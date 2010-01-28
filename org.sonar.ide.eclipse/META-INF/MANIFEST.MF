@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Itp Plug-in
+Bundle-SymbolicName: tycho.demo.itp01;singleton:=true
+Bundle-Version: 0.0.1.qualifier
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Export-Package: tycho.demo.itp01.actions;x-friends:="tycho.demo.itp01.tests"
