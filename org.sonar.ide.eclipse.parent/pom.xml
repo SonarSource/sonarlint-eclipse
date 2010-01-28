@@ -74,15 +74,14 @@
 
   <pluginRepositories>
     <pluginRepository>
-      <id>sonatype</id>
-      <name>Sonatype</name>
-      <url>http://repository.sonatype.org/content/repositories/snapshots/</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
+      <id>sonatype-public</id>
+      <url>http://repository.sonatype.org/content/groups/sonatype-public-grid</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
     </pluginRepository>
   </pluginRepositories>
 
