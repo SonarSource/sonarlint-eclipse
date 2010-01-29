@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.codehaus.sonar-ide.eclipse</groupId>
+    <artifactId>eclipse-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../org.sonar.ide.eclipse.parent/pom.xml</relativePath>
+  </parent>
+
+  <artifactId>org.codehaus.sonar-ide.eclipse.tests</artifactId>
+  <packaging>eclipse-test-plugin</packaging>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <resources>
+      <resource>
+        <directory>src</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.sonatype.tycho</groupId>
+        <artifactId>maven-osgi-test-plugin</artifactId>
+        <configuration>
+          <environmentVariables>
+            <TMP>${java.io.tmpdir}</TMP>
+          </environmentVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

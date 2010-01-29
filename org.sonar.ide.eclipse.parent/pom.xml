@@ -17,6 +17,7 @@
 
   <modules>
     <module>../org.sonar.ide.eclipse</module>
+    <module>../org.sonar.ide.eclipse.tests</module>
   </modules>
 
   <build>
