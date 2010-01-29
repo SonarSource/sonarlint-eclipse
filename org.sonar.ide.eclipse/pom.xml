@@ -14,6 +14,8 @@
   <packaging>eclipse-plugin</packaging>
   <version>0.0.1-SNAPSHOT</version>
 
+  <name>Sonar IDEs :: Eclipse Plugin</name>
+
   <build>
     <sourceDirectory>src</sourceDirectory>
 
