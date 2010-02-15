@@ -18,6 +18,7 @@
   </prerequisites>
 
   <modules>
+    <module>../org.sonar.ide.eclipse.sonar_embedder</module>
     <module>../org.sonar.ide.eclipse</module>
     <module>../org.sonar.ide.eclipse.feature</module>
     <module>../org.sonar.ide.eclipse.site</module>
@@ -73,6 +74,10 @@
           <groupId>org.sonatype.tycho</groupId>
           <artifactId>maven-osgi-compiler-plugin</artifactId>
           <version>${tycho.version}</version>
+          <configuration>
+            <source>1.5</source>
+            <target>1.5</target>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.sonatype.tycho</groupId>
@@ -103,5 +108,23 @@
       </releases>
     </pluginRepository>
   </pluginRepositories>
+
+  <developers>
+    <developer>
+      <id>godin</id>
+      <name>Evgeny Mandrikov</name>
+      <timezone>+3</timezone>
+      <roles>
+        <role>Project Leader</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jer</id>
+      <name>Jeremie</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
 
 </project>

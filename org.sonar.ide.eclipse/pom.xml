@@ -10,11 +10,11 @@
     <relativePath>../org.sonar.ide.eclipse.parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>org.codehaus.sonar-ide.eclipse</artifactId>
+  <artifactId>org.sonar.ide.eclipse</artifactId>
   <packaging>eclipse-plugin</packaging>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>Sonar IDEs :: Eclipse Plugin</name>
+  <name>Sonar Integration for Eclipse</name>
 
   <build>
     <sourceDirectory>src</sourceDirectory>

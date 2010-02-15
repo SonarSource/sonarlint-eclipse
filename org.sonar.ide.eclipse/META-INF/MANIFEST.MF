@@ -8,8 +8,10 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.ide,
  org.eclipse.jdt.ui,
- org.eclipse.jdt.core
-Eclipse-LazyStart: true
-Bundle-ClassPath: .
+ org.eclipse.jdt.core,
+ org.sonar.ide.eclipse.sonar_embedder
+Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
+Import-Package: org.eclipse.core.resources
+Bundle-ClassPath: .

@@ -10,7 +10,7 @@
     <relativePath>../org.sonar.ide.eclipse.parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>org.codehaus.sonar-ide.eclipse.site</artifactId>
+  <artifactId>org.sonar.ide.eclipse.site</artifactId>
   <packaging>eclipse-update-site</packaging>
 
   <name>Sonar Integration for Eclipse Update Site</name>

@@ -10,7 +10,7 @@
     <relativePath>../org.sonar.ide.eclipse.parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>org.codehaus.sonar-ide.eclipse.tests</artifactId>
+  <artifactId>org.sonar.ide.eclipse.tests</artifactId>
   <packaging>eclipse-test-plugin</packaging>
   <version>0.0.1-SNAPSHOT</version>
 
