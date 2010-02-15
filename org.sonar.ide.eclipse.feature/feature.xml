@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+    id="org.sonar.ide.eclipse.feature"
+    label="Sonar Integration for Eclipse"
+    version="0.0.1.qualifier"
+    plugin="org.sonar.ide.eclipse">
+
+  <description>
+    Sonar Integration for Eclipse
+  </description>
+
+  <plugin
+      id="org.sonar.ide.eclipse"
+      download-size="0"
+      install-size="0"
+      version="0.0.0"
+      unpack="false"/>
+
+</feature>

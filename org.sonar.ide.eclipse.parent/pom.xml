@@ -10,7 +10,7 @@
   <name>Sonar IDEs :: Eclipse Plugin :: Parent</name>
 
   <properties>
-    <tycho.version>0.7.0-SNAPSHOT</tycho.version>
+    <tycho.version>0.7.0</tycho.version>
   </properties>
 
   <prerequisites>
@@ -19,11 +19,22 @@
 
   <modules>
     <module>../org.sonar.ide.eclipse</module>
-    <module>../org.sonar.ide.eclipse.tests</module>
+    <module>../org.sonar.ide.eclipse.feature</module>
+    <module>../org.sonar.ide.eclipse.site</module>
+    <!--<module>../org.sonar.ide.eclipse.tests</module>-->
   </modules>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.7</version>
+        <configuration>
+          <downloadSources>true</downloadSources>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.sonatype.tycho</groupId>
         <artifactId>tycho-maven-plugin</artifactId>
@@ -37,6 +48,7 @@
         <version>${tycho.version}</version>
         <configuration>
           <resolver>p2</resolver>
+          <pomDependencies>consider</pomDependencies>
         </configuration>
       </plugin>
     </plugins>
@@ -52,6 +64,10 @@
           <groupId>org.sonatype.tycho</groupId>
           <artifactId>maven-osgi-packaging-plugin</artifactId>
           <version>${tycho.version}</version>
+          <configuration>
+            <!-- workaround for TYCHO-349 or TYCHO-313 -->
+            <strictVersions>false</strictVersions>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.sonatype.tycho</groupId>
