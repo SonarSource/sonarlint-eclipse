@@ -11,6 +11,11 @@
 
   <properties>
     <tycho.version>0.7.0</tycho.version>
+
+    <!-- disable accidental deployment -->
+    <sonar-ide.site>dav:http://localhost/eclipse</sonar-ide.site>
+    <sonar-ide.snapshots>http://localhost</sonar-ide.snapshots>
+    <sonar-ide.releases>http://localhost</sonar-ide.releases>
   </properties>
 
   <prerequisites>
@@ -84,6 +89,11 @@
           <artifactId>maven-osgi-test-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>wagon-maven-plugin</artifactId>
+          <version>1.0-beta-3</version>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
@@ -108,6 +118,19 @@
       </releases>
     </pluginRepository>
   </pluginRepositories>
+
+  <distributionManagement>
+    <repository>
+      <id>sonar-ide</id>
+      <name>Sonar IDEs repository</name>
+      <url>${sonar-ide.releases}</url>
+    </repository>
+    <snapshotRepository>
+      <id>sonar-ide</id>
+      <name>Sonar IDEs snapshot repository</name>
+      <url>${sonar-ide.snapshots}</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <developers>
     <developer>
