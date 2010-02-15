@@ -31,6 +31,14 @@
   </modules>
 
   <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -129,6 +137,7 @@
       <id>sonar-ide</id>
       <name>Sonar IDEs snapshot repository</name>
       <url>${sonar-ide.snapshots}</url>
+      <uniqueVersion>false</uniqueVersion>
     </snapshotRepository>
   </distributionManagement>
 
