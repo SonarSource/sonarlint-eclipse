@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Export-Package: org.sonar.wsclient,org.sonar.ide.shared,org.sonar.wscl
+ ient.connectors,org.sonar.ide.images.tendency,org.sonar.wsclient.unma
+ rshallers,org.sonar.ide.ui,org.sonar.ide.client,org.sonar.ide.images.
+ priority,org.sonar.ide.ui.treemap.split,org.sonar.ide.ui.treemap,org.
+ sonar.ide.images,org.sonar.wsclient.services
+Bundle-ClassPath: jars/sonar-ide-commons-0.1-SNAPSHOT.jar,jars/slf4j-a
+ pi-1.5.10.jar,jars/google-collections-1.0.jar,jars/commons-lang-2.4.j
+ ar,jars/jdom-1.1.jar,jars/sonar-ws-client-1.13-SNAPSHOT.jar,jars/json
+ -simple-1.1.jar,jars/commons-httpclient-3.1.jar,jars/commons-codec-1.
+ 2.jar,jars/httpclient-4.0.jar,jars/httpcore-4.0.1.jar,jars/forms-1.2.
+ 1.jar,jars/slf4j-simple-1.5.10.jar,jars/jcl-over-slf4j-1.5.10.jar
+MavenArtifact-BaseVersion: 0.0.1-SNAPSHOT
+Bundle-Version: 0.0.1.qualifier
+MavenArtifact-ArtifactId: org.sonar.ide.eclipse.sonar_embedder
+MavenArtifact-GroupId: org.codehaus.sonar-ide.eclipse
+Bundle-Name: Sonar Embedder Bundle
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.sonar.ide.eclipse.sonar_embedder;singleton:=t
+ rue
+Bundle-RequiredExecutionEnvironment: J2SE-1.5, JavaSE-1.6
+
