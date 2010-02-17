@@ -171,7 +171,8 @@
     </developer>
     <developer>
       <id>jer</id>
-      <name>Jeremie</name>
+      <name>Jérémie Lagarde</name>
+      <timezone>+1</timezone>
       <roles>
         <role>Developer</role>
       </roles>
