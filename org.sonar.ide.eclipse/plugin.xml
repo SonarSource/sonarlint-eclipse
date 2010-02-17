@@ -1,3 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
+   <extension point="org.eclipse.ui.preferencePages">         
+	  <category id = "org.sonar.ide.eclipse.prefcat" name="Sonar"/>
+      <page
+            category="org.sonar.ide.eclipse.prefcat"
+            class="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
+            id="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
+            name="Sonar Preferences">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.sonar.ide.eclipse.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="Sonar"
+            id="org.sonar.ide.eclipse">
+      </category>
+      <view
+            category="org.sonar.ide.eclipse"
+            class="org.sonar.ide.eclipse.views.NavigatorView"
+            icon="icons/sonar.gif"
+            id="org.sonar.ide.eclipse.views.NavigatorView"
+            name="Navigator View">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="contexts.xml">
+      </contexts>
+   </extension>
+   <extension point="org.eclipse.ui.newWizards">
+	  <category id = "org.sonar.ide.eclipse.wizcat" name="Sonar"/>
+      <wizard
+            canFinishEarly="true"
+            category="org.sonar.ide.eclipse.wizcat"
+            class="org.sonar.ide.eclipse.wizards.NewServerLocationWizard"
+            descriptionImage="icons/sonar-large.gif"
+            icon="icons/sonar.gif"
+            id="org.sonar.ide.eclipse.wizards.newserverlocationwizard"
+            name="Sonar server">
+      </wizard>
+   </extension>
 </plugin>
