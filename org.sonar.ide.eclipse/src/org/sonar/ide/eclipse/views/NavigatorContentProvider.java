@@ -1,7 +1,5 @@
 package org.sonar.ide.eclipse.views;
 
-import java.util.List;
-
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -14,14 +12,16 @@ import org.sonar.ide.eclipse.views.model.TreeRoot;
 import org.sonar.ide.eclipse.views.model.TreeServer;
 import org.sonar.wsclient.Host;
 
+import java.util.List;
+
 /**
- * @author Jérémie Lagarde
+ * @author JÃ©rÃ©mie Lagarde
  */
 public class NavigatorContentProvider implements IStructuredContentProvider, ITreeContentProvider {
 
-  private TreeRoot                   invisibleRoot;
+  private TreeRoot invisibleRoot;
   private DeferredTreeContentManager manager;
-  private AbstractTreeViewer         viewer;
+  private AbstractTreeViewer viewer;
 
   public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
     if (viewer instanceof AbstractTreeViewer) {

@@ -1,8 +1,5 @@
 package org.sonar.ide.eclipse;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -14,20 +11,26 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
+/**
+ * @author Jérémie Lagarde
+ */
 public class SonarPlugin extends AbstractUIPlugin {
 
   // The plug-in ID
-  public static final String        PLUGIN_ID        = "org.sonar.ide.eclipse";
+  public static final String PLUGIN_ID = "org.sonar.ide.eclipse";
 
   // Images
-  private static ImageDescriptor    SONARWIZBAN_IMG;
-  private static ImageDescriptor    SONARSYNCHRO_IMG;
+  private static ImageDescriptor SONARWIZBAN_IMG;
+  private static ImageDescriptor SONARSYNCHRO_IMG;
 
-  public static final String        IMG_SONARWIZBAN  = "sonar_wizban.gif";     //$NON-NLS-1$
-  public static final String        IMG_SONARSYNCHRO = "synced.gif";           //$NON-NLS-1$
+  public static final String IMG_SONARWIZBAN = "sonar_wizban.gif"; //$NON-NLS-1$
+  public static final String IMG_SONARSYNCHRO = "synced.gif"; //$NON-NLS-1$
 
   // The shared instance
-  private static SonarPlugin        plugin;
+  private static SonarPlugin plugin;
 
   private static SonarServerManager serverManager;
 
@@ -48,6 +51,7 @@ public class SonarPlugin extends AbstractUIPlugin {
    * org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext
    * )
    */
+
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
@@ -61,6 +65,7 @@ public class SonarPlugin extends AbstractUIPlugin {
    * org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext
    * )
    */
+
   @Override
   public void stop(BundleContext context) throws Exception {
     plugin = null;
@@ -91,21 +96,21 @@ public class SonarPlugin extends AbstractUIPlugin {
     display.syncExec(new Runnable() {
       public void run() {
         switch (severity) {
-        case IStatus.ERROR:
-          MessageDialog.openError(display.getActiveShell(), Messages
-              .getString("error"), msg); //$NON-NLS-1$
-          break;
-        case IStatus.WARNING:
-          MessageDialog.openWarning(display.getActiveShell(), Messages
-              .getString("warning"), msg); //$NON-NLS-1$
-          break;
+          case IStatus.ERROR:
+            MessageDialog.openError(display.getActiveShell(), Messages
+                .getString("error"), msg); //$NON-NLS-1$
+            break;
+          case IStatus.WARNING:
+            MessageDialog.openWarning(display.getActiveShell(), Messages
+                .getString("warning"), msg); //$NON-NLS-1$
+            break;
         }
       }
     });
   }
 
   public void displayError(int severity, final String msg, Throwable t,
-      boolean shouldLog) {
+                           boolean shouldLog) {
     final IStatus status = createStatus(severity, msg, t);
     if (shouldLog) {
       writeLog(status);

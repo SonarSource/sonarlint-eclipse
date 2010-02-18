@@ -7,26 +7,26 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.sonar.ide.eclipse.SonarPlugin;
 
 /**
- * @author Jérémie Lagarde
+ * @author JÃ©rÃ©mie Lagarde
  */
 public class SonarPreferencePage
-	extends FieldEditorPreferencePage
-	implements IWorkbenchPreferencePage {
+    extends FieldEditorPreferencePage
+    implements IWorkbenchPreferencePage {
 
-	public SonarPreferencePage() {
-		super(GRID);
-		setPreferenceStore(SonarPlugin.getDefault().getPreferenceStore());
-		setDescription("Sonar server connection");
-	}
-	
-	@Override
+  public SonarPreferencePage() {
+    super(GRID);
+    setPreferenceStore(SonarPlugin.getDefault().getPreferenceStore());
+    setDescription("Sonar server connection");
+  }
+
+  @Override
   public void createFieldEditors() {
-		addField(new StringFieldEditor(PreferenceConstants.P_SONAR_SERVER_URL, 
-				"&Default sonar url:", getFieldEditorParent()));
-	}
+    addField(new StringFieldEditor(PreferenceConstants.P_SONAR_SERVER_URL,
+        "&Default sonar url:", getFieldEditorParent()));
+  }
 
-	public void init(IWorkbench workbench) {
-	}
+  public void init(IWorkbench workbench) {
+  }
 
-	
+
 }

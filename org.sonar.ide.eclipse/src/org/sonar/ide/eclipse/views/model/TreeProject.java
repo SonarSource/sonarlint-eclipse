@@ -4,30 +4,30 @@ import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
 
 /**
- * @author Jérémie Lagarde
+ * @author JÃ©rÃ©mie Lagarde
  */
 public class TreeProject extends TreeParent {
 
-	public TreeProject(Resource resource) {
-		super(resource);
-	}
+  public TreeProject(Resource resource) {
+    super(resource);
+  }
 
-	
-	@Override
+
+  @Override
   public String getName() {
-		return super.getName() + " - " + getResource().getVersion();
-	}
+    return super.getName() + " - " + getResource().getVersion();
+  }
 
-	@Override
+  @Override
   protected ResourceQuery createResourceQuery() {
-	    ResourceQuery query = new ResourceQuery();
-	    query.setResourceKeyOrId(getResource().getKey());
-	    query.setDepth(1);
-	    return query;
-	}
+    ResourceQuery query = new ResourceQuery();
+    query.setResourceKeyOrId(getResource().getKey());
+    query.setDepth(1);
+    return query;
+  }
 
-	@Override
-	public String getRemoteURL() {
-		return getRemoteRootURL() + "/" + "project/index/" + getResource().getId(); //$NON-NLS-1$
-	}
+  @Override
+  public String getRemoteURL() {
+    return getRemoteRootURL() + "/" + "project/index/" + getResource().getId(); //$NON-NLS-1$
+  }
 }

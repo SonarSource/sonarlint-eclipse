@@ -6,15 +6,15 @@ import org.sonar.ide.eclipse.SonarPlugin;
 
 /**
  * Class used to initialize default preference values.
- * 
- * @author Jérémie Lagarde
+ *
+ * @author JÃ©rÃ©mie Lagarde
  */
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
-	@Override
+  @Override
   public void initializeDefaultPreferences() {
-		IPreferenceStore store = SonarPlugin.getDefault().getPreferenceStore();
-		store.setDefault(PreferenceConstants.P_SONAR_SERVER_URL, PreferenceConstants.P_SONAR_SERVER_URL_DEFAULT);
-	}
+    IPreferenceStore store = SonarPlugin.getDefault().getPreferenceStore();
+    store.setDefault(PreferenceConstants.P_SONAR_SERVER_URL, PreferenceConstants.P_SONAR_SERVER_URL_DEFAULT);
+  }
 
 }

@@ -1,27 +1,21 @@
 package org.sonar.ide.eclipse;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.widgets.Display;
 import org.sonar.wsclient.Host;
 
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * @author Jérémie Lagarde
- * 
+ * @author JÃ©rÃ©mie Lagarde
  */
 public class SonarServerManager {
 
   private static final String SERVER_CACHE_NAME = ".serverlist";        //$NON-NLS-1$
 
-  private final ArrayList<Host>     serverList        = new ArrayList<Host>();
+  private final ArrayList<Host> serverList = new ArrayList<Host>();
 
   SonarServerManager() {
     try {
@@ -130,7 +124,7 @@ public class SonarServerManager {
   }
 
   public interface IServerSetListener {
-    public static final int SERVER_ADDED   = 0;
+    public static final int SERVER_ADDED = 0;
     public static final int SERVER_REMOVED = 1;
 
     public void serverSetChanged(int type, List<Host> serverList);

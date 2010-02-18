@@ -5,45 +5,44 @@ import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.ResourceQuery;
 
 /**
- * @author Jérémie Lagarde
- * 
+ * @author JÃ©rÃ©mie Lagarde
  */
 public class TreeServer extends TreeParent {
 
-	private final Sonar server;
-	private final Host  host;
+  private final Sonar server;
+  private final Host host;
 
-	public TreeServer(Host host) {
-		super(null);
-		this.host  = host;
-		this.server = Sonar.create(host.getHost());
-	}
+  public TreeServer(Host host) {
+    super(null);
+    this.host = host;
+    this.server = Sonar.create(host.getHost());
+  }
 
-	@Override
+  @Override
   public String getName() {
-		return host.getHost();
-	}
-	
+    return host.getHost();
+  }
 
-	@Override
+
+  @Override
   public Sonar getServer() {
-		return server;
-	}
-	
+    return server;
+  }
 
-	@Override
+
+  @Override
   protected String getRemoteRootURL() {
-		return host.getHost();
-	}
+    return host.getHost();
+  }
 
 
-	@Override
+  @Override
   protected ResourceQuery createResourceQuery() {
-		return new ResourceQuery();
-	}
+    return new ResourceQuery();
+  }
 
-	@Override
-	public String getRemoteURL() {
-		return getRemoteRootURL();
-	}
+  @Override
+  public String getRemoteURL() {
+    return getRemoteRootURL();
+  }
 }

@@ -7,63 +7,66 @@ import org.sonar.wsclient.services.Resource;
 
 
 /**
- * @author Jérémie Lagarde
+ * @author JÃ©rÃ©mie Lagarde
  */
 public abstract class TreeObject implements IAdaptable {
-	
-	private final Resource    resource;
-	private TreeParent  parent;
-	private TreePropertyProvider propertyProvider;
-	
-	public TreeObject(Resource resource) {
-		this.resource = resource;
-	}
-	
-	public String getName() {
-		return resource.getName();
-	}
-	
-	public abstract String getRemoteURL();
-	
-	protected String getRemoteRootURL() {
-		return parent.getRemoteRootURL();
-	}
 
-	public String getVersion() {
-		if(resource.getVersion() != null)
-			return resource.getVersion();
-		if(getParent() !=null)
-			return getParent().getVersion();
-		return "";
-			
-	}
-	
-	public Resource getResource() {
-		return resource;
-	}
+  private final Resource resource;
+  private TreeParent parent;
+  private TreePropertyProvider propertyProvider;
 
-	public Sonar getServer() {
-		return parent.getServer();
-	}
+  public TreeObject(Resource resource) {
+    this.resource = resource;
+  }
 
-	public void setParent(TreeParent parent) {
-		this.parent = parent;
-	}
-	public TreeParent getParent() {
-		return parent;
-	}
-	@Override
+  public String getName() {
+    return resource.getName();
+  }
+
+  public abstract String getRemoteURL();
+
+  protected String getRemoteRootURL() {
+    return parent.getRemoteRootURL();
+  }
+
+  public String getVersion() {
+    if (resource.getVersion() != null)
+      return resource.getVersion();
+    if (getParent() != null)
+      return getParent().getVersion();
+    return "";
+
+  }
+
+  public Resource getResource() {
+    return resource;
+  }
+
+  public Sonar getServer() {
+    return parent.getServer();
+  }
+
+  public void setParent(TreeParent parent) {
+    this.parent = parent;
+  }
+
+  public TreeParent getParent() {
+    return parent;
+  }
+
+  @Override
   public String toString() {
-		return getName();
-	}
-	@SuppressWarnings("unchecked")
-	public Object getAdapter(Class adapter) {
-		if (adapter == IPropertySource.class) {
-			if (propertyProvider == null) {
-				propertyProvider = new TreePropertyProvider(this);
-			}
-			return propertyProvider;
-		}
-	    return null;
-	}
+    return getName();
+  }
+
+  @SuppressWarnings("unchecked")
+  public Object getAdapter(Class adapter) {
+    if (adapter == IPropertySource.class) {
+      if (propertyProvider == null) {
+        propertyProvider = new TreePropertyProvider(this);
+      }
+      return propertyProvider;
+    }
+    return null;
+  }
 }
