@@ -1,6 +1,5 @@
 package org.sonar.ide.eclipse;
 
-import org.eclipse.core.internal.runtime.Activator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
