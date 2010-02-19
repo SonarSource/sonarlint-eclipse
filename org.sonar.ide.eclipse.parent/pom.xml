@@ -112,6 +112,11 @@
       <layout>p2</layout>
       <url>http://download.eclipse.org/releases/ganymede</url>
     </repository>
+    <repository>
+      <id>m2eclipse</id>
+      <layout>p2</layout>
+      <url>http://m2eclipse.sonatype.org/sites/m2e</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>

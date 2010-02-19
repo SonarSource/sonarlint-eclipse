@@ -3,15 +3,23 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Sonar Integration for Eclipse
 Bundle-SymbolicName: org.sonar.ide.eclipse;singleton:=true
 Bundle-Version: 0.0.1.qualifier
+Bundle-ClassPath: .
 Bundle-Activator: org.sonar.ide.eclipse.SonarPlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.ide,
  org.eclipse.jdt.ui,
  org.eclipse.jdt.core,
- org.sonar.ide.eclipse.sonar_embedder
-Bundle-ActivationPolicy: lazy
+ org.sonar.ide.eclipse.sonar_embedder,
+ org.maven.ide.eclipse.maven_embedder;bundle-version="0.10.0",
+ org.maven.ide.eclipse;bundle-version="0.10.0",
+ org.maven.ide.eclipse.jdt;bundle-version="0.10.0"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
 Import-Package: org.eclipse.core.resources
-Bundle-ClassPath: .
+Bundle-ActivationPolicy: lazy
+Export-Package: org.sonar.ide.eclipse,
+ org.sonar.ide.eclipse.preferences,
+ org.sonar.ide.eclipse.views,
+ org.sonar.ide.eclipse.views.model,
+ org.sonar.ide.eclipse.wizards
