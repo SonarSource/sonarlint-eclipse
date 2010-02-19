@@ -27,7 +27,7 @@ public class NavigatorLabelProvider extends LabelProvider {
     if (obj instanceof TreeParent)
       imageKey = ISharedImages.IMG_OBJ_FOLDER;
     if (obj instanceof TreeProject)
-      imageKey = ISharedImages.IMG_OBJ_PROJECT;
+      imageKey = org.eclipse.ui.ide.IDE.SharedImages.IMG_OBJ_PROJECT;
     if (obj instanceof TreeFile)
       imageKey = ISharedImages.IMG_OBJ_FILE;
     return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);

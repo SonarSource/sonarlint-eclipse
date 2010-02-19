@@ -312,7 +312,7 @@ public class NavigatorView extends ViewPart {
       if (viewer.getExpandedState(node)) {
         viewer.collapseToLevel(node, 1);
       } else {
-        viewer.expandToLevel(node, viewer.ALL_LEVELS);
+        viewer.expandToLevel(node, AbstractTreeViewer.ALL_LEVELS);
       }
     }
     if (node instanceof TreeFile) {
@@ -390,7 +390,7 @@ public class NavigatorView extends ViewPart {
     if (selection.size() != 1)
       return false;
 
-    Object element = selection.getFirstElement();
+    // Object element = selection.getFirstElement();
     // IEditorInput selectionAsInput= EditorUtility.getEditorInput(selection.getFirstElement());
     // return input.equals(selectionAsInput);
     return false;
@@ -409,7 +409,6 @@ public class NavigatorView extends ViewPart {
     TreeObject treeObject = null;
     if (input instanceof IJavaElement) {
       String name = ((IJavaElement) input).getElementName();
-      String parent = ((IJavaElement) input).getParent().getElementName();
       treeObject = ((NavigatorContentProvider) viewer.getContentProvider()).find(name);
     }
 
