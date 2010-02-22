@@ -54,4 +54,12 @@
                   class="org.maven.ide.eclipse.sonar.SonarProjectConfigurator"
                   name="Sonar"/>
   </extension>
+  <extension
+        point="org.eclipse.ui.propertyPages">
+     <page
+           class="org.sonar.ide.eclipse.properties.SonarProjectPropertyPage"
+           id="org.sonar.ide.eclipse.properties.sonarProjectPropertyPage"
+           name="Sonar properties">
+     </page>
+  </extension>
 </plugin>
