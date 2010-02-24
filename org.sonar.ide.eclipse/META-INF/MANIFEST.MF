@@ -17,6 +17,7 @@ Import-Package: org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonar.ide.eclipse,
  org.sonar.ide.eclipse.preferences,
+ org.sonar.ide.eclipse.properties,
  org.sonar.ide.eclipse.views,
  org.sonar.ide.eclipse.views.model,
  org.sonar.ide.eclipse.wizards
