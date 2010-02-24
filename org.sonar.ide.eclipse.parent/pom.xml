@@ -32,6 +32,7 @@
 
     <!-- features -->
     <module>../org.sonar.ide.eclipse.feature</module>
+    <module>../org.maven.ide.eclipse.sonar.feature</module>
   </modules>
 
   <build>
