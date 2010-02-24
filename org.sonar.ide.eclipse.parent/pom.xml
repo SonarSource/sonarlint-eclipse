@@ -25,9 +25,13 @@
   <modules>
     <module>../org.sonar.ide.eclipse.sonar_embedder</module>
     <module>../org.sonar.ide.eclipse</module>
-    <module>../org.sonar.ide.eclipse.feature</module>
     <module>../org.sonar.ide.eclipse.site</module>
     <!--<module>../org.sonar.ide.eclipse.tests</module>-->
+
+    <module>../org.maven.ide.eclipse.sonar</module>
+
+    <!-- features -->
+    <module>../org.sonar.ide.eclipse.feature</module>
   </modules>
 
   <build>

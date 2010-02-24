@@ -1,6 +1,7 @@
 package org.maven.ide.eclipse.sonar;
 
 import org.apache.maven.project.MavenProject;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
@@ -13,20 +14,18 @@ import org.maven.ide.eclipse.project.configurator.ProjectConfigurationRequest;
  */
 public class SonarProjectConfigurator extends AbstractProjectConfigurator {
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) throws CoreException {
-    MavenProject project = request.getMavenProject();
-    configureSonar(project);
+    configureProject(request.getProject(), request.getMavenProject());
   }
 
   @Override
   protected void mavenProjectChanged(MavenProjectChangedEvent event, IProgressMonitor monitor) throws CoreException {
     IMavenProjectFacade facade = event.getMavenProject();
-    MavenProject project = facade.getMavenProject();
-    configureSonar(project);
+    configureProject(facade.getProject(), facade.getMavenProject());
   }
 
-  private void configureSonar(MavenProject project) {
-    String groupId = project.getGroupId();
-    String artifactId = project.getArtifactId();
+  private void configureProject(IProject project, MavenProject mavenProject) {
+    String groupId = mavenProject.getGroupId();
+    String artifactId = mavenProject.getArtifactId();
     System.out.println(groupId + ":" + artifactId);
   }
 }

@@ -10,10 +10,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.jdt.ui,
  org.eclipse.jdt.core,
- org.sonar.ide.eclipse.sonar_embedder,
- org.maven.ide.eclipse.maven_embedder;bundle-version="0.10.0",
- org.maven.ide.eclipse;bundle-version="0.10.0",
- org.maven.ide.eclipse.jdt;bundle-version="0.10.0"
+ org.sonar.ide.eclipse.sonar_embedder
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
 Import-Package: org.eclipse.core.resources

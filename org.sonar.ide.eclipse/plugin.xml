@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
   <extension point="org.eclipse.ui.preferencePages">
-    <category id="org.sonar.ide.eclipse.prefcat" name="Sonar"/>
     <page
-        category="org.sonar.ide.eclipse.prefcat"
         class="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
         id="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
-        name="Sonar Preferences">
+        name="Sonar">
     </page>
   </extension>
-  <extension
-      point="org.eclipse.core.runtime.preferences">
+  <extension point="org.eclipse.core.runtime.preferences">
     <initializer
         class="org.sonar.ide.eclipse.preferences.PreferenceInitializer">
     </initializer>
   </extension>
-  <extension
-      point="org.eclipse.ui.views">
+  <extension point="org.eclipse.ui.views">
     <category
         name="Sonar"
         id="org.sonar.ide.eclipse">
@@ -28,12 +24,6 @@
         id="org.sonar.ide.eclipse.views.NavigatorView"
         name="Navigator View">
     </view>
-  </extension>
-  <extension
-      point="org.eclipse.help.contexts">
-    <contexts
-        file="contexts.xml">
-    </contexts>
   </extension>
   <extension point="org.eclipse.ui.newWizards">
     <category id="org.sonar.ide.eclipse.wizcat" name="Sonar"/>
@@ -47,19 +37,12 @@
         name="Sonar server">
     </wizard>
   </extension>
-
-  <!-- Integration with m2eclipse -->
-  <extension point="org.maven.ide.eclipse.projectConfigurators">
-    <configurator id="org.maven.ide.eclipse.sonar"
-                  class="org.maven.ide.eclipse.sonar.SonarProjectConfigurator"
-                  name="Sonar"/>
-  </extension>
   <extension
-        point="org.eclipse.ui.propertyPages">
-     <page
-           class="org.sonar.ide.eclipse.properties.SonarProjectPropertyPage"
-           id="org.sonar.ide.eclipse.properties.sonarProjectPropertyPage"
-           name="Sonar properties">
-     </page>
+      point="org.eclipse.ui.propertyPages">
+    <page
+        class="org.sonar.ide.eclipse.properties.SonarProjectPropertyPage"
+        id="org.sonar.ide.eclipse.properties.sonarProjectPropertyPage"
+        name="Sonar properties">
+    </page>
   </extension>
 </plugin>
