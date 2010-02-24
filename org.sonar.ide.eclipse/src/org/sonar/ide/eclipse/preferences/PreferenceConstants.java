@@ -7,7 +7,7 @@ package org.sonar.ide.eclipse.preferences;
  */
 public class PreferenceConstants {
 
-  public static final String P_SONAR_SERVER_URL = "sonarServeurUrlPreference";      //$NON-NLS-1$
+  public static final String P_SONAR_SERVER_URL = "sonarServerUrlPreference";       //$NON-NLS-1$
   public static final String P_SONAR_SERVER_URL_DEFAULT = "http://localhost:9000/"; //$NON-NLS-1$
 
 }
