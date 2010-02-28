@@ -51,6 +51,7 @@
            id="org.sonar.ide.eclipse.contribution1"
            objectClass="org.eclipse.core.resources.IResource">
         <menu
+              icon="icons/sonar.gif"
               id="org.sonar.ide.eclipse.sonar"
               label="Sonar"
               path="additions">
