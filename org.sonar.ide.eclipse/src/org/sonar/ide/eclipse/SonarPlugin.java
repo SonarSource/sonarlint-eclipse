@@ -1,5 +1,8 @@
 package org.sonar.ide.eclipse;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -10,26 +13,26 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 /**
  * @author Jérémie Lagarde
  */
 public class SonarPlugin extends AbstractUIPlugin {
 
   // The plug-in ID
-  public static final String PLUGIN_ID = "org.sonar.ide.eclipse";
+  public static final String        PLUGIN_ID        = "org.sonar.ide.eclipse";
+
+  // Marker
+  public static final String        MARKER_ID        = PLUGIN_ID + ".sonarMarker"; //$NON-NLS-1$
 
   // Images
-  private static ImageDescriptor SONARWIZBAN_IMG;
-  private static ImageDescriptor SONARSYNCHRO_IMG;
+  private static ImageDescriptor    SONARWIZBAN_IMG;
+  private static ImageDescriptor    SONARSYNCHRO_IMG;
 
-  public static final String IMG_SONARWIZBAN = "sonar_wizban.gif"; //$NON-NLS-1$
-  public static final String IMG_SONARSYNCHRO = "synced.gif"; //$NON-NLS-1$
+  public static final String        IMG_SONARWIZBAN  = "sonar_wizban.gif";        //$NON-NLS-1$
+  public static final String        IMG_SONARSYNCHRO = "synced.gif";              //$NON-NLS-1$
 
   // The shared instance
-  private static SonarPlugin plugin;
+  private static SonarPlugin        plugin;
 
   private static SonarServerManager serverManager;
 
@@ -80,20 +83,17 @@ public class SonarPlugin extends AbstractUIPlugin {
       public void run() {
         switch (severity) {
           case IStatus.ERROR:
-            MessageDialog.openError(display.getActiveShell(), Messages
-                .getString("error"), msg); //$NON-NLS-1$
+            MessageDialog.openError(display.getActiveShell(), Messages.getString("error"), msg); //$NON-NLS-1$
             break;
           case IStatus.WARNING:
-            MessageDialog.openWarning(display.getActiveShell(), Messages
-                .getString("warning"), msg); //$NON-NLS-1$
+            MessageDialog.openWarning(display.getActiveShell(), Messages.getString("warning"), msg); //$NON-NLS-1$
             break;
         }
       }
     });
   }
 
-  public void displayError(int severity, final String msg, Throwable t,
-                           boolean shouldLog) {
+  public void displayError(int severity, final String msg, Throwable t, boolean shouldLog) {
     final IStatus status = createStatus(severity, msg, t);
     if (shouldLog) {
       writeLog(status);
@@ -101,8 +101,7 @@ public class SonarPlugin extends AbstractUIPlugin {
     final Display display = PlatformUI.getWorkbench().getDisplay();
     display.syncExec(new Runnable() {
       public void run() {
-        ErrorDialog.openError(display.getActiveShell(), null, Messages
-            .getString("error"), status); //$NON-NLS-1$
+        ErrorDialog.openError(display.getActiveShell(), null, Messages.getString("error"), status); //$NON-NLS-1$
       }
     });
   }

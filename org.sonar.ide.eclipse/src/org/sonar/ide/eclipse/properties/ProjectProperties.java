@@ -47,7 +47,7 @@ public class ProjectProperties {
     if (project == null || !project.isAccessible()) {
       return null;
     }
-    ProjectProperties projectProperties = (ProjectProperties) projectPropertiesMap.get(project);
+    ProjectProperties projectProperties = projectPropertiesMap.get(project);
     if (projectProperties != null) {
       return projectProperties;
     }
@@ -57,9 +57,7 @@ public class ProjectProperties {
   }
 
   public String getUrl() {
-    return preferences
-        .get(P_SONAR_SERVER_URL, SonarPlugin.getDefault().getPreferenceStore()
-            .getString(PreferenceConstants.P_SONAR_SERVER_URL));
+    return preferences.get(P_SONAR_SERVER_URL, SonarPlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL));
   }
 
   public void setUrl(String url) {
@@ -81,7 +79,7 @@ public class ProjectProperties {
   public void setPassword(String password) {
     preferences.put(P_SONAR_SERVER_PASSWORD, password);
   }
-  
+
   public String getGroupId() {
     return preferences.get(P_PROJECT_GROUPID, "");
   }
@@ -90,7 +88,6 @@ public class ProjectProperties {
     preferences.put(P_PROJECT_GROUPID, groupId);
   }
 
-  
   public String getArtifactId() {
     return preferences.get(P_PROJECT_ARTIFACTID, project.getName());
   }
@@ -98,8 +95,8 @@ public class ProjectProperties {
   public void setArtifactId(String artifactId) {
     preferences.put(P_PROJECT_ARTIFACTID, artifactId);
   }
-  
-  protected void flush() throws BackingStoreException {
+
+  public void flush() throws BackingStoreException {
     preferences.flush();
   }
 

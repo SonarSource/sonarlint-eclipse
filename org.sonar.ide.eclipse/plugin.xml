@@ -45,4 +45,43 @@
         name="Sonar properties">
     </page>
   </extension>
+  <extension
+        point="org.eclipse.ui.popupMenus">
+     <objectContribution
+           id="org.sonar.ide.eclipse.contribution1"
+           objectClass="org.eclipse.core.resources.IResource">
+        <menu
+              id="org.sonar.ide.eclipse.sonar"
+              label="Sonar"
+              path="additions">
+           <separator
+                 name="group1">
+           </separator>
+        </menu>
+        <action
+              class="org.sonar.ide.eclipse.actions.RefreshViolationAction"
+              enablesFor="+"
+              id="org.sonar.ide.eclipse.refreshViolationAction"
+              label="Refresh violations"
+              menubarPath="org.sonar.ide.eclipse.sonar/group1"
+              state="true"
+              style="push">
+        </action>
+     </objectContribution>
+  </extension>
+  <extension
+        id="sonarMarker"
+        point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent	
+            value="true">
+      </persistent>
+      <attribute
+            name="rulename">
+      </attribute>
+   </extension>
+
+  
 </plugin>

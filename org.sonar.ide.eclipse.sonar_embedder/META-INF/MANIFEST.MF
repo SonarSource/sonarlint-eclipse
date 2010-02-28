@@ -3,7 +3,7 @@ Export-Package: org.sonar.wsclient,org.sonar.ide.shared,org.sonar.wscl
  ient.connectors,org.sonar.ide.images.tendency,org.sonar.wsclient.unma
  rshallers,org.sonar.ide.ui,org.sonar.ide.client,org.sonar.ide.images.
  priority,org.sonar.ide.ui.treemap.split,org.sonar.ide.ui.treemap,org.
- sonar.ide.images,org.sonar.wsclient.services
+ sonar.ide.images,org.sonar.wsclient.services,org.apache.commons.lang
 Bundle-ClassPath: jars/sonar-ide-commons-0.1-SNAPSHOT.jar,jars/slf4j-a
  pi-1.5.10.jar,jars/google-collections-1.0.jar,jars/commons-lang-2.4.j
  ar,jars/jdom-1.1.jar,jars/sonar-ws-client-1.13-SNAPSHOT.jar,jars/json

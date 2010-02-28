@@ -1,12 +1,20 @@
 package org.sonar.ide.eclipse;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.widgets.Display;
 import org.sonar.wsclient.Host;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.connectors.HttpClient4Connector;
 
 /**
  * @author Jérémie Lagarde
@@ -45,7 +53,7 @@ public class SonarServerManager {
   public List<Host> getServers() {
     return serverList;
   }
-
+  
   public boolean removeServer(String host) {
     Host server = findServer(host);
     if (server == null) {
@@ -62,6 +70,19 @@ public class SonarServerManager {
     return result;
   }
 
+  
+  public Host createServer(String url)  throws Exception {
+    if(StringUtils.isBlank(url))
+      return null;
+    Host host = findServer(url);
+    if(host==null) {
+      host = new Host(url);
+      addServer(host);
+      commit();
+    }
+    return host;
+  }
+  
   public Host findServer(String host) {
     Host server = null;
     for (Host element : serverList) {
@@ -71,6 +92,11 @@ public class SonarServerManager {
       }
     }
     return server;
+  }
+
+  public Sonar getSonar(String url) throws Exception {
+    final Host server = createServer(url);
+    return new Sonar(new HttpClient4Connector(server));
   }
 
   private void commit() throws Exception {
