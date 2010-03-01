@@ -1,8 +1,5 @@
 package org.sonar.ide.eclipse.properties;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
@@ -12,22 +9,24 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.preferences.PreferenceConstants;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Jérémie Lagarde
- * 
  */
 public class ProjectProperties {
 
-  private static final String                     P_SONAR_SERVER_URL      = "sonarServerUrl";
-  private static final String                     P_SONAR_SERVER_USERNAME = "sonarServerUsername";
-  private static final String                     P_SONAR_SERVER_PASSWORD = "sonarServerPassword";
-  private static final String                     P_PROJECT_GROUPID       = "projectGroupId";
-  private static final String                     P_PROJECT_ARTIFACTID    = "projectArtifactId";
+  private static final String P_SONAR_SERVER_URL = "sonarServerUrl";
+  private static final String P_SONAR_SERVER_USERNAME = "sonarServerUsername";
+  private static final String P_SONAR_SERVER_PASSWORD = "sonarServerPassword";
+  private static final String P_PROJECT_GROUPID = "projectGroupId";
+  private static final String P_PROJECT_ARTIFACTID = "projectArtifactId";
 
-  private static Map<IProject, ProjectProperties> projectPropertiesMap    = new HashMap<IProject, ProjectProperties>();
+  private static Map<IProject, ProjectProperties> projectPropertiesMap = new HashMap<IProject, ProjectProperties>();
 
-  private IProject                                project                 = null;
-  private IEclipsePreferences                     preferences             = null;
+  private IProject project = null;
+  private IEclipsePreferences preferences = null;
 
   protected ProjectProperties(IProject project) {
     this.project = project;
