@@ -10,6 +10,8 @@
   <name>Sonar IDEs :: Eclipse Plugin :: Parent</name>
 
   <properties>
+    <jdk.min.version>1.5</jdk.min.version>
+
     <tycho.version>0.7.0</tycho.version>
 
     <!-- disable accidental deployment -->
@@ -49,7 +51,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <compilerVersion>1.5</compilerVersion>
+          <compilerVersion>${jdk.min.version}</compilerVersion>
         </configuration>
       </plugin>
       <plugin>
@@ -60,14 +62,12 @@
           <downloadSources>true</downloadSources>
         </configuration>
       </plugin>
-
       <plugin>
         <groupId>org.sonatype.tycho</groupId>
         <artifactId>tycho-maven-plugin</artifactId>
         <version>${tycho.version}</version>
         <extensions>true</extensions>
       </plugin>
-
       <plugin>
         <groupId>org.sonatype.tycho</groupId>
         <artifactId>target-platform-configuration</artifactId>
@@ -100,8 +100,8 @@
           <artifactId>maven-osgi-compiler-plugin</artifactId>
           <version>${tycho.version}</version>
           <configuration>
-            <source>1.5</source>
-            <target>1.5</target>
+            <source>${jdk.min.version}</source>
+            <target>${jdk.min.version}</target>
           </configuration>
         </plugin>
         <plugin>
