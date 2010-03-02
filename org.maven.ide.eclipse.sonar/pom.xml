@@ -12,7 +12,6 @@
 
   <artifactId>org.maven.ide.eclipse.sonar</artifactId>
   <packaging>eclipse-plugin</packaging>
-  <version>0.0.1-SNAPSHOT</version>
 
   <name>Sonar Integration for Eclipse Maven</name>
 

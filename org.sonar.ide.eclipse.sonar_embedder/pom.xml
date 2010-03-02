@@ -12,6 +12,7 @@
 
   <artifactId>org.sonar.ide.eclipse.sonar_embedder</artifactId>
   <packaging>eclipse-plugin</packaging>
+
   <name>Sonar Embedder Bundle</name>
 
   <dependencies>
