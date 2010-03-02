@@ -63,7 +63,8 @@
             <configuration>
               <packageSources>false</packageSources>
               <exportPackages>
-                org.sonar.*,org.apache.commons.lang,
+                org.sonar.*,
+                org.apache.commons.lang,
               </exportPackages>
               <manifestAttributes>
                 <Bundle-RequiredExecutionEnvironment>J2SE-1.5, JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
