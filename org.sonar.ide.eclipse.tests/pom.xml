@@ -14,7 +14,7 @@
   <packaging>eclipse-test-plugin</packaging>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>Sonar IDEs :: Eclipse Plugin :: Tests</name>
+  <name>Sonar Integration for Eclipse Tests</name>
 
   <build>
     <sourceDirectory>src</sourceDirectory>
