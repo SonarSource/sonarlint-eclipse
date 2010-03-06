@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -117,14 +118,20 @@ public abstract class AbstractSonarTest extends TestCase {
     File dst = new File(root.getLocation().toFile(), src.getName());
     copyDirectory(src, dst);
 
-    final IPath path = Path.fromOSString(dst.getAbsolutePath());
+    final IProject project = workspace.getRoot().getProject(src.getName());
     final List<IProject> addedProjectList = new ArrayList<IProject>();
     
     workspace.run(new IWorkspaceRunnable() {
       public void run(IProgressMonitor monitor) throws CoreException {
         // create project as java project
-        IProjectDescription desc = workspace.loadProjectDescription(path);
-        IProject project = workspace.getRoot().getProject(desc.getName());
+        if (!project.exists()) {
+          IProjectDescription projectDescription = workspace.newProjectDescription(project.getName());
+          projectDescription.setLocation(null); 
+          project.create(projectDescription, monitor);
+          project.open(IResource.NONE, monitor);
+        } else {
+          project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+        }
         addedProjectList.add(project);
       }
     }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
@@ -133,6 +140,8 @@ public abstract class AbstractSonarTest extends TestCase {
   }
 
   private void copyDirectory(File sourceLocation, File targetLocation) throws IOException {
+    if(sourceLocation.getName().contains(".svn"))
+      return;
     if (sourceLocation.isDirectory()) {
       if (!targetLocation.exists()) {
         targetLocation.mkdir();
