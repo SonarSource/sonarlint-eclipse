@@ -8,7 +8,7 @@
     <groupId>org.codehaus.sonar-ide</groupId>
     <artifactId>sonar-ide-parent</artifactId>
     <version>1-SNAPSHOT</version>
-    <relativePath>../../parent/pom.xml</relativePath>
+    <relativePath>../../sonar-ide-parent/pom.xml</relativePath>
   </parent>
   -->
 
@@ -38,7 +38,7 @@
     <module>../org.sonar.ide.eclipse.sonar_embedder</module>
     <module>../org.sonar.ide.eclipse</module>
     <module>../org.sonar.ide.eclipse.site</module>
-    <module>../org.sonar.ide.eclipse.tests</module>
+    <!--module>../org.sonar.ide.eclipse.tests</module-->
 
     <module>../org.maven.ide.eclipse.sonar</module>
 
@@ -84,7 +84,7 @@
         <version>${tycho.version}</version>
         <configuration>
           <resolver>p2</resolver>
-          <pomDependencies>consider</pomDependencies>
+          <!--pomDependencies>consider</pomDependencies-->
         </configuration>
       </plugin>
     </plugins>
