@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.codehaus.sonar-ide</groupId>
     <artifactId>sonar-ide-parent</artifactId>
-    <version>1-SNAPSHOT</version>
+    <version>1</version>
     <relativePath>../../sonar-ide-parent/pom.xml</relativePath>
   </parent>
   -->
