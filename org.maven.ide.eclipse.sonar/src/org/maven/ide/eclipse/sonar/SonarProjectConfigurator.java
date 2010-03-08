@@ -9,6 +9,7 @@ import org.maven.ide.eclipse.project.MavenProjectChangedEvent;
 import org.maven.ide.eclipse.project.configurator.AbstractProjectConfigurator;
 import org.maven.ide.eclipse.project.configurator.ProjectConfigurationRequest;
 import org.osgi.service.prefs.BackingStoreException;
+import org.sonar.ide.api.SonarIdeException;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 
 /**
@@ -34,7 +35,7 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
     projectProperties.setArtifactId(artifactId);
     try {
       projectProperties.flush();
-    } catch (BackingStoreException e) {
+    } catch (SonarIdeException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }

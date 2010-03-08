@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
+import org.sonar.ide.api.SonarIdeException;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
 
@@ -55,7 +56,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
     projectProperties.setArtifactId(block.getArtifactId());
     try {
       projectProperties.flush();
-    } catch (BackingStoreException e) {
+    } catch (SonarIdeException e) {
       SonarPlugin.getDefault().writeLog(IStatus.ERROR, e.getMessage(), e);
     }
   }

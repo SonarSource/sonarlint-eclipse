@@ -6,6 +6,7 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
+import org.sonar.ide.api.SonarIdeException;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.preferences.PreferenceConstants;
 
@@ -95,8 +96,12 @@ public class ProjectProperties {
     preferences.put(P_PROJECT_ARTIFACTID, artifactId);
   }
 
-  public void flush() throws BackingStoreException {
-    preferences.flush();
+  public void flush() throws SonarIdeException {
+    try {
+      preferences.flush();
+    } catch (BackingStoreException e) {
+      throw new SonarIdeException("preferences.flush()",e);
+    }
   }
 
 }
