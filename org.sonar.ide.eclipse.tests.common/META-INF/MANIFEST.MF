@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ClassPath: jars/jetty-servlet-tester-6.1.6.jar,jars/jetty-6.1.6
+ .jar,jars/jetty-util-6.1.6.jar,jars/servlet-api-2.5-6.1.6.jar,jars/co
+ mmons-io-1.4.jar
+MavenArtifact-BaseVersion: 0.0.1-SNAPSHOT
+Bundle-Version: 0.0.1.qualifier
+MavenArtifact-ArtifactId: org.sonar.ide.eclipse.tests.common
+MavenArtifact-GroupId: org.codehaus.sonar-ide.eclipse
+Bundle-Name: Common Sonar Testing Integration for Eclipse
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.sonar.ide.eclipse.tests.common;singleton:=tru
+ e
+Bundle-RequiredExecutionEnvironment: J2SE-1.5, JavaSE-1.6
+

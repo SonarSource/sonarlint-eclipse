@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.codehaus.sonar-ide.eclipse</groupId>
+		<artifactId>eclipse-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../org.sonar.ide.eclipse.parent/pom.xml</relativePath>
+	</parent>
+
+	<artifactId>org.sonar.ide.eclipse.tests.common</artifactId>
+	<packaging>eclipse-plugin</packaging>
+
+	<name>Common Sonar Testing Integration for Eclipse </name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.mortbay.jetty</groupId>
+			<artifactId>jetty-servlet-tester</artifactId>
+			<version>6.1.6</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<!-- dependency>
+			<groupId>org.codehaus.sonar-ide.eclipse</groupId>
+			<artifactId>org.sonar.ide.eclipse</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<type>eclipse-plugin</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.sonar-ide.eclipse</groupId>
+			<artifactId>org.sonar.ide.eclipse.sonar_embedder</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<type>eclipse-plugin</type>
+			<scope>compile</scope>
+		</dependency -->
+	</dependencies>
+
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>src</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>jars</directory>
+							<followSymlinks>false</followSymlinks>
+							<includes>
+								<include>**/*.jar</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>META-INF</directory>
+							<followSymlinks>false</followSymlinks>
+							<includes>
+								<include>**/MANIFEST.MF</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.sonatype.tycho</groupId>
+				<artifactId>maven-osgi-packaging-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>generate-bundle</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<packageSources>false</packageSources>
+					<exportPackages>
+						org.sonar.*,
+						org.apache.commons.lang,
+              </exportPackages>
+					<manifestAttributes>
+						<Bundle-RequiredExecutionEnvironment>J2SE-1.5, JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
+					</manifestAttributes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
