@@ -1,4 +1,4 @@
-package org.sonar.ide.eclipse.tests;
+package org.sonar.ide.eclipse.tests.common;
 
 import java.io.File;
 import java.io.FileInputStream;
