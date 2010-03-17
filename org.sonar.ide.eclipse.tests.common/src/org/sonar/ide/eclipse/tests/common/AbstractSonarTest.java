@@ -95,9 +95,9 @@ public abstract class AbstractSonarTest extends TestCase {
   }
 
   private void cleanWorkspace() throws Exception {
-    for (Host host : SonarPlugin.getServerManager().getServers()) {
-      SonarPlugin.getServerManager().removeServer(host.getHost());
-    }
+//    for (Host host : SonarPlugin.getServerManager().getServers()) {
+//      SonarPlugin.getServerManager().removeServer(host.getHost());
+//    }
     // TODO : cleanWorkspace()
   }
 
