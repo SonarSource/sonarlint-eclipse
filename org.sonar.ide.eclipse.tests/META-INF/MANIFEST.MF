@@ -1,16 +1,26 @@
 Manifest-Version: 1.0
-Require-Bundle: org.sonar.ide.eclipse;bundle-version="[0.0.1,0.0.2)",
- org.sonar.ide.eclipse.tests.common;bundle-version="[0.0.1,0.0.2)"
-Bundle-ClassPath: .
-MavenArtifact-BaseVersion: 0.0.1-SNAPSHOT
-Bundle-Version: 0.0.1.qualifier
-MavenArtifact-GroupId: org.codehaus.sonar-ide.eclipse
-Bundle-Name: Maven Integration Tests Plug-in
 Bundle-ManifestVersion: 2
+Bundle-Name: Maven Integration Tests Plug-in
 Bundle-SymbolicName: org.sonar.ide.eclipse.tests;singleton:=true
-Import-Package: junit.framework,
+Bundle-Version: 0.0.1.qualifier
+Require-Bundle: org.junit,
+ org.eclipse.ui,
  org.eclipse.core.resources,
  org.eclipse.core.runtime,
- org.eclipse.core.runtime.jobs,
- org.sonar.ide.eclipse.tests,
- org.sonar.wsclient
+ org.eclipse.ui.ide,
+ org.eclipse.jdt.ui,
+ org.eclipse.jdt.core,
+ org.sonar.ide.eclipse.sonar_embedder,
+ org.sonar.ide.eclipse.tests.common;visibility:=reexport,
+ org.sonar.ide.eclipse
+Bundle-ClassPath: .
+Import-Package: junit.framework,
+ org.slf4j,
+ org.sonar.ide.eclipse.tests.common,
+ org.apache.commons.io,
+ org.apache.commons.lang,
+ org.eclipse.core.runtime,
+ org.sonar.ide.eclipse,
+ org.sonar.ide.shared,
+ org.sonar.wsclient,
+ org.sonar.wsclient.connectors

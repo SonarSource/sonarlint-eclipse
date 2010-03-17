@@ -6,7 +6,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
-import org.sonar.ide.eclipse.tests.AbstractSonarTest;
+import org.sonar.ide.eclipse.tests.common.AbstractSonarTest;
 import org.sonar.wsclient.Host;
 /**
  * Test case for refresh violations.
@@ -44,8 +44,8 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
     
     // TODO check sonar makers.
     IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
-    for (IMarker iMarker : markers) {
-      
+    for (IMarker marker : markers) {
+      System.out.println("   - marker : " + marker.getId() );
     }
     
   }
