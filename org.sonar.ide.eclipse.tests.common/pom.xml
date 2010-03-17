@@ -87,6 +87,9 @@
 						</executions>
 						<configuration>
 							<packageSources>false</packageSources>
+							<bundleClasspath>
+							     <bundleClasspath>.</bundleClasspath>
+							</bundleClasspath>
 							<!--
 								<requireBundles>
 								    <requireBundle>
