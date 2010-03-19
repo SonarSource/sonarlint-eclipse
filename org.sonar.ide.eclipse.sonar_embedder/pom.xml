@@ -22,9 +22,9 @@
       <version>0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
-    	<groupId>ch.qos.logback</groupId>
-    	<artifactId>logback-classic</artifactId>
-    	<version>0.9.18</version>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>0.9.18</version>
     </dependency>
   </dependencies>
 
@@ -82,4 +82,4 @@
     </profile>
   </profiles>
 
-</project> 
+</project>
