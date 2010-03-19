@@ -19,7 +19,7 @@
     <dependency>
       <groupId>org.codehaus.sonar-ide</groupId>
       <artifactId>sonar-ide-commons</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${sonar-ide.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>

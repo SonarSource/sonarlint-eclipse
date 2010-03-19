@@ -107,7 +107,7 @@ public abstract class AbstractSonarTest extends TestCase {
    * @return created projects
    */
   protected IProject importEclipseProject(String projectdir) throws IOException, CoreException {
-
+    System.out.println("Importing Eclipse project");
     IWorkspaceRoot root = workspace.getRoot();
 
     File src = new File(projectdir);
@@ -131,7 +131,7 @@ public abstract class AbstractSonarTest extends TestCase {
         addedProjectList.add(project);
       }
     }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
-
+    System.out.println("Eclipse project imported");
     return addedProjectList.get(0);
   }
 
