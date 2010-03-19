@@ -30,6 +30,7 @@
         <groupId>org.sonatype.tycho</groupId>
         <artifactId>maven-osgi-test-plugin</artifactId>
         <configuration>
+          <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
           <environmentVariables>
             <TMP>${java.io.tmpdir}</TMP>
           </environmentVariables>
