@@ -13,7 +13,7 @@
   <artifactId>org.sonar.ide.eclipse.tests.common</artifactId>
   <packaging>eclipse-plugin</packaging>
 
-  <name>Common Sonar Testing Integration for Eclipse</name>
+  <name>Sonar Integration for Eclipse Tests Common</name>
 
   <dependencies>
     <dependency>
@@ -79,7 +79,7 @@
             <artifactId>maven-osgi-packaging-plugin</artifactId>
             <executions>
               <execution>
-                <phase>process-classes</phase>
+                <phase>generate-resources</phase>
                 <goals>
                   <goal>generate-bundle</goal>
                 </goals>
@@ -87,10 +87,10 @@
             </executions>
             <configuration>
               <packageSources>false</packageSources>
+              <!--
               <bundleClasspath>
                 <bundleClasspath>.</bundleClasspath>
               </bundleClasspath>
-              <!--
               <requireBundles>
                 <requireBundle>
                   <groupId>org.codehaus.sonar-ide.eclipse</groupId>
