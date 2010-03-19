@@ -41,7 +41,7 @@
 
     <module>../org.sonar.ide.eclipse.tests.common</module>
 
-    <!--module>../org.sonar.ide.eclipse.tests</module-->
+    <module>../org.sonar.ide.eclipse.tests</module>
 
     <module>../org.maven.ide.eclipse.sonar</module>
 

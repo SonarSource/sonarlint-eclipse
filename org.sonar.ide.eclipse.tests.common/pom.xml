@@ -87,10 +87,10 @@
             </executions>
             <configuration>
               <packageSources>false</packageSources>
-              <!--
               <bundleClasspath>
                 <bundleClasspath>.</bundleClasspath>
               </bundleClasspath>
+              <!--
               <requireBundles>
                 <requireBundle>
                   <groupId>org.codehaus.sonar-ide.eclipse</groupId>
