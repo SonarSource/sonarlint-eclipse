@@ -36,11 +36,13 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
     properties.setGroupId("test");
     properties.setArtifactId("SimpleProject");
     properties.flush();
+    System.out.println("Project configured");
     
     // Retrieve violation markers
     Job job = new RefreshViolationJob(project);
     job.schedule();
     job.join();
+    System.out.println("Violation markers retrieved");
     
     // TODO check sonar makers.
     IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
