@@ -17,7 +17,6 @@ public class LogsTest extends TestCase {
   }
 
   public void testInfo() {
-    // TODO fix class loading for org.slf4j.Logger
-    //Logs.INFO.info("test");
+    Logs.INFO.info("Logger testing...");
   }
 }
