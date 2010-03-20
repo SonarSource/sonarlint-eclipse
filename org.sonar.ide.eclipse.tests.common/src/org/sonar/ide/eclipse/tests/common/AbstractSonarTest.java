@@ -168,7 +168,7 @@ public abstract class AbstractSonarTest extends TestCase {
   /**
    * @author Evgeny Mandrikov
    */
-  public class SonarTestServer {
+  public static class SonarTestServer {
     private ServletTester tester;
     private String        baseUrl;
 
@@ -200,7 +200,7 @@ public abstract class AbstractSonarTest extends TestCase {
   /**
    * @author Evgeny Mandrikov
    */
-  public abstract class TestServlet extends GenericServlet {
+  public static abstract class TestServlet extends GenericServlet {
     private static final long serialVersionUID = 1L;
 
     protected String getClassKey(ServletRequest request) {
@@ -231,7 +231,7 @@ public abstract class AbstractSonarTest extends TestCase {
     }
   }
 
-  public class VersionServlet extends GenericServlet {
+  public static class VersionServlet extends GenericServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
@@ -242,7 +242,7 @@ public abstract class AbstractSonarTest extends TestCase {
     }
   }
 
-  public class ViolationServlet extends TestServlet {
+  public static class ViolationServlet extends TestServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
@@ -251,7 +251,7 @@ public abstract class AbstractSonarTest extends TestCase {
     }
   }
 
-  public class SourceServlet extends TestServlet {
+  public static class SourceServlet extends TestServlet {
     private static final long serialVersionUID = 1L;
 
     @Override

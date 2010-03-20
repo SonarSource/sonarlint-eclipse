@@ -14,6 +14,7 @@ Require-Bundle: org.junit,
  org.sonar.ide.eclipse.tests.common;visibility:=reexport,
  org.sonar.ide.eclipse
 Bundle-ClassPath: .
+Eclipse-RegisterBuddy: org.sonar.ide.eclipse.tests.common
 Import-Package: junit.framework,
  org.slf4j,
  org.sonar.ide.eclipse.tests.common,

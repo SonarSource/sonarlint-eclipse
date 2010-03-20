@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Export-Package: org.sonar.ide.images.tendency,org.sonar.ide.ui,org.apa
  che.commons.lang,org.sonar.wsclient,org.sonar.ide.shared,org.sonar.ws
  client.connectors,org.sonar.wsclient.unmarshallers,org.sonar.ide.clie
- nt,org.sonar.ide.ui.treemap,org.sonar.ide.ui.treemap.split,org.sonar.
- ide.images.priority,org.sonar.ide.images,org.sonar.ide.api,org.sonar.
+ nt,org.sonar.ide.images.priority,org.sonar.ide.ui.treemap,org.sonar.i
+ de.ui.treemap.split,org.sonar.ide.images,org.sonar.ide.api,org.sonar.
  wsclient.services
 Bundle-ClassPath: jars/sonar-ide-commons-0.1-SNAPSHOT.jar,jars/slf4j-a
  pi-1.5.11.jar,jars/jcl-over-slf4j-1.5.11.jar,jars/google-collections-

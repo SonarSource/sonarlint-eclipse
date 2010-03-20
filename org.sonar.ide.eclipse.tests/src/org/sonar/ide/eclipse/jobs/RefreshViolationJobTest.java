@@ -18,13 +18,12 @@ import org.sonar.wsclient.Host;
  */
 public class RefreshViolationJobTest extends AbstractSonarTest {
 
-  
-
   public void testRefreshViolations() throws Exception {
     // start the mock sonar server.
     String url = addLocalTestServer();
     for (Host  host :  SonarPlugin.getServerManager().getServers()) {
-      System.out.println("server : " + host.getHost()); // TODO remove sysout.
+      // TODO remove sysout.
+      System.out.println("server : " + host.getHost());
     }
     
     // Import simple project
@@ -36,18 +35,23 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
     properties.setGroupId("test");
     properties.setArtifactId("SimpleProject");
     properties.flush();
+    
+    // TODO remove sysout.    
     System.out.println("Project configured");
     
     // Retrieve violation markers
     Job job = new RefreshViolationJob(project);
     job.schedule();
     job.join();
+ 
+    // TODO remove sysout.    
     System.out.println("Violation markers retrieved");
     
     // TODO check sonar makers.
     IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     for (IMarker marker : markers) {
-      System.out.println("   - marker : " + marker.getId() );
+      // TODO remove sysout.
+      System.out.println("   - marker [" + marker.getId() + "] : " + marker.getAttribute(IMarker.MESSAGE));
     }
     
   }

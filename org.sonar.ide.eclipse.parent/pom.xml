@@ -123,6 +123,14 @@
           <groupId>org.sonatype.tycho</groupId>
           <artifactId>maven-osgi-test-plugin</artifactId>
           <version>${tycho.version}</version>
+          <configuration>
+            <useUIHarness>true</useUIHarness>
+            <includes>
+              <include>**/*Test.java</include>
+            </includes>
+            <!-- kill test JVM it tests take more than 10 minutes (600 seconds) to finish -->
+            <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
