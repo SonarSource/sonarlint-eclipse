@@ -70,6 +70,8 @@
               <packageSources>false</packageSources>
               <exportPackages>
                 org.sonar.*,
+                org.slf4j,
+                org.slf4j.impl,
                 org.apache.commons.lang,
               </exportPackages>
               <manifestAttributes>
