@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
+import org.sonar.ide.shared.ViolationUtils;
 import org.sonar.ide.shared.ViolationsLoader;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.Violation;
@@ -43,7 +44,7 @@ public class RefreshViolationJob extends Job {
   }
 
   public RefreshViolationJob(IProject[] projects) {
-    super("TODO");
+    super("Retrieve sonar violation"); // TODO put in messages.properties
     this.projects = projects;
     setPriority(Job.LONG);
   }
@@ -86,7 +87,7 @@ public class RefreshViolationJob extends Job {
     final Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
     List<ICompilationUnit> unitList = getICompilationUnits(project);
     try {
-      monitor.beginTask("Retrieve sonar violations for " + project.getElementName(), unitList.size());
+      monitor.beginTask("Retrieve sonar violations for " + project.getElementName(), unitList.size()); // TODO put it in messages.properties
       for (ICompilationUnit unit : unitList) {
         if (monitor.isCanceled())
           break;
@@ -100,7 +101,7 @@ public class RefreshViolationJob extends Job {
 
   private void retrieveMarkers(Sonar sonar, ICompilationUnit unit, IProgressMonitor monitor) throws Exception {
     try {
-      monitor.beginTask("Retrieve sonar violations for " + unit.getElementName(), 1);
+      monitor.beginTask("Retrieve sonar violations for " + unit.getElementName(), 1); // TODO put it in messages.properties
       final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(unit.getResource());
       final Collection<Violation> violations = ViolationsLoader.getViolations(sonar, resourceKey, unit.getSource());
       for (Violation violation : violations) {
@@ -109,12 +110,15 @@ public class RefreshViolationJob extends Job {
         markerAttributes.put(IMarker.PRIORITY, new Integer(IMarker.PRIORITY_HIGH));
         markerAttributes.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_WARNING));
         markerAttributes.put(IMarker.LINE_NUMBER, violation.getLine());
-        markerAttributes.put(IMarker.MESSAGE, violation.getMessage());
+        markerAttributes.put(IMarker.MESSAGE, ViolationUtils.getDescription(violation));
         // create a marker for the actual resource
         IMarker marker = unit.getResource().createMarker(SonarPlugin.MARKER_ID);
         marker.setAttributes(markerAttributes);
       }
-    } finally {
+    } catch(Exception ex){
+      // TODO : best exception management.
+      ex.printStackTrace();
+    }finally {
       monitor.done();
     }
   }

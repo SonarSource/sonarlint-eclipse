@@ -57,10 +57,12 @@ public class EclipseResourceUtils extends AbstractResourceUtils<IResource> {
             name.append(".").append(packageDeclaration.getElementName());
           }
         }
+        if(name == null)
+          return "";
         return name.toString();
       }
     } catch (JavaModelException e) {
-      // TODO
+      // TODO Add exception management.
       e.printStackTrace();
     }
     return null;
