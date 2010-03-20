@@ -124,7 +124,7 @@
           <artifactId>maven-osgi-test-plugin</artifactId>
           <version>${tycho.version}</version>
           <configuration>
-            <useUIHarness>true</useUIHarness>
+            <useUIHarness>false</useUIHarness>
             <includes>
               <include>**/*Test.java</include>
             </includes>
