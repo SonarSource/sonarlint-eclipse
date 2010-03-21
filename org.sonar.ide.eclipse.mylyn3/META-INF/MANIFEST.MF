@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Sonar Integration for Eclipse Mylyn 3.x
+Bundle-SymbolicName: org.sonar.ide.eclipse.mylyn3;singleton:=true
+Bundle-Version: 0.0.1.qualifier
+Bundle-Activator: org.maven.ide.eclipse.mylyn3.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.mylyn.tasks.ui;bundle-version="3.0.0",
+ org.eclipse.mylyn.tasks.core;bundle-version="3.0.0",
+ org.sonar.ide.eclipse;bundle-version="[0.0.1,0.0.2)"
+Eclipse-LazyStart: true
+Bundle-RequiredExecutionEnvironment: J2SE-1.5,
+ JavaSE-1.6
