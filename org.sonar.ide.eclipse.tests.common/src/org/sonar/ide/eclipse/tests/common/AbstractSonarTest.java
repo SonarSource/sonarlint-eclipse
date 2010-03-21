@@ -30,7 +30,9 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.mortbay.jetty.testing.ServletTester;
+import org.sonar.ide.api.Logs;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.shared.AbstractResourceUtils;
 import org.sonar.wsclient.Host;
@@ -44,6 +46,7 @@ import org.sonar.wsclient.connectors.HttpClient4Connector;
  * 
  */
 public abstract class AbstractSonarTest extends TestCase {
+
   protected static final IProgressMonitor monitor = new NullProgressMonitor();
   protected IWorkspace                    workspace;
   protected SonarPlugin                   plugin;
@@ -81,7 +84,7 @@ public abstract class AbstractSonarTest extends TestCase {
   protected void tearDown() throws Exception {
     super.tearDown();
 
-    cleanWorkspace();
+    // cleanWorkspace();
 
     IWorkspaceDescription description = workspace.getDescription();
     description.setAutoBuilding(true);
@@ -95,10 +98,18 @@ public abstract class AbstractSonarTest extends TestCase {
   }
 
   private void cleanWorkspace() throws Exception {
-//    for (Host host : SonarPlugin.getServerManager().getServers()) {
-//      SonarPlugin.getServerManager().removeServer(host.getHost());
-//    }
-    // TODO : cleanWorkspace()
+    // Job.getJobManager().suspend();
+    // waitForJobs();
+    
+    List<Host> hosts = new ArrayList<Host>();
+    hosts.addAll(SonarPlugin.getServerManager().getServers());
+    for (Host host : hosts) {
+      SonarPlugin.getServerManager().removeServer(host.getHost());
+    }
+    IWorkspaceRoot root = workspace.getRoot();
+    for (IProject project : root.getProjects()) {
+      project.delete(true, true, monitor);
+    } 
   }
 
   /**
@@ -107,7 +118,7 @@ public abstract class AbstractSonarTest extends TestCase {
    * @return created projects
    */
   protected IProject importEclipseProject(String projectdir) throws IOException, CoreException {
-    System.out.println("Importing Eclipse project");
+    Logs.INFO.info("Importing Eclipse project : " + projectdir);
     IWorkspaceRoot root = workspace.getRoot();
 
     File src = new File(projectdir);
@@ -131,7 +142,7 @@ public abstract class AbstractSonarTest extends TestCase {
         addedProjectList.add(project);
       }
     }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
-    System.out.println("Eclipse project imported");
+    Logs.INFO.info("Eclipse project imported");
     return addedProjectList.get(0);
   }
 
@@ -158,6 +169,12 @@ public abstract class AbstractSonarTest extends TestCase {
       }
       in.close();
       out.close();
+    }
+  }
+
+  public static void waitForJobs() throws Exception {
+    while (!Job.getJobManager().isIdle()) {
+      Thread.sleep(1000);
     }
   }
 
