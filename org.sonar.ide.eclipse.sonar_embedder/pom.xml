@@ -60,7 +60,7 @@
             <artifactId>maven-osgi-packaging-plugin</artifactId>
             <executions>
               <execution>
-                <phase>process-classes</phase>
+                <phase>generate-resources</phase>
                 <goals>
                   <goal>generate-bundle</goal>
                 </goals>
