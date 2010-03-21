@@ -1,6 +1,5 @@
 package org.sonar.ide.api;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 /**

@@ -112,7 +112,7 @@
                   org.junit,org.eclipse.core.resources,org.eclipse.core.runtime,org.sonar.ide.eclipse,org.sonar.ide.eclipse.sonar_embedder
                 </Require-Bundle>
                 <Bundle-RequiredExecutionEnvironment>J2SE-1.5, JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
-                <Export-Package>org.sonar.ide.eclipse.tests.common</Export-Package>
+                <Export-Package>org.sonar.ide.eclipse.tests.common,org.apache.commons.io</Export-Package>
                 <Eclipse-BuddyPolicy>registered</Eclipse-BuddyPolicy>
               </manifestAttributes>
             </configuration>

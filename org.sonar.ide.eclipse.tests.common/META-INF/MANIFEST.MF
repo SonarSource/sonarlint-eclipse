@@ -1,5 +1,6 @@
 Manifest-Version: 1.0
-Export-Package: org.sonar.ide.eclipse.tests.common
+Export-Package: org.sonar.ide.eclipse.tests.common,org.apache.commons.
+ io
 Bundle-ClassPath: .,jars/jetty-servlet-tester-6.1.6.jar,jars/jetty-6.1
  .6.jar,jars/jetty-util-6.1.6.jar,jars/servlet-api-2.5-6.1.6.jar,jars/
  commons-io-1.4.jar

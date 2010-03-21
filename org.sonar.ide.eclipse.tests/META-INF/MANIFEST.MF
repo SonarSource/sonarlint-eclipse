@@ -25,3 +25,5 @@ Import-Package: junit.framework,
  org.sonar.ide.shared,
  org.sonar.wsclient,
  org.sonar.wsclient.connectors
+Bundle-RequiredExecutionEnvironment: J2SE-1.5,
+ JavaSE-1.6
