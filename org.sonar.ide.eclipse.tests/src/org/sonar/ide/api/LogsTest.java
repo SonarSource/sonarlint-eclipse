@@ -1,6 +1,6 @@
 package org.sonar.ide.api;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  * Test of sonar-ide logging api in eclipse plugin.
@@ -10,12 +10,8 @@ import junit.framework.TestCase;
  * @author Jérémie Lagarde
  * 
  */
-public class LogsTest extends TestCase {
-
-  protected void setUp() throws Exception {
-    super.setUp();
-  }
-
+public class LogsTest {
+  @Test
   public void testInfo() {
     Logs.INFO.info("Logger testing...");
   }

@@ -31,6 +31,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.junit.After;
+import org.junit.Before;
 import org.mortbay.jetty.testing.ServletTester;
 import org.sonar.ide.api.Logs;
 import org.sonar.ide.eclipse.SonarPlugin;
@@ -45,15 +47,16 @@ import org.sonar.wsclient.connectors.HttpClient4Connector;
  * @author Jérémie Lagarde
  * 
  */
-public abstract class AbstractSonarTest extends TestCase {
+public abstract class AbstractSonarTest {
 
   protected static final IProgressMonitor monitor = new NullProgressMonitor();
   protected IWorkspace                    workspace;
   protected SonarPlugin                   plugin;
   private SonarTestServer                 testServer;
 
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
+//    super.setUp();
     workspace = ResourcesPlugin.getWorkspace();
     IWorkspaceDescription description = workspace.getDescription();
     description.setAutoBuilding(false);
@@ -81,8 +84,9 @@ public abstract class AbstractSonarTest extends TestCase {
     return url;
   }
 
-  protected void tearDown() throws Exception {
-    super.tearDown();
+  @After
+  public void tearDown() throws Exception {
+//    super.tearDown();
 
     // cleanWorkspace();
 

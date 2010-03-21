@@ -1,5 +1,7 @@
 package org.sonar.ide.eclipse.jobs;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -7,6 +9,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.jobs.Job;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.SonarPlugin;
@@ -27,6 +30,7 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
 
   private static final Logger LOG = LoggerFactory.getLogger(RefreshViolationJobTest.class);
 
+  @Test
   public void testRefreshViolations() throws Exception {
     // start the mock sonar server.
     String url = addLocalTestServer();
@@ -61,7 +65,6 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
       assertTrue("Maker must have a message.",StringUtils.isNotBlank((String)marker.getAttribute(IMarker.MESSAGE)));
       LOG.debug("marker[" + marker.getId() + "] : " + marker.getAttribute(IMarker.MESSAGE));
     }
-
   }
 
 }

@@ -1,5 +1,6 @@
 package org.sonar.ide.eclipse.tests;
 
+import org.junit.Test;
 import org.sonar.ide.eclipse.tests.common.AbstractSonarTest;
 
 
@@ -11,7 +12,8 @@ import org.sonar.ide.eclipse.tests.common.AbstractSonarTest;
  *
  */
 public class SimpleTestWithMockServerTest extends AbstractSonarTest {
-
+  
+  @Test
   public void testStartMockServer() throws Exception {
     // start the mock sonar server.
     startTestServer();

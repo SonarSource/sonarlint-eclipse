@@ -1,6 +1,10 @@
 package org.sonar.ide.api;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
 
 /**
  * Test of sonar-ide excpetion api in eclipse plugin.
@@ -10,8 +14,9 @@ import junit.framework.TestCase;
  * @author Jérémie Lagarde
  * 
  */
-public class SonarIdeExceptionTest extends TestCase {
+public class SonarIdeExceptionTest {
 
+  @Test
   public void testException() {
     String msg = "testing ...";
     try {
@@ -22,6 +27,7 @@ public class SonarIdeExceptionTest extends TestCase {
     }
   }
 
+  @Test
   public void testExceptionWithCause() {
     String msg = "testing ...";
     try {
