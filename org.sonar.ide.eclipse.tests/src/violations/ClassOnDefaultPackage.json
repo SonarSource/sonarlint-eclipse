@@ -9,7 +9,7 @@
   {
     "message":"Avoid unused local variables such as 'j'.",
     "line":4,
-    "priority":"MAJOR",
+    "priority":"MINOR",
     "rule":{"key":"pmd:UnusedLocalVariable","name":"Unused local variable","category":"Maintainability"},
     "resource":{"key":"org.codehaus.sonar-ide.test-project:module1:[default].ClassOnDefaultPackage","name":"ClassOnDefaultPackage","scope":"FIL","qualifier":"CLA","language":"java"}
   },
@@ -23,7 +23,7 @@
   {
     "message":"Utility classes should not have a public or default constructor.",
     "line":1,
-    "priority":"MAJOR",
+    "priority":"CRITICAL",
     "rule":{"key":"checkstyle:com.puppycrawl.tools.checkstyle.checks.design.HideUtilityClassConstructorCheck","name":"Hide Utility Class Constructor","category":"Efficiency"},
     "resource":{"key":"org.codehaus.sonar-ide.test-project:module1:[default].ClassOnDefaultPackage","name":"ClassOnDefaultPackage","scope":"FIL","qualifier":"CLA","language":"java"}
   }

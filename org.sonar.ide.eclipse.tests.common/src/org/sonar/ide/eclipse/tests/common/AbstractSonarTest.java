@@ -1,5 +1,7 @@
 package org.sonar.ide.eclipse.tests.common;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -15,10 +17,9 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -31,8 +32,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.mortbay.jetty.testing.ServletTester;
 import org.sonar.ide.api.Logs;
 import org.sonar.ide.eclipse.SonarPlugin;
@@ -50,13 +51,13 @@ import org.sonar.wsclient.connectors.HttpClient4Connector;
 public abstract class AbstractSonarTest {
 
   protected static final IProgressMonitor monitor = new NullProgressMonitor();
-  protected IWorkspace                    workspace;
-  protected SonarPlugin                   plugin;
-  private SonarTestServer                 testServer;
+  protected static IWorkspace             workspace;
+  protected static SonarPlugin            plugin;
+  private static SonarTestServer          testServer;
+  private List<MarkerChecker>             markerCheckerList;
 
-  @Before
-  public void setUp() throws Exception {
-//    super.setUp();
+  @BeforeClass
+  final static public void prepareWorkspace() throws Exception {
     workspace = ResourcesPlugin.getWorkspace();
     IWorkspaceDescription description = workspace.getDescription();
     description.setAutoBuilding(false);
@@ -66,7 +67,7 @@ public abstract class AbstractSonarTest {
     cleanWorkspace();
   }
 
-  protected String startTestServer() throws Exception {
+  final protected String startTestServer() throws Exception {
     if (testServer == null) {
       synchronized (SonarTestServer.class) {
         if (testServer == null) {
@@ -78,16 +79,14 @@ public abstract class AbstractSonarTest {
     return testServer.getBaseUrl();
   }
 
-  protected String addLocalTestServer() throws Exception {
+  final protected String addLocalTestServer() throws Exception {
     String url = startTestServer();
     SonarPlugin.getServerManager().createServer(url);
     return url;
   }
 
-  @After
-  public void tearDown() throws Exception {
-//    super.tearDown();
-
+  @AfterClass
+  final static public void end() throws Exception {
     // cleanWorkspace();
 
     IWorkspaceDescription description = workspace.getDescription();
@@ -101,10 +100,10 @@ public abstract class AbstractSonarTest {
 
   }
 
-  private void cleanWorkspace() throws Exception {
+  final static private void cleanWorkspace() throws Exception {
     // Job.getJobManager().suspend();
     // waitForJobs();
-    
+
     List<Host> hosts = new ArrayList<Host>();
     hosts.addAll(SonarPlugin.getServerManager().getServers());
     for (Host host : hosts) {
@@ -113,7 +112,7 @@ public abstract class AbstractSonarTest {
     IWorkspaceRoot root = workspace.getRoot();
     for (IProject project : root.getProjects()) {
       project.delete(true, true, monitor);
-    } 
+    }
   }
 
   /**
@@ -180,6 +179,38 @@ public abstract class AbstractSonarTest {
     while (!Job.getJobManager().isIdle()) {
       Thread.sleep(1000);
     }
+  }
+
+  protected void cleanMarckerInfo() {
+    markerCheckerList = null;
+  }
+
+  protected void addMarckerInfo(int priority, long line, String message) {
+    if (markerCheckerList == null) {
+      markerCheckerList = new ArrayList<MarkerChecker>();
+    }
+    markerCheckerList.add(new MarkerChecker(priority, line, message));
+  }
+
+  protected void assertMarkers(IMarker[] markers) throws CoreException {
+    for (IMarker marker : markers) {
+      assertMarker(marker);
+    }
+  }
+
+  protected void assertMarker(IMarker marker) throws CoreException {
+    if (Logs.INFO.isDebugEnabled()) {
+      Logs.INFO.debug("Checker marker[" + marker.getId() + "] (" + marker.getAttribute(IMarker.PRIORITY) + ") : line " + marker.getAttribute(IMarker.LINE_NUMBER) + " : "
+          + marker.getAttribute(IMarker.MESSAGE));
+    }
+    if (!SonarPlugin.MARKER_ID.equals(marker.getType()))
+      return;
+    for (MarkerChecker checker : markerCheckerList) {
+      if (checker.check(marker))
+        return;
+    }
+    fail("MarckerChecker faild for marker[" + marker.getId() + "] (" + marker.getAttribute(IMarker.PRIORITY) + ") : line " + marker.getAttribute(IMarker.LINE_NUMBER) + " : "
+        + marker.getAttribute(IMarker.MESSAGE));
   }
 
   // =========================================================================
