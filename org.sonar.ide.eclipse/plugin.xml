@@ -68,6 +68,15 @@
               state="true"
               style="push">
         </action>
+        <action
+              class="org.sonar.ide.eclipse.actions.OpenInBrowserAction"
+              enablesFor="+"
+              id="org.sonar.ide.eclipse.openInBrowserAction"
+              label="Open in sonar server"
+              menubarPath="org.sonar.ide.eclipse.sonar/group1"
+              state="true"
+              style="push">
+        </action>        
      </objectContribution>
   </extension>
   <extension
