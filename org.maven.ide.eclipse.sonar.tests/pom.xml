@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.codehaus.sonar-ide.eclipse</groupId>
+    <artifactId>eclipse-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../org.sonar.ide.eclipse.parent/pom.xml</relativePath>
+  </parent>
+
+  <artifactId>org.maven.ide.eclipse.sonar.tests</artifactId>
+  <packaging>eclipse-test-plugin</packaging>
+
+  <name>Sonar Integration for Eclipse Maven Tests</name>
+
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <resources>
+      <resource>
+        <directory>src</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.1</version>
+        <executions>
+          <execution>
+            <id>extract-projects</id>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.codehaus.sonar-ide</groupId>
+                  <artifactId>sonar-ide-testing-harness</artifactId>
+                  <version>${sonar-ide.version}</version>
+                  <type>tar.gz</type>
+                  <classifier>projects</classifier>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
