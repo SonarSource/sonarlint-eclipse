@@ -1,29 +1,32 @@
 package org.sonar.ide.eclipse.tests.common;
 
-import org.apache.commons.io.FileUtils;
-import org.eclipse.core.resources.*;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceDescription;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.mortbay.jetty.testing.ServletTester;
 import org.sonar.ide.api.Logs;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.test.AbstractSonarIdeTest;
-import org.sonar.ide.test.SourceServlet;
-import org.sonar.ide.test.VersionServlet;
-import org.sonar.ide.test.ViolationServlet;
+import org.sonar.ide.test.SonarTestServer;
 import org.sonar.wsclient.Host;
-import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.connectors.HttpClient4Connector;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.fail;
 
 /**
  * Common test case for sonar-ide/eclipse projects.
@@ -133,36 +136,6 @@ public abstract class AbstractSonarTest extends AbstractSonarIdeTest {
     return addedProjectList.get(0);
   }
 
-  /**
-   * @deprecated use {@link FileUtils#copyDirectory(File, File, java.io.FileFilter)} instead of it
-   */
-  @Deprecated
-  private void copyDirectory(File sourceLocation, File targetLocation) throws IOException {
-    if (sourceLocation.getName().contains(".svn"))
-      return;
-    if (sourceLocation.isDirectory()) {
-      if (!targetLocation.exists()) {
-        targetLocation.mkdir();
-      }
-
-      String[] children = sourceLocation.list();
-      for (int i = 0; i < children.length; i++) {
-        copyDirectory(new File(sourceLocation, children[i]), new File(targetLocation, children[i]));
-      }
-    } else {
-
-      InputStream in = new FileInputStream(sourceLocation);
-      OutputStream out = new FileOutputStream(targetLocation);
-      byte[] buf = new byte[1024];
-      int len;
-      while ((len = in.read(buf)) > 0) {
-        out.write(buf, 0, len);
-      }
-      in.close();
-      out.close();
-    }
-  }
-
   public static void waitForJobs() throws Exception {
     while (!Job.getJobManager().isIdle()) {
       Thread.sleep(1000);
@@ -199,42 +172,6 @@ public abstract class AbstractSonarTest extends AbstractSonarIdeTest {
     }
     fail("MarckerChecker faild for marker[" + marker.getId() + "] (" + marker.getAttribute(IMarker.PRIORITY) + ") : line " + marker.getAttribute(IMarker.LINE_NUMBER) + " : "
         + marker.getAttribute(IMarker.MESSAGE));
-  }
-
-  // =========================================================================
-  // == TODO : Use org.sonar.ide.commons.tests ==
-  // == Duplicate code from sonar-ide-commons/src/test/java ==
-
-  /**
-   * @author Evgeny Mandrikov
-   */
-  public static class SonarTestServer {
-    private ServletTester tester;
-    private String baseUrl;
-
-    public void start() throws Exception {
-      tester = new ServletTester();
-      tester.setContextPath("/");
-      tester.addServlet(VersionServlet.class, "/api/server/version");
-      tester.addServlet(ViolationServlet.class, "/api/violations");
-      tester.addServlet(SourceServlet.class, "/api/sources");
-
-      baseUrl = tester.createSocketConnector(true);
-      tester.start();
-    }
-
-    public void stop() throws Exception {
-      tester.stop();
-    }
-
-    public String getBaseUrl() {
-      return baseUrl;
-    }
-
-    public Sonar getSonar() {
-      HttpClient4Connector connector = new HttpClient4Connector(new Host(getBaseUrl()));
-      return new Sonar(connector);
-    }
   }
 
 }
