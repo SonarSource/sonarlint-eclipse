@@ -1,25 +1,7 @@
 package org.sonar.ide.eclipse.tests.common;
 
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceDescription;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.apache.commons.io.FileUtils;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -29,6 +11,7 @@ import org.junit.BeforeClass;
 import org.mortbay.jetty.testing.ServletTester;
 import org.sonar.ide.api.Logs;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.test.AbstractSonarIdeTest;
 import org.sonar.ide.test.SourceServlet;
 import org.sonar.ide.test.VersionServlet;
 import org.sonar.ide.test.ViolationServlet;
@@ -36,22 +19,29 @@ import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.connectors.HttpClient4Connector;
 
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.fail;
+
 /**
  * Common test case for sonar-ide/eclipse projects.
- * 
+ *
  * @author Jérémie Lagarde
- * 
  */
-public abstract class AbstractSonarTest {
+public abstract class AbstractSonarTest extends AbstractSonarIdeTest {
 
   protected static final IProgressMonitor monitor = new NullProgressMonitor();
-  protected static IWorkspace             workspace;
-  protected static SonarPlugin            plugin;
-  private static SonarTestServer          testServer;
-  private List<MarkerChecker>             markerCheckerList;
+  protected static IWorkspace workspace;
+  protected static SonarPlugin plugin;
+  private static SonarTestServer testServer;
+  private List<MarkerChecker> markerCheckerList;
 
   @BeforeClass
   final static public void prepareWorkspace() throws Exception {
+    init();
+
     workspace = ResourcesPlugin.getWorkspace();
     IWorkspaceDescription description = workspace.getDescription();
     description.setAutoBuilding(false);
@@ -111,18 +101,18 @@ public abstract class AbstractSonarTest {
 
   /**
    * Import test project into the Eclipse workspace
-   * 
+   *
    * @return created projects
    */
   protected IProject importEclipseProject(String projectdir) throws IOException, CoreException {
     Logs.INFO.info("Importing Eclipse project : " + projectdir);
     IWorkspaceRoot root = workspace.getRoot();
 
-    File src = new File(projectdir);
-    File dst = new File(root.getLocation().toFile(), src.getName());
-    copyDirectory(src, dst);
+    String projectName = projectdir;
+    File dst = new File(root.getLocation().toFile(), projectName);
+    dst = getProject(projectName, dst);
 
-    final IProject project = workspace.getRoot().getProject(src.getName());
+    final IProject project = workspace.getRoot().getProject(projectName);
     final List<IProject> addedProjectList = new ArrayList<IProject>();
 
     workspace.run(new IWorkspaceRunnable() {
@@ -143,6 +133,10 @@ public abstract class AbstractSonarTest {
     return addedProjectList.get(0);
   }
 
+  /**
+   * @deprecated use {@link FileUtils#copyDirectory(File, File, java.io.FileFilter)} instead of it
+   */
+  @Deprecated
   private void copyDirectory(File sourceLocation, File targetLocation) throws IOException {
     if (sourceLocation.getName().contains(".svn"))
       return;
@@ -216,7 +210,7 @@ public abstract class AbstractSonarTest {
    */
   public static class SonarTestServer {
     private ServletTester tester;
-    private String        baseUrl;
+    private String baseUrl;
 
     public void start() throws Exception {
       tester = new ServletTester();

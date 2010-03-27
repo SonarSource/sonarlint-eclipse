@@ -1,9 +1,5 @@
 package org.sonar.ide.eclipse.jobs;
 
-import static org.junit.Assert.assertTrue;
-
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -23,14 +19,16 @@ import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.tests.common.AbstractSonarTest;
 import org.sonar.wsclient.Host;
 
+import java.util.List;
+
+import static org.junit.Assert.assertTrue;
+
 /**
  * Test case for refresh violations.
- * 
+ *
+ * @author Jérémie Lagarde
  * @link http://jira.codehaus.org/browse/SONARIDE-35
  * @link http://jira.codehaus.org/browse/SONARIDE-27
- * 
- * @author Jérémie Lagarde
- * 
  */
 public class RefreshViolationJobTest extends AbstractSonarTest {
 
@@ -50,7 +48,7 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
       }
     }
     // Import simple project
-    project = importEclipseProject("projects/SimpleProject/");
+    project = importEclipseProject("SimpleProject");
 
     // Configure the project
     ProjectProperties properties = ProjectProperties.getInstance(project);
@@ -60,11 +58,11 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
     properties.flush();
     LOG.debug("Project configured");
   }
-    
+
   @Test
   public void testRefreshViolations() throws Exception {
     prepareTest();
-    
+
     // Retrieve violation markers
     Job job = new RefreshViolationJob(project);
     job.schedule();
@@ -72,29 +70,29 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
     LOG.debug("Violation markers retrieved");
 
     cleanMarckerInfo();
-    addMarckerInfo(1,7,"Unused private method : Avoid unused private methods such as 'myMethod()'.");
-    addMarckerInfo(0,4,"Unused local variable : Avoid unused local variables such as 'j'.");
-    addMarckerInfo(1,4,"Parameter Assignment : Assignment of parameter 'i' is not allowed.");
-    addMarckerInfo(2,1,"Hide Utility Class Constructor : Utility classes should not have a public or default constructor.");
-    
+    addMarckerInfo(1, 7, "Unused private method : Avoid unused private methods such as 'myMethod()'.");
+    addMarckerInfo(0, 4, "Unused local variable : Avoid unused local variables such as 'j'.");
+    addMarckerInfo(1, 4, "Parameter Assignment : Assignment of parameter 'i' is not allowed.");
+    addMarckerInfo(2, 1, "Hide Utility Class Constructor : Utility classes should not have a public or default constructor.");
+
     IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertTrue("There isn't marker for the project.", markers != null && markers.length > 0);
     assertMarkers(markers);
   }
-  
+
   @Test
   public void testRefreshViolationsWithModifiedFile() throws Exception {
     prepareTest();
-    
+
     // Add blank line.
     IJavaProject javaProject = JavaCore.create(project);
-    ICompilationUnit unit = (ICompilationUnit)javaProject.findElement(new Path("ClassOnDefaultPackage.java"));
+    ICompilationUnit unit = (ICompilationUnit) javaProject.findElement(new Path("ClassOnDefaultPackage.java"));
     IBuffer buffer = unit.getBuffer();
     String content = buffer.getContents();
     content = StringUtils.replace(content, "  private String myMethod()", "\n  private String myMethod()");
     buffer.setContents(content);
     buffer.save(new NullProgressMonitor(), true);
-    
+
     // Retrieve violation markers
     Job job = new RefreshViolationJob(project);
     job.schedule();
@@ -102,11 +100,11 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
     LOG.debug("Violation markers retrieved");
 
     cleanMarckerInfo();
-    addMarckerInfo(1,8,"Unused private method : Avoid unused private methods such as 'myMethod()'.");
-    addMarckerInfo(0,4,"Unused local variable : Avoid unused local variables such as 'j'.");
-    addMarckerInfo(1,4,"Parameter Assignment : Assignment of parameter 'i' is not allowed.");
-    addMarckerInfo(2,1,"Hide Utility Class Constructor : Utility classes should not have a public or default constructor.");
-    
+    addMarckerInfo(1, 8, "Unused private method : Avoid unused private methods such as 'myMethod()'.");
+    addMarckerInfo(0, 4, "Unused local variable : Avoid unused local variables such as 'j'.");
+    addMarckerInfo(1, 4, "Parameter Assignment : Assignment of parameter 'i' is not allowed.");
+    addMarckerInfo(2, 1, "Hide Utility Class Constructor : Utility classes should not have a public or default constructor.");
+
     IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertTrue("There isn't marker for the project.", markers != null && markers.length > 0);
     assertMarkers(markers);
