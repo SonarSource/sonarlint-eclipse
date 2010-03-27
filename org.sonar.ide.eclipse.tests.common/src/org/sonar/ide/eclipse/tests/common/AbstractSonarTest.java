@@ -8,17 +8,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.GenericServlet;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -37,7 +29,9 @@ import org.junit.BeforeClass;
 import org.mortbay.jetty.testing.ServletTester;
 import org.sonar.ide.api.Logs;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.shared.AbstractResourceUtils;
+import org.sonar.ide.test.SourceServlet;
+import org.sonar.ide.test.VersionServlet;
+import org.sonar.ide.test.ViolationServlet;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.connectors.HttpClient4Connector;
@@ -246,69 +240,6 @@ public abstract class AbstractSonarTest {
     public Sonar getSonar() {
       HttpClient4Connector connector = new HttpClient4Connector(new Host(getBaseUrl()));
       return new Sonar(connector);
-    }
-  }
-
-  /**
-   * @author Evgeny Mandrikov
-   */
-  public static abstract class TestServlet extends GenericServlet {
-    private static final long serialVersionUID = 1L;
-
-    protected String getClassKey(ServletRequest request) {
-      String resourceKey = request.getParameter("resource");
-      String[] parts = resourceKey.split(":");
-      // String groupId = parts[0];
-      // String artifactId = parts[1];
-      String classKey = parts[2];
-      if (classKey.startsWith(AbstractResourceUtils.DEFAULT_PACKAGE_NAME)) {
-        classKey = StringUtils.substringAfter(classKey, ".");
-      }
-      return classKey;
-    }
-
-    protected abstract String getResource(String classKey);
-
-    @Override
-    public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
-      PrintWriter out = response.getWriter();
-      String json;
-      try {
-        String classKey = getClassKey(request);
-        json = IOUtils.toString(ViolationServlet.class.getResourceAsStream(getResource(classKey)));
-      } catch (Exception e) {
-        json = "[]";
-      }
-      out.println(json);
-    }
-  }
-
-  public static class VersionServlet extends GenericServlet {
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
-      PrintWriter out = response.getWriter();
-      String json = "{\"id\":\"20100207124430\", \"version\":\"2.0\"}";
-      out.println(json);
-    }
-  }
-
-  public static class ViolationServlet extends TestServlet {
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    protected String getResource(String classKey) {
-      return "/violations/" + classKey + ".json";
-    }
-  }
-
-  public static class SourceServlet extends TestServlet {
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    protected String getResource(String classKey) {
-      return "/sources/" + classKey + ".json";
     }
   }
 
