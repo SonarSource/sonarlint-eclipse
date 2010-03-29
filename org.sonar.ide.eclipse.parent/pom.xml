@@ -24,7 +24,7 @@
 
     <jdk.min.version>1.5</jdk.min.version>
 
-    <tycho.version>0.7.0</tycho.version>
+    <tycho.version>0.8.0</tycho.version>
 
     <sonar-ide.version>0.1-SNAPSHOT</sonar-ide.version>
 
