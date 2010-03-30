@@ -229,6 +229,15 @@
     </snapshotRepository>
   </distributionManagement>
 
+  <profiles>
+    <profile>
+      <id>its</id>
+      <modules>
+        <module>../org.sonar.ide.eclipse.ui.tests</module>
+      </modules>
+    </profile>
+  </profiles>
+
   <issueManagement>
     <system>JIRA</system>
     <url>http://jira.codehaus.org/browse/SONARIDE/component/14315</url>
