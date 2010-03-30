@@ -9,7 +9,7 @@ Eclipse-LazyStart: true
 MavenArtifact-GroupId: org.codehaus.sonar-ide.eclipse
 Bundle-Version: 0.0.1.qualifier
 MavenArtifact-ArtifactId: org.sonar.ide.eclipse.ui.test
-Export-Package: org.sonar.ide.eclipse.ui.tests
+Export-Package: org.sonar.ide.eclipse.integration.tests
 Require-Bundle: org.junit4;bundle-version="4.4.0",
  org.hamcrest,
  org.eclipse.jdt.core,
