@@ -25,6 +25,8 @@
 
     <tycho.version>0.8.0</tycho.version>
 
+    <target.platform>e35</target.platform>
+
     <sonar-ide.version>0.1-SNAPSHOT</sonar-ide.version>
 
     <!-- disable accidental deployment -->
@@ -51,6 +53,8 @@
     <!-- features -->
     <module>../org.sonar.ide.eclipse.feature</module>
     <module>../org.maven.ide.eclipse.sonar.feature</module>
+
+    <module>../target-platform</module>
   </modules>
 
   <build>
@@ -91,6 +95,17 @@
         <configuration>
           <resolver>p2</resolver>
           <!--pomDependencies>consider</pomDependencies-->
+          <!-- TODO Godin: target-platform
+          <target>
+            <artifact>
+              <groupId>org.codehaus.sonar-ide.eclipse</groupId>
+              <artifactId>target-platform</artifactId>
+              <version>${project.version}</version>
+              <classifier>${target.platform}</classifier>
+            </artifact>
+          </target>
+          <ignoreTychoRepositories>true</ignoreTychoRepositories>
+          -->
           <environments>
             <environment>
               <os>linux</os>
