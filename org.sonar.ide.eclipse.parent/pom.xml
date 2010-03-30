@@ -3,15 +3,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <!-- TODO Godin: for now we can't reference parent - set enforcer.skip=true -->
-  <!--
   <parent>
     <groupId>org.codehaus.sonar-ide</groupId>
     <artifactId>sonar-ide-parent</artifactId>
     <version>1</version>
     <relativePath>../../sonar-ide-parent/pom.xml</relativePath>
   </parent>
-  -->
 
   <groupId>org.codehaus.sonar-ide.eclipse</groupId>
   <artifactId>eclipse-parent</artifactId>
@@ -22,6 +19,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <enforcer.skip>true</enforcer.skip>
 
     <jdk.min.version>1.5</jdk.min.version>
 
