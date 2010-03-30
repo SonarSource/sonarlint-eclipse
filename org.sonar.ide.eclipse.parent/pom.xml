@@ -57,6 +57,21 @@
     <module>../target-platform</module>
   </modules>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.codehaus.sonar-ide</groupId>
+        <artifactId>sonar-ide-commons</artifactId>
+        <version>${sonar-ide.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.sonar-ide</groupId>
+        <artifactId>sonar-ide-testing-harness</artifactId>
+        <version>${sonar-ide.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <build>
     <extensions>
       <extension>

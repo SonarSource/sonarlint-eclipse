@@ -1,15 +1,15 @@
+Manifest-Version: 1.0
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
 Bundle-Name: Sonar Integration Tests Plug-in
-Manifest-Version: 1.0
 Bundle-ClassPath: .
 Bundle-SymbolicName: org.sonar.ide.eclipse.ui.tests;singleton:=true
 Bundle-ManifestVersion: 2
-Eclipse-LazyStart: true
+Bundle-ActivationPolicy: lazy
 MavenArtifact-GroupId: org.codehaus.sonar-ide.eclipse
 Bundle-Version: 0.0.1.qualifier
 MavenArtifact-ArtifactId: org.sonar.ide.eclipse.ui.test
-Export-Package: org.sonar.ide.eclipse.integration.tests
+Export-Package: org.sonar.ide.eclipse.ui.tests
 Require-Bundle: org.junit4;bundle-version="4.4.0",
  org.hamcrest,
  org.eclipse.jdt.core,
@@ -29,4 +29,7 @@ Require-Bundle: org.junit4;bundle-version="4.4.0",
  org.eclipse.ui.editors,
  org.eclipse.swtbot.eclipse.finder,
  org.eclipse.swtbot.swt.finder,
- org.eclipse.swtbot.junit4_x
+ org.eclipse.swtbot.junit4_x,
+ org.sonar.ide.eclipse.tests.common,
+ org.sonar.ide.eclipse,
+ org.maven.ide.eclipse.sonar

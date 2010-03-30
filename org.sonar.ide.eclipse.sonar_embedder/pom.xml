@@ -19,11 +19,11 @@
     <dependency>
       <groupId>org.codehaus.sonar-ide</groupId>
       <artifactId>sonar-ide-commons</artifactId>
-      <version>${sonar-ide.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
+      <!-- TODO Godin: remove version from here -->
       <version>0.9.18</version>
     </dependency>
   </dependencies>
