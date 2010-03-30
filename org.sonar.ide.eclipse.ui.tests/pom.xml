@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.codehaus.sonar-ide.eclipse</groupId>
+    <artifactId>eclipse-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../org.sonar.ide.eclipse.parent</relativePath>
+  </parent>
+
+  <artifactId>org.sonar.ide.eclipse.ui.tests</artifactId>
+  <packaging>eclipse-test-plugin</packaging>
+
+  <name>Sonar Integration for Eclipse UI Tests</name>
+
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+
+    <plugins>
+      <plugin>
+        <groupId>org.sonatype.tycho</groupId>
+        <artifactId>maven-osgi-test-plugin</artifactId>
+        <configuration>
+          <useUIHarness>true</useUIHarness>
+          <useUIThread>false</useUIThread>
+          <forkedProcessTimeoutInSeconds>7200</forkedProcessTimeoutInSeconds>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <repositories>
+    <repository>
+      <id>swtbot</id>
+      <layout>p2</layout>
+      <url>http://download.eclipse.org/technology/swtbot/galileo/dev-build/update-site</url>
+    </repository>
+  </repositories>
+
+</project>
