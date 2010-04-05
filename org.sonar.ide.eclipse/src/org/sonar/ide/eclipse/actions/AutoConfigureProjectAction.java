@@ -10,15 +10,15 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.sonar.ide.eclipse.jobs.RefreshViolationJob;
 
+
 /**
  * @author Jérémie Lagarde
- * 
  */
-public class RefreshViolationAction implements IObjectActionDelegate {
+public class AutoConfigureProjectAction implements IObjectActionDelegate {
 
   private IStructuredSelection selection;
 
-  public RefreshViolationAction() {
+  public AutoConfigureProjectAction() {
     super();
   }
 

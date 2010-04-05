@@ -23,6 +23,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.console.SonarConsole;
+import org.sonar.ide.eclipse.console.SonarConsolePreferenceBlock;
 import org.sonar.ide.eclipse.wizards.NewServerLocationWizard;
 import org.sonar.wsclient.Host;
 
@@ -33,8 +35,9 @@ import org.sonar.wsclient.Host;
  */
 public class SonarPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 
-  private Combo  serversCombo;
-  private Button createServerButton;
+  private Combo                       serversCombo;
+  private Button                      createServerButton;
+  private SonarConsolePreferenceBlock consoleBlock;
 
   public SonarPreferencePage() {
     super(Messages.getString("pref.global.title")); //$NON-NLS-1$
@@ -57,6 +60,8 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     layout.verticalSpacing = 9;
 
     addServerGroup(container);
+    consoleBlock = new SonarConsolePreferenceBlock();
+    consoleBlock.createContents(container);
 
     return container;
   }
@@ -107,7 +112,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
           for (Host server : servers) {
             serversCombo.add(server.getHost());
           }
-          serversCombo.select(servers.size()-1);
+          serversCombo.select(servers.size() - 1);
         }
       }
     });
@@ -122,6 +127,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
   @Override
   protected void performApply() {
     getPreferenceStore().setValue(PreferenceConstants.P_SONAR_SERVER_URL, serversCombo.getItem(serversCombo.getSelectionIndex()));
+    consoleBlock.performApply(getPreferenceStore());
   }
 
 }

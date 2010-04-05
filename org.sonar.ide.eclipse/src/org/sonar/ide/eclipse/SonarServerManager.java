@@ -12,9 +12,10 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.widgets.Display;
+import org.sonar.ide.client.SonarClient;
+import org.sonar.ide.eclipse.preferences.PreferenceConstants;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.connectors.HttpClient4Connector;
 
 /**
  * @author Jérémie Lagarde
@@ -94,11 +95,17 @@ public class SonarServerManager {
     return server;
   }
 
+  public Host getDefaultServer() throws Exception {
+    String url = SonarPlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL);
+    return findServer(url);
+  }
+  
   public Sonar getSonar(String url) throws Exception {
     final Host server = createServer(url);
-    return new Sonar(new HttpClient4Connector(server));
+    // return new Sonar(new HttpClient4Connector(server));
+    return new SonarClient(server.getHost(),server.getUsername(),server.getPassword());
   }
-
+  
   private void commit() throws Exception {
     File serverListFile = SonarPlugin.getDefault().getStateLocation().append(SERVER_CACHE_NAME).toFile();
     FileOutputStream fos = null;

@@ -5,16 +5,18 @@ Bundle-SymbolicName: org.sonar.ide.eclipse;singleton:=true
 Bundle-Version: 0.0.1.qualifier
 Bundle-ClassPath: .
 Bundle-Activator: org.sonar.ide.eclipse.SonarPlugin
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui,
  org.eclipse.ui.ide,
+ org.eclipse.ui.console,
  org.eclipse.jdt.ui,
  org.eclipse.jdt.core,
  org.sonar.ide.eclipse.sonar_embedder
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
 Import-Package: org.apache.commons.lang,
- org.eclipse.core.resources
+ org.eclipse.core.resources,
+ org.sonar.ide.ui
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonar.ide.eclipse,
  org.sonar.ide.eclipse.preferences,

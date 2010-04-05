@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.sonar.ide.eclipse.console.SonarConsole;
 
 /**
  * @author Jérémie Lagarde
@@ -26,15 +27,21 @@ public class SonarPlugin extends AbstractUIPlugin {
 
   // Images
   private static ImageDescriptor    SONARWIZBAN_IMG;
+  private static ImageDescriptor    SONARCONSOLE_IMG;
   private static ImageDescriptor    SONARSYNCHRO_IMG;
+  private static ImageDescriptor    SONARCLOSE_IMG;
 
   public static final String        IMG_SONARWIZBAN  = "sonar_wizban.gif";        //$NON-NLS-1$
+  public static final String        IMG_SONARCONSOLE = "sonar.gif";               //$NON-NLS-1$
   public static final String        IMG_SONARSYNCHRO = "synced.gif";              //$NON-NLS-1$
+  public static final String        IMG_SONARCLOSE   = "close.gif";              //$NON-NLS-1$
 
   // The shared instance
   private static SonarPlugin        plugin;
 
   private static SonarServerManager serverManager;
+
+  private SonarConsole              console;
 
   public SonarPlugin() {
   }
@@ -50,12 +57,18 @@ public class SonarPlugin extends AbstractUIPlugin {
   public void start(BundleContext context) throws Exception {
     super.start(context);
     plugin = this;
+    try {
+      console = new SonarConsole();
+    } catch (RuntimeException e) {
+      writeLog(IStatus.ERROR, "Errors occurred starting the Sonar console", e); //$NON-NLS-1$
+    }
   }
 
   @Override
   public void stop(BundleContext context) throws Exception {
     plugin = null;
     super.stop(context);
+    console.shutdown();
   }
 
   /**
@@ -63,6 +76,10 @@ public class SonarPlugin extends AbstractUIPlugin {
    */
   public static SonarPlugin getDefault() {
     return plugin;
+  }
+
+  public SonarConsole getConsole() {
+    return this.console;
   }
 
   private IStatus createStatus(int severity, String msg, Throwable t) {
@@ -134,11 +151,23 @@ public class SonarPlugin extends AbstractUIPlugin {
       }
       img = SONARWIZBAN_IMG;
     }
+    if (id.equals(IMG_SONARCONSOLE)) {
+      if (SONARCONSOLE_IMG == null) {
+        SONARCONSOLE_IMG = loadImageDescriptor(IMG_SONARCONSOLE);
+      }
+      img = SONARCONSOLE_IMG;
+    }
     if (id.equals(IMG_SONARSYNCHRO)) {
       if (SONARSYNCHRO_IMG == null) {
         SONARSYNCHRO_IMG = loadImageDescriptor(IMG_SONARSYNCHRO);
       }
       img = SONARSYNCHRO_IMG;
+    }
+    if (id.equals(IMG_SONARCLOSE)) {
+      if (SONARCLOSE_IMG == null) {
+        SONARCLOSE_IMG = loadImageDescriptor(IMG_SONARCLOSE);
+      }
+      img = SONARCLOSE_IMG;
     }
     return img;
   }
