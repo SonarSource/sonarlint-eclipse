@@ -42,7 +42,7 @@
     <page
         class="org.sonar.ide.eclipse.properties.SonarProjectPropertyPage"
         id="org.sonar.ide.eclipse.properties.sonarProjectPropertyPage"
-        name="Sonar properties">
+        name="Sonar">
     </page>
   </extension>
   <extension
