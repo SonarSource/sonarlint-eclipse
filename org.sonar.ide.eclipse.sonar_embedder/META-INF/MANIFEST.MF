@@ -1,10 +1,14 @@
 Manifest-Version: 1.0
-Export-Package: org.sonar.ide.images.tendency,org.sonar.ide.ui,org.slf
- 4j,org.apache.commons.lang,org.slf4j.impl,org.sonar.wsclient,org.sona
- r.ide.shared,org.sonar.wsclient.connectors,org.sonar.wsclient.unmarsh
- allers,org.sonar.ide.client,org.sonar.ide.images.priority,org.sonar.i
- de.ui.treemap,org.sonar.ide.ui.treemap.split,org.sonar.ide.images,org
- .sonar.wsclient.services,org.sonar.ide.api
+Export-Package: ch.qos.logback.core.spi,org.sonar.ide.images.tendency,
+ ch.qos.logback.classic,org.sonar.ide.ui,ch.qos.logback.core,ch.qos.lo
+ gback.core.joran.spi,org.slf4j,ch.qos.logback.classic.joran,org.apach
+ e.commons.lang,org.slf4j.impl,org.sonar.wsclient,org.sonar.ide.shared
+ ,org.sonar.wsclient.connectors,ch.qos.logback.core.joran,org.sonar.ws
+ client.unmarshallers,org.sonar.ide.client,org.sonar.ide.ui.treemap,or
+ g.sonar.ide.ui.treemap.split,org.sonar.ide.images.priority,ch.qos.log
+ back.core.util,org.sonar.ide.images,org.sonar.wsclient.services,org.s
+ onar.ide.api
+Bundle-Vendor: Sonar IDE
 Bundle-ClassPath: jars/sonar-ide-commons-0.1-SNAPSHOT.jar,jars/slf4j-a
  pi-1.5.11.jar,jars/jcl-over-slf4j-1.5.11.jar,jars/google-collections-
  1.0.jar,jars/commons-lang-2.5.jar,jars/jdom-1.1.jar,jars/sonar-ws-cli
