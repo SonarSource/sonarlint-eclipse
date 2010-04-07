@@ -1,296 +1,296 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
+  <parent>
+    <groupId>org.codehaus.sonar-ide</groupId>
+    <artifactId>sonar-ide-parent</artifactId>
+    <version>1</version>
+    <relativePath>../../sonar-ide-parent/pom.xml</relativePath>
+  </parent>
+
+  <groupId>org.codehaus.sonar-ide.eclipse</groupId>
+  <artifactId>eclipse-parent</artifactId>
+  <packaging>pom</packaging>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <name>Sonar Integration for Eclipse Parent</name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <enforcer.skip>true</enforcer.skip>
+
+    <jdk.min.version>1.5</jdk.min.version>
+
+    <tycho.version>0.8.0</tycho.version>
+
+    <target.platform>e35</target.platform>
+
+    <sonar-ide.version>0.1-SNAPSHOT</sonar-ide.version>
+
+    <!-- disable accidental deployment -->
+    <sonar-ide.site>dav:http://localhost/eclipse</sonar-ide.site>
+    <sonar-ide.snapshots>http://localhost</sonar-ide.snapshots>
+    <sonar-ide.releases>http://localhost</sonar-ide.releases>
+  </properties>
+
+  <prerequisites>
+    <maven>3.0</maven>
+  </prerequisites>
+
+  <modules>
+    <module>../org.sonar.ide.eclipse.sonar_embedder</module>
+    <module>../org.sonar.ide.eclipse</module>
+    <module>../org.sonar.ide.eclipse.site</module>
+
+    <module>../org.sonar.ide.eclipse.tests.common</module>
+
+    <module>../org.sonar.ide.eclipse.tests</module>
+
+    <module>../org.maven.ide.eclipse.sonar</module>
+
+    <!-- features -->
+    <module>../org.sonar.ide.eclipse.feature</module>
+    <module>../org.maven.ide.eclipse.sonar.feature</module>
+
+    <module>../target-platform</module>
+  </modules>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
         <groupId>org.codehaus.sonar-ide</groupId>
-        <artifactId>sonar-ide-parent</artifactId>
-        <version>1</version>
-        <relativePath>../../sonar-ide-parent/pom.xml</relativePath>
-    </parent>
+        <artifactId>sonar-ide-commons</artifactId>
+        <version>${sonar-ide.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.sonar-ide</groupId>
+        <artifactId>sonar-ide-testing-harness</artifactId>
+        <version>${sonar-ide.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
-    <groupId>org.codehaus.sonar-ide.eclipse</groupId>
-    <artifactId>eclipse-parent</artifactId>
-    <packaging>pom</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+  <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
 
-    <name>Sonar Integration for Eclipse Parent</name>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <compilerVersion>${jdk.min.version}</compilerVersion>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.7</version>
+        <configuration>
+          <downloadSources>true</downloadSources>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.tycho</groupId>
+        <artifactId>tycho-maven-plugin</artifactId>
+        <version>${tycho.version}</version>
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.tycho</groupId>
+        <artifactId>target-platform-configuration</artifactId>
+        <version>${tycho.version}</version>
+        <configuration>
+          <resolver>p2</resolver>
+          <!-- TODO Godin: seems unusable for now (TYCHO-404)
+          <pomDependencies>consider</pomDependencies>
+          -->
+          <!-- TODO Godin: target-platform
+          <target>
+            <artifact>
+              <groupId>org.codehaus.sonar-ide.eclipse</groupId>
+              <artifactId>target-platform</artifactId>
+              <version>${project.version}</version>
+              <classifier>${target.platform}</classifier>
+            </artifact>
+          </target>
+          <ignoreTychoRepositories>true</ignoreTychoRepositories>
+          -->
+          <environments>
+            <environment>
+              <os>linux</os>
+              <ws>gtk</ws>
+              <arch>x86</arch>
+            </environment>
+            <environment>
+              <os>linux</os>
+              <ws>gtk</ws>
+              <arch>x86_64</arch>
+            </environment>
+            <environment>
+              <os>win32</os>
+              <ws>win32</ws>
+              <arch>x86</arch>
+            </environment>
+            <environment>
+              <os>win32</os>
+              <ws>win32</ws>
+              <arch>x86_64</arch>
+            </environment>
+            <environment>
+              <os>macosx</os>
+              <ws>carbon</ws>
+              <arch>x86</arch>
+            </environment>
+            <environment>
+              <os>macosx</os>
+              <ws>cocoa</ws>
+              <arch>x86</arch>
+            </environment>
+          </environments>
+        </configuration>
+      </plugin>
+    </plugins>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <enforcer.skip>true</enforcer.skip>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.sonatype.tycho</groupId>
+          <artifactId>maven-osgi-packaging-plugin</artifactId>
+          <version>${tycho.version}</version>
+          <configuration>
+            <!-- workaround for TYCHO-349 or TYCHO-313 -->
+            <strictVersions>false</strictVersions>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.tycho</groupId>
+          <artifactId>maven-osgi-compiler-plugin</artifactId>
+          <version>${tycho.version}</version>
+          <configuration>
+            <source>${jdk.min.version}</source>
+            <target>${jdk.min.version}</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.tycho</groupId>
+          <artifactId>maven-osgi-test-plugin</artifactId>
+          <version>${tycho.version}</version>
+          <configuration>
+            <useUIHarness>false</useUIHarness>
+            <includes>
+              <include>**/*Test.java</include>
+            </includes>
+            <!-- kill test JVM it tests take more than 10 minutes (600 seconds) to finish -->
+            <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>wagon-maven-plugin</artifactId>
+          <version>1.0-beta-3</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 
-        <jdk.min.version>1.5</jdk.min.version>
+  <repositories>
+    <repository>
+      <id>update35</id>
+      <url>http://download.eclipse.org/eclipse/updates/3.5</url>
+      <layout>p2</layout>
+    </repository>
+    <repository>
+      <id>ganymede</id>
+      <layout>p2</layout>
+      <url>http://download.eclipse.org/releases/ganymede</url>
+    </repository>
+    <repository>
+      <id>m2eclipse</id>
+      <layout>p2</layout>
+      <url>http://m2eclipse.sonatype.org/sites/m2e</url>
+    </repository>
+  </repositories>
 
-        <tycho.version>0.8.0</tycho.version>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>sonatype-public</id>
+      <url>http://repository.sonatype.org/content/groups/sonatype-public-grid</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
 
-        <target.platform>e35</target.platform>
+  <distributionManagement>
+    <repository>
+      <id>sonar-ide</id>
+      <name>Sonar IDEs repository</name>
+      <url>${sonar-ide.releases}</url>
+    </repository>
+    <snapshotRepository>
+      <id>sonar-ide</id>
+      <name>Sonar IDEs snapshot repository</name>
+      <url>${sonar-ide.snapshots}</url>
+      <uniqueVersion>false</uniqueVersion>
+    </snapshotRepository>
+  </distributionManagement>
 
-        <sonar-ide.version>0.1-SNAPSHOT</sonar-ide.version>
+  <profiles>
+    <profile>
+      <id>its</id>
+      <modules>
+        <module>../org.sonar.ide.eclipse.ui.tests</module>
+      </modules>
+    </profile>
+  </profiles>
 
-        <!-- disable accidental deployment -->
-        <sonar-ide.site>dav:http://localhost/eclipse</sonar-ide.site>
-        <sonar-ide.snapshots>http://localhost</sonar-ide.snapshots>
-        <sonar-ide.releases>http://localhost</sonar-ide.releases>
-    </properties>
+  <issueManagement>
+    <system>JIRA</system>
+    <url>http://jira.codehaus.org/browse/SONARIDE/component/14315</url>
+  </issueManagement>
 
-    <prerequisites>
-        <maven>3.0</maven>
-    </prerequisites>
+  <scm>
+    <connection>
+      scm:svn:http://svn.codehaus.org/sonar-ide/trunk/eclipse/org.sonar.ide.eclipse.parent
+    </connection>
+    <developerConnection>
+      scm:svn:https://svn.codehaus.org/sonar-ide/trunk/eclipse/org.sonar.ide.eclipse.parent
+    </developerConnection>
+  </scm>
 
-    <modules>
-        <module>../org.sonar.ide.eclipse.sonar_embedder</module>
-        <module>../org.sonar.ide.eclipse</module>
-        <module>../org.sonar.ide.eclipse.site</module>
+  <ciManagement>
+    <system>Bamboo</system>
+    <url>http://bamboo.ci.codehaus.org/browse/SONARIDE-ECLIPSE</url>
+  </ciManagement>
 
-        <module>../org.sonar.ide.eclipse.tests.common</module>
-
-        <module>../org.sonar.ide.eclipse.tests</module>
-
-        <module>../org.maven.ide.eclipse.sonar</module>
-
-        <!-- features -->
-        <module>../org.sonar.ide.eclipse.feature</module>
-        <module>../org.maven.ide.eclipse.sonar.feature</module>
-
-        <module>../target-platform</module>
-    </modules>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.codehaus.sonar-ide</groupId>
-                <artifactId>sonar-ide-commons</artifactId>
-                <version>${sonar-ide.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.sonar-ide</groupId>
-                <artifactId>sonar-ide-testing-harness</artifactId>
-                <version>${sonar-ide.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <build>
-        <extensions>
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-webdav</artifactId>
-                <version>1.0-beta-2</version>
-            </extension>
-        </extensions>
-
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <compilerVersion>${jdk.min.version}</compilerVersion>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-eclipse-plugin</artifactId>
-                <version>2.7</version>
-                <configuration>
-                    <downloadSources>true</downloadSources>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.tycho</groupId>
-                <artifactId>tycho-maven-plugin</artifactId>
-                <version>${tycho.version}</version>
-                <extensions>true</extensions>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.tycho</groupId>
-                <artifactId>target-platform-configuration</artifactId>
-                <version>${tycho.version}</version>
-                <configuration>
-                    <resolver>p2</resolver>
-                    <!-- TODO Godin: seems unusable for now (TYCHO-404)
-                    <pomDependencies>consider</pomDependencies>
-                    -->
-                    <!-- TODO Godin: target-platform
-                    <target>
-                      <artifact>
-                        <groupId>org.codehaus.sonar-ide.eclipse</groupId>
-                        <artifactId>target-platform</artifactId>
-                        <version>${project.version}</version>
-                        <classifier>${target.platform}</classifier>
-                      </artifact>
-                    </target>
-                    <ignoreTychoRepositories>true</ignoreTychoRepositories>
-                    -->
-                    <environments>
-                        <environment>
-                            <os>linux</os>
-                            <ws>gtk</ws>
-                            <arch>x86</arch>
-                        </environment>
-                        <environment>
-                            <os>linux</os>
-                            <ws>gtk</ws>
-                            <arch>x86_64</arch>
-                        </environment>
-                        <environment>
-                            <os>win32</os>
-                            <ws>win32</ws>
-                            <arch>x86</arch>
-                        </environment>
-                        <environment>
-                            <os>win32</os>
-                            <ws>win32</ws>
-                            <arch>x86_64</arch>
-                        </environment>
-                        <environment>
-                            <os>macosx</os>
-                            <ws>carbon</ws>
-                            <arch>x86</arch>
-                        </environment>
-                        <environment>
-                            <os>macosx</os>
-                            <ws>cocoa</ws>
-                            <arch>x86</arch>
-                        </environment>
-                    </environments>
-                </configuration>
-            </plugin>
-        </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.sonatype.tycho</groupId>
-                    <artifactId>maven-osgi-packaging-plugin</artifactId>
-                    <version>${tycho.version}</version>
-                    <configuration>
-                        <!-- workaround for TYCHO-349 or TYCHO-313 -->
-                        <strictVersions>false</strictVersions>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.sonatype.tycho</groupId>
-                    <artifactId>maven-osgi-compiler-plugin</artifactId>
-                    <version>${tycho.version}</version>
-                    <configuration>
-                        <source>${jdk.min.version}</source>
-                        <target>${jdk.min.version}</target>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.sonatype.tycho</groupId>
-                    <artifactId>maven-osgi-test-plugin</artifactId>
-                    <version>${tycho.version}</version>
-                    <configuration>
-                        <useUIHarness>false</useUIHarness>
-                        <includes>
-                            <include>**/*Test.java</include>
-                        </includes>
-                        <!-- kill test JVM it tests take more than 10 minutes (600 seconds) to finish -->
-                        <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>wagon-maven-plugin</artifactId>
-                    <version>1.0-beta-3</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
-
-    <repositories>
-        <repository>
-            <id>update35</id>
-            <url>http://download.eclipse.org/eclipse/updates/3.5</url>
-            <layout>p2</layout>
-        </repository>
-        <repository>
-            <id>ganymede</id>
-            <layout>p2</layout>
-            <url>http://download.eclipse.org/releases/ganymede</url>
-        </repository>
-        <repository>
-            <id>m2eclipse</id>
-            <layout>p2</layout>
-            <url>http://m2eclipse.sonatype.org/sites/m2e</url>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>sonatype-public</id>
-            <url>http://repository.sonatype.org/content/groups/sonatype-public-grid</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </pluginRepository>
-    </pluginRepositories>
-
-    <distributionManagement>
-        <repository>
-            <id>sonar-ide</id>
-            <name>Sonar IDEs repository</name>
-            <url>${sonar-ide.releases}</url>
-        </repository>
-        <snapshotRepository>
-            <id>sonar-ide</id>
-            <name>Sonar IDEs snapshot repository</name>
-            <url>${sonar-ide.snapshots}</url>
-            <uniqueVersion>false</uniqueVersion>
-        </snapshotRepository>
-    </distributionManagement>
-
-    <profiles>
-        <profile>
-            <id>its</id>
-            <modules>
-                <module>../org.sonar.ide.eclipse.ui.tests</module>
-            </modules>
-        </profile>
-    </profiles>
-
-    <issueManagement>
-        <system>JIRA</system>
-        <url>http://jira.codehaus.org/browse/SONARIDE/component/14315</url>
-    </issueManagement>
-
-    <scm>
-        <connection>
-            scm:svn:http://svn.codehaus.org/sonar-ide/trunk/eclipse/org.sonar.ide.eclipse.parent
-        </connection>
-        <developerConnection>
-            scm:svn:https://svn.codehaus.org/sonar-ide/trunk/eclipse/org.sonar.ide.eclipse.parent
-        </developerConnection>
-    </scm>
-
-    <ciManagement>
-        <system>Bamboo</system>
-        <url>http://bamboo.ci.codehaus.org/browse/SONARIDE-ECLIPSE</url>
-    </ciManagement>
-
-    <developers>
-        <developer>
-            <id>godin</id>
-            <name>Evgeny Mandrikov</name>
-            <timezone>+3</timezone>
-            <roles>
-                <role>Project Leader</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>jer</id>
-            <name>Jérémie Lagarde</name>
-            <timezone>+1</timezone>
-            <roles>
-                <role>Developer</role>
-            </roles>
-        </developer>
-    </developers>
+  <developers>
+    <developer>
+      <id>godin</id>
+      <name>Evgeny Mandrikov</name>
+      <timezone>+3</timezone>
+      <roles>
+        <role>Project Leader</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jer</id>
+      <name>Jérémie Lagarde</name>
+      <timezone>+1</timezone>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
 
 </project>
