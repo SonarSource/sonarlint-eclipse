@@ -60,6 +60,15 @@
            </separator>
         </menu>
         <action
+              class="org.sonar.ide.eclipse.actions.AutoConfigureProjectAction"
+              enablesFor="+"
+              id="org.sonar.ide.eclipse.autoConfigureProjectAction"
+              label="Auto configuration"
+              menubarPath="org.sonar.ide.eclipse.sonar/group1"
+              state="true"
+              style="push">
+        </action>
+        <action
               class="org.sonar.ide.eclipse.actions.RefreshViolationAction"
               enablesFor="+"
               id="org.sonar.ide.eclipse.refreshViolationAction"
@@ -107,6 +116,27 @@
             <instanceof value="org.sonar.ide.eclipse.console.SonarConsole"/>
          </enablement>
       </consolePageParticipant>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+     <actionSet
+           id="org.sonar.ide.eclipse.actionSet"
+           label="Sonar"
+           visible="true">
+        <menu
+              id="sonarMenu"
+              label="Sonar"
+              path="project/additions">
+        </menu>
+        <action
+              class="org.sonar.ide.eclipse.actions.AutoConfigureProjectAction"
+              icon="icons/sonar.gif"
+              id="org.sonar.ide.eclipse.actions.AutoConfigureProjectAction"
+              label="Find All Sonar Configuration"
+              menubarPath="project/additions"
+              tooltip="Find sonar configuration for all projects">
+        </action>
+     </actionSet>
    </extension>
 
   

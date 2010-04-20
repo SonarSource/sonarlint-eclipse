@@ -54,7 +54,7 @@ public class SonarServerManager {
   public List<Host> getServers() {
     return serverList;
   }
-  
+
   public boolean removeServer(String host) {
     Host server = findServer(host);
     if (server == null) {
@@ -71,7 +71,7 @@ public class SonarServerManager {
     return result;
   }
 
-  
+
   public Host createServer(String url)  throws Exception {
     if(StringUtils.isBlank(url))
       return null;
@@ -83,7 +83,7 @@ public class SonarServerManager {
     }
     return host;
   }
-  
+
   public Host findServer(String host) {
     Host server = null;
     for (Host element : serverList) {
@@ -99,13 +99,13 @@ public class SonarServerManager {
     String url = SonarPlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL);
     return findServer(url);
   }
-  
+
   public Sonar getSonar(String url) throws Exception {
     final Host server = createServer(url);
     // return new Sonar(new HttpClient4Connector(server));
     return new SonarClient(server.getHost(),server.getUsername(),server.getPassword());
   }
-  
+
   private void commit() throws Exception {
     File serverListFile = SonarPlugin.getDefault().getStateLocation().append(SERVER_CACHE_NAME).toFile();
     FileOutputStream fos = null;
@@ -114,7 +114,7 @@ public class SonarServerManager {
       fos = new FileOutputStream(serverListFile);
       writer = new PrintWriter(fos);
       for (Host server : serverList) {
-        writer.println(server.getHost());
+        writer.println(server.getHost() + "|" + server.getUsername() + "|" + server.getPassword());
       }
       writer.flush();
       fos.flush();
@@ -139,13 +139,17 @@ public class SonarServerManager {
     try {
       fis = new FileInputStream(serverListFile);
       reader = new BufferedReader(new InputStreamReader(fis));
-      String host = null;
+      String line = null;
       do {
-        host = reader.readLine();
-        if (host != null && host.trim().length() > 0) {
-          serverList.add(new Host(host));
+        line = reader.readLine();
+        if (line != null && line.trim().length() > 0) {
+          String[] infos = StringUtils.split(line, "|");
+          if (infos.length == 1)
+            serverList.add(new Host(infos[0]));
+          if (infos.length == 3)
+            serverList.add(new Host(infos[0], infos[1], infos[2]));
         }
-      } while (host != null);
+      } while (line != null);
     } finally {
       if (fis != null) {
         fis.close();
