@@ -49,8 +49,6 @@ public class SonarProjectPropertyPage extends PropertyPage {
     if (projectProperties == null || block ==null)
       return;
     projectProperties.setUrl(block.getUrl());
-    projectProperties.setUsername(block.getUsername());
-    projectProperties.setPassword(block.getPassword());
     projectProperties.setGroupId(block.getGroupId());
     projectProperties.setArtifactId(block.getArtifactId());
     try {

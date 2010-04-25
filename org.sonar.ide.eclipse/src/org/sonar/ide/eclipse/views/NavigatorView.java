@@ -1,5 +1,10 @@
 package org.sonar.ide.eclipse.views;
 
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.List;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -9,14 +14,35 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IPartListener2;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IStorageEditorInput;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.part.DrillDownAdapter;
 import org.eclipse.ui.part.ViewPart;
@@ -27,16 +53,12 @@ import org.sonar.ide.eclipse.views.model.TreeFile;
 import org.sonar.ide.eclipse.views.model.TreeObject;
 import org.sonar.ide.eclipse.views.model.TreeParent;
 import org.sonar.ide.eclipse.views.model.TreeServer;
+import org.sonar.ide.eclipse.wizards.EditServerLocationWizard;
 import org.sonar.ide.eclipse.wizards.NewServerLocationWizard;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.Violation;
 import org.sonar.wsclient.services.ViolationQuery;
-
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @author Jérémie Lagarde
@@ -49,6 +71,7 @@ public class NavigatorView extends ViewPart {
   private DrillDownAdapter drillDownAdapter;
   private Action deleteServerAction;
   private Action addServerAction;
+  private Action editServerAction;
   private Action doubleClickAction;
   private Action openSonarWebAction;
   private Action linkToEditorAction;
@@ -171,6 +194,19 @@ public class NavigatorView extends ViewPart {
       return false;
     }
   }
+  
+  private boolean shouldAddEditAction() {
+    ISelection selection = viewer.getSelection();
+    if (selection == null) {
+      return false;
+    }
+    Object obj = ((IStructuredSelection) selection).getFirstElement();
+    if (obj instanceof TreeServer) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   private boolean shouldAddOpenSonarWebAction() {
     ISelection selection = viewer.getSelection();
@@ -188,6 +224,9 @@ public class NavigatorView extends ViewPart {
   private void fillContextMenu(IMenuManager manager) {
     if (shouldAddDeleteAction()) {
       manager.add(deleteServerAction);
+    }
+    if (shouldAddEditAction()) {
+      manager.add(editServerAction);
     }
     manager.add(refreshAction);
     if (shouldAddOpenSonarWebAction()) {
@@ -238,11 +277,33 @@ public class NavigatorView extends ViewPart {
         dialog.open();
       }
     };
+    
     addServerAction.setText(Messages.getString("action.add.server")); //$NON-NLS-1$
     addServerAction.setToolTipText(Messages.getString("action.add.server.desc")); //$NON-NLS-1$
     addServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
         getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
 
+    editServerAction = new Action() {
+      @Override
+      public void run() {
+        ISelection selection = viewer.getSelection();
+        Object obj = ((IStructuredSelection) selection).getFirstElement();
+        if (obj instanceof TreeServer) {
+          String server = ((TreeServer) obj).getName();
+          EditServerLocationWizard wiz = new EditServerLocationWizard(server);
+          wiz.init(SonarPlugin.getDefault().getWorkbench(), null);
+          WizardDialog dialog = new WizardDialog(NavigatorView.this.getSite().getShell(), wiz);
+          dialog.create();
+          dialog.open();
+        }
+      }
+    };
+    
+    editServerAction.setText(Messages.getString("action.edit.server")); //$NON-NLS-1$
+    editServerAction.setToolTipText(Messages.getString("action.edit.server.desc")); //$NON-NLS-1$
+    editServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
+        getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
+    
     doubleClickAction = new Action() {
       @Override
       public void run() {

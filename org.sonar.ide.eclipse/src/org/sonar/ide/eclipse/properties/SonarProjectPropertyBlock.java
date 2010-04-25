@@ -16,8 +16,6 @@ import org.sonar.ide.eclipse.Messages;
 public class SonarProjectPropertyBlock {
 
   private Text serverUrlText;
-  private Text serverUsernameText;
-  private Text serverPasswordText;
   private Text projectGroupIdText;
   private Text projectArtifactIdText;
   
@@ -43,21 +41,6 @@ public class SonarProjectPropertyBlock {
     serverUrlText = new Text(container, SWT.BORDER | SWT.SINGLE);
     serverUrlText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     serverUrlText.setText(projectProperties.getUrl());
-    
-    // Sonar Server Username
-    Label labelUsername = new Label(container, SWT.NULL);
-    labelUsername.setText(Messages.getString("pref.project.label.username")); //$NON-NLS-1$
-    serverUsernameText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    serverUsernameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    serverUsernameText.setText(projectProperties.getUsername());
-    
-    // Sonar Server password
-    Label labelPassword = new Label(container, SWT.NULL);
-    labelPassword.setText(Messages.getString("pref.project.label.password")); //$NON-NLS-1$
-    serverPasswordText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    serverPasswordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    serverPasswordText.setText(projectProperties.getPassword());
-
   }
 
   private void addSeparator(Composite parent) {
@@ -89,14 +72,6 @@ public class SonarProjectPropertyBlock {
 
   protected String getUrl() {
     return serverUrlText.getText();
-  }
-
-  protected String getUsername() {
-    return serverUsernameText.getText();
-  }
-
-  protected String getPassword() {
-    return serverPasswordText.getText();
   }
 
   protected String getGroupId() {

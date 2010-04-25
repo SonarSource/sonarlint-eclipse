@@ -22,7 +22,7 @@ import org.sonar.wsclient.Sonar;
  */
 public class SonarServerManager {
 
-  private static final String SERVER_CACHE_NAME = ".serverlist";        //$NON-NLS-1$
+  private static final String SERVER_CACHE_NAME = ".serverlist"; //$NON-NLS-1$
 
   private final ArrayList<Host> serverList = new ArrayList<Host>();
 
@@ -34,8 +34,8 @@ public class SonarServerManager {
     }
   }
 
-  public void addServer(String location) throws Exception {
-    addServer(new Host(location));
+  public void addServer(String location, String username, String password) throws Exception {
+    addServer(new Host(location,username,password));
   }
 
   public void addServer(Host server) throws Exception {
@@ -102,10 +102,14 @@ public class SonarServerManager {
 
   public Sonar getSonar(String url) throws Exception {
     final Host server = createServer(url);
-    // return new Sonar(new HttpClient4Connector(server));
     return new SonarClient(server.getHost(),server.getUsername(),server.getPassword());
   }
 
+  public boolean testSonar(String url,String user,String password) throws Exception {
+    SonarClient sonar = new SonarClient(url,user,password);
+    return sonar.isAvailable();
+  }
+  
   private void commit() throws Exception {
     File serverListFile = SonarPlugin.getDefault().getStateLocation().append(SERVER_CACHE_NAME).toFile();
     FileOutputStream fos = null;
@@ -173,7 +177,7 @@ public class SonarServerManager {
     return serverSetListeners.add(listener);
   }
 
-  public boolean removeRepositorySetListener(IServerSetListener listener) {
+  public boolean removeServerSetListener(IServerSetListener listener) {
     return serverSetListeners.remove(listener);
   }
 

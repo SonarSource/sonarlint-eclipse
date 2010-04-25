@@ -1,8 +1,10 @@
 package org.sonar.ide.eclipse.preferences;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.window.Window;
@@ -23,8 +25,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.console.SonarConsole;
 import org.sonar.ide.eclipse.console.SonarConsolePreferenceBlock;
+import org.sonar.ide.eclipse.wizards.EditServerLocationWizard;
 import org.sonar.ide.eclipse.wizards.NewServerLocationWizard;
 import org.sonar.wsclient.Host;
 
@@ -37,6 +39,8 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
 
   private Combo                       serversCombo;
   private Button                      createServerButton;
+  private Button                      editServerButton;
+  private Button                      deleteServerButton;
   private SonarConsolePreferenceBlock consoleBlock;
 
   public SonarPreferencePage() {
@@ -73,7 +77,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     GridData data = new GridData(GridData.FILL_HORIZONTAL);
     group.setLayoutData(data);
     group.setText(Messages.getString("pref.global.label.host")); //$NON-NLS-1$
-    GridLayout gridLayout = new GridLayout(2, false);
+    GridLayout gridLayout = new GridLayout(4, false);
     group.setLayout(gridLayout);
 
     // Create select list of servers.
@@ -106,7 +110,51 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
         WizardDialog dialog = new WizardDialog(createServerButton.getShell(), wiz);
         dialog.create();
         if (dialog.open() == Window.OK) {
-          System.out.println("test");
+          serversCombo.removeAll();
+          List<Host> servers = SonarPlugin.getServerManager().getServers();
+          for (Host server : servers) {
+            serversCombo.add(server.getHost());
+          }
+          serversCombo.select(servers.size() - 1);
+        }
+      }
+    });
+    
+    // Edit server button.
+    editServerButton = new Button(group, SWT.PUSH);
+    editServerButton.setText(Messages.getString("action.edit.server")); //$NON-NLS-1$
+    editServerButton.setToolTipText(Messages.getString("action.edit.server.desc")); //$NON-NLS-1$
+    editServerButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
+    editServerButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
+    editServerButton.addSelectionListener(new SelectionAdapter() {
+      public void widgetSelected(SelectionEvent e) {
+        EditServerLocationWizard wiz = new EditServerLocationWizard(serversCombo.getText());
+        wiz.init(SonarPlugin.getDefault().getWorkbench(), null);
+        WizardDialog dialog = new WizardDialog(editServerButton.getShell(), wiz);
+        dialog.create();
+        if (dialog.open() == Window.OK) {
+          serversCombo.removeAll();
+          List<Host> servers = SonarPlugin.getServerManager().getServers();
+          for (Host server : servers) {
+            serversCombo.add(server.getHost());
+          }
+          serversCombo.select(servers.size() - 1);
+        }
+      }
+    });
+    
+    // Delete server button.
+    deleteServerButton = new Button(group, SWT.PUSH);
+    deleteServerButton.setText(Messages.getString("action.delete.server")); //$NON-NLS-1$
+    deleteServerButton.setToolTipText(Messages.getString("action.delete.server.desc")); //$NON-NLS-1$
+    deleteServerButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE).createImage());
+    deleteServerButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
+    deleteServerButton.addSelectionListener(new SelectionAdapter() {
+      public void widgetSelected(SelectionEvent e) {      
+        if (MessageDialog.openConfirm(SonarPreferencePage.this.getShell(), Messages.getString("remove.server.dialog.caption"), //$NON-NLS-1$
+            MessageFormat.format(Messages.getString("remove.server.dialog.msg"), //$NON-NLS-1$
+                new Object[] { serversCombo.getText() }))) {
+          SonarPlugin.getServerManager().removeServer(serversCombo.getText());
           serversCombo.removeAll();
           List<Host> servers = SonarPlugin.getServerManager().getServers();
           for (Host server : servers) {
