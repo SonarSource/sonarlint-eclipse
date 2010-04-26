@@ -48,13 +48,13 @@ import org.eclipse.ui.part.DrillDownAdapter;
 import org.eclipse.ui.part.ViewPart;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.SonarServerManager.IServerSetListener;
 import org.sonar.ide.eclipse.views.model.TreeFile;
 import org.sonar.ide.eclipse.views.model.TreeObject;
 import org.sonar.ide.eclipse.views.model.TreeParent;
 import org.sonar.ide.eclipse.views.model.TreeServer;
 import org.sonar.ide.eclipse.wizards.EditServerLocationWizard;
 import org.sonar.ide.eclipse.wizards.NewServerLocationWizard;
+import org.sonar.ide.shared.DefaultServerManager.IServerSetListener;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.Violation;
@@ -65,61 +65,59 @@ import org.sonar.wsclient.services.ViolationQuery;
  */
 public class NavigatorView extends ViewPart {
 
-  public static final String ID = "org.sonar.ide.eclipse.views.NavigatorView";
+  public static final String   ID            = "org.sonar.ide.eclipse.views.NavigatorView";
 
-  private TreeViewer viewer;
-  private DrillDownAdapter drillDownAdapter;
-  private Action deleteServerAction;
-  private Action addServerAction;
-  private Action editServerAction;
-  private Action doubleClickAction;
-  private Action openSonarWebAction;
-  private Action linkToEditorAction;
-  private Action refreshAction;
-  private boolean linking;
-
+  private TreeViewer           viewer;
+  private DrillDownAdapter     drillDownAdapter;
+  private Action               deleteServerAction;
+  private Action               addServerAction;
+  private Action               editServerAction;
+  private Action               doubleClickAction;
+  private Action               openSonarWebAction;
+  private Action               linkToEditorAction;
+  private Action               refreshAction;
+  private boolean              linking;
 
   private final IPartListener2 partListener2 = new IPartListener2() {
-    public void partActivated(IWorkbenchPartReference ref) {
-      if (ref.getPart(true) instanceof IEditorPart) {
-        editorActivated(getViewSite().getPage().getActiveEditor());
-      }
-    }
+                                               public void partActivated(IWorkbenchPartReference ref) {
+                                                 if (ref.getPart(true) instanceof IEditorPart) {
+                                                   editorActivated(getViewSite().getPage().getActiveEditor());
+                                                 }
+                                               }
 
-    public void partBroughtToTop(IWorkbenchPartReference ref) {
-      if (ref.getPart(true) == NavigatorView.this)
-        editorActivated(getViewSite().getPage().getActiveEditor());
-    }
+                                               public void partBroughtToTop(IWorkbenchPartReference ref) {
+                                                 if (ref.getPart(true) == NavigatorView.this)
+                                                   editorActivated(getViewSite().getPage().getActiveEditor());
+                                               }
 
-    public void partClosed(IWorkbenchPartReference ref) {
-    }
+                                               public void partClosed(IWorkbenchPartReference ref) {
+                                               }
 
-    public void partDeactivated(IWorkbenchPartReference ref) {
-    }
+                                               public void partDeactivated(IWorkbenchPartReference ref) {
+                                               }
 
-    public void partOpened(IWorkbenchPartReference ref) {
-      if (ref.getPart(true) == NavigatorView.this)
-        editorActivated(getViewSite().getPage().getActiveEditor());
-    }
+                                               public void partOpened(IWorkbenchPartReference ref) {
+                                                 if (ref.getPart(true) == NavigatorView.this)
+                                                   editorActivated(getViewSite().getPage().getActiveEditor());
+                                               }
 
-    public void partHidden(IWorkbenchPartReference ref) {
-    }
+                                               public void partHidden(IWorkbenchPartReference ref) {
+                                               }
 
-    public void partVisible(IWorkbenchPartReference ref) {
-      if (ref.getPart(true) == NavigatorView.this)
-        editorActivated(getViewSite().getPage().getActiveEditor());
-    }
+                                               public void partVisible(IWorkbenchPartReference ref) {
+                                                 if (ref.getPart(true) == NavigatorView.this)
+                                                   editorActivated(getViewSite().getPage().getActiveEditor());
+                                               }
 
-    public void partInputChanged(IWorkbenchPartReference ref) {
-    }
-  };
+                                               public void partInputChanged(IWorkbenchPartReference ref) {
+                                               }
+                                             };
 
   class NameSorter extends ViewerSorter {
   }
 
   public NavigatorView() {
   }
-
 
   @Override
   public void createPartControl(Composite parent) {
@@ -131,18 +129,17 @@ public class NavigatorView extends ViewPart {
     viewer.setInput(viewer);
 
     // Create the help context id for the viewer's control
-    // PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "org.sonar.ide.eclipse.viewer");
+    // PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(),
+    // "org.sonar.ide.eclipse.viewer");
     makeActions();
     hookContextMenu();
     hookDoubleClickAction();
     contributeToActionBars();
 
     SonarPlugin.getServerManager().addServerSetListener(new IServerSetListener() {
-
       public void serverSetChanged(int type, List<Host> serverList) {
         viewer.setContentProvider(new NavigatorContentProvider());
       }
-
     });
     getSite().setSelectionProvider(viewer);
     getSite().getPage().addPartListener(partListener2);
@@ -194,7 +191,7 @@ public class NavigatorView extends ViewPart {
       return false;
     }
   }
-  
+
   private boolean shouldAddEditAction() {
     ISelection selection = viewer.getSelection();
     if (selection == null) {
@@ -252,10 +249,9 @@ public class NavigatorView extends ViewPart {
         Object obj = ((IStructuredSelection) selection).getFirstElement();
         if (obj instanceof TreeServer) {
           String server = ((TreeServer) obj).getName();
-          if (MessageDialog.openConfirm(NavigatorView.this.getSite().getShell(),
-              Messages.getString("remove.server.dialog.caption"), //$NON-NLS-1$
+          if (MessageDialog.openConfirm(NavigatorView.this.getSite().getShell(), Messages.getString("remove.server.dialog.caption"), //$NON-NLS-1$
               MessageFormat.format(Messages.getString("remove.server.dialog.msg"), //$NON-NLS-1$
-                  new Object[]{server}))) {
+                  new Object[] { server }))) {
             SonarPlugin.getServerManager().removeServer(server);
           }
         }
@@ -263,25 +259,22 @@ public class NavigatorView extends ViewPart {
     };
     deleteServerAction.setText(Messages.getString("action.delete.server")); //$NON-NLS-1$
     deleteServerAction.setToolTipText(Messages.getString("action.delete.server.desc")); //$NON-NLS-1$
-    deleteServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-        getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
+    deleteServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
 
     addServerAction = new Action() {
       @Override
       public void run() {
         NewServerLocationWizard wiz = new NewServerLocationWizard();
         wiz.init(SonarPlugin.getDefault().getWorkbench(), null);
-        WizardDialog dialog =
-            new WizardDialog(NavigatorView.this.getSite().getShell(), wiz);
+        WizardDialog dialog = new WizardDialog(NavigatorView.this.getSite().getShell(), wiz);
         dialog.create();
         dialog.open();
       }
     };
-    
+
     addServerAction.setText(Messages.getString("action.add.server")); //$NON-NLS-1$
     addServerAction.setToolTipText(Messages.getString("action.add.server.desc")); //$NON-NLS-1$
-    addServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-        getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
+    addServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
 
     editServerAction = new Action() {
       @Override
@@ -298,12 +291,11 @@ public class NavigatorView extends ViewPart {
         }
       }
     };
-    
+
     editServerAction.setText(Messages.getString("action.edit.server")); //$NON-NLS-1$
     editServerAction.setToolTipText(Messages.getString("action.edit.server.desc")); //$NON-NLS-1$
-    editServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-        getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
-    
+    editServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
+
     doubleClickAction = new Action() {
       @Override
       public void run() {
@@ -329,8 +321,7 @@ public class NavigatorView extends ViewPart {
     };
     refreshAction.setText(Messages.getString("action.refresh.server")); //$NON-NLS-1$
     refreshAction.setToolTipText(Messages.getString("action.refresh.server.desc")); //$NON-NLS-1$
-    refreshAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-        getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
+    refreshAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
 
     openSonarWebAction = new Action() {
       @Override
@@ -346,9 +337,7 @@ public class NavigatorView extends ViewPart {
     };
     openSonarWebAction.setText(Messages.getString("action.open")); //$NON-NLS-1$
     openSonarWebAction.setToolTipText(Messages.getString("action.open.desc")); //$NON-NLS-1$
-    openSonarWebAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-        getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
-
+    openSonarWebAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
 
     linkToEditorAction = new Action(Messages.getString("action.link"), IAction.AS_CHECK_BOX) {
       @Override
@@ -385,11 +374,9 @@ public class NavigatorView extends ViewPart {
     if (selectedNode == null) {
       return;
     }
-    IWorkbenchBrowserSupport browserSupport =
-        SonarPlugin.getDefault().getWorkbench().getBrowserSupport();
+    IWorkbenchBrowserSupport browserSupport = SonarPlugin.getDefault().getWorkbench().getBrowserSupport();
     try {
-      URL consoleURL = new URL(
-          extractSonarUrl(selectedNode));
+      URL consoleURL = new URL(extractSonarUrl(selectedNode));
       if (browserSupport.isInternalWebBrowserAvailable()) {
         browserSupport.createBrowser("id" + selectedNode.getServer().hashCode()).openURL(consoleURL);
       } else {
@@ -408,7 +395,6 @@ public class NavigatorView extends ViewPart {
 
   }
 
-
   void editorActivated(IEditorPart editor) {
     if (editor == null)
       return;
@@ -424,12 +410,13 @@ public class NavigatorView extends ViewPart {
       viewer.getTree().showSelection();
   }
 
-
   private Object getInputFromEditor(IEditorInput editorInput) {
     Object input = JavaUI.getEditorInputJavaElement(editorInput);
     if (input instanceof ICompilationUnit) {
       ICompilationUnit cu = (ICompilationUnit) input;
-      if (!cu.getJavaProject().isOnClasspath(cu)) { // test needed for Java files in non-source folders (bug 207839)
+      if (!cu.getJavaProject().isOnClasspath(cu)) { // test needed for Java
+        // files in non-source
+        // folders (bug 207839)
         input = cu.getResource();
       }
     }
@@ -452,7 +439,8 @@ public class NavigatorView extends ViewPart {
       return false;
 
     // Object element = selection.getFirstElement();
-    // IEditorInput selectionAsInput= EditorUtility.getEditorInput(selection.getFirstElement());
+    // IEditorInput selectionAsInput=
+    // EditorUtility.getEditorInput(selection.getFirstElement());
     // return input.equals(selectionAsInput);
     return false;
   }
@@ -479,14 +467,14 @@ public class NavigatorView extends ViewPart {
         viewer.reveal(element);
       } else {
         viewer.setSelection(newSelection, true);
-//				while (element != null && viewer.getSelection().isEmpty()) {
-//					// Try to select parent in case element is filtered
-//					element= getParent(element);
-//					if (element != null) {
-//						newSelection= new StructuredSelection(element);
-//						viewer.setSelection(newSelection, true);
-//					}
-//				}
+        // while (element != null && viewer.getSelection().isEmpty()) {
+        // // Try to select parent in case element is filtered
+        // element= getParent(element);
+        // if (element != null) {
+        // newSelection= new StructuredSelection(element);
+        // viewer.setSelection(newSelection, true);
+        // }
+        // }
       }
       IResource file = null;
       if (input instanceof IFile) {
@@ -509,14 +497,13 @@ public class NavigatorView extends ViewPart {
             }
           }
         } catch (CoreException e) {
-          // You need to handle the case where the marker no longer exists      }
+          // You need to handle the case where the marker no longer exists }
         }
       }
       return true;
     }
     return false;
   }
-
 
   private String extractSonarUrl(TreeObject treeObject) {
     return treeObject.getRemoteURL();
