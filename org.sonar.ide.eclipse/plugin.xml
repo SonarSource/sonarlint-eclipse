@@ -90,6 +90,7 @@
   </extension>
   <extension
         id="sonarMarker"
+        name="Sonar"
         point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.problemmarker">
@@ -138,6 +139,5 @@
         </action>
      </actionSet>
    </extension>
-
   
 </plugin>
