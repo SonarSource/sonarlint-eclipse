@@ -94,6 +94,7 @@ public class AutoConfigureProjectJob extends Job {
         properties.setUrl(serverUtl);
         properties.setArtifactId(project.getElementName());
         properties.setGroupId(StringUtils.substringBefore(resource.getKey(), ":"));
+        properties.save();
       }
     }
   }

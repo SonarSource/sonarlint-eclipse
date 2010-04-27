@@ -13,7 +13,7 @@ import org.sonar.ide.eclipse.SonarPlugin;
 /**
  * Property page for projects to configure sonar server connection. It store in
  * <project>/.settings/org.sonar.ide.eclipse.prefs following properties:
- *   - url, username, password
+ *   - url,
  *   - groupId, artifactId
  * 
  * @author Jérémie Lagarde
@@ -52,7 +52,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
     projectProperties.setGroupId(block.getGroupId());
     projectProperties.setArtifactId(block.getArtifactId());
     try {
-      projectProperties.flush();
+      projectProperties.save();
     } catch (SonarIdeException e) {
       SonarPlugin.getDefault().writeLog(IStatus.ERROR, e.getMessage(), e);
     }

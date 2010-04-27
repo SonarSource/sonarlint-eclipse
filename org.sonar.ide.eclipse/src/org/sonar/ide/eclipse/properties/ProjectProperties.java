@@ -1,5 +1,6 @@
 package org.sonar.ide.eclipse.properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
@@ -9,34 +10,17 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.sonar.ide.api.SonarIdeException;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.preferences.PreferenceConstants;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.sonar.ide.shared.AbstractProjectProperties;
 
 /**
  * @author Jérémie Lagarde
  */
-public class ProjectProperties {
+public class ProjectProperties extends AbstractProjectProperties<IProject>{
 
-  private static final String P_SONAR_SERVER_URL = "sonarServerUrl";
-  private static final String P_SONAR_SERVER_USERNAME = "sonarServerUsername";
-  private static final String P_SONAR_SERVER_PASSWORD = "sonarServerPassword";
-  private static final String P_PROJECT_GROUPID = "projectGroupId";
-  private static final String P_PROJECT_ARTIFACTID = "projectArtifactId";
-
-  private static Map<IProject, ProjectProperties> projectPropertiesMap = new HashMap<IProject, ProjectProperties>();
-
-  private IProject project = null;
-  private IEclipsePreferences preferences = null;
+  private IEclipsePreferences preferences;
 
   protected ProjectProperties(IProject project) {
-    this.project = project;
-    initPreferencesStore();
-  }
-
-  private void initPreferencesStore() {
-    IScopeContext projectScope = new ProjectScope(project);
-    preferences = projectScope.getNode(SonarPlugin.PLUGIN_ID);
+    super(project);
   }
 
   public static ProjectProperties getInstance(IResource resource) {
@@ -47,61 +31,48 @@ public class ProjectProperties {
     if (project == null || !project.isAccessible()) {
       return null;
     }
-    ProjectProperties projectProperties = projectPropertiesMap.get(project);
+    ProjectProperties projectProperties = (ProjectProperties)find(project.getName());
     if (projectProperties != null) {
       return projectProperties;
     }
     projectProperties = new ProjectProperties(project);
-    projectPropertiesMap.put(project, projectProperties);
     return projectProperties;
   }
 
-  public String getUrl() {
-    return preferences.get(P_SONAR_SERVER_URL, SonarPlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL));
+  public void load() {
+    IScopeContext projectScope = new ProjectScope(getProject());
+    preferences = projectScope.getNode(SonarPlugin.PLUGIN_ID);
   }
 
-  public void setUrl(String url) {
-    preferences.put(P_SONAR_SERVER_URL, url);
-  }
-
-  public String getUsername() {
-    return preferences.get(P_SONAR_SERVER_USERNAME, "");
-  }
-
-  public void setUsername(String username) {
-    preferences.put(P_SONAR_SERVER_USERNAME, username);
-  }
-
-  public String getPassword() {
-    return preferences.get(P_SONAR_SERVER_PASSWORD, "");
-  }
-
-  public void setPassword(String password) {
-    preferences.put(P_SONAR_SERVER_PASSWORD, password);
-  }
-
-  public String getGroupId() {
-    return preferences.get(P_PROJECT_GROUPID, "");
-  }
-
-  public void setGroupId(String groupId) {
-    preferences.put(P_PROJECT_GROUPID, groupId);
-  }
-
-  public String getArtifactId() {
-    return preferences.get(P_PROJECT_ARTIFACTID, project.getName());
-  }
-
-  public void setArtifactId(String artifactId) {
-    preferences.put(P_PROJECT_ARTIFACTID, artifactId);
-  }
-
-  public void flush() throws SonarIdeException {
+  public void save() {
     try {
       preferences.flush();
     } catch (BackingStoreException e) {
       throw new SonarIdeException("preferences.flush()",e);
     }
+  }
+
+  @Override
+  public String getUrl() {
+    String url = super.getUrl();
+    if (StringUtils.isBlank(url))
+      url = SonarPlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL);
+    return url;
+  }
+  
+  @Override
+  protected String getProjectName() {
+    return getProject().getName();
+  }
+
+  @Override
+  protected String getProperty(String type, String defaultValue) {
+    return preferences.get(type, defaultValue);
+  }
+
+  @Override
+  protected void setProperty(String type, String value) {
+    preferences.put(type,value);
   }
 
 }
