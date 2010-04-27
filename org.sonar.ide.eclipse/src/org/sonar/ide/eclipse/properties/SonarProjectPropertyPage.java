@@ -33,7 +33,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
     ProjectProperties projectProperties = ProjectProperties.getInstance(getProject());
     if (projectProperties == null)
       return new Composite(parent, SWT.NULL);
-    block = new SonarProjectPropertyBlock();
+    block = new SonarProjectPropertyBlock(getProject());
     return block.createContents(parent, projectProperties);
   }
 

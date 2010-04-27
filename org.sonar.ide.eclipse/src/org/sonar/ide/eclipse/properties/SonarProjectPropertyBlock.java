@@ -1,31 +1,57 @@
 package org.sonar.ide.eclipse.properties;
 
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonar.ide.eclipse.Messages;
+import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.jobs.AutoConfigureProjectJob;
+import org.sonar.wsclient.Host;
 
 /**
  * @author Jérémie Lagarde
- *
+ * 
  */
 public class SonarProjectPropertyBlock {
 
-  private Text serverUrlText;
-  private Text projectGroupIdText;
-  private Text projectArtifactIdText;
-  
+  private IProject project;
+  private Combo    serversCombo;
+  private Button   serverConfigButton;
+
+  private Text     projectGroupIdText;
+  private Text     projectArtifactIdText;
+  private Button   autoConfigButton;
+
+  public SonarProjectPropertyBlock(IProject project) {
+    this.project = project;
+  }
+
   public Control createContents(Composite parent, ProjectProperties projectProperties) {
     Composite container = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout();
     container.setLayout(layout);
     layout.numColumns = 2;
     layout.verticalSpacing = 9;
-    
+
     addServerData(container, projectProperties);
     addSeparator(container);
     addProjectData(container, projectProperties);
@@ -33,14 +59,53 @@ public class SonarProjectPropertyBlock {
     return container;
   }
 
+  private void addServerData(Composite container, ProjectProperties projectProperties) {
+    // Create group
+    Group group = new Group(container, SWT.NONE);
+    GridData data = new GridData(GridData.FILL_HORIZONTAL);
+    data.horizontalSpan = 2;
+    data.grabExcessHorizontalSpace = true;
+    group.setLayoutData(data);
+    group.setText(Messages.getString("pref.project.label.host")); //$NON-NLS-1$
+    GridLayout gridLayout = new GridLayout(3, false);
+    group.setLayout(gridLayout);
+    
 
-  private void addServerData(Composite container, ProjectProperties projectProperties) {   
-    // Sonar Server Url
-    Label labelUrl = new Label(container, SWT.NULL);
-    labelUrl.setText(Messages.getString("pref.project.label.host")); //$NON-NLS-1$
-    serverUrlText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    serverUrlText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    serverUrlText.setText(projectProperties.getUrl());
+    // Create select list of servers.
+    serversCombo = new Combo(group, SWT.NONE);
+    List<Host> servers = SonarPlugin.getServerManager().getServers();
+    String defaultServer = projectProperties.getUrl();
+    int index = -1;
+    for (int i = 0; i < servers.size(); i++) {
+      Host server = servers.get(i);
+      if (StringUtils.equals(defaultServer, server.getHost()))
+        index = i;
+      serversCombo.add(server.getHost());
+    }
+    if (index == -1) {
+      serversCombo.add(defaultServer);
+      index = servers.size();
+    }
+    serversCombo.select(index);
+
+    // Create open preference button.
+    serverConfigButton = new Button(group, SWT.PUSH);
+    serverConfigButton.setText(Messages.getString("action.open.sonar.preference")); //$NON-NLS-1$
+    serverConfigButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
+    serverConfigButton.addSelectionListener(new SelectionAdapter() {
+      public void widgetSelected(SelectionEvent e) {
+        PreferenceDialog preference = PreferencesUtil.createPreferenceDialogOn(PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+            "org.sonar.ide.eclipse.preferences.SonarPreferencePage", null, null);
+        if (preference != null && (preference.open() == Window.OK)) {
+          serversCombo.removeAll();
+          List<Host> servers = SonarPlugin.getServerManager().getServers();
+          for (Host server : servers) {
+            serversCombo.add(server.getHost());
+          }
+          serversCombo.select(servers.size() - 1);
+        }
+      }
+    });
   }
 
   private void addSeparator(Composite parent) {
@@ -51,8 +116,6 @@ public class SonarProjectPropertyBlock {
     gridData.grabExcessHorizontalSpace = true;
     separator.setLayoutData(gridData);
   }
-  
-
 
   private void addProjectData(Composite container, ProjectProperties projectProperties) {
     // Project groupId
@@ -61,17 +124,43 @@ public class SonarProjectPropertyBlock {
     projectGroupIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
     projectGroupIdText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     projectGroupIdText.setText(projectProperties.getGroupId());
-    
+
     // Project artifactId
     Label labelArtifactId = new Label(container, SWT.NULL);
     labelArtifactId.setText(Messages.getString("pref.project.label.artifactid")); //$NON-NLS-1$
     projectArtifactIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
     projectArtifactIdText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     projectArtifactIdText.setText(projectProperties.getArtifactId());
+    
+    // Create auto config button.
+    autoConfigButton = new Button(container, SWT.PUSH);
+    autoConfigButton.setText(Messages.getString("action.autoconfig")); //$NON-NLS-1$
+    autoConfigButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
+    autoConfigButton.addSelectionListener(new SelectionAdapter() {
+      public void widgetSelected(SelectionEvent e) {
+        final Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(new Runnable() {
+          public void run() {
+            Job job = new AutoConfigureProjectJob(project);
+            job.schedule();
+            try {
+              job.join();
+              ProjectProperties projectProperties = ProjectProperties.getInstance(project);
+              if (projectProperties != null) {
+                serverConfigButton.setText(projectProperties.getUrl());
+                projectArtifactIdText.setText(projectProperties.getArtifactId());
+                projectGroupIdText.setText(projectProperties.getGroupId());
+              }
+            } catch (InterruptedException e) {
+            }
+          }
+        });
+      }
+    });
   }
 
   protected String getUrl() {
-    return serverUrlText.getText();
+    return serversCombo.getText();
   }
 
   protected String getGroupId() {
@@ -81,5 +170,5 @@ public class SonarProjectPropertyBlock {
   protected String getArtifactId() {
     return projectArtifactIdText.getText();
   }
-  
+
 }
