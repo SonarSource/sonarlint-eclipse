@@ -55,7 +55,7 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
     properties.setUrl(url);
     properties.setGroupId("org.sonar-ide.tests.SimpleProject");
     properties.setArtifactId("SimpleProject");
-    properties.flush();
+    properties.save();
     LOG.debug("Project configured");
   }
 
