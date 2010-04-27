@@ -34,7 +34,7 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
     projectProperties.setGroupId(groupId);
     projectProperties.setArtifactId(artifactId);
     try {
-      projectProperties.flush();
+      projectProperties.save();
     } catch (SonarIdeException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
