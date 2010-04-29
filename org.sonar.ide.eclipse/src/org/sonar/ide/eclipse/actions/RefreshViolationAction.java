@@ -1,6 +1,10 @@
 package org.sonar.ide.eclipse.actions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
@@ -32,7 +36,13 @@ public class RefreshViolationAction implements IObjectActionDelegate {
    * @see IActionDelegate#run(IAction)
    */
   public void run(IAction action) {
-    Job job = new RefreshViolationJob((IProject) selection.getFirstElement());
+    List<IProject> projects = new ArrayList<IProject>();
+    for (Object resource : selection.toList()) {
+      IProject project = ((IResource)resource).getProject();
+      if(project.isOpen() && !projects.contains(project))
+        projects.add(project);
+    }
+    Job job = new RefreshViolationJob(projects.toArray(new IProject[projects.size()]));
     job.schedule();
   }
 
