@@ -18,10 +18,8 @@
   <name>Sonar Integration for Eclipse Parent</name>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <enforcer.skip>true</enforcer.skip>
-
-    <jdk.min.version>1.5</jdk.min.version>
+    <maven.min.version>3.0</maven.min.version>
 
     <tycho.version>0.8.0</tycho.version>
 
