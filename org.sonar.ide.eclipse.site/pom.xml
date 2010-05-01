@@ -31,6 +31,7 @@
                   <goal>upload</goal>
                 </goals>
                 <configuration>
+                  <serverId>sonar-ide</serverId>
                   <fromDir>${project.basedir}/target/site</fromDir>
                   <includes>**</includes>
                   <url>${sonar-ide.site}</url>
