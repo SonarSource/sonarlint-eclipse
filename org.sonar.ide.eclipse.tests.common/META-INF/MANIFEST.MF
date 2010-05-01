@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Export-Package: org.sonar.ide.test,org.sonar.ide.eclipse.tests.common,
  org.apache.commons.io
-Bundle-ClassPath: .,jars/sonar-ide-testing-harness-0.1-SNAPSHOT.jar,ja
+Bundle-ClassPath: .,jars/sonar-ide-testing-harness-0.2-SNAPSHOT.jar,ja
  rs/jetty-servlet-tester-6.1.6.jar,jars/jetty-6.1.6.jar,jars/jetty-uti
  l-6.1.6.jar,jars/servlet-api-2.5-6.1.6.jar,jars/commons-io-1.4.jar,ja
  rs/commons-lang-2.5.jar,jars/slf4j-api-1.5.11.jar

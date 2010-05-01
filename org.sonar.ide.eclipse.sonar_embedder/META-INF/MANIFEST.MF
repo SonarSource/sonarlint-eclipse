@@ -9,7 +9,7 @@ Export-Package: ch.qos.logback.core.spi,org.sonar.ide.images.tendency,
  back.core.util,org.sonar.ide.images,org.sonar.wsclient.services,org.s
  onar.ide.api
 Bundle-Vendor: Sonar IDE
-Bundle-ClassPath: jars/sonar-ide-commons-0.1-SNAPSHOT.jar,jars/slf4j-a
+Bundle-ClassPath: jars/sonar-ide-commons-0.2-SNAPSHOT.jar,jars/slf4j-a
  pi-1.5.11.jar,jars/jcl-over-slf4j-1.5.11.jar,jars/google-collections-
  1.0.jar,jars/commons-lang-2.5.jar,jars/jdom-1.1.jar,jars/sonar-ws-cli
  ent-2.0.1.jar,jars/json-simple-1.1.jar,jars/commons-httpclient-3.1.ja
