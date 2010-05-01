@@ -81,7 +81,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     group.setLayout(gridLayout);
 
     // Create select list of servers.
-    serversCombo = new Combo(group, SWT.NONE);
+    serversCombo = new Combo(group, SWT.READ_ONLY);
     List<Host> servers = SonarPlugin.getServerManager().getServers();
     String defaultServer = getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL);
     int index = -1;
@@ -104,6 +104,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     createServerButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
     createServerButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
     createServerButton.addSelectionListener(new SelectionAdapter() {
+      @Override
       public void widgetSelected(SelectionEvent e) {
         NewServerLocationWizard wiz = new NewServerLocationWizard();
         wiz.init(SonarPlugin.getDefault().getWorkbench(), null);
@@ -127,6 +128,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     editServerButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
     editServerButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
     editServerButton.addSelectionListener(new SelectionAdapter() {
+      @Override
       public void widgetSelected(SelectionEvent e) {
         EditServerLocationWizard wiz = new EditServerLocationWizard(serversCombo.getText());
         wiz.init(SonarPlugin.getDefault().getWorkbench(), null);
@@ -150,6 +152,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     deleteServerButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE).createImage());
     deleteServerButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
     deleteServerButton.addSelectionListener(new SelectionAdapter() {
+      @Override
       public void widgetSelected(SelectionEvent e) {      
         if (MessageDialog.openConfirm(SonarPreferencePage.this.getShell(), Messages.getString("remove.server.dialog.caption"), //$NON-NLS-1$
             MessageFormat.format(Messages.getString("remove.server.dialog.msg"), //$NON-NLS-1$

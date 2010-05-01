@@ -33,7 +33,7 @@ import org.sonar.wsclient.Host;
  */
 public class SonarProjectPropertyBlock {
 
-  private IProject project;
+  private final IProject project;
   private Combo    serversCombo;
   private Button   serverConfigButton;
 
@@ -72,7 +72,7 @@ public class SonarProjectPropertyBlock {
     
 
     // Create select list of servers.
-    serversCombo = new Combo(group, SWT.NONE);
+    serversCombo = new Combo(group, SWT.READ_ONLY);
     List<Host> servers = SonarPlugin.getServerManager().getServers();
     String defaultServer = projectProperties.getUrl();
     int index = -1;
@@ -93,6 +93,7 @@ public class SonarProjectPropertyBlock {
     serverConfigButton.setText(Messages.getString("action.open.sonar.preference")); //$NON-NLS-1$
     serverConfigButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
     serverConfigButton.addSelectionListener(new SelectionAdapter() {
+      @Override
       public void widgetSelected(SelectionEvent e) {
         PreferenceDialog preference = PreferencesUtil.createPreferenceDialogOn(PlatformUI.getWorkbench().getDisplay().getActiveShell(),
             "org.sonar.ide.eclipse.preferences.SonarPreferencePage", null, null);
@@ -137,6 +138,7 @@ public class SonarProjectPropertyBlock {
     autoConfigButton.setText(Messages.getString("action.autoconfig")); //$NON-NLS-1$
     autoConfigButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
     autoConfigButton.addSelectionListener(new SelectionAdapter() {
+      @Override
       public void widgetSelected(SelectionEvent e) {
         final Display display = PlatformUI.getWorkbench().getDisplay();
         display.asyncExec(new Runnable() {
