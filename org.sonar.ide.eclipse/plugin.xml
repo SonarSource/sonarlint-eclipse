@@ -182,7 +182,15 @@
         </action>
      </actionSet>
    </extension>
-
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="org.sonar.ide.eclipse.perspectives.SonarPerspective"
+            icon="icons/sonar.png"
+            id="org.sonar.ide.eclipse.perspectives.SonarPerspective"
+            name="Sonar">
+      </perspective>
+   </extension>
   
   
 </plugin>
