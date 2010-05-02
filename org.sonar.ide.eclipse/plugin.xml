@@ -20,9 +20,16 @@
     <view
         category="org.sonar.ide.eclipse"
         class="org.sonar.ide.eclipse.views.NavigatorView"
-        icon="icons/sonar.gif"
+        icon="icons/sonar.png"
         id="org.sonar.ide.eclipse.views.NavigatorView"
-        name="Navigator View">
+        name="Sonar Server Navigator">
+    </view>
+    <view
+        category="org.sonar.ide.eclipse"
+        class="org.sonar.ide.eclipse.views.MetricsView"
+        icon="icons/sonar.png"
+        id="org.sonar.ide.eclipse.views.MetricsView"
+        name="Sonar Metrics">
     </view>
   </extension>
   <extension point="org.eclipse.ui.newWizards">
@@ -32,7 +39,7 @@
         category="org.sonar.ide.eclipse.wizcat"
         class="org.sonar.ide.eclipse.wizards.NewServerLocationWizard"
         descriptionImage="icons/sonar-large.gif"
-        icon="icons/sonar.gif"
+        icon="icons/sonar.png"
         id="org.sonar.ide.eclipse.wizards.newserverlocationwizard"
         name="Sonar server">
     </wizard>
@@ -51,7 +58,7 @@
            id="org.sonar.ide.eclipse.contribution1"
            objectClass="org.eclipse.core.resources.IResource">
         <menu
-              icon="icons/sonar.gif"
+              icon="icons/sonar.png"
               id="org.sonar.ide.eclipse.sonar"
               label="Sonar"
               path="additions">
@@ -90,7 +97,7 @@
   </extension>
   <extension
         id="sonarMarker"
-        name="Sonar"
+        name="Sonar violation"
         point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.problemmarker">
@@ -101,11 +108,47 @@
       <attribute
             name="rulename">
       </attribute>
+      <attribute
+            name="priority">
+      </attribute>
    </extension>
-
+   
+   <extension
+        point="org.eclipse.ui.editors.annotationTypes">
+        <type
+            name="org.sonar.ide.eclipse.violationType"
+            markerType="org.sonar.ide.eclipse.sonarMarker"/>
+    </extension>
+    
+    <extension
+        point="org.eclipse.ui.editors.markerAnnotationSpecification">
+        <specification
+            annotationType="org.sonar.ide.eclipse.violationType"
+            annotationImageProvider="org.sonar.ide.eclipse.markers.SonarMarkerImageProvider"
+            presentationLayer="3"
+            label="Sonar violation"
+            verticalRulerPreferenceKey="org.sonar.ide.eclipse.violation.verticalruler"
+            verticalRulerPreferenceValue="true"
+            overviewRulerPreferenceKey="org.sonar.ide.eclipse.violation.overviewruler"
+            overviewRulerPreferenceValue="true"
+            showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.violation.dropdown"
+            showInNextPrevDropdownToolbarAction="true"
+            isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.violation.previous"
+            isGoToPreviousNavigationTarget="true"
+            isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.violation.next"
+            isGoToNextNavigationTarget="true"
+            highlightPreferenceKey="org.sonar.ide.eclipse.violation.highlight"
+            highlightPreferenceValue="true"
+            textPreferenceKey="org.sonar.ide.eclipse.violation.error.text"
+            textPreferenceValue="true"
+            textStylePreferenceKey="org.sonar.ide.eclipse.violation.text.style"
+            textStylePreferenceValue="BOX"
+            colorPreferenceKey="org.sonar.ide.eclipse.violation.color"
+            colorPreferenceValue="255,246,191"/>
+    </extension>
 
    <extension point="org.eclipse.ui.console.consoleFactories">
-      <consoleFactory label="Sonar Console" icon="icons/sonar.gif"
+      <consoleFactory label="Sonar Console" icon="icons/sonar.png"
             class="org.sonar.ide.eclipse.console.SonarConsoleFactory"/>
    </extension>
 
@@ -131,7 +174,7 @@
         </menu>
         <action
               class="org.sonar.ide.eclipse.actions.AutoConfigureProjectAction"
-              icon="icons/sonar.gif"
+              icon="icons/sonar.png"
               id="org.sonar.ide.eclipse.actions.AutoConfigureProjectAction"
               label="Find All Sonar Configuration"
               menubarPath="project/additions"
@@ -139,5 +182,7 @@
         </action>
      </actionSet>
    </extension>
+
+  
   
 </plugin>

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -32,6 +33,7 @@ import org.sonar.wsclient.services.Violation;
 
 /**
  * This class load violations in background.
+ * 
  * @link http://jira.codehaus.org/browse/SONARIDE-27
  * 
  * @author Jérémie Lagarde
@@ -91,7 +93,11 @@ public class RefreshViolationJob extends Job {
     final Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
     List<ICompilationUnit> unitList = getICompilationUnits(project);
     try {
-      monitor.beginTask("Retrieve sonar violations for " + project.getElementName(), unitList.size()); // TODO put it in messages.properties
+      monitor.beginTask("Retrieve sonar violations for " + project.getElementName(), unitList.size()); // TODO
+                                                                                                       // put
+                                                                                                       // it
+                                                                                                       // in
+                                                                                                       // messages.properties
       for (ICompilationUnit unit : unitList) {
         if (monitor.isCanceled())
           break;
@@ -105,42 +111,49 @@ public class RefreshViolationJob extends Job {
 
   private void retrieveMarkers(Sonar sonar, ICompilationUnit unit, IProgressMonitor monitor) throws Exception {
     try {
-      monitor.beginTask("Retrieve sonar violations for " + unit.getElementName(), 1); // TODO put it in messages.properties
+      monitor.beginTask("Retrieve sonar violations for " + unit.getElementName(), 1); // TODO
+                                                                                      // put
+                                                                                      // it
+                                                                                      // in
+                                                                                      // messages.properties
       final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(unit.getResource());
       final Collection<Violation> violations = ViolationsLoader.getViolations(sonar, resourceKey, unit.getSource());
       for (Violation violation : violations) {
         // create a marker for the actual resource
         creatMarker(unit, violation);
       }
-    } catch(Exception ex){
+    } catch (Exception ex) {
       // TODO : best exception management.
       ex.printStackTrace();
-    }finally {
+    } finally {
       monitor.done();
     }
   }
 
   private IMarker creatMarker(ICompilationUnit unit, Violation violation) throws CoreException {
     Map<String, Object> markerAttributes = new HashMap<String, Object>();
-   Logs.INFO.debug("Create marker : " + violation.getPriority()); 
-    if(ViolationUtils.PRIORITY_BLOCKER.equalsIgnoreCase(violation.getPriority()))
+    Logs.INFO.debug("Create marker : " + violation.getPriority());
+    if (ViolationUtils.PRIORITY_BLOCKER.equalsIgnoreCase(violation.getPriority()))
       markerAttributes.put(IMarker.PRIORITY, new Integer(IMarker.PRIORITY_HIGH));
-    if(ViolationUtils.PRIORITY_CRITICAL.equalsIgnoreCase(violation.getPriority()))
+    if (ViolationUtils.PRIORITY_CRITICAL.equalsIgnoreCase(violation.getPriority()))
       markerAttributes.put(IMarker.PRIORITY, new Integer(IMarker.PRIORITY_HIGH));
-    if(ViolationUtils.PRIORITY_MAJOR.equalsIgnoreCase(violation.getPriority()))
+    if (ViolationUtils.PRIORITY_MAJOR.equalsIgnoreCase(violation.getPriority()))
       markerAttributes.put(IMarker.PRIORITY, new Integer(IMarker.PRIORITY_NORMAL));
-    if(ViolationUtils.PRIORITY_MINOR.equalsIgnoreCase(violation.getPriority()))
+    if (ViolationUtils.PRIORITY_MINOR.equalsIgnoreCase(violation.getPriority()))
       markerAttributes.put(IMarker.PRIORITY, new Integer(IMarker.PRIORITY_LOW));
-    if(ViolationUtils.PRIORITY_INFO.equalsIgnoreCase(violation.getPriority()))
+    if (ViolationUtils.PRIORITY_INFO.equalsIgnoreCase(violation.getPriority()))
       markerAttributes.put(IMarker.PRIORITY, new Integer(IMarker.PRIORITY_LOW));
     markerAttributes.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_WARNING));
     markerAttributes.put(IMarker.LINE_NUMBER, violation.getLine());
     markerAttributes.put(IMarker.MESSAGE, ViolationUtils.getDescription(violation));
+    markerAttributes.put("rulename", violation.getRuleName());
+    markerAttributes.put("priority", violation.getPriority());
+    addLine(markerAttributes, violation.getLine(), unit.getSource());
     IMarker marker = unit.getResource().createMarker(SonarPlugin.MARKER_ID);
     marker.setAttributes(markerAttributes);
     return marker;
   }
-  
+
   /**
    * @param javaProject
    * @return all ICompilationUnit for the project.
@@ -174,4 +187,16 @@ public class RefreshViolationJob extends Job {
     }
     return unitList;
   }
+
+  // TODO : need to refactor it.
+  private void addLine(Map<String, Object> markerAttributes, long line, String text) {
+    int start = 0;
+    for (int i = 1; i < line; i++) {
+      start = StringUtils.indexOf(text, '\n', start) + 1;
+    }
+    int end = StringUtils.indexOf(text, '\n', start);
+    markerAttributes.put(IMarker.CHAR_START, start);
+    markerAttributes.put(IMarker.CHAR_END, end);
+  }
+
 }
