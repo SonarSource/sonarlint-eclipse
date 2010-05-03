@@ -29,6 +29,7 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
   public void deactivated() {
   }
 
+  @SuppressWarnings("unchecked")
   public Object getAdapter(Class adapter) {
     return null;
   }

@@ -75,7 +75,7 @@ public class AutoConfigureProjectJob extends Job {
     if (StringUtils.isNotBlank(serverUrl)) {
       retrieveProjectConfiguration(project, serverUrl, monitor);
     } else {
-      for (Host host : SonarPlugin.getDefault().getServerManager().getServers()) {
+      for (Host host : SonarPlugin.getServerManager().getServers()) {
         retrieveProjectConfiguration(project, host.getHost(), monitor);
         if (isProjectConfigured(project.getProject()))
           return;

@@ -4,18 +4,20 @@ import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.project.MavenProjectChangedEvent;
 import org.maven.ide.eclipse.project.configurator.AbstractProjectConfigurator;
 import org.maven.ide.eclipse.project.configurator.ProjectConfigurationRequest;
-import org.osgi.service.prefs.BackingStoreException;
 import org.sonar.ide.api.SonarIdeException;
+import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 
 /**
  * @author Evgeny Mandrikov
  */
 public class SonarProjectConfigurator extends AbstractProjectConfigurator {
+  @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) throws CoreException {
     configureProject(request.getProject(), request.getMavenProject());
   }
@@ -29,15 +31,13 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
   private void configureProject(IProject project, MavenProject mavenProject) {
     String groupId = mavenProject.getGroupId();
     String artifactId = mavenProject.getArtifactId();
-    System.out.println(groupId + ":" + artifactId); // TODO remove
     ProjectProperties projectProperties = ProjectProperties.getInstance(project);
     projectProperties.setGroupId(groupId);
     projectProperties.setArtifactId(artifactId);
     try {
       projectProperties.save();
     } catch (SonarIdeException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
     }
   }
 }

@@ -7,7 +7,7 @@ Bundle-ClassPath: .
 Bundle-Activator: org.sonar.ide.eclipse.SonarPlugin
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
- org.eclipse.ui.ide,
+ org.eclipse.ui.ide;visibility:=reexport,
  org.eclipse.ui.console,
  org.eclipse.ui.editors,
  org.eclipse.ui.workbench.texteditor,
