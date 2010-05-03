@@ -108,9 +108,6 @@
       <attribute
             name="rulename">
       </attribute>
-      <attribute
-            name="priority">
-      </attribute>
    </extension>
    
    <extension

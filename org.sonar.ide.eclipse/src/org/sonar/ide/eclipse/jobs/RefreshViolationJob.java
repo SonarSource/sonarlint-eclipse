@@ -147,7 +147,6 @@ public class RefreshViolationJob extends Job {
     markerAttributes.put(IMarker.LINE_NUMBER, violation.getLine());
     markerAttributes.put(IMarker.MESSAGE, ViolationUtils.getDescription(violation));
     markerAttributes.put("rulename", violation.getRuleName());
-    markerAttributes.put("priority", violation.getPriority());
     addLine(markerAttributes, violation.getLine(), unit.getSource());
     IMarker marker = unit.getResource().createMarker(SonarPlugin.MARKER_ID);
     marker.setAttributes(markerAttributes);
