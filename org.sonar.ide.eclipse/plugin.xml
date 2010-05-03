@@ -4,7 +4,7 @@
     <page
         class="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
         id="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
-        name="Sonar">
+        name="%sonar.preference.page.name">
     </page>
   </extension>
   <extension point="org.eclipse.core.runtime.preferences">
@@ -14,7 +14,7 @@
   </extension>
   <extension point="org.eclipse.ui.views">
     <category
-        name="Sonar"
+        name="%sonar.category.view.name"
         id="org.sonar.ide.eclipse">
     </category>
     <view
@@ -22,18 +22,18 @@
         class="org.sonar.ide.eclipse.views.NavigatorView"
         icon="icons/sonar.png"
         id="org.sonar.ide.eclipse.views.NavigatorView"
-        name="Sonar Server Navigator">
+        name="%sonar.navigator.view.name">
     </view>
     <view
         category="org.sonar.ide.eclipse"
         class="org.sonar.ide.eclipse.views.MetricsView"
         icon="icons/sonar.png"
         id="org.sonar.ide.eclipse.views.MetricsView"
-        name="Sonar Metrics">
+        name="%sonar.metrics.view.name">
     </view>
   </extension>
   <extension point="org.eclipse.ui.newWizards">
-    <category id="org.sonar.ide.eclipse.wizcat" name="Sonar"/>
+    <category id="org.sonar.ide.eclipse.wizcat" name="%sonar.category.wizard.name"/>
     <wizard
         canFinishEarly="true"
         category="org.sonar.ide.eclipse.wizcat"
@@ -41,7 +41,7 @@
         descriptionImage="icons/sonar-large.gif"
         icon="icons/sonar.png"
         id="org.sonar.ide.eclipse.wizards.newserverlocationwizard"
-        name="Sonar server">
+        name="%sonar.wizard.newserverlocation.name ">
     </wizard>
   </extension>
   <extension
@@ -49,7 +49,7 @@
     <page
         class="org.sonar.ide.eclipse.properties.SonarProjectPropertyPage"
         id="org.sonar.ide.eclipse.properties.sonarProjectPropertyPage"
-        name="Sonar">
+        name="%sonar.properties.page.name">
     </page>
   </extension>
   <extension
@@ -60,7 +60,7 @@
         <menu
               icon="icons/sonar.png"
               id="org.sonar.ide.eclipse.sonar"
-              label="Sonar"
+              label="%sonar.menu.label"
               path="additions">
            <separator
                  name="group1">
@@ -70,7 +70,7 @@
               class="org.sonar.ide.eclipse.actions.AutoConfigureProjectAction"
               enablesFor="+"
               id="org.sonar.ide.eclipse.autoConfigureProjectAction"
-              label="Auto configuration"
+              label="%sonar.action.autoconfiguration.label"
               menubarPath="org.sonar.ide.eclipse.sonar/group1"
               state="true"
               style="push">
@@ -79,7 +79,7 @@
               class="org.sonar.ide.eclipse.actions.RefreshViolationAction"
               enablesFor="+"
               id="org.sonar.ide.eclipse.refreshViolationAction"
-              label="Refresh violations"
+              label="%sonar.action.refreshviolations.label"
               menubarPath="org.sonar.ide.eclipse.sonar/group1"
               state="true"
               style="push">
@@ -88,7 +88,7 @@
               class="org.sonar.ide.eclipse.actions.OpenInBrowserAction"
               enablesFor="+"
               id="org.sonar.ide.eclipse.openInBrowserAction"
-              label="Open in sonar server"
+              label="%sonar.action.openinbrowser.label"
               menubarPath="org.sonar.ide.eclipse.sonar/group1"
               state="true"
               style="push">
@@ -97,7 +97,7 @@
   </extension>
   <extension
         id="sonarMarker"
-        name="Sonar violation"
+        name="%sonar.marker.name"
         point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.problemmarker">
@@ -123,7 +123,7 @@
             annotationType="org.sonar.ide.eclipse.violationType"
             annotationImageProvider="org.sonar.ide.eclipse.markers.SonarMarkerImageProvider"
             presentationLayer="3"
-            label="Sonar violation"
+            label="%sonar.marker.specification.label"
             verticalRulerPreferenceKey="org.sonar.ide.eclipse.violation.verticalruler"
             verticalRulerPreferenceValue="true"
             overviewRulerPreferenceKey="org.sonar.ide.eclipse.violation.overviewruler"
@@ -145,7 +145,7 @@
     </extension>
 
    <extension point="org.eclipse.ui.console.consoleFactories">
-      <consoleFactory label="Sonar Console" icon="icons/sonar.png"
+      <consoleFactory label="%sonar.consolefactory.label" icon="icons/sonar.png"
             class="org.sonar.ide.eclipse.console.SonarConsoleFactory"/>
    </extension>
 
@@ -162,20 +162,20 @@
          point="org.eclipse.ui.actionSets">
      <actionSet
            id="org.sonar.ide.eclipse.actionSet"
-           label="Sonar"
+           label="%actionSet.label"
            visible="true">
         <menu
               id="sonarMenu"
-              label="Sonar"
+              label="%sonar.menu.label"
               path="project/additions">
         </menu>
         <action
               class="org.sonar.ide.eclipse.actions.AutoConfigureProjectAction"
               icon="icons/sonar.png"
               id="org.sonar.ide.eclipse.actions.AutoConfigureProjectAction"
-              label="Find All Sonar Configuration"
+              label="%sonar.action.allautoconiguration.label"
               menubarPath="project/additions"
-              tooltip="Find sonar configuration for all projects">
+              tooltip="%sonar.action.allautoconiguration.tooltip">
         </action>
      </actionSet>
    </extension>
@@ -185,7 +185,7 @@
             class="org.sonar.ide.eclipse.perspectives.SonarPerspective"
             icon="icons/sonar.png"
             id="org.sonar.ide.eclipse.perspectives.SonarPerspective"
-            name="Sonar">
+            name="%sonar.perspective.name">
       </perspective>
    </extension>
   

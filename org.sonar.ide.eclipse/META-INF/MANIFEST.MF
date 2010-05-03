@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Sonar Integration for Eclipse
+Bundle-Name: %sonar.bundle.name
 Bundle-SymbolicName: org.sonar.ide.eclipse;singleton:=true
 Bundle-Version: 0.0.1.qualifier
 Bundle-ClassPath: .
@@ -28,3 +28,4 @@ Export-Package: org.sonar.ide.eclipse,
  org.sonar.ide.eclipse.jobs,
  org.sonar.ide.eclipse.views.model,
  org.sonar.ide.eclipse.wizards
+Bundle-Localization: OSGI-INF/l10n/bundle
