@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.5"?>
 
-<target name="sonar-ide-e25">
+<target name="sonar-ide-e35">
 <locations>
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
 <unit id="org.eclipse.sdk.ide" version="3.5.1.M20090917-0800"/>
 <repository location="http://download.eclipse.org/eclipse/updates/3.5"/>
 </location>
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
-<unit id="org.eclipse.swtbot.feature.group" version="2.0.0.512-dev-e35"/>
-<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.0.0.512-dev-e35"/>
+<unit id="org.eclipse.swtbot.feature.group" version="2.0.0.536-dev-e35"/>
+<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.0.0.536-dev-e35"/>
 <repository location="http://download.eclipse.org/technology/swtbot/galileo/dev-build/update-site/"/>
 </location>
 </locations>
