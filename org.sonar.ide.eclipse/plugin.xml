@@ -56,7 +56,8 @@
         point="org.eclipse.ui.popupMenus">
      <objectContribution
            id="org.sonar.ide.eclipse.contribution1"
-           objectClass="org.eclipse.core.resources.IResource">
+           objectClass="org.eclipse.core.resources.IResource"
+           adaptable="true">
         <menu
               icon="icons/sonar.png"
               id="org.sonar.ide.eclipse.sonar"
@@ -122,7 +123,7 @@
         <specification
             annotationType="org.sonar.ide.eclipse.violationType"
             annotationImageProvider="org.sonar.ide.eclipse.markers.SonarMarkerImageProvider"
-            presentationLayer="3"
+            presentationLayer="5"
             label="%sonar.marker.specification.label"
             verticalRulerPreferenceKey="org.sonar.ide.eclipse.violation.verticalruler"
             verticalRulerPreferenceValue="true"
