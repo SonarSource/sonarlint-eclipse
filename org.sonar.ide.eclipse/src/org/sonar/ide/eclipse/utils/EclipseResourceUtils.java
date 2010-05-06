@@ -4,6 +4,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageDeclaration;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
@@ -47,6 +48,9 @@ public class EclipseResourceUtils extends AbstractResourceUtils<IResource> {
   protected String getPackageName(IResource file) {
     try {
       if (isJavaFile(file)) {
+        IJavaElement element = JavaCore.create(file);
+        if (!(element instanceof ICompilationUnit))
+          return "";
         ICompilationUnit compilationUnit = (ICompilationUnit) JavaCore.create(file);
         IPackageDeclaration[] packages = compilationUnit.getPackageDeclarations();
         StringBuilder name = null;
