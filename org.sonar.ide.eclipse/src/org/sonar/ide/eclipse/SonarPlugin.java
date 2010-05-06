@@ -1,10 +1,8 @@
 package org.sonar.ide.eclipse;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.JoranConfiguratorBase;
-import ch.qos.logback.core.joran.spi.JoranException;
-import ch.qos.logback.core.util.StatusPrinter;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -17,8 +15,11 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.console.SonarConsole;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.JoranConfiguratorBase;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.util.StatusPrinter;
 
 /**
  * @author Jérémie Lagarde
@@ -26,28 +27,28 @@ import java.net.URL;
 public class SonarPlugin extends AbstractUIPlugin {
 
   // The plug-in ID
-  public static final String PLUGIN_ID = "org.sonar.ide.eclipse";
+  public static final String        PLUGIN_ID        = "org.sonar.ide.eclipse";
 
   // Marker
-  public static final String MARKER_ID = PLUGIN_ID + ".sonarMarker"; //$NON-NLS-1$
+  public static final String        MARKER_ID        = PLUGIN_ID + ".sonarMarker"; //$NON-NLS-1$
 
   // Images
-  private static ImageDescriptor SONARWIZBAN_IMG;
-  private static ImageDescriptor SONARCONSOLE_IMG;
-  private static ImageDescriptor SONARSYNCHRO_IMG;
-  private static ImageDescriptor SONARCLOSE_IMG;
+  private static ImageDescriptor    SONARWIZBAN_IMG;
+  private static ImageDescriptor    SONARCONSOLE_IMG;
+  private static ImageDescriptor    SONARSYNCHRO_IMG;
+  private static ImageDescriptor    SONARCLOSE_IMG;
 
-  public static final String IMG_SONARWIZBAN = "sonar_wizban.gif"; //$NON-NLS-1$
-  public static final String IMG_SONARCONSOLE = "sonar.gif"; //$NON-NLS-1$
-  public static final String IMG_SONARSYNCHRO = "synced.gif"; //$NON-NLS-1$
-  public static final String IMG_SONARCLOSE = "close.gif"; //$NON-NLS-1$
+  public static final String        IMG_SONARWIZBAN  = "sonar_wizban.gif";        //$NON-NLS-1$
+  public static final String        IMG_SONARCONSOLE = "sonar.png";               //$NON-NLS-1$
+  public static final String        IMG_SONARSYNCHRO = "synced.gif";              //$NON-NLS-1$
+  public static final String        IMG_SONARCLOSE   = "close.gif";               //$NON-NLS-1$
 
   // The shared instance
-  private static SonarPlugin plugin;
+  private static SonarPlugin        plugin;
 
   private static SonarServerManager serverManager;
 
-  private SonarConsole console;
+  private SonarConsole              console;
 
   public SonarPlugin() {
   }
@@ -133,12 +134,12 @@ public class SonarPlugin extends AbstractUIPlugin {
 
       public void run() {
         switch (severity) {
-          case IStatus.ERROR:
-            MessageDialog.openError(display.getActiveShell(), Messages.getString("error"), msg); //$NON-NLS-1$
-            break;
-          case IStatus.WARNING:
-            MessageDialog.openWarning(display.getActiveShell(), Messages.getString("warning"), msg); //$NON-NLS-1$
-            break;
+        case IStatus.ERROR:
+          MessageDialog.openError(display.getActiveShell(), Messages.getString("error"), msg); //$NON-NLS-1$
+          break;
+        case IStatus.WARNING:
+          MessageDialog.openWarning(display.getActiveShell(), Messages.getString("warning"), msg); //$NON-NLS-1$
+          break;
         }
       }
     });
