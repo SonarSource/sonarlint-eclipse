@@ -46,11 +46,14 @@
 
     <module>../org.sonar.ide.eclipse.tests</module>
 
+    <!-- m2eclipse disabled due to incomplete target-platform -->
+    <!--
     <module>../org.maven.ide.eclipse.sonar</module>
+    <module>../org.maven.ide.eclipse.sonar.feature</module>
+    -->
 
     <!-- features -->
     <module>../org.sonar.ide.eclipse.feature</module>
-    <module>../org.maven.ide.eclipse.sonar.feature</module>
 
     <module>../target-platform</module>
   </modules>
@@ -102,7 +105,6 @@
           <!-- TODO Godin: seems unusable for now (TYCHO-404)
           <pomDependencies>consider</pomDependencies>
           -->
-          <!-- TODO Godin: target-platform
           <target>
             <artifact>
               <groupId>org.codehaus.sonar-ide.eclipse</groupId>
@@ -112,7 +114,6 @@
             </artifact>
           </target>
           <ignoreTychoRepositories>true</ignoreTychoRepositories>
-          -->
           <environments>
             <environment>
               <os>linux</os>
@@ -145,6 +146,7 @@
               <arch>x86</arch>
             </environment>
           </environments>
+          <!-- -->
         </configuration>
       </plugin>
     </plugins>
@@ -185,24 +187,6 @@
       </plugins>
     </pluginManagement>
   </build>
-
-  <repositories>
-    <repository>
-      <id>update35</id>
-      <url>http://download.eclipse.org/eclipse/updates/3.5</url>
-      <layout>p2</layout>
-    </repository>
-    <repository>
-      <id>ganymede</id>
-      <layout>p2</layout>
-      <url>http://download.eclipse.org/releases/ganymede</url>
-    </repository>
-    <repository>
-      <id>m2eclipse</id>
-      <layout>p2</layout>
-      <url>http://m2eclipse.sonatype.org/sites/m2e</url>
-    </repository>
-  </repositories>
 
   <pluginRepositories>
     <pluginRepository>
