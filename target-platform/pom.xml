@@ -13,12 +13,13 @@
   <artifactId>target-platform</artifactId>
   <packaging>pom</packaging>
 
+  <name>Sonar Integration for Eclipse (target-platform)</name>
+
   <build>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.3</version>
         <executions>
           <execution>
             <id>attach-artifacts</id>
@@ -33,6 +34,11 @@
                   <type>target</type>
                   <classifier>e35</classifier>
                 </artifact>
+                <!--artifact>
+                  <file>e35-maven.target</file>
+                  <type>target</type>
+                  <classifier>e35-maven</classifier>
+                </artifact-->
               </artifacts>
             </configuration>
           </execution>
