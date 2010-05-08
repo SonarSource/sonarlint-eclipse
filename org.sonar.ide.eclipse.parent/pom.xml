@@ -28,7 +28,7 @@
     <sonar-ide.version>0.2-SNAPSHOT</sonar-ide.version>
 
     <!-- disable accidental deployment -->
-    <sonar-ide.site>dav:http://localhost/eclipse</sonar-ide.site>
+    <sonar-ide.site>dav:http://localhost</sonar-ide.site>
     <sonar-ide.snapshots>http://localhost</sonar-ide.snapshots>
     <sonar-ide.releases>http://localhost</sonar-ide.releases>
   </properties>
