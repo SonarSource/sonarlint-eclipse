@@ -15,13 +15,15 @@
   <packaging>pom</packaging>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>Sonar Integration for Eclipse Parent</name>
+  <name>Sonar Integration for Eclipse (parent)</name>
 
   <properties>
-    <!-- This version installed on Codehaus Bamboo -->
-    <maven.min.version>3.0-alpha-6</maven.min.version>
-    <!-- TODO Godin: Looks like for enforcer at least maven 3.0-beta-1 required -->
-    <enforcer.skip>true</enforcer.skip>
+    <!-- TODO Godin:
+    Maven 3.0-alpha-6 installed on Codehaus Bamboo (see http://jira.codehaus.org/browse/HAUS-1954).
+    So configuration for Codehaus Bamboo build should be fixed, but for now:
+    -Dmaven.min.version=3.0-alpha-6 -Denforcer.skip=true
+    -->
+    <maven.min.version>3.0-beta-1</maven.min.version>
 
     <tycho.version>0.8.0</tycho.version>
 
