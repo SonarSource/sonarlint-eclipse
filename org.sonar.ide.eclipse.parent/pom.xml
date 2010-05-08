@@ -20,6 +20,8 @@
   <properties>
     <!-- This version installed on Codehaus Bamboo -->
     <maven.min.version>3.0-alpha-6</maven.min.version>
+    <!-- TODO Godin: Looks like for enforcer at least maven 3.0-beta-1 required -->
+    <enforcer.skip>true</enforcer.skip>
 
     <tycho.version>0.8.0</tycho.version>
 
