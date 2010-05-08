@@ -18,8 +18,8 @@
   <name>Sonar Integration for Eclipse Parent</name>
 
   <properties>
-    <enforcer.skip>true</enforcer.skip>
-    <maven.min.version>3.0</maven.min.version>
+    <!-- This version installed on Codehaus Bamboo -->
+    <maven.min.version>3.0-alpha-6</maven.min.version>
 
     <tycho.version>0.8.0</tycho.version>
 
@@ -32,10 +32,6 @@
     <sonar-ide.snapshots>http://localhost</sonar-ide.snapshots>
     <sonar-ide.releases>http://localhost</sonar-ide.releases>
   </properties>
-
-  <prerequisites>
-    <maven>3.0</maven>
-  </prerequisites>
 
   <modules>
     <module>../org.sonar.ide.eclipse.sonar_embedder</module>
