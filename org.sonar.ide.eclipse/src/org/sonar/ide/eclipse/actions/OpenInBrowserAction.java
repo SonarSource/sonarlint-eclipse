@@ -20,6 +20,7 @@ package org.sonar.ide.eclipse.actions;
 
 import java.net.URL;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.action.IAction;
@@ -61,11 +62,15 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
   }
 
   protected void openBrowser(IResource resource) {
-    String fileKey = EclipseResourceUtils.getInstance().getFileKey(resource);
+    String key;
+    if (resource instanceof IFile)
+      key = EclipseResourceUtils.getInstance().getFileKey(resource);
+    else
+      key = EclipseResourceUtils.getInstance().getProjectKey(resource);
     IWorkbenchBrowserSupport browserSupport = SonarPlugin.getDefault().getWorkbench().getBrowserSupport();
     ProjectProperties properties = ProjectProperties.getInstance(resource);
     try {
-      URL consoleURL = new URL(properties.getUrl() + "/resource/index/" + fileKey);
+      URL consoleURL = new URL(properties.getUrl() + "/resource/index/" + key);
       if (browserSupport.isInternalWebBrowserAvailable()) {
         browserSupport.createBrowser("id" + properties.getUrl().hashCode()).openURL(consoleURL);
       } else {

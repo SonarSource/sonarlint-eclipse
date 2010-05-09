@@ -49,7 +49,7 @@ public class EclipseResourceUtils extends AbstractResourceUtils<IResource> {
 
   @Override
   protected boolean isJavaFile(IResource file) {
-    return (JavaCore.create(file) != null);
+    return (JavaCore.create(file) instanceof ICompilationUnit);
   }
 
   @Override
