@@ -57,11 +57,13 @@ public class ProjectProperties extends AbstractProjectProperties<IProject>{
     return projectProperties;
   }
 
+  @Override
   public void load() {
     IScopeContext projectScope = new ProjectScope(getProject());
     preferences = projectScope.getNode(SonarPlugin.PLUGIN_ID);
   }
 
+  @Override
   public void save() {
     try {
       preferences.flush();
@@ -93,4 +95,17 @@ public class ProjectProperties extends AbstractProjectProperties<IProject>{
     preferences.put(type,value);
   }
 
+  public boolean isProjectConfigured() {
+    if (StringUtils.isBlank(getArtifactId())) {
+      return false;
+    }
+    if (StringUtils.isBlank(getGroupId())) {
+      return false;
+    }
+    if (StringUtils.isBlank(getUrl())) {
+      return false;
+    }
+    return true;
+
+  }
 }

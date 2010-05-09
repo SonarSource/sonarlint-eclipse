@@ -86,29 +86,29 @@ public class AutoConfigureProjectJob extends Job {
   }
 
   private void retrieveProjectConfiguration(IJavaProject project, IProgressMonitor monitor) throws Exception {
-    if (isProjectConfigured(project.getProject()))
-      return;
     final ProjectProperties properties = ProjectProperties.getInstance(project.getResource());
+    if (properties != null && properties.isProjectConfigured())
+      return;
     String serverUrl = properties.getUrl();
     if (StringUtils.isNotBlank(serverUrl)) {
       retrieveProjectConfiguration(project, serverUrl, monitor);
     } else {
       for (Host host : SonarPlugin.getServerManager().getServers()) {
         retrieveProjectConfiguration(project, host.getHost(), monitor);
-        if (isProjectConfigured(project.getProject()))
+        if (properties.isProjectConfigured())
           return;
       }
     }
   }
 
   private void retrieveProjectConfiguration(IJavaProject project, String serverUtl, IProgressMonitor monitor) throws Exception {
-    if (isProjectConfigured(project.getProject()))
+    ProjectProperties properties = ProjectProperties.getInstance(project.getResource());
+    if (properties != null && properties.isProjectConfigured())
       return;
     List<Resource> resources = retrieveResources(serverUtl, monitor);
     for (Resource resource : resources) {
       if (resource.getKey().endsWith(":" + project.getElementName())) {
         SonarPlugin.getDefault().getConsole().logResponse("Configure");
-        ProjectProperties properties = ProjectProperties.getInstance(project.getResource());
         properties.setUrl(serverUtl);
         properties.setArtifactId(project.getElementName());
         properties.setGroupId(StringUtils.substringBefore(resource.getKey(), ":"));
@@ -124,7 +124,8 @@ public class AutoConfigureProjectJob extends Job {
       return resourcesByServerMap.get(serverUrl);
     try {
       monitor.beginTask("Retrieve projects on " + serverUrl, 1); // TODO put it
-      // in messages.properties
+                                                                 // in
+                                                                 // messages.properties
       ResourceQuery query = new ResourceQuery();
       query.setScopes(Resource.SCOPE_SET);
       query.setQualifiers(Resource.QUALIFIER_PROJECT, Resource.QUALIFIER_MODULE);
@@ -138,22 +139,5 @@ public class AutoConfigureProjectJob extends Job {
       monitor.done();
     }
     return resourcesByServerMap.get(serverUrl);
-  }
-
-  public boolean isProjectConfigured(IProject project) {
-    ProjectProperties properties = ProjectProperties.getInstance(project);
-    if (properties == null)
-      return false;
-    if (StringUtils.isBlank(properties.getArtifactId())) {
-      return false;
-    }
-    if (StringUtils.isBlank(properties.getGroupId())) {
-      return false;
-    }
-    if (StringUtils.isBlank(properties.getUrl())) {
-      return false;
-    }
-    return true;
-
   }
 }

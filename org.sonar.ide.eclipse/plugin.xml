@@ -52,6 +52,15 @@
         name="%sonar.properties.page.name">
     </page>
   </extension>
+  
+  <extension point="org.eclipse.core.runtime.adapters">
+      <factory
+            adaptableType="org.eclipse.core.runtime.IAdaptable"
+            class="org.sonar.ide.eclipse.actions.SonarAdapterFactory">
+         <adapter type="org.eclipse.ui.IActionFilter"/>
+      </factory>
+  </extension>
+  
   <extension
         point="org.eclipse.ui.popupMenus">
      <objectContribution
