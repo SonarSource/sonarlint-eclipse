@@ -10,7 +10,7 @@
     <relativePath>../org.sonar.ide.eclipse.parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>org.maven.ide.eclipse.sonar.feature</artifactId>
+  <artifactId>org.sonar.ide.eclipse.m2eclipse.feature</artifactId>
   <packaging>eclipse-feature</packaging>
 
   <name>Sonar Integration for Eclipse Maven (Optional)</name>

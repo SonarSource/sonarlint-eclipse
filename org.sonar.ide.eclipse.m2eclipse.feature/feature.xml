@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<feature id="org.maven.ide.eclipse.sonar.feature"
+<feature id="org.sonar.ide.eclipse.m2eclipse.feature"
          label="Sonar Integration for Eclipse Maven (Optional)"
          version="0.0.1.qualifier"
-         plugin="org.maven.ide.sonar">
+         plugin="org.sonar.ide.eclipse">
 
   <plugin
-      id="org.maven.ide.eclipse.sonar"
+      id="org.sonar.ide.eclipse.m2eclipse"
       download-size="0"
       install-size="0"
       version="0.0.0"
