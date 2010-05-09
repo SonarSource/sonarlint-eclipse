@@ -48,8 +48,8 @@
 
     <!-- m2eclipse disabled due to incomplete target-platform -->
     <!--
-    <module>../org.maven.ide.eclipse.sonar</module>
-    <module>../org.maven.ide.eclipse.sonar.feature</module>
+    <module>../org.sonar.ide.eclipse.m2eclipse</module>
+    <module>../org.sonar.ide.eclipse.m2eclipse.feature</module>
     -->
 
     <!-- features -->
