@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-  <!-- TODO change url -->
-  <description url="http://sonar-ide.codehaus.org/site">
+  <description url="http://dist.sonar-ide.codehaus.org/eclipse">
     Sonar Integration for Eclipse
   </description>
   <feature url="features/org.sonar.ide.eclipse.feature_0.0.0.jar" id="org.sonar.ide.eclipse.feature" version="0.0.0">
