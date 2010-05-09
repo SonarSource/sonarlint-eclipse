@@ -46,14 +46,11 @@
 
     <module>../org.sonar.ide.eclipse.tests</module>
 
-    <!-- m2eclipse disabled due to incomplete target-platform -->
-    <!--
     <module>../org.sonar.ide.eclipse.m2eclipse</module>
-    <module>../org.sonar.ide.eclipse.m2eclipse.feature</module>
-    -->
 
     <!-- features -->
     <module>../org.sonar.ide.eclipse.feature</module>
+    <module>../org.sonar.ide.eclipse.m2eclipse.feature</module>
 
     <module>../target-platform</module>
   </modules>
@@ -146,7 +143,6 @@
               <arch>x86</arch>
             </environment>
           </environments>
-          <!-- -->
         </configuration>
       </plugin>
       <plugin>

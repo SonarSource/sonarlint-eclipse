@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Sonar Integration for Eclipse Maven
-Bundle-SymbolicName: org.maven.ide.eclipse.sonar;singleton:=true
+Bundle-SymbolicName: org.sonar.ide.eclipse.m2eclipse;singleton:=true
 Bundle-Version: 0.0.1.qualifier
 Bundle-Activator: org.maven.ide.eclipse.sonar.Activator
 Require-Bundle: org.eclipse.core.runtime,

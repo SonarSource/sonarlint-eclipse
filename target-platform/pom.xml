@@ -34,11 +34,11 @@
                   <type>target</type>
                   <classifier>e35</classifier>
                 </artifact>
-                <!--artifact>
-                  <file>e35-maven.target</file>
+                <artifact>
+                  <file>e35-m2eclipse.target</file>
                   <type>target</type>
-                  <classifier>e35-maven</classifier>
-                </artifact-->
+                  <classifier>e35-m2eclipse</classifier>
+                </artifact>
               </artifacts>
             </configuration>
           </execution>

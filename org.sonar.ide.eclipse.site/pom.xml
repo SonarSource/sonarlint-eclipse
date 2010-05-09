@@ -13,7 +13,7 @@
   <artifactId>org.sonar.ide.eclipse.site</artifactId>
   <packaging>eclipse-update-site</packaging>
 
-  <name>Sonar Integration for Eclipse Update Site</name>
+  <name>Sonar Integration for Eclipse (update-site)</name>
 
   <profiles>
     <profile>
