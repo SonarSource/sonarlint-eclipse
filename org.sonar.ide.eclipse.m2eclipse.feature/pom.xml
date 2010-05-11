@@ -13,7 +13,7 @@
   <artifactId>org.sonar.ide.eclipse.m2eclipse.feature</artifactId>
   <packaging>eclipse-feature</packaging>
 
-  <name>Sonar Integration for Eclipse Maven (Optional)</name>
+  <name>Sonar Integration for M2Eclipse (feature)</name>
 
   <properties>
     <!-- Godin: It's here, because target-platform resolution for m2eclipse slows down the build -->

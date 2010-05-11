@@ -13,6 +13,6 @@
   <artifactId>org.sonar.ide.eclipse.mylyn3.feature</artifactId>
   <packaging>eclipse-feature</packaging>
 
-  <name>Sonar Integration for Eclipse Mylyn 3.x (Optional)</name>
+  <name>Sonar Integration for Eclipse Mylyn 3.x (feature)</name>
 
 </project>

@@ -13,6 +13,6 @@
   <artifactId>org.sonar.ide.eclipse.feature</artifactId>
   <packaging>eclipse-feature</packaging>
 
-  <name>Sonar Integration for Eclipse</name>
+  <name>Sonar Integration for Eclipse (feature)</name>
 
 </project>

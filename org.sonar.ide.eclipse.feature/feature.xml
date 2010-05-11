@@ -1,13 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
     id="org.sonar.ide.eclipse.feature"
-    label="Sonar Integration for Eclipse"
+    label="Sonar Integration for Eclipse (Required)"
     version="0.0.1.qualifier"
     plugin="org.sonar.ide.eclipse">
 
-  <description>
+  <description url="http://sonar-ide.codehaus.org/">
     Sonar Integration for Eclipse
   </description>
+
+  <copyright url="http://godin.net.ru/">
+    Copyright (c) 2010 Evgeny Mandrikov
+  </copyright>
+
+  <!-- TODO
+  <license url="">
+    TEXT
+  </license>
+  -->
+
+  <!-- TODO
+  <url>
+    <update label="Sonar Integration for Eclipse" url="http://dist.sonar-ide.codehaus.org/eclipse/"/>
+  </url>
+  -->
+
+  <requires>
+    <import feature="org.eclipse.platform" version="3.5.0" match="greaterOrEqual"/>
+  </requires>
 
   <plugin
       id="org.sonar.ide.eclipse"
