@@ -167,7 +167,7 @@ public class SonarProjectPropertyBlock {
               job.join();
               ProjectProperties projectProperties = ProjectProperties.getInstance(project);
               if (projectProperties != null) {
-                serverConfigButton.setText(projectProperties.getUrl());
+                serversCombo.setText(projectProperties.getUrl());
                 projectArtifactIdText.setText(projectProperties.getArtifactId());
                 projectGroupIdText.setText(projectProperties.getGroupId());
               }
