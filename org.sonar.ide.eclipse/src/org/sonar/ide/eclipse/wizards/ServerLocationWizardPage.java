@@ -89,7 +89,7 @@ public class ServerLocationWizardPage extends WizardPage {
     // Sonar Server password
     Label labelPassword = new Label(container, SWT.NULL);
     labelPassword.setText(Messages.getString("pref.project.label.password")); //$NON-NLS-1$
-    serverPasswordText = new Text(container, SWT.BORDER | SWT.SINGLE);
+    serverPasswordText = new Text(container, SWT.BORDER | SWT.SINGLE | SWT.PASSWORD);
     serverPasswordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     
     // Sonar test connection button
