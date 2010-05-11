@@ -18,6 +18,7 @@
 
 package org.sonar.ide.eclipse.views.model;
 
+import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.ResourceQuery;
@@ -33,7 +34,7 @@ public class TreeServer extends TreeParent {
   public TreeServer(Host host) {
     super(null);
     this.host = host;
-    this.server = Sonar.create(host.getHost());
+    this.server = SonarPlugin.getServerManager().getSonar(host.getHost());
   }
 
   @Override
