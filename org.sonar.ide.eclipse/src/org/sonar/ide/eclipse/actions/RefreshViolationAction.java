@@ -19,10 +19,11 @@
 package org.sonar.ide.eclipse.actions;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
@@ -30,18 +31,27 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.IWorkingSet;
 import org.sonar.ide.eclipse.jobs.RefreshViolationJob;
 
 /**
  * @author Jérémie Lagarde
  * 
  */
-public class RefreshViolationAction implements IObjectActionDelegate {
+public class RefreshViolationAction implements IWorkbenchWindowActionDelegate {
 
   private IStructuredSelection selection;
 
   public RefreshViolationAction() {
     super();
+  }
+
+  public void dispose() {
+  }
+
+  public void init(IWorkbenchWindow window) {
   }
 
   /**
@@ -54,13 +64,7 @@ public class RefreshViolationAction implements IObjectActionDelegate {
    * @see IActionDelegate#run(IAction)
    */
   public void run(IAction action) {
-    List<IProject> projects = new ArrayList<IProject>();
-    for (Object resource : selection.toList()) {
-      IProject project = ((IResource)resource).getProject();
-      if(project.isOpen() && !projects.contains(project))
-        projects.add(project);
-    }
-    Job job = new RefreshViolationJob(projects.toArray(new IProject[projects.size()]));
+    Job job = new RefreshViolationJob(getProjects());
     job.schedule();
   }
 
@@ -73,4 +77,27 @@ public class RefreshViolationAction implements IObjectActionDelegate {
     }
   }
 
+  private IProject[] getProjects() {
+    ArrayList<IProject> projectList = new ArrayList<IProject>();
+    if (selection != null) {
+      for (Iterator<?> it = selection.iterator(); it.hasNext();) {
+        Object o = it.next();
+        if (o instanceof IProject) {
+          projectList.add((IProject) o);
+        } else if (o instanceof IWorkingSet) {
+          IWorkingSet workingSet = (IWorkingSet) o;
+          for (IAdaptable adaptable : workingSet.getElements()) {
+            IProject project = (IProject) adaptable.getAdapter(IProject.class);
+            if (project != null && project.isAccessible()) {
+              projectList.add(project);
+            }
+          }
+        }
+      }
+    }
+    if (projectList.isEmpty()) {
+      return ResourcesPlugin.getWorkspace().getRoot().getProjects();
+    }
+    return projectList.toArray(new IProject[projectList.size()]);
+  }
 }
