@@ -13,11 +13,11 @@
     Copyright (c) 2010 Evgeny Mandrikov
   </copyright>
 
-  <!-- TODO
-  <license url="">
-    TEXT
+  <license url="http://www.gnu.org/licenses/lgpl.txt">
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Lesser General Public License (LGPL) v.3
+    which accompanies this distribution, and is available at http://www.gnu.org/licenses/lgpl.txt
   </license>
-  -->
 
   <!-- TODO
   <url>
@@ -26,7 +26,7 @@
   -->
 
   <requires>
-    <import feature="org.eclipse.platform" version="3.5.0" match="greaterOrEqual"/>
+    <import feature="org.eclipse.platform" version="3.4.0" match="greaterOrEqual"/>
   </requires>
 
   <plugin

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.5"?>
+
+<target name="sonar-ide-e34">
+<locations>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.eclipse.sdk.ide" version="3.4.2.M20090211-1700"/>
+<repository location="http://download.eclipse.org/eclipse/updates/3.4"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.eclipse.swtbot.feature.group" version="2.0.0.512-dev-e34"/>
+<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.0.0.512-dev-e34"/>
+<repository location="http://download.eclipse.org/technology/swtbot/ganymede/dev-build/update-site"/>
+</location>
+</locations>
+</target>
