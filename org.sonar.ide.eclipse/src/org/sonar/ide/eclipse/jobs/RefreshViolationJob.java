@@ -107,6 +107,8 @@ public class RefreshViolationJob extends Job {
   }
 
   private void retrieveMarkers(IJavaProject project, IProgressMonitor monitor) throws Exception {
+    if (project == null || !project.exists())
+      return;
     final ProjectProperties properties = ProjectProperties.getInstance(project.getResource());
     final Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
     List<ICompilationUnit> unitList = getICompilationUnits(project);
