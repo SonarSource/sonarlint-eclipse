@@ -200,7 +200,7 @@
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            class="org.sonar.ide.eclipse.perspectives.SonarPerspective"
+            class="org.sonar.ide.eclipse.perspectives.SonarPerspectiveFactory"
             icon="icons/sonar.png"
             id="org.sonar.ide.eclipse.perspectives.SonarPerspective"
             name="%sonar.perspective.name">
