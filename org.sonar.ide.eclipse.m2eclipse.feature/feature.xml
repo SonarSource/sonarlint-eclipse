@@ -1,40 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<feature id="org.sonar.ide.eclipse.m2eclipse.feature"
-         label="Sonar Integration for M2Eclipse (Optional)"
-         version="0.0.1.qualifier"
-         plugin="org.sonar.ide.eclipse.m2eclipse">
+<feature
+      id="org.sonar.ide.eclipse.m2eclipse.feature"
+      label="Sonar Integration for M2Eclipse (Optional)"
+      version="0.0.1.qualifier"
+      plugin="org.sonar.ide.eclipse.m2eclipse">
 
-  <description url="http://sonar-ide.codehaus.org/">
-    Sonar Integration for M2Eclipse
-  </description>
+   <description url="http://sonar-ide.codehaus.org/">
+      Sonar Integration for M2Eclipse
+   </description>
 
-  <copyright url="http://godin.net.ru/">
-    Copyright (c) 2010 Evgeny Mandrikov
-  </copyright>
+   <copyright url="http://godin.net.ru/">
+      Copyright (c) 2010 Evgeny Mandrikov
+   </copyright>
 
-  <license url="http://www.gnu.org/licenses/lgpl.txt">
-    All rights reserved. This program and the accompanying materials
+   <license url="http://www.gnu.org/licenses/lgpl.txt">
+      All rights reserved. This program and the accompanying materials
     are made available under the terms of the GNU Lesser General Public License (LGPL) v.3
     which accompanies this distribution, and is available at http://www.gnu.org/licenses/lgpl.txt
-  </license>
+   </license>
 
-  <!-- TODO
-  <url>
-    <update label="Sonar Integration for Eclipse" url="http://dist.sonar-ide.codehaus.org/eclipse/"/>
-  </url>
-  -->
+   <url>
+      <discovery label="m2eclipse" url="http://m2eclipse.sonatype.org/sites/m2e"/>
+   </url>
 
-  <requires>
-    <import feature="org.eclipse.platform" version="3.4.0" match="greaterOrEqual"/>
-    <import feature="org.maven.ide.eclipse.feature" version="0.10.0" match="equivalent"/>
-    <import feature="org.sonar.ide.eclipse.feature" version="0.0.1" match="equivalent"/>
-  </requires>
+   <requires>
+      <import feature="org.eclipse.platform" version="3.4.0" match="greaterOrEqual"/>
+      <import feature="org.maven.ide.eclipse.feature" version="0.10.0" match="equivalent"/>
+      <import feature="org.sonar.ide.eclipse.feature" version="0.0.1" match="equivalent"/>
+   </requires>
 
-  <plugin
-      id="org.sonar.ide.eclipse.m2eclipse"
-      download-size="0"
-      install-size="0"
-      version="0.0.0"
-      unpack="false"/>
+   <plugin
+         id="org.sonar.ide.eclipse.m2eclipse"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>
