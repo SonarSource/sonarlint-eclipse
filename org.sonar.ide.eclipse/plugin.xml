@@ -47,9 +47,11 @@
   <extension
       point="org.eclipse.ui.propertyPages">
     <page
-        class="org.sonar.ide.eclipse.properties.SonarProjectPropertyPage"
-        id="org.sonar.ide.eclipse.properties.sonarProjectPropertyPage"
-        name="%sonar.properties.page.name">
+      objectClass="org.eclipse.core.resources.IProject"
+       adaptable="true"
+      class="org.sonar.ide.eclipse.properties.SonarProjectPropertyPage"
+       id="org.sonar.ide.eclipse.properties.sonarProjectPropertyPage"
+       name="%sonar.properties.page.name">
     </page>
   </extension>
   
