@@ -52,6 +52,8 @@ public class TreePropertyProvider implements IPropertySource {
   }
 
   public Object getPropertyValue(Object id) {
+    if (node == null || node.getResource() == null)
+      return "";
     if (id.equals("id")) { //$NON-NLS-1$
       return node.getResource().getId();
     }
