@@ -28,10 +28,12 @@ import org.sonar.ide.eclipse.preferences.PreferenceConstants;
  */
 public class NewServerLocationWizard extends AbstractServerLocationWizard implements INewWizard {
 
+  @Override
   protected String getTitle() {
-    return Messages.getString("new.sonar.server"); //
+    return Messages.getString("new.sonar.server"); //$NON-NLS-1$
   }
 
+  @Override
   protected String getDefaultUrl() {
     return SonarPlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL);
   }

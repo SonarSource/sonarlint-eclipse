@@ -20,6 +20,7 @@ package org.sonar.ide.eclipse.wizards;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -45,6 +46,7 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
   protected abstract String getTitle();
   protected abstract String getDefaultUrl();
 
+  @Override
   public void addPages() {
     super.addPages();
     page = new ServerLocationWizardPage("server_location_page", getTitle(), SonarPlugin.getImageDescriptor(SonarPlugin.IMG_SONARWIZBAN),getDefaultUrl());
@@ -56,9 +58,10 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
 
   @Override
   public boolean performFinish() {
-    final String serverUrl = page.getServerUrl();
+    final String serverUrl = StringUtils.removeEnd(page.getServerUrl(), "/");
     final String username = page.getUsername();
     final String password = page.getPassword();
+
     IRunnableWithProgress op = new IRunnableWithProgress() {
       public void run(IProgressMonitor monitor) throws InvocationTargetException {
         monitor.beginTask("Saving " + serverUrl, 1);
