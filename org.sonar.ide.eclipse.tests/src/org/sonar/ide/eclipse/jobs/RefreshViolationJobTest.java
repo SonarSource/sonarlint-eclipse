@@ -18,6 +18,11 @@
 
 package org.sonar.ide.eclipse.jobs;
 
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -37,13 +42,9 @@ import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.tests.common.AbstractSonarTest;
 import org.sonar.wsclient.Host;
 
-import java.util.List;
-
-import static org.junit.Assert.assertTrue;
-
 /**
  * Test case for refresh violations.
- *
+ * 
  * @author Jérémie Lagarde
  * @link http://jira.codehaus.org/browse/SONARIDE-35
  * @link http://jira.codehaus.org/browse/SONARIDE-27
@@ -51,25 +52,25 @@ import static org.junit.Assert.assertTrue;
 public class RefreshViolationJobTest extends AbstractSonarTest {
 
   private static final Logger LOG = LoggerFactory.getLogger(RefreshViolationJobTest.class);
-  private IProject project;
-
+  private IProject            project;
 
   protected void prepareTest() throws Exception {
     // start the mock sonar server.
-    String url = addLocalTestServer();
-    List<Host> hosts = SonarPlugin.getServerManager().getServers();
+    final String url = addLocalTestServer();
+    final List<Host> hosts = SonarPlugin.getServerManager().getServers();
     assertTrue("There isn't server configured.", hosts != null && hosts.size() > 0);
 
     if (LOG.isDebugEnabled()) {
-      for (Host host : hosts) {
-        LOG.debug("Server : url=" + host.getHost() + " user=" + host.getUsername() + " hasPassword=" + !StringUtils.isBlank(host.getPassword()));
+      for (final Host host : hosts) {
+        LOG.debug("Server : url=" + host.getHost() + " user=" + host.getUsername() + " hasPassword="
+            + !StringUtils.isBlank(host.getPassword()));
       }
     }
     // Import simple project
     project = importEclipseProject("SimpleProject");
 
     // Configure the project
-    ProjectProperties properties = ProjectProperties.getInstance(project);
+    final ProjectProperties properties = ProjectProperties.getInstance(project);
     properties.setUrl(url);
     properties.setGroupId("org.sonar-ide.tests.SimpleProject");
     properties.setArtifactId("SimpleProject");
@@ -82,7 +83,9 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
     prepareTest();
 
     // Retrieve violation markers
-    Job job = new RefreshViolationJob(project);
+    final List<IResource> resources = new ArrayList<IResource>();
+    resources.add(project);
+    final Job job = new RefreshViolationJob(resources);
     job.schedule();
     job.join();
     LOG.debug("Violation markers retrieved");
@@ -93,7 +96,7 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
     addMarckerInfo(1, 4, "Parameter Assignment : Assignment of parameter 'i' is not allowed.");
     addMarckerInfo(2, 1, "Hide Utility Class Constructor : Utility classes should not have a public or default constructor.");
 
-    IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+    final IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertTrue("There isn't marker for the project.", markers != null && markers.length > 0);
     assertMarkers(markers);
   }
@@ -103,16 +106,18 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
     prepareTest();
 
     // Add blank line.
-    IJavaProject javaProject = JavaCore.create(project);
-    ICompilationUnit unit = (ICompilationUnit) javaProject.findElement(new Path("ClassOnDefaultPackage.java"));
-    IBuffer buffer = unit.getBuffer();
+    final IJavaProject javaProject = JavaCore.create(project);
+    final ICompilationUnit unit = (ICompilationUnit) javaProject.findElement(new Path("ClassOnDefaultPackage.java"));
+    final IBuffer buffer = unit.getBuffer();
     String content = buffer.getContents();
     content = StringUtils.replace(content, "  private String myMethod()", "\n  private String myMethod()");
     buffer.setContents(content);
     buffer.save(new NullProgressMonitor(), true);
 
     // Retrieve violation markers
-    Job job = new RefreshViolationJob(project);
+    final List<IResource> resources = new ArrayList<IResource>();
+    resources.add(project);
+    final Job job = new RefreshViolationJob(resources);
     job.schedule();
     job.join();
     LOG.debug("Violation markers retrieved");
@@ -123,7 +128,7 @@ public class RefreshViolationJobTest extends AbstractSonarTest {
     addMarckerInfo(1, 4, "Parameter Assignment : Assignment of parameter 'i' is not allowed.");
     addMarckerInfo(2, 1, "Hide Utility Class Constructor : Utility classes should not have a public or default constructor.");
 
-    IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+    final IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertTrue("There isn't marker for the project.", markers != null && markers.length > 0);
     assertMarkers(markers);
   }
