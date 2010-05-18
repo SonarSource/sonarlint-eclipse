@@ -67,7 +67,7 @@ public abstract class AbstractRefreshModelJob<M extends Model> extends Job imple
       monitor.beginTask("Retrieve sonar data", resources.size());
 
       for (final IResource resource : resources) {
-        if (!monitor.isCanceled()) {
+        if (!monitor.isCanceled() && resource.isAccessible()) {
           resource.accept(this);
         }
       }
