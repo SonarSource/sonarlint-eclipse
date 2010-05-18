@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.IWorkingSet;
@@ -47,33 +48,33 @@ public class AutoConfigureProjectAction implements IWorkbenchWindowActionDelegat
   public void dispose() {
   }
 
-  public void init(IWorkbenchWindow window) {
+  public void init(final IWorkbenchWindow window) {
   }
 
-  public void run(IAction action) {
-    Job job = new AutoConfigureProjectJob(getProjects());
+  public void run(final IAction action) {
+    final Job job = new AutoConfigureProjectJob(getProjects());
     job.schedule();
   }
 
-  public void selectionChanged(IAction action, ISelection selection) {
-    if (selection instanceof IStructuredSelection) {
-      this.selection = (IStructuredSelection) selection;
-    } else {
+  public void selectionChanged(final IAction action, final ISelection selection) {
+    if (selection instanceof ITreeSelection) {
       this.selection = null;
+    } else if (selection instanceof IStructuredSelection) {
+      this.selection = (IStructuredSelection) selection;
     }
   }
 
   private IProject[] getProjects() {
-    ArrayList<IProject> projectList = new ArrayList<IProject>();
+    final ArrayList<IProject> projectList = new ArrayList<IProject>();
     if (selection != null) {
-      for (Iterator<?> it = selection.iterator(); it.hasNext();) {
-        Object o = it.next();
+      for (final Iterator<?> it = selection.iterator(); it.hasNext();) {
+        final Object o = it.next();
         if (o instanceof IProject) {
           projectList.add((IProject) o);
         } else if (o instanceof IWorkingSet) {
-          IWorkingSet workingSet = (IWorkingSet) o;
-          for (IAdaptable adaptable : workingSet.getElements()) {
-            IProject project = (IProject) adaptable.getAdapter(IProject.class);
+          final IWorkingSet workingSet = (IWorkingSet) o;
+          for (final IAdaptable adaptable : workingSet.getElements()) {
+            final IProject project = (IProject) adaptable.getAdapter(IProject.class);
             if (project != null && project.isAccessible()) {
               projectList.add(project);
             }
