@@ -44,7 +44,7 @@
                 <artifactItem>
                   <groupId>org.codehaus.sonar-ide</groupId>
                   <artifactId>sonar-ide-testing-harness</artifactId>
-                  <version>${sonar-ide.version}</version>
+                  <version>${sonar-ide-commons.version}</version>
                   <type>tar.gz</type>
                   <classifier>projects</classifier>
                 </artifactItem>

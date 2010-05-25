@@ -24,7 +24,7 @@
 
     <target.platform>e35</target.platform>
 
-    <sonar-ide.version>0.2-SNAPSHOT</sonar-ide.version>
+    <sonar-ide-commons.version>0.1.1</sonar-ide-commons.version>
 
     <!-- disable accidental deployment -->
     <sonar-ide.site>dav:http://localhost</sonar-ide.site>
@@ -55,12 +55,12 @@
       <dependency>
         <groupId>org.codehaus.sonar-ide</groupId>
         <artifactId>sonar-ide-commons</artifactId>
-        <version>${sonar-ide.version}</version>
+        <version>${sonar-ide-commons.version}</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.sonar-ide</groupId>
         <artifactId>sonar-ide-testing-harness</artifactId>
-        <version>${sonar-ide.version}</version>
+        <version>${sonar-ide-commons.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -140,24 +140,6 @@
             </environment>
             -->
           </environments>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>com.mycila.maven-license-plugin</groupId>
-        <artifactId>maven-license-plugin</artifactId>
-        <configuration>
-          <header>license-header.txt</header>
-          <includes>
-            <include>src/**</include>
-          </includes>
-          <mapping>
-            <java>SLASHSTAR_STYLE</java>
-          </mapping>
-          <properties>
-            <year>${project.inceptionYear}</year>
-            <name>${project.organization.name}</name>
-          </properties>
-          <encoding>${project.build.sourceEncoding}</encoding>
         </configuration>
       </plugin>
     </plugins>
