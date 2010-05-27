@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
-Export-Package: org.sonar.ide.test,org.sonar.ide.eclipse.tests.common,
- org.apache.commons.io
+Export-Package: org.apache.commons.io,
+ org.sonar.ide.eclipse.tests.common
 Bundle-ClassPath: .,jars/sonar-ide-testing-harness-0.1.1.jar,jars/jett
  y-servlet-tester-6.1.6.jar,jars/jetty-6.1.6.jar,jars/jetty-util-6.1.6
  .jar,jars/servlet-api-2.5-6.1.6.jar,jars/commons-io-1.4.jar,jars/comm
@@ -10,7 +10,7 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5, JavaSE-1.6
 Require-Bundle: org.junit4,org.eclipse.core.resources,org.eclipse.core
  .runtime,org.sonar.ide.eclipse,org.sonar.ide.eclipse.sonar_embedder
 Bundle-Vendor: Evgeny Mandrikov
-MavenArtifact-BaseVersion: 0.0.1-SNAPSHOT
+MavenArtifact-BaseVersion: 0.2.0-SNAPSHOT
 Bundle-Version: 0.2.0.qualifier
 Eclipse-BuddyPolicy: registered
 MavenArtifact-GroupId: org.codehaus.sonar-ide.eclipse
