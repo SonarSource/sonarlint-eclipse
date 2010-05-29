@@ -57,6 +57,8 @@ public class SonarProjectPropertyBlock {
 
   private Text     projectGroupIdText;
   private Text     projectArtifactIdText;
+  private Text     projectBranchText;
+  
   private Button   autoConfigButton;
 
   public SonarProjectPropertyBlock(IProject project) {
@@ -151,6 +153,13 @@ public class SonarProjectPropertyBlock {
     projectArtifactIdText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     projectArtifactIdText.setText(projectProperties.getArtifactId());
     
+    // Project branch
+    Label labelBranch = new Label(container, SWT.NULL);
+    labelBranch.setText(Messages.getString("pref.project.label.branch")); //$NON-NLS-1$
+    projectBranchText = new Text(container, SWT.BORDER | SWT.SINGLE);
+    projectBranchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    projectBranchText.setText(projectProperties.getBranch());
+    
     // Create auto config button.
     autoConfigButton = new Button(container, SWT.PUSH);
     autoConfigButton.setText(Messages.getString("action.autoconfig")); //$NON-NLS-1$
@@ -191,4 +200,7 @@ public class SonarProjectPropertyBlock {
     return projectArtifactIdText.getText();
   }
 
+  protected String getBranch() {
+    return projectBranchText.getText();
+  }
 }

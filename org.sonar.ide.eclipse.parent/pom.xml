@@ -24,7 +24,7 @@
 
     <target.platform>e35</target.platform>
 
-    <sonar-ide-commons.version>0.1.1</sonar-ide-commons.version>
+    <sonar-ide-commons.version>0.2-SNAPSHOT</sonar-ide-commons.version>
 
     <!-- disable accidental deployment -->
     <sonar-ide.site>dav:http://localhost</sonar-ide.site>
@@ -214,6 +214,32 @@
       <modules>
         <module>../org.sonar.ide.eclipse.ui.tests</module>
       </modules>
+    </profile>
+
+    <profile>
+      <id>sign</id>
+      <activation>
+        <property>
+          <name>jarsigner.alias</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jarsigner-plugin</artifactId>
+            <version>1.2</version>
+            <executions>
+              <execution>
+                <id>sign</id>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 

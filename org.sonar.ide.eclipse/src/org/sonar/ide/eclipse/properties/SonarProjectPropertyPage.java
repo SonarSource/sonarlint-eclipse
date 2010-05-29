@@ -32,7 +32,7 @@ import org.sonar.ide.eclipse.SonarPlugin;
  * Property page for projects to configure sonar server connection. It store in
  * <project>/.settings/org.sonar.ide.eclipse.prefs following properties:
  *   - url,
- *   - groupId, artifactId
+ *   - groupId, artifactId, branch
  * 
  * @author Jérémie Lagarde
  */
@@ -46,11 +46,13 @@ public class SonarProjectPropertyPage extends PropertyPage {
 
   @Override
   protected Control createContents(Composite parent) {
-    if (parent == null)
+    if (parent == null) {
       return new Composite(parent, SWT.NULL);
+    }
     ProjectProperties projectProperties = ProjectProperties.getInstance(getProject());
-    if (projectProperties == null)
+    if (projectProperties == null) {
       return new Composite(parent, SWT.NULL);
+    }
     block = new SonarProjectPropertyBlock(getProject());
     return block.createContents(parent, projectProperties);
   }
@@ -64,11 +66,13 @@ public class SonarProjectPropertyPage extends PropertyPage {
   @Override
   protected void performApply() {
     ProjectProperties projectProperties = ProjectProperties.getInstance(getProject());
-    if (projectProperties == null || block ==null)
+    if (projectProperties == null || block ==null) {
       return;
+    }
     projectProperties.setUrl(block.getUrl());
     projectProperties.setGroupId(block.getGroupId());
     projectProperties.setArtifactId(block.getArtifactId());
+    projectProperties.setBranch(block.getBranch());
     try {
       projectProperties.save();
     } catch (SonarIdeException e) {

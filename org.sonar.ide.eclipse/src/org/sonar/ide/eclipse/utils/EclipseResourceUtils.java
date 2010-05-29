@@ -93,6 +93,10 @@ public class EclipseResourceUtils extends AbstractResourceUtils<IResource> {
   @Override
   public String getProjectKey(IResource file) {
     ProjectProperties properties = ProjectProperties.getInstance(file);
-    return getProjectKey(properties.getGroupId(), properties.getArtifactId());
+    return getProjectKey(
+        properties.getGroupId(),
+        properties.getArtifactId(),
+        properties.getBranch()
+    );
   }
 }

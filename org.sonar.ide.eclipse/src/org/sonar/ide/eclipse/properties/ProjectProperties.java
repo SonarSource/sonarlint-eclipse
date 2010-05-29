@@ -75,8 +75,9 @@ public class ProjectProperties extends AbstractProjectProperties<IProject>{
   @Override
   public String getUrl() {
     String url = super.getUrl();
-    if (StringUtils.isBlank(url))
+    if (StringUtils.isBlank(url)) {
       url = SonarPlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL);
+    }
     return url;
   }
   
