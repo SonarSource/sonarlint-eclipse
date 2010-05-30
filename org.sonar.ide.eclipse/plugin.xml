@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
 
-  <extension point="org.eclipse.ui.intro.configExtension">
-      <configExtension configId="org.eclipse.ui.intro.universalConfig"
-                       content="intro/overview.xml"/>
-      <!--configExtension configId="org.eclipse.ui.intro.universalConfig"
-                       content="intro/whatsnew.xml"/-->
-  </extension>
-
   <extension point="org.eclipse.ui.preferencePages">
     <page
         class="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
@@ -62,7 +55,7 @@
        name="%sonar.properties.page.name">
     </page>
   </extension>
-  
+
   <extension point="org.eclipse.core.runtime.adapters">
       <factory
             adaptableType="org.eclipse.core.runtime.IAdaptable"
@@ -70,7 +63,7 @@
          <adapter type="org.eclipse.ui.IActionFilter"/>
       </factory>
   </extension>
-  
+
   <extension
         point="org.eclipse.ui.popupMenus">
      <objectContribution
@@ -216,5 +209,22 @@
             name="%sonar.perspective.name">
       </perspective>
    </extension>
+
+  <!-- Welcome -->
+  <extension point="org.eclipse.ui.intro.configExtension">
+      <configExtension configId="org.eclipse.ui.intro.universalConfig"
+                       content="intro/overview.xml"/>
+      <!--configExtension configId="org.eclipse.ui.intro.universalConfig"
+                       content="intro/whatsnew.xml"/-->
+  </extension>
+
+  <!-- Help Contents -->
+  <extension
+         point="org.eclipse.help.toc">
+      <toc
+            file="help/toc.xml"
+            primary="true">
+      </toc>
+  </extension>
 
 </plugin>

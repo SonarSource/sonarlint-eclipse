@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+<toc label="Sonar Integration for Eclipse" link_to="../com.tasktop.help.ui/toc-connectors.xml#additions">
+    <topic label="Overview" href="help/main.html"> 
+    </topic>
+    <topic href="help/support.html" label="Support">
+    </topic>
+</toc>
