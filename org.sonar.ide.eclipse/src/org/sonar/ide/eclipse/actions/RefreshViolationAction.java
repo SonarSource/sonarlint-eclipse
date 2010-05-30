@@ -39,7 +39,6 @@ import org.sonar.ide.eclipse.jobs.RefreshViolationJob;
 
 /**
  * @author Jérémie Lagarde
- * 
  */
 public class RefreshViolationAction implements IWorkbenchWindowActionDelegate {
 
@@ -65,23 +64,19 @@ public class RefreshViolationAction implements IWorkbenchWindowActionDelegate {
    * @see IActionDelegate#run(IAction)
    */
   public void run(final IAction action) {
+    final List<IResource> resources;
     if (selection instanceof ITreeSelection) {
-      final List<IResource> projects = new ArrayList<IResource>();
-      Collections.addAll(projects, ResourcesPlugin.getWorkspace().getRoot().getProjects());
-      // Load violations
-      final Job job = new RefreshViolationJob(projects);
-      job.schedule();
-      // Load duplications
-      final Job job2 = new RefreshDuplicationsJob(projects);
-      job2.schedule();
+      resources = new ArrayList<IResource>();
+      Collections.addAll(resources, ResourcesPlugin.getWorkspace().getRoot().getProjects());
     } else {
-      // Load violations
-      final Job job = new RefreshViolationJob(selection.toList());
-      job.schedule();
-      // Load duplications
-      final Job job2 = new RefreshDuplicationsJob(selection.toList());
-      job2.schedule();
+      resources = selection.toList();
     }
+    // Load violations
+    final Job violationsJob = new RefreshViolationJob(resources);
+    violationsJob.schedule();
+    // Load duplications
+    final Job duplicationsJob = new RefreshDuplicationsJob(resources);
+    duplicationsJob.schedule();
   }
 
   /**
@@ -93,6 +88,5 @@ public class RefreshViolationAction implements IWorkbenchWindowActionDelegate {
     } else {
       this.selection = null;
     }
-
   }
 }

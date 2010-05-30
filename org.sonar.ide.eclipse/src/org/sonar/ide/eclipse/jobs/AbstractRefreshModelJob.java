@@ -39,7 +39,6 @@ import org.eclipse.jdt.core.JavaCore;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.services.Model;
 
 /**
  * @author Jérémie Lagarde
