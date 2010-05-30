@@ -1,0 +1,7 @@
+a#sonar img {
+  background-image: url(../../icons/sonar32.png);
+}
+
+a#sonar:hover img {
+  background-image: url(../../icons/sonar32.png);
+}

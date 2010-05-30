@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<introContent>
+  <extensionContent id="org.sonar.ide.eclipse" name="Sonar Integration for Eclipse"
+                    style="css/whatsnew.css" alt-style="css/whatsnew.properties" path="whatsnew/@">
+    <group id="content-group" style-id="content-group">
+      <link id="sonar" style-id="content-link"
+            label="Sonar Integration for Eclipse"
+            url="http://sonar-ide.codehaus.org">
+        <text>Find out how Sonar Plugin might be used in your daily work.</text>
+      </link>
+    </group>
+  </extensionContent>
+</introContent>

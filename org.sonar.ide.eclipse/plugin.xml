@@ -214,8 +214,8 @@
   <extension point="org.eclipse.ui.intro.configExtension">
       <configExtension configId="org.eclipse.ui.intro.universalConfig"
                        content="intro/overview.xml"/>
-      <!--configExtension configId="org.eclipse.ui.intro.universalConfig"
-                       content="intro/whatsnew.xml"/-->
+      <configExtension configId="org.eclipse.ui.intro.universalConfig"
+                       content="intro/whatsnew.xml"/>
   </extension>
 
   <!-- Help Contents -->
