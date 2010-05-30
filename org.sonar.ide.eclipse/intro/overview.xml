@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <introContent>
   <extensionContent id="org.sonar.ide.eclipse" name="Sonar Integration for Eclipse"
-                    style="css/overview.css" alt-style="css/overview.properties" path="overview/@">
+    style="css/overview.css" alt-style="css/overview.properties" path="overview/@">
     <group id="content-group" style-id="content-group">
-      <link id="sonar" style-id="content-link"
-            label="Sonar Integration for Eclipse"
-            url="http://sonar-ide.codehaus.org/">
-        <text>See an overview of the features provided by Sonar Integration for Eclipse.</text>
+      <link id="sonar" style-id="content-link" label="Sonar Integration for Eclipse"
+        url="http://sonar-ide.codehaus.org/">
+        <text>See an overview of the features provided by Sonar
+          Integration for Eclipse.</text>
       </link>
     </group>
   </extensionContent>
