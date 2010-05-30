@@ -44,7 +44,7 @@ import org.sonar.wsclient.services.Model;
 /**
  * @author Jérémie Lagarde
  */
-public abstract class AbstractRefreshModelJob<M extends Model> extends Job implements IResourceVisitor {
+public abstract class AbstractRefreshModelJob<M> extends Job implements IResourceVisitor {
 
   private final List<IResource>      resources;
   private final String               markerId;

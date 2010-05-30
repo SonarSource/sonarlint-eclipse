@@ -6,7 +6,7 @@ Export-Package: ch.qos.logback.core.spi,org.sonar.ide.images.tendency,
  ,org.sonar.wsclient.connectors,ch.qos.logback.core.joran,org.sonar.ws
  client.unmarshallers,org.sonar.ide.client,org.sonar.ide.images.priori
  ty,ch.qos.logback.core.util,org.sonar.ide.images,org.sonar.ide.api,or
- g.sonar.wsclient.services
+ g.sonar.ide.shared.duplications,org.sonar.wsclient.services
 Bundle-Vendor: Evgeny Mandrikov
 Bundle-ClassPath: jars/sonar-ide-commons-0.2-SNAPSHOT.jar,jars/slf4j-a
  pi-1.5.11.jar,jars/jcl-over-slf4j-1.5.11.jar,jars/google-collections-

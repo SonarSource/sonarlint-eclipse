@@ -34,6 +34,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.sonar.ide.eclipse.jobs.RefreshDuplicationsJob;
 import org.sonar.ide.eclipse.jobs.RefreshViolationJob;
 
 /**
@@ -67,11 +68,19 @@ public class RefreshViolationAction implements IWorkbenchWindowActionDelegate {
     if (selection instanceof ITreeSelection) {
       final List<IResource> projects = new ArrayList<IResource>();
       Collections.addAll(projects, ResourcesPlugin.getWorkspace().getRoot().getProjects());
+      // Load violations
       final Job job = new RefreshViolationJob(projects);
       job.schedule();
+      // Load duplications
+      final Job job2 = new RefreshDuplicationsJob(projects);
+      job2.schedule();
     } else {
+      // Load violations
       final Job job = new RefreshViolationJob(selection.toList());
       job.schedule();
+      // Load duplications
+      final Job job2 = new RefreshDuplicationsJob(selection.toList());
+      job2.schedule();
     }
   }
 
