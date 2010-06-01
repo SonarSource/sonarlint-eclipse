@@ -8,5 +8,6 @@
     <import feature="org.eclipse.platform" match="greaterOrEqual" version="3.4.0"/>
   </requires>
   <plugin id="org.sonar.ide.eclipse" unpack="false" install-size="0" download-size="0" version="0.0.0"/>
+  <plugin id="org.sonar.ide.eclipse.help" unpack="false" install-size="0" download-size="0" version="0.0.0"/>
   <plugin id="org.sonar.ide.eclipse.sonar_embedder" install-size="0" download-size="0" version="0.0.0"/>
 </feature>
