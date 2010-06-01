@@ -220,13 +220,4 @@
                        content="intro/tutorials.xml"/>
   </extension>
 
-  <!-- Help Contents -->
-  <extension
-         point="org.eclipse.help.toc">
-      <toc
-            file="help/toc.xml"
-            primary="true">
-      </toc>
-  </extension>
-
 </plugin>
