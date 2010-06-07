@@ -52,11 +52,15 @@ public class SonarPlugin extends AbstractUIPlugin {
 
   // Images
   private static ImageDescriptor    SONARWIZBAN_IMG;
+  private static ImageDescriptor    SONAR16_IMG;
+  private static ImageDescriptor    SONAR32_IMG;
   private static ImageDescriptor    SONARCONSOLE_IMG;
   private static ImageDescriptor    SONARSYNCHRO_IMG;
   private static ImageDescriptor    SONARCLOSE_IMG;
 
   public static final String        IMG_SONARWIZBAN  = "sonar_wizban.gif";        //$NON-NLS-1$
+  public static final String        IMG_SONAR16      = "sonar.png";               //$NON-NLS-1$
+  public static final String        IMG_SONAR32      = "sonar32.png";             //$NON-NLS-1$
   public static final String        IMG_SONARCONSOLE = "sonar.png";               //$NON-NLS-1$
   public static final String        IMG_SONARSYNCHRO = "synced.gif";              //$NON-NLS-1$
   public static final String        IMG_SONARCLOSE   = "close.gif";               //$NON-NLS-1$
@@ -79,14 +83,14 @@ public class SonarPlugin extends AbstractUIPlugin {
   }
 
   @Override
-  public void start(BundleContext context) throws Exception {
+  public void start(final BundleContext context) throws Exception {
     super.start(context);
     plugin = this;
 
     initLogging();
     try {
       console = new SonarConsole();
-    } catch (RuntimeException e) {
+    } catch (final RuntimeException e) {
       writeLog(IStatus.ERROR, "Errors occurred starting the Sonar console", e); //$NON-NLS-1$
     }
 
@@ -97,15 +101,15 @@ public class SonarPlugin extends AbstractUIPlugin {
    * Godin: I'm not sure is it correct way or not, but it works.
    */
   private void initLogging() {
-    URL url = getBundle().getEntry("/conf/logback.xml");
+    final URL url = getBundle().getEntry("/conf/logback.xml");
     if (url != null) {
-      LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+      final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
       try {
-        JoranConfiguratorBase configurator = new JoranConfigurator();
+        final JoranConfiguratorBase configurator = new JoranConfigurator();
         configurator.setContext(lc);
         lc.reset();
         configurator.doConfigure(url);
-      } catch (JoranException e) {
+      } catch (final JoranException e) {
         e.printStackTrace();
       }
       StatusPrinter.printIfErrorsOccured(lc);
@@ -115,7 +119,7 @@ public class SonarPlugin extends AbstractUIPlugin {
   }
 
   @Override
-  public void stop(BundleContext context) throws Exception {
+  public void stop(final BundleContext context) throws Exception {
     plugin = null;
     super.stop(context);
     console.shutdown();
@@ -134,15 +138,15 @@ public class SonarPlugin extends AbstractUIPlugin {
     return this.console;
   }
 
-  private IStatus createStatus(int severity, String msg, Throwable t) {
+  private IStatus createStatus(final int severity, final String msg, final Throwable t) {
     return new Status(severity, PLUGIN_ID, msg, t);
   }
 
-  public void writeLog(int severity, String msg, Throwable t) {
+  public void writeLog(final int severity, final String msg, final Throwable t) {
     super.getLog().log(createStatus(severity, msg, t));
   }
 
-  public void writeLog(IStatus status) {
+  public void writeLog(final IStatus status) {
     super.getLog().log(status);
   }
 
@@ -163,7 +167,7 @@ public class SonarPlugin extends AbstractUIPlugin {
     });
   }
 
-  public void displayError(int severity, final String msg, Throwable t, boolean shouldLog) {
+  public void displayError(final int severity, final String msg, final Throwable t, final boolean shouldLog) {
     final IStatus status = createStatus(severity, msg, t);
     if (shouldLog) {
       writeLog(status);
@@ -177,7 +181,7 @@ public class SonarPlugin extends AbstractUIPlugin {
     });
   }
 
-  public static ImageDescriptor getImageDescriptor(String id) {
+  public static ImageDescriptor getImageDescriptor(final String id) {
     ImageDescriptor img = getCachedImageDescriptor(id);
     if (img == null) {
       img = loadImageDescriptor(id);
@@ -185,25 +189,37 @@ public class SonarPlugin extends AbstractUIPlugin {
     return img;
   }
 
-  private static ImageDescriptor loadImageDescriptor(String id) {
-    String iconPath = "icons/"; //$NON-NLS-1$
+  private static ImageDescriptor loadImageDescriptor(final String id) {
+    final String iconPath = "icons/"; //$NON-NLS-1$
 
     try {
-      URL installURL = SonarPlugin.getDefault().getBundle().getEntry("/"); //$NON-NLS-1$
-      URL url = new URL(installURL, iconPath + id);
+      final URL installURL = SonarPlugin.getDefault().getBundle().getEntry("/"); //$NON-NLS-1$
+      final URL url = new URL(installURL, iconPath + id);
       return ImageDescriptor.createFromURL(url);
-    } catch (MalformedURLException e) {
+    } catch (final MalformedURLException e) {
       return ImageDescriptor.getMissingImageDescriptor();
     }
   }
 
-  private static ImageDescriptor getCachedImageDescriptor(String id) {
+  private static ImageDescriptor getCachedImageDescriptor(final String id) {
     ImageDescriptor img = null;
     if (id.equals(IMG_SONARWIZBAN)) {
       if (SONARWIZBAN_IMG == null) {
         SONARWIZBAN_IMG = loadImageDescriptor(IMG_SONARWIZBAN);
       }
       img = SONARWIZBAN_IMG;
+    }
+    if (id.equals(IMG_SONAR16)) {
+      if (SONAR16_IMG == null) {
+        SONAR16_IMG = loadImageDescriptor(IMG_SONAR16);
+      }
+      img = SONARCONSOLE_IMG;
+    }
+    if (id.equals(IMG_SONAR32)) {
+      if (SONAR32_IMG == null) {
+        SONAR32_IMG = loadImageDescriptor(IMG_SONAR32);
+      }
+      img = SONARCONSOLE_IMG;
     }
     if (id.equals(IMG_SONARCONSOLE)) {
       if (SONARCONSOLE_IMG == null) {
