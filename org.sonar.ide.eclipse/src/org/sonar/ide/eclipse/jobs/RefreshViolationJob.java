@@ -97,6 +97,7 @@ public class RefreshViolationJob extends AbstractRefreshModelJob<Violation> {
     markerAttributes.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_WARNING));
     markerAttributes.put(IMarker.LINE_NUMBER, violation.getLine());
     markerAttributes.put(IMarker.MESSAGE, ViolationUtils.getDescription(violation));
+    markerAttributes.put("rulekey", violation.getRuleKey());
     markerAttributes.put("rulename", violation.getRuleName());
     addLine(markerAttributes, violation.getLine(), unit.getSource());
     final IMarker marker = unit.getResource().createMarker(SonarPlugin.MARKER_ID);

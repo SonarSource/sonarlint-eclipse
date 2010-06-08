@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<!-- ====================================================================== -->
+<!-- Copyright (C) 2010 Evgeny Mandrikov, Jérémie Lagarde                   -->
+<!--                                                                        -->
+<!-- Sonar-IDE is free software; you can redistribute it and/or             -->
+<!-- modify it under the terms of the GNU Lesser General Public             -->
+<!-- License as published by the Free Software Foundation; either           -->
+<!-- version 3 of the License, or (at your option) any later version.       -->
+<!--                                                                        -->
+<!-- Sonar-IDE is distributed in the hope that it will be useful,           -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of         -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU      -->
+<!-- Lesser General Public License for more details.                        -->
+<!--                                                                        -->
+<!-- You should have received a copy of the GNU Lesser General Public       -->
+<!-- License along with Sonar-IDE; if not, write to the Free Software       -->
+<!-- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02      -->
+<!-- ====================================================================== -->
 <plugin>
+   <extension-point id="resolver" name="sonar resolver" schema="schema/org.sonar.ide.eclipse.markers.resolver.exsd"/>
 
   <extension point="org.eclipse.ui.preferencePages">
     <page
@@ -218,6 +237,21 @@
                        content="intro/whatsnew.xml"/>
       <configExtension configId="org.eclipse.ui.intro.universalConfig"
                        content="intro/tutorials.xml"/>
+  </extension>
+
+  <!-- Marker resolver -->
+  <extension
+        point="org.eclipse.ui.ide.markerResolution">
+     <markerResolutionGenerator
+           class="org.sonar.ide.eclipse.markers.SonarMarkerResolutionGenerator"
+           markerType="org.sonar.ide.eclipse.sonarMarker">
+     </markerResolutionGenerator>
+  </extension>
+  <extension
+        point="org.sonar.ide.eclipse.resolver">
+     <resolver
+           class="org.sonar.ide.eclipse.markers.resolvers.NoSonarResolver">
+     </resolver>
   </extension>
 
 </plugin>
