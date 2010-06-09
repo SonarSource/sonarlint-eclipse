@@ -253,5 +253,13 @@
            class="org.sonar.ide.eclipse.markers.resolvers.NoSonarResolver">
      </resolver>
   </extension>
-
+  <extension
+        point="org.eclipse.ui.workbench.texteditor.quickDiffReferenceProvider">
+     <referenceprovider
+            name="Sonar source"
+            label="Sonar source"
+           class="org.sonar.ide.eclipse.quickdiff.SonarReferenceProvider"
+           id="org.sonar.ide.eclipse.referenceprovider">
+     </referenceprovider>
+  </extension>
 </plugin>
