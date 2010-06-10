@@ -39,6 +39,7 @@ public class ImportProjectTest extends UITestCase {
     String projectName = "SimpleProject";
     importNonMavenProject(projectName);
     
+    // for non maven projects groupId is unknown
     check("", projectName);
   }
 

@@ -136,6 +136,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
       bot.text().setText(project.getCanonicalPath());
       bot.button("Refresh").click();
       bot.button("Finish").click();
+      waitForAllBuildsToComplete();
     } finally {
       waitForClose(shell);
     }

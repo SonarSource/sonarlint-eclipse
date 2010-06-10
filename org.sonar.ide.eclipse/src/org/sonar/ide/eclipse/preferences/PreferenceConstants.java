@@ -27,7 +27,7 @@ public class PreferenceConstants {
 
   // Default Sonar Server
   public static final String P_SONAR_SERVER_URL         = "sonarServerUrlPreference"; //$NON-NLS-1$
-  public static final String P_SONAR_SERVER_URL_DEFAULT = "http://localhost:9000/";  //$NON-NLS-1$
+  public static final String P_SONAR_SERVER_URL_DEFAULT = "http://localhost:9000";    //$NON-NLS-1$
 
   // Console configuration
   public static final String P_CONSOLE_REQUEST_COLOR    = "consoleRequestColor";     //$NON-NLS-1$
