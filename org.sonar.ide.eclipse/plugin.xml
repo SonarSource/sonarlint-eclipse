@@ -258,7 +258,7 @@
      <referenceprovider
             name="Sonar source"
             label="Sonar source"
-           class="org.sonar.ide.eclipse.quickdiff.SonarReferenceProvider"
+           class="org.sonar.ide.eclipse.compare.SonarReferenceProvider"
            id="org.sonar.ide.eclipse.referenceprovider">
      </referenceprovider>
   </extension>
