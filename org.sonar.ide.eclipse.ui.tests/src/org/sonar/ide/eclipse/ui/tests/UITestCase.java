@@ -27,6 +27,7 @@ import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.utils.SWTUtils;
+import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
@@ -51,6 +52,7 @@ import org.sonar.ide.test.SonarIdeTestCase;
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
 public abstract class UITestCase extends SonarIdeTestCase {
+
   public static final String PACKAGE_EXPLORER_VIEW_ID = "org.eclipse.jdt.ui.PackageExplorer";
 
   protected static SWTWorkbenchBot bot;
@@ -123,7 +125,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
     File output = takeScreenShot("exception");
     return new Exception(e.getMessage() + " - " + output, e);
   }
-  
+
   protected File importNonMavenProject(String projectName) throws Exception {
     File project = getProject(projectName);
     waitForAllBuildsToComplete();
@@ -181,11 +183,19 @@ public abstract class UITestCase extends SonarIdeTestCase {
     shell.close();
     return false;
   }
-  
+
   protected static SWTBotShell showSonarPropertiesPage(String projectName) {
     SWTBotTree tree = selectProject(projectName);
     ContextMenuHelper.clickContextMenu(tree, "Properties");
     SWTBotShell shell = bot.shell("Properties for " + projectName);
+    shell.activate();
+    bot.tree().select("Sonar");
+    return shell;
+  }
+  
+  protected static SWTBotShell showGlobalSonarPropertiesPage() {
+    bot.menu("Window").menu("Preferences").click();
+    SWTBotShell shell = bot.shell("Preferences");
     shell.activate();
     bot.tree().select("Sonar");
     return shell;
@@ -197,5 +207,26 @@ public abstract class UITestCase extends SonarIdeTestCase {
     treeItem = tree.getTreeItem(projectName);
     treeItem.select();
     return tree;
+  }
+
+  protected void configureDefaultSonarServer(String serverUrl) {
+    SWTBotShell shell = showGlobalSonarPropertiesPage();
+    bot.button("Edit").click();
+
+    SWTBotShell shell2 = bot.shell(""); // TODO Godin: should be unique name
+    shell2.activate();
+    bot.textWithLabel("Sonar server URL :").setText(serverUrl);
+
+    // Close wizard
+    bot.button("Finish").click();
+    bot.waitUntil(Conditions.shellCloses(shell2));
+
+    // Close properties
+    shell.bot().button("OK").click();
+    bot.waitUntil(Conditions.shellCloses(shell));
+  }
+  
+  protected static String getGroupId(String projectName) {
+    return "org.sonar-ide.tests." + projectName;
   }
 }

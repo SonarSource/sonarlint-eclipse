@@ -29,16 +29,17 @@ import org.junit.Test;
  * @author Evgeny Mandrikov
  */
 public class ImportProjectTest extends UITestCase {
+
   @After
   public void tearDown() throws Exception {
     clearProjects();
   }
-  
+
   @Test
   public void testNonMavenProject() throws Exception {
     String projectName = "SimpleProject";
     importNonMavenProject(projectName);
-    
+
     // for non maven projects groupId is unknown
     check("", projectName);
   }
@@ -46,7 +47,7 @@ public class ImportProjectTest extends UITestCase {
   @Test
   public void testSimpleModuleMavenProject() throws Exception {
     String projectName = "hello-world";
-    String groupId = "org.sonar-ide.tests." + projectName;
+    String groupId = getGroupId(projectName);
     importMavenProject(projectName);
 
     check(groupId, "hello-world");
@@ -55,9 +56,9 @@ public class ImportProjectTest extends UITestCase {
   @Test
   public void testMultiModuleMavenProject() throws Exception {
     String projectName = "modules";
-    String groupId = "org.sonar-ide.tests." + projectName;
+    String groupId = getGroupId(projectName);
     importMavenProject(projectName);
-    
+
     check(groupId, "parent");
     check(groupId, "module_a");
     check(groupId, "submodule_a1");
@@ -66,11 +67,11 @@ public class ImportProjectTest extends UITestCase {
     check(groupId, "submodule_b1");
     check(groupId, "submodule_b2");
   }
-  
+
   private void check(String groupId, String artifactId) {
     SWTBotShell shell = showSonarPropertiesPage(artifactId);
     assertProperties(shell, groupId, artifactId);
-    closeProperties(shell);    
+    closeProperties(shell);
   }
 
   private void assertProperties(SWTBotShell shell, String expectedGroupId, String expectedArtifactId) {
