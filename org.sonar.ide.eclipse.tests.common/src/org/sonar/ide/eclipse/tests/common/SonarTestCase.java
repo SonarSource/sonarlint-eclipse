@@ -42,16 +42,16 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.sonar.ide.api.Logs;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.test.AbstractSonarIdeTest;
+import org.sonar.ide.test.SonarIdeTestCase;
 import org.sonar.ide.test.SonarTestServer;
 import org.sonar.wsclient.Host;
 
 /**
  * Common test case for sonar-ide/eclipse projects.
- *
+ * 
  * @author Jérémie Lagarde
  */
-public abstract class AbstractSonarTest extends AbstractSonarIdeTest {
+public abstract class SonarTestCase extends SonarIdeTestCase {
 
   protected static final IProgressMonitor monitor = new NullProgressMonitor();
   protected static IWorkspace workspace;
@@ -122,7 +122,7 @@ public abstract class AbstractSonarTest extends AbstractSonarIdeTest {
 
   /**
    * Import test project into the Eclipse workspace
-   *
+   * 
    * @return created projects
    */
   protected IProject importEclipseProject(String projectdir) throws IOException, CoreException {
@@ -137,9 +137,10 @@ public abstract class AbstractSonarTest extends AbstractSonarIdeTest {
     final List<IProject> addedProjectList = new ArrayList<IProject>();
 
     workspace.run(new IWorkspaceRunnable() {
+
       public void run(IProgressMonitor monitor) throws CoreException {
         // create project as java project
-        if (!project.exists()) {
+        if ( !project.exists()) {
           IProjectDescription projectDescription = workspace.newProjectDescription(project.getName());
           projectDescription.setLocation(null);
           project.create(projectDescription, monitor);
@@ -155,7 +156,7 @@ public abstract class AbstractSonarTest extends AbstractSonarIdeTest {
   }
 
   public static void waitForJobs() throws Exception {
-    while (!Job.getJobManager().isIdle()) {
+    while ( !Job.getJobManager().isIdle()) {
       Thread.sleep(1000);
     }
   }
@@ -179,17 +180,17 @@ public abstract class AbstractSonarTest extends AbstractSonarIdeTest {
 
   protected void assertMarker(IMarker marker) throws CoreException {
     if (Logs.INFO.isDebugEnabled()) {
-      Logs.INFO.debug("Checker marker[" + marker.getId() + "] (" + marker.getAttribute(IMarker.PRIORITY) + ") : line " + marker.getAttribute(IMarker.LINE_NUMBER) + " : "
-          + marker.getAttribute(IMarker.MESSAGE));
+      Logs.INFO.debug("Checker marker[" + marker.getId() + "] (" + marker.getAttribute(IMarker.PRIORITY) + ") : line "
+          + marker.getAttribute(IMarker.LINE_NUMBER) + " : " + marker.getAttribute(IMarker.MESSAGE));
     }
-    if (!SonarPlugin.MARKER_ID.equals(marker.getType()))
+    if ( !SonarPlugin.MARKER_ID.equals(marker.getType()))
       return;
     for (MarkerChecker checker : markerCheckerList) {
       if (checker.check(marker))
         return;
     }
-    fail("MarckerChecker faild for marker[" + marker.getId() + "] (" + marker.getAttribute(IMarker.PRIORITY) + ") : line " + marker.getAttribute(IMarker.LINE_NUMBER) + " : "
-        + marker.getAttribute(IMarker.MESSAGE));
+    fail("MarckerChecker faild for marker[" + marker.getId() + "] (" + marker.getAttribute(IMarker.PRIORITY) + ") : line "
+        + marker.getAttribute(IMarker.LINE_NUMBER) + " : " + marker.getAttribute(IMarker.MESSAGE));
   }
 
 }

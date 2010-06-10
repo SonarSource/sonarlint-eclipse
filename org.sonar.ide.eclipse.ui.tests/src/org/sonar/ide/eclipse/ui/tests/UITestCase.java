@@ -42,7 +42,7 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.sonar.ide.eclipse.tests.common.JobHelpers;
 import org.sonar.ide.eclipse.tests.common.WorkspaceHelpers;
-import org.sonar.ide.test.AbstractSonarIdeTest;
+import org.sonar.ide.test.SonarIdeTestCase;
 
 /**
  * TODO use Xvfb ("fake" X-server)
@@ -50,7 +50,7 @@ import org.sonar.ide.test.AbstractSonarIdeTest;
  * @author Evgeny Mandrikov
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
-public abstract class UITestCase extends AbstractSonarIdeTest {
+public abstract class UITestCase extends SonarIdeTestCase {
   public static final String PACKAGE_EXPLORER_VIEW_ID = "org.eclipse.jdt.ui.PackageExplorer";
 
   protected static SWTWorkbenchBot bot;

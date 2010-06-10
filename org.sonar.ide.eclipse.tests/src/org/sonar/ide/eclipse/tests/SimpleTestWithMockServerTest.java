@@ -19,7 +19,7 @@
 package org.sonar.ide.eclipse.tests;
 
 import org.junit.Test;
-import org.sonar.ide.eclipse.tests.common.AbstractSonarTest;
+import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
 
 /**
@@ -29,7 +29,7 @@ import org.sonar.ide.eclipse.tests.common.AbstractSonarTest;
  * @author Jérémie Lagarde
  *
  */
-public class SimpleTestWithMockServerTest extends AbstractSonarTest {
+public class SimpleTestWithMockServerTest extends SonarTestCase {
   
   @Test
   public void testStartMockServer() throws Exception {

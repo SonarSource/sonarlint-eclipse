@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
-import org.sonar.ide.eclipse.tests.common.AbstractSonarTest;
+import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 import org.sonar.wsclient.Host;
 
 /**
@@ -49,7 +49,7 @@ import org.sonar.wsclient.Host;
  * @link http://jira.codehaus.org/browse/SONARIDE-35
  * @link http://jira.codehaus.org/browse/SONARIDE-27
  */
-public class RefreshViolationJobTest extends AbstractSonarTest {
+public class RefreshViolationJobTest extends SonarTestCase {
 
   private static final Logger LOG = LoggerFactory.getLogger(RefreshViolationJobTest.class);
   private IProject            project;
