@@ -18,14 +18,36 @@
 
 package org.sonar.ide.eclipse.tests.common;
 
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+
 /**
  * @author Evgeny Mandrikov
  */
 public class JobHelpers {
+
+  /**
+   * Inspired by http://eclipse.dzone.com/articles/eclipse-gui-testing-is-viable-
+   * Also see http://fisheye.jboss.org/browse/JBossTools/trunk/vpe/tests/org.jboss.tools.vpe.ui.test/src/org/jboss/tools/vpe/ui/test/TestUtil.java?r=HEAD
+   */
   public static void waitForJobsToComplete() {
-    // TODO Godin: implement me
+    // ensure that all queued workspace operations and locks are released
+    try {
+      ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+
+        public void run(IProgressMonitor monitor) throws CoreException {
+          // nothing to do!
+        }
+      }, new NullProgressMonitor());
+    } catch (CoreException e) {
+      throw new IllegalStateException(e);
+    }
+
   }
-  
+
   private JobHelpers() {
   }
 }

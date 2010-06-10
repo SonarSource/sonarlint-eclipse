@@ -18,14 +18,58 @@
 
 package org.sonar.ide.eclipse.tests.common;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+
 /**
  * @author Evgeny Mandrikov
  */
 public class WorkspaceHelpers {
-  public static void cleanWorkspace() {
+
+  public static void cleanWorkspace() throws InterruptedException, CoreException, IOException {
     // TODO Godin: implement me
+    doCleanWorkspace();
   }
-  
+
+  private static void doCleanWorkspace() throws InterruptedException, CoreException, IOException {
+    final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+    workspace.run(new IWorkspaceRunnable() {
+
+      public void run(IProgressMonitor monitor) throws CoreException {
+        IProject[] projects = workspace.getRoot().getProjects();
+        for (int i = 0; i < projects.length; i++) {
+          projects[i].delete(true, true, monitor);
+        }
+      }
+    }, new NullProgressMonitor());
+
+    JobHelpers.waitForJobsToComplete(); // was: JobHelpers.waitForJobsToComplete(new NullProgressMonitor());
+
+    File[] files = workspace.getRoot().getLocation().toFile().listFiles();
+    if (files != null) {
+      for (File file : files) {
+        if ( !".metadata".equals(file.getName())) {
+          if (file.isDirectory()) {
+            FileUtils.deleteDirectory(file);
+          } else {
+            if ( !file.delete()) {
+              throw new IOException("Could not delete file " + file.getCanonicalPath());
+            }
+          }
+        }
+      }
+    }
+  }
+
   private WorkspaceHelpers() {
   }
 }

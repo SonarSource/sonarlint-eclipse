@@ -24,9 +24,12 @@ import java.io.IOException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.utils.SWTUtils;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -48,6 +51,7 @@ import org.sonar.ide.test.AbstractSonarIdeTest;
  */
 @RunWith(SWTBotJunit4ClassRunner.class)
 public abstract class UITestCase extends AbstractSonarIdeTest {
+  public static final String PACKAGE_EXPLORER_VIEW_ID = "org.eclipse.jdt.ui.PackageExplorer";
 
   protected static SWTWorkbenchBot bot;
 
@@ -55,15 +59,20 @@ public abstract class UITestCase extends AbstractSonarIdeTest {
   public final static void beforeClass() throws Exception {
     init(); // TODO Godin: remove
     bot = new SWTWorkbenchBot();
-    
+
+    try {
+      closeView("org.eclipse.ui.internal.introview");
+      closeView("org.eclipse.ui.views.ContentOutline");
+    } catch (WidgetNotFoundException e) {
+      // ignore
+    }
+
     // Clean out projects left over from previous test runs
     clearProjects();
 
     openPerspective("org.eclipse.jdt.ui.JavaPerspective");
-    
-    closeView("org.eclipse.ui.views.ContentOutline");
   }
-  
+
   @AfterClass
   public final static void afterClass() throws Exception {
     clearProjects();
@@ -78,18 +87,18 @@ public abstract class UITestCase extends AbstractSonarIdeTest {
     // TODO Godin: what if view doesn't exists
     bot.viewById(id).close();
   }
-  
+
   protected IEditorPart openFile(IProject project, String relPath) throws PartInitException {
     IFile file = project.getFile(relPath);
     // TODO next line should be executed in UI Thread
     return IDE.openEditor(getActivePage(), file, true);
   }
-  
+
   protected static IWorkbenchPage getActivePage() {
     IWorkbench workbench = PlatformUI.getWorkbench();
     return workbench.getWorkbenchWindows()[0].getActivePage();
   }
-  
+
   /**
    * Cleans workspace.
    */
@@ -113,6 +122,24 @@ public abstract class UITestCase extends AbstractSonarIdeTest {
   public static Exception takeScreenShot(Throwable e) throws IOException {
     File output = takeScreenShot("exception");
     return new Exception(e.getMessage() + " - " + output, e);
+  }
+  
+  protected File importNonMavenProject(String projectName) throws Exception {
+    File project = getProject(projectName);
+    waitForAllBuildsToComplete();
+    bot.menu("File").menu("Import...").click();
+    SWTBotShell shell = bot.shell("Import");
+    try {
+      shell.activate();
+      bot.tree().expandNode("General").select("Existing Projects into Workspace");
+      bot.button("Next >").click();
+      bot.text().setText(project.getCanonicalPath());
+      bot.button("Refresh").click();
+      bot.button("Finish").click();
+    } finally {
+      waitForClose(shell);
+    }
+    return project;
   }
 
   protected File importMavenProject(String projectName) throws Exception {
@@ -152,5 +179,22 @@ public abstract class UITestCase extends AbstractSonarIdeTest {
     }
     shell.close();
     return false;
+  }
+  
+  protected static SWTBotShell showSonarPropertiesPage(String projectName) {
+    SWTBotTree tree = selectProject(projectName);
+    ContextMenuHelper.clickContextMenu(tree, "Properties");
+    SWTBotShell shell = bot.shell("Properties for " + projectName);
+    shell.activate();
+    bot.tree().select("Sonar");
+    return shell;
+  }
+
+  protected static SWTBotTree selectProject(String projectName) {
+    SWTBotTree tree = bot.viewById(PACKAGE_EXPLORER_VIEW_ID).bot().tree();
+    SWTBotTreeItem treeItem = null;
+    treeItem = tree.getTreeItem(projectName);
+    treeItem.select();
+    return tree;
   }
 }
