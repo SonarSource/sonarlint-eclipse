@@ -125,6 +125,14 @@
               state="true"
               style="push">
         </action>        
+        
+         <action
+               label="Sonar server"
+               class="org.sonar.ide.eclipse.compare.CompareWithSonarAction"
+               menubarPath="compareWithMenu/compareWithGroup"
+               id="org.sonar.ide.eclipse..compareWithSonar">
+         </action> 
+        
      </objectContribution>
   </extension>
   <extension
@@ -262,4 +270,5 @@
            id="org.sonar.ide.eclipse.referenceprovider">
      </referenceprovider>
   </extension>
+  
 </plugin>
