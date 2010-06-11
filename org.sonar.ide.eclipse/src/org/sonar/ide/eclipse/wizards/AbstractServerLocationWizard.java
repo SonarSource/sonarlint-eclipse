@@ -59,7 +59,7 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
 
   @Override
   public boolean performFinish() {
-    final String serverUrl = StringUtils.removeEnd(page.getServerUrl(), "/");
+    final String serverUrl = page.getServerUrl();
     final String username = page.getUsername();
     final String password = page.getPassword();
 

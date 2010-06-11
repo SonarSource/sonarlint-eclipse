@@ -52,14 +52,14 @@ import org.sonar.wsclient.Host;
 public class SonarProjectPropertyBlock {
 
   private final IProject project;
-  private Combo    serversCombo;
-  private Button   serverConfigButton;
+  private Combo serversCombo;
+  private Button serverConfigButton;
 
-  private Text     projectGroupIdText;
-  private Text     projectArtifactIdText;
-  private Text     projectBranchText;
-  
-  private Button   autoConfigButton;
+  private Text projectGroupIdText;
+  private Text projectArtifactIdText;
+  private Text projectBranchText;
+
+  private Button autoConfigButton;
 
   public SonarProjectPropertyBlock(IProject project) {
     this.project = project;
@@ -89,7 +89,6 @@ public class SonarProjectPropertyBlock {
     group.setText(Messages.getString("pref.project.label.host")); //$NON-NLS-1$
     GridLayout gridLayout = new GridLayout(3, false);
     group.setLayout(gridLayout);
-    
 
     // Create select list of servers.
     serversCombo = new Combo(group, SWT.READ_ONLY);
@@ -98,8 +97,9 @@ public class SonarProjectPropertyBlock {
     int index = -1;
     for (int i = 0; i < servers.size(); i++) {
       Host server = servers.get(i);
-      if (StringUtils.equals(defaultServer, server.getHost()))
+      if (StringUtils.equals(defaultServer, server.getHost())) {
         index = i;
+      }
       serversCombo.add(server.getHost());
     }
     if (index == -1) {
@@ -113,6 +113,7 @@ public class SonarProjectPropertyBlock {
     serverConfigButton.setText(Messages.getString("action.open.sonar.preference")); //$NON-NLS-1$
     serverConfigButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
     serverConfigButton.addSelectionListener(new SelectionAdapter() {
+
       @Override
       public void widgetSelected(SelectionEvent e) {
         PreferenceDialog preference = PreferencesUtil.createPreferenceDialogOn(PlatformUI.getWorkbench().getDisplay().getActiveShell(),
@@ -152,23 +153,25 @@ public class SonarProjectPropertyBlock {
     projectArtifactIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
     projectArtifactIdText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     projectArtifactIdText.setText(projectProperties.getArtifactId());
-    
+
     // Project branch
     Label labelBranch = new Label(container, SWT.NULL);
     labelBranch.setText(Messages.getString("pref.project.label.branch")); //$NON-NLS-1$
     projectBranchText = new Text(container, SWT.BORDER | SWT.SINGLE);
     projectBranchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     projectBranchText.setText(projectProperties.getBranch());
-    
+
     // Create auto config button.
     autoConfigButton = new Button(container, SWT.PUSH);
     autoConfigButton.setText(Messages.getString("action.autoconfig")); //$NON-NLS-1$
     autoConfigButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
     autoConfigButton.addSelectionListener(new SelectionAdapter() {
+
       @Override
       public void widgetSelected(SelectionEvent e) {
         final Display display = PlatformUI.getWorkbench().getDisplay();
         display.asyncExec(new Runnable() {
+
           public void run() {
             Job job = new AutoConfigureProjectJob(project);
             job.schedule();

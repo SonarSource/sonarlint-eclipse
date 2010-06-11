@@ -103,6 +103,7 @@ public class ServerLocationWizardPage extends WizardPage {
         try {
           testConnectionOk = SonarPlugin.getServerManager().testSonar(getServerUrl(), getUsername(), getPassword());
         } catch (Exception ex) {
+          // ignore
         }
         if (testConnectionOk) {
           MessageDialog.openInformation(ServerLocationWizardPage.this.getShell(), Messages.getString("test.server.dialog.caption"), //$NON-NLS-1$
@@ -152,7 +153,7 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   public String getServerUrl() {
-    return serverUrlText.getText();
+    return StringUtils.removeEnd(serverUrlText.getText(), "/");
   }
 
   public String getUsername() {

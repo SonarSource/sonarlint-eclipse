@@ -23,7 +23,7 @@ public class ConfigurationTest extends UITestCase {
 
     // TODO see SONARIDE-90
     testConnection("http://fake", false);
-    testConnection(server.getBaseUrl() + "/", false); // TODO should be successful
+    testConnection(server.getBaseUrl() + "/", true); // test for SONARIDE-90
     testConnection(server.getBaseUrl(), true);
 
     // Close wizard
