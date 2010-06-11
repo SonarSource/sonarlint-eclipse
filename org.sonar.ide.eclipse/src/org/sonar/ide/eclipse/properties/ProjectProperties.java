@@ -33,7 +33,7 @@ import org.sonar.ide.shared.AbstractProjectProperties;
 /**
  * @author Jérémie Lagarde
  */
-public class ProjectProperties extends AbstractProjectProperties<IProject>{
+public class ProjectProperties extends AbstractProjectProperties<IProject> {
 
   private IEclipsePreferences preferences;
 
@@ -49,7 +49,7 @@ public class ProjectProperties extends AbstractProjectProperties<IProject>{
     if (project == null || !project.isAccessible()) {
       return null;
     }
-    ProjectProperties projectProperties = (ProjectProperties)find(project.getName());
+    ProjectProperties projectProperties = (ProjectProperties) find(project.getName());
     if (projectProperties != null) {
       return projectProperties;
     }
@@ -68,7 +68,7 @@ public class ProjectProperties extends AbstractProjectProperties<IProject>{
     try {
       preferences.flush();
     } catch (BackingStoreException e) {
-      throw new SonarIdeException("preferences.flush()",e);
+      throw new SonarIdeException("preferences.flush()", e);
     }
   }
 
@@ -80,7 +80,7 @@ public class ProjectProperties extends AbstractProjectProperties<IProject>{
     }
     return url;
   }
-  
+
   @Override
   protected String getProjectName() {
     return getProject().getName();
@@ -88,12 +88,18 @@ public class ProjectProperties extends AbstractProjectProperties<IProject>{
 
   @Override
   protected String getProperty(String type, String defaultValue) {
-    return preferences.get(type, defaultValue);
+    try {
+      // TODO Godin: next line can throw IllegalStateException: Preference node "org.sonar.ide.eclipse" has been removed.
+      return preferences.get(type, defaultValue);
+    } catch (Throwable e) {
+      e.printStackTrace();
+      return defaultValue;
+    }
   }
 
   @Override
   protected void setProperty(String type, String value) {
-    preferences.put(type,value);
+    preferences.put(type, value);
   }
 
   public boolean isProjectConfigured() {
