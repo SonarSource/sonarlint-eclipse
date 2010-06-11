@@ -130,7 +130,8 @@
                label="Sonar server"
                class="org.sonar.ide.eclipse.compare.CompareWithSonarAction"
                menubarPath="compareWithMenu/compareWithGroup"
-               id="org.sonar.ide.eclipse..compareWithSonar">
+               id="org.sonar.ide.eclipse..compareWithSonar"
+               icon="icons/sonar.png">
          </action> 
         
      </objectContribution>
