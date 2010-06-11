@@ -64,6 +64,10 @@ public abstract class UITestCase extends SonarIdeTestCase {
 
     try {
       closeView("org.eclipse.ui.internal.introview");
+    } catch (WidgetNotFoundException e) {
+      // ignore
+    }
+    try {
       closeView("org.eclipse.ui.views.ContentOutline");
     } catch (WidgetNotFoundException e) {
       // ignore
@@ -79,6 +83,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
   public final static void afterClass() throws Exception {
     clearProjects();
     bot.sleep(2000);
+//    bot.resetWorkbench();
   }
 
   private static void openPerspective(final String id) {
@@ -213,7 +218,8 @@ public abstract class UITestCase extends SonarIdeTestCase {
     SWTBotShell shell = showGlobalSonarPropertiesPage();
     bot.button("Edit").click();
 
-    SWTBotShell shell2 = bot.shell(""); // TODO Godin: should be unique name
+    bot.waitUntil(Conditions.shellIsActive("Edit sonar server connection"));
+    SWTBotShell shell2 = bot.shell("Edit sonar server connection");
     shell2.activate();
     bot.textWithLabel("Sonar server URL :").setText(serverUrl);
 

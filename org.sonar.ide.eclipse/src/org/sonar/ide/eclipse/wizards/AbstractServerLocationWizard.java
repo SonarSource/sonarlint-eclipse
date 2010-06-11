@@ -41,6 +41,7 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
   public AbstractServerLocationWizard() {
     super();
     setNeedsProgressMonitor(true);
+    setWindowTitle(getTitle());
   }
 
   protected abstract String getTitle();

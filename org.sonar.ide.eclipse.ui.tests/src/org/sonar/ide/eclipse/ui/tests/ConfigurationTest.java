@@ -17,13 +17,14 @@ public class ConfigurationTest extends UITestCase {
     SWTBotShell shell = showGlobalSonarPropertiesPage();
     bot.button("Edit").click();
 
-    SWTBotShell shell2 = bot.shell(""); // TODO Godin: should be unique name
+    bot.waitUntil(Conditions.shellIsActive("Edit sonar server connection"));
+    SWTBotShell shell2 = bot.shell("Edit sonar server connection");
     shell2.activate();
 
     // TODO see SONARIDE-90
-    testConnection(server.getBaseUrl(), true);
-    testConnection(server.getBaseUrl() + "/", false); // TODO should be successful
     testConnection("http://fake", false);
+    testConnection(server.getBaseUrl() + "/", false); // TODO should be successful
+    testConnection(server.getBaseUrl(), true);
 
     // Close wizard
     shell2.activate();
@@ -40,7 +41,6 @@ public class ConfigurationTest extends UITestCase {
     bot.button("Test connection").click();
 
     bot.waitUntil(Conditions.shellIsActive("Test sonar server connection"));
-
     SWTBotShell dialog = bot.shell("Test sonar server connection");
     dialog.activate();
 
