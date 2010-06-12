@@ -18,11 +18,19 @@
 
 package org.sonar.ide.eclipse.wizards;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -45,9 +53,9 @@ import org.sonar.wsclient.Host;
  */
 public class ServerLocationWizardPage extends WizardPage {
 
-  private Text   serverUrlText;
-  private Text   serverUsernameText;
-  private Text   serverPasswordText;
+  private Text serverUrlText;
+  private Text serverUsernameText;
+  private Text serverPasswordText;
   private String defaultServerUrl;
   private Button testConnectionButton;
 
@@ -75,6 +83,7 @@ public class ServerLocationWizardPage extends WizardPage {
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     serverUrlText.setLayoutData(gd);
     serverUrlText.addModifyListener(new ModifyListener() {
+
       public void modifyText(ModifyEvent e) {
         dialogChanged();
       }
@@ -91,26 +100,60 @@ public class ServerLocationWizardPage extends WizardPage {
     labelPassword.setText(Messages.getString("pref.project.label.password")); //$NON-NLS-1$
     serverPasswordText = new Text(container, SWT.BORDER | SWT.SINGLE | SWT.PASSWORD);
     serverPasswordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    
+
     // Sonar test connection button
     testConnectionButton = new Button(container, SWT.PUSH);
     testConnectionButton.setText(Messages.getString("action.testconnection.server")); //$NON-NLS-1$
     testConnectionButton.setToolTipText(Messages.getString("action.testconnection.server.desc")); //$NON-NLS-1$
     testConnectionButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
+
     testConnectionButton.addSelectionListener(new SelectionAdapter() {
+
       public void widgetSelected(SelectionEvent e) {
-        boolean testConnectionOk = false;
+        // We need those variables - in other case we would get an IllegalAccessException
+        final String serverUrl = getServerUrl();
+        final String username = getUsername();
+        final String password = getPassword();
         try {
-          testConnectionOk = SonarPlugin.getServerManager().testSonar(getServerUrl(), getUsername(), getPassword());
-        } catch (Exception ex) {
-          // ignore
+          getWizard().getContainer().run(true, true, new IRunnableWithProgress() {
+
+            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+              monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
+              try {
+                if (SonarPlugin.getServerManager().testSonar(serverUrl, username, password)) {
+                  status = new Status(Status.OK, SonarPlugin.PLUGIN_ID, Messages.getString("test.server.dialog.msg"));
+                } else {
+                  status = new Status(Status.ERROR, SonarPlugin.PLUGIN_ID, Messages.getString("test.server.dialog.error"));
+                }
+              } catch (CoreException e) {
+                status = e.getStatus();
+              } catch (OperationCanceledException e) {
+                status = Status.CANCEL_STATUS;
+                throw new InterruptedException();
+              } catch (Exception e) {
+                throw new InvocationTargetException(e);
+              } finally {
+                monitor.done();
+              }
+            }
+          });
+        } catch (InvocationTargetException e1) {
+          // TODO Auto-generated catch block
+          e1.printStackTrace();
+        } catch (InterruptedException e1) {
+          // canceled
         }
-        if (testConnectionOk) {
-          MessageDialog.openInformation(ServerLocationWizardPage.this.getShell(), Messages.getString("test.server.dialog.caption"), //$NON-NLS-1$
-              MessageFormat.format(Messages.getString("test.server.dialog.msg"), new Object[] {}));//$NON-NLS-1$
-        } else {
-          MessageDialog.openError(ServerLocationWizardPage.this.getShell(), Messages.getString("test.server.dialog.caption"), //$NON-NLS-1$
-              MessageFormat.format(Messages.getString("test.server.dialog.error"), new Object[] {}));//$NON-NLS-1$           
+        getWizard().getContainer().updateButtons();
+
+        String message = status.getMessage();
+        switch (status.getSeverity()) {
+          case IStatus.OK:
+            setMessage(message, IMessageProvider.INFORMATION);
+            break;
+
+          default:
+            setMessage(message, IMessageProvider.ERROR);
+            break;
         }
       }
     });
@@ -119,6 +162,8 @@ public class ServerLocationWizardPage extends WizardPage {
     dialogChanged();
     setControl(container);
   }
+
+  private IStatus status;
 
   private void initialize() {
     Host host = SonarPlugin.getServerManager().findServer(defaultServerUrl);
@@ -135,8 +180,7 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   /**
-   * Uses the standard container selection dialog to choose the new value for
-   * the container field.
+   * Uses the standard container selection dialog to choose the new value for the container field.
    */
 
   private void dialogChanged() {
