@@ -26,6 +26,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
+import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.utils.SWTUtils;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
@@ -53,6 +54,8 @@ import org.sonar.ide.test.SonarIdeTestCase;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public abstract class UITestCase extends SonarIdeTestCase {
 
+  private static final String SCREENSHOTS_DIR = "target/screenshots";
+
   public static final String PACKAGE_EXPLORER_VIEW_ID = "org.eclipse.jdt.ui.PackageExplorer";
 
   protected static SWTWorkbenchBot bot;
@@ -60,6 +63,9 @@ public abstract class UITestCase extends SonarIdeTestCase {
   @BeforeClass
   public final static void beforeClass() throws Exception {
     init(); // TODO Godin: remove
+    
+    SWTBotPreferences.SCREENSHOTS_DIR = SCREENSHOTS_DIR;
+    SWTBotPreferences.SCREENSHOT_FORMAT = "png";
     bot = new SWTWorkbenchBot();
 
     try {
@@ -119,7 +125,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
   }
 
   public static File takeScreenShot(String classifier) throws IOException {
-    File parent = new File("target/screenshots");
+    File parent = new File(SCREENSHOTS_DIR);
     parent.mkdirs();
     File output = File.createTempFile("swtbot", "-" + classifier + ".png", parent);
     SWTUtils.captureScreenshot(output.getAbsolutePath());
