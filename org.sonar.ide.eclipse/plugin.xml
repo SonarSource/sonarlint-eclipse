@@ -121,7 +121,8 @@
               label="%sonar.action.refreshviolations.label"
               menubarPath="org.sonar.ide.eclipse.sonar/group1"
               state="true"
-              style="push">
+              style="push"
+              icon="icons/refresh.gif">
         </action>
         <action
               class="org.sonar.ide.eclipse.actions.RefreshDuplicationAction"
@@ -130,7 +131,8 @@
               label="%sonar.action.refreshduplications.label"
               menubarPath="org.sonar.ide.eclipse.sonar/group1"
               state="true"
-              style="push">
+              style="push"
+              icon="icons/refresh.gif">
         </action>
         <action
               class="org.sonar.ide.eclipse.actions.RefreshCoverageAction"
@@ -139,7 +141,8 @@
               label="%sonar.action.refreshcoverage.label"
               menubarPath="org.sonar.ide.eclipse.sonar/group1"
               state="true"
-              style="push">
+              style="push"
+              icon="icons/refresh.gif">
         </action>
         <action
               class="org.sonar.ide.eclipse.actions.OpenInBrowserAction"
@@ -148,17 +151,17 @@
               label="%sonar.action.openinbrowser.label"
               menubarPath="org.sonar.ide.eclipse.sonar/group1"
               state="true"
-              style="push">
+              style="push"
+              icon="icons/web.gif">
         </action>        
         
-         <action
-               label="Sonar server"
-               class="org.sonar.ide.eclipse.compare.CompareWithSonarAction"
-               menubarPath="compareWithMenu/compareWithGroup"
-               id="org.sonar.ide.eclipse..compareWithSonar"
-               icon="icons/sonar.png">
-         </action> 
-        
+        <action
+              label="Sonar server"
+              class="org.sonar.ide.eclipse.compare.CompareWithSonarAction"
+              menubarPath="compareWithMenu/compareWithGroup"
+              id="org.sonar.ide.eclipse.compareWithSonar"
+              icon="icons/sonar.png">
+        </action>
      </objectContribution>
   </extension>
   <extension
