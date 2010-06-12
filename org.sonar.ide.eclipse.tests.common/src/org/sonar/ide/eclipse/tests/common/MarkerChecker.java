@@ -20,7 +20,6 @@ package org.sonar.ide.eclipse.tests.common;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
-import org.sonar.ide.api.Logs;
 
 /**
  * This class is use to check Marker.
