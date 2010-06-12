@@ -18,18 +18,15 @@
 
 package org.sonar.ide.eclipse.jobs;
 
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
-import org.sonar.ide.shared.coverage.CoverageData;
+import org.sonar.ide.shared.coverage.CoverageLine;
 import org.sonar.ide.shared.coverage.CoverageLoader;
 import org.sonar.wsclient.Sonar;
 
@@ -41,54 +38,57 @@ import org.sonar.wsclient.Sonar;
  * @author Jérémie Lagarde
  * 
  */
-public class RefreshCoverageJob extends AbstractRefreshModelJob<CoverageData> {
-
+public class RefreshCoverageJob extends AbstractRefreshModelJob<CoverageLine> {
 
   public RefreshCoverageJob(final List<IResource> resources) {
-    super(resources, SonarPlugin.MARKER_ID);
+    super(resources, SonarPlugin.MARKER_COVERAGE_ID);
   }
 
   @Override
-  protected void retrieveMarkers(final ICompilationUnit unit, final IProgressMonitor monitor) throws CoreException {
-    if (unit == null || !unit.exists() || monitor.isCanceled()) {
-      return;
-    }
-
-    final Sonar sonar = getSonar(unit.getResource().getProject());
-
+  protected Collection<CoverageLine> retrieveDatas(final Sonar sonar, final String resourceKey, final ICompilationUnit unit) {
     try {
-      // TODO put it in messages.properties
-      monitor.beginTask("Retrieve sonar coverage for " + unit.getElementName(), 1);
-      final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(unit.getResource());
-      final Map<Integer, String> coverage = CoverageLoader.getCoverageLineHits(sonar, resourceKey);
-      for (final Integer line : coverage.keySet()) {
-        // create a marker for thcoveragee actual resource
-        creatMarker(unit, line, coverage.get(line));
-      }
-    } catch (final Exception ex) {
-      // TODO : best exception management.
-      ex.printStackTrace();
-    } finally {
-      monitor.done();
+      return CoverageLoader.getCoverageLines(sonar, resourceKey);
+    } catch (final Exception e) {
+      return Collections.emptyList();
     }
   }
 
-  private IMarker creatMarker(final ICompilationUnit unit, final Integer line, final String code) throws CoreException {
-    final Map<String, Object> markerAttributes = new HashMap<String, Object>();
-    if ("0".equals(code)) {
-      markerAttributes.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_WARNING));
+  @Override
+  protected Integer getLine(final CoverageLine coverage) {
+    return coverage.getLine();
+  }
+
+  @Override
+  protected String getMessage(final CoverageLine coverage) {
+    // TODO jérémie : improve message and so on
+    return "Coverage " + coverage.getHits() + ":" + coverage.getBranchHits();
+  }
+
+  @Override
+  protected Integer getPriority(final CoverageLine Coverage) {
+    return new Integer(IMarker.PRIORITY_LOW);
+  }
+
+  @Override
+  protected Integer getSeverity(final CoverageLine coverage) {
+    final String hits = coverage.getHits();
+    final String branchHits = coverage.getBranchHits();
+    final boolean hasLineCoverage = (null != hits);
+    final boolean hasBranchCoverage = (null != branchHits);
+    final boolean lineIsCovered = (hasLineCoverage && Integer.parseInt(hits) > 0);
+    final boolean branchIsCovered = (hasBranchCoverage && "100%".equals(branchHits));
+
+    if (lineIsCovered) {
+      if (branchIsCovered) {
+        return new Integer(IMarker.SEVERITY_INFO);
+      } else if (hasBranchCoverage) {
+        return new Integer(IMarker.SEVERITY_WARNING);
+      } else {
+        return new Integer(IMarker.SEVERITY_INFO);
+      }
+    } else if (hasLineCoverage) {
+      return new Integer(IMarker.SEVERITY_ERROR);
     }
-    if ("1".equals(code)) {
-      markerAttributes.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_INFO));
-    }
-    if ("2".equals(code)) {
-      markerAttributes.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_ERROR));
-    }
-    markerAttributes.put(IMarker.LINE_NUMBER, line);
-    markerAttributes.put(IMarker.MESSAGE, "Code coverage  :" + code);
-    addLine(markerAttributes, line, unit.getSource());
-    final IMarker marker = unit.getResource().createMarker("org.sonar.ide.eclipse.sonarCoverageMarker");
-    marker.setAttributes(markerAttributes);
-    return marker;
+    return new Integer(-1);
   }
 }

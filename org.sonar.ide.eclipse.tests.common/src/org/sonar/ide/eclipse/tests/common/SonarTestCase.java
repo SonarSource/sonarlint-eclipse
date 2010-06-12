@@ -64,7 +64,7 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
     init();
 
     workspace = ResourcesPlugin.getWorkspace();
-    IWorkspaceDescription description = workspace.getDescription();
+    final IWorkspaceDescription description = workspace.getDescription();
     description.setAutoBuilding(false);
     workspace.setDescription(description);
 
@@ -85,7 +85,7 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
   }
 
   final protected String addLocalTestServer() throws Exception {
-    String url = startTestServer();
+    final String url = startTestServer();
     SonarPlugin.getServerManager().createServer(url);
     return url;
   }
@@ -94,7 +94,7 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
   final static public void end() throws Exception {
     // cleanWorkspace();
 
-    IWorkspaceDescription description = workspace.getDescription();
+    final IWorkspaceDescription description = workspace.getDescription();
     description.setAutoBuilding(true);
     workspace.setDescription(description);
 
@@ -109,13 +109,13 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
     // Job.getJobManager().suspend();
     // waitForJobs();
 
-    List<Host> hosts = new ArrayList<Host>();
+    final List<Host> hosts = new ArrayList<Host>();
     hosts.addAll(SonarPlugin.getServerManager().getServers());
-    for (Host host : hosts) {
+    for (final Host host : hosts) {
       SonarPlugin.getServerManager().removeServer(host.getHost());
     }
-    IWorkspaceRoot root = workspace.getRoot();
-    for (IProject project : root.getProjects()) {
+    final IWorkspaceRoot root = workspace.getRoot();
+    for (final IProject project : root.getProjects()) {
       project.delete(true, true, monitor);
     }
   }
@@ -125,11 +125,11 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
    * 
    * @return created projects
    */
-  protected IProject importEclipseProject(String projectdir) throws IOException, CoreException {
+  protected IProject importEclipseProject(final String projectdir) throws IOException, CoreException {
     Logs.INFO.info("Importing Eclipse project : " + projectdir);
-    IWorkspaceRoot root = workspace.getRoot();
+    final IWorkspaceRoot root = workspace.getRoot();
 
-    String projectName = projectdir;
+    final String projectName = projectdir;
     File dst = new File(root.getLocation().toFile(), projectName);
     dst = getProject(projectName, dst);
 
@@ -138,10 +138,10 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
 
     workspace.run(new IWorkspaceRunnable() {
 
-      public void run(IProgressMonitor monitor) throws CoreException {
+      public void run(final IProgressMonitor monitor) throws CoreException {
         // create project as java project
         if ( !project.exists()) {
-          IProjectDescription projectDescription = workspace.newProjectDescription(project.getName());
+          final IProjectDescription projectDescription = workspace.newProjectDescription(project.getName());
           projectDescription.setLocation(null);
           project.create(projectDescription, monitor);
           project.open(IResource.NONE, monitor);
@@ -165,29 +165,31 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
     markerCheckerList = null;
   }
 
-  protected void addMarckerInfo(int priority, long line, String message) {
+  protected void addMarckerInfo(final int priority, final long line, final String message) {
     if (markerCheckerList == null) {
       markerCheckerList = new ArrayList<MarkerChecker>();
     }
     markerCheckerList.add(new MarkerChecker(priority, line, message));
   }
 
-  protected void assertMarkers(IMarker[] markers) throws CoreException {
-    for (IMarker marker : markers) {
+  protected void assertMarkers(final IMarker[] markers) throws CoreException {
+    for (final IMarker marker : markers) {
       assertMarker(marker);
     }
   }
 
-  protected void assertMarker(IMarker marker) throws CoreException {
+  protected void assertMarker(final IMarker marker) throws CoreException {
     if (Logs.INFO.isDebugEnabled()) {
       Logs.INFO.debug("Checker marker[" + marker.getId() + "] (" + marker.getAttribute(IMarker.PRIORITY) + ") : line "
           + marker.getAttribute(IMarker.LINE_NUMBER) + " : " + marker.getAttribute(IMarker.MESSAGE));
     }
-    if ( !SonarPlugin.MARKER_ID.equals(marker.getType()))
+    if (!SonarPlugin.MARKER_VIOLATION_ID.equals(marker.getType())) {
       return;
-    for (MarkerChecker checker : markerCheckerList) {
-      if (checker.check(marker))
+    }
+    for (final MarkerChecker checker : markerCheckerList) {
+      if (checker.check(marker)) {
         return;
+      }
     }
     fail("MarckerChecker faild for marker[" + marker.getId() + "] (" + marker.getAttribute(IMarker.PRIORITY) + ") : line "
         + marker.getAttribute(IMarker.LINE_NUMBER) + " : " + marker.getAttribute(IMarker.MESSAGE));

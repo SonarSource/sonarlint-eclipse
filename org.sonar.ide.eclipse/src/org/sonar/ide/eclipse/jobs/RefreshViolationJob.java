@@ -19,18 +19,17 @@
 package org.sonar.ide.eclipse.jobs;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.sonar.ide.api.Logs;
+import org.eclipse.jdt.core.JavaModelException;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.ide.shared.ViolationUtils;
 import org.sonar.ide.shared.ViolationsLoader;
 import org.sonar.wsclient.Sonar;
@@ -46,63 +45,56 @@ import org.sonar.wsclient.services.Violation;
  */
 public class RefreshViolationJob extends AbstractRefreshModelJob<Violation> {
 
-
   public RefreshViolationJob(final List<IResource> resources) {
-    super(resources, SonarPlugin.MARKER_ID);
+    super(resources, SonarPlugin.MARKER_VIOLATION_ID);
   }
 
   @Override
-  protected void retrieveMarkers(final ICompilationUnit unit, final IProgressMonitor monitor) throws CoreException {
-    if (unit == null || !unit.exists() || monitor.isCanceled()) {
-      return;
-    }
-
-    final Sonar sonar = getSonar(unit.getResource().getProject());
-
+  protected Collection<Violation> retrieveDatas(final Sonar sonar, final String resourceKey, final ICompilationUnit unit) {
     try {
-      // TODO put it in messages.properties
-      monitor.beginTask("Retrieve sonar violations for " + unit.getElementName(), 1);
-      final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(unit.getResource());
-      final Collection<Violation> violations = ViolationsLoader.getViolations(sonar, resourceKey, unit.getSource());
-      for (final Violation violation : violations) {
-        // create a marker for the actual resource
-        creatMarker(unit, violation);
-      }
-    } catch (final Exception ex) {
-      // TODO : best exception management.
-      ex.printStackTrace();
-    } finally {
-      monitor.done();
+      return ViolationsLoader.getViolations(sonar, resourceKey, unit.getSource());
+    } catch (final JavaModelException e) {
+      SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
+      return Collections.emptyList();
     }
   }
 
-  private IMarker creatMarker(final ICompilationUnit unit, final Violation violation) throws CoreException {
-    final Map<String, Object> markerAttributes = new HashMap<String, Object>();
-    Logs.INFO.debug("Create marker : " + violation.getPriority());
+  @Override
+  protected Integer getLine(final Violation violation) {
+    return violation.getLine();
+  }
+
+  @Override
+  protected String getMessage(final Violation violation) {
+    return ViolationUtils.getDescription(violation);
+  }
+
+  @Override
+  protected Integer getPriority(final Violation violation) {
     if (ViolationUtils.PRIORITY_BLOCKER.equalsIgnoreCase(violation.getPriority())) {
-      markerAttributes.put(IMarker.PRIORITY, new Integer(IMarker.PRIORITY_HIGH));
+      return new Integer(IMarker.PRIORITY_HIGH);
     }
     if (ViolationUtils.PRIORITY_CRITICAL.equalsIgnoreCase(violation.getPriority())) {
-      markerAttributes.put(IMarker.PRIORITY, new Integer(IMarker.PRIORITY_HIGH));
+      return new Integer(IMarker.PRIORITY_HIGH);
     }
     if (ViolationUtils.PRIORITY_MAJOR.equalsIgnoreCase(violation.getPriority())) {
-      markerAttributes.put(IMarker.PRIORITY, new Integer(IMarker.PRIORITY_NORMAL));
+      return new Integer(IMarker.PRIORITY_NORMAL);
     }
-    if (ViolationUtils.PRIORITY_MINOR.equalsIgnoreCase(violation.getPriority())) {
-      markerAttributes.put(IMarker.PRIORITY, new Integer(IMarker.PRIORITY_LOW));
-    }
-    if (ViolationUtils.PRIORITY_INFO.equalsIgnoreCase(violation.getPriority())) {
-      markerAttributes.put(IMarker.PRIORITY, new Integer(IMarker.PRIORITY_LOW));
-    }
-    markerAttributes.put(IMarker.SEVERITY, new Integer(IMarker.SEVERITY_WARNING));
-    markerAttributes.put(IMarker.LINE_NUMBER, violation.getLine());
-    markerAttributes.put(IMarker.MESSAGE, ViolationUtils.getDescription(violation));
-    markerAttributes.put("rulekey", violation.getRuleKey());
-    markerAttributes.put("rulename", violation.getRuleName());
-    addLine(markerAttributes, violation.getLine(), unit.getSource());
-    final IMarker marker = unit.getResource().createMarker(SonarPlugin.MARKER_ID);
-    marker.setAttributes(markerAttributes);
-    return marker;
+    return new Integer(IMarker.PRIORITY_LOW);
   }
+
+  @Override
+  protected Integer getSeverity(final Violation violation) {
+    return new Integer(IMarker.SEVERITY_WARNING);
+  }
+
+  @Override
+  protected Map<String, Object> getExtraInfos(final Violation violation) {
+    final Map<String, Object> extraInfos = new HashMap<String, Object>();
+    extraInfos.put("rulekey", violation.getRuleKey());
+    extraInfos.put("rulename", violation.getRuleName());
+    return extraInfos;
+  }
+
 
 }

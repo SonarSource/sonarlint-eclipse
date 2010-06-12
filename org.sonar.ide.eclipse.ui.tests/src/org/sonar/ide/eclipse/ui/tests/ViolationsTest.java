@@ -20,17 +20,17 @@ public class ViolationsTest extends UITestCase {
   public void testRefreshViolations() throws Exception {
     configureDefaultSonarServer(getTestServer().getBaseUrl());
 
-    String projectName = "SimpleProject";
+    final String projectName = "SimpleProject";
     importNonMavenProject(projectName);
 
-    SWTBotShell shell = showSonarPropertiesPage(projectName);
+    final SWTBotShell shell = showSonarPropertiesPage(projectName);
     shell.bot().textWithLabel("GroupId :").setText(getGroupId(projectName));
 
     shell.bot().button("Apply").click();
     shell.bot().button("Cancel").click();
     bot.waitUntil(Conditions.shellCloses(shell));
 
-    SWTBotTree tree = selectProject(projectName);
+    final SWTBotTree tree = selectProject(projectName);
 
     assertThat(getMarkers(projectName).length, is(0));
 
@@ -41,8 +41,8 @@ public class ViolationsTest extends UITestCase {
     assertThat(getMarkers(projectName).length, greaterThan(0));
   }
 
-  private IMarker[] getMarkers(String projectName) throws Exception {
-    IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-    return project.findMarkers(SonarPlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+  private IMarker[] getMarkers(final String projectName) throws Exception {
+    final IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+    return project.findMarkers(SonarPlugin.MARKER_VIOLATION_ID, true, IResource.DEPTH_INFINITE);
   }
 }

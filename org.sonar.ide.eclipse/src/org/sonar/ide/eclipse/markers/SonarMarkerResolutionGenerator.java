@@ -40,7 +40,7 @@ public class SonarMarkerResolutionGenerator implements IMarkerResolutionGenerato
 
   public boolean hasResolutions(final IMarker marker) {
     try {
-      return SonarPlugin.MARKER_ID.equals(marker.getType());
+      return SonarPlugin.MARKER_VIOLATION_ID.equals(marker.getType());
     } catch (final CoreException e) {
       return false;
     }

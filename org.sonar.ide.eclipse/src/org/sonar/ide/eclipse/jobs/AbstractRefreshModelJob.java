@@ -18,6 +18,7 @@
 
 package org.sonar.ide.eclipse.jobs;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.wsclient.Sonar;
 
 /**
@@ -95,6 +97,79 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
     return true;
   }
 
+  abstract protected Collection<M> retrieveDatas(final Sonar sonar, final String resourceKey, final ICompilationUnit unit);
+
+  private void retrieveMarkers(final ICompilationUnit unit, final IProgressMonitor monitor) throws CoreException {
+    if (unit == null || !unit.exists() || monitor.isCanceled()) {
+      return;
+    }
+    final Sonar sonar = getSonar(unit.getResource().getProject());
+    try {
+      // TODO put it in messages.properties
+      monitor.beginTask("Retrieve sonar informations for " + unit.getElementName(), 1);
+      final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(unit.getResource());
+      final Collection<M> datas = retrieveDatas(sonar, resourceKey, unit);
+      for (final M data : datas) {
+        // create a marker for the actual resource
+        creatMarker(unit, data);
+      }
+    } catch (final Exception ex) {
+      // TODO : best exception management.
+      ex.printStackTrace();
+    } finally {
+      monitor.done();
+    }
+  }
+
+  private IMarker creatMarker(final ICompilationUnit unit, final M data) throws CoreException {
+    final Map<String, Object> markerAttributes = new HashMap<String, Object>();
+    markerAttributes.put(IMarker.PRIORITY, getPriority(data));
+    markerAttributes.put(IMarker.SEVERITY, getSeverity(data));
+    markerAttributes.put(IMarker.LINE_NUMBER, getLine(data));
+    markerAttributes.put(IMarker.MESSAGE, getMessage(data));
+    addLine(markerAttributes, getLine(data), unit.getSource());
+    final Map<String, Object> extraInfos = getExtraInfos(data);
+    if (extraInfos != null) {
+      for (final String key : extraInfos.keySet()) {
+        markerAttributes.put(key, extraInfos.get(key));
+      }
+    }
+    final IMarker marker = unit.getResource().createMarker(markerId);
+    marker.setAttributes(markerAttributes);
+    return marker;
+  }
+
+  /**
+   * @return The line number.
+   */
+  protected abstract Integer getLine(M data);
+
+  /**
+   * @return Severity marker attribute. A number from the set of error, warning
+   *         and info severities defined by the platform.
+   * 
+   * @see IMarker.SEVERITY_ERROR
+   * @see IMarker.SEVERITY_WARNING
+   * @see IMarker.SEVERITY_INFO
+   */
+  protected abstract Integer getSeverity(M data);
+
+  /**
+   * @return Priority marker attribute. A number from the set of high, normal
+   *         and low priorities defined by the platform.
+   * 
+   * @see IMarker.PRIORITY_HIGH
+   * @see IMarker.PRIORITY_NORMAL
+   * @see IMarker.PRIORITY_LOW
+   */
+  protected abstract Integer getPriority(M data);
+
+  protected abstract String getMessage(M data);
+
+  protected Map<String, Object> getExtraInfos(final M data) {
+    return null;
+  }
+
   protected Sonar getSonar(final IProject project) {
     if (sonars.containsKey(project)) {
       return sonars.get(project);
@@ -105,13 +180,10 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
     return sonar;
   }
 
-  abstract protected void retrieveMarkers(ICompilationUnit unit, IProgressMonitor monitor) throws CoreException;
-
   /**
    * Remove all sonar markers
    * 
-   * @param project
-   *          The project to clean
+   * @param project The project to clean
    * @throws CoreException
    */
   private void cleanMarkers(final ICompilationUnit unit) throws CoreException {
@@ -119,7 +191,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
   }
 
   // TODO : need to refactor it.
-  protected void addLine(final Map<String, Object> markerAttributes, final long line, final String text) {
+  private void addLine(final Map<String, Object> markerAttributes, final long line, final String text) {
     int start = 0;
     for (int i = 1; i < line; i++) {
       start = StringUtils.indexOf(text, '\n', start) + 1;

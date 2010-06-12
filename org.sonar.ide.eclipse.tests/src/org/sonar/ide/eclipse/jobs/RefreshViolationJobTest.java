@@ -96,7 +96,7 @@ public class RefreshViolationJobTest extends SonarTestCase {
     addMarckerInfo(1, 4, "Parameter Assignment : Assignment of parameter 'i' is not allowed.");
     addMarckerInfo(2, 1, "Hide Utility Class Constructor : Utility classes should not have a public or default constructor.");
 
-    final IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+    final IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_VIOLATION_ID, true, IResource.DEPTH_INFINITE);
     assertTrue("There isn't marker for the project.", markers != null && markers.length > 0);
     assertMarkers(markers);
   }
@@ -128,7 +128,7 @@ public class RefreshViolationJobTest extends SonarTestCase {
     addMarckerInfo(1, 4, "Parameter Assignment : Assignment of parameter 'i' is not allowed.");
     addMarckerInfo(2, 1, "Hide Utility Class Constructor : Utility classes should not have a public or default constructor.");
 
-    final IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+    final IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_VIOLATION_ID, true, IResource.DEPTH_INFINITE);
     assertTrue("There isn't marker for the project.", markers != null && markers.length > 0);
     assertMarkers(markers);
   }

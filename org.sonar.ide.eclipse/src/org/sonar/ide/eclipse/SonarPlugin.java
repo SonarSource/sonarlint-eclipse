@@ -45,10 +45,12 @@ import ch.qos.logback.core.util.StatusPrinter;
 public class SonarPlugin extends AbstractUIPlugin {
 
   // The plug-in ID
-  public static final String        PLUGIN_ID        = "org.sonar.ide.eclipse";
+  public static final String        PLUGIN_ID             = "org.sonar.ide.eclipse";
 
-  // Marker
-  public static final String        MARKER_ID        = PLUGIN_ID + ".sonarMarker"; //$NON-NLS-1$
+  // Markers
+  public static final String        MARKER_VIOLATION_ID   = PLUGIN_ID + ".sonarViolationMarker";  //$NON-NLS-1$
+  public static final String        MARKER_DUPLICATION_ID = PLUGIN_ID + ".sonarDuplicationMarker"; //$NON-NLS-1$
+  public static final String        MARKER_COVERAGE_ID    = PLUGIN_ID + ".sonarCoverageMarker";   //$NON-NLS-1$
 
   // Images
   private static ImageDescriptor    SONARWIZBAN_IMG;
@@ -58,12 +60,12 @@ public class SonarPlugin extends AbstractUIPlugin {
   private static ImageDescriptor    SONARSYNCHRO_IMG;
   private static ImageDescriptor    SONARCLOSE_IMG;
 
-  public static final String        IMG_SONARWIZBAN  = "sonar_wizban.gif";        //$NON-NLS-1$
-  public static final String        IMG_SONAR16      = "sonar.png";               //$NON-NLS-1$
-  public static final String        IMG_SONAR32      = "sonar32.png";             //$NON-NLS-1$
-  public static final String        IMG_SONARCONSOLE = "sonar.png";               //$NON-NLS-1$
-  public static final String        IMG_SONARSYNCHRO = "synced.gif";              //$NON-NLS-1$
-  public static final String        IMG_SONARCLOSE   = "close.gif";               //$NON-NLS-1$
+  public static final String        IMG_SONARWIZBAN       = "sonar_wizban.gif";                   //$NON-NLS-1$
+  public static final String        IMG_SONAR16           = "sonar.png";                          //$NON-NLS-1$
+  public static final String        IMG_SONAR32           = "sonar32.png";                        //$NON-NLS-1$
+  public static final String        IMG_SONARCONSOLE      = "sonar.png";                          //$NON-NLS-1$
+  public static final String        IMG_SONARSYNCHRO      = "synced.gif";                         //$NON-NLS-1$
+  public static final String        IMG_SONARCLOSE        = "close.gif";                          //$NON-NLS-1$
 
   // The shared instance
   private static SonarPlugin        plugin;
