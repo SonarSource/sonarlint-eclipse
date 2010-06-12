@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Evgeny Mandrikov
+ * Copyright (C) 2010 Evgeny Mandrikov, Jérémie Lagarde
  *
  * Sonar-IDE is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,16 +34,16 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.sonar.ide.eclipse.jobs.RefreshViolationJob;
+import org.sonar.ide.eclipse.jobs.RefreshDuplicationsJob;
 
 /**
  * @author Jérémie Lagarde
  */
-public class RefreshViolationAction implements IWorkbenchWindowActionDelegate {
+public class RefreshDuplicationAction implements IWorkbenchWindowActionDelegate {
 
   private IStructuredSelection selection;
 
-  public RefreshViolationAction() {
+  public RefreshDuplicationAction() {
     super();
   }
 
@@ -70,9 +70,9 @@ public class RefreshViolationAction implements IWorkbenchWindowActionDelegate {
     } else {
       resources = selection.toList();
     }
-    // Load violations
-    final Job violationsJob = new RefreshViolationJob(resources);
-    violationsJob.schedule();
+    // Load duplications
+    final Job duplicationsJob = new RefreshDuplicationsJob(resources);
+    duplicationsJob.schedule();
   }
 
   /**

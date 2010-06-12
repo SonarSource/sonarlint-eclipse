@@ -124,6 +124,24 @@
               style="push">
         </action>
         <action
+              class="org.sonar.ide.eclipse.actions.RefreshDuplicationAction"
+              enablesFor="+"
+              id="org.sonar.ide.eclipse.refreshDuplicationAction"
+              label="%sonar.action.refreshduplications.label"
+              menubarPath="org.sonar.ide.eclipse.sonar/group1"
+              state="true"
+              style="push">
+        </action>
+        <action
+              class="org.sonar.ide.eclipse.actions.RefreshCoverageAction"
+              enablesFor="+"
+              id="org.sonar.ide.eclipse.refreshCoverageAction"
+              label="%sonar.action.refreshcoverage.label"
+              menubarPath="org.sonar.ide.eclipse.sonar/group1"
+              state="true"
+              style="push">
+        </action>
+        <action
               class="org.sonar.ide.eclipse.actions.OpenInBrowserAction"
               enablesFor="+"
               id="org.sonar.ide.eclipse.openInBrowserAction"
