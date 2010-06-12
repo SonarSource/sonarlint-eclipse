@@ -4,12 +4,11 @@ import static org.junit.Assert.fail;
 
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.sonar.ide.test.SonarTestServer;
 
-@Ignore("Not ready")
 public class ConfigurationTest extends UITestCase {
 
   @Test
@@ -23,7 +22,6 @@ public class ConfigurationTest extends UITestCase {
     SWTBotShell shell2 = bot.shell("Edit sonar server connection");
     shell2.activate();
 
-    // TODO see SONARIDE-90
     testConnection("http://fake", false);
     testConnection(server.getBaseUrl() + "/", true); // test for SONARIDE-90
     testConnection(server.getBaseUrl(), true);
@@ -40,19 +38,15 @@ public class ConfigurationTest extends UITestCase {
 
   private void testConnection(String serverUrl, boolean expectedSuccess) {
     bot.textWithLabel("Sonar server URL :").setText(serverUrl);
-    bot.button("Test connection").click();
+    SWTBotButton button = bot.button("Test connection");
+    button.click();
+    bot.waitUntil(Conditions.widgetIsEnabled(button));
 
-    // TODO Godin: doesn't work
+    String message = expectedSuccess ? "Successfully connected!" : "Unable to connect.";
     try {
-      bot.label("Successfully connected!");
-      if ( !expectedSuccess) {
-        fail("Expected 'Unable to connect'");
-      }
+      bot.text(" " + message);
     } catch (WidgetNotFoundException e) {
-      if (expectedSuccess) {
-        fail("Expected 'Successfully connected'");
-      }
+      fail("Expected '" + message + "'");
     }
   }
-
 }
