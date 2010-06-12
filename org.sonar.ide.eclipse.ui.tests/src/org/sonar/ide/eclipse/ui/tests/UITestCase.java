@@ -62,7 +62,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
   @BeforeClass
   public final static void beforeClass() throws Exception {
     init(); // TODO Godin: remove
-    
+
     SWTBotPreferences.SCREENSHOTS_DIR = SCREENSHOTS_DIR;
     SWTBotPreferences.SCREENSHOT_FORMAT = "png";
     bot = new SWTWorkbenchBot();
@@ -81,17 +81,17 @@ public abstract class UITestCase extends SonarIdeTestCase {
     // Clean out projects left over from previous test runs
     clearProjects();
 
-    openPerspective("org.eclipse.jdt.ui.JavaPerspective");
+    openPerspective(JavaUI.ID_PERSPECTIVE);
   }
 
   @AfterClass
   public final static void afterClass() throws Exception {
     clearProjects();
     bot.sleep(2000);
-//    bot.resetWorkbench();
+    // bot.resetWorkbench();
   }
 
-  private static void openPerspective(final String id) {
+  protected static void openPerspective(final String id) {
     bot.perspectiveById(id).activate();
   }
 
@@ -202,7 +202,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
     bot.tree().select("Sonar");
     return shell;
   }
-  
+
   protected static SWTBotShell showGlobalSonarPropertiesPage() {
     bot.menu("Window").menu("Preferences").click();
     SWTBotShell shell = bot.shell("Preferences");
@@ -236,7 +236,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
     shell.bot().button("OK").click();
     bot.waitUntil(Conditions.shellCloses(shell));
   }
-  
+
   protected static String getGroupId(String projectName) {
     return "org.sonar-ide.tests." + projectName;
   }
