@@ -1,23 +1,23 @@
 Manifest-Version: 1.0
-MavenArtifact-GroupId: org.codehaus.sonar-ide.eclipse
-Bundle-RequiredExecutionEnvironment: J2SE-1.5, JavaSE-1.6
-MavenArtifact-BaseVersion: 0.2.0-SNAPSHOT
-Eclipse-BuddyPolicy: registered
 Export-Package: org.sonar.ide.test,org.sonar.ide.eclipse.tests.common,
  org.apache.commons.io
-Bundle-Version: 0.2.0.qualifier
-MavenArtifact-ArtifactId: org.sonar.ide.eclipse.tests.common
-Bundle-Name: Sonar Integration for Eclipse Tests Common
 Bundle-ClassPath: .,jars/sonar-ide-testing-harness-0.2-SNAPSHOT.jar,ja
  rs/sonar-ws-client-2.0.1.jar,jars/json-simple-1.1.jar,jars/jetty-serv
  let-tester-6.1.6.jar,jars/jetty-6.1.6.jar,jars/jetty-util-6.1.6.jar,j
  ars/servlet-api-2.5-6.1.6.jar,jars/commons-io-1.4.jar,jars/commons-la
  ng-2.5.jar,jars/slf4j-api-1.5.11.jar,jars/logback-classic-0.9.18.jar,
  jars/logback-core-0.9.18.jar
-Bundle-ManifestVersion: 2
-Bundle-Vendor: Evgeny Mandrikov
-Bundle-SymbolicName: org.sonar.ide.eclipse.tests.common;singleton:=tru
- e
+Bundle-Name: Sonar Integration for Eclipse Tests Common
+Bundle-RequiredExecutionEnvironment: J2SE-1.5, JavaSE-1.6
 Require-Bundle: org.junit4,org.eclipse.core.resources,org.eclipse.core
  .runtime,org.sonar.ide.eclipse,org.sonar.ide.eclipse.sonar_embedder
+Bundle-Vendor: Evgeny Mandrikov
+MavenArtifact-BaseVersion: 0.2.0-SNAPSHOT
+Bundle-Version: 0.2.0.qualifier
+Eclipse-BuddyPolicy: registered
+MavenArtifact-GroupId: org.codehaus.sonar-ide.eclipse
+MavenArtifact-ArtifactId: org.sonar.ide.eclipse.tests.common
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.sonar.ide.eclipse.tests.common;singleton:=tru
+ e
 

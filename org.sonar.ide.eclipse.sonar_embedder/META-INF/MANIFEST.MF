@@ -3,11 +3,11 @@ Export-Package: ch.qos.logback.core.spi,org.sonar.ide.images.tendency,
  ch.qos.logback.classic,org.sonar.ide.ui,org.sonar.ide.shared.coverage
  ,ch.qos.logback.core,ch.qos.logback.core.joran.spi,org.slf4j,ch.qos.l
  ogback.classic.joran,org.apache.commons.lang,org.slf4j.impl,org.sonar
- .wsclient,org.sonar.ide.shared,org.sonar.wsclient.connectors,ch.qos.l
- ogback.core.joran,org.sonar.wsclient.unmarshallers,org.sonar.ide.clie
- nt,org.sonar.ide.images.priority,ch.qos.logback.core.util,org.sonar.i
- de.images,org.sonar.wsclient.services,org.sonar.ide.api,org.sonar.ide
- .shared.duplications
+ .wsclient,org.sonar.ide.shared.measures,org.sonar.ide.shared,org.sona
+ r.wsclient.connectors,ch.qos.logback.core.joran,org.sonar.wsclient.un
+ marshallers,org.sonar.ide.client,org.sonar.ide.images.priority,ch.qos
+ .logback.core.util,org.sonar.ide.images,org.sonar.wsclient.services,o
+ rg.sonar.ide.api,org.sonar.ide.shared.duplications
 Bundle-Vendor: Evgeny Mandrikov
 Bundle-ClassPath: jars/sonar-ide-commons-0.2-SNAPSHOT.jar,jars/slf4j-a
  pi-1.5.11.jar,jars/jcl-over-slf4j-1.5.11.jar,jars/google-collections-

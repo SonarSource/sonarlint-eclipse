@@ -34,16 +34,16 @@ public class MetricsLabelProvider extends LabelProvider implements ITableLabelPr
   public String getColumnText(final Object element, final int columnIndex) {
     final Metric metric = (Metric) element;
     switch (columnIndex) {
-    case 0:
-      return metric.getName();
-    case 1:
-      return metric.getDomain();
-    case 2:
-      return metric.getKey();
-    case 3:
-      return metric.getDescription();
-    default:
-      throw new RuntimeException("Should not happen");
+      case 0:
+        return metric.getName();
+      case 1:
+        return metric.getDomain();
+      case 2:
+        return metric.getKey();
+      case 3:
+        return metric.getDescription();
+      default:
+        throw new RuntimeException("Should not happen");
     }
   }
 
