@@ -83,53 +83,54 @@ import org.sonar.wsclient.services.ViolationQuery;
  */
 public class NavigatorView extends ViewPart {
 
-  public static final String   ID            = "org.sonar.ide.eclipse.views.NavigatorView";
+  public static final String ID = "org.sonar.ide.eclipse.views.NavigatorView";
 
-  private TreeViewer           viewer;
-  private DrillDownAdapter     drillDownAdapter;
-  private Action               deleteServerAction;
-  private Action               addServerAction;
-  private Action               editServerAction;
-  private Action               doubleClickAction;
-  private Action               openSonarWebAction;
-  private Action               linkToEditorAction;
-  private Action               refreshAction;
-  private boolean              linking;
+  private TreeViewer viewer;
+  private DrillDownAdapter drillDownAdapter;
+  private Action deleteServerAction;
+  private Action addServerAction;
+  private Action editServerAction;
+  private Action doubleClickAction;
+  private Action openSonarWebAction;
+  private Action linkToEditorAction;
+  private Action refreshAction;
+  private boolean linking;
 
   private final IPartListener2 partListener2 = new IPartListener2() {
-                                               public void partActivated(IWorkbenchPartReference ref) {
-                                                 if (ref.getPart(true) instanceof IEditorPart) {
-                                                   editorActivated(getViewSite().getPage().getActiveEditor());
-                                                 }
-                                               }
 
-                                               public void partBroughtToTop(IWorkbenchPartReference ref) {
-                                                 if (ref.getPart(true) == NavigatorView.this)
-                                                   editorActivated(getViewSite().getPage().getActiveEditor());
-                                               }
+    public void partActivated(IWorkbenchPartReference ref) {
+      if (ref.getPart(true) instanceof IEditorPart) {
+        editorActivated(getViewSite().getPage().getActiveEditor());
+      }
+    }
 
-                                               public void partClosed(IWorkbenchPartReference ref) {
-                                               }
+    public void partBroughtToTop(IWorkbenchPartReference ref) {
+      if (ref.getPart(true) == NavigatorView.this)
+        editorActivated(getViewSite().getPage().getActiveEditor());
+    }
 
-                                               public void partDeactivated(IWorkbenchPartReference ref) {
-                                               }
+    public void partClosed(IWorkbenchPartReference ref) {
+    }
 
-                                               public void partOpened(IWorkbenchPartReference ref) {
-                                                 if (ref.getPart(true) == NavigatorView.this)
-                                                   editorActivated(getViewSite().getPage().getActiveEditor());
-                                               }
+    public void partDeactivated(IWorkbenchPartReference ref) {
+    }
 
-                                               public void partHidden(IWorkbenchPartReference ref) {
-                                               }
+    public void partOpened(IWorkbenchPartReference ref) {
+      if (ref.getPart(true) == NavigatorView.this)
+        editorActivated(getViewSite().getPage().getActiveEditor());
+    }
 
-                                               public void partVisible(IWorkbenchPartReference ref) {
-                                                 if (ref.getPart(true) == NavigatorView.this)
-                                                   editorActivated(getViewSite().getPage().getActiveEditor());
-                                               }
+    public void partHidden(IWorkbenchPartReference ref) {
+    }
 
-                                               public void partInputChanged(IWorkbenchPartReference ref) {
-                                               }
-                                             };
+    public void partVisible(IWorkbenchPartReference ref) {
+      if (ref.getPart(true) == NavigatorView.this)
+        editorActivated(getViewSite().getPage().getActiveEditor());
+    }
+
+    public void partInputChanged(IWorkbenchPartReference ref) {
+    }
+  };
 
   class NameSorter extends ViewerSorter {
   }
@@ -155,6 +156,7 @@ public class NavigatorView extends ViewPart {
     contributeToActionBars();
 
     SonarPlugin.getServerManager().addServerSetListener(new IServerSetListener() {
+
       public void serverSetChanged(int type, List<Host> serverList) {
         viewer.setContentProvider(new NavigatorContentProvider());
       }
@@ -172,6 +174,7 @@ public class NavigatorView extends ViewPart {
     MenuManager menuMgr = new MenuManager("#PopupMenu");
     menuMgr.setRemoveAllWhenShown(true);
     menuMgr.addMenuListener(new IMenuListener() {
+
       public void menuAboutToShow(IMenuManager manager) {
         NavigatorView.this.fillContextMenu(manager);
       }
@@ -261,6 +264,7 @@ public class NavigatorView extends ViewPart {
 
   private void makeActions() {
     deleteServerAction = new Action() {
+
       @Override
       public void run() {
         ISelection selection = viewer.getSelection();
@@ -280,6 +284,7 @@ public class NavigatorView extends ViewPart {
     deleteServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
 
     addServerAction = new Action() {
+
       @Override
       public void run() {
         NewServerLocationWizard wiz = new NewServerLocationWizard();
@@ -295,6 +300,7 @@ public class NavigatorView extends ViewPart {
     addServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
 
     editServerAction = new Action() {
+
       @Override
       public void run() {
         ISelection selection = viewer.getSelection();
@@ -315,6 +321,7 @@ public class NavigatorView extends ViewPart {
     editServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
 
     doubleClickAction = new Action() {
+
       @Override
       public void run() {
         ISelection selection = viewer.getSelection();
@@ -326,12 +333,13 @@ public class NavigatorView extends ViewPart {
     };
 
     refreshAction = new Action() {
+
       @Override
       public void run() {
         ISelection selection = viewer.getSelection();
         if (selection instanceof IStructuredSelection) {
           IStructuredSelection strucSel = (IStructuredSelection) selection;
-          if (!strucSel.isEmpty()) {
+          if ( !strucSel.isEmpty()) {
             viewer.refresh(strucSel.getFirstElement());
           }
         }
@@ -342,12 +350,13 @@ public class NavigatorView extends ViewPart {
     refreshAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
 
     openSonarWebAction = new Action() {
+
       @Override
       public void run() {
         ISelection selection = viewer.getSelection();
         if (selection instanceof IStructuredSelection) {
           IStructuredSelection strucSel = (IStructuredSelection) selection;
-          if (!strucSel.isEmpty()) {
+          if ( !strucSel.isEmpty()) {
             openBrowser((TreeObject) strucSel.getFirstElement());
           }
         }
@@ -358,6 +367,7 @@ public class NavigatorView extends ViewPart {
     openSonarWebAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
 
     linkToEditorAction = new Action(Messages.getString("action.link"), IAction.AS_CHECK_BOX) {
+
       @Override
       public void run() {
         toggleLinking(isChecked());
@@ -369,6 +379,7 @@ public class NavigatorView extends ViewPart {
 
   private void hookDoubleClickAction() {
     viewer.addDoubleClickListener(new IDoubleClickListener() {
+
       public void doubleClick(DoubleClickEvent event) {
         doubleClickAction.run();
       }
@@ -407,32 +418,35 @@ public class NavigatorView extends ViewPart {
 
   protected void toggleLinking(boolean checked) {
     this.linking = checked;
-
-    if (this.linking)
+    if (this.linking) {
       editorActivated(getSite().getPage().getActiveEditor());
-
+    }
   }
 
   void editorActivated(IEditorPart editor) {
-    if (editor == null)
+    if (editor == null) {
       return;
+    }
     IEditorInput editorInput = editor.getEditorInput();
-    if (editorInput == null)
+    if (editorInput == null) {
       return;
+    }
     Object input = getInputFromEditor(editorInput);
-    if (input == null)
+    if (input == null) {
       return;
-    if (!inputIsSelected(editorInput))
+    }
+    if ( !inputIsSelected(editorInput)) {
       showInput(input);
-    else
+    } else {
       viewer.getTree().showSelection();
+    }
   }
 
   private Object getInputFromEditor(IEditorInput editorInput) {
     Object input = JavaUI.getEditorInputJavaElement(editorInput);
     if (input instanceof ICompilationUnit) {
       ICompilationUnit cu = (ICompilationUnit) input;
-      if (!cu.getJavaProject().isOnClasspath(cu)) { // test needed for Java
+      if ( !cu.getJavaProject().isOnClasspath(cu)) { // test needed for Java
         // files in non-source
         // folders (bug 207839)
         input = cu.getResource();
@@ -453,9 +467,9 @@ public class NavigatorView extends ViewPart {
 
   private boolean inputIsSelected(IEditorInput input) {
     IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-    if (selection.size() != 1)
+    if (selection.size() != 1) {
       return false;
-
+    }
     // Object element = selection.getFirstElement();
     // IEditorInput selectionAsInput=
     // EditorUtility.getEditorInput(selection.getFirstElement());

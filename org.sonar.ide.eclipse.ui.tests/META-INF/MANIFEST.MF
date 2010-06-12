@@ -13,6 +13,7 @@ Export-Package: org.sonar.ide.eclipse.ui.tests
 Require-Bundle: org.junit4;bundle-version="4.4.0",
  org.hamcrest,
  org.eclipse.jdt.core,
+ org.eclipse.jdt.ui,
  org.eclipse.debug.core,
  org.eclipse.jdt.launching,
  org.eclipse.jface,

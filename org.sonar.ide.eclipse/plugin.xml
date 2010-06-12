@@ -51,6 +51,13 @@
         id="org.sonar.ide.eclipse.views.MetricsView"
         name="%sonar.metrics.view.name">
     </view>
+    <view
+    	category="org.sonar.ide.eclipse"
+    	class="org.sonar.ide.eclipse.views.MeasuresView"
+    	icon="icons/sonar.png"
+    	id="org.sonar.ide.eclipse.views.MeasuresView"
+    	name="%sonar.measures.view.name">
+    </view>
   </extension>
   <extension point="org.eclipse.ui.newWizards">
     <category id="org.sonar.ide.eclipse.wizcat" name="%sonar.category.wizard.name"/>

@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
@@ -55,8 +56,6 @@ import org.sonar.ide.test.SonarIdeTestCase;
 public abstract class UITestCase extends SonarIdeTestCase {
 
   private static final String SCREENSHOTS_DIR = "target/screenshots";
-
-  public static final String PACKAGE_EXPLORER_VIEW_ID = "org.eclipse.jdt.ui.PackageExplorer";
 
   protected static SWTWorkbenchBot bot;
 
@@ -213,7 +212,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
   }
 
   protected static SWTBotTree selectProject(String projectName) {
-    SWTBotTree tree = bot.viewById(PACKAGE_EXPLORER_VIEW_ID).bot().tree();
+    SWTBotTree tree = bot.viewById(JavaUI.ID_PACKAGES).bot().tree();
     SWTBotTreeItem treeItem = null;
     treeItem = tree.getTreeItem(projectName);
     treeItem.select();

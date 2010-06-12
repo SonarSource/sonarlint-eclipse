@@ -44,13 +44,15 @@ import org.sonar.wsclient.services.Metric;
 
 /**
  * @author Jérémie Lagarde
+ * @deprecated since 0.2.0 use {@link MeasuresView} instead of it
  */
+@Deprecated
 public class MetricsView extends ViewPart {
 
   public static final String ID = "org.sonar.ide.eclipse.views.MetricsView";
 
-  private TableViewer        viewer;
-  private Combo              serversCombo;
+  private TableViewer viewer;
+  private Combo serversCombo;
 
   @Override
   public void createPartControl(final Composite parent) {
@@ -93,6 +95,7 @@ public class MetricsView extends ViewPart {
     }
 
     serversCombo.addSelectionListener(new SelectionAdapter() {
+
       @Override
       public void widgetSelected(final SelectionEvent e) {
         final SonarClient sonar = (SonarClient) SonarPlugin.getServerManager().getSonar(serversCombo.getText());
