@@ -34,6 +34,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.sonar.ide.eclipse.jobs.RefreshCoverageJob;
 import org.sonar.ide.eclipse.jobs.RefreshDuplicationsJob;
 import org.sonar.ide.eclipse.jobs.RefreshViolationJob;
 
@@ -77,6 +78,9 @@ public class RefreshViolationAction implements IWorkbenchWindowActionDelegate {
     // Load duplications
     final Job duplicationsJob = new RefreshDuplicationsJob(resources);
     duplicationsJob.schedule();
+    // Load coverage
+    final Job coverageJob = new RefreshCoverageJob(resources);
+    coverageJob.schedule();
   }
 
   /**
