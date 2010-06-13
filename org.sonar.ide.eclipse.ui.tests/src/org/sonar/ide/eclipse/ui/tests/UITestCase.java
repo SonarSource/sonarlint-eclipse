@@ -44,6 +44,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.sonar.ide.eclipse.tests.common.JobHelpers;
+import org.sonar.ide.eclipse.tests.common.VersionHelpers;
 import org.sonar.ide.eclipse.tests.common.WorkspaceHelpers;
 import org.sonar.ide.test.SonarIdeTestCase;
 
@@ -61,6 +62,8 @@ public abstract class UITestCase extends SonarIdeTestCase {
 
   @BeforeClass
   public final static void beforeClass() throws Exception {
+    System.out.println("Eclipse version : " + VersionHelpers.getEclipseVersion());
+    
     SWTBotPreferences.SCREENSHOTS_DIR = SCREENSHOTS_DIR;
     SWTBotPreferences.SCREENSHOT_FORMAT = "png";
     bot = new SWTWorkbenchBot();
@@ -238,4 +241,5 @@ public abstract class UITestCase extends SonarIdeTestCase {
   protected static String getGroupId(String projectName) {
     return "org.sonar-ide.tests." + projectName;
   }
+
 }
