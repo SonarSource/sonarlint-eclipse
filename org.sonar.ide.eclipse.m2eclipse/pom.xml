@@ -15,11 +15,6 @@
 
   <name>Sonar Integration for M2Eclipse</name>
 
-  <properties>
-    <!-- Godin: It's here, because target-platform resolution for m2eclipse slows down the build -->
-    <target.platform>e35-m2eclipse</target.platform>
-  </properties>
-
   <build>
     <sourceDirectory>src</sourceDirectory>
 

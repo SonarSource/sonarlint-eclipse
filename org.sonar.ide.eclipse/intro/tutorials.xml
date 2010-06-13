@@ -6,7 +6,7 @@
       <link id="sonar" style-id="content-link" label="Sonar Integration for Eclipse"
         url="http://sonar-ide.codehaus.org">
         <text>Learn about most common use cases when working with Sonar
-          from Eclipse</text>
+          from Eclipse.</text>
       </link>
     </group>
   </extensionContent>

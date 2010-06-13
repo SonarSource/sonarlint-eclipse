@@ -8,9 +8,22 @@
 <repository location="http://download.eclipse.org/eclipse/updates/3.5"/>
 </location>
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
-<unit id="org.eclipse.swtbot.feature.group" version="2.0.0.536-dev-e35"/>
-<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.0.0.536-dev-e35"/>
+<unit id="org.eclipse.wst.web_ui.feature.feature.group" version="3.1.1.v200908120400-7R77FSpEVw2xXR0CtKvX6bG6a2qU"/>
+<unit id="org.eclipse.wst.web_core.feature.feature.group" version="3.1.1.v200908120400-7H77FDAAT7oGlfz0dFV3j0BgbCD7"/>
+<unit id="org.eclipse.jst.web_ui.feature.feature.group" version="3.1.1.v200908121609-7E77FBfDlwYa_9sdy2q77doi14gl"/>
+<unit id="org.eclipse.jst.server_adapters.feature.feature.group" version="3.1.0.v20090311c-20-7w311A1422c"/>
+<unit id="org.eclipse.jst.server_adapters.ext.feature.feature.group" version="3.1.1.v20090813-777HFDPCcNBBz0BjJU4BA8"/>
+<unit id="org.eclipse.zest.sdk.feature.group" version="1.1.1.v20090724-1146-6628CNCSBRDXVPcKmPebkLYNSOSP"/>
+<repository location="http://download.eclipse.org/releases/galileo"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.0.0.568-dev-e35"/>
+<unit id="org.eclipse.swtbot.feature.group" version="2.0.0.568-dev-e35"/>
 <repository location="http://download.eclipse.org/technology/swtbot/galileo/dev-build/update-site/"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.maven.ide.eclipse.feature.feature.group" version="0.10.0.20100209-0800"/>
+<repository location="http://m2eclipse.sonatype.org/sites/m2e"/>
 </location>
 </locations>
 </target>

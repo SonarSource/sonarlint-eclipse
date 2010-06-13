@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.6"?>
+
+<target name="sonar-ide-e36">
+<locations>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.eclipse.sdk.ide" version="3.6.0.I20100527-1700"/>
+<unit id="org.eclipse.emf.common.feature.group" version="2.6.0.v20100527-1920"/>
+<unit id="org.eclipse.wst.common.emf" version="1.2.0.v201005200700"/>
+<unit id="org.eclipse.wst.sse.core" version="1.1.500.v201005261534"/>
+<unit id="org.eclipse.wst.xml.core" version="1.1.500.v201005271618"/>
+<unit id="org.eclipse.zest.sdk.feature.group" version="1.2.0.v20100519-2050-679-8COKLDAKOXIET_YWTacZM9XR"/>
+<unit id="org.eclipse.wst.sse.ui" version="1.2.0.v201005130131"/>
+<unit id="org.eclipse.emf.ecore.edit.feature.group" version="2.6.0.v20100527-1920"/>
+<unit id="org.eclipse.emf.edit.ui.feature.group" version="2.6.0.v20100527-1920"/>
+<unit id="org.eclipse.wst.xsd.core" version="1.1.501.v201004110600"/>
+<unit id="org.eclipse.wst.web_ui.feature.feature.group" version="3.2.0.v201005241510-7O7CFb3EMf84nOyJKuT05LU72RId"/>
+<repository location="http://download.eclipse.org/releases/helios"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.0.0.568-dev-e36"/>
+<unit id="org.eclipse.swtbot.eclipse.gef.feature.group" version="2.0.0.568-dev-e36"/>
+<unit id="org.eclipse.swtbot.feature.group" version="2.0.0.568-dev-e36"/>
+<unit id="org.eclipse.swtbot.ide.feature.group" version="2.0.0.568-dev-e36"/>
+<unit id="org.eclipse.swtbot.eclipse.test.junit3.feature.group" version="2.0.0.568-dev-e36"/>
+<unit id="org.eclipse.swtbot.eclipse.test.junit4.feature.group" version="2.0.0.568-dev-e36"/>
+<repository location="http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.maven.ide.eclipse.feature.feature.group" version="0.10.0.20100209-0800"/>
+<repository location="http://m2eclipse.sonatype.org/sites/m2e"/>
+</location>
+</locations>
+</target>

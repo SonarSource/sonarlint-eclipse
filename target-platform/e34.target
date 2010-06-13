@@ -4,13 +4,38 @@
 <target name="sonar-ide-e34">
 <locations>
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.eclipse.jst.feature.group" version="3.0.4.v200811190840-7U1959LJIHM6ogLbhvbrAnWtxuyM"/>
+<unit id="org.eclipse.wst.feature.group" version="3.0.4.v200811190840-7A-8l8Qqcz0HyVgjXUE-iuOYZ9ai"/>
+<repository location="http://download.eclipse.org/releases/ganymede"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
 <unit id="org.eclipse.sdk.ide" version="3.4.2.M20090211-1700"/>
 <repository location="http://download.eclipse.org/eclipse/updates/3.4"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.eclipse.ajdt.feature.group" version="2.0.1.e34x-20090930-1200"/>
+<repository location="http://download.eclipse.org/tools/ajdt/34/update"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.eclipse.gef.sdk.feature.group" version="3.4.2.v20090218-1145-7B7E597OKBd7QHgEHNHn9JKTFJJR"/>
+<repository location="http://download.eclipse.org/releases/ganymede"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.eclipse.zest.sdk.feature.group" version="1.0.0.v20080115-5318_GCGFGJMZHOMaa6PMUULSPXD"/>
+<repository location="http://download.eclipse.org/releases/ganymede"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.eclipse.mylyn_feature.feature.group" version="3.0.5.v20090218-1800-e3x"/>
+<repository location="http://download.eclipse.org/releases/ganymede"/>
 </location>
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
 <unit id="org.eclipse.swtbot.feature.group" version="2.0.0.512-dev-e34"/>
 <unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.0.0.512-dev-e34"/>
 <repository location="http://download.eclipse.org/technology/swtbot/ganymede/dev-build/update-site"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<unit id="org.maven.ide.eclipse.feature.feature.group" version="0.10.0.20100209-0800"/>
+<repository location="http://m2eclipse.sonatype.org/sites/m2e"/>
 </location>
 </locations>
 </target>

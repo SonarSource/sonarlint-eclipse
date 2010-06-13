@@ -30,24 +30,19 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>e35.target</file>
-                  <type>target</type>
-                  <classifier>e35</classifier>
-                </artifact>
-                <artifact>
                   <file>e34.target</file>
                   <type>target</type>
                   <classifier>e34</classifier>
                 </artifact>
                 <artifact>
-                  <file>e35-m2eclipse.target</file>
+                  <file>e35.target</file>
                   <type>target</type>
-                  <classifier>e35-m2eclipse</classifier>
+                  <classifier>e35</classifier>
                 </artifact>
                 <artifact>
-                  <file>e34-m2eclipse.target</file>
+                  <file>e36.target</file>
                   <type>target</type>
-                  <classifier>e34-m2eclipse</classifier>
+                  <classifier>e36</classifier>
                 </artifact>
               </artifacts>
             </configuration>
