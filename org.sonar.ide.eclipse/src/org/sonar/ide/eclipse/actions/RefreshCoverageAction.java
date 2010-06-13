@@ -18,71 +18,20 @@
 
 package org.sonar.ide.eclipse.actions;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITreeSelection;
-import org.eclipse.ui.IActionDelegate;
-import org.eclipse.ui.IObjectActionDelegate;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.sonar.ide.eclipse.jobs.RefreshCoverageJob;
 
 /**
  * @author Jérémie Lagarde
  */
-public class RefreshCoverageAction implements IWorkbenchWindowActionDelegate {
+public class RefreshCoverageAction extends AbstractRefreshAction {
 
-  private IStructuredSelection selection;
-
-  public RefreshCoverageAction() {
-    super();
+  @Override
+  protected Job createJob(List<IResource> resources) {
+    return new RefreshCoverageJob(resources);
   }
 
-  public void dispose() {
-  }
-
-  public void init(final IWorkbenchWindow window) {
-  }
-
-  /**
-   * @see IObjectActionDelegate#setActivePart(IAction, IWorkbenchPart)
-   */
-  public void setActivePart(final IAction action, final IWorkbenchPart targetPart) {
-  }
-
-  /**
-   * @see IActionDelegate#run(IAction)
-   */
-  public void run(final IAction action) {
-    final List<IResource> resources;
-    if (selection instanceof ITreeSelection) {
-      resources = new ArrayList<IResource>();
-      Collections.addAll(resources, ResourcesPlugin.getWorkspace().getRoot().getProjects());
-    } else {
-      resources = selection.toList();
-    }
-    // Load coverage
-    final Job coverageJob = new RefreshCoverageJob(resources);
-    coverageJob.schedule();
-  }
-
-  /**
-   * @see IActionDelegate#selectionChanged(IAction, ISelection)
-   */
-  public void selectionChanged(final IAction action, final ISelection selection) {
-    if (selection instanceof IStructuredSelection) {
-      this.selection = (IStructuredSelection) selection;
-    } else {
-      this.selection = null;
-    }
-  }
 }
