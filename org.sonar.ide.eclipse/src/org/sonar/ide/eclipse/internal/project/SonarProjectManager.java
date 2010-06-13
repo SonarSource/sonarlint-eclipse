@@ -1,5 +1,6 @@
 package org.sonar.ide.eclipse.internal.project;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -32,11 +33,17 @@ public class SonarProjectManager {
     }
     String version = projectNode.get(P_VERSION, null);
     // Godin: we can perform migration here
+    String artifactId = projectNode.get(P_PROJECT_ARTIFACTID, "");
+    if (version == null) {
+      if (StringUtils.isBlank(artifactId)) {
+        artifactId = project.getName();
+      }
+    }
 
     ProjectProperties configuration = new ProjectProperties(project);
     configuration.setUrl(projectNode.get(P_SONAR_SERVER_URL, ""));
     configuration.setGroupId(projectNode.get(P_PROJECT_GROUPID, ""));
-    configuration.setArtifactId(projectNode.get(P_PROJECT_ARTIFACTID, ""));
+    configuration.setArtifactId(artifactId);
     configuration.setBranch(projectNode.get(P_PROJECT_BRANCH, ""));
     return configuration;
   }
@@ -50,7 +57,7 @@ public class SonarProjectManager {
     if (projectNode != null) {
       Logs.INFO.debug("Saving configuration for project " + project.getName());
       projectNode.put(P_VERSION, VERSION);
-      
+
       projectNode.put(P_SONAR_SERVER_URL, configuration.getUrl());
       projectNode.put(P_PROJECT_GROUPID, configuration.getGroupId());
       projectNode.put(P_PROJECT_ARTIFACTID, configuration.getArtifactId());

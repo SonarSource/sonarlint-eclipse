@@ -29,7 +29,9 @@ import org.junit.Test;
 import org.sonar.ide.eclipse.SonarUI;
 import org.sonar.ide.eclipse.views.MeasuresView;
 
-
+/**
+ * @author Evgeny Mandrikov
+ */
 public class MeasuresTest extends UITestCase {
 
   @Test

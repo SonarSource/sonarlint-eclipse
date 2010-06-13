@@ -32,7 +32,10 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.junit.Test;
 import org.sonar.ide.eclipse.SonarPlugin;
 
-public class ViolationsTest extends UITestCase {
+/**
+ * @author Evgeny Mandrikov
+ */
+public class MarkersTest extends UITestCase {
 
   @Test
   public void testRefreshViolations() throws Exception {
@@ -50,17 +53,36 @@ public class ViolationsTest extends UITestCase {
 
     final SWTBotTree tree = selectProject(projectName);
 
-    assertThat(getMarkers(projectName).length, is(0));
+    assertThat(getMarkers(projectName, SonarPlugin.MARKER_VIOLATION_ID).length, is(0));
 
     ContextMenuHelper.clickContextMenu(tree, "Sonar", "Refresh violations");
     waitForAllBuildsToComplete();
     bot.sleep(1000 * 10); // TODO Godin: looks like waitForAllBuildsToComplete(); doesn't work
 
-    assertThat(getMarkers(projectName).length, greaterThan(0));
+    assertThat(getMarkers(projectName, SonarPlugin.MARKER_VIOLATION_ID).length, greaterThan(0));
+  }
+  
+  @Test
+  public void testRefreshDuplications() throws Exception {
+    configureDefaultSonarServer(getTestServer().getBaseUrl());
+
+    final String projectName = "duplications";
+    importMavenProject(projectName);
+    
+    final SWTBotTree tree = selectProject(projectName);
+
+    assertThat(getMarkers(projectName, SonarPlugin.MARKER_DUPLICATION_ID).length, is(0));
+
+    ContextMenuHelper.clickContextMenu(tree, "Sonar", "Refresh duplications");
+    waitForAllBuildsToComplete();
+    bot.sleep(1000 * 10); // TODO Godin: looks like waitForAllBuildsToComplete(); doesn't work
+
+    assertThat(getMarkers(projectName, SonarPlugin.MARKER_DUPLICATION_ID).length, greaterThan(0));
+  }
+  
+  private IMarker[] getMarkers(final String projectName, final String markerId) throws Exception {
+    final IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+    return project.findMarkers(markerId, true, IResource.DEPTH_INFINITE);
   }
 
-  private IMarker[] getMarkers(final String projectName) throws Exception {
-    final IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-    return project.findMarkers(SonarPlugin.MARKER_VIOLATION_ID, true, IResource.DEPTH_INFINITE);
-  }
 }

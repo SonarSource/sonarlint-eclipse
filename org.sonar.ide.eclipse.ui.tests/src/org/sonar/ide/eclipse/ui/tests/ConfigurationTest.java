@@ -27,6 +27,9 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.Test;
 import org.sonar.ide.test.SonarTestServer;
 
+/**
+ * @author Evgeny Mandrikov
+ */
 public class ConfigurationTest extends UITestCase {
 
   @Test
