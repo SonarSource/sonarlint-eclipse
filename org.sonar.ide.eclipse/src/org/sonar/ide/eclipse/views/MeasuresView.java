@@ -22,6 +22,10 @@ import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.action.Action;
@@ -30,6 +34,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorInput;
@@ -121,19 +126,36 @@ public class MeasuresView extends ViewPart {
     if (editorInput == null) {
       return;
     }
-    IResource resource = getResourceFromEditor(editorInput);
+    final IResource resource = getResourceFromEditor(editorInput);
     if (resource == null) {
       return;
     }
-    String resourceKey = EclipseResourceUtils.getInstance().getFileKey(resource);
-    IProject project = resource.getProject();
-    final ProjectProperties properties = ProjectProperties.getInstance(project);
-    final Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
-    // TODO don't block UI
-    List<MeasureData> measures = MeasuresLoader.getMeasures(sonar, resourceKey);
-    viewer.setInput(measures);
+    // TODO Godin: should be refactored
+    new Job("My new job") {
+
+      @Override
+      protected IStatus run(IProgressMonitor monitor) {
+        monitor.beginTask("Some nice progress message here ...", 100);
+
+        // execute the task ...
+        String resourceKey = EclipseResourceUtils.getInstance().getFileKey(resource);
+        IProject project = resource.getProject();
+        ProjectProperties properties = ProjectProperties.getInstance(project);
+        Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
+        final List<MeasureData> measures = MeasuresLoader.getMeasures(sonar, resourceKey);
+        Display.getDefault().asyncExec(new Runnable() {
+
+          public void run() {
+            viewer.setInput(measures);
+          }
+        });
+
+        monitor.done();
+        return Status.OK_STATUS;
+      }
+    }.schedule();
   }
-  
+
   private IResource getResourceFromEditor(IEditorInput editorInput) {
     IJavaElement element = JavaUI.getEditorInputJavaElement(editorInput);
     if (element != null) {
