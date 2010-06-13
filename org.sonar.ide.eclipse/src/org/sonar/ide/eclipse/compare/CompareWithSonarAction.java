@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Evgeny Mandrikov, Jérémie Lagarde
+ * Copyright (C) 2010 Evgeny Mandrikov
  *
  * Sonar-IDE is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,6 +15,7 @@
  * License along with Sonar-IDE; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
+
 package org.sonar.ide.eclipse.compare;
 
 import org.eclipse.compare.CompareUI;

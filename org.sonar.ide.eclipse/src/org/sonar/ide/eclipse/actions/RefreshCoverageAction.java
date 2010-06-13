@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Evgeny Mandrikov, Jérémie Lagarde
+ * Copyright (C) 2010 Evgeny Mandrikov
  *
  * Sonar-IDE is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
