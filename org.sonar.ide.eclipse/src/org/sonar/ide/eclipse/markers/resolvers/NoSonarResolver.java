@@ -18,17 +18,23 @@
 
 package org.sonar.ide.eclipse.markers.resolvers;
 
+import org.eclipse.core.filebuffers.FileBuffers;
+import org.eclipse.core.filebuffers.ITextFileBufferManager;
+import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.text.edits.MalformedTreeException;
-import org.eclipse.text.edits.TextEdit;
+import org.eclipse.text.edits.InsertEdit;
+import org.eclipse.text.edits.MultiTextEdit;
 
 /**
  * @author Jérémie Lagarde
@@ -53,41 +59,48 @@ public class NoSonarResolver implements ISonarResolver {
     if (line == -1 || cu == null) {
       return false;
     }
-
-    // creation of DOM/AST from a ICompilationUnit
-    final ASTParser parser = ASTParser.newParser(AST.JLS3);
-    parser.setSource(cu);
-    final CompilationUnit astRoot = (CompilationUnit) parser.createAST(null);
-
-    // start record of the modifications
-    astRoot.recordModifications();
     try {
       final String source = cu.getSource();
       final Document document = new Document(source);
       final IRegion region = document.getLineInformation(line - 1);
       final int endOfLine = region.getOffset() + region.getLength();
-      document.replace(endOfLine, 0, " //NOSONAR");
-
-      // computation of the text edits
-      final TextEdit edits = astRoot.rewrite(document, cu.getJavaProject().getOptions(true));
-
-      // computation of the new source code
-      edits.apply(document);
-      final String newSource = document.get();
-
-      // update of the compilation unit
-      cu.getBuffer().setContents(newSource);
+      final String lineSource = source.substring(region.getOffset(), endOfLine);
+      if (lineSource.contains("//NOSONAR")) {
+        return false;
+      }
+      addNoSonarComments(cu, endOfLine, new NullProgressMonitor());
+      return true;
     } catch (final JavaModelException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
-    } catch (final MalformedTreeException e) {
+    } catch (final BadLocationException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
-    } catch (final BadLocationException e) {
+    } catch (final CoreException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
     return true;
   }
 
+  private void addNoSonarComments(final ICompilationUnit cu, final int position, final IProgressMonitor monitor) throws CoreException {
+
+    final ITextFileBufferManager manager = FileBuffers.getTextFileBufferManager();
+    final IPath path = cu.getPath();
+
+    manager.connect(path, LocationKind.IFILE, new SubProgressMonitor(monitor, 1));
+    try {
+      final IDocument document = manager.getTextFileBuffer(path, LocationKind.IFILE).getDocument();
+      final MultiTextEdit edit = new MultiTextEdit();
+
+      edit.addChild(new InsertEdit(position, " //NOSONAR"));
+
+      monitor.worked(1);
+      edit.apply(document);
+    } catch (final BadLocationException e) {
+      e.printStackTrace();
+    } finally {
+      manager.disconnect(path, LocationKind.IFILE, new SubProgressMonitor(monitor, 1));
+    }
+  }
 }
