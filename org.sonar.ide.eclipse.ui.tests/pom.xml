@@ -25,6 +25,7 @@
         <configuration>
           <useUIHarness>true</useUIHarness>
           <useUIThread>false</useUIThread>
+          <argLine>-Xmx800m -XX:MaxPermSize=256m</argLine>
           <forkedProcessTimeoutInSeconds>7200</forkedProcessTimeoutInSeconds>
         </configuration>
       </plugin>
