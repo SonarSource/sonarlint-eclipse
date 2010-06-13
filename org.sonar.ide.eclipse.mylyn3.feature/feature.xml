@@ -2,7 +2,8 @@
 <feature
       id="org.sonar.ide.eclipse.mylyn3.feature"
       label="Sonar Integration for Eclipse Mylyn 3.x (Optional)"
-      version="0.2.0.qualifier">
+      version="0.2.0.qualifier"
+      plugin="org.sonar.ide.eclipse">
 
    <plugin
          id="org.sonar.ide.eclipse.mylyn3"
