@@ -30,8 +30,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.JavaModelException;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.shared.ViolationUtils;
-import org.sonar.ide.shared.ViolationsLoader;
+import org.sonar.ide.shared.violations.ViolationUtils;
+import org.sonar.ide.shared.violations.ViolationsLoader;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.Violation;
 
@@ -41,7 +41,6 @@ import org.sonar.wsclient.services.Violation;
  * @link http://jira.codehaus.org/browse/SONARIDE-27
  * 
  * @author Jérémie Lagarde
- * 
  */
 public class RefreshViolationJob extends AbstractRefreshModelJob<Violation> {
 

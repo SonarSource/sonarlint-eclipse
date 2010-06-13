@@ -44,7 +44,6 @@ import org.sonar.wsclient.services.ResourceQuery;
  * @link http://jira.codehaus.org/browse/SONARIDE-47
  * 
  * @author Jérémie Lagarde
- * 
  */
 public class AutoConfigureProjectJob extends Job {
 

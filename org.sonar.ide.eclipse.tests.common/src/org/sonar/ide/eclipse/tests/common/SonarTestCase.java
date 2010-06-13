@@ -61,8 +61,6 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
 
   @BeforeClass
   final static public void prepareWorkspace() throws Exception {
-    init();
-
     workspace = ResourcesPlugin.getWorkspace();
     final IWorkspaceDescription description = workspace.getDescription();
     description.setAutoBuilding(false);

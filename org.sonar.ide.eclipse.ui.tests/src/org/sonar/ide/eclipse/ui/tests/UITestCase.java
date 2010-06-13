@@ -61,8 +61,6 @@ public abstract class UITestCase extends SonarIdeTestCase {
 
   @BeforeClass
   public final static void beforeClass() throws Exception {
-    init(); // TODO Godin: remove
-
     SWTBotPreferences.SCREENSHOTS_DIR = SCREENSHOTS_DIR;
     SWTBotPreferences.SCREENSHOT_FORMAT = "png";
     bot = new SWTWorkbenchBot();

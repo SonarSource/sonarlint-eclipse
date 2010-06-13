@@ -36,7 +36,6 @@ import org.sonar.wsclient.Sonar;
  * @link http://jira.codehaus.org/browse/SONARIDE-60
  * 
  * @author Jérémie Lagarde
- * 
  */
 public class RefreshCoverageJob extends AbstractRefreshModelJob<CoverageLine> {
 
