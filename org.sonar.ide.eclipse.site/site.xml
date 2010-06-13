@@ -1,10 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <site>
-  <description url="http://sonar-ide.codehaus.org/">Sonar Integration for Eclipse</description>
-  <feature id="org.sonar.ide.eclipse.feature" url="features/org.sonar.ide.eclipse.feature_0.0.0.jar" version="0.0.0">
-    <category name="Sonar"/>
-  </feature>
-  <feature id="org.sonar.ide.eclipse.m2eclipse.feature" url="features/org.sonar.ide.eclipse.m2eclipse.feature_0.0.0.jar" version="0.0.0">
-    <category name="Sonar"/>
-  </feature>
-  <category-def name="Sonar" label="Sonar Integration for Eclipse"/>
+   <description url="http://sonar-ide.codehaus.org/">
+      Sonar Integration for Eclipse
+   </description>
+   <feature url="features/org.sonar.ide.eclipse.feature_0.0.0.jar" id="org.sonar.ide.eclipse.feature" version="0.0.0">
+      <category name="Sonar"/>
+   </feature>
+   <feature url="features/org.sonar.ide.eclipse.m2eclipse.feature_0.0.0.jar" id="org.sonar.ide.eclipse.m2eclipse.feature" version="0.0.0">
+      <category name="Sonar"/>
+   </feature>
+   <category-def name="Sonar" label="Sonar"/>
 </site>

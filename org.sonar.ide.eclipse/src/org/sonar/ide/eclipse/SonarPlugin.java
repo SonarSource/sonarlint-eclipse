@@ -32,6 +32,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.console.SonarConsole;
+import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -242,6 +243,10 @@ public class SonarPlugin extends AbstractUIPlugin {
       img = SONARCLOSE_IMG;
     }
     return img;
+  }
+
+  public SonarProjectManager getProjectManager() {
+    return new SonarProjectManager();
   }
 
 }
