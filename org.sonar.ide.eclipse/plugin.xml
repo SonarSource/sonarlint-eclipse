@@ -432,7 +432,7 @@
         point="org.eclipse.ui.ide.markerResolution">
      <markerResolutionGenerator
            class="org.sonar.ide.eclipse.markers.SonarMarkerResolutionGenerator"
-           markerType="org.sonar.ide.eclipse.sonarMarker">
+           markerType="org.sonar.ide.eclipse.sonarViolationMarker">
      </markerResolutionGenerator>
   </extension>
   <extension
