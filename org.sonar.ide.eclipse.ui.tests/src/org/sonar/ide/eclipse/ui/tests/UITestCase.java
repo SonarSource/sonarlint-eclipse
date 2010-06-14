@@ -47,6 +47,7 @@ import org.sonar.ide.eclipse.tests.common.JobHelpers;
 import org.sonar.ide.eclipse.tests.common.VersionHelpers;
 import org.sonar.ide.eclipse.tests.common.WorkspaceHelpers;
 import org.sonar.ide.test.SonarIdeTestCase;
+import org.sonar.ide.test.SonarTestServer;
 
 /**
  * TODO use Xvfb ("fake" X-server)
@@ -63,7 +64,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
   @BeforeClass
   public final static void beforeClass() throws Exception {
     System.out.println("Eclipse version : " + VersionHelpers.getEclipseVersion());
-    
+
     SWTBotPreferences.SCREENSHOTS_DIR = SCREENSHOTS_DIR;
     SWTBotPreferences.SCREENSHOT_FORMAT = "png";
     bot = new SWTWorkbenchBot();
@@ -92,12 +93,34 @@ public abstract class UITestCase extends SonarIdeTestCase {
     // bot.resetWorkbench();
   }
 
+  @After
+  public final void finalShot() throws IOException {
+    takeScreenShot(getClass().getSimpleName());
+  }
+
+  /**
+   * Don't use this method for UI testing, because in future we'd like to use real Sonar server. Use {@link #getSonarServerUrl()} instead of
+   * it.
+   */
+  @Override
+  protected SonarTestServer getTestServer() throws Exception {
+    return super.getTestServer();
+  }
+
+  protected String getSonarServerUrl() throws Exception {
+    // TODO Godin: should be possible to use real Sonar server
+    return getTestServer().getBaseUrl();
+  }
+
   protected static void openPerspective(final String id) {
     bot.perspectiveById(id).activate();
   }
 
+  /**
+   * @throws WidgetNotFoundException
+   *           if view not found
+   */
   protected static void closeView(final String id) {
-    // TODO Godin: what if view doesn't exists
     bot.viewById(id).close();
   }
 
@@ -119,11 +142,6 @@ public abstract class UITestCase extends SonarIdeTestCase {
     WorkspaceHelpers.cleanWorkspace();
   }
 
-  @After
-  public final void finalShot() throws IOException {
-    takeScreenShot(getClass().getSimpleName());
-  }
-
   public static File takeScreenShot(String classifier) throws IOException {
     File parent = new File(SCREENSHOTS_DIR);
     parent.mkdirs();
@@ -137,6 +155,9 @@ public abstract class UITestCase extends SonarIdeTestCase {
     return new Exception(e.getMessage() + " - " + output, e);
   }
 
+  /**
+   * Imports non-maven project.
+   */
   protected File importNonMavenProject(String projectName) throws Exception {
     File project = getProject(projectName);
     waitForAllBuildsToComplete();
@@ -156,6 +177,27 @@ public abstract class UITestCase extends SonarIdeTestCase {
     return project;
   }
 
+  /**
+   * Imports non-maven project and sets proper groupId.
+   */
+  protected File importAndConfigureNonMavenProject(String projectName) throws Exception {
+    File project = importNonMavenProject(projectName);
+    // Configure
+    final SWTBotShell shell = showSonarPropertiesPage(projectName);
+    shell.bot().textWithLabel("GroupId :").setText(getGroupId(projectName));
+
+    shell.bot().button("Apply").click();
+    shell.bot().button("Cancel").click();
+    bot.waitUntil(Conditions.shellCloses(shell));
+
+    return project;
+  }
+
+  /**
+   * Imports maven project. <br/>
+   * Don't use this method a lot, because we shouldn't depend closely on m2eclipse. <br/>
+   * TODO Move it out of here into m2eclipse module.
+   */
   protected File importMavenProject(String projectName) throws Exception {
     File project = getProject(projectName);
     waitForAllBuildsToComplete();
@@ -220,7 +262,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
     return tree;
   }
 
-  protected void configureDefaultSonarServer(String serverUrl) {
+  protected static void configureDefaultSonarServer(String serverUrl) {
     SWTBotShell shell = showGlobalSonarPropertiesPage();
     bot.button("Edit").click();
 
@@ -236,6 +278,10 @@ public abstract class UITestCase extends SonarIdeTestCase {
     // Close properties
     shell.bot().button("OK").click();
     bot.waitUntil(Conditions.shellCloses(shell));
+  }
+
+  protected void configureDefaultSonarServer() throws Exception {
+    configureDefaultSonarServer(getSonarServerUrl());
   }
 
   protected static String getGroupId(String projectName) {

@@ -25,7 +25,6 @@ import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.Test;
-import org.sonar.ide.test.SonarTestServer;
 
 /**
  * @author Evgeny Mandrikov
@@ -34,8 +33,6 @@ public class ConfigurationTest extends UITestCase {
 
   @Test
   public void test() throws Exception {
-    SonarTestServer server = getTestServer();
-
     SWTBotShell shell = showGlobalSonarPropertiesPage();
     bot.button("Edit").click();
 
@@ -44,8 +41,8 @@ public class ConfigurationTest extends UITestCase {
     shell2.activate();
 
     testConnection("http://fake", false);
-    testConnection(server.getBaseUrl() + "/", true); // test for SONARIDE-90
-    testConnection(server.getBaseUrl(), true);
+    testConnection(getSonarServerUrl() + "/", true); // test for SONARIDE-90
+    testConnection(getSonarServerUrl(), true);
 
     // Close wizard
     shell2.activate();
