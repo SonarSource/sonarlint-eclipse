@@ -42,12 +42,12 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.part.ViewPart;
+import org.sonar.ide.eclipse.EclipseSonar;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.ide.shared.measures.MeasureData;
-import org.sonar.ide.shared.measures.MeasuresLoader;
 import org.sonar.wsclient.Sonar;
 
 /**
@@ -142,7 +142,7 @@ public class MeasuresView extends ViewPart {
         IProject project = resource.getProject();
         ProjectProperties properties = ProjectProperties.getInstance(project);
         Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
-        final List<MeasureData> measures = MeasuresLoader.getMeasures(sonar, resourceKey);
+        final List<MeasureData> measures = new EclipseSonar(sonar).search(resourceKey).getMeasures();
         Display.getDefault().asyncExec(new Runnable() {
 
           public void run() {

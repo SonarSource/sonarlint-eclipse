@@ -1,14 +1,14 @@
 Manifest-Version: 1.0
 Export-Package: ch.qos.logback.core.spi,org.sonar.ide.images.tendency,
- org.sonar.ide.shared.coverage,ch.qos.logback.core,ch.qos.logback.core
- .joran.spi,org.apache.commons.lang,org.sonar.ide.shared.violations,or
- g.slf4j.impl,org.sonar.wsclient,ch.qos.logback.core.joran,org.sonar.i
- de.images.priority,org.sonar.ide.images,org.sonar.ide.shared.duplicat
- ions,org.sonar.ide.ui,ch.qos.logback.classic,org.slf4j,ch.qos.logback
- .classic.joran,org.sonar.ide.shared.measures,org.sonar.ide.shared,org
- .sonar.wsclient.connectors,org.sonar.wsclient.unmarshallers,org.sonar
- .ide.client,ch.qos.logback.core.util,org.sonar.ide.api,org.sonar.wscl
- ient.services
+ org.sonar.ide.shared.coverage,ch.qos.logback.core,org.sonar.ide.wscli
+ ent,ch.qos.logback.core.joran.spi,org.apache.commons.lang,org.sonar.i
+ de.shared.violations,org.slf4j.impl,org.sonar.wsclient,ch.qos.logback
+ .core.joran,org.sonar.ide.images.priority,org.sonar.ide.images,org.so
+ nar.ide.shared.duplications,org.sonar.ide.ui,ch.qos.logback.classic,o
+ rg.slf4j,ch.qos.logback.classic.joran,org.sonar.ide.shared.measures,o
+ rg.sonar.ide.shared,org.sonar.wsclient.connectors,org.sonar.wsclient.
+ unmarshallers,org.sonar.ide.client,ch.qos.logback.core.util,org.sonar
+ .ide.api,org.sonar.wsclient.services
 Bundle-Vendor: Evgeny Mandrikov
 Bundle-ClassPath: jars/sonar-ide-commons-0.2-SNAPSHOT.jar,jars/slf4j-a
  pi-1.5.11.jar,jars/jcl-over-slf4j-1.5.11.jar,jars/google-collections-

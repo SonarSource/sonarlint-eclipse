@@ -19,15 +19,14 @@
 package org.sonar.ide.eclipse.jobs;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.sonar.ide.eclipse.EclipseSonar;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.shared.duplications.Duplication;
-import org.sonar.ide.shared.duplications.DuplicationsLoader;
 import org.sonar.wsclient.Sonar;
 
 /**
@@ -43,11 +42,7 @@ public class RefreshDuplicationsJob extends AbstractRefreshModelJob<Duplication>
 
   @Override
   protected Collection<Duplication> retrieveDatas(final Sonar sonar, final String resourceKey, final ICompilationUnit unit) {
-    try {
-      return DuplicationsLoader.getDuplications(sonar, resourceKey, unit.getSource());
-    } catch (final Exception e) {
-      return Collections.emptyList();
-    }
+    return new EclipseSonar(sonar).search(resourceKey, unit).getDuplications();
   }
 
   @Override

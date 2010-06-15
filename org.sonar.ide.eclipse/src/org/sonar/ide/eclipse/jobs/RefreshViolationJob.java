@@ -19,19 +19,16 @@
 package org.sonar.ide.eclipse.jobs;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.JavaModelException;
+import org.sonar.ide.eclipse.EclipseSonar;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.shared.violations.ViolationUtils;
-import org.sonar.ide.shared.violations.ViolationsLoader;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.Violation;
 
@@ -50,12 +47,7 @@ public class RefreshViolationJob extends AbstractRefreshModelJob<Violation> {
 
   @Override
   protected Collection<Violation> retrieveDatas(final Sonar sonar, final String resourceKey, final ICompilationUnit unit) {
-    try {
-      return ViolationsLoader.getViolations(sonar, resourceKey, unit.getSource());
-    } catch (final JavaModelException e) {
-      SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
-      return Collections.emptyList();
-    }
+    return new EclipseSonar(sonar).search(resourceKey, unit).getViolations();
   }
 
   @Override
@@ -94,6 +86,5 @@ public class RefreshViolationJob extends AbstractRefreshModelJob<Violation> {
     extraInfos.put("rulename", violation.getRuleName());
     return extraInfos;
   }
-
 
 }

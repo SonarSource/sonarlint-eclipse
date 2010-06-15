@@ -88,6 +88,6 @@ public class RefreshCoverageJob extends AbstractRefreshModelJob<CoverageLine> {
     } else if (hasLineCoverage) {
       return new Integer(IMarker.SEVERITY_ERROR);
     }
-    return new Integer(-1);
+    return new Integer( -1);
   }
 }
