@@ -21,6 +21,8 @@ package org.sonar.ide.eclipse.markers;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
@@ -57,7 +59,13 @@ public class SonarMarkerResolution implements IMarkerResolution2 {
     if (resource instanceof IFile && resource.isAccessible()) {
       final IJavaElement element = JavaCore.create((IFile) resource);
       if (element instanceof ICompilationUnit) {
-        resolver.resolve(marker, (ICompilationUnit) element);
+        if (resolver.resolve(marker, (ICompilationUnit) element)) {
+          try {
+            marker.delete();
+          } catch (final CoreException e) {
+            SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
+          }
+        }
       }
     }
   }
