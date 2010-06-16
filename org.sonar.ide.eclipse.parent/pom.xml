@@ -26,6 +26,9 @@
 
     <sonar-ide-commons.version>0.2-SNAPSHOT</sonar-ide-commons.version>
 
+    <!-- Version of Sonar for integration tests -->
+    <sonarVersion>2.1.2</sonarVersion>
+
     <!-- disable accidental deployment -->
     <sonar-ide.site>dav:http://localhost</sonar-ide.site>
     <sonar-ide.snapshots>http://localhost</sonar-ide.snapshots>
@@ -111,12 +114,12 @@
             <environment>
               <os>linux</os>
               <ws>gtk</ws>
-              <arch>x86</arch>
+              <arch>x86_64</arch>
             </environment>
             <environment>
               <os>linux</os>
               <ws>gtk</ws>
-              <arch>x86_64</arch>
+              <arch>x86</arch>
             </environment>
             <environment>
               <os>win32</os>
@@ -128,18 +131,22 @@
               <ws>win32</ws>
               <arch>x86_64</arch>
             </environment>
-            <!-- TODO see SONARIDE-82
+            <!-- TODO see SONARIDE-82 -->
             <environment>
               <os>macosx</os>
               <ws>carbon</ws>
-              <arch>x86_64</arch>
+              <arch>x86</arch>
+            </environment>
+            <environment>
+              <os>macosx</os>
+              <ws>cocoa</ws>
+              <arch>x86</arch>
             </environment>
             <environment>
               <os>macosx</os>
               <ws>cocoa</ws>
               <arch>x86_64</arch>
             </environment>
-            -->
           </environments>
         </configuration>
       </plugin>
@@ -177,6 +184,12 @@
             <!-- kill test JVM it tests take more than 10 minutes (600 seconds) to finish -->
             <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.sonar</groupId>
+          <artifactId>sonar-dev-mojo</artifactId>
+          <!-- TODO Godin: define version using property -->
+          <version>2.2M1</version>
         </plugin>
       </plugins>
     </pluginManagement>

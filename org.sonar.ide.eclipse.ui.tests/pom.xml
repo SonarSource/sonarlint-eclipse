@@ -57,4 +57,42 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>real-sonar</id>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.sonar</groupId>
+            <artifactId>sonar-dev-mojo</artifactId>
+            <executions>
+              <execution>
+                <id>start-server</id>
+                <phase>pre-integration-test</phase>
+                <configuration>
+                  <wait>false</wait>
+                  <sonarVersion>${sonarVersion}</sonarVersion>
+                  <analyzeProjects>true</analyzeProjects>
+                  <mavenProjectsDir>${basedir}/target/projects-source</mavenProjectsDir>
+                </configuration>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>stop-server</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>
