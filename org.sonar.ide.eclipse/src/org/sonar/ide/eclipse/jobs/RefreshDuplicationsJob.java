@@ -41,8 +41,8 @@ public class RefreshDuplicationsJob extends AbstractRefreshModelJob<Duplication>
   }
 
   @Override
-  protected Collection<Duplication> retrieveDatas(final Sonar sonar, final String resourceKey, final ICompilationUnit unit) {
-    return new EclipseSonar(sonar).search(resourceKey, unit).getDuplications();
+  protected Collection<Duplication> retrieveDatas(final Sonar sonar, final ICompilationUnit unit) {
+    return new EclipseSonar(sonar).search(unit).getDuplications();
   }
 
   @Override

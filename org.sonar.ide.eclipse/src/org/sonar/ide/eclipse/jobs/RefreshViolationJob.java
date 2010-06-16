@@ -46,8 +46,8 @@ public class RefreshViolationJob extends AbstractRefreshModelJob<Violation> {
   }
 
   @Override
-  protected Collection<Violation> retrieveDatas(final Sonar sonar, final String resourceKey, final ICompilationUnit unit) {
-    return new EclipseSonar(sonar).search(resourceKey, unit).getViolations();
+  protected Collection<Violation> retrieveDatas(final Sonar sonar, final ICompilationUnit unit) {
+    return new EclipseSonar(sonar).search(unit).getViolations();
   }
 
   @Override

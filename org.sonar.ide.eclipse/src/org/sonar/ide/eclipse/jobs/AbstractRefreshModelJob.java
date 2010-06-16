@@ -39,7 +39,6 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
-import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.wsclient.Sonar;
 
 /**
@@ -47,10 +46,10 @@ import org.sonar.wsclient.Sonar;
  */
 public abstract class AbstractRefreshModelJob<M> extends Job implements IResourceVisitor {
 
-  private final List<IResource>      resources;
-  private final String               markerId;
-  private IProgressMonitor           monitor;
-  private IStatus                    status;
+  private final List<IResource> resources;
+  private final String markerId;
+  private IProgressMonitor monitor;
+  private IStatus status;
   private final Map<IProject, Sonar> sonars = new HashMap<IProject, Sonar>();
 
   public AbstractRefreshModelJob(final List<IResource> resources, final String markerId) {
@@ -68,11 +67,11 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
       monitor.beginTask("Retrieve sonar data", resources.size());
 
       for (final IResource resource : resources) {
-        if (!monitor.isCanceled() && resource.isAccessible()) {
+        if ( !monitor.isCanceled() && resource.isAccessible()) {
           resource.accept(this);
         }
       }
-      if (!monitor.isCanceled()) {
+      if ( !monitor.isCanceled()) {
         status = Status.OK_STATUS;
       } else {
         status = Status.CANCEL_STATUS;
@@ -97,7 +96,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
     return true;
   }
 
-  abstract protected Collection<M> retrieveDatas(final Sonar sonar, final String resourceKey, final ICompilationUnit unit);
+  protected abstract Collection<M> retrieveDatas(final Sonar sonar, final ICompilationUnit unit);
 
   private void retrieveMarkers(final ICompilationUnit unit, final IProgressMonitor monitor) throws CoreException {
     if (unit == null || !unit.exists() || monitor.isCanceled()) {
@@ -107,8 +106,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
     try {
       // TODO put it in messages.properties
       monitor.beginTask("Retrieve sonar informations for " + unit.getElementName(), 1);
-      final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(unit.getResource());
-      final Collection<M> datas = retrieveDatas(sonar, resourceKey, unit);
+      final Collection<M> datas = retrieveDatas(sonar, unit);
       for (final M data : datas) {
         // create a marker for the actual resource
         creatMarker(unit, data);
@@ -145,8 +143,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
   protected abstract Integer getLine(M data);
 
   /**
-   * @return Severity marker attribute. A number from the set of error, warning
-   *         and info severities defined by the platform.
+   * @return Severity marker attribute. A number from the set of error, warning and info severities defined by the platform.
    * 
    * @see IMarker.SEVERITY_ERROR
    * @see IMarker.SEVERITY_WARNING
@@ -155,8 +152,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
   protected abstract Integer getSeverity(M data);
 
   /**
-   * @return Priority marker attribute. A number from the set of high, normal
-   *         and low priorities defined by the platform.
+   * @return Priority marker attribute. A number from the set of high, normal and low priorities defined by the platform.
    * 
    * @see IMarker.PRIORITY_HIGH
    * @see IMarker.PRIORITY_NORMAL
@@ -183,7 +179,8 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
   /**
    * Remove all sonar markers
    * 
-   * @param project The project to clean
+   * @param project
+   *          The project to clean
    * @throws CoreException
    */
   private void cleanMarkers(final ICompilationUnit unit) throws CoreException {

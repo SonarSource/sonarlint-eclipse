@@ -19,15 +19,14 @@
 package org.sonar.ide.eclipse.jobs;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.sonar.ide.eclipse.EclipseSonar;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.shared.coverage.CoverageLine;
-import org.sonar.ide.shared.coverage.CoverageLoader;
 import org.sonar.wsclient.Sonar;
 
 /**
@@ -44,12 +43,8 @@ public class RefreshCoverageJob extends AbstractRefreshModelJob<CoverageLine> {
   }
 
   @Override
-  protected Collection<CoverageLine> retrieveDatas(final Sonar sonar, final String resourceKey, final ICompilationUnit unit) {
-    try {
-      return CoverageLoader.getCoverageLines(sonar, resourceKey);
-    } catch (final Exception e) {
-      return Collections.emptyList();
-    }
+  protected Collection<CoverageLine> retrieveDatas(Sonar sonar, ICompilationUnit unit) {
+    return new EclipseSonar(sonar).search(unit).getCoverage().getCoverageLines();
   }
 
   @Override
