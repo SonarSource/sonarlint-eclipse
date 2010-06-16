@@ -34,7 +34,6 @@ import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +49,6 @@ import org.sonar.wsclient.Host;
  * @link http://jira.codehaus.org/browse/SONARIDE-35
  * @link http://jira.codehaus.org/browse/SONARIDE-27
  */
-@Ignore("Godin: doesn't work after migration to new API")
 public class RefreshViolationJobTest extends SonarTestCase {
 
   private static final Logger LOG = LoggerFactory.getLogger(RefreshViolationJobTest.class);
