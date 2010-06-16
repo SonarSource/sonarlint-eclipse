@@ -406,6 +406,18 @@
               tooltip="%sonar.action.allrefreshviolation.tooltip">
         </action>
      </actionSet>
+     <actionSet
+           id="org.sonar.ide.eclipse.ui.menu.help"
+           label="Feedback Helpers"
+           visible="true">
+        <action
+              id="org.sonar.ide.eclipse.ui.SendFeedback"
+              menubarPath="help/feedback"
+              class="org.sonar.ide.eclipse.actions.SendFeedbackAction"
+              label="Report Sonar Issue"
+              icon="icons/sonar.png">
+        </action>
+     </actionSet>
    </extension>
    <extension
          point="org.eclipse.ui.perspectives">
