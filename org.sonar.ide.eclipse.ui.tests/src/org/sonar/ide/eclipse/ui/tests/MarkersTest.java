@@ -52,7 +52,7 @@ public class MarkersTest extends UITestCase {
 
     ContextMenuHelper.clickContextMenu(tree, "Sonar", "Refresh violations");
     waitForAllBuildsToComplete();
-    bot.sleep(1000 * 10); // TODO Godin: looks like waitForAllBuildsToComplete(); doesn't work
+    bot.sleep(1000 * 30); // TODO Godin: looks like waitForAllBuildsToComplete(); doesn't work
 
     assertThat(getMarkers(projectName, SonarPlugin.MARKER_VIOLATION_ID).length, greaterThan(0));
   }
@@ -68,7 +68,7 @@ public class MarkersTest extends UITestCase {
 
     ContextMenuHelper.clickContextMenu(tree, "Sonar", "Refresh duplications");
     waitForAllBuildsToComplete();
-    bot.sleep(1000 * 10); // TODO Godin: looks like waitForAllBuildsToComplete(); doesn't work
+    bot.sleep(1000 * 30); // TODO Godin: looks like waitForAllBuildsToComplete(); doesn't work
 
     assertThat(getMarkers(projectName, SonarPlugin.MARKER_DUPLICATION_ID).length, greaterThan(0));
   }
