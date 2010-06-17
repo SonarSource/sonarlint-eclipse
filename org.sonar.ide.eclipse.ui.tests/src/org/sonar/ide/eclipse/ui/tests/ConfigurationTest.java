@@ -58,7 +58,7 @@ public class ConfigurationTest extends UITestCase {
     bot.textWithLabel("Sonar server URL :").setText(serverUrl);
     SWTBotButton button = bot.button("Test connection");
     button.click();
-    bot.waitUntil(Conditions.widgetIsEnabled(button));
+    bot.waitUntil(Conditions.widgetIsEnabled(button), 1000 * 30);
 
     String message = expectedSuccess ? "Successfully connected!" : "Unable to connect.";
     try {
