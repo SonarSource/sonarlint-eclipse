@@ -446,6 +446,8 @@
            class="org.sonar.ide.eclipse.markers.resolvers.NoSonarResolver">
      </resolver>
   </extension>
+  
+  <!-- Quick diff -->
   <extension
         point="org.eclipse.ui.workbench.texteditor.quickDiffReferenceProvider">
      <referenceprovider
@@ -455,5 +457,35 @@
            id="org.sonar.ide.eclipse.referenceprovider">
      </referenceprovider>
   </extension>
+  <extension
+        point="org.eclipse.ui.editorActions">
+     <editorContribution
+            id="org.sonar.ide.eclipse.markers.editorContribution"
+            targetID="org.eclipse.jdt.ui.CompilationUnitEditor">
+         <action
+               class="org.sonar.ide.eclipse.markers.ShowCoverageAction"
+               definitionId="org.sonar.ide.eclipse.markers.showCoverageCommand"
+               icon="icons/sonar.png"
+               id="org.sonar.ide.eclipse.markers.showCoverageAction"
+               label="Show coverage"
+               style="push"
+               toolbarPath="Normal/additions">
+         </action>
+      </editorContribution>
+  </extension>
+  
+  <extension
+         id="org.sonar.ide.eclipse.markers.commands"
+         name="Swap Commands"
+         point="org.eclipse.ui.commands">
+      <command
+            categoryId="org.eclipse.jdt.ui.category.source"
+            id="org.sonar.ide.eclipse.markers.showCoverageAction"
+            name="Show coverage">
+      </command>
+   </extension>
+  
+  
+ 
   
 </plugin>
