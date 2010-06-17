@@ -101,6 +101,9 @@ public class MeasuresView extends ViewPart {
     getSite().getPage().addPartListener(partListener2);
   }
 
+  /**
+   * Passing the focus request to the viewer's control.
+   */
   @Override
   public void setFocus() {
     viewer.getControl().setFocus();

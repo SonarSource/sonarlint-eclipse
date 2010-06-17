@@ -45,13 +45,6 @@
         name="%sonar.navigator.view.name">
     </view>
     <view
-        category="org.sonar.ide.eclipse"
-        class="org.sonar.ide.eclipse.views.MetricsView"
-        icon="icons/sonar.png"
-        id="org.sonar.ide.eclipse.views.MetricsView"
-        name="%sonar.metrics.view.name">
-    </view>
-    <view
     	category="org.sonar.ide.eclipse"
     	class="org.sonar.ide.eclipse.views.MeasuresView"
     	icon="icons/sonar.png"
