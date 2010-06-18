@@ -26,6 +26,12 @@
         id="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
         name="%sonar.preference.page.name">
     </page>
+    <page
+          category="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
+          class="org.sonar.ide.eclipse.preferences.SonarConsolePreferencePage"
+          id="org.sonar.ide.eclipse.preferences.SonarConsolePreferencePage"
+          name="Console">
+    </page>
   </extension>
   <extension point="org.eclipse.core.runtime.preferences">
     <initializer

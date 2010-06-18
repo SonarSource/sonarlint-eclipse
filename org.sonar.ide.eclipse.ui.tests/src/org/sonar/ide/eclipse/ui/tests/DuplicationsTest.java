@@ -28,12 +28,14 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.sonar.ide.eclipse.SonarPlugin;
 
 /**
  * @author Evgeny Mandrikov
  */
+@Ignore("configureDefaultSonarServer doesn't work")
 public class DuplicationsTest extends UITestCase {
 
   @Before

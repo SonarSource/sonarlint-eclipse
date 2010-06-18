@@ -36,9 +36,9 @@ import org.sonar.ide.eclipse.preferences.PreferenceConstants;
  */
 public class SonarConsolePreferenceBlock {
 
-  private ColorFieldEditor   requestColorEditor;
-  private ColorFieldEditor   responseColorEditor;
-  private ColorFieldEditor   errorColorEditor;
+  private ColorFieldEditor requestColorEditor;
+  private ColorFieldEditor responseColorEditor;
+  private ColorFieldEditor errorColorEditor;
   private BooleanFieldEditor showOnMessage;
   private BooleanFieldEditor showOnError;
 

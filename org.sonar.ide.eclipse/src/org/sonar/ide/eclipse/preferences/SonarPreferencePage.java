@@ -21,10 +21,15 @@ package org.sonar.ide.eclipse.preferences;
 import java.text.MessageFormat;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -33,170 +38,187 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.console.SonarConsolePreferenceBlock;
+import org.sonar.ide.eclipse.ui.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.wizards.EditServerLocationWizard;
 import org.sonar.ide.eclipse.wizards.NewServerLocationWizard;
 import org.sonar.wsclient.Host;
 
 /**
  * Preference page for the workspace.
- * 
- * @author Jérémie Lagarde
  */
-public class SonarPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
+public class SonarPreferencePage extends AbstractSonarPreferencePage {
 
-  private Combo                       serversCombo;
-  private Button                      createServerButton;
-  private Button                      editServerButton;
-  private Button                      deleteServerButton;
-  private SonarConsolePreferenceBlock consoleBlock;
+  private CheckboxTableViewer serversViewer;
+
+  private List<Host> servers;
+  private Host defaultServer;
 
   public SonarPreferencePage() {
     super(Messages.getString("pref.global.title")); //$NON-NLS-1$
   }
 
-  public void init(IWorkbench workbench) {
-  }
-
-  @Override
-  protected IPreferenceStore doGetPreferenceStore() {
-    return SonarPlugin.getDefault().getPreferenceStore();
-  }
-
   @Override
   protected Control createContents(Composite parent) {
-    Composite container = new Composite(parent, SWT.NULL);
-    GridLayout layout = new GridLayout();
+    Composite container = new Composite(parent, SWT.NONE);
+    GridLayout layout = new GridLayout(3, false);
     container.setLayout(layout);
-    layout.numColumns = 2;
-    layout.verticalSpacing = 9;
 
-    addServerGroup(container);
-    consoleBlock = new SonarConsolePreferenceBlock();
-    consoleBlock.createContents(container);
+    Label link = new Label(container, SWT.NONE);
+    link.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 3, 1));
+    link.setText("Add, remove or edit Sonar servers.");
+    createTable(container);
+
+    // retrieve list of servers
+    servers = SonarPlugin.getServerManager().getServers();
+    // TODO Godin: remove this dirty hack
+    if (servers.size() == 0) {
+      servers.add(new Host("http://localhost:9000"));
+    }
+    serversViewer.setInput(servers);
+
+    // set default server
+    String defaultServerUrl = getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL);
+    for (Host server : servers) {
+      if (defaultServerUrl.equals(server.getHost())) {
+        setCheckedServer(server);
+      }
+    }
+
+    // TODO Godin: we need to remove unnecessary buttons, but this doesn't work:
+    // getDefaultsButton().setVisible(false);
+    // getApplyButton().setVisible(false);
 
     return container;
   }
 
-  private void addServerGroup(Composite container) {
+  @Override
+  protected void performApply() {
+    getPreferenceStore().setValue(PreferenceConstants.P_SONAR_SERVER_URL, defaultServer.getHost());
+  }
 
-    // Create group
-    Group group = new Group(container, SWT.NONE);
-    GridData data = new GridData(GridData.FILL_HORIZONTAL);
-    group.setLayoutData(data);
-    group.setText(Messages.getString("pref.global.label.host")); //$NON-NLS-1$
-    GridLayout gridLayout = new GridLayout(4, false);
-    group.setLayout(gridLayout);
+  private Host getSelectedServer() {
+    IStructuredSelection selection = (IStructuredSelection) serversViewer.getSelection();
+    return (Host) selection.getFirstElement();
+  }
 
-    // Create select list of servers.
-    serversCombo = new Combo(group, SWT.READ_ONLY);
-    List<Host> servers = SonarPlugin.getServerManager().getServers();
-    String defaultServer = getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL);
-    int index = -1;
-    for (int i = 0; i < servers.size(); i++) {
-      Host server = servers.get(i);
-      if (StringUtils.equals(defaultServer, server.getHost()))
-        index = i;
-      serversCombo.add(server.getHost());
-    }
-    if (index == -1) {
-      serversCombo.add(defaultServer);
-      index = servers.size();
-    }
-    serversCombo.select(index);
+  private void setCheckedServer(Host host) {
+    serversViewer.setAllChecked(false);
+    serversViewer.setChecked(host, true);
+    defaultServer = host;
+  }
 
-    // Create new server button.
-    createServerButton = new Button(group, SWT.PUSH);
-    createServerButton.setText(Messages.getString("action.add.server")); //$NON-NLS-1$
-    createServerButton.setToolTipText(Messages.getString("action.add.server.desc")); //$NON-NLS-1$
-    createServerButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
-    createServerButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
-    createServerButton.addSelectionListener(new SelectionAdapter() {
+  private void createTable(Composite composite) {
+    serversViewer = CheckboxTableViewer.newCheckList(composite, SWT.BORDER | SWT.FULL_SELECTION);
+    serversViewer.setContentProvider(new ServersContentProvider());
+    serversViewer.setLabelProvider(new ServersLabelProvider());
+
+    Table table = serversViewer.getTable();
+    GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 2, 3);
+    gridData.heightHint = 300;
+    table.setLayoutData(gridData);
+
+    serversViewer.addCheckStateListener(new ICheckStateListener() {
+      public void checkStateChanged(CheckStateChangedEvent event) {
+        if (event.getElement() != null && event.getChecked()) {
+          setCheckedServer((Host) event.getElement());
+        }
+      }
+    });
+
+    final Button addButton = new Button(composite, SWT.NONE);
+    addButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+    addButton.setText(Messages.getString("action.add.server")); //$NON-NLS-1$
+    addButton.setToolTipText(Messages.getString("action.add.server.desc")); //$NON-NLS-1$
+    addButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
+    addButton.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         NewServerLocationWizard wiz = new NewServerLocationWizard();
         wiz.init(SonarPlugin.getDefault().getWorkbench(), null);
-        WizardDialog dialog = new WizardDialog(createServerButton.getShell(), wiz);
+        WizardDialog dialog = new WizardDialog(addButton.getShell(), wiz);
         dialog.create();
         if (dialog.open() == Window.OK) {
-          serversCombo.removeAll();
-          List<Host> servers = SonarPlugin.getServerManager().getServers();
-          for (Host server : servers) {
-            serversCombo.add(server.getHost());
-          }
-          serversCombo.select(servers.size() - 1);
+          serversViewer.setInput(SonarPlugin.getServerManager().getServers());
         }
       }
     });
-    
-    // Edit server button.
-    editServerButton = new Button(group, SWT.PUSH);
-    editServerButton.setText(Messages.getString("action.edit.server")); //$NON-NLS-1$
-    editServerButton.setToolTipText(Messages.getString("action.edit.server.desc")); //$NON-NLS-1$
-    editServerButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
-    editServerButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
-    editServerButton.addSelectionListener(new SelectionAdapter() {
+
+    final Button editButton = new Button(composite, SWT.NONE);
+    editButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+    editButton.setText(Messages.getString("action.edit.server")); //$NON-NLS-1$
+    editButton.setToolTipText(Messages.getString("action.edit.server.desc")); //$NON-NLS-1$
+    editButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
+    editButton.setEnabled(false);
+    editButton.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        EditServerLocationWizard wiz = new EditServerLocationWizard(serversCombo.getText());
+        Host selected = getSelectedServer();
+        EditServerLocationWizard wiz = new EditServerLocationWizard(selected.getHost());
         wiz.init(SonarPlugin.getDefault().getWorkbench(), null);
-        WizardDialog dialog = new WizardDialog(editServerButton.getShell(), wiz);
+        WizardDialog dialog = new WizardDialog(editButton.getShell(), wiz);
         dialog.create();
         if (dialog.open() == Window.OK) {
-          serversCombo.removeAll();
-          List<Host> servers = SonarPlugin.getServerManager().getServers();
-          for (Host server : servers) {
-            serversCombo.add(server.getHost());
-          }
-          serversCombo.select(servers.size() - 1);
+          // TODO
         }
       }
     });
-    
-    // Delete server button.
-    deleteServerButton = new Button(group, SWT.PUSH);
-    deleteServerButton.setText(Messages.getString("action.delete.server")); //$NON-NLS-1$
-    deleteServerButton.setToolTipText(Messages.getString("action.delete.server.desc")); //$NON-NLS-1$
-    deleteServerButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE).createImage());
-    deleteServerButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
-    deleteServerButton.addSelectionListener(new SelectionAdapter() {
+
+    final Button removeButton = new Button(composite, SWT.NONE);
+    removeButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+    removeButton.setText(Messages.getString("action.delete.server")); //$NON-NLS-1$
+    removeButton.setToolTipText(Messages.getString("action.delete.server.desc")); //$NON-NLS-1$
+    removeButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE).createImage());
+    removeButton.setEnabled(false);
+    removeButton.addSelectionListener(new SelectionAdapter() {
       @Override
-      public void widgetSelected(SelectionEvent e) {      
+      public void widgetSelected(SelectionEvent e) {
+        Host selected = getSelectedServer();
         if (MessageDialog.openConfirm(SonarPreferencePage.this.getShell(), Messages.getString("remove.server.dialog.caption"), //$NON-NLS-1$
             MessageFormat.format(Messages.getString("remove.server.dialog.msg"), //$NON-NLS-1$
-                new Object[] { serversCombo.getText() }))) {
-          SonarPlugin.getServerManager().removeServer(serversCombo.getText());
-          serversCombo.removeAll();
-          List<Host> servers = SonarPlugin.getServerManager().getServers();
-          for (Host server : servers) {
-            serversCombo.add(server.getHost());
-          }
-          serversCombo.select(servers.size() - 1);
+                new Object[] { selected.getHost() }))) {
+          SonarPlugin.getServerManager().removeServer(selected.getHost());
+          servers.remove(selected);
+          serversViewer.refresh();
         }
+      }
+    });
+
+    serversViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+      public void selectionChanged(SelectionChangedEvent event) {
+        removeButton.setEnabled(servers.size() > 1);
+        editButton.setEnabled(true);
       }
     });
   }
 
-  @Override
-  public boolean performOk() {
-    performApply();
-    return super.performOk();
+  private class ServersLabelProvider extends AbstractTableLabelProvider {
+    @Override
+    public String getColumnText(Object element, int columnIndex) {
+      Host host = (Host) element;
+      return host.getHost();
+    }
   }
 
-  @Override
-  protected void performApply() {
-    getPreferenceStore().setValue(PreferenceConstants.P_SONAR_SERVER_URL, serversCombo.getItem(serversCombo.getSelectionIndex()));
-    consoleBlock.performApply(getPreferenceStore());
+  private class ServersContentProvider implements IStructuredContentProvider {
+
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+    }
+
+    public void dispose() {
+    }
+
+    @SuppressWarnings("unchecked")
+    public Object[] getElements(Object inputElement) {
+      return ((List) inputElement).toArray();
+    }
   }
 
 }

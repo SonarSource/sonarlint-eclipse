@@ -18,40 +18,94 @@
 
 package org.sonar.ide.eclipse.ui.tests;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
 
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTableItem;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
+ * TODO test remove
+ * 
  * @author Evgeny Mandrikov
  */
 public class ConfigurationTest extends UITestCase {
 
+  private static final String DEFAULT_HOST = "http://localhost:9000";
+  private static SWTBotShell shell;
+  private static SWTBotTable table;
+
+  @BeforeClass
+  public static void openProperties() throws Exception {
+    shell = showGlobalSonarPropertiesPage();
+    table = bot.table();
+  }
+
+  @AfterClass
+  public static void closeProperties() {
+    shell.bot().button("OK").click();
+    bot.waitUntil(Conditions.shellCloses(shell));
+  }
+
   @Test
-  public void test() throws Exception {
-    SWTBotShell shell = showGlobalSonarPropertiesPage();
-    bot.button("Edit").click();
+  public void defaultServerDefined() throws Exception {
+    // assertThat(bot.button("Edit...").isEnabled(), is(false));
+    // assertThat(bot.button("Remove").isEnabled(), is(false));
 
-    bot.waitUntil(Conditions.shellIsActive("Edit sonar server connection"));
-    SWTBotShell shell2 = bot.shell("Edit sonar server connection");
+    assertThat(table.rowCount(), greaterThanOrEqualTo(1));
+
+    SWTBotTableItem item = table.getTableItem(DEFAULT_HOST);
+    assertThat(item.isChecked(), is(true));
+
+    // item.click();
+    // assertThat(bot.button("Edit...").isEnabled(), is(true));
+    // assertThat(bot.button("Remove").isEnabled(), is(true));
+  }
+
+  private void select(String host) {
+    SWTBotTableItem item = table.getTableItem(host);
+    item.select();
+  }
+
+  private static void closeWizard(SWTBotShell wizard) {
+    wizard.activate();
+    bot.button("Cancel").click();
+    bot.waitUntil(Conditions.shellCloses(wizard));
+  }
+
+  @Test
+  public void editWorks() throws Exception {
+    select(DEFAULT_HOST);
+    assertThat(bot.button("Edit...").isEnabled(), is(true));
+    bot.button("Edit...").click();
+    bot.waitUntil(Conditions.shellIsActive("Edit Sonar server connection"));
+    SWTBotShell shell2 = bot.shell("Edit Sonar server connection");
     shell2.activate();
+    assertThat(bot.textWithLabel("Sonar server URL :").getText(), is(DEFAULT_HOST));
+    assertThat(bot.textWithLabel("Username :").getText(), is(""));
+    assertThat(bot.textWithLabel("Password :").getText(), is(""));
+    closeWizard(shell2);
+  }
 
+  @Test
+  public void addWorks() throws Exception {
+    bot.button("Add...").click();
+    bot.waitUntil(Conditions.shellIsActive("New Sonar server connection"));
+    SWTBotShell shell2 = bot.shell("New Sonar server connection");
+    shell2.activate();
     testConnection("http://fake", false);
     testConnection(getSonarServerUrl() + "/", true); // test for SONARIDE-90
     testConnection(getSonarServerUrl(), true);
-
-    // Close wizard
-    shell2.activate();
-    bot.button("Finish").click();
-    bot.waitUntil(Conditions.shellCloses(shell2));
-
-    // Close properties
-    shell.bot().button("OK").click();
-    bot.waitUntil(Conditions.shellCloses(shell));
+    closeWizard(shell2);
   }
 
   private void testConnection(String serverUrl, boolean expectedSuccess) {
