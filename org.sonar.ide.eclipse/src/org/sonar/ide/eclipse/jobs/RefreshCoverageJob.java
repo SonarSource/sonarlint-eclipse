@@ -19,13 +19,24 @@
 package org.sonar.ide.eclipse.jobs;
 
 import java.util.Collection;
-import java.util.List;
 
-import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.sonar.ide.eclipse.EclipseSonar;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.ide.shared.coverage.CoverageLine;
 import org.sonar.wsclient.Sonar;
 
@@ -36,53 +47,73 @@ import org.sonar.wsclient.Sonar;
  * 
  * @author Jérémie Lagarde
  */
-public class RefreshCoverageJob extends AbstractRefreshModelJob<CoverageLine> {
+public class RefreshCoverageJob extends Job {
 
-  public RefreshCoverageJob(final List<IResource> resources) {
-    super(resources, SonarPlugin.MARKER_COVERAGE_ID);
+  protected AbstractDecoratedTextEditor targetEditor;
+
+  public RefreshCoverageJob(final AbstractDecoratedTextEditor targetEditor) {
+    super("RefreshCoverageJob");
+    this.targetEditor = targetEditor;
   }
 
   @Override
-  protected Collection<CoverageLine> retrieveDatas(Sonar sonar, ICompilationUnit unit) {
-    return new EclipseSonar(sonar).search(unit).getCoverage().getCoverageLines();
-  }
+  protected IStatus run(final IProgressMonitor monitor) {
 
-  @Override
-  protected Integer getLine(final CoverageLine coverage) {
-    return coverage.getLine();
-  }
+    if (targetEditor != null) {
+      final IDocument doc = getDocument();
+      final IAnnotationModel model = targetEditor.getDocumentProvider().getAnnotationModel(targetEditor.getEditorInput());
+      final IResource resource = (IResource) targetEditor.getEditorInput().getAdapter(IResource.class);
+      final Sonar sonar = getSonar(resource.getProject());
+      final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(resource);
+      final Collection<CoverageLine> coverageLines = new EclipseSonar(sonar).search(resourceKey).getCoverage().getCoverageLines();
 
-  @Override
-  protected String getMessage(final CoverageLine coverage) {
-    // TODO jérémie : improve message and so on
-    return "Coverage " + coverage.getHits() + ":" + coverage.getBranchHits();
-  }
+      for (final CoverageLine coverage : coverageLines) {
+        final String hits = coverage.getHits();
+        final String branchHits = coverage.getBranchHits();
+        final boolean hasLineCoverage = (null != hits);
+        final boolean hasBranchCoverage = (null != branchHits);
+        final boolean lineIsCovered = (hasLineCoverage && Integer.parseInt(hits) > 0);
+        final boolean branchIsCovered = (hasBranchCoverage && "100%".equals(branchHits));
+        try {
+          final IRegion region = doc.getLineInformation(coverage.getLine() - 1);
+          final Position position = new Position(region.getOffset(), region.getLength());
 
-  @Override
-  protected Integer getPriority(final CoverageLine Coverage) {
-    return new Integer(IMarker.PRIORITY_LOW);
-  }
-
-  @Override
-  protected Integer getSeverity(final CoverageLine coverage) {
-    final String hits = coverage.getHits();
-    final String branchHits = coverage.getBranchHits();
-    final boolean hasLineCoverage = (null != hits);
-    final boolean hasBranchCoverage = (null != branchHits);
-    final boolean lineIsCovered = (hasLineCoverage && Integer.parseInt(hits) > 0);
-    final boolean branchIsCovered = (hasBranchCoverage && "100%".equals(branchHits));
-
-    if (lineIsCovered) {
-      if (branchIsCovered) {
-        return new Integer(IMarker.SEVERITY_INFO);
-      } else if (hasBranchCoverage) {
-        return new Integer(IMarker.SEVERITY_WARNING);
-      } else {
-        return new Integer(IMarker.SEVERITY_INFO);
+          if (lineIsCovered) {
+            if (branchIsCovered) {
+              model
+              .addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)), position);
+            } else if (hasBranchCoverage) {
+              model.addAnnotation(new Annotation("org.sonar.ide.eclipse.partialCoverageAnnotationType", false, getMessage(coverage)),
+                  position);
+            } else {
+              model
+              .addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)), position);
+            }
+          } else if (hasLineCoverage) {
+            model.addAnnotation(new Annotation("org.sonar.ide.eclipse.noCoverageAnnotationType", false, getMessage(coverage)), position);
+          }
+        } catch (final Exception ex) {
+          SonarPlugin.getDefault().displayError(IStatus.WARNING, "Error in RefreshCoverageJob.", ex, true); //$NON-NLS-1$
+        }
       }
-    } else if (hasLineCoverage) {
-      return new Integer(IMarker.SEVERITY_ERROR);
+
     }
-    return new Integer( -1);
+    return Status.OK_STATUS;
   }
+
+  protected final IDocument getDocument() {
+    final IDocumentProvider provider = targetEditor.getDocumentProvider();
+    return provider.getDocument(targetEditor.getEditorInput());
+  }
+
+  protected Sonar getSonar(final IProject project) {
+    final ProjectProperties properties = ProjectProperties.getInstance(project);
+    final Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
+    return sonar;
+  }
+
+  protected String getMessage(final CoverageLine coverage) {
+    return "Coverage " + coverage.getHits() + ":" + coverage.getBranchHits() != null ? coverage.getBranchHits() : "100%";
+  }
+
 }

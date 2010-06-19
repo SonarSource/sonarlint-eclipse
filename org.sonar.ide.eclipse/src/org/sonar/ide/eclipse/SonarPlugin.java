@@ -51,7 +51,6 @@ public class SonarPlugin extends AbstractUIPlugin {
   // Markers
   public static final String MARKER_VIOLATION_ID = PLUGIN_ID + ".sonarViolationMarker"; //$NON-NLS-1$
   public static final String MARKER_DUPLICATION_ID = PLUGIN_ID + ".sonarDuplicationMarker"; //$NON-NLS-1$
-  public static final String MARKER_COVERAGE_ID = PLUGIN_ID + ".sonarCoverageMarker"; //$NON-NLS-1$
 
   // Images
   private static ImageDescriptor SONARWIZBAN_IMG;

@@ -18,20 +18,71 @@
 
 package org.sonar.ide.eclipse.actions;
 
-import java.util.List;
-
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorActionDelegate;
+import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
+import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.jobs.RefreshCoverageJob;
 
 /**
  * @author Jérémie Lagarde
  */
-public class RefreshCoverageAction extends AbstractRefreshAction {
+public class RefreshCoverageAction implements IEditorActionDelegate {
 
-  @Override
-  protected Job createJob(List<IResource> resources) {
-    return new RefreshCoverageJob(resources);
+  protected AbstractDecoratedTextEditor targetEditor;
+  protected IStructuredSelection        selection;
+
+  public void setActiveEditor(final IAction action, final IEditorPart targetEditor) {
+    this.targetEditor = null;
+    if (targetEditor instanceof AbstractDecoratedTextEditor) {
+      this.targetEditor = (AbstractDecoratedTextEditor) targetEditor;
+      selection = null;
+    }
+  }
+
+  public void run(final IAction action) {
+    if (targetEditor != null) {
+      refresh(targetEditor);
+      return;
+    }
+    if (selection != null) {
+      final IWorkbenchPage page = SonarPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
+      for (final Object element : selection.toList()) {
+        if (element instanceof IFile) {
+          final IFile file = (IFile) element;
+          final IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
+          try {
+            refresh((AbstractDecoratedTextEditor) page.openEditor(new FileEditorInput(file), desc.getId()));
+          } catch (final PartInitException e) {
+            SonarPlugin.getDefault().displayError(IStatus.WARNING, "Error in RefreshCoverageAction.", e, true); //$NON-NLS-1$
+          }
+        }
+      }
+    }
+  }
+
+  private void refresh(final AbstractDecoratedTextEditor targetEditor) {
+    final Job job = new RefreshCoverageJob(targetEditor);
+    job.schedule();
+  }
+
+  public void selectionChanged(final IAction action, final ISelection selection) {
+    this.selection = null;
+    this.targetEditor = null;
+    if (selection instanceof IStructuredSelection) {
+      this.selection = (IStructuredSelection) selection;
+    }
   }
 
 }
