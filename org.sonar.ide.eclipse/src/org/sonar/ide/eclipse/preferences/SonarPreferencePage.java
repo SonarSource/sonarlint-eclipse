@@ -187,6 +187,11 @@ public class SonarPreferencePage extends AbstractSonarPreferencePage {
           SonarPlugin.getServerManager().removeServer(selected.getHost());
           servers.remove(selected);
           serversViewer.refresh();
+          // set new deault server, if previous was removed
+          Object[] checkedElements = serversViewer.getCheckedElements();
+          if (checkedElements == null || checkedElements.length == 0) {
+            setCheckedServer(servers.get(0));
+          }
         }
       }
     });
