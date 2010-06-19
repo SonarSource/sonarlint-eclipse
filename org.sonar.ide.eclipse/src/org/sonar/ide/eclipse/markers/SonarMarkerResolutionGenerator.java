@@ -24,6 +24,7 @@ import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
@@ -53,11 +54,13 @@ public class SonarMarkerResolutionGenerator implements IMarkerResolutionGenerato
       for (final IConfigurationElement element : config) {
         final Object resolver = element.createExecutableExtension("class");
         if (resolver instanceof ISonarResolver) {
-          resolutions.add(new SonarMarkerResolution((ISonarResolver) resolver));
+          if (((ISonarResolver) resolver).canResolve(marker)) {
+            resolutions.add(new SonarMarkerResolution((ISonarResolver) resolver));
+          }
         }
       }
     } catch (final CoreException ex) {
-      System.out.println(ex.getMessage());
+      SonarPlugin.getDefault().displayError(IStatus.WARNING, "Error in SonarMarkerResolutionGenerator.", ex, true);
     }
     return resolutions.toArray(new IMarkerResolution[resolutions.size()]);
   }
