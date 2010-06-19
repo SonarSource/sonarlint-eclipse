@@ -20,12 +20,9 @@ package org.sonar.ide.eclipse.views;
 
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -74,9 +71,6 @@ import org.sonar.ide.eclipse.wizards.EditServerLocationWizard;
 import org.sonar.ide.eclipse.wizards.NewServerLocationWizard;
 import org.sonar.ide.shared.DefaultServerManager.IServerSetListener;
 import org.sonar.wsclient.Host;
-import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.services.Violation;
-import org.sonar.wsclient.services.ViolationQuery;
 
 /**
  * @author Jérémie Lagarde
@@ -105,8 +99,9 @@ public class NavigatorView extends ViewPart {
     }
 
     public void partBroughtToTop(IWorkbenchPartReference ref) {
-      if (ref.getPart(true) == NavigatorView.this)
+      if (ref.getPart(true) == NavigatorView.this) {
         editorActivated(getViewSite().getPage().getActiveEditor());
+      }
     }
 
     public void partClosed(IWorkbenchPartReference ref) {
@@ -116,16 +111,18 @@ public class NavigatorView extends ViewPart {
     }
 
     public void partOpened(IWorkbenchPartReference ref) {
-      if (ref.getPart(true) == NavigatorView.this)
+      if (ref.getPart(true) == NavigatorView.this) {
         editorActivated(getViewSite().getPage().getActiveEditor());
+      }
     }
 
     public void partHidden(IWorkbenchPartReference ref) {
     }
 
     public void partVisible(IWorkbenchPartReference ref) {
-      if (ref.getPart(true) == NavigatorView.this)
+      if (ref.getPart(true) == NavigatorView.this) {
         editorActivated(getViewSite().getPage().getActiveEditor());
+      }
     }
 
     public void partInputChanged(IWorkbenchPartReference ref) {
@@ -484,8 +481,9 @@ public class NavigatorView extends ViewPart {
       element = JavaCore.create((IFile) input);
     }
 
-    if (element == null) // try a non Java resource
+    if (element == null) {
       element = input;
+    }
 
     TreeObject treeObject = null;
     if (input instanceof IJavaElement) {
@@ -507,30 +505,6 @@ public class NavigatorView extends ViewPart {
         // viewer.setSelection(newSelection, true);
         // }
         // }
-      }
-      IResource file = null;
-      if (input instanceof IFile) {
-        file = (IFile) input;
-      } else if (element instanceof ICompilationUnit) {
-        file = ((ICompilationUnit) element).getResource();
-      }
-      if (file != null) {
-        Sonar sonar = treeObject.getServer();
-        ViolationQuery query = ViolationQuery.createForResource(treeObject.getResource());
-        Collection<Violation> violations = sonar.findAll(query);
-        try {
-          for (Violation violation : violations) {
-            IMarker marker = ((IFile) file).createMarker(IMarker.TASK);
-            if (marker.exists()) {
-              marker.setAttribute(IMarker.MESSAGE, "sonar : " + violation.getMessage());
-              marker.setAttribute(IMarker.LINE_NUMBER, violation.getLine());
-              marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-              marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-            }
-          }
-        } catch (CoreException e) {
-          // You need to handle the case where the marker no longer exists }
-        }
       }
       return true;
     }
