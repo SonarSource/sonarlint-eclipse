@@ -166,7 +166,7 @@ public class SonarPreferencePage extends AbstractSonarPreferencePage {
         WizardDialog dialog = new WizardDialog(editButton.getShell(), wiz);
         dialog.create();
         if (dialog.open() == Window.OK) {
-          // TODO
+          serversViewer.refresh();
         }
       }
     });
@@ -187,6 +187,8 @@ public class SonarPreferencePage extends AbstractSonarPreferencePage {
           SonarPlugin.getServerManager().removeServer(selected.getHost());
           servers.remove(selected);
           serversViewer.refresh();
+          removeButton.setEnabled(false);
+          editButton.setEnabled(false);
           // set new deault server, if previous was removed
           Object[] checkedElements = serversViewer.getCheckedElements();
           if (checkedElements == null || checkedElements.length == 0) {

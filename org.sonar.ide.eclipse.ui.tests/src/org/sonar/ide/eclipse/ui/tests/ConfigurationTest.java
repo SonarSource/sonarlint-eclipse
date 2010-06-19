@@ -19,7 +19,7 @@
 package org.sonar.ide.eclipse.ui.tests;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
 
@@ -56,56 +56,66 @@ public class ConfigurationTest extends UITestCase {
     bot.waitUntil(Conditions.shellCloses(shell));
   }
 
-  @Test
-  public void defaultServerDefined() throws Exception {
-    // assertThat(bot.button("Edit...").isEnabled(), is(false));
-    // assertThat(bot.button("Remove").isEnabled(), is(false));
-
-    assertThat(table.rowCount(), greaterThanOrEqualTo(1));
-
-    SWTBotTableItem item = table.getTableItem(DEFAULT_HOST);
-    assertThat(item.isChecked(), is(true));
-
-    // item.click();
-    // assertThat(bot.button("Edit...").isEnabled(), is(true));
-    // assertThat(bot.button("Remove").isEnabled(), is(true));
-  }
-
-  private void select(String host) {
-    SWTBotTableItem item = table.getTableItem(host);
-    item.select();
-  }
-
   private static void closeWizard(SWTBotShell wizard) {
     wizard.activate();
-    bot.button("Cancel").click();
+    bot.button("Finish").click();
     bot.waitUntil(Conditions.shellCloses(wizard));
   }
 
   @Test
-  public void editWorks() throws Exception {
-    select(DEFAULT_HOST);
+  public void test() throws Exception {
+    // test default
+    assertThat(table.rowCount(), equalTo(1));
+    SWTBotTableItem item = table.getTableItem(0);
+    assertThat(item.getText(), is(DEFAULT_HOST));
+    assertThat(table.getTableItem(0).isChecked(), is(true));
+
+    // test add
+    bot.button("Add...").click();
+    bot.waitUntil(Conditions.shellIsActive("New Sonar server connection"));
+    SWTBotShell wizard = bot.shell("New Sonar server connection");
+    wizard.activate();
+
+    testConnection(getSonarServerUrl() + "/", true); // test for SONARIDE-90
+    testConnection(getSonarServerUrl(), true);
+    testConnection("http://fake", false);
+    closeWizard(wizard);
+    assertThat(table.containsItem("http://fake"), is(true));
+
+    // test edit
+    table.getTableItem("http://fake").select();
     assertThat(bot.button("Edit...").isEnabled(), is(true));
     bot.button("Edit...").click();
     bot.waitUntil(Conditions.shellIsActive("Edit Sonar server connection"));
-    SWTBotShell shell2 = bot.shell("Edit Sonar server connection");
-    shell2.activate();
-    assertThat(bot.textWithLabel("Sonar server URL :").getText(), is(DEFAULT_HOST));
+    wizard = bot.shell("Edit Sonar server connection");
+    wizard.activate();
+    assertThat(bot.textWithLabel("Sonar server URL :").getText(), is("http://fake"));
     assertThat(bot.textWithLabel("Username :").getText(), is(""));
     assertThat(bot.textWithLabel("Password :").getText(), is(""));
-    closeWizard(shell2);
-  }
+    bot.textWithLabel("Sonar server URL :").setText("http://fake2");
+    closeWizard(wizard);
+    assertThat(table.containsItem("http://fake2"), is(true));
 
-  @Test
-  public void addWorks() throws Exception {
-    bot.button("Add...").click();
-    bot.waitUntil(Conditions.shellIsActive("New Sonar server connection"));
-    SWTBotShell shell2 = bot.shell("New Sonar server connection");
-    shell2.activate();
-    testConnection("http://fake", false);
-    testConnection(getSonarServerUrl() + "/", true); // test for SONARIDE-90
-    testConnection(getSonarServerUrl(), true);
-    closeWizard(shell2);
+    // set as default
+    item = table.getTableItem("http://fake2");
+    item.check();
+
+    // test remove
+    item.select();
+    bot.button("Remove").click();
+    bot.waitUntil(Conditions.shellIsActive("Remove sonar server connection"));
+    bot.button("OK").click();
+
+    assertThat(table.containsItem("http://fake2"), is(false));
+    assertThat(table.getTableItem(0).isChecked(), is(true));
+
+    assertThat("Edit button enabled", bot.button("Edit...").isEnabled(), is(false));
+    assertThat("Remove button enabled", bot.button("Remove").isEnabled(), is(false));
+
+    // test remove last
+    table.getTableItem(0).click();
+    assertThat("Edit button enabled", bot.button("Edit...").isEnabled(), is(true));
+    assertThat("Remove button enabled", bot.button("Remove").isEnabled(), is(false));
   }
 
   private void testConnection(String serverUrl, boolean expectedSuccess) {
