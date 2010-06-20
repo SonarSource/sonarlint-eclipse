@@ -76,21 +76,7 @@ public class SonarPreferencePage extends AbstractSonarPreferencePage {
     link.setText("Add, remove or edit Sonar servers.");
     createTable(container);
 
-    // retrieve list of servers
-    servers = SonarPlugin.getServerManager().getServers();
-    // TODO Godin: remove this dirty hack
-    if (servers.size() == 0) {
-      servers.add(new Host("http://localhost:9000"));
-    }
-    serversViewer.setInput(servers);
-
-    // set default server
-    String defaultServerUrl = getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL);
-    for (Host server : servers) {
-      if (defaultServerUrl.equals(server.getHost())) {
-        setCheckedServer(server);
-      }
-    }
+    initTable();
 
     // TODO Godin: we need to remove unnecessary buttons, but this doesn't work:
     // getDefaultsButton().setVisible(false);
@@ -115,12 +101,30 @@ public class SonarPreferencePage extends AbstractSonarPreferencePage {
     defaultServer = host;
   }
 
+  private void initTable() {
+    // retrieve list of servers
+    servers = SonarPlugin.getServerManager().getServers();
+    // TODO Godin: remove this dirty hack
+    if (servers.size() == 0) {
+      servers.add(new Host("http://localhost:9000"));
+    }
+    serversViewer.setInput(servers);
+
+    // set default server
+    String defaultServerUrl = getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL);
+    for (Host server : servers) {
+      if (defaultServerUrl.equals(server.getHost())) {
+        setCheckedServer(server);
+      }
+    }
+  }
+
   private void createTable(Composite composite) {
     serversViewer = CheckboxTableViewer.newCheckList(composite, SWT.BORDER | SWT.FULL_SELECTION);
     serversViewer.setContentProvider(new ServersContentProvider());
     serversViewer.setLabelProvider(new ServersLabelProvider());
 
-    Table table = serversViewer.getTable();
+    final Table table = serversViewer.getTable();
     GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 2, 3);
     gridData.heightHint = 300;
     table.setLayoutData(gridData);
@@ -146,7 +150,7 @@ public class SonarPreferencePage extends AbstractSonarPreferencePage {
         WizardDialog dialog = new WizardDialog(addButton.getShell(), wiz);
         dialog.create();
         if (dialog.open() == Window.OK) {
-          serversViewer.setInput(SonarPlugin.getServerManager().getServers());
+          initTable();
         }
       }
     });
@@ -166,7 +170,7 @@ public class SonarPreferencePage extends AbstractSonarPreferencePage {
         WizardDialog dialog = new WizardDialog(editButton.getShell(), wiz);
         dialog.create();
         if (dialog.open() == Window.OK) {
-          serversViewer.refresh();
+          initTable();
         }
       }
     });

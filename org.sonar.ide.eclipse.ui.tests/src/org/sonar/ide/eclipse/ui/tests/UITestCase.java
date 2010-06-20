@@ -264,16 +264,21 @@ public abstract class UITestCase extends SonarIdeTestCase {
 
   protected static void configureDefaultSonarServer(String serverUrl) {
     SWTBotShell shell = showGlobalSonarPropertiesPage();
-    bot.button("Edit").click();
 
-    bot.waitUntil(Conditions.shellIsActive("Edit sonar server connection"));
-    SWTBotShell shell2 = bot.shell("Edit sonar server connection");
+    bot.table().getTableItem(0).select();
+
+    bot.button("Edit...").click();
+
+    bot.waitUntil(Conditions.shellIsActive("Edit Sonar server connection"));
+    SWTBotShell shell2 = bot.shell("Edit Sonar server connection");
     shell2.activate();
     bot.textWithLabel("Sonar server URL :").setText(serverUrl);
 
     // Close wizard
     bot.button("Finish").click();
     bot.waitUntil(Conditions.shellCloses(shell2));
+
+    bot.table().getTableItem(0).check(); // TODO
 
     // Close properties
     shell.bot().button("OK").click();
