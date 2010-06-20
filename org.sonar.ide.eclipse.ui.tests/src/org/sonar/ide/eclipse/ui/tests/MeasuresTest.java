@@ -50,8 +50,6 @@ public class MeasuresTest extends UITestCase {
     openPerspective(SonarUI.ID_PERSPECTIVE);
     bot.viewById(MeasuresView.ID).setFocus();
 
-    bot.toolbarToggleButtonWithTooltip("Link with Editor").click();
-
     SWTBotTable table = bot.table();
     assertThat(table.rowCount(), is(0));
 

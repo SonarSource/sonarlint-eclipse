@@ -20,30 +20,30 @@ package org.sonar.ide.eclipse.views;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.sonar.ide.eclipse.EclipseSonar;
-import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
@@ -58,8 +58,6 @@ public class MeasuresView extends ViewPart {
   public static final String ID = "org.sonar.ide.eclipse.views.MeasuresView";
 
   private TableViewer viewer;
-  private Action linkToEditorAction;
-  private boolean linking;
 
   private void createColumns(final TableViewer viewer) {
     final int[] bounds = { 100, 100, 100 };
@@ -81,24 +79,69 @@ public class MeasuresView extends ViewPart {
     createColumns(viewer);
     viewer.setContentProvider(new MeasuresContentProvider());
     viewer.setLabelProvider(new MeasuresLabelProvider());
+  }
 
-    // Create actions
-    linkToEditorAction = new Action(Messages.getString("action.link"), IAction.AS_CHECK_BOX) {
+  @Override
+  public void init(IViewSite site) throws PartInitException {
+    site.getPage().addSelectionListener(JavaUI.ID_PACKAGES, selectionListener);
+    super.init(site);
+  }
 
-      @Override
-      public void run() {
-        toggleLinking(isChecked());
+  @Override
+  public void dispose() {
+    super.dispose();
+    getSite().getPage().removeSelectionListener(JavaUI.ID_PACKAGES, selectionListener);
+  }
+
+  private ISelection currentSelection;
+
+  ISelectionListener selectionListener = new ISelectionListener() {
+    public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+      // TODO don't handle selections, if this view inactive, eg. when another perspective selected
+      // TODO comment me
+      if (selection == null || selection.equals(currentSelection)) {
+        return;
       }
-    };
-    linkToEditorAction.setToolTipText(Messages.getString("action.link.desc")); //$NON-NLS-1$
-    linkToEditorAction.setImageDescriptor(SonarPlugin.getImageDescriptor(SonarPlugin.IMG_SONARSYNCHRO));
+      // TODO comment me
+      if (part == null) {
+        return;
+      }
 
-    // Create toolbar
-    IActionBars bars = getViewSite().getActionBars();
-    bars.getToolBarManager().add(linkToEditorAction);
+      currentSelection = selection;
+      if (currentSelection instanceof IStructuredSelection) {
+        IStructuredSelection sel = (IStructuredSelection) currentSelection;
+        Object o = sel.getFirstElement();
+        if (o == null) {
+          // no selection
+          return;
+        }
+        if (o instanceof IPackageFragment) {
+          IPackageFragment packageFragment = (IPackageFragment) o;
+          IProject project = packageFragment.getResource().getProject();
+          updateMeasures(project, getResourceKey(project, packageFragment.getElementName()));
+        } else if (o instanceof ICompilationUnit) {
+          ICompilationUnit cu = (ICompilationUnit) o;
+          try {
+            IProject project = cu.getResource().getProject();
+            final String packageName;
+            if (cu.getPackageDeclarations().length == 0) {
+              packageName = "[default]";
+            } else {
+              packageName = cu.getPackageDeclarations()[0].getElementName();
+            }
+            String className = StringUtils.removeEnd(cu.getElementName(), ".java");
+            updateMeasures(project, getResourceKey(project, packageName + "." + className));
+          } catch (JavaModelException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
+        }
+      }
+    }
+  };
 
-    // TODO comment me
-    getSite().getPage().addPartListener(partListener2);
+  private String getResourceKey(IProject project, String s) {
+    return EclipseResourceUtils.getInstance().getProjectKey(project) + ":" + s;
   }
 
   /**
@@ -109,101 +152,25 @@ public class MeasuresView extends ViewPart {
     viewer.getControl().setFocus();
   }
 
-  @Override
-  public void dispose() {
-    getSite().getPage().removePartListener(partListener2);
-  }
-
-  protected void toggleLinking(boolean checked) {
-    this.linking = checked;
-    if (this.linking) {
-      editorActivated(getSite().getPage().getActiveEditor());
-    }
-  }
-
-  protected void editorActivated(IEditorPart editor) {
-    if (editor == null) {
-      return;
-    }
-    IEditorInput editorInput = editor.getEditorInput();
-    if (editorInput == null) {
-      return;
-    }
-    final IResource resource = getResourceFromEditor(editorInput);
-    if (resource == null) {
-      return;
-    }
+  private void updateMeasures(final IProject project, final String resourceKey) {
     // TODO Godin: should be refactored
     new Job("My new job") {
-
       @Override
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Some nice progress message here ...", 100);
-
         // execute the task ...
-        String resourceKey = EclipseResourceUtils.getInstance().getFileKey(resource);
-        IProject project = resource.getProject();
         ProjectProperties properties = ProjectProperties.getInstance(project);
         Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
         final List<MeasureData> measures = new EclipseSonar(sonar).search(resourceKey).getMeasures();
         Display.getDefault().asyncExec(new Runnable() {
-
           public void run() {
             viewer.setInput(measures);
           }
         });
-
         monitor.done();
         return Status.OK_STATUS;
       }
     }.schedule();
   }
-
-  private IResource getResourceFromEditor(IEditorInput editorInput) {
-    IJavaElement element = JavaUI.getEditorInputJavaElement(editorInput);
-    if (element != null) {
-      return element.getResource();
-    }
-    return null;
-  }
-
-  private final IPartListener2 partListener2 = new IPartListener2() {
-
-    public void partActivated(IWorkbenchPartReference ref) {
-      if (ref.getPart(true) instanceof IEditorPart) {
-        editorActivated(getViewSite().getPage().getActiveEditor());
-      }
-    }
-
-    public void partBroughtToTop(IWorkbenchPartReference ref) {
-      if (ref.getPart(true) == MeasuresView.this) {
-        editorActivated(getViewSite().getPage().getActiveEditor());
-      }
-    }
-
-    public void partClosed(IWorkbenchPartReference ref) {
-    }
-
-    public void partDeactivated(IWorkbenchPartReference ref) {
-    }
-
-    public void partHidden(IWorkbenchPartReference ref) {
-    }
-
-    public void partInputChanged(IWorkbenchPartReference ref) {
-    }
-
-    public void partOpened(IWorkbenchPartReference ref) {
-      if (ref.getPart(true) == MeasuresView.this) {
-        editorActivated(getViewSite().getPage().getActiveEditor());
-      }
-    }
-
-    public void partVisible(IWorkbenchPartReference ref) {
-      if (ref.getPart(true) == MeasuresView.this) {
-        editorActivated(getViewSite().getPage().getActiveEditor());
-      }
-    }
-  };
 
 }
