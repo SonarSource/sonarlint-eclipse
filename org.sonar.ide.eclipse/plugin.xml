@@ -60,7 +60,7 @@
     <view
         category="org.sonar.ide.eclipse"
         class="org.sonar.ide.eclipse.views.ViolationsView"
-        icon="icons/sonar.png"
+        icon="icons/violations_view.gif"
         id="org.sonar.ide.eclipse.views.ViolationsView"
         name="%sonar.violation.view.name">
     </view>
