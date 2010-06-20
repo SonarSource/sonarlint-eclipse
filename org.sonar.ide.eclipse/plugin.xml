@@ -57,7 +57,48 @@
     	id="org.sonar.ide.eclipse.views.MeasuresView"
     	name="%sonar.measures.view.name">
     </view>
+    <view
+        category="org.sonar.ide.eclipse"
+        class="org.sonar.ide.eclipse.views.ViolationsView"
+        icon="icons/sonar.png"
+        id="org.sonar.ide.eclipse.views.ViolationsView"
+        name="%sonar.violation.view.name">
+    </view>
   </extension>
+
+  <extension 
+      point="org.eclipse.ui.ide.markerSupport"> 
+    <markerContentGenerator 
+         id="org.sonar.ide.eclipse.markers.violationMarkerGenerator" 
+         name="Sonar Violation Marker Generator"> 
+        <markerTypeReference
+             id="org.sonar.ide.eclipse.sonarViolationMarker"/>
+        <markerFieldReference
+             id="org.sonar.ide.eclipse.views.violationRuleKeyField"
+             visible="false"/>  
+        <markerFieldReference
+             id="org.sonar.ide.eclipse.views.violationRuleNameField"/>        
+        <markerFieldReference
+             id="org.eclipse.ui.ide.resourceField"/>
+        <markerFieldReference
+             id="org.eclipse.ui.ide.locationField"/>
+        <markerFieldReference
+             id="org.eclipse.ui.ide.priorityField"/>        
+        <markerFieldReference
+             id="org.eclipse.ui.ide.severityAndDescriptionField"/>
+    </markerContentGenerator>
+    <markerField 
+        class="org.sonar.ide.eclipse.views.ViolationRuleNameField" 
+        id="org.sonar.ide.eclipse.views.violationRuleNameField" 
+        name="%sonar.violation.view.rulenamefield"> 
+    </markerField> 
+    <markerField 
+        class="org.sonar.ide.eclipse.views.ViolationRuleKeyField" 
+        id="org.sonar.ide.eclipse.views.violationRuleKeyField" 
+        name="%sonar.violation.view.rulekeyfield"> 
+    </markerField> 
+  </extension>
+  
   <extension point="org.eclipse.ui.newWizards">
     <category id="org.sonar.ide.eclipse.wizcat" name="%sonar.category.wizard.name"/>
     <wizard
