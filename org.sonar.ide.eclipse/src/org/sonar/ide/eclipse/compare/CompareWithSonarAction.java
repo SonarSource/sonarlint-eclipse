@@ -19,19 +19,15 @@
 package org.sonar.ide.eclipse.compare;
 
 import org.eclipse.compare.CompareUI;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
-import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.Source;
-import org.sonar.wsclient.services.SourceQuery;
 
 /**
  * @author Jérémie Lagarde
@@ -60,17 +56,9 @@ public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
   public void run(final IAction action) {
     if (resource != null) {
       final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(resource);
-      final SourceQuery sourceQuery = new SourceQuery(resourceKey);
-      final Sonar sonar = getSonar(resource.getProject());
-      final Source source = sonar.find(sourceQuery);
+      final Source source = EclipseSonar.getInstance(resource.getProject()).search(resourceKey).getCode();
       CompareUI.openCompareEditor(new SonarCompareInput(resource, source));
     }
-  }
-
-  protected Sonar getSonar(final IProject project) {
-    final ProjectProperties properties = ProjectProperties.getInstance(project);
-    final Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
-    return sonar;
   }
 
 }

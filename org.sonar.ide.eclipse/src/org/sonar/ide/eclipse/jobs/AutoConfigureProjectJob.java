@@ -47,7 +47,7 @@ import org.sonar.wsclient.services.ResourceQuery;
  */
 public class AutoConfigureProjectJob extends Job {
 
-  private final IProject[]                  projects;
+  private final IProject[] projects;
   private final Map<String, List<Resource>> resourcesByServerMap = new HashMap<String, List<Resource>>();
 
   public AutoConfigureProjectJob(IProject project) {
@@ -72,10 +72,11 @@ public class AutoConfigureProjectJob extends Job {
           retrieveProjectConfiguration(JavaCore.create(projects[i]), monitor);
         }
       }
-      if (!monitor.isCanceled())
+      if ( !monitor.isCanceled()) {
         status = Status.OK_STATUS;
-      else
+      } else {
         status = Status.CANCEL_STATUS;
+      }
     } catch (Exception e) {
       status = new Status(IStatus.ERROR, SonarPlugin.PLUGIN_ID, IStatus.ERROR, e.getLocalizedMessage(), e);
     } finally {
@@ -100,15 +101,16 @@ public class AutoConfigureProjectJob extends Job {
     }
   }
 
-  private void retrieveProjectConfiguration(IJavaProject project, String serverUtl, IProgressMonitor monitor) throws Exception {
+  private void retrieveProjectConfiguration(IJavaProject project, String serverUrl, IProgressMonitor monitor) throws Exception {
     ProjectProperties properties = ProjectProperties.getInstance(project.getResource());
-    if (properties != null && properties.isProjectConfigured())
+    if (properties != null && properties.isProjectConfigured()) {
       return;
-    List<Resource> resources = retrieveResources(serverUtl, monitor);
+    }
+    List<Resource> resources = retrieveResources(serverUrl, monitor);
     for (Resource resource : resources) {
       if (resource.getKey().endsWith(":" + project.getElementName())) {
         SonarPlugin.getDefault().getConsole().logResponse("Configure");
-        properties.setUrl(serverUtl);
+        properties.setUrl(serverUrl);
         properties.setArtifactId(project.getElementName());
         properties.setGroupId(StringUtils.substringBefore(resource.getKey(), ":"));
         properties.save();
@@ -117,17 +119,17 @@ public class AutoConfigureProjectJob extends Job {
   }
 
   private List<Resource> retrieveResources(String serverUrl, IProgressMonitor monitor) throws Exception {
-    if (StringUtils.isBlank(serverUrl))
+    if (StringUtils.isBlank(serverUrl)) {
       return new ArrayList<Resource>();
-    if (resourcesByServerMap.containsKey(serverUrl))
+    }
+    if (resourcesByServerMap.containsKey(serverUrl)) {
       return resourcesByServerMap.get(serverUrl);
+    }
     try {
-      monitor.beginTask("Retrieve projects on " + serverUrl, 1); // TODO put it
-                                                                 // in
-                                                                 // messages.properties
-      ResourceQuery query = new ResourceQuery();
-      query.setScopes(Resource.SCOPE_SET);
-      query.setQualifiers(Resource.QUALIFIER_PROJECT, Resource.QUALIFIER_MODULE);
+      monitor.beginTask("Retrieve projects on " + serverUrl, 1); // TODO put it in messages.properties
+      // TODO Godin: don't use sonar-ws-client directly
+      ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT,
+          Resource.QUALIFIER_MODULE);
       Sonar sonar = SonarPlugin.getServerManager().getSonar(serverUrl);
       List<Resource> resources = sonar.findAll(query);
       resourcesByServerMap.put(serverUrl, resources);

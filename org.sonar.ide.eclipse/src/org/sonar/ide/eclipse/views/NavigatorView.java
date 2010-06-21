@@ -153,7 +153,6 @@ public class NavigatorView extends ViewPart {
     contributeToActionBars();
 
     SonarPlugin.getServerManager().addServerSetListener(new IServerSetListener() {
-
       public void serverSetChanged(int type, List<Host> serverList) {
         viewer.setContentProvider(new NavigatorContentProvider());
       }
@@ -171,7 +170,6 @@ public class NavigatorView extends ViewPart {
     MenuManager menuMgr = new MenuManager("#PopupMenu");
     menuMgr.setRemoveAllWhenShown(true);
     menuMgr.addMenuListener(new IMenuListener() {
-
       public void menuAboutToShow(IMenuManager manager) {
         NavigatorView.this.fillContextMenu(manager);
       }
@@ -261,7 +259,6 @@ public class NavigatorView extends ViewPart {
 
   private void makeActions() {
     deleteServerAction = new Action() {
-
       @Override
       public void run() {
         ISelection selection = viewer.getSelection();
@@ -281,7 +278,6 @@ public class NavigatorView extends ViewPart {
     deleteServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
 
     addServerAction = new Action() {
-
       @Override
       public void run() {
         NewServerLocationWizard wiz = new NewServerLocationWizard();
@@ -297,7 +293,6 @@ public class NavigatorView extends ViewPart {
     addServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
 
     editServerAction = new Action() {
-
       @Override
       public void run() {
         ISelection selection = viewer.getSelection();
@@ -318,7 +313,6 @@ public class NavigatorView extends ViewPart {
     editServerAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD));
 
     doubleClickAction = new Action() {
-
       @Override
       public void run() {
         ISelection selection = viewer.getSelection();
@@ -330,7 +324,6 @@ public class NavigatorView extends ViewPart {
     };
 
     refreshAction = new Action() {
-
       @Override
       public void run() {
         ISelection selection = viewer.getSelection();
@@ -347,7 +340,6 @@ public class NavigatorView extends ViewPart {
     refreshAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
 
     openSonarWebAction = new Action() {
-
       @Override
       public void run() {
         ISelection selection = viewer.getSelection();
@@ -364,7 +356,6 @@ public class NavigatorView extends ViewPart {
     openSonarWebAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
 
     linkToEditorAction = new Action(Messages.getString("action.link"), IAction.AS_CHECK_BOX) {
-
       @Override
       public void run() {
         toggleLinking(isChecked());
@@ -376,7 +367,6 @@ public class NavigatorView extends ViewPart {
 
   private void hookDoubleClickAction() {
     viewer.addDoubleClickListener(new IDoubleClickListener() {
-
       public void doubleClick(DoubleClickEvent event) {
         doubleClickAction.run();
       }
@@ -402,9 +392,9 @@ public class NavigatorView extends ViewPart {
     }
     IWorkbenchBrowserSupport browserSupport = SonarPlugin.getDefault().getWorkbench().getBrowserSupport();
     try {
-      URL consoleURL = new URL(extractSonarUrl(selectedNode));
+      URL consoleURL = new URL(selectedNode.getRemoteURL());
       if (browserSupport.isInternalWebBrowserAvailable()) {
-        browserSupport.createBrowser("id" + selectedNode.getServer().hashCode()).openURL(consoleURL);
+        browserSupport.createBrowser("id" + selectedNode.getHost().hashCode()).openURL(consoleURL);
       } else {
         browserSupport.getExternalBrowser().openURL(consoleURL);
       }
@@ -509,10 +499,6 @@ public class NavigatorView extends ViewPart {
       return true;
     }
     return false;
-  }
-
-  private String extractSonarUrl(TreeObject treeObject) {
-    return treeObject.getRemoteURL();
   }
 
   @Override

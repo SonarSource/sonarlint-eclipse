@@ -68,8 +68,11 @@
             </executions>
             <configuration>
               <packageSources>false</packageSources>
+              <!-- TODO don't export org.sonar.wsclient -->
               <exportPackages>
-                org.sonar.*,
+                org.sonar.ide.*,
+                org.sonar.wsclient,
+                org.sonar.wsclient.services,
                 org.slf4j,
                 org.slf4j.impl,
                 org.apache.commons.lang,

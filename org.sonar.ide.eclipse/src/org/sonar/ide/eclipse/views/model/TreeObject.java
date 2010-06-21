@@ -20,48 +20,50 @@ package org.sonar.ide.eclipse.views.model;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.views.properties.IPropertySource;
-import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.services.Resource;
-
+import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.wsclient.RemoteSonarUtils;
+import org.sonar.wsclient.Host;
 
 /**
  * @author Jérémie Lagarde
  */
 public abstract class TreeObject implements IAdaptable {
 
-  private final Resource resource;
+  protected final SourceCode sourceCode;
   private TreeParent parent;
   private TreePropertyProvider propertyProvider;
 
-  public TreeObject(Resource resource) {
-    this.resource = resource;
+  public TreeObject(SourceCode sourceCode) {
+    this.sourceCode = sourceCode;
   }
 
   public String getName() {
-    return resource.getName();
+    return sourceCode.getName();
   }
 
-  public abstract String getRemoteURL();
-
-  protected String getRemoteRootURL() {
-    return parent.getRemoteRootURL();
+  public String getRemoteURL() {
+    return RemoteSonarUtils.getUrl(sourceCode);
   }
 
+  /**
+   * TODO Godin: dosn't work since migration to new API
+   */
   public String getVersion() {
-    if (resource.getVersion() != null)
-      return resource.getVersion();
-    if (getParent() != null)
+    // if (resource.getVersion() != null) {
+    // return resource.getVersion();
+    // }
+    if (getParent() != null) {
       return getParent().getVersion();
+    }
     return "";
-
   }
 
-  public Resource getResource() {
-    return resource;
+  public SourceCode getSourceCode() {
+    return sourceCode;
   }
 
-  public Sonar getServer() {
-    return parent.getServer();
+  public Host getHost() {
+    return parent.getHost();
   }
 
   public void setParent(TreeParent parent) {

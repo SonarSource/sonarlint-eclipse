@@ -24,10 +24,9 @@ import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.sonar.ide.eclipse.EclipseSonar;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.shared.duplications.Duplication;
-import org.sonar.wsclient.Sonar;
 
 /**
  * This class load duplications in background.
@@ -41,8 +40,8 @@ public class RefreshDuplicationsJob extends AbstractRefreshModelJob<Duplication>
   }
 
   @Override
-  protected Collection<Duplication> retrieveDatas(final Sonar sonar, final ICompilationUnit unit) {
-    return new EclipseSonar(sonar).search(unit).getDuplications();
+  protected Collection<Duplication> retrieveDatas(EclipseSonar sonar, ICompilationUnit unit) {
+    return sonar.search(unit).getDuplications();
   }
 
   @Override

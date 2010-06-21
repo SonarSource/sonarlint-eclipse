@@ -26,10 +26,9 @@ import java.util.Map;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.sonar.ide.eclipse.EclipseSonar;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.shared.violations.ViolationUtils;
-import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.Violation;
 
 /**
@@ -46,8 +45,8 @@ public class RefreshViolationJob extends AbstractRefreshModelJob<Violation> {
   }
 
   @Override
-  protected Collection<Violation> retrieveDatas(final Sonar sonar, final ICompilationUnit unit) {
-    return new EclipseSonar(sonar).search(unit).getViolations();
+  protected Collection<Violation> retrieveDatas(EclipseSonar sonar, ICompilationUnit unit) {
+    return sonar.search(unit).getViolations();
   }
 
   @Override

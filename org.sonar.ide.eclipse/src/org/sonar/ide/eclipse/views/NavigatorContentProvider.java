@@ -18,6 +18,8 @@
 
 package org.sonar.ide.eclipse.views;
 
+import java.util.List;
+
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -29,8 +31,6 @@ import org.sonar.ide.eclipse.views.model.TreeParent;
 import org.sonar.ide.eclipse.views.model.TreeRoot;
 import org.sonar.ide.eclipse.views.model.TreeServer;
 import org.sonar.wsclient.Host;
-
-import java.util.List;
 
 /**
  * @author Jérémie Lagarde
@@ -90,10 +90,8 @@ public class NavigatorContentProvider implements IStructuredContentProvider, ITr
       TreeServer treeServer = new TreeServer(server);
       invisibleRoot.addChild(treeServer);
     }
-
   }
 
-  //
   // public ImageDescriptor getImageDescriptor(Object arg0) {
   // return null;
   // }
@@ -114,18 +112,24 @@ public class NavigatorContentProvider implements IStructuredContentProvider, ITr
   }
 
   public TreeObject find(TreeParent parent, String name) {
-    if (parent == null || name == null)
+    if (parent == null || name == null) {
       return null;
-    TreeObject[] children = parent.getChildren();
-    for (int i = 0; i < children.length; i++) {
-      if (children[i].getResource() != null && name.equals(children[i].getResource().getName() + ".java"))
-        return children[i];
-      if (children[i] instanceof TreeParent) {
-        TreeObject object = find((TreeParent) children[i], name);
-        if (object != null)
-          return object;
-      }
     }
+    /*
+     * TODO
+     * TreeObject[] children = parent.getChildren();
+     * for (int i = 0; i < children.length; i++) {
+     * if (children[i].getResource() != null && name.equals(children[i].getResource().getName() + ".java")) {
+     * return children[i];
+     * }
+     * if (children[i] instanceof TreeParent) {
+     * TreeObject object = find((TreeParent) children[i], name);
+     * if (object != null) {
+     * return object;
+     * }
+     * }
+     * }
+     */
     return null;
   }
 

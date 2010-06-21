@@ -27,18 +27,18 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.quickdiff.IQuickDiffReferenceProvider;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
-import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.Host;
 import org.sonar.wsclient.services.Source;
-import org.sonar.wsclient.services.SourceQuery;
 
 /**
  * @author Jérémie Lagarde
  */
 public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
 
-  private String    id;
+  private String id;
   private IDocument sonarSource;
   private IResource resource;
 
@@ -61,9 +61,7 @@ public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
     }
     if (resource != null) {
       final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(resource);
-      final SourceQuery sourceQuery = new SourceQuery(resourceKey);
-      final Sonar sonar = getSonar(resource.getProject());
-      final Source source = sonar.find(sourceQuery);
+      final Source source = EclipseSonar.getInstance(resource.getProject()).search(resourceKey).getCode();
       // TODO : do it in Source object : Source.toString()
       // sonarSource = new Document(source.toString());
       final StringBuilder stringBuilder = new StringBuilder();
@@ -87,10 +85,9 @@ public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
     return resource != null;
   }
 
-  protected Sonar getSonar(final IProject project) {
+  protected Host getSonarHost(final IProject project) {
     final ProjectProperties properties = ProjectProperties.getInstance(project);
-    final Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
-    return sonar;
+    return SonarPlugin.getServerManager().createServer(properties.getUrl());
   }
 
 }

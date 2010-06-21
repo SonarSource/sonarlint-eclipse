@@ -18,16 +18,14 @@
 
 package org.sonar.ide.eclipse.views.model;
 
+import java.util.List;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.progress.IDeferredWorkbenchAdapter;
 import org.eclipse.ui.progress.IElementCollector;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.wsclient.Host;
-import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.services.ResourceQuery;
-
-import java.util.List;
 
 /**
  * @author Jérémie Lagarde
@@ -44,19 +42,8 @@ public class TreeRoot extends TreeParent implements IDeferredWorkbenchAdapter {
   }
 
   @Override
-  public Sonar getServer() {
-    return null;
-  }
-
-  @Override
-  protected ResourceQuery createResourceQuery() {
-    return null;
-  }
-
-  @Override
-  public void fetchDeferredChildren(Object object,
-                                    IElementCollector collector, IProgressMonitor monitor) {
-    if (!(object instanceof TreeRoot)) {
+  public void fetchDeferredChildren(Object object, IElementCollector collector, IProgressMonitor monitor) {
+    if ( !(object instanceof TreeRoot)) {
       return;
     }
     TreeRoot node = (TreeRoot) object;
@@ -73,6 +60,5 @@ public class TreeRoot extends TreeParent implements IDeferredWorkbenchAdapter {
   public String getRemoteURL() {
     return null;
   }
-
 
 }

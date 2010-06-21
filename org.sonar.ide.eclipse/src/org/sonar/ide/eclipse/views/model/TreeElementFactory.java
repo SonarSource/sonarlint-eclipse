@@ -18,6 +18,7 @@
 
 package org.sonar.ide.eclipse.views.model;
 
+import org.sonar.ide.api.SourceCode;
 import org.sonar.wsclient.services.Resource;
 
 /**
@@ -28,7 +29,8 @@ public final class TreeElementFactory {
   public enum SonarResourceScope {
     PRJ, // project/module
     DIR, // directory (like Java package)
-    FIL  // file
+    FIL
+    // file
   }
 
   public enum SonarResourceQualifier {
@@ -44,19 +46,30 @@ public final class TreeElementFactory {
   private TreeElementFactory() {
   }
 
+  public static TreeObject create(SourceCode sourceCode) {
+    // TODO
+    return new TreeParent(sourceCode) {
+    };
+  }
+
+  /**
+   * @deprecated don't use sonar-ws-client directly
+   */
+  @Deprecated
   public static TreeObject create(Resource resource) {
-    if (resource == null)
+    if (resource == null) {
       return null;
-    switch (SonarResourceScope.valueOf(resource.getScope())) {
-      case PRJ:
-        return new TreeProject(resource);
-      case DIR:
-        return new TreeDirectory(resource);
-      case FIL:
-        return new TreeFile(resource);
-      default:
-        break;
     }
+    // switch (SonarResourceScope.valueOf(resource.getScope())) {
+    // case PRJ:
+    // return new TreeProject(resource);
+    // case DIR:
+    // return new TreeDirectory(resource);
+    // case FIL:
+    // return new TreeFile(resource);
+    // default:
+    // break;
+    // }
     return null;
   }
 

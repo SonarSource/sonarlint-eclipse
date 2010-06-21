@@ -43,12 +43,9 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
-import org.sonar.ide.eclipse.EclipseSonar;
-import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.ide.shared.measures.MeasureData;
-import org.sonar.wsclient.Sonar;
 
 /**
  * @author Evgeny Mandrikov
@@ -159,9 +156,7 @@ public class MeasuresView extends ViewPart {
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Some nice progress message here ...", 100);
         // execute the task ...
-        ProjectProperties properties = ProjectProperties.getInstance(project);
-        Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
-        final List<MeasureData> measures = new EclipseSonar(sonar).search(resourceKey).getMeasures();
+        final List<MeasureData> measures = EclipseSonar.getInstance(project).search(resourceKey).getMeasures();
         Display.getDefault().asyncExec(new Runnable() {
           public void run() {
             viewer.setInput(measures);

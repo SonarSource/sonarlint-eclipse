@@ -18,23 +18,22 @@
 
 package org.sonar.ide.eclipse.views.model;
 
-import org.sonar.ide.eclipse.SonarPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.ui.progress.IElementCollector;
+import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.wsclient.Host;
-import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.services.ResourceQuery;
 
 /**
  * @author Jérémie Lagarde
  */
 public class TreeServer extends TreeParent {
 
-  private final Sonar server;
   private final Host host;
 
   public TreeServer(Host host) {
     super(null);
     this.host = host;
-    this.server = SonarPlugin.getServerManager().getSonar(host.getHost());
   }
 
   @Override
@@ -42,26 +41,24 @@ public class TreeServer extends TreeParent {
     return host.getHost();
   }
 
-
   @Override
-  public Sonar getServer() {
-    return server;
-  }
-
-
-  @Override
-  protected String getRemoteRootURL() {
+  public String getRemoteURL() {
     return host.getHost();
   }
 
-
   @Override
-  protected ResourceQuery createResourceQuery() {
-    return new ResourceQuery();
+  public void fetchDeferredChildren(Object object, IElementCollector collector, IProgressMonitor monitor) {
+    if ( !(object instanceof TreeServer)) {
+      return;
+    }
+    for (SourceCode child : new EclipseSonar(host).getProjects()) {
+      TreeObject treeObject = new TreeProject(child);
+      addChild(treeObject);
+      // node.addChild(treeObject);
+      collector.add(treeObject, monitor);
+      monitor.worked(1);
+    }
+    monitor.done();
   }
 
-  @Override
-  public String getRemoteURL() {
-    return getRemoteRootURL();
-  }
 }

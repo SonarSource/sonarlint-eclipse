@@ -39,8 +39,7 @@ public class TreePropertyProvider implements IPropertySource {
   }
 
   public IPropertyDescriptor[] getPropertyDescriptors() {
-    return new IPropertyDescriptor[]{
-        new TextPropertyDescriptor("id", Messages.getString("prop.resource.id")), //$NON-NLS-1$ //$NON-NLS-2$
+    return new IPropertyDescriptor[] { new TextPropertyDescriptor("id", Messages.getString("prop.resource.id")), //$NON-NLS-1$ //$NON-NLS-2$
         new TextPropertyDescriptor("key", Messages.getString("prop.resource.key")), //$NON-NLS-1$ //$NON-NLS-2$
         new TextPropertyDescriptor("language", Messages.getString("prop.resource.language")), //$NON-NLS-1$ //$NON-NLS-2$
         new TextPropertyDescriptor("longname", Messages.getString("prop.resource.longname")), //$NON-NLS-1$ //$NON-NLS-2$
@@ -52,33 +51,33 @@ public class TreePropertyProvider implements IPropertySource {
   }
 
   public Object getPropertyValue(Object id) {
-    if (node == null || node.getResource() == null)
+    if (node == null || node.getSourceCode() == null) {
       return "";
-    if (id.equals("id")) { //$NON-NLS-1$
-      return node.getResource().getId();
     }
-    if (id.equals("key")) { //$NON-NLS-1$
-      return node.getResource().getKey();
-    }
-    if (id.equals("language")) { //$NON-NLS-1$
-      return node.getResource().getLanguage();
-    }
-    if (id.equals("longname")) { //$NON-NLS-1$
-      return node.getResource().getLongName();
-    }
-    if (id.equals("name")) { //$NON-NLS-1$
-      return node.getResource().getName();
-    }
-    if (id.equals("qualifier")) { //$NON-NLS-1$
-      return node.getResource().getQualifier();
-    }
-    if (id.equals("scope")) { //$NON-NLS-1$
-      return node.getResource().getScope();
-    }
-    if (id.equals("version")) { //$NON-NLS-1$
-      return node.getVersion();
-    }
-
+    //    if (id.equals("id")) { //$NON-NLS-1$
+    // return node.getResource().getId();
+    // }
+    //    if (id.equals("key")) { //$NON-NLS-1$
+    // return node.getResource().getKey();
+    // }
+    //    if (id.equals("language")) { //$NON-NLS-1$
+    // return node.getResource().getLanguage();
+    // }
+    //    if (id.equals("longname")) { //$NON-NLS-1$
+    // return node.getResource().getLongName();
+    // }
+    //    if (id.equals("name")) { //$NON-NLS-1$
+    // return node.getResource().getName();
+    // }
+    //    if (id.equals("qualifier")) { //$NON-NLS-1$
+    // return node.getResource().getQualifier();
+    // }
+    //    if (id.equals("scope")) { //$NON-NLS-1$
+    // return node.getResource().getScope();
+    // }
+    //    if (id.equals("version")) { //$NON-NLS-1$
+    // return node.getVersion();
+    // }
     return ""; //$NON-NLS-1$
   }
 

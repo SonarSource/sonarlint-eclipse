@@ -20,7 +20,6 @@ package org.sonar.ide.eclipse.jobs;
 
 import java.util.Collection;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -33,12 +32,10 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.sonar.ide.eclipse.EclipseSonar;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.ide.shared.coverage.CoverageLine;
-import org.sonar.wsclient.Sonar;
 
 /**
  * This class load code coverage in background.
@@ -63,9 +60,9 @@ public class RefreshCoverageJob extends Job {
       final IDocument doc = getDocument();
       final IAnnotationModel model = targetEditor.getDocumentProvider().getAnnotationModel(targetEditor.getEditorInput());
       final IResource resource = (IResource) targetEditor.getEditorInput().getAdapter(IResource.class);
-      final Sonar sonar = getSonar(resource.getProject());
       final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(resource);
-      final Collection<CoverageLine> coverageLines = new EclipseSonar(sonar).search(resourceKey).getCoverage().getCoverageLines();
+      final Collection<CoverageLine> coverageLines = EclipseSonar.getInstance(resource.getProject()).search(resourceKey).getCoverage()
+          .getCoverageLines();
 
       for (final CoverageLine coverage : coverageLines) {
         final String hits = coverage.getHits();
@@ -81,13 +78,13 @@ public class RefreshCoverageJob extends Job {
           if (lineIsCovered) {
             if (branchIsCovered) {
               model
-              .addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)), position);
+                  .addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)), position);
             } else if (hasBranchCoverage) {
               model.addAnnotation(new Annotation("org.sonar.ide.eclipse.partialCoverageAnnotationType", false, getMessage(coverage)),
                   position);
             } else {
               model
-              .addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)), position);
+                  .addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)), position);
             }
           } else if (hasLineCoverage) {
             model.addAnnotation(new Annotation("org.sonar.ide.eclipse.noCoverageAnnotationType", false, getMessage(coverage)), position);
@@ -104,12 +101,6 @@ public class RefreshCoverageJob extends Job {
   protected final IDocument getDocument() {
     final IDocumentProvider provider = targetEditor.getDocumentProvider();
     return provider.getDocument(targetEditor.getEditorInput());
-  }
-
-  protected Sonar getSonar(final IProject project) {
-    final ProjectProperties properties = ProjectProperties.getInstance(project);
-    final Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
-    return sonar;
   }
 
   protected String getMessage(final CoverageLine coverage) {

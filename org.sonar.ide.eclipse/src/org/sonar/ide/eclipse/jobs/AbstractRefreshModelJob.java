@@ -26,7 +26,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
@@ -38,8 +37,7 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
-import org.sonar.wsclient.Sonar;
+import org.sonar.ide.eclipse.internal.EclipseSonar;
 
 /**
  * @author Jérémie Lagarde
@@ -50,7 +48,6 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
   private final String markerId;
   private IProgressMonitor monitor;
   private IStatus status;
-  private final Map<IProject, Sonar> sonars = new HashMap<IProject, Sonar>();
 
   public AbstractRefreshModelJob(final List<IResource> resources, final String markerId) {
     super("Retrieve sonar " + markerId);
@@ -96,17 +93,16 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
     return true;
   }
 
-  protected abstract Collection<M> retrieveDatas(final Sonar sonar, final ICompilationUnit unit);
+  protected abstract Collection<M> retrieveDatas(EclipseSonar sonar, ICompilationUnit unit);
 
   private void retrieveMarkers(final ICompilationUnit unit, final IProgressMonitor monitor) throws CoreException {
     if (unit == null || !unit.exists() || monitor.isCanceled()) {
       return;
     }
-    final Sonar sonar = getSonar(unit.getResource().getProject());
     try {
       // TODO put it in messages.properties
       monitor.beginTask("Retrieve sonar informations for " + unit.getElementName(), 1);
-      final Collection<M> datas = retrieveDatas(sonar, unit);
+      final Collection<M> datas = retrieveDatas(EclipseSonar.getInstance(unit.getResource().getProject()), unit);
       for (final M data : datas) {
         // create a marker for the actual resource
         creatMarker(unit, data);
@@ -164,16 +160,6 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
 
   protected Map<String, Object> getExtraInfos(final M data) {
     return null;
-  }
-
-  protected Sonar getSonar(final IProject project) {
-    if (sonars.containsKey(project)) {
-      return sonars.get(project);
-    }
-    final ProjectProperties properties = ProjectProperties.getInstance(project);
-    final Sonar sonar = SonarPlugin.getServerManager().getSonar(properties.getUrl());
-    sonars.put(project, sonar);
-    return sonar;
   }
 
   /**
