@@ -132,6 +132,7 @@
               <arch>x86_64</arch>
             </environment>
             <!-- TODO see SONARIDE-82 -->
+            <!-- doesn't work with e34 target platform
             <environment>
               <os>macosx</os>
               <ws>carbon</ws>
@@ -147,6 +148,7 @@
               <ws>cocoa</ws>
               <arch>x86_64</arch>
             </environment>
+            -->
           </environments>
         </configuration>
       </plugin>
