@@ -62,7 +62,7 @@ public class RefreshCoverageJob extends Job {
       final IResource resource = (IResource) targetEditor.getEditorInput().getAdapter(IResource.class);
       final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(resource);
       final Collection<CoverageLine> coverageLines = EclipseSonar.getInstance(resource.getProject()).search(resourceKey).getCoverage()
-          .getCoverageLines();
+      .getCoverageLines();
 
       for (final CoverageLine coverage : coverageLines) {
         final String hits = coverage.getHits();
@@ -74,17 +74,20 @@ public class RefreshCoverageJob extends Job {
         try {
           final IRegion region = doc.getLineInformation(coverage.getLine() - 1);
           final Position position = new Position(region.getOffset(), region.getLength());
+          final Position positionFull = new Position(region.getOffset(), 1);
 
           if (lineIsCovered) {
             if (branchIsCovered) {
               model
-                  .addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)), position);
+.addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)),
+                  positionFull);
             } else if (hasBranchCoverage) {
               model.addAnnotation(new Annotation("org.sonar.ide.eclipse.partialCoverageAnnotationType", false, getMessage(coverage)),
                   position);
             } else {
               model
-                  .addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)), position);
+.addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)),
+                  positionFull);
             }
           } else if (hasLineCoverage) {
             model.addAnnotation(new Annotation("org.sonar.ide.eclipse.noCoverageAnnotationType", false, getMessage(coverage)), position);
