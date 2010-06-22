@@ -18,7 +18,10 @@
 
 package org.sonar.ide.eclipse.views;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
@@ -30,14 +33,17 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
@@ -54,28 +60,64 @@ public class MeasuresView extends ViewPart {
 
   public static final String ID = "org.sonar.ide.eclipse.views.MeasuresView";
 
-  private TableViewer viewer;
-
-  private void createColumns(final TableViewer viewer) {
-    final int[] bounds = { 100, 100, 100 };
-    for (int i = 0; i < MeasuresLabelProvider.COLUMNS.length; i++) {
-      final TableViewerColumn column = new TableViewerColumn(viewer, SWT.NONE);
-      column.getColumn().setText(MeasuresLabelProvider.COLUMNS[i]);
-      column.getColumn().setWidth(bounds[i]);
-      column.getColumn().setResizable(true);
-      column.getColumn().setMoveable(true);
-    }
-    final Table table = viewer.getTable();
-    table.setHeaderVisible(true);
-    table.setLinesVisible(true);
-  }
+  private TreeViewer viewer;
 
   @Override
   public void createPartControl(Composite parent) {
-    viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
-    createColumns(viewer);
-    viewer.setContentProvider(new MeasuresContentProvider());
+    Tree tree = new Tree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+    tree.setHeaderVisible(true);
+    tree.setLinesVisible(true);
+    TreeColumn column1 = new TreeColumn(tree, SWT.LEFT);
+    column1.setText("Name");
+    column1.setWidth(200);
+    TreeColumn column2 = new TreeColumn(tree, SWT.LEFT);
+    column2.setText("Value");
+    column2.setWidth(100);
+    viewer = new TreeViewer(tree);
+    viewer.setContentProvider(new MapContentProvider());
     viewer.setLabelProvider(new MeasuresLabelProvider());
+  }
+
+  class MeasuresLabelProvider implements ITableLabelProvider {
+
+    public Image getColumnImage(Object element, int columnIndex) {
+      return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public String getColumnText(Object element, int columnIndex) {
+      if (element instanceof Map.Entry) {
+        if (columnIndex > 0) {
+          return "";
+        }
+        return ((Map.Entry) element).getKey().toString();
+      }
+      if (element instanceof MeasureData) {
+        switch (columnIndex) {
+          case 0:
+            return ((MeasureData) element).getName();
+          case 1:
+            return ((MeasureData) element).getValue();
+          default:
+            return "";
+        }
+      }
+      return "";
+    }
+
+    public void addListener(ILabelProviderListener listener) {
+    }
+
+    public void dispose() {
+    }
+
+    public boolean isLabelProperty(Object element, String property) {
+      return false;
+    }
+
+    public void removeListener(ILabelProviderListener listener) {
+    }
+
   }
 
   @Override
@@ -112,6 +154,7 @@ public class MeasuresView extends ViewPart {
           // no selection
           return;
         }
+        // TODO show measures for project, when project selected
         if (o instanceof IPackageFragment) {
           IPackageFragment packageFragment = (IPackageFragment) o;
           IProject project = packageFragment.getResource().getProject();
@@ -157,9 +200,25 @@ public class MeasuresView extends ViewPart {
         monitor.beginTask("Some nice progress message here ...", 100);
         // execute the task ...
         final List<MeasureData> measures = EclipseSonar.getInstance(project).search(resourceKey).getMeasures();
+        final Map<String, List<MeasureData>> measuresByDomain = new HashMap<String, List<MeasureData>>();
+        for (MeasureData measure : measures) {
+          if (StringUtils.isBlank(measure.getValue())) {
+            continue;
+          }
+          final List<MeasureData> domain;
+          if (measuresByDomain.containsKey(measure.getDomain())) {
+            domain = measuresByDomain.get(measure.getDomain());
+          } else {
+            domain = new ArrayList<MeasureData>();
+            measuresByDomain.put(measure.getDomain(), domain);
+          }
+          domain.add(measure);
+        }
         Display.getDefault().asyncExec(new Runnable() {
           public void run() {
-            viewer.setInput(measures);
+            setContentDescription(resourceKey);
+            viewer.setInput(measuresByDomain);
+            viewer.expandAll();
           }
         });
         monitor.done();
@@ -167,5 +226,4 @@ public class MeasuresView extends ViewPart {
       }
     }.schedule();
   }
-
 }
