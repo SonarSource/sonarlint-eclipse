@@ -27,6 +27,9 @@ public class ViolationRuleNameField extends MarkerField {
 
   @Override
   public String getValue(MarkerItem item) {
+    if (item == null || item.getMarker() == null) {
+      return null;
+    }
     return item.getMarker().getAttribute("rulename", "");
   }
 
