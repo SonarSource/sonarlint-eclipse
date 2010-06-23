@@ -18,9 +18,7 @@
 
 package org.sonar.ide.eclipse.views;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -52,6 +50,12 @@ import org.eclipse.ui.part.ViewPart;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.ide.shared.measures.MeasureData;
+
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 /**
  * @author Evgeny Mandrikov
@@ -197,27 +201,25 @@ public class MeasuresView extends ViewPart {
     new Job("My new job") {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
-        monitor.beginTask("Some nice progress message here ...", 100);
-        // execute the task ...
-        final List<MeasureData> measures = EclipseSonar.getInstance(project).search(resourceKey).getMeasures();
-        final Map<String, List<MeasureData>> measuresByDomain = new HashMap<String, List<MeasureData>>();
-        for (MeasureData measure : measures) {
-          if (StringUtils.isBlank(measure.getValue())) {
-            continue;
+        monitor.beginTask("Some nice progress message here ...", IProgressMonitor.UNKNOWN);
+        Collection<MeasureData> measures = EclipseSonar.getInstance(project).search(resourceKey).getMeasures();
+        // Filter by empty value
+        // TODO Godin: remove when SONAR-1620 would be resolved
+        measures = Collections2.filter(measures, new Predicate<MeasureData>() {
+          public boolean apply(MeasureData measure) {
+            return StringUtils.isNotBlank(measure.getValue());
           }
-          final List<MeasureData> domain;
-          if (measuresByDomain.containsKey(measure.getDomain())) {
-            domain = measuresByDomain.get(measure.getDomain());
-          } else {
-            domain = new ArrayList<MeasureData>();
-            measuresByDomain.put(measure.getDomain(), domain);
+        });
+        // Group by domain
+        final Multimap<String, MeasureData> measuresByDomain = Multimaps.index(measures, new Function<MeasureData, String>() {
+          public String apply(MeasureData measure) {
+            return measure.getDomain();
           }
-          domain.add(measure);
-        }
+        });
         Display.getDefault().asyncExec(new Runnable() {
           public void run() {
             setContentDescription(resourceKey);
-            viewer.setInput(measuresByDomain);
+            viewer.setInput(measuresByDomain.asMap());
             viewer.expandAll();
           }
         });

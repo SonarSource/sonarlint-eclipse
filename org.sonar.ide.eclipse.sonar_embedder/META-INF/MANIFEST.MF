@@ -1,13 +1,15 @@
 Manifest-Version: 1.0
 Export-Package: ch.qos.logback.core.spi,org.sonar.ide.images.tendency,
- ch.qos.logback.classic,org.sonar.ide.ui,org.sonar.ide.shared.coverage
- ,ch.qos.logback.core,ch.qos.logback.core.joran.spi,org.sonar.ide.wscl
- ient,org.slf4j,ch.qos.logback.classic.joran,org.apache.commons.lang,o
- rg.slf4j.impl,org.sonar.ide.shared.violations,org.sonar.wsclient,org.
- sonar.ide.shared.measures,org.sonar.ide.shared,ch.qos.logback.core.jo
- ran,org.sonar.ide.client,org.sonar.ide.images.priority,ch.qos.logback
- .core.util,org.sonar.ide.images,org.sonar.wsclient.services,org.sonar
- .ide.api,org.sonar.ide.shared.duplications
+ com.google.common.base,org.sonar.ide.shared.coverage,ch.qos.logback.c
+ ore,ch.qos.logback.core.joran.spi,org.sonar.ide.wsclient,org.apache.c
+ ommons.lang,org.sonar.ide.shared.violations,org.slf4j.impl,org.sonar.
+ wsclient,ch.qos.logback.core.joran,org.sonar.ide.images.priority,org.
+ sonar.ide.images,org.sonar.ide.shared.duplications,com.google.common.
+ collect,org.sonar.ide.ui,ch.qos.logback.classic,com.google.common.bas
+ e.internal,org.slf4j,ch.qos.logback.classic.joran,org.sonar.ide.share
+ d.measures,org.sonar.ide.shared,org.sonar.ide.client,ch.qos.logback.c
+ ore.util,org.sonar.ide.api,com.google.common.annotations,org.sonar.ws
+ client.services
 Bundle-Vendor: Evgeny Mandrikov
 Bundle-ClassPath: jars/sonar-ide-commons-0.2-SNAPSHOT.jar,jars/slf4j-a
  pi-1.5.11.jar,jars/jcl-over-slf4j-1.5.11.jar,jars/google-collections-

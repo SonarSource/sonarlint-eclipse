@@ -75,6 +75,7 @@
                 org.sonar.wsclient.services,
                 org.slf4j,
                 org.slf4j.impl,
+                com.google.*,
                 org.apache.commons.lang,
                 ch.qos.logback.classic,
                 ch.qos.logback.classic.joran,
