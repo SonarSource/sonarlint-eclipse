@@ -130,13 +130,12 @@ public class SonarPlugin extends AbstractUIPlugin {
 
   @Override
   public void stop(final BundleContext context) throws Exception {
-    plugin = null;
-    super.stop(context);
     if (console != null) {
       console.shutdown();
     }
-
+    plugin = null;
     LoggerFactory.getLogger(SonarPlugin.class).info("Sonar plugin stopped");
+    super.stop(context);
   }
 
   /**

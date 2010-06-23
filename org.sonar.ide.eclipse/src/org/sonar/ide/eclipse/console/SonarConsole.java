@@ -46,15 +46,15 @@ import org.sonar.ide.ui.ISonarConsole;
  */
 public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyChangeListener {
 
-  public static final String    SONAR_CONSOLE_TYPE = "SONAR"; //$NON-NLS-1$
-  private ConsoleDocument       document           = null;
-  private boolean               visible            = false;
-  private boolean               initialized        = false;
+  public static final String SONAR_CONSOLE_TYPE = "SONAR"; //$NON-NLS-1$
+  private ConsoleDocument document = null;
+  private boolean visible = false;
+  private boolean initialized = false;
 
   // created colors for each line type - must be disposed at shutdown
-  private Color                 requestColor;
-  private Color                 responseColor;
-  private Color                 errorColor;
+  private Color requestColor;
+  private Color responseColor;
+  private Color errorColor;
 
   // streams for each command type - each stream has its own color
   private IOConsoleOutputStream requestStream;
@@ -63,8 +63,8 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
 
   // preferences for showing the Sonar console when communication with sonar
   // server is provided
-  private boolean               showOnError;
-  private boolean               showOnMessage;
+  private boolean showOnError;
+  private boolean showOnMessage;
 
   public SonarConsole() {
     super(Messages.getString("console.view.title"), SONAR_CONSOLE_TYPE, SonarPlugin.getImageDescriptor(SonarPlugin.IMG_SONARCONSOLE)); //$NON-NLS-1$
@@ -85,11 +85,10 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
 
   private void initializeStreams() {
     synchronized (document) {
-      if (!initialized) {
+      if ( !initialized) {
         requestStream = newOutputStream();
         responseStream = newOutputStream();
         errorStream = newOutputStream();
-        
         // install colors
         requestColor = createColor(Display.getDefault(), PreferenceConstants.P_CONSOLE_REQUEST_COLOR);
         requestStream.setColor(requestColor);
@@ -97,10 +96,8 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
         responseStream.setColor(responseColor);
         errorColor = createColor(Display.getDefault(), PreferenceConstants.P_CONSOLE_ERROR_COLOR);
         errorStream.setColor(errorColor);
-
         // install font
         setFont(JFaceResources.getFontRegistry().get("pref_console_font"));
-        
         initialized = true;
       }
     }
@@ -111,7 +108,7 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
     if (store.getBoolean(PreferenceConstants.P_CONSOLE_LIMIT_OUTPUT)) {
       setWaterMarks(1000, store.getInt(PreferenceConstants.P_CONSOLE_HIGH_WATER_MARK));
     } else {
-      setWaterMarks(-1, 0);
+      setWaterMarks( -1, 0);
     }
   }
 
@@ -156,7 +153,7 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
 
   private void bringConsoleToFront() {
     IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
-    if (!visible) {
+    if ( !visible) {
       manager.addConsoles(new IConsole[] { this });
     }
     manager.showConsoleView(this);
@@ -183,12 +180,15 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
     // Call super dispose because we want the partitioner to be
     // disconnected.
     super.dispose();
-    if (requestColor != null)
+    if (requestColor != null) {
       requestColor.dispose();
-    if (responseColor != null)
+    }
+    if (responseColor != null) {
       responseColor.dispose();
-    if (errorColor != null)
+    }
+    if (errorColor != null) {
       errorColor.dispose();
+    }
     SonarPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(this);
   }
 
@@ -245,14 +245,14 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
   }
 
   public void logError(String error) {
-    if(showOnError){
+    if (showOnError) {
       bringConsoleToFront();
     }
     appendLine(ConsoleDocument.ERROR, error);
   }
 
   public void logError(String error, Throwable ex) {
-    if(showOnError){
+    if (showOnError) {
       bringConsoleToFront();
     }
     appendLine(ConsoleDocument.ERROR, error);
@@ -262,17 +262,17 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
   }
 
   public void logRequest(String request) {
-    if(showOnMessage){
+    if (showOnMessage) {
       bringConsoleToFront();
     }
-    appendLine(ConsoleDocument.REQUEST,request);
+    appendLine(ConsoleDocument.REQUEST, request);
   }
 
   public void logResponse(String response) {
-    if(showOnMessage){
+    if (showOnMessage) {
       bringConsoleToFront();
     }
-    appendLine(ConsoleDocument.RESPONSE,response);
+    appendLine(ConsoleDocument.RESPONSE, response);
   }
 
 }
