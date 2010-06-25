@@ -31,6 +31,7 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -46,7 +47,10 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.dialogs.FilteredTree;
+import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.part.ViewPart;
+import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.ide.shared.measures.MeasureData;
@@ -68,7 +72,13 @@ public class MeasuresView extends ViewPart {
 
   @Override
   public void createPartControl(Composite parent) {
-    Tree tree = new Tree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+    PatternFilter filter = new PatternFilter();
+    boolean newLook = true; // TODO Godin: true, if the new 3.5 look should be used
+    FilteredTree filteredTree = new FilteredTree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, filter, newLook);
+    viewer = filteredTree.getViewer();
+    viewer.setContentProvider(new MapContentProvider());
+    viewer.setLabelProvider(new MeasuresLabelProvider());
+    Tree tree = viewer.getTree();
     tree.setHeaderVisible(true);
     tree.setLinesVisible(true);
     TreeColumn column1 = new TreeColumn(tree, SWT.LEFT);
@@ -77,12 +87,9 @@ public class MeasuresView extends ViewPart {
     TreeColumn column2 = new TreeColumn(tree, SWT.LEFT);
     column2.setText("Value");
     column2.setWidth(100);
-    viewer = new TreeViewer(tree);
-    viewer.setContentProvider(new MapContentProvider());
-    viewer.setLabelProvider(new MeasuresLabelProvider());
   }
 
-  class MeasuresLabelProvider implements ITableLabelProvider {
+  class MeasuresLabelProvider implements ITableLabelProvider, ILabelProvider {
 
     public Image getColumnImage(Object element, int columnIndex) {
       return null;
@@ -120,6 +127,15 @@ public class MeasuresView extends ViewPart {
     }
 
     public void removeListener(ILabelProviderListener listener) {
+    }
+
+    public Image getImage(Object element) {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    public String getText(Object element) {
+      return getColumnText(element, 0);
     }
 
   }
@@ -202,18 +218,18 @@ public class MeasuresView extends ViewPart {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Some nice progress message here ...", IProgressMonitor.UNKNOWN);
-        Collection<MeasureData> measures = EclipseSonar.getInstance(project).search(resourceKey).getMeasures();
+        Collection<IMeasure> measures = EclipseSonar.getInstance(project).search(resourceKey).getMeasures();
         // Filter by empty value
         // TODO Godin: remove when SONAR-1620 would be resolved
-        measures = Collections2.filter(measures, new Predicate<MeasureData>() {
-          public boolean apply(MeasureData measure) {
+        measures = Collections2.filter(measures, new Predicate<IMeasure>() {
+          public boolean apply(IMeasure measure) {
             return StringUtils.isNotBlank(measure.getValue());
           }
         });
         // Group by domain
-        final Multimap<String, MeasureData> measuresByDomain = Multimaps.index(measures, new Function<MeasureData, String>() {
-          public String apply(MeasureData measure) {
-            return measure.getDomain();
+        final Multimap<String, IMeasure> measuresByDomain = Multimaps.index(measures, new Function<IMeasure, String>() {
+          public String apply(IMeasure measure) {
+            return measure.getMetricDef().getDomain();
           }
         });
         Display.getDefault().asyncExec(new Runnable() {
