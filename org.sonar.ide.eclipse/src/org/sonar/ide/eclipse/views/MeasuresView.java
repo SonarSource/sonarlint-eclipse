@@ -73,8 +73,7 @@ public class MeasuresView extends ViewPart {
   @Override
   public void createPartControl(Composite parent) {
     PatternFilter filter = new PatternFilter();
-    boolean newLook = true; // TODO Godin: true, if the new 3.5 look should be used
-    FilteredTree filteredTree = new FilteredTree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, filter, newLook);
+    FilteredTree filteredTree = new FilteredTree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, filter);
     viewer = filteredTree.getViewer();
     viewer.setContentProvider(new MapContentProvider());
     viewer.setLabelProvider(new MeasuresLabelProvider());
