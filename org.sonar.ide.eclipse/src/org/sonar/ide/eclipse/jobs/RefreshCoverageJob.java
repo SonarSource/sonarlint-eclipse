@@ -20,6 +20,7 @@ package org.sonar.ide.eclipse.jobs;
 
 import java.util.Collection;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -79,14 +80,14 @@ public class RefreshCoverageJob extends Job {
           if (lineIsCovered) {
             if (branchIsCovered) {
               model
-.addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)),
+              .addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)),
                   positionFull);
             } else if (hasBranchCoverage) {
               model.addAnnotation(new Annotation("org.sonar.ide.eclipse.partialCoverageAnnotationType", false, getMessage(coverage)),
                   position);
             } else {
               model
-.addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)),
+              .addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)),
                   positionFull);
             }
           } else if (hasLineCoverage) {
@@ -107,7 +108,15 @@ public class RefreshCoverageJob extends Job {
   }
 
   protected String getMessage(final CoverageLine coverage) {
-    return "Coverage " + coverage.getHits() + ":" + coverage.getBranchHits() != null ? coverage.getBranchHits() : "100%";
+    if ("0".equals(coverage.getHits())) {
+      String hits = StringUtils.leftPad(coverage.getHits(), 2);
+      String branch = StringUtils.leftPad((coverage.getBranchHits() != null ? coverage.getBranchHits() : "    "), 4);
+      return hits + " " + branch;
+    } else {
+      String hits = StringUtils.leftPad(coverage.getHits(), 2);
+      String branch = StringUtils.leftPad((coverage.getBranchHits() != null ? coverage.getBranchHits() : "    "), 4);
+      return hits + " " + branch;
+    }
   }
 
 }
