@@ -175,16 +175,6 @@
               icon="icons/refresh.gif">
         </action>
         <action
-              class="org.sonar.ide.eclipse.actions.RefreshCoverageAction"
-              enablesFor="+"
-              id="org.sonar.ide.eclipse.refreshCoverageAction"
-              label="%sonar.action.refreshcoverage.label"
-              menubarPath="org.sonar.ide.eclipse.sonar/group1"
-              state="true"
-              style="push"
-              icon="icons/refresh.gif">
-        </action>
-        <action
               class="org.sonar.ide.eclipse.actions.OpenInBrowserAction"
               enablesFor="+"
               id="org.sonar.ide.eclipse.openInBrowserAction"
@@ -274,13 +264,13 @@
             isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.fullCoverage.next"
             isGoToNextNavigationTarget="false"
             highlightPreferenceKey="org.sonar.ide.eclipse.fullCoverage.highlight"
-            highlightPreferenceValue="true"
+            highlightPreferenceValue="false"
             textPreferenceKey="org.sonar.ide.eclipse.fullCoverage.text"
             textPreferenceValue="true"
             textStylePreferenceKey="org.sonar.ide.eclipse.fullCoverage.text.style"
             textStylePreferenceValue="BOX"
             colorPreferenceKey="org.sonar.ide.eclipse.fullCoverage.color"
-            colorPreferenceValue="170,255,170"/>
+            colorPreferenceValue="172,233,124"/>
       <specification
             annotationType="org.sonar.ide.eclipse.partialCoverageAnnotationType"
             presentationLayer="0"
@@ -302,7 +292,7 @@
             textStylePreferenceKey="org.sonar.ide.eclipse.partialCoverage.text.style"
             textStylePreferenceValue="BOX"
             colorPreferenceKey="org.sonar.ide.eclipse.partialCoverage.color"
-            colorPreferenceValue="255,255,100"/>
+            colorPreferenceValue="255,246,191"/>
       <specification
             annotationType="org.sonar.ide.eclipse.noCoverageAnnotationType"
             presentationLayer="0"
@@ -324,7 +314,7 @@
             textStylePreferenceKey="org.sonar.ide.eclipse.noCoverage.text.style"
             textStylePreferenceValue="BOX"
             colorPreferenceKey="org.sonar.ide.eclipse.noCoverage.color"
-            colorPreferenceValue="255,170,170"/>
+            colorPreferenceValue="240,200,200"/>
    </extension>
 
   <extension
@@ -474,4 +464,39 @@
      </referenceprovider>
   </extension>
   
+  
+  <!-- Coverage Ruler -->
+  <extension
+        point="org.eclipse.ui.workbench.texteditor.rulerColumns">
+     <column
+           class="org.sonar.ide.eclipse.internal.ui.texteditor.coverage.CoverageColumn"
+            name="Show coverage (sonar)"
+           enabled="true"
+           global="true"
+           id="org.sonar.ide.eclipse.coverageRuler"
+           includeInMenu="false">
+         <placement gravity="1.0">
+            <after id="org.eclipse.ui.editors.columns.linenumbers"/>
+         </placement>
+         <targetClass
+               class="org.eclipse.ui.texteditor.AbstractDecoratedTextEditor">
+         </targetClass>      
+     </column>
+  </extension>
+  
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <viewerContribution
+            targetID="#CompilationUnitRulerContext"
+            id="org.eclipse.ui.texteditor.ruler.context.actions">
+         <action
+               label="Show sonar coverage"
+               class="org.sonar.ide.eclipse.internal.ui.texteditor.coverage.CoverageToggleAction"
+               menubarPath="additions"
+               state="false"
+               style="toggle"
+               id="org.sonar.ide.eclipse.coverageToggleAction">
+         </action>
+      </viewerContribution>
+   </extension>
 </plugin>
