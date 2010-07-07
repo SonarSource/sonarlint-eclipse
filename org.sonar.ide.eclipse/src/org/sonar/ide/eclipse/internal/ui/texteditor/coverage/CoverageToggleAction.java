@@ -44,6 +44,7 @@ public class CoverageToggleAction implements IEditorActionDelegate, IUpdate {
     if (targetEditor instanceof ITextEditor) {
       editor = (ITextEditor) targetEditor;
       this.action = action;
+      update();
     } else {
       editor = null;
     }
