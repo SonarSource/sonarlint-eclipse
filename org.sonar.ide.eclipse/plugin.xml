@@ -479,7 +479,7 @@
             <after id="org.eclipse.ui.editors.columns.linenumbers"/>
          </placement>
          <targetClass
-               class="org.eclipse.ui.texteditor.AbstractDecoratedTextEditor">
+               class="org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor">
          </targetClass>      
      </column>
   </extension>
