@@ -104,7 +104,7 @@ public class RefreshCoverageJob extends Job {
 
   protected final IDocument getDocument() {
     final IDocumentProvider provider = targetEditor.getDocumentProvider();
-    return provider.getDocument(targetEditor.getEditorInput());
+    return provider.getDocument(targetEditor.getEditorInput()); // FIXME: NPE
   }
 
   protected String getMessage(final CoverageLine coverage) {
