@@ -45,9 +45,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
@@ -69,6 +71,7 @@ public class MeasuresView extends ViewPart {
   public static final String ID = "org.sonar.ide.eclipse.views.MeasuresView";
 
   private TreeViewer viewer;
+  private boolean visible;
 
   @Override
   public void createPartControl(Composite parent) {
@@ -155,12 +158,45 @@ public class MeasuresView extends ViewPart {
     public String getText(Object element) {
       return getColumnText(element, 0);
     }
-
   }
+
+  private IPartListener2 partListener = new IPartListener2() {
+
+    public void partActivated(IWorkbenchPartReference partRef) {
+    }
+
+    public void partBroughtToTop(IWorkbenchPartReference partRef) {
+    }
+
+    public void partClosed(IWorkbenchPartReference partRef) {
+    }
+
+    public void partDeactivated(IWorkbenchPartReference partRef) {
+    }
+
+    public void partHidden(IWorkbenchPartReference partRef) {
+      if (partRef.getPart(true) == MeasuresView.this) {
+        visible = false;
+      }
+    }
+
+    public void partInputChanged(IWorkbenchPartReference partRef) {
+    }
+
+    public void partOpened(IWorkbenchPartReference partRef) {
+    }
+
+    public void partVisible(IWorkbenchPartReference partRef) {
+      if (partRef.getPart(true) == MeasuresView.this) {
+        visible = true;
+      }
+    }
+  };
 
   @Override
   public void init(IViewSite site) throws PartInitException {
     site.getPage().addSelectionListener(JavaUI.ID_PACKAGES, selectionListener);
+    site.getPage().addPartListener(partListener);
     super.init(site);
   }
 
@@ -168,13 +204,17 @@ public class MeasuresView extends ViewPart {
   public void dispose() {
     super.dispose();
     getSite().getPage().removeSelectionListener(JavaUI.ID_PACKAGES, selectionListener);
+    getSite().getPage().removePartListener(partListener);
   }
 
   private ISelection currentSelection;
 
   ISelectionListener selectionListener = new ISelectionListener() {
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-      // TODO don't handle selections, if this view inactive, eg. when another perspective selected
+      // Don't handle selections, if this view inactive, eg. when another perspective selected
+      if ( !visible) {
+        return;
+      }
       // TODO comment me
       if (selection == null || selection.equals(currentSelection)) {
         return;
@@ -236,6 +276,12 @@ public class MeasuresView extends ViewPart {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Some nice progress message here ...", IProgressMonitor.UNKNOWN);
+        Display.getDefault().asyncExec(new Runnable() {
+          public void run() {
+            setContentDescription("");
+            viewer.setInput(null);
+          }
+        });
         Collection<IMeasure> measures = EclipseSonar.getInstance(project).search(resourceKey).getMeasures();
         // Group by domain
         final Multimap<String, IMeasure> measuresByDomain = Multimaps.index(measures, new Function<IMeasure, String>() {
@@ -247,7 +293,6 @@ public class MeasuresView extends ViewPart {
           public void run() {
             setContentDescription(resourceKey);
             viewer.setInput(measuresByDomain.asMap());
-            viewer.expandAll();
           }
         });
         monitor.done();
