@@ -54,6 +54,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
@@ -271,11 +272,10 @@ public class MeasuresView extends ViewPart {
   }
 
   private void updateMeasures(final IProject project, final String resourceKey) {
-    // TODO Godin: should be refactored
-    new Job("My new job") {
+    Job job = new Job("Loading measures") {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
-        monitor.beginTask("Some nice progress message here ...", IProgressMonitor.UNKNOWN);
+        monitor.beginTask("Loading measures for " + resourceKey, IProgressMonitor.UNKNOWN);
         Display.getDefault().asyncExec(new Runnable() {
           public void run() {
             setContentDescription("");
@@ -298,6 +298,8 @@ public class MeasuresView extends ViewPart {
         monitor.done();
         return Status.OK_STATUS;
       }
-    }.schedule();
+    };
+    IWorkbenchSiteProgressService siteService = (IWorkbenchSiteProgressService) getSite().getAdapter(IWorkbenchSiteProgressService.class);
+    siteService.schedule(job);
   }
 }
