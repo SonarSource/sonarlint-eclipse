@@ -19,6 +19,7 @@
 package org.sonar.ide.eclipse.views;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -37,6 +38,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -70,8 +72,28 @@ public class MeasuresView extends ViewPart {
 
   @Override
   public void createPartControl(Composite parent) {
-    PatternFilter filter = new PatternFilter();
-    FilteredTree filteredTree = new FilteredTree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, filter);
+    PatternFilter filter = new PatternFilter() {
+      /**
+       * This is a workaround to show measures, which belongs to specified category.
+       */
+      @SuppressWarnings("unchecked")
+      @Override
+      protected boolean isParentMatch(Viewer viewer, Object element) {
+        Map<String, List<MeasureData>> map = (Map<String, List<MeasureData>>) viewer.getInput();
+        if (element instanceof MeasureData) {
+          MeasureData measure = (MeasureData) element;
+          String domain = measure.getDomain();
+          for (Map.Entry<String, List<MeasureData>> e : map.entrySet()) {
+            if (domain.equals(e.getKey())) {
+              return isLeafMatch(viewer, e);
+            }
+          }
+        }
+        return super.isParentMatch(viewer, element);
+      }
+    };
+    // TODO incompatible with Eclipse 3.4
+    FilteredTree filteredTree = new FilteredTree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
     viewer = filteredTree.getViewer();
     viewer.setContentProvider(new MapContentProvider());
     viewer.setLabelProvider(new MeasuresLabelProvider());
@@ -127,7 +149,6 @@ public class MeasuresView extends ViewPart {
     }
 
     public Image getImage(Object element) {
-      // TODO Auto-generated method stub
       return null;
     }
 
