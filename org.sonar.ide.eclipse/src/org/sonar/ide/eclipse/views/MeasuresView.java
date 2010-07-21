@@ -293,6 +293,7 @@ public class MeasuresView extends ViewPart {
           public void run() {
             setContentDescription(resourceKey);
             viewer.setInput(measuresByDomain.asMap());
+            viewer.expandAll();
           }
         });
         monitor.done();
