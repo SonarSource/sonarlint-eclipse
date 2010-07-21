@@ -56,8 +56,6 @@ import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.ide.shared.measures.MeasureData;
 
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -218,13 +216,6 @@ public class MeasuresView extends ViewPart {
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Some nice progress message here ...", IProgressMonitor.UNKNOWN);
         Collection<IMeasure> measures = EclipseSonar.getInstance(project).search(resourceKey).getMeasures();
-        // Filter by empty value
-        // TODO Godin: remove when SONAR-1620 would be resolved
-        measures = Collections2.filter(measures, new Predicate<IMeasure>() {
-          public boolean apply(IMeasure measure) {
-            return StringUtils.isNotBlank(measure.getValue());
-          }
-        });
         // Group by domain
         final Multimap<String, IMeasure> measuresByDomain = Multimaps.index(measures, new Function<IMeasure, String>() {
           public String apply(IMeasure measure) {
