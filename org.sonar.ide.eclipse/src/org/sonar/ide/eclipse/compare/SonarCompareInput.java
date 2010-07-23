@@ -34,7 +34,7 @@ import org.sonar.wsclient.services.Source;
 public class SonarCompareInput extends CompareEditorInput {
 
   protected IResource resource;
-  protected Source    source;
+  protected Source source;
 
   public SonarCompareInput(final IResource resource, final Source source) {
     super(new CompareConfiguration());
@@ -54,7 +54,7 @@ public class SonarCompareInput extends CompareEditorInput {
     final ITypedElement right = new SonarCompareNode(resource.getName(), stringBuilder.toString());
     final CompareConfiguration config = getCompareConfiguration();
     config.setLeftLabel(left.getName());
-    config.setLeftEditable(false);
+    config.setLeftEditable(true);
     config.setRightLabel(right.getName() + " (sonar server)");
     config.setRightEditable(false);
     config.setRightImage(SonarPlugin.getImageDescriptor(SonarPlugin.IMG_SONAR16).createImage());
