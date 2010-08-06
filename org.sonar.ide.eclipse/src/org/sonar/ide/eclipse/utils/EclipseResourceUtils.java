@@ -67,8 +67,9 @@ public class EclipseResourceUtils extends AbstractResourceUtils<IResource> {
     try {
       if (isJavaFile(file)) {
         IJavaElement element = JavaCore.create(file);
-        if (!(element instanceof ICompilationUnit))
+        if ( !(element instanceof ICompilationUnit)) {
           return "";
+        }
         ICompilationUnit compilationUnit = (ICompilationUnit) JavaCore.create(file);
         IPackageDeclaration[] packages = compilationUnit.getPackageDeclarations();
         StringBuilder name = null;
@@ -79,8 +80,9 @@ public class EclipseResourceUtils extends AbstractResourceUtils<IResource> {
             name.append(".").append(packageDeclaration.getElementName());
           }
         }
-        if(name == null)
+        if (name == null) {
           return "";
+        }
         return name.toString();
       }
     } catch (JavaModelException e) {
@@ -93,10 +95,6 @@ public class EclipseResourceUtils extends AbstractResourceUtils<IResource> {
   @Override
   public String getProjectKey(IResource file) {
     ProjectProperties properties = ProjectProperties.getInstance(file);
-    return getProjectKey(
-        properties.getGroupId(),
-        properties.getArtifactId(),
-        properties.getBranch()
-    );
+    return getProjectKey(properties.getGroupId(), properties.getArtifactId(), properties.getBranch());
   }
 }

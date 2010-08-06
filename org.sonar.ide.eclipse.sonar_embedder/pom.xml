@@ -26,6 +26,11 @@
       <!-- TODO Godin: remove version from here -->
       <version>0.9.18</version>
     </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>1.4</version>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -77,6 +82,7 @@
                 org.slf4j.impl,
                 com.google.*,
                 org.apache.commons.lang,
+                org.apache.commons.io,
                 ch.qos.logback.classic,
                 ch.qos.logback.classic.joran,
                 ch.qos.logback.core,

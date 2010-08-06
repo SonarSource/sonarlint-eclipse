@@ -1,9 +1,14 @@
 package org.sonar.ide.eclipse.internal;
 
+import java.io.IOException;
+
+import org.apache.commons.io.IOUtils;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.JavaModelException;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
@@ -16,8 +21,6 @@ import org.sonar.wsclient.Host;
  * Used for migration to new API.
  * 
  * @author Evgeny Mandrikov
- * @see #search(ICompilationUnit)
- * @see #search(String, ICompilationUnit)
  */
 public final class EclipseSonar extends RemoteSonar {
 
@@ -35,25 +38,43 @@ public final class EclipseSonar extends RemoteSonar {
   }
 
   /**
-   * For Eclipse use {@link #search(ICompilationUnit)} or {@link #search(String, ICompilationUnit)} instead of it. {@inheritDoc}
+   * For Eclipse use {@link #search(IResource)} instead of it. {@inheritDoc}
    */
   @Override
+  @Deprecated
   public SourceCode search(String key) {
     return super.search(key);
   }
 
-  private SourceCode search(String key, ICompilationUnit unit) {
-    SourceCode code = search(key);
-    try {
-      code.setLocalContent(unit.getSource());
-    } catch (JavaModelException e) {
-      SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
-    }
-    return code;
+  private static void displayError(Throwable e) {
+    SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
   }
 
-  public SourceCode search(ICompilationUnit unit) {
-    return search(EclipseResourceUtils.getInstance().getFileKey(unit.getResource()), unit);
+  /**
+   * @return null, if not found
+   */
+  public SourceCode search(IResource resource) {
+    if (resource instanceof IProject) {
+      String key = EclipseResourceUtils.getInstance().getProjectKey(resource);
+      return search(key);
+    } else if (resource instanceof IFolder) {
+      // TODO hangle packages
+    } else if (resource instanceof IFile) {
+      String key = EclipseResourceUtils.getInstance().getFileKey(resource);
+      SourceCode code = search(key);
+      IFile file = (IFile) resource;
+      try {
+        String content = IOUtils.toString(file.getContents(), file.getCharset());
+        code.setLocalContent(content);
+      } catch (CoreException e) {
+        displayError(e);
+      } catch (IOException e) {
+        displayError(e);
+      }
+      return code;
+    }
+    // TODO
+    return null;
   }
 
 }

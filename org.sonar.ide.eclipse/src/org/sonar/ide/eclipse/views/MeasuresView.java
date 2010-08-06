@@ -22,15 +22,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelection;
@@ -51,9 +51,9 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.IMeasure;
+import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.AbstractPackageExplorerListener;
-import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.ide.shared.measures.MeasureData;
 
 import com.google.common.base.Function;
@@ -179,35 +179,23 @@ public class MeasuresView extends ViewPart {
           // no selection
           return;
         }
-        // TODO show measures for project, when project selected
-        if (o instanceof IPackageFragment) {
+        // TODO SONARIDE-101
+        if (o instanceof IJavaProject) {
+          IJavaProject javaProject = (IJavaProject) o;
+          IProject project = javaProject.getProject();
+          updateMeasures(project, javaProject.getResource());
+        } else if (o instanceof IPackageFragment) {
           IPackageFragment packageFragment = (IPackageFragment) o;
           IProject project = packageFragment.getResource().getProject();
-          updateMeasures(project, getResourceKey(project, packageFragment.getElementName()));
+          updateMeasures(project, packageFragment.getResource());
         } else if (o instanceof ICompilationUnit) {
           ICompilationUnit cu = (ICompilationUnit) o;
-          try {
-            IProject project = cu.getResource().getProject();
-            final String packageName;
-            if (cu.getPackageDeclarations().length == 0) {
-              packageName = "[default]";
-            } else {
-              packageName = cu.getPackageDeclarations()[0].getElementName();
-            }
-            String className = StringUtils.removeEnd(cu.getElementName(), ".java");
-            updateMeasures(project, getResourceKey(project, packageName + "." + className));
-          } catch (JavaModelException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
+          IProject project = cu.getResource().getProject();
+          updateMeasures(project, cu.getResource());
         }
       }
     }
   };
-
-  private String getResourceKey(IProject project, String s) {
-    return EclipseResourceUtils.getInstance().getProjectKey(project) + ":" + s;
-  }
 
   /**
    * Passing the focus request to the viewer's control.
@@ -217,31 +205,40 @@ public class MeasuresView extends ViewPart {
     viewer.getControl().setFocus();
   }
 
-  private void updateMeasures(final IProject project, final String resourceKey) {
+  private void updateMeasures(final IProject project, final IResource resource) {
     Job job = new Job("Loading measures") {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
-        monitor.beginTask("Loading measures for " + resourceKey, IProgressMonitor.UNKNOWN);
+        monitor.beginTask("Loading measures for " + resource.toString(), IProgressMonitor.UNKNOWN);
         Display.getDefault().asyncExec(new Runnable() {
           public void run() {
             setContentDescription("");
             viewer.setInput(null);
           }
         });
-        Collection<IMeasure> measures = EclipseSonar.getInstance(project).search(resourceKey).getMeasures();
-        // Group by domain
-        final Multimap<String, IMeasure> measuresByDomain = Multimaps.index(measures, new Function<IMeasure, String>() {
-          public String apply(IMeasure measure) {
-            return measure.getMetricDef().getDomain();
-          }
-        });
-        Display.getDefault().asyncExec(new Runnable() {
-          public void run() {
-            setContentDescription(resourceKey);
-            viewer.setInput(measuresByDomain.asMap());
-            viewer.expandAll();
-          }
-        });
+        final SourceCode sourceCode = EclipseSonar.getInstance(project).search(resource);
+        if (sourceCode == null) {
+          Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+              setContentDescription("Not found");
+            }
+          });
+        } else {
+          Collection<IMeasure> measures = sourceCode.getMeasures();
+          // Group by domain
+          final Multimap<String, IMeasure> measuresByDomain = Multimaps.index(measures, new Function<IMeasure, String>() {
+            public String apply(IMeasure measure) {
+              return measure.getMetricDef().getDomain();
+            }
+          });
+          Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+              setContentDescription(sourceCode.getKey());
+              viewer.setInput(measuresByDomain.asMap());
+              viewer.expandAll();
+            }
+          });
+        }
         monitor.done();
         return Status.OK_STATUS;
       }
@@ -249,4 +246,5 @@ public class MeasuresView extends ViewPart {
     IWorkbenchSiteProgressService siteService = (IWorkbenchSiteProgressService) getSite().getAdapter(IWorkbenchSiteProgressService.class);
     siteService.schedule(job);
   }
+
 }

@@ -35,7 +35,6 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
-import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.ide.shared.coverage.CoverageLine;
 
 /**
@@ -61,9 +60,8 @@ public class RefreshCoverageJob extends Job {
       final IDocument doc = getDocument();
       final IAnnotationModel model = targetEditor.getDocumentProvider().getAnnotationModel(targetEditor.getEditorInput());
       final IResource resource = (IResource) targetEditor.getEditorInput().getAdapter(IResource.class);
-      final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(resource);
-      final Collection<CoverageLine> coverageLines = EclipseSonar.getInstance(resource.getProject()).search(resourceKey).getCoverage()
-      .getCoverageLines();
+      final Collection<CoverageLine> coverageLines = EclipseSonar.getInstance(resource.getProject()).search(resource).getCoverage()
+          .getCoverageLines();
 
       for (final CoverageLine coverage : coverageLines) {
         final String hits = coverage.getHits();
@@ -79,15 +77,13 @@ public class RefreshCoverageJob extends Job {
 
           if (lineIsCovered) {
             if (branchIsCovered) {
-              model
-              .addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)),
+              model.addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)),
                   positionFull);
             } else if (hasBranchCoverage) {
               model.addAnnotation(new Annotation("org.sonar.ide.eclipse.partialCoverageAnnotationType", false, getMessage(coverage)),
                   position);
             } else {
-              model
-              .addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)),
+              model.addAnnotation(new Annotation("org.sonar.ide.eclipse.fullCoverageAnnotationType", false, getMessage(coverage)),
                   positionFull);
             }
           } else if (hasLineCoverage) {

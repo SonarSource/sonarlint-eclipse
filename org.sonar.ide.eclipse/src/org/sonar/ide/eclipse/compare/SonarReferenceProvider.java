@@ -29,7 +29,6 @@ import org.eclipse.ui.texteditor.quickdiff.IQuickDiffReferenceProvider;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
-import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.services.Source;
 
@@ -60,8 +59,7 @@ public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
       return sonarSource;
     }
     if (resource != null) {
-      final String resourceKey = EclipseResourceUtils.getInstance().getFileKey(resource);
-      final Source source = EclipseSonar.getInstance(resource.getProject()).search(resourceKey).getCode();
+      final Source source = EclipseSonar.getInstance(resource.getProject()).search(resource).getCode();
       // TODO : do it in Source object : Source.toString()
       // sonarSource = new Document(source.toString());
       final StringBuilder stringBuilder = new StringBuilder();

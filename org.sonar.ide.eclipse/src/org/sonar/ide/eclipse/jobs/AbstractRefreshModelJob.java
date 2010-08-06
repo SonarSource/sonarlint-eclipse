@@ -86,14 +86,14 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
       final IJavaElement element = JavaCore.create((IFile) resource);
       if (element instanceof ICompilationUnit) {
         final ICompilationUnit unit = (ICompilationUnit) element;
-        cleanMarkers(unit);
+        cleanMarkers(resource);
         retrieveMarkers(unit, monitor);
       }
     }
     return true;
   }
 
-  protected abstract Collection<M> retrieveDatas(EclipseSonar sonar, ICompilationUnit unit);
+  protected abstract Collection<M> retrieveDatas(EclipseSonar sonar, IResource resource);
 
   private void retrieveMarkers(final ICompilationUnit unit, final IProgressMonitor monitor) throws CoreException {
     if (unit == null || !unit.exists() || monitor.isCanceled()) {
@@ -102,7 +102,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
     try {
       // TODO put it in messages.properties
       monitor.beginTask("Retrieve sonar informations for " + unit.getElementName(), 1);
-      final Collection<M> datas = retrieveDatas(EclipseSonar.getInstance(unit.getResource().getProject()), unit);
+      final Collection<M> datas = retrieveDatas(EclipseSonar.getInstance(unit.getResource().getProject()), unit.getResource());
       for (final M data : datas) {
         // create a marker for the actual resource
         creatMarker(unit, data);
@@ -163,14 +163,10 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
   }
 
   /**
-   * Remove all sonar markers
-   * 
-   * @param project
-   *          The project to clean
-   * @throws CoreException
+   * Remove all Sonar markers.
    */
-  private void cleanMarkers(final ICompilationUnit unit) throws CoreException {
-    unit.getResource().deleteMarkers(markerId, true, IResource.DEPTH_ZERO);
+  private void cleanMarkers(final IResource file) throws CoreException {
+    file.deleteMarkers(markerId, true, IResource.DEPTH_ZERO);
   }
 
   // TODO : need to refactor it.
