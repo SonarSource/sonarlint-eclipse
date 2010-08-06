@@ -31,7 +31,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelection;
@@ -45,11 +44,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
@@ -57,6 +52,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.ui.AbstractPackageExplorerListener;
 import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.ide.shared.measures.MeasureData;
 
@@ -161,73 +157,23 @@ public class MeasuresView extends ViewPart {
     }
   }
 
-  private IPartListener2 partListener = new IPartListener2() {
-
-    public void partActivated(IWorkbenchPartReference partRef) {
-    }
-
-    public void partBroughtToTop(IWorkbenchPartReference partRef) {
-    }
-
-    public void partClosed(IWorkbenchPartReference partRef) {
-    }
-
-    public void partDeactivated(IWorkbenchPartReference partRef) {
-    }
-
-    public void partHidden(IWorkbenchPartReference partRef) {
-      if (partRef.getPart(true) == MeasuresView.this) {
-        visible = false;
-      }
-    }
-
-    public void partInputChanged(IWorkbenchPartReference partRef) {
-    }
-
-    public void partOpened(IWorkbenchPartReference partRef) {
-    }
-
-    public void partVisible(IWorkbenchPartReference partRef) {
-      if (partRef.getPart(true) == MeasuresView.this) {
-        visible = true;
-      }
-    }
-  };
-
   @Override
   public void init(IViewSite site) throws PartInitException {
-    site.getPage().addSelectionListener(JavaUI.ID_PACKAGES, selectionListener);
-    site.getPage().addPartListener(partListener);
+    selectionListener.init(site);
     super.init(site);
   }
 
   @Override
   public void dispose() {
     super.dispose();
-    getSite().getPage().removeSelectionListener(JavaUI.ID_PACKAGES, selectionListener);
-    getSite().getPage().removePartListener(partListener);
+    selectionListener.dispose(getViewSite());
   }
 
-  private ISelection currentSelection;
-
-  ISelectionListener selectionListener = new ISelectionListener() {
-    public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-      // Don't handle selections, if this view inactive, eg. when another perspective selected
-      if ( !visible) {
-        return;
-      }
-      // TODO comment me
-      if (selection == null || selection.equals(currentSelection)) {
-        return;
-      }
-      // TODO comment me
-      if (part == null) {
-        return;
-      }
-
-      currentSelection = selection;
-      if (currentSelection instanceof IStructuredSelection) {
-        IStructuredSelection sel = (IStructuredSelection) currentSelection;
+  private AbstractPackageExplorerListener selectionListener = new AbstractPackageExplorerListener(this) {
+    @Override
+    protected void handleSlection(ISelection selection) {
+      if (selection instanceof IStructuredSelection) {
+        IStructuredSelection sel = (IStructuredSelection) selection;
         Object o = sel.getFirstElement();
         if (o == null) {
           // no selection

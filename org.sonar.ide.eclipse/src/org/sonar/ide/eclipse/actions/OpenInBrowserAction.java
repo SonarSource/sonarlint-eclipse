@@ -54,8 +54,8 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
     try {
       Object element = selection.getFirstElement();
       if (element instanceof IResource) {
-        openBrowser((IResource)element);
-      }  
+        openBrowser((IResource) element);
+      }
     } catch (Exception e) {
       SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
     }
@@ -63,10 +63,11 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
 
   protected void openBrowser(IResource resource) {
     String key;
-    if (resource instanceof IFile)
+    if (resource instanceof IFile) {
       key = EclipseResourceUtils.getInstance().getFileKey(resource);
-    else
+    } else {
       key = EclipseResourceUtils.getInstance().getProjectKey(resource);
+    }
     IWorkbenchBrowserSupport browserSupport = SonarPlugin.getDefault().getWorkbench().getBrowserSupport();
     ProjectProperties properties = ProjectProperties.getInstance(resource);
     try {
@@ -76,11 +77,11 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
       } else {
         browserSupport.getExternalBrowser().openURL(consoleURL);
       }
-    }catch(Exception e) {
+    } catch (Exception e) {
       SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
     }
   }
-  
+
   public void selectionChanged(IAction action, ISelection selection) {
     if (selection instanceof IStructuredSelection) {
       this.selection = (IStructuredSelection) selection;
