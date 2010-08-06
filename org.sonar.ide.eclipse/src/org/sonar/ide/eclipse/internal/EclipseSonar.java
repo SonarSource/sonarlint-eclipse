@@ -80,7 +80,6 @@ public final class EclipseSonar extends RemoteSonar {
       }
       return code;
     }
-    // TODO
     return null;
   }
 
