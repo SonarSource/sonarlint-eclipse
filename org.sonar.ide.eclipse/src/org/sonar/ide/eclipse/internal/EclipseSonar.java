@@ -69,6 +69,9 @@ public final class EclipseSonar extends RemoteSonar {
     } else if (resource instanceof IFile) {
       String key = EclipseResourceUtils.getInstance().getFileKey(resource);
       SourceCode code = search(key);
+      if (code == null) {
+        return null;
+      }
       IFile file = (IFile) resource;
       try {
         String content = IOUtils.toString(file.getContents(), file.getCharset());
