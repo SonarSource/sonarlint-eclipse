@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageDeclaration;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
@@ -62,15 +63,18 @@ public class EclipseResourceUtils extends AbstractResourceUtils<IResource> {
     throw new NotImplementedException("Currently only java files supported");
   }
 
+  /**
+   * TODO Godin: visiblity modified to public.
+   */
   @Override
-  protected String getPackageName(IResource file) {
+  public String getPackageName(IResource file) {
     try {
-      if (isJavaFile(file)) {
-        IJavaElement element = JavaCore.create(file);
-        if ( !(element instanceof ICompilationUnit)) {
-          return "";
-        }
-        ICompilationUnit compilationUnit = (ICompilationUnit) JavaCore.create(file);
+      IJavaElement javaElement = JavaCore.create(file);
+      if (javaElement instanceof IPackageFragment) {
+        IPackageFragment packageFragment = (IPackageFragment) javaElement;
+        return packageFragment.getElementName();
+      } else if (javaElement instanceof ICompilationUnit) {
+        ICompilationUnit compilationUnit = (ICompilationUnit) javaElement;
         IPackageDeclaration[] packages = compilationUnit.getPackageDeclarations();
         StringBuilder name = null;
         for (IPackageDeclaration packageDeclaration : packages) {

@@ -3,6 +3,7 @@ package org.sonar.ide.eclipse.internal;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -58,7 +59,13 @@ public final class EclipseSonar extends RemoteSonar {
       String key = EclipseResourceUtils.getInstance().getProjectKey(resource);
       return search(key);
     } else if (resource instanceof IFolder) {
-      // TODO hangle packages
+      String projectKey = EclipseResourceUtils.getInstance().getProjectKey(resource);
+      String packageKey = EclipseResourceUtils.getInstance().getPackageName(resource);
+      if (StringUtils.isBlank(packageKey)) {
+        packageKey = EclipseResourceUtils.DEFAULT_PACKAGE_NAME;
+      }
+      String key = projectKey + ":" + packageKey;
+      return search(key);
     } else if (resource instanceof IFile) {
       String key = EclipseResourceUtils.getInstance().getFileKey(resource);
       SourceCode code = search(key);
