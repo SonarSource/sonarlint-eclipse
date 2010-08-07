@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -54,7 +55,6 @@ import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.AbstractPackageExplorerListener;
-import org.sonar.ide.shared.measures.MeasureData;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
@@ -78,11 +78,11 @@ public class MeasuresView extends ViewPart {
       @SuppressWarnings("unchecked")
       @Override
       protected boolean isParentMatch(Viewer viewer, Object element) {
-        Map<String, List<MeasureData>> map = (Map<String, List<MeasureData>>) viewer.getInput();
-        if (element instanceof MeasureData) {
-          MeasureData measure = (MeasureData) element;
-          String domain = measure.getDomain();
-          for (Map.Entry<String, List<MeasureData>> e : map.entrySet()) {
+        Map<String, List<IMeasure>> map = (Map<String, List<IMeasure>>) viewer.getInput();
+        if (element instanceof IMeasure) {
+          IMeasure measure = (IMeasure) element;
+          String domain = measure.getMetricDef().getDomain();
+          for (Map.Entry<String, List<IMeasure>> e : map.entrySet()) {
             if (domain.equals(e.getKey())) {
               return isLeafMatch(viewer, e);
             }
@@ -123,12 +123,12 @@ public class MeasuresView extends ViewPart {
         }
         return ((Map.Entry) element).getKey().toString();
       }
-      if (element instanceof MeasureData) {
+      if (element instanceof IMeasure) {
         switch (columnIndex) {
           case 0:
-            return ((MeasureData) element).getName();
+            return ((IMeasure) element).getMetricDef().getName();
           case 1:
-            return ((MeasureData) element).getValue();
+            return ((IMeasure) element).getValue();
           default:
             return "";
         }
@@ -181,18 +181,11 @@ public class MeasuresView extends ViewPart {
           return;
         }
         // TODO SONARIDE-101
-        if (o instanceof IJavaProject) {
-          IJavaProject javaProject = (IJavaProject) o;
-          IProject project = javaProject.getProject();
-          updateMeasures(project, javaProject.getResource());
-        } else if (o instanceof IPackageFragment) {
-          IPackageFragment packageFragment = (IPackageFragment) o;
-          IProject project = packageFragment.getResource().getProject();
-          updateMeasures(project, packageFragment.getResource());
-        } else if (o instanceof ICompilationUnit) {
-          ICompilationUnit cu = (ICompilationUnit) o;
-          IProject project = cu.getResource().getProject();
-          updateMeasures(project, cu.getResource());
+        if (o instanceof IJavaProject || o instanceof IPackageFragment || o instanceof ICompilationUnit) {
+          IJavaElement javaElement = (IJavaElement) o;
+          IResource resource = javaElement.getResource();
+          IProject project = resource.getProject();
+          updateMeasures(project, resource);
         } else {
           clear();
         }
