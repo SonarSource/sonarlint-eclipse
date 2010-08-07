@@ -19,6 +19,8 @@ import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
  */
 public class RemoteView extends ViewPart {
 
+  public static final String ID = "org.sonar.ide.eclipse.views.RemoteView";
+
   private Browser browser;
 
   @Override

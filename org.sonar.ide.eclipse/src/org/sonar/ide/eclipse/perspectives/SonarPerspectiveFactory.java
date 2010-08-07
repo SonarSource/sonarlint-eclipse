@@ -25,6 +25,7 @@ import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.sonar.ide.eclipse.views.MeasuresView;
 import org.sonar.ide.eclipse.views.NavigatorView;
+import org.sonar.ide.eclipse.views.RemoteView;
 
 /**
  * @author Jérémie Lagarde
@@ -50,13 +51,14 @@ public class SonarPerspectiveFactory implements IPerspectiveFactory {
     IFolderLayout left = layout.createFolder("left", IPageLayout.LEFT, 0.25f, layout.getEditorArea()); //$NON-NLS-1$
     left.addView(JavaUI.ID_PACKAGES);
 
-    IFolderLayout leftbottom = layout.createFolder("leftbottom", IPageLayout.BOTTOM, (float) 0.5, "left"); //$NON-NLS-1$
-    leftbottom.addView(IPageLayout.ID_PROP_SHEET);
-    
+    // IFolderLayout leftbottom = layout.createFolder("leftbottom", IPageLayout.BOTTOM, (float) 0.5, "left"); //$NON-NLS-1$
+    // leftbottom.addView(IPageLayout.ID_PROP_SHEET);
+
     IFolderLayout right = layout.createFolder("right", IPageLayout.RIGHT, 0.75f, layout.getEditorArea()); //$NON-NLS-1$
     right.addView(MeasuresView.ID);
 
     IFolderLayout bottom = layout.createFolder("bottomRight", IPageLayout.BOTTOM, 0.75f, layout.getEditorArea()); // NON-NLS-1$
+    bottom.addView(RemoteView.ID);
     bottom.addView(IPageLayout.ID_PROBLEM_VIEW);
     bottom.addView(NavigatorView.ID);
     bottom.addView(IConsoleConstants.ID_CONSOLE_VIEW);
