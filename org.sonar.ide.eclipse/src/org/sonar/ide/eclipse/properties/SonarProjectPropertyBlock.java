@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -34,7 +33,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -42,7 +40,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.jobs.AutoConfigureProjectJob;
 import org.sonar.wsclient.Host;
 
 /**
@@ -59,7 +56,7 @@ public class SonarProjectPropertyBlock {
   private Text projectArtifactIdText;
   private Text projectBranchText;
 
-  private Button autoConfigButton;
+  // private Button autoConfigButton;
 
   public SonarProjectPropertyBlock(IProject project) {
     this.project = project;
@@ -161,34 +158,36 @@ public class SonarProjectPropertyBlock {
     projectBranchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     projectBranchText.setText(projectProperties.getBranch());
 
-    // Create auto config button.
-    autoConfigButton = new Button(container, SWT.PUSH);
-    autoConfigButton.setText(Messages.getString("action.autoconfig")); //$NON-NLS-1$
-    autoConfigButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
-    autoConfigButton.addSelectionListener(new SelectionAdapter() {
-
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        final Display display = PlatformUI.getWorkbench().getDisplay();
-        display.asyncExec(new Runnable() {
-
-          public void run() {
-            Job job = new AutoConfigureProjectJob(project);
-            job.schedule();
-            try {
-              job.join();
-              ProjectProperties projectProperties = ProjectProperties.getInstance(project);
-              if (projectProperties != null) {
-                serversCombo.setText(projectProperties.getUrl());
-                projectArtifactIdText.setText(projectProperties.getArtifactId());
-                projectGroupIdText.setText(projectProperties.getGroupId());
-              }
-            } catch (InterruptedException e) {
-            }
-          }
-        });
-      }
-    });
+    /*
+     * // Create auto config button.
+     * autoConfigButton = new Button(container, SWT.PUSH);
+     * autoConfigButton.setText(Messages.getString("action.autoconfig")); //$NON-NLS-1$
+     * autoConfigButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
+     * autoConfigButton.addSelectionListener(new SelectionAdapter() {
+     * 
+     * @Override
+     * public void widgetSelected(SelectionEvent e) {
+     * final Display display = PlatformUI.getWorkbench().getDisplay();
+     * display.asyncExec(new Runnable() {
+     * 
+     * public void run() {
+     * Job job = new AutoConfigureProjectJob(project);
+     * job.schedule();
+     * try {
+     * job.join();
+     * ProjectProperties projectProperties = ProjectProperties.getInstance(project);
+     * if (projectProperties != null) {
+     * serversCombo.setText(projectProperties.getUrl());
+     * projectArtifactIdText.setText(projectProperties.getArtifactId());
+     * projectGroupIdText.setText(projectProperties.getGroupId());
+     * }
+     * } catch (InterruptedException e) {
+     * }
+     * }
+     * });
+     * }
+     * });
+     */
   }
 
   protected String getUrl() {

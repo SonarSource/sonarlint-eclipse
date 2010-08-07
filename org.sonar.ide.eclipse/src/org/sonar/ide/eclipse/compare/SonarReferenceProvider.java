@@ -18,7 +18,6 @@
 
 package org.sonar.ide.eclipse.compare;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -26,11 +25,8 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.quickdiff.IQuickDiffReferenceProvider;
-import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
-import org.sonar.wsclient.Host;
-import org.sonar.wsclient.services.Source;
 
 /**
  * @author Jérémie Lagarde
@@ -59,14 +55,8 @@ public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
       return sonarSource;
     }
     if (resource != null) {
-      final Source source = EclipseSonar.getInstance(resource.getProject()).search(resource).getCode();
-      // TODO : do it in Source object : Source.toString()
-      // sonarSource = new Document(source.toString());
-      final StringBuilder stringBuilder = new StringBuilder();
-      for (final String line : source.getLines()) {
-        stringBuilder.append(line).append("\n");
-      }
-      sonarSource = new Document(stringBuilder.toString());
+      SourceCode sourceCode = EclipseSonar.getInstance(resource.getProject()).search(resource);
+      sonarSource = new Document(sourceCode.getRemoteContent());
     }
     return sonarSource;
   }
@@ -81,11 +71,6 @@ public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
 
   public boolean isEnabled() {
     return resource != null;
-  }
-
-  protected Host getSonarHost(final IProject project) {
-    final ProjectProperties properties = ProjectProperties.getInstance(project);
-    return SonarPlugin.getServerManager().createServer(properties.getUrl());
   }
 
 }

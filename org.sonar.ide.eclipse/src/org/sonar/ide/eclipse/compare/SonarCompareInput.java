@@ -26,32 +26,25 @@ import org.eclipse.compare.structuremergeviewer.DiffNode;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.wsclient.services.Source;
 
 /**
  * @author Jérémie Lagarde
  */
 public class SonarCompareInput extends CompareEditorInput {
 
-  protected IResource resource;
-  protected Source source;
+  protected final IResource resource;
+  protected final String sourceCode;
 
-  public SonarCompareInput(final IResource resource, final Source source) {
+  public SonarCompareInput(IResource resource, String sourceCode) {
     super(new CompareConfiguration());
     this.resource = resource;
-    this.source = source;
+    this.sourceCode = sourceCode;
   }
 
   @Override
   protected Object prepareInput(final IProgressMonitor monitor) {
-    // TODO : do it in Source object : Source.toString()
-    // sonarSource = new Document(source.toString());
-    final StringBuilder stringBuilder = new StringBuilder();
-    for (final String line : source.getLines()) {
-      stringBuilder.append(line).append("\n");
-    }
     final ITypedElement left = new ResourceNode(resource);
-    final ITypedElement right = new SonarCompareNode(resource.getName(), stringBuilder.toString());
+    final ITypedElement right = new SonarCompareNode(resource.getName(), sourceCode);
     final CompareConfiguration config = getCompareConfiguration();
     config.setLeftLabel(left.getName());
     config.setLeftEditable(true);

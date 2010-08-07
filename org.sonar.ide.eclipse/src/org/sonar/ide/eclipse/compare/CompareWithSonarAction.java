@@ -25,8 +25,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
-import org.sonar.wsclient.services.Source;
 
 /**
  * @author Jérémie Lagarde
@@ -54,8 +54,8 @@ public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
 
   public void run(final IAction action) {
     if (resource != null) {
-      final Source source = EclipseSonar.getInstance(resource.getProject()).search(resource).getCode();
-      CompareUI.openCompareEditor(new SonarCompareInput(resource, source));
+      final SourceCode sourceCode = EclipseSonar.getInstance(resource.getProject()).search(resource);
+      CompareUI.openCompareEditor(new SonarCompareInput(resource, sourceCode.getRemoteContent()));
     }
   }
 
