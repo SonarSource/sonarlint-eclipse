@@ -65,10 +65,11 @@
         name="%sonar.violation.view.name">
     </view>
     <view
-    	category="org.sonar.ide.eclipse"
-    	class="org.sonar.ide.eclipse.views.RemoteView"
-    	id="org.sonar.ide.eclipse.views.RemoteView"
-    	name="RemoteView">
+          category="org.sonar.ide.eclipse"
+          class="org.sonar.ide.eclipse.views.RemoteView"
+          icon="icons/sonar.png"
+          id="org.sonar.ide.eclipse.views.RemoteView"
+          name="Web">
     </view>
   </extension>
 

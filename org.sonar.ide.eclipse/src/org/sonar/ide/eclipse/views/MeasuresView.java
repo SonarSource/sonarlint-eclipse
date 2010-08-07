@@ -68,7 +68,6 @@ public class MeasuresView extends ViewPart {
   public static final String ID = "org.sonar.ide.eclipse.views.MeasuresView";
 
   private TreeViewer viewer;
-  private boolean visible;
 
   @Override
   public void createPartControl(Composite parent) {
