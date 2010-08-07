@@ -18,6 +18,8 @@
 
 package org.maven.ide.eclipse.sonar;
 
+import java.util.Properties;
+
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -35,6 +37,11 @@ import org.sonar.ide.eclipse.properties.ProjectProperties;
  * @author Evgeny Mandrikov
  */
 public class SonarProjectConfigurator extends AbstractProjectConfigurator {
+  /**
+   * See <a href="http://docs.codehaus.org/display/SONAR/Advanced+parameters">advanced Maven parameters for Sonar</a>
+   */
+  private static final String PROJECT_BRANCH_PROPERTY = "sonar.branch";
+
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) throws CoreException {
     configureProject(request.getProject(), request.getMavenProject());
@@ -47,11 +54,17 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
   }
 
   private void configureProject(IProject project, MavenProject mavenProject) {
-    String groupId = mavenProject.getGroupId();
-    String artifactId = mavenProject.getArtifactId();
     ProjectProperties projectProperties = ProjectProperties.getInstance(project);
-    projectProperties.setGroupId(groupId);
-    projectProperties.setArtifactId(artifactId);
+
+    projectProperties.setGroupId(mavenProject.getGroupId());
+    projectProperties.setArtifactId(mavenProject.getArtifactId());
+
+    Properties mavenProjectProperties = mavenProject.getProperties();
+    // Don't change branch, if not set in pom.xml
+    if (mavenProjectProperties.containsKey(PROJECT_BRANCH_PROPERTY)) {
+      projectProperties.setBranch(mavenProjectProperties.getProperty(PROJECT_BRANCH_PROPERTY));
+    }
+
     try {
       projectProperties.save();
     } catch (SonarIdeException e) {
