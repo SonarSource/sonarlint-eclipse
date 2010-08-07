@@ -10,9 +10,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
+import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.ui.AbstractPackageExplorerListener;
-import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 
 /**
  * @author Evgeny Mandrikov
@@ -26,6 +27,7 @@ public class RemoteView extends ViewPart {
   @Override
   public void createPartControl(Composite parent) {
     browser = new Browser(parent, SWT.NONE);
+    clear();
   }
 
   @Override
@@ -45,6 +47,10 @@ public class RemoteView extends ViewPart {
     selectionListener.dispose(getViewSite());
   }
 
+  private void clear() {
+    browser.setText("Select Java class in Package Explorer.");
+  }
+
   private AbstractPackageExplorerListener selectionListener = new AbstractPackageExplorerListener(RemoteView.this) {
     @Override
     public void handleSlection(ISelection selection) {
@@ -59,11 +65,15 @@ public class RemoteView extends ViewPart {
         if (o instanceof ICompilationUnit) {
           ICompilationUnit cu = (ICompilationUnit) o;
           IResource resource = cu.getResource();
+          SourceCode sourceCode = EclipseSonar.getInstance(resource.getProject()).search(resource);
+          if (sourceCode == null) {
+            browser.setText("Not found.");
+            return;
+          }
           ProjectProperties properties = ProjectProperties.getInstance(resource);
-          String key = EclipseResourceUtils.getInstance().getFileKey(resource);
-          browser.setUrl(properties.getUrl() + "/resource/index/" + key + "?metric=coverage");
+          browser.setUrl(properties.getUrl() + "/resource/index/" + sourceCode.getKey() + "?metric=coverage");
         } else {
-          return;
+          clear();
         }
       }
     }

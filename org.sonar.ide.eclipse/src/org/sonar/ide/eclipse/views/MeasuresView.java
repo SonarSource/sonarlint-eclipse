@@ -230,7 +230,7 @@ public class MeasuresView extends ViewPart {
         update("Loading...", null);
         final SourceCode sourceCode = EclipseSonar.getInstance(project).search(resource);
         if (sourceCode == null) {
-          update("Not found", null);
+          update("Not found.", null);
         } else {
           Collection<IMeasure> measures = sourceCode.getMeasures();
           // Group by domain
