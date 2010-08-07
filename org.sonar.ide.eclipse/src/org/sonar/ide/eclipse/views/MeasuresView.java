@@ -105,6 +105,8 @@ public class MeasuresView extends ViewPart {
     TreeColumn column2 = new TreeColumn(tree, SWT.LEFT);
     column2.setText("Value");
     column2.setWidth(100);
+
+    clear();
   }
 
   class MeasuresLabelProvider implements ITableLabelProvider, ILabelProvider {
@@ -191,10 +193,26 @@ public class MeasuresView extends ViewPart {
           ICompilationUnit cu = (ICompilationUnit) o;
           IProject project = cu.getResource().getProject();
           updateMeasures(project, cu.getResource());
+        } else {
+          clear();
         }
       }
     }
   };
+
+  private void clear() {
+    update("Select Java project, package or class in Package Explorer to see measures.", null);
+  }
+
+  private void update(final String description, final Object content) {
+    Display.getDefault().asyncExec(new Runnable() {
+      public void run() {
+        setContentDescription(description);
+        viewer.setInput(content);
+        viewer.expandAll();
+      }
+    });
+  }
 
   /**
    * Passing the focus request to the viewer's control.
@@ -209,19 +227,10 @@ public class MeasuresView extends ViewPart {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Loading measures for " + resource.toString(), IProgressMonitor.UNKNOWN);
-        Display.getDefault().asyncExec(new Runnable() {
-          public void run() {
-            setContentDescription("");
-            viewer.setInput(null);
-          }
-        });
+        update("Loading...", null);
         final SourceCode sourceCode = EclipseSonar.getInstance(project).search(resource);
         if (sourceCode == null) {
-          Display.getDefault().asyncExec(new Runnable() {
-            public void run() {
-              setContentDescription("Not found");
-            }
-          });
+          update("Not found", null);
         } else {
           Collection<IMeasure> measures = sourceCode.getMeasures();
           // Group by domain
@@ -230,13 +239,7 @@ public class MeasuresView extends ViewPart {
               return measure.getMetricDef().getDomain();
             }
           });
-          Display.getDefault().asyncExec(new Runnable() {
-            public void run() {
-              setContentDescription(sourceCode.getKey());
-              viewer.setInput(measuresByDomain.asMap());
-              viewer.expandAll();
-            }
-          });
+          update(sourceCode.getKey(), measuresByDomain.asMap());
         }
         monitor.done();
         return Status.OK_STATUS;
