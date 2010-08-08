@@ -31,7 +31,20 @@ public class EclipseProxySelector extends ProxySelector {
   public List<Proxy> select(final URI uri) {
     final ArrayList<Proxy> result = new ArrayList<Proxy>();
 
-    for (IProxyData data : service.select(uri)) {
+    final String host = uri.getHost();
+
+    String type = IProxyData.SOCKS_PROXY_TYPE;
+    if ("http".equals(uri.getScheme())) {
+      type = IProxyData.HTTP_PROXY_TYPE;
+    } else if ("ftp".equals(uri.getScheme())) {
+      type = IProxyData.HTTP_PROXY_TYPE;
+    } else if ("https".equals(uri.getScheme())) {
+      type = IProxyData.HTTPS_PROXY_TYPE;
+    }
+
+    // TODO Godin: by some reasons service.select(uri) doesn't work here
+    final IProxyData data = service.getProxyDataForHost(host, type);
+    if (data != null) {
       if (IProxyData.HTTP_PROXY_TYPE.equals(data.getType())) {
         addProxy(result, Proxy.Type.HTTP, data);
       } else if (IProxyData.HTTPS_PROXY_TYPE.equals(data.getType())) {
