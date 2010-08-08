@@ -18,9 +18,12 @@
 
 package org.sonar.ide.eclipse;
 
+import java.net.Authenticator;
 import java.net.MalformedURLException;
+import java.net.ProxySelector;
 import java.net.URL;
 
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -30,6 +33,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.console.SonarConsole;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
@@ -97,35 +101,11 @@ public class SonarPlugin extends AbstractUIPlugin {
     super.start(context);
     plugin = this;
 
-    initLogging();
-    try {
-      console = new SonarConsole();
-    } catch (final RuntimeException e) {
-      writeLog(IStatus.ERROR, "Errors occurred starting the Sonar console", e); //$NON-NLS-1$
-    }
+    setupLogging();
+    setupConsole();
+    setupProxy(context);
 
     LoggerFactory.getLogger(SonarPlugin.class).info("Sonar plugin started");
-  }
-
-  /**
-   * Godin: I'm not sure is it correct way or not, but it works.
-   */
-  private void initLogging() {
-    final URL url = getBundle().getEntry("/conf/logback.xml");
-    if (url != null) {
-      final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-      try {
-        final JoranConfiguratorBase configurator = new JoranConfigurator();
-        configurator.setContext(lc);
-        lc.reset();
-        configurator.doConfigure(url);
-      } catch (final JoranException e) {
-        e.printStackTrace();
-      }
-      StatusPrinter.printIfErrorsOccured(lc);
-    } else {
-      System.err.println("logback.xml not found");
-    }
   }
 
   @Override
@@ -143,6 +123,44 @@ public class SonarPlugin extends AbstractUIPlugin {
    */
   public static SonarPlugin getDefault() {
     return plugin;
+  }
+
+  /**
+   * Godin: I'm not sure is it correct way or not, but it works.
+   */
+  private void setupLogging() {
+    final URL url = getBundle().getEntry("/conf/logback.xml");
+    if (url != null) {
+      final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+      try {
+        final JoranConfiguratorBase configurator = new JoranConfigurator();
+        configurator.setContext(lc);
+        lc.reset();
+        configurator.doConfigure(url);
+      } catch (final JoranException e) {
+        e.printStackTrace();
+      }
+      StatusPrinter.printIfErrorsOccured(lc);
+    } else {
+      System.err.println("logback.xml not found");
+    }
+  }
+
+  private void setupProxy(final BundleContext context) {
+    ServiceReference proxyServiceReference = context.getServiceReference(IProxyService.class.getName());
+    if (proxyServiceReference != null) {
+      IProxyService proxyService = (IProxyService) context.getService(proxyServiceReference);
+      ProxySelector.setDefault(new EclipseProxySelector(proxyService));
+      Authenticator.setDefault(new EclipseProxyAuthenticator(proxyService));
+    }
+  }
+
+  private void setupConsole() {
+    try {
+      console = new SonarConsole();
+    } catch (final RuntimeException e) {
+      writeLog(IStatus.ERROR, "Errors occurred starting the Sonar console", e); //$NON-NLS-1$
+    }
   }
 
   public SonarConsole getConsole() {
