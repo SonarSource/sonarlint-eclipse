@@ -20,7 +20,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.sonar.ide.eclipse.sonar_embedder
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
-Import-Package: org.apache.commons.lang,
+Import-Package: org.apache.commons.io,
+ org.apache.commons.lang,
  org.eclipse.core.resources,
  org.sonar.ide.ui
 Bundle-ActivationPolicy: lazy
