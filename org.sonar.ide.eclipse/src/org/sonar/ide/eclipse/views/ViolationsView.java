@@ -23,6 +23,9 @@ import org.eclipse.ui.views.markers.MarkerSupportView;
  * @author Jérémie Lagarde
  */
 public class ViolationsView extends MarkerSupportView {
+
+  public static final String ID = "org.sonar.ide.eclipse.views.ViolationsView";
+
   public ViolationsView() {
     super("org.sonar.ide.eclipse.markers.violationMarkerGenerator");
   }
