@@ -459,6 +459,12 @@
            class="org.sonar.ide.eclipse.markers.resolvers.NoSonarResolver">
      </resolver>
   </extension>
+  <extension
+        point="org.sonar.ide.eclipse.resolver">
+     <resolver
+           class="org.sonar.ide.eclipse.markers.resolvers.IgnoreMarkerResolver">
+     </resolver>
+  </extension>
   
   <!-- Quick diff -->
   <extension
