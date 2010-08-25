@@ -82,6 +82,7 @@ public class RefreshViolationJob extends AbstractRefreshModelJob<Violation> {
     final Map<String, Object> extraInfos = new HashMap<String, Object>();
     extraInfos.put("rulekey", violation.getRuleKey());
     extraInfos.put("rulename", violation.getRuleName());
+    extraInfos.put("rulepriority", violation.getPriority());
     return extraInfos;
   }
 

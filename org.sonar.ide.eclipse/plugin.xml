@@ -84,7 +84,9 @@
              id="org.sonar.ide.eclipse.views.violationRuleKeyField"
              visible="false"/>  
         <markerFieldReference
-             id="org.sonar.ide.eclipse.views.violationRuleNameField"/>        
+             id="org.sonar.ide.eclipse.views.violationRuleNameField"/>  
+        <markerFieldReference
+             id="org.sonar.ide.eclipse.views.violationRulePriorityField"/>        
         <markerFieldReference
              id="org.eclipse.ui.ide.resourceField"/>
         <markerFieldReference
@@ -103,6 +105,11 @@
         class="org.sonar.ide.eclipse.views.ViolationRuleKeyField" 
         id="org.sonar.ide.eclipse.views.violationRuleKeyField" 
         name="%sonar.violation.view.rulekeyfield"> 
+    </markerField> 
+    <markerField 
+        class="org.sonar.ide.eclipse.views.ViolationRulePriorityField" 
+        id="org.sonar.ide.eclipse.views.violationRulePriorityField" 
+        name="%sonar.violation.view.rulepriorityfield"> 
     </markerField> 
   </extension>
   
