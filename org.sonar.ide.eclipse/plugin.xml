@@ -90,9 +90,7 @@
         <markerFieldReference
              id="org.eclipse.ui.ide.resourceField"/>
         <markerFieldReference
-             id="org.eclipse.ui.ide.locationField"/>
-        <markerFieldReference
-             id="org.eclipse.ui.ide.priorityField"/>        
+             id="org.eclipse.ui.ide.locationField"/>    
         <markerFieldReference
              id="org.eclipse.ui.ide.severityAndDescriptionField"/>
     </markerContentGenerator>
