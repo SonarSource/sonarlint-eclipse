@@ -1,7 +1,11 @@
 package org.sonar.ide.eclipse.views;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -48,7 +52,7 @@ public class RemoteView extends ViewPart {
   }
 
   private void clear() {
-    browser.setText("Select Java class in Package Explorer.");
+    browser.setText("Select Java project, package or class in Package Explorer.");
   }
 
   private AbstractPackageExplorerListener selectionListener = new AbstractPackageExplorerListener(RemoteView.this) {
@@ -62,20 +66,26 @@ public class RemoteView extends ViewPart {
           return;
         }
 
-        if (o instanceof ICompilationUnit) {
-          ICompilationUnit cu = (ICompilationUnit) o;
-          IResource resource = cu.getResource();
-          SourceCode sourceCode = EclipseSonar.getInstance(resource.getProject()).search(resource);
-          if (sourceCode == null) {
-            browser.setText("Not found.");
-            return;
-          }
-          ProjectProperties properties = ProjectProperties.getInstance(resource);
-          browser.setUrl(properties.getUrl() + "/resource/index/" + sourceCode.getKey() + "?metric=coverage");
+        // TODO SONARIDE-101
+        if (o instanceof IJavaProject || o instanceof IPackageFragment || o instanceof ICompilationUnit) {
+          IJavaElement javaElement = (IJavaElement) o;
+          IResource resource = javaElement.getResource();
+          IProject project = resource.getProject();
+          updateBrowser(project, resource);
         } else {
           clear();
         }
       }
+    }
+
+    private void updateBrowser(IProject project, IResource resource) {
+      SourceCode sourceCode = EclipseSonar.getInstance(resource.getProject()).search(resource);
+      if (sourceCode == null) {
+        browser.setText("Not found.");
+        return;
+      }
+      ProjectProperties properties = ProjectProperties.getInstance(resource);
+      browser.setUrl(properties.getUrl() + "/resource/index/" + sourceCode.getKey() + "?metric=coverage");
     }
   };
 

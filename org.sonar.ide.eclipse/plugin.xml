@@ -185,16 +185,6 @@
               state="true"
               style="push"
               icon="icons/refresh.gif">
-        </action>
-        <action
-              class="org.sonar.ide.eclipse.actions.OpenInBrowserAction"
-              enablesFor="+"
-              id="org.sonar.ide.eclipse.openInBrowserAction"
-              label="%sonar.action.openinbrowser.label"
-              menubarPath="org.sonar.ide.eclipse.sonar/group1"
-              state="true"
-              style="push"
-              icon="icons/web.gif">
         </action>        
         
         <action
