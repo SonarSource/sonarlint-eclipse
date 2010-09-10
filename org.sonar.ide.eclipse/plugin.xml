@@ -458,12 +458,7 @@
            markerType="org.sonar.ide.eclipse.sonarViolationMarker">
      </markerResolutionGenerator>
   </extension>
-  <extension
-        point="org.sonar.ide.eclipse.resolver">
-     <resolver
-           class="org.sonar.ide.eclipse.markers.resolvers.NoSonarResolver">
-     </resolver>
-  </extension>
+  
   <extension
         point="org.sonar.ide.eclipse.resolver">
      <resolver
