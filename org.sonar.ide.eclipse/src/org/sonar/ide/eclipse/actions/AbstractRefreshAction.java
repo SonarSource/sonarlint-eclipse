@@ -43,7 +43,10 @@ public abstract class AbstractRefreshAction implements IWorkbenchWindowActionDel
     } else {
       resources = selection.toList();
     }
-    createJob(resources).schedule();
+    Job[] jobs = createJobs(resources);
+    for (Job job : jobs) {
+      job.schedule();
+    }
   }
 
   /**
@@ -58,4 +61,8 @@ public abstract class AbstractRefreshAction implements IWorkbenchWindowActionDel
   }
 
   protected abstract Job createJob(List<IResource> resources);
+
+  protected Job[] createJobs(List<IResource> resources) {
+    return new Job[] { createJob(resources) };
+  }
 }

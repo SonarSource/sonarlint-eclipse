@@ -167,20 +167,10 @@
               style="push">
         </action>
         <action
-              class="org.sonar.ide.eclipse.actions.RefreshViolationAction"
-              enablesFor="+"
-              id="org.sonar.ide.eclipse.refreshViolationAction"
-              label="%sonar.action.refreshviolations.label"
-              menubarPath="org.sonar.ide.eclipse.sonar/group1"
-              state="true"
-              style="push"
-              icon="icons/refresh.gif">
-        </action>
-        <action
-              class="org.sonar.ide.eclipse.actions.RefreshDuplicationAction"
-              enablesFor="+"
-              id="org.sonar.ide.eclipse.refreshDuplicationAction"
-              label="%sonar.action.refreshduplications.label"
+        	  class="org.sonar.ide.eclipse.actions.RefreshAllAction"
+        	  enablesFor="+"
+        	  id="org.sonar.ide.eclipse.refreshAllAction"
+        	  label="Refresh"
               menubarPath="org.sonar.ide.eclipse.sonar/group1"
               state="true"
               style="push"
@@ -397,15 +387,7 @@
               label="%sonar.action.allautoconiguration.label"
               menubarPath="project/additions"
               tooltip="%sonar.action.allautoconiguration.tooltip">
-        </action>
-        <action
-              class="org.sonar.ide.eclipse.actions.RefreshViolationAction"
-              icon="icons/sonar.png"
-              id="org.sonar.ide.eclipse.actions.RefreshViolationAction"
-              label="%sonar.action.allrefreshviolation.label"
-              menubarPath="project/additions"
-              tooltip="%sonar.action.allrefreshviolation.tooltip">
-        </action>
+        </action>   
      </actionSet>
      <actionSet
            id="org.sonar.ide.eclipse.ui.menu.help"

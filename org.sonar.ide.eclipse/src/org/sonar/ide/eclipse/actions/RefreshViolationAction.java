@@ -26,7 +26,9 @@ import org.sonar.ide.eclipse.jobs.RefreshViolationJob;
 
 /**
  * @author Jérémie Lagarde
+ * @deprecated Since 0.2 replaced by {@link RefreshAllAction}.
  */
+@Deprecated
 public class RefreshViolationAction extends AbstractRefreshAction {
 
   @Override

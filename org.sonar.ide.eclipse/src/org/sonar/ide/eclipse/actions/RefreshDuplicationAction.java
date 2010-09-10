@@ -26,7 +26,9 @@ import org.sonar.ide.eclipse.jobs.RefreshDuplicationsJob;
 
 /**
  * @author Jérémie Lagarde
+ * @deprecated Since 0.2 replaced by {@link RefreshAllAction}.
  */
+@Deprecated
 public class RefreshDuplicationAction extends AbstractRefreshAction {
 
   @Override
