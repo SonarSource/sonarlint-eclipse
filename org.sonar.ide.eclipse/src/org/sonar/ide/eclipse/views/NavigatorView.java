@@ -394,7 +394,8 @@ public class NavigatorView extends ViewPart {
     try {
       URL consoleURL = new URL(selectedNode.getRemoteURL());
       if (browserSupport.isInternalWebBrowserAvailable()) {
-        browserSupport.createBrowser("id" + selectedNode.getHost().hashCode()).openURL(consoleURL);
+        // browserSupport.createBrowser("id" + selectedNode.getHost().hashCode()).openURL(consoleURL);
+        browserSupport.createBrowser("sonar").openURL(consoleURL);
       } else {
         browserSupport.getExternalBrowser().openURL(consoleURL);
       }
