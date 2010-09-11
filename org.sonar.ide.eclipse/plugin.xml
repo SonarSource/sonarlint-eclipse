@@ -73,6 +73,54 @@
     </view>
   </extension>
 
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.sonar.ide.eclipse.views.ViolationsView">
+         <!-- menu
+               id="org.eclipse.ui.ide.problems.filtersMenu"
+               label="Show">
+            <dynamic
+                  class="org.eclipse.ui.internal.views.markers.FiltersContribution"
+                  id="org.eclipse.ui.ide.filtersContribution">
+            </dynamic>
+         </menu -->
+         <!-- menu
+               id="problemsGroupByMenu"
+               label="Group By">
+            <dynamic
+                  class="org.eclipse.ui.internal.views.markers.GroupsContribution"
+                  id="org.eclipse.ui.ide.dynamic1">
+            </dynamic>
+         </menu -->
+         <menu
+               id="org.eclipse.ui.ide.problems.markerSortMenu"
+               label="Sort"
+               mnemonic="%Menu.Sort.mnemonic">
+         </menu>
+         <command
+               commandId="org.eclipse.ui.ide.configureFilters"
+               mnemonic="%command.configureFilters.mnemonic"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.ide.configureColumns"
+               mnemonic="%command.configureColumns.mnemonic"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.window.preferences"
+               label="Preferences"
+               mnemonic="%command.preferences.mnemonic"
+               style="push">
+            <parameter
+                  name="preferencePageId"
+                  value="org.eclipse.ui.ide.markers">
+            </parameter>
+         </command>
+      </menuContribution>
+  </extension>
+  
   <extension 
       point="org.eclipse.ui.ide.markerSupport"> 
     <markerContentGenerator 
