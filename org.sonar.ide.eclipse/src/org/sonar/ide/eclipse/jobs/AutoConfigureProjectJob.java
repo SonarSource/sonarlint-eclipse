@@ -18,7 +18,11 @@
 
 package org.sonar.ide.eclipse.jobs;
 
-import org.apache.commons.lang.NotImplementedException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -30,6 +34,9 @@ import org.eclipse.jdt.core.JavaCore;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.wsclient.Host;
+import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.services.Resource;
+import org.sonar.wsclient.services.ResourceQuery;
 
 /**
  * Auto configuration of projects by searching the equivalent on the server.
@@ -42,7 +49,7 @@ public class AutoConfigureProjectJob extends Job {
 
   private final IProject[] projects;
 
-  // private final Map<String, List<Resource>> resourcesByServerMap = new HashMap<String, List<Resource>>();
+  private final Map<String, List<Resource>> resourcesByServerMap = new HashMap<String, List<Resource>>();
 
   public AutoConfigureProjectJob(IProject project) {
     super(project.getName());
@@ -61,9 +68,9 @@ public class AutoConfigureProjectJob extends Job {
   protected IStatus run(IProgressMonitor monitor) {
     IStatus status = null;
     try {
-      for (int i = 0; i < projects.length; i++) {
-        if (projects[i].isOpen() && !monitor.isCanceled()) {
-          retrieveProjectConfiguration(JavaCore.create(projects[i]), monitor);
+      for (IProject project : projects) {
+        if (project.isOpen() && !monitor.isCanceled()) {
+          retrieveProjectConfiguration(JavaCore.create(project), monitor);
         }
       }
       if ( !monitor.isCanceled()) {
@@ -81,16 +88,18 @@ public class AutoConfigureProjectJob extends Job {
 
   private void retrieveProjectConfiguration(IJavaProject project, IProgressMonitor monitor) throws Exception {
     final ProjectProperties properties = ProjectProperties.getInstance(project.getResource());
-    if (properties != null && properties.isProjectConfigured())
+    if (properties != null && properties.isProjectConfigured()) {
       return;
+    }
     String serverUrl = properties.getUrl();
     if (StringUtils.isNotBlank(serverUrl)) {
       retrieveProjectConfiguration(project, serverUrl, monitor);
     } else {
       for (Host host : SonarPlugin.getServerManager().getServers()) {
         retrieveProjectConfiguration(project, host.getHost(), monitor);
-        if (properties.isProjectConfigured())
+        if (properties.isProjectConfigured()) {
           return;
+        }
       }
     }
   }
@@ -100,46 +109,43 @@ public class AutoConfigureProjectJob extends Job {
     if (properties != null && properties.isProjectConfigured()) {
       return;
     }
-    throw new NotImplementedException();
-    /*
-     * List<Resource> resources = retrieveResources(serverUrl, monitor);
-     * for (Resource resource : resources) {
-     * if (resource.getKey().endsWith(":" + project.getElementName())) {
-     * SonarPlugin.getDefault().getConsole().logResponse("Configure");
-     * properties.setUrl(serverUrl);
-     * properties.setArtifactId(project.getElementName());
-     * properties.setGroupId(StringUtils.substringBefore(resource.getKey(), ":"));
-     * properties.save();
-     * }
-     * }
-     */
+    List<Resource> resources = retrieveResources(serverUrl, monitor);
+    for (Resource resource : resources) {
+      if (resource.getKey().endsWith(":" + project.getElementName())) {
+        SonarPlugin.getDefault().getConsole().logResponse("Configure");
+        properties.setUrl(serverUrl);
+        properties.setArtifactId(project.getElementName());
+        properties.setGroupId(StringUtils.substringBefore(resource.getKey(), ":"));
+        properties.save();
+      }
+    }
+
   }
 
-  /*
-   * private List<Resource> retrieveResources(String serverUrl, IProgressMonitor monitor) throws Exception {
-   * if (StringUtils.isBlank(serverUrl)) {
-   * return new ArrayList<Resource>();
-   * }
-   * if (resourcesByServerMap.containsKey(serverUrl)) {
-   * return resourcesByServerMap.get(serverUrl);
-   * }
-   * 
-   * try {
-   * monitor.beginTask("Retrieve projects on " + serverUrl, 1); // TODO put it in messages.properties
-   * // TODO Godin: don't use sonar-ws-client directly
-   * ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT,
-   * Resource.QUALIFIER_MODULE);
-   * Sonar sonar = SonarPlugin.getServerManager().getSonar(serverUrl);
-   * List<Resource> resources = sonar.findAll(query);
-   * resourcesByServerMap.put(serverUrl, resources);
-   * } catch (Exception ex) {
-   * SonarPlugin.getDefault().getConsole().logError("Error in retrieving projects list on " + serverUrl, ex);
-   * resourcesByServerMap.put(serverUrl, new ArrayList<Resource>());
-   * } finally {
-   * monitor.done();
-   * }
-   * return resourcesByServerMap.get(serverUrl);
-   * 
-   * }
-   */
+  private List<Resource> retrieveResources(String serverUrl, IProgressMonitor monitor) throws Exception {
+    if (StringUtils.isBlank(serverUrl)) {
+      return new ArrayList<Resource>();
+    }
+    if (resourcesByServerMap.containsKey(serverUrl)) {
+      return resourcesByServerMap.get(serverUrl);
+    }
+
+    try {
+      monitor.beginTask("Retrieve projects on " + serverUrl, 1);
+      // TODO put it in messages.properties
+      // TODO Godin: don't use sonar-ws-client directly
+      ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT,
+          Resource.QUALIFIER_MODULE);
+      Sonar sonar = SonarPlugin.getServerManager().getSonar(serverUrl);
+      List<Resource> resources = sonar.findAll(query);
+      resourcesByServerMap.put(serverUrl, resources);
+    } catch (Exception ex) {
+      SonarPlugin.getDefault().getConsole().logError("Error in retrieving projects list on " + serverUrl, ex);
+      resourcesByServerMap.put(serverUrl, new ArrayList<Resource>());
+    } finally {
+      monitor.done();
+    }
+    return resourcesByServerMap.get(serverUrl);
+
+  }
 }
