@@ -75,4 +75,10 @@ public class ViolationsView extends MarkerSupportView {
     return refreshAction;
   }
 
+  @Override
+  public String getContentDescription() {
+    // TODO : add some metrics about violation makers.
+    return "";
+  }
+
 }
