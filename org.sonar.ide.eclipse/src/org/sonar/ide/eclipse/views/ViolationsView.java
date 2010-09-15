@@ -39,7 +39,7 @@ public class ViolationsView extends MarkerSupportView {
 
   public static final String ID = "org.sonar.ide.eclipse.views.ViolationsView";
 
-  private Action             refreshAction;
+  private Action refreshAction;
 
   public ViolationsView() {
     super("org.sonar.ide.eclipse.markers.violationMarkerGenerator");

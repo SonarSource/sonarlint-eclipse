@@ -67,7 +67,9 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
         if ( !monitor.isCanceled() && resource.isAccessible()) {
           resource.accept(this);
         }
+        monitor.worked(1);
       }
+
       if ( !monitor.isCanceled()) {
         status = Status.OK_STATUS;
       } else {
@@ -89,6 +91,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
         cleanMarkers(resource);
         retrieveMarkers(unit, monitor);
       }
+      return false; // do not visit members of this resource
     }
     return true;
   }
