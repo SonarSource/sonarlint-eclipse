@@ -1,5 +1,6 @@
 package org.sonar.ide.eclipse.views;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -85,7 +86,13 @@ public class RemoteView extends ViewPart {
         return;
       }
       ProjectProperties properties = ProjectProperties.getInstance(resource);
-      browser.setUrl(properties.getUrl() + "/resource/index/" + sourceCode.getKey() + "?metric=coverage");
+      StringBuffer url = new StringBuffer(properties.getUrl()).append("/resource/index/").append(sourceCode.getKey());
+      if (resource instanceof IFile) {
+        url.append("?metric=coverage");
+      } else {
+        url.append("?page=dashboard");
+      }
+      browser.setUrl(url.toString());
     }
   };
 
