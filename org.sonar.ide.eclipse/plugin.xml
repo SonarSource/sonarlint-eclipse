@@ -1,22 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
-<!-- ====================================================================== -->
-<!-- Copyright (C) 2010 Evgeny Mandrikov, Jérémie Lagarde                   -->
-<!--                                                                        -->
-<!-- Sonar-IDE is free software; you can redistribute it and/or             -->
-<!-- modify it under the terms of the GNU Lesser General Public             -->
-<!-- License as published by the Free Software Foundation; either           -->
-<!-- version 3 of the License, or (at your option) any later version.       -->
-<!--                                                                        -->
-<!-- Sonar-IDE is distributed in the hope that it will be useful,           -->
-<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of         -->
-<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU      -->
-<!-- Lesser General Public License for more details.                        -->
-<!--                                                                        -->
-<!-- You should have received a copy of the GNU Lesser General Public       -->
-<!-- License along with Sonar-IDE; if not, write to the Free Software       -->
-<!-- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02      -->
-<!-- ====================================================================== -->
 <plugin>
    <extension-point id="resolver" name="sonar resolver" schema="schema/org.sonar.ide.eclipse.markers.resolver.exsd"/>
 
@@ -285,77 +268,6 @@
             colorPreferenceKey="org.sonar.ide.eclipse.violation.color"
             colorPreferenceValue="255,246,191"/>
     </extension>
-  
-    
-    <extension
-        point="org.eclipse.ui.editors.markerAnnotationSpecification">
-      <specification
-            annotationType="org.sonar.ide.eclipse.fullCoverageAnnotationType"
-            presentationLayer="0"
-            label="sonar coverage (full)"
-            verticalRulerPreferenceKey="org.sonar.ide.eclipse.fullCoverage.verticalruler"
-            verticalRulerPreferenceValue="false"
-            overviewRulerPreferenceKey="org.sonar.ide.eclipse.fullCoverage.overviewruler"
-            overviewRulerPreferenceValue="false"
-            showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.fullCoverage.dropdown"
-            showInNextPrevDropdownToolbarAction="false"
-            isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.fullCoverage.previous"
-            isGoToPreviousNavigationTarget="false"
-            isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.fullCoverage.next"
-            isGoToNextNavigationTarget="false"
-            highlightPreferenceKey="org.sonar.ide.eclipse.fullCoverage.highlight"
-            highlightPreferenceValue="false"
-            textPreferenceKey="org.sonar.ide.eclipse.fullCoverage.text"
-            textPreferenceValue="true"
-            textStylePreferenceKey="org.sonar.ide.eclipse.fullCoverage.text.style"
-            textStylePreferenceValue="BOX"
-            colorPreferenceKey="org.sonar.ide.eclipse.fullCoverage.color"
-            colorPreferenceValue="172,233,124"/>
-      <specification
-            annotationType="org.sonar.ide.eclipse.partialCoverageAnnotationType"
-            presentationLayer="0"
-            label="sonar coverage (partial)"
-            verticalRulerPreferenceKey="org.sonar.ide.eclipse.partialCoverage.verticalruler"
-            verticalRulerPreferenceValue="false"
-            overviewRulerPreferenceKey="org.sonar.ide.eclipse.partialCoverage.overviewruler"
-            overviewRulerPreferenceValue="false"
-            showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.partialCoverage.dropdown"
-            showInNextPrevDropdownToolbarAction="false"
-            isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.partialCoverage.previous"
-            isGoToPreviousNavigationTarget="false"
-            isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.partialCoverage.next"
-            isGoToNextNavigationTarget="false"
-            highlightPreferenceKey="org.sonar.ide.eclipse.partialCoverage.highlight"
-            highlightPreferenceValue="true"
-            textPreferenceKey="org.sonar.ide.eclipse.partialCoverage.text"
-            textPreferenceValue="true"
-            textStylePreferenceKey="org.sonar.ide.eclipse.partialCoverage.text.style"
-            textStylePreferenceValue="BOX"
-            colorPreferenceKey="org.sonar.ide.eclipse.partialCoverage.color"
-            colorPreferenceValue="255,246,191"/>
-      <specification
-            annotationType="org.sonar.ide.eclipse.noCoverageAnnotationType"
-            presentationLayer="0"
-            label="sonar coverage (no)"
-            verticalRulerPreferenceKey="org.sonar.ide.eclipse.noCoverage.verticalruler"
-            verticalRulerPreferenceValue="false"
-            overviewRulerPreferenceKey="org.sonar.ide.eclipse.noCoverage.overviewruler"
-            overviewRulerPreferenceValue="false"
-            showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.noCoverage.dropdown"
-            showInNextPrevDropdownToolbarAction="false"
-            isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.noCoverage.previous"
-            isGoToPreviousNavigationTarget="false"
-            isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.noCoverage.next"
-            isGoToNextNavigationTarget="false"
-            highlightPreferenceKey="org.sonar.ide.eclipse.noCoverage.highlight"
-            highlightPreferenceValue="true"
-            textPreferenceKey="org.sonar.ide.eclipse.noCoverage.text"
-            textPreferenceValue="true"
-            textStylePreferenceKey="org.sonar.ide.eclipse.noCoverage.text.style"
-            textStylePreferenceValue="BOX"
-            colorPreferenceKey="org.sonar.ide.eclipse.noCoverage.color"
-            colorPreferenceValue="240,200,200"/>
-   </extension>
 
   <extension
         id="sonarDuplicationMarker"
@@ -497,8 +409,8 @@
      </referenceprovider>
   </extension>
   
-  
   <!-- Coverage Ruler -->
+  <!--
   <extension
         point="org.eclipse.ui.workbench.texteditor.rulerColumns">
      <column
@@ -517,7 +429,7 @@
      </column>
   </extension>
   
-   <extension
+  <extension
          point="org.eclipse.ui.popupMenus">
       <viewerContribution
             targetID="#CompilationUnitRulerContext"
@@ -531,5 +443,76 @@
                id="org.sonar.ide.eclipse.coverageToggleAction">
          </action>
       </viewerContribution>
-   </extension>
+  </extension>
+  
+  <extension
+        point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="org.sonar.ide.eclipse.fullCoverageAnnotationType"
+            presentationLayer="0"
+            label="sonar coverage (full)"
+            verticalRulerPreferenceKey="org.sonar.ide.eclipse.fullCoverage.verticalruler"
+            verticalRulerPreferenceValue="false"
+            overviewRulerPreferenceKey="org.sonar.ide.eclipse.fullCoverage.overviewruler"
+            overviewRulerPreferenceValue="false"
+            showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.fullCoverage.dropdown"
+            showInNextPrevDropdownToolbarAction="false"
+            isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.fullCoverage.previous"
+            isGoToPreviousNavigationTarget="false"
+            isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.fullCoverage.next"
+            isGoToNextNavigationTarget="false"
+            highlightPreferenceKey="org.sonar.ide.eclipse.fullCoverage.highlight"
+            highlightPreferenceValue="false"
+            textPreferenceKey="org.sonar.ide.eclipse.fullCoverage.text"
+            textPreferenceValue="true"
+            textStylePreferenceKey="org.sonar.ide.eclipse.fullCoverage.text.style"
+            textStylePreferenceValue="BOX"
+            colorPreferenceKey="org.sonar.ide.eclipse.fullCoverage.color"
+            colorPreferenceValue="172,233,124"/>
+      <specification
+            annotationType="org.sonar.ide.eclipse.partialCoverageAnnotationType"
+            presentationLayer="0"
+            label="sonar coverage (partial)"
+            verticalRulerPreferenceKey="org.sonar.ide.eclipse.partialCoverage.verticalruler"
+            verticalRulerPreferenceValue="false"
+            overviewRulerPreferenceKey="org.sonar.ide.eclipse.partialCoverage.overviewruler"
+            overviewRulerPreferenceValue="false"
+            showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.partialCoverage.dropdown"
+            showInNextPrevDropdownToolbarAction="false"
+            isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.partialCoverage.previous"
+            isGoToPreviousNavigationTarget="false"
+            isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.partialCoverage.next"
+            isGoToNextNavigationTarget="false"
+            highlightPreferenceKey="org.sonar.ide.eclipse.partialCoverage.highlight"
+            highlightPreferenceValue="true"
+            textPreferenceKey="org.sonar.ide.eclipse.partialCoverage.text"
+            textPreferenceValue="true"
+            textStylePreferenceKey="org.sonar.ide.eclipse.partialCoverage.text.style"
+            textStylePreferenceValue="BOX"
+            colorPreferenceKey="org.sonar.ide.eclipse.partialCoverage.color"
+            colorPreferenceValue="255,246,191"/>
+      <specification
+            annotationType="org.sonar.ide.eclipse.noCoverageAnnotationType"
+            presentationLayer="0"
+            label="sonar coverage (no)"
+            verticalRulerPreferenceKey="org.sonar.ide.eclipse.noCoverage.verticalruler"
+            verticalRulerPreferenceValue="false"
+            overviewRulerPreferenceKey="org.sonar.ide.eclipse.noCoverage.overviewruler"
+            overviewRulerPreferenceValue="false"
+            showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.noCoverage.dropdown"
+            showInNextPrevDropdownToolbarAction="false"
+            isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.noCoverage.previous"
+            isGoToPreviousNavigationTarget="false"
+            isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.noCoverage.next"
+            isGoToNextNavigationTarget="false"
+            highlightPreferenceKey="org.sonar.ide.eclipse.noCoverage.highlight"
+            highlightPreferenceValue="true"
+            textPreferenceKey="org.sonar.ide.eclipse.noCoverage.text"
+            textPreferenceValue="true"
+            textStylePreferenceKey="org.sonar.ide.eclipse.noCoverage.text.style"
+            textStylePreferenceValue="BOX"
+            colorPreferenceKey="org.sonar.ide.eclipse.noCoverage.color"
+            colorPreferenceValue="240,200,200"/>
+  </extension>
+  -->
 </plugin>
