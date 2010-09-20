@@ -121,7 +121,7 @@
         <markerFieldReference
              id="org.eclipse.ui.ide.resourceField"/>
         <markerFieldReference
-             id="org.eclipse.ui.ide.severityAndDescriptionField"/>
+             id="org.eclipse.ui.ide.descriptionField"/>
     </markerContentGenerator>
     <markerField 
         class="org.sonar.ide.eclipse.views.ViolationRuleNameField" 
