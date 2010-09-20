@@ -65,6 +65,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
 
       for (final IResource resource : resources) {
         if ( !monitor.isCanceled() && resource.isAccessible()) {
+          monitor.subTask("updating " + resource.getName());
           resource.accept(this);
         }
         monitor.worked(1);
@@ -108,7 +109,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
       final Collection<M> datas = retrieveDatas(EclipseSonar.getInstance(unit.getResource().getProject()), unit.getResource());
       for (final M data : datas) {
         // create a marker for the actual resource
-        creatMarker(unit, data);
+        createMarker(unit, data);
       }
     } catch (final Exception ex) {
       // TODO : best exception management.
@@ -118,7 +119,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
     }
   }
 
-  private IMarker creatMarker(final ICompilationUnit unit, final M data) throws CoreException {
+  protected IMarker createMarker(final ICompilationUnit unit, final M data) throws CoreException {
     final Map<String, Object> markerAttributes = new HashMap<String, Object>();
     markerAttributes.put(IMarker.PRIORITY, getPriority(data));
     markerAttributes.put(IMarker.SEVERITY, getSeverity(data));
@@ -168,7 +169,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
   /**
    * Remove all Sonar markers.
    */
-  private void cleanMarkers(final IResource file) throws CoreException {
+  protected void cleanMarkers(final IResource file) throws CoreException {
     file.deleteMarkers(markerId, true, IResource.DEPTH_ZERO);
   }
 

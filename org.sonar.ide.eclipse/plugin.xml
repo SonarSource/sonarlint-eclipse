@@ -121,8 +121,6 @@
         <markerFieldReference
              id="org.eclipse.ui.ide.resourceField"/>
         <markerFieldReference
-             id="org.eclipse.ui.ide.locationField"/>    
-        <markerFieldReference
              id="org.eclipse.ui.ide.severityAndDescriptionField"/>
     </markerContentGenerator>
     <markerField 
@@ -197,16 +195,6 @@
               state="true"
               style="push">
         </action>
-        <action
-        	  class="org.sonar.ide.eclipse.actions.RefreshAllAction"
-        	  enablesFor="+"
-        	  id="org.sonar.ide.eclipse.refreshAllAction"
-        	  label="Refresh"
-              menubarPath="org.sonar.ide.eclipse.sonar/group1"
-              state="true"
-              style="push"
-              icon="icons/refresh.gif">
-        </action>        
         
         <action
               label="Sonar server"

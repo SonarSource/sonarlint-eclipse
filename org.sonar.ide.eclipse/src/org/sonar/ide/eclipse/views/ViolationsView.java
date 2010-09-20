@@ -17,12 +17,6 @@
  */
 package org.sonar.ide.eclipse.views;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
@@ -30,7 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.markers.MarkerSupportView;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.jobs.RefreshViolationJob;
+import org.sonar.ide.eclipse.jobs.RefreshAllViolationsJob;
 
 /**
  * @author Jérémie Lagarde
@@ -63,9 +57,7 @@ public class ViolationsView extends MarkerSupportView {
       refreshAction = new Action() {
         @Override
         public void run() {
-          List<IResource> resources = new ArrayList<IResource>();
-          Collections.addAll(resources, ResourcesPlugin.getWorkspace().getRoot().getProjects());
-          (new RefreshViolationJob(resources)).schedule();
+          RefreshAllViolationsJob.createAndSchedule();
         }
       };
       refreshAction.setText(Messages.getString("action.refresh.violations")); //$NON-NLS-1$

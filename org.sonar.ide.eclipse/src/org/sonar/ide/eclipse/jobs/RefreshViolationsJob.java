@@ -19,12 +19,24 @@
 package org.sonar.ide.eclipse.jobs;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPartListener2;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.progress.UIJob;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.shared.violations.ViolationUtils;
@@ -37,9 +49,9 @@ import org.sonar.wsclient.services.Violation;
  * 
  * @author Jérémie Lagarde
  */
-public class RefreshViolationJob extends AbstractRefreshModelJob<Violation> {
+public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
 
-  public RefreshViolationJob(final List<IResource> resources) {
+  public RefreshViolationsJob(final List<IResource> resources) {
     super(resources, SonarPlugin.MARKER_VIOLATION_ID);
   }
 
@@ -84,6 +96,51 @@ public class RefreshViolationJob extends AbstractRefreshModelJob<Violation> {
     extraInfos.put("rulename", violation.getRuleName());
     extraInfos.put("rulepriority", violation.getPriority());
     return extraInfos;
+  }
+
+  public static void setupViolationsUpdater() {
+    new UIJob("Prepare violations updater") {
+      @Override
+      public IStatus runInUIThread(IProgressMonitor monitor) {
+        final IWorkbenchPage page = SonarPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        page.addPartListener(new ViolationsUpdater());
+        return Status.OK_STATUS;
+      }
+    }.schedule();
+  }
+
+  private static class ViolationsUpdater implements IPartListener2 {
+    public void partOpened(IWorkbenchPartReference partRef) {
+      IWorkbenchPart part = partRef.getPart(true);
+      if (part instanceof IEditorPart) {
+        IEditorInput input = ((IEditorPart) part).getEditorInput();
+        if (input instanceof IFileEditorInput) {
+          IResource resource = ((IFileEditorInput) input).getFile();
+          new RefreshViolationsJob(Collections.singletonList(resource)).schedule();
+        }
+      }
+    }
+
+    public void partVisible(IWorkbenchPartReference partRef) {
+    }
+
+    public void partInputChanged(IWorkbenchPartReference partRef) {
+    }
+
+    public void partHidden(IWorkbenchPartReference partRef) {
+    }
+
+    public void partDeactivated(IWorkbenchPartReference partRef) {
+    }
+
+    public void partClosed(IWorkbenchPartReference partRef) {
+    }
+
+    public void partBroughtToTop(IWorkbenchPartReference partRef) {
+    }
+
+    public void partActivated(IWorkbenchPartReference partRef) {
+    }
   }
 
 }

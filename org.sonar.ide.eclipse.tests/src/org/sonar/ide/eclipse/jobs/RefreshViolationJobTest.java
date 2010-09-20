@@ -85,7 +85,7 @@ public class RefreshViolationJobTest extends SonarTestCase {
     // Retrieve violation markers
     final List<IResource> resources = new ArrayList<IResource>();
     resources.add(project);
-    final Job job = new RefreshViolationJob(resources);
+    final Job job = new RefreshViolationsJob(resources);
     job.schedule();
     job.join();
     LOG.debug("Violation markers retrieved");
@@ -117,7 +117,7 @@ public class RefreshViolationJobTest extends SonarTestCase {
     // Retrieve violation markers
     final List<IResource> resources = new ArrayList<IResource>();
     resources.add(project);
-    final Job job = new RefreshViolationJob(resources);
+    final Job job = new RefreshViolationsJob(resources);
     job.schedule();
     job.join();
     LOG.debug("Violation markers retrieved");

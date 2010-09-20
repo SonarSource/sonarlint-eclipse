@@ -37,6 +37,7 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.console.SonarConsole;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
+import org.sonar.ide.eclipse.jobs.RefreshViolationsJob;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -50,36 +51,36 @@ import ch.qos.logback.core.util.StatusPrinter;
 public class SonarPlugin extends AbstractUIPlugin {
 
   // The plug-in ID
-  public static final String         PLUGIN_ID             = "org.sonar.ide.eclipse";
+  public static final String PLUGIN_ID = "org.sonar.ide.eclipse";
 
   // Markers
-  public static final String         MARKER_VIOLATION_ID   = PLUGIN_ID + ".sonarViolationMarker";  //$NON-NLS-1$
-  public static final String         MARKER_DUPLICATION_ID = PLUGIN_ID + ".sonarDuplicationMarker"; //$NON-NLS-1$
+  public static final String MARKER_VIOLATION_ID = PLUGIN_ID + ".sonarViolationMarker"; //$NON-NLS-1$
+  public static final String MARKER_DUPLICATION_ID = PLUGIN_ID + ".sonarDuplicationMarker"; //$NON-NLS-1$
 
   // Images
-  private static ImageDescriptor     SONARWIZBAN_IMG;
-  private static ImageDescriptor     SONAR16_IMG;
-  private static ImageDescriptor     SONAR32_IMG;
-  private static ImageDescriptor     SONARCONSOLE_IMG;
-  private static ImageDescriptor     SONARSYNCHRO_IMG;
-  private static ImageDescriptor     SONARREFRESH_IMG;
-  private static ImageDescriptor     SONARCLOSE_IMG;
+  private static ImageDescriptor SONARWIZBAN_IMG;
+  private static ImageDescriptor SONAR16_IMG;
+  private static ImageDescriptor SONAR32_IMG;
+  private static ImageDescriptor SONARCONSOLE_IMG;
+  private static ImageDescriptor SONARSYNCHRO_IMG;
+  private static ImageDescriptor SONARREFRESH_IMG;
+  private static ImageDescriptor SONARCLOSE_IMG;
 
-  public static final String         IMG_SONARWIZBAN       = "sonar_wizban.gif";                   //$NON-NLS-1$
-  public static final String         IMG_SONAR16           = "sonar.png";                          //$NON-NLS-1$
-  public static final String         IMG_SONAR32           = "sonar32.png";                        //$NON-NLS-1$
-  public static final String         IMG_SONARCONSOLE      = "sonar.png";                          //$NON-NLS-1$
-  public static final String         IMG_SONARSYNCHRO      = "synced.gif";                         //$NON-NLS-1$
-  public static final String         IMG_SONARREFRESH      = "refresh.gif";                        //$NON-NLS-1$
-  public static final String         IMG_SONARCLOSE        = "close.gif";                          //$NON-NLS-1$
+  public static final String IMG_SONARWIZBAN = "sonar_wizban.gif"; //$NON-NLS-1$
+  public static final String IMG_SONAR16 = "sonar.png"; //$NON-NLS-1$
+  public static final String IMG_SONAR32 = "sonar32.png"; //$NON-NLS-1$
+  public static final String IMG_SONARCONSOLE = "sonar.png"; //$NON-NLS-1$
+  public static final String IMG_SONARSYNCHRO = "synced.gif"; //$NON-NLS-1$
+  public static final String IMG_SONARREFRESH = "refresh.gif"; //$NON-NLS-1$
+  public static final String IMG_SONARCLOSE = "close.gif"; //$NON-NLS-1$
 
   // The shared instance
-  private static SonarPlugin         plugin;
+  private static SonarPlugin plugin;
 
-  private static SonarServerManager  serverManager;
+  private static SonarServerManager serverManager;
   private static SonarProjectManager projectManager;
 
-  private SonarConsole               console;
+  private SonarConsole console;
 
   public SonarPlugin() {
   }
@@ -106,6 +107,7 @@ public class SonarPlugin extends AbstractUIPlugin {
     setupLogging();
     setupConsole();
     setupProxy(context);
+    RefreshViolationsJob.setupViolationsUpdater();
 
     LoggerFactory.getLogger(SonarPlugin.class).info("Sonar plugin started");
   }
@@ -187,12 +189,12 @@ public class SonarPlugin extends AbstractUIPlugin {
 
       public void run() {
         switch (severity) {
-        case IStatus.ERROR:
-          MessageDialog.openError(display.getActiveShell(), Messages.getString("error"), msg); //$NON-NLS-1$
-          break;
-        case IStatus.WARNING:
-          MessageDialog.openWarning(display.getActiveShell(), Messages.getString("warning"), msg); //$NON-NLS-1$
-          break;
+          case IStatus.ERROR:
+            MessageDialog.openError(display.getActiveShell(), Messages.getString("error"), msg); //$NON-NLS-1$
+            break;
+          case IStatus.WARNING:
+            MessageDialog.openWarning(display.getActiveShell(), Messages.getString("warning"), msg); //$NON-NLS-1$
+            break;
         }
       }
     });
