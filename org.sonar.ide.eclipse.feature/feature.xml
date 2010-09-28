@@ -1,4 +1,4 @@
-<feature id="org.sonar.ide.eclipse.feature" label="Sonar Integration for Eclipse (Required)" plugin="org.sonar.ide.eclipse" version="0.2.0.qualifier">
+<feature id="org.sonar.ide.eclipse.feature" label="Sonar Integration for Eclipse (Required)" plugin="org.sonar.ide.eclipse" version="0.2.0">
   <description url="http://sonar-ide.codehaus.org/">Sonar Integration for Eclipse</description>
   <copyright url="http://godin.net.ru/">Copyright (c) 2010 Evgeny Mandrikov</copyright>
   <license url="http://www.gnu.org/licenses/lgpl.txt">All rights reserved. This program and the accompanying materials

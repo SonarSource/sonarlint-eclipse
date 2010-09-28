@@ -13,7 +13,7 @@
   <groupId>org.codehaus.sonar-ide.eclipse</groupId>
   <artifactId>eclipse-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.2.0-SNAPSHOT</version>
+  <version>0.2.0</version>
 
   <name>Sonar Integration for Eclipse (parent)</name>
 
@@ -24,7 +24,7 @@
 
     <target.platform>e35</target.platform>
 
-    <sonar-ide-commons.version>0.2-SNAPSHOT</sonar-ide-commons.version>
+    <sonar-ide-commons.version>0.2</sonar-ide-commons.version>
 
     <!-- Version of Sonar for integration tests -->
     <sonarVersion>2.1.2</sonarVersion>
