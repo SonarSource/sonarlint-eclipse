@@ -2,7 +2,7 @@
 <feature
       id="org.sonar.ide.eclipse.m2eclipse.feature"
       label="Sonar Integration for M2Eclipse (Optional)"
-      version="0.2.0"
+      version="0.3.0.qualifier"
       plugin="org.sonar.ide.eclipse">
 
    <description url="http://sonar-ide.codehaus.org/">
