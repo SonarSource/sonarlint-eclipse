@@ -18,10 +18,6 @@
 
 package org.sonar.ide.eclipse.views;
 
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -71,6 +67,10 @@ import org.sonar.ide.eclipse.wizards.EditServerLocationWizard;
 import org.sonar.ide.eclipse.wizards.NewServerLocationWizard;
 import org.sonar.ide.shared.DefaultServerManager.IServerSetListener;
 import org.sonar.wsclient.Host;
+
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.List;
 
 /**
  * @author Jérémie Lagarde
@@ -252,7 +252,8 @@ public class NavigatorView extends ViewPart {
   private void fillLocalToolBar(IToolBarManager manager) {
     manager.add(deleteServerAction);
     manager.add(addServerAction);
-    manager.add(linkToEditorAction);
+    // TODO see SONARIDE-153 :
+    // manager.add(linkToEditorAction);
     manager.add(new Separator());
     drillDownAdapter.addNavigationActions(manager);
   }
@@ -266,8 +267,8 @@ public class NavigatorView extends ViewPart {
         if (obj instanceof TreeServer) {
           String server = ((TreeServer) obj).getName();
           if (MessageDialog.openConfirm(NavigatorView.this.getSite().getShell(), Messages.getString("remove.server.dialog.caption"), //$NON-NLS-1$
-              MessageFormat.format(Messages.getString("remove.server.dialog.msg"), //$NON-NLS-1$
-                  new Object[] { server }))) {
+          MessageFormat.format(Messages.getString("remove.server.dialog.msg"), //$NON-NLS-1$
+          new Object[] { server }))) {
             SonarPlugin.getServerManager().removeServer(server);
           }
         }
