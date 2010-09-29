@@ -26,7 +26,7 @@
    <requires>
       <import feature="org.eclipse.platform" version="3.4.0" match="greaterOrEqual"/>
       <import feature="org.maven.ide.eclipse.feature" version="0.10.0" match="compatible"/>
-      <import feature="org.sonar.ide.eclipse.feature" version="0.2.0" match="equivalent"/>
+      <import feature="org.sonar.ide.eclipse.feature" version="0.3.0" match="equivalent"/>
    </requires>
 
    <plugin
