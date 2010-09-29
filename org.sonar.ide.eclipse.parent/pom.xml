@@ -20,7 +20,7 @@
   <properties>
     <maven.min.version>3.0-beta-1</maven.min.version>
 
-    <tycho.version>0.9.0</tycho.version>
+    <tycho.version>0.10.0</tycho.version>
 
     <target.platform>e35</target.platform>
 
