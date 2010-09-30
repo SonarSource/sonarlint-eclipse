@@ -18,6 +18,7 @@
 
 package org.sonar.ide.eclipse.jobs;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -28,12 +29,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.JavaCore;
+import org.sonar.ide.api.SonarIdeException;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +62,6 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
   protected IStatus run(final IProgressMonitor monitor) {
     this.monitor = monitor;
     try {
-      // TODO put it in messages.properties
       monitor.beginTask("Retrieve sonar data", resources.size());
 
       for (final IResource resource : resources) {
@@ -86,12 +87,15 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
 
   public boolean visit(final IResource resource) throws CoreException {
     if (resource instanceof IFile) {
-      final IJavaElement element = JavaCore.create((IFile) resource);
-      if (element instanceof ICompilationUnit) {
-        final ICompilationUnit unit = (ICompilationUnit) element;
-        cleanMarkers(resource);
-        retrieveMarkers(unit, monitor);
-      }
+      // final IJavaElement element = JavaCore.create((IFile) resource);
+      // if (element instanceof ICompilationUnit) {
+      // final ICompilationUnit unit = (ICompilationUnit) element;
+      // cleanMarkers(resource);
+      // retrieveMarkers(unit, monitor);
+      // }
+      IFile file = (IFile) resource;
+      cleanMarkers(file);
+      retrieveMarkers(file, monitor);
       return false; // do not visit members of this resource
     }
     return true;
@@ -99,40 +103,49 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
 
   protected abstract Collection<M> retrieveDatas(EclipseSonar sonar, IResource resource);
 
-  private void retrieveMarkers(final ICompilationUnit unit, final IProgressMonitor monitor) throws CoreException {
-    if (unit == null || !unit.exists() || monitor.isCanceled()) {
+  private void retrieveMarkers(final IFile resource, final IProgressMonitor monitor) throws CoreException {
+    if (resource == null || !resource.exists() || monitor.isCanceled()) {
       return;
     }
     try {
-      // TODO put it in messages.properties
-      monitor.beginTask("Retrieve sonar informations for " + unit.getElementName(), 1);
-      final Collection<M> datas = retrieveDatas(EclipseSonar.getInstance(unit.getResource().getProject()), unit.getResource());
+      monitor.beginTask("Retrieve sonar informations for " + resource.getName(), 1);
+      final Collection<M> datas = retrieveDatas(EclipseSonar.getInstance(resource.getProject()), resource);
       for (final M data : datas) {
         // create a marker for the actual resource
-        createMarker(unit, data);
+        createMarker(resource, data);
       }
     } catch (final Exception ex) {
-      // TODO : best exception management.
-      ex.printStackTrace();
+      SonarLogger.log(ex);
     } finally {
       monitor.done();
     }
   }
 
-  protected IMarker createMarker(final ICompilationUnit unit, final M data) throws CoreException {
+  protected IMarker createMarker(final IFile file, final M data) throws CoreException {
     final Map<String, Object> markerAttributes = new HashMap<String, Object>();
     markerAttributes.put(IMarker.PRIORITY, getPriority(data));
     markerAttributes.put(IMarker.SEVERITY, getSeverity(data));
     markerAttributes.put(IMarker.LINE_NUMBER, getLine(data));
     markerAttributes.put(IMarker.MESSAGE, getMessage(data));
-    addLine(markerAttributes, getLine(data), unit.getSource());
+
+    InputStream inputStream = file.getContents();
+    String source;
+    try {
+      source = IOUtils.toString(inputStream, file.getCharset());
+    } catch (IOException e) {
+      throw new SonarIdeException(e.getMessage(), e);
+    } finally {
+      IOUtils.closeQuietly(inputStream);
+    }
+
+    addLine(markerAttributes, getLine(data), source);
     final Map<String, Object> extraInfos = getExtraInfos(data);
     if (extraInfos != null) {
       for (final String key : extraInfos.keySet()) {
         markerAttributes.put(key, extraInfos.get(key));
       }
     }
-    final IMarker marker = unit.getResource().createMarker(markerId);
+    final IMarker marker = file.createMarker(markerId);
     marker.setAttributes(markerAttributes);
     return marker;
   }
@@ -169,7 +182,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
   /**
    * Remove all Sonar markers.
    */
-  protected void cleanMarkers(final IResource file) throws CoreException {
+  protected void cleanMarkers(final IFile file) throws CoreException {
     file.deleteMarkers(markerId, true, IResource.DEPTH_ZERO);
   }
 

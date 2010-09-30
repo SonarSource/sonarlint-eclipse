@@ -1,10 +1,7 @@
 package org.sonar.ide.eclipse.jobs;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -21,6 +18,10 @@ import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.wsclient.services.Violation;
 
 import com.google.common.collect.ArrayListMultimap;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class RefreshAllViolationsJob extends RefreshViolationsJob {
 
@@ -73,9 +74,9 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
           if (type != null) {
             ICompilationUnit unit = type.getCompilationUnit();
             if (unit != null) {
-              cleanMarkers(type.getResource());
+              cleanMarkers((IFile) type.getResource());
               for (Violation violation : mm.get(resourceKey)) {
-                createMarker(unit, violation);
+                createMarker((IFile) unit.getResource(), violation);
               }
             }
           }
