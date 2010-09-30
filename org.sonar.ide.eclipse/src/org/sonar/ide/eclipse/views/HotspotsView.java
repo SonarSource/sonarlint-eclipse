@@ -56,17 +56,12 @@ public class HotspotsView extends ViewPart {
     hotspotsLabel.setText("Hotspots by");
 
     combo = new Combo(container, SWT.READ_ONLY | SWT.TOP);
-    GridData gridData = new GridData();
-    gridData.horizontalAlignment = SWT.FILL;
-    // gridData.grabExcessHorizontalSpace = true;
-    combo.setLayoutData(gridData);
 
     resourceLabel = new Label(container, SWT.NONE);
-    gridData = new GridData();
+    GridData gridData = new GridData();
     gridData.horizontalAlignment = SWT.FILL;
     gridData.grabExcessHorizontalSpace = true;
     resourceLabel.setLayoutData(gridData);
-    resourceLabel.setText("Yeah");
 
     viewer = new TableViewer(container);
     gridData = new GridData();
