@@ -8,6 +8,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
@@ -81,6 +83,11 @@ public class HotspotsView extends ViewPart {
 
     viewer.setContentProvider(new ArrayContentProvider());
     viewer.setLabelProvider(new HotspotsLabelProvider());
+    viewer.addDoubleClickListener(new IDoubleClickListener() {
+      public void doubleClick(DoubleClickEvent event) {
+        System.out.println(viewer.getSelection());
+      }
+    });
 
     combo.add("complexity");
     combo.add("uncovered_lines");
