@@ -23,6 +23,7 @@ import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.console.IConsoleConstants;
+import org.sonar.ide.eclipse.views.HotspotsView;
 import org.sonar.ide.eclipse.views.MeasuresView;
 import org.sonar.ide.eclipse.views.NavigatorView;
 import org.sonar.ide.eclipse.views.RemoteView;
@@ -57,6 +58,7 @@ public class SonarPerspectiveFactory implements IPerspectiveFactory {
 
     IFolderLayout bottom = layout.createFolder("bottomRight", IPageLayout.BOTTOM, 0.75f, layout.getEditorArea()); // NON-NLS-1$
     bottom.addView(RemoteView.ID);
+    bottom.addView(HotspotsView.ID);
     bottom.addView(ViolationsView.ID);
     bottom.addView(NavigatorView.ID);
     bottom.addView(IConsoleConstants.ID_CONSOLE_VIEW);

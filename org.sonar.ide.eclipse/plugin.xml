@@ -41,6 +41,13 @@
     	name="%sonar.measures.view.name">
     </view>
     <view
+    	category="org.sonar.ide.eclipse"
+    	class="org.sonar.ide.eclipse.views.HotspotsView"
+    	icon="icons/sonar.png"
+    	id="org.sonar.ide.eclipse.views.HotspotsView"
+    	name="Hotspots">
+    </view>
+    <view
         category="org.sonar.ide.eclipse"
         class="org.sonar.ide.eclipse.views.ViolationsView"
         icon="icons/violations_view.gif"
@@ -214,7 +221,6 @@
         </action>
      </objectContribution>
 
-    <!--
     <objectContribution id="org.sonar.ide.eclipse.projectMenu"
         				adaptable="true"
         				objectClass="org.eclipse.core.resources.IProject">
@@ -231,7 +237,6 @@
           </and>
         </visibility>
     </objectContribution>
-    -->
   </extension>
   
   <extension
