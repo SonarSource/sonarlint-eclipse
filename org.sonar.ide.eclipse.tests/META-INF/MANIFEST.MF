@@ -3,16 +3,16 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Maven Integration Tests Plug-in
 Bundle-SymbolicName: org.sonar.ide.eclipse.tests;singleton:=true
 Bundle-Version: 0.3.0.qualifier
-Require-Bundle: org.junit4;bundle-version="4.4.0",
+Require-Bundle: org.junit4;bundle-version="4.0.0",
  org.eclipse.ui,
  org.eclipse.core.resources,
  org.eclipse.core.runtime,
  org.eclipse.ui.ide,
  org.eclipse.jdt.ui,
  org.eclipse.jdt.core,
- org.sonar.ide.eclipse.sonar_embedder,
- org.sonar.ide.eclipse.tests.common;visibility:=reexport,
- org.sonar.ide.eclipse
+ org.sonar.ide.eclipse.sonar_embedder;bundle-version="[0.3.0,0.4.0)",
+ org.sonar.ide.eclipse.tests.common;bundle-version="[0.3.0,0.4.0)";visibility:=reexport,
+ org.sonar.ide.eclipse;bundle-version="[0.3.0,0.4.0)"
 Bundle-ClassPath: .
 Eclipse-RegisterBuddy: org.sonar.ide.eclipse.tests.common
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Export-Package: org.sonar.ide.test,org.sonar.ide.eclipse.tests.common,
  org.apache.commons.io
-Require-Bundle: org.junit4;bundle-version="4.4.0",org.eclipse.core.res
+Require-Bundle: org.junit4;bundle-version="4.0.0",org.eclipse.core.res
  ources,org.eclipse.core.runtime,org.sonar.ide.eclipse,org.sonar.ide.e
  clipse.sonar_embedder
 Bundle-Vendor: Evgeny Mandrikov
