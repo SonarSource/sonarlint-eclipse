@@ -24,8 +24,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
@@ -59,8 +57,7 @@ public class AutoConfigureProjectJob extends Job {
   }
 
   public AutoConfigureProjectJob(IProject[] projects) {
-    super("Retrieve project information in sonar server"); // TODO put in
-    // messages.properties
+    super("Retrieve project information in sonar server");
     this.projects = projects;
     setPriority(Job.LONG);
   }
@@ -71,7 +68,7 @@ public class AutoConfigureProjectJob extends Job {
     try {
       for (IProject project : projects) {
         if (project.isOpen() && !monitor.isCanceled()) {
-          retrieveProjectConfiguration(JavaCore.create(project), monitor);
+          retrieveProjectConfiguration(project, monitor);
         }
       }
       if ( !monitor.isCanceled()) {
@@ -87,8 +84,8 @@ public class AutoConfigureProjectJob extends Job {
     return status;
   }
 
-  private void retrieveProjectConfiguration(IJavaProject project, IProgressMonitor monitor) throws Exception {
-    final ProjectProperties properties = ProjectProperties.getInstance(project.getResource());
+  private void retrieveProjectConfiguration(IProject project, IProgressMonitor monitor) throws Exception {
+    final ProjectProperties properties = ProjectProperties.getInstance(project);
     if (properties != null && properties.isProjectConfigured()) {
       return;
     }
@@ -105,17 +102,17 @@ public class AutoConfigureProjectJob extends Job {
     }
   }
 
-  private void retrieveProjectConfiguration(IJavaProject project, String serverUrl, IProgressMonitor monitor) throws Exception {
-    ProjectProperties properties = ProjectProperties.getInstance(project.getResource());
+  private void retrieveProjectConfiguration(IProject project, String serverUrl, IProgressMonitor monitor) throws Exception {
+    ProjectProperties properties = ProjectProperties.getInstance(project);
     if (properties != null && properties.isProjectConfigured()) {
       return;
     }
     List<Resource> resources = retrieveResources(serverUrl, monitor);
     for (Resource resource : resources) {
-      if (resource.getKey().endsWith(":" + project.getElementName())) {
+      if (resource.getKey().endsWith(":" + project.getName())) {
         SonarPlugin.getDefault().getConsole().logResponse("Configure");
         properties.setUrl(serverUrl);
-        properties.setArtifactId(project.getElementName());
+        properties.setArtifactId(project.getName());
         properties.setGroupId(StringUtils.substringBefore(resource.getKey(), ":"));
         properties.save();
       }
@@ -133,10 +130,8 @@ public class AutoConfigureProjectJob extends Job {
 
     try {
       monitor.beginTask("Retrieve projects on " + serverUrl, 1);
-      // TODO put it in messages.properties
       // TODO Godin: don't use sonar-ws-client directly
-      ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT,
-          Resource.QUALIFIER_MODULE);
+      ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT, Resource.QUALIFIER_MODULE);
       Sonar sonar = SonarPlugin.getServerManager().getSonar(serverUrl);
       List<Resource> resources = sonar.findAll(query);
       resourcesByServerMap.put(serverUrl, resources);
