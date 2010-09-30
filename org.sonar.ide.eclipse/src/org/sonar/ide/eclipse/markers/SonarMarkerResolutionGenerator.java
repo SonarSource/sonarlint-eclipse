@@ -18,9 +18,6 @@
 
 package org.sonar.ide.eclipse.markers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -29,7 +26,11 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.markers.resolvers.ISonarResolver;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Jérémie Lagarde
@@ -41,7 +42,7 @@ public class SonarMarkerResolutionGenerator implements IMarkerResolutionGenerato
 
   public boolean hasResolutions(final IMarker marker) {
     try {
-      return SonarPlugin.MARKER_VIOLATION_ID.equals(marker.getType());
+      return ISonarConstants.MARKER_ID.equals(marker.getType());
     } catch (final CoreException e) {
       return false;
     }

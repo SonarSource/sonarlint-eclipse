@@ -18,24 +18,24 @@
 
 package org.sonar.ide.eclipse.markers.resolvers;
 
-import java.text.MessageFormat;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.sonar.ide.eclipse.Messages;
-import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarConstants;
+
+import java.text.MessageFormat;
 
 /**
  * @author Jérémie Lagarde
  */
 public class IgnoreMarkerResolver implements ISonarResolver {
-  private String       label;
-  private String       description;
+  private String label;
+  private String description;
 
   public boolean canResolve(final IMarker marker) {
     try {
-      if (SonarPlugin.MARKER_VIOLATION_ID.equals(marker.getType())) {
+      if (ISonarConstants.MARKER_ID.equals(marker.getType())) {
         final Object ruleName = marker.getAttribute("rulename"); //$NON-NLS-1$
         label = MessageFormat.format(Messages.getString("resolver.ignoremarker.label"), ruleName); //$NON-NLS-1$
         description = MessageFormat.format(Messages.getString("resolver.ignoremarker.description"), ruleName); //$NON-NLS-1$

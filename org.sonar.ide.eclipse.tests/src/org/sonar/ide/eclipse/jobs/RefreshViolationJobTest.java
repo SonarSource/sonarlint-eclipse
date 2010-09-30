@@ -20,9 +20,6 @@ package org.sonar.ide.eclipse.jobs;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -38,9 +35,13 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 import org.sonar.wsclient.Host;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test case for refresh violations.
@@ -96,7 +97,7 @@ public class RefreshViolationJobTest extends SonarTestCase {
     addMarckerInfo(1, 4, "Parameter Assignment : Assignment of parameter 'i' is not allowed.");
     addMarckerInfo(2, 1, "Hide Utility Class Constructor : Utility classes should not have a public or default constructor.");
 
-    final IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_VIOLATION_ID, true, IResource.DEPTH_INFINITE);
+    final IMarker[] markers = project.findMarkers(ISonarConstants.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertTrue("There isn't marker for the project.", markers != null && markers.length > 0);
     assertMarkers(markers);
   }
@@ -128,7 +129,7 @@ public class RefreshViolationJobTest extends SonarTestCase {
     addMarckerInfo(1, 4, "Parameter Assignment : Assignment of parameter 'i' is not allowed.");
     addMarckerInfo(2, 1, "Hide Utility Class Constructor : Utility classes should not have a public or default constructor.");
 
-    final IMarker[] markers = project.findMarkers(SonarPlugin.MARKER_VIOLATION_ID, true, IResource.DEPTH_INFINITE);
+    final IMarker[] markers = project.findMarkers(ISonarConstants.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertTrue("There isn't marker for the project.", markers != null && markers.length > 0);
     assertMarkers(markers);
   }

@@ -32,6 +32,7 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.sonar.ide.eclipse.Messages;
+import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.preferences.PreferenceConstants;
@@ -68,7 +69,7 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
   private boolean showOnMessage;
 
   public SonarConsole() {
-    super(Messages.getString("console.view.title"), SONAR_CONSOLE_TYPE, SonarPlugin.getImageDescriptor(SonarPlugin.IMG_SONARCONSOLE)); //$NON-NLS-1$
+    super(Messages.getString("console.view.title"), SONAR_CONSOLE_TYPE, SonarImages.getImageDescriptor(SonarImages.IMG_SONARCONSOLE)); //$NON-NLS-1$
     document = new ConsoleDocument();
     SonarPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(this);
   }

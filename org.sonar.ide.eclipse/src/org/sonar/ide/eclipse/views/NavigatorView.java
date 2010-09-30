@@ -58,6 +58,7 @@ import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.part.DrillDownAdapter;
 import org.eclipse.ui.part.ViewPart;
 import org.sonar.ide.eclipse.Messages;
+import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.views.model.TreeFile;
 import org.sonar.ide.eclipse.views.model.TreeObject;
@@ -363,7 +364,7 @@ public class NavigatorView extends ViewPart {
       }
     };
     linkToEditorAction.setToolTipText(Messages.getString("action.link.desc")); //$NON-NLS-1$
-    linkToEditorAction.setImageDescriptor(SonarPlugin.getImageDescriptor(SonarPlugin.IMG_SONARSYNCHRO));
+    linkToEditorAction.setImageDescriptor(SonarImages.getImageDescriptor(SonarImages.IMG_SONARSYNCHRO));
   }
 
   private void hookDoubleClickAction() {

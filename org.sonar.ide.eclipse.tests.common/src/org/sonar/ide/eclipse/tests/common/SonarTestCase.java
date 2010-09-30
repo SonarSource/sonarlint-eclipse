@@ -20,11 +20,6 @@ package org.sonar.ide.eclipse.tests.common;
 
 import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -42,9 +37,15 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.sonar.ide.api.Logs;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.test.SonarIdeTestCase;
 import org.sonar.ide.test.SonarTestServer;
 import org.sonar.wsclient.Host;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Common test case for sonar-ide/eclipse projects.
@@ -181,7 +182,7 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
       Logs.INFO.debug("Checker marker[" + marker.getId() + "] (" + marker.getAttribute(IMarker.PRIORITY) + ") : line "
           + marker.getAttribute(IMarker.LINE_NUMBER) + " : " + marker.getAttribute(IMarker.MESSAGE));
     }
-    if (!SonarPlugin.MARKER_VIOLATION_ID.equals(marker.getType())) {
+    if ( !ISonarConstants.MARKER_ID.equals(marker.getType())) {
       return;
     }
     for (final MarkerChecker checker : markerCheckerList) {

@@ -18,8 +18,6 @@
 
 package org.sonar.ide.eclipse.markers.resolvers;
 
-import java.text.MessageFormat;
-
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
@@ -38,6 +36,9 @@ import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarConstants;
+
+import java.text.MessageFormat;
 
 /**
  * @author Jérémie Lagarde
@@ -46,12 +47,12 @@ public class NoSonarResolver implements ISonarResolver {
 
   private final String NOSONAR_TAG = "//NOSONAR"; //$NON-NLS-1$
 
-  private String       label;
-  private String       description;
+  private String label;
+  private String description;
 
   public boolean canResolve(final IMarker marker) {
     try {
-      if (SonarPlugin.MARKER_VIOLATION_ID.equals(marker.getType())) {
+      if (ISonarConstants.MARKER_ID.equals(marker.getType())) {
         final Object ruleName = marker.getAttribute("rulename"); //$NON-NLS-1$
         label = MessageFormat.format(Messages.getString("resolver.nosonartag.label"), ruleName); //$NON-NLS-1$
         description = MessageFormat.format(Messages.getString("resolver.nosonartag.description"), ruleName); //$NON-NLS-1$

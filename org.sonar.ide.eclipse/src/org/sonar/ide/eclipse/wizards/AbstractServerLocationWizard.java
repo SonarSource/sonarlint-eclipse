@@ -18,8 +18,6 @@
 
 package org.sonar.ide.eclipse.wizards;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -28,7 +26,10 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.SonarPlugin;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author Jérémie Lagarde
@@ -44,12 +45,13 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
   }
 
   protected abstract String getTitle();
+
   protected abstract String getDefaultUrl();
 
   @Override
   public void addPages() {
     super.addPages();
-    page = new ServerLocationWizardPage("server_location_page", getTitle(), SonarPlugin.getImageDescriptor(SonarPlugin.IMG_SONARWIZBAN),getDefaultUrl());
+    page = new ServerLocationWizardPage("server_location_page", getTitle(), SonarImages.getImageDescriptor(SonarImages.IMG_SONARWIZBAN), getDefaultUrl());
     addPage(page);
   }
 

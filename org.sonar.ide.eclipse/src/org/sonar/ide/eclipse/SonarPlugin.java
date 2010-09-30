@@ -22,7 +22,6 @@ import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -42,40 +41,10 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 
 import java.net.Authenticator;
-import java.net.MalformedURLException;
 import java.net.ProxySelector;
 import java.net.URL;
 
 public class SonarPlugin extends AbstractUIPlugin {
-
-  /**
-   * @deprecated use {@link ISonarConstants#MARKER_ID} instead
-   */
-  @Deprecated
-  public static final String MARKER_VIOLATION_ID = ISonarConstants.PLUGIN_ID + ".sonarViolationMarker"; //$NON-NLS-1$
-
-  /**
-   * @deprecated use {@link ISonarConstants#MARKER_ID} instead
-   */
-  @Deprecated
-  public static final String MARKER_DUPLICATION_ID = ISonarConstants.PLUGIN_ID + ".sonarDuplicationMarker"; //$NON-NLS-1$
-
-  // Images
-  private static ImageDescriptor SONARWIZBAN_IMG;
-  private static ImageDescriptor SONAR16_IMG;
-  private static ImageDescriptor SONAR32_IMG;
-  private static ImageDescriptor SONARCONSOLE_IMG;
-  private static ImageDescriptor SONARSYNCHRO_IMG;
-  private static ImageDescriptor SONARREFRESH_IMG;
-  private static ImageDescriptor SONARCLOSE_IMG;
-
-  public static final String IMG_SONARWIZBAN = "sonar_wizban.gif"; //$NON-NLS-1$
-  public static final String IMG_SONAR16 = "sonar.png"; //$NON-NLS-1$
-  public static final String IMG_SONAR32 = "sonar32.png"; //$NON-NLS-1$
-  public static final String IMG_SONARCONSOLE = "sonar.png"; //$NON-NLS-1$
-  public static final String IMG_SONARSYNCHRO = "synced.gif"; //$NON-NLS-1$
-  public static final String IMG_SONARREFRESH = "refresh.gif"; //$NON-NLS-1$
-  public static final String IMG_SONARCLOSE = "close.gif"; //$NON-NLS-1$
 
   // The shared instance
   private static SonarPlugin plugin;
@@ -191,73 +160,6 @@ public class SonarPlugin extends AbstractUIPlugin {
         ErrorDialog.openError(display.getActiveShell(), null, Messages.getString("error"), status); //$NON-NLS-1$
       }
     });
-  }
-
-  public static ImageDescriptor getImageDescriptor(final String id) {
-    ImageDescriptor img = getCachedImageDescriptor(id);
-    if (img == null) {
-      img = loadImageDescriptor(id);
-    }
-    return img;
-  }
-
-  private static ImageDescriptor loadImageDescriptor(final String id) {
-    final String iconPath = "icons/"; //$NON-NLS-1$
-
-    try {
-      final URL installURL = SonarPlugin.getDefault().getBundle().getEntry("/"); //$NON-NLS-1$
-      final URL url = new URL(installURL, iconPath + id);
-      return ImageDescriptor.createFromURL(url);
-    } catch (final MalformedURLException e) {
-      return ImageDescriptor.getMissingImageDescriptor();
-    }
-  }
-
-  private static ImageDescriptor getCachedImageDescriptor(final String id) {
-    ImageDescriptor img = null;
-    if (id.equals(IMG_SONARWIZBAN)) {
-      if (SONARWIZBAN_IMG == null) {
-        SONARWIZBAN_IMG = loadImageDescriptor(IMG_SONARWIZBAN);
-      }
-      img = SONARWIZBAN_IMG;
-    }
-    if (id.equals(IMG_SONAR16)) {
-      if (SONAR16_IMG == null) {
-        SONAR16_IMG = loadImageDescriptor(IMG_SONAR16);
-      }
-      img = SONARCONSOLE_IMG;
-    }
-    if (id.equals(IMG_SONAR32)) {
-      if (SONAR32_IMG == null) {
-        SONAR32_IMG = loadImageDescriptor(IMG_SONAR32);
-      }
-      img = SONARCONSOLE_IMG;
-    }
-    if (id.equals(IMG_SONARCONSOLE)) {
-      if (SONARCONSOLE_IMG == null) {
-        SONARCONSOLE_IMG = loadImageDescriptor(IMG_SONARCONSOLE);
-      }
-      img = SONARCONSOLE_IMG;
-    }
-    if (id.equals(IMG_SONARSYNCHRO)) {
-      if (SONARSYNCHRO_IMG == null) {
-        SONARSYNCHRO_IMG = loadImageDescriptor(IMG_SONARSYNCHRO);
-      }
-      img = SONARSYNCHRO_IMG;
-    }
-    if (id.equals(IMG_SONARREFRESH)) {
-      if (SONARREFRESH_IMG == null) {
-        SONARREFRESH_IMG = loadImageDescriptor(IMG_SONARREFRESH);
-      }
-      img = SONARREFRESH_IMG;
-    }
-    if (id.equals(IMG_SONARCLOSE)) {
-      if (SONARCLOSE_IMG == null) {
-        SONARCLOSE_IMG = loadImageDescriptor(IMG_SONARCLOSE);
-      }
-      img = SONARCLOSE_IMG;
-    }
-    return img;
   }
 
 }

@@ -25,6 +25,7 @@ import org.eclipse.compare.ResourceNode;
 import org.eclipse.compare.structuremergeviewer.DiffNode;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.SonarPlugin;
 
 /**
@@ -50,7 +51,7 @@ public class SonarCompareInput extends CompareEditorInput {
     config.setLeftEditable(true);
     config.setRightLabel(right.getName() + " (sonar server)");
     config.setRightEditable(false);
-    config.setRightImage(SonarPlugin.getImageDescriptor(SonarPlugin.IMG_SONAR16).createImage());
+    config.setRightImage(SonarImages.getImageDescriptor(SonarImages.IMG_SONAR16).createImage());
     return new DiffNode(left, right);
   }
 }

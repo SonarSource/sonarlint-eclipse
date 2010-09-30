@@ -23,6 +23,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.markers.MarkerSupportView;
 import org.sonar.ide.eclipse.Messages;
+import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.jobs.RefreshAllViolationsJob;
 
@@ -62,7 +63,7 @@ public class ViolationsView extends MarkerSupportView {
       };
       refreshAction.setText(Messages.getString("action.refresh.violations")); //$NON-NLS-1$
       refreshAction.setToolTipText(Messages.getString("action.refresh.violations.desc")); //$NON-NLS-1$
-      refreshAction.setImageDescriptor(SonarPlugin.getImageDescriptor(SonarPlugin.IMG_SONARREFRESH));
+      refreshAction.setImageDescriptor(SonarImages.getImageDescriptor(SonarImages.IMG_SONARREFRESH));
     }
     return refreshAction;
   }

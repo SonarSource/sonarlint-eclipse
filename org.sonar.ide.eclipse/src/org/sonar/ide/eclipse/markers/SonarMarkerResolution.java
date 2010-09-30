@@ -28,6 +28,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMarkerResolution2;
+import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.markers.resolvers.ISonarResolver;
 
@@ -47,7 +48,7 @@ public class SonarMarkerResolution implements IMarkerResolution2 {
   }
 
   public Image getImage() {
-    return SonarPlugin.getImageDescriptor(SonarPlugin.IMG_SONAR16).createImage();
+    return SonarImages.getImageDescriptor(SonarImages.IMG_SONAR16).createImage();
   }
 
   public String getLabel() {

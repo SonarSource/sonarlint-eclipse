@@ -12,7 +12,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarConstants;
 
 @Ignore("Godin: doesn't work in SonarSource Hudson")
 public class ViolationsTest extends UITestCase {
@@ -29,13 +29,13 @@ public class ViolationsTest extends UITestCase {
 
     final SWTBotTree tree = selectProject(projectName);
 
-    assertThat(getMarkers(projectName, SonarPlugin.MARKER_VIOLATION_ID).length, is(0));
+    assertThat(getMarkers(projectName, ISonarConstants.MARKER_ID).length, is(0));
 
     ContextMenuHelper.clickContextMenu(tree, "Sonar", "Refresh violations");
     waitForAllBuildsToComplete();
     bot.sleep(1000 * 30); // TODO Godin: looks like waitForAllBuildsToComplete(); doesn't work
 
-    assertThat(getMarkers(projectName, SonarPlugin.MARKER_VIOLATION_ID).length, greaterThan(0));
+    assertThat(getMarkers(projectName, ISonarConstants.MARKER_ID).length, greaterThan(0));
   }
 
   private IMarker[] getMarkers(final String projectName, final String markerId) throws Exception {
