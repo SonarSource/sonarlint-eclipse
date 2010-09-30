@@ -19,7 +19,21 @@
 package org.maven.ide.eclipse.sonar;
 
 import org.eclipse.core.runtime.Plugin;
+import org.osgi.framework.BundleContext;
+import org.sonar.ide.eclipse.core.SonarLogger;
 
-public class Activator extends Plugin {
+public class SonarMavenPlugin extends Plugin {
   public static final String PLUGIN_ID = "org.maven.ide.eclipse.sonar";
+
+  @Override
+  public void start(BundleContext context) throws Exception {
+    super.start(context);
+    SonarLogger.log("SonarMavenPlugin started");
+  }
+
+  @Override
+  public void stop(BundleContext context) throws Exception {
+    SonarLogger.log("SonarMavenPlugin stopped");
+    super.stop(context);
+  }
 }

@@ -83,7 +83,7 @@ public class SonarPlugin extends AbstractUIPlugin {
     setupProxy(context);
     RefreshViolationsJob.setupViolationsUpdater();
 
-    LoggerFactory.getLogger(SonarPlugin.class).info("Sonar plugin started");
+    LoggerFactory.getLogger(SonarPlugin.class).info("SonarPlugin started");
   }
 
   @Override
@@ -92,7 +92,7 @@ public class SonarPlugin extends AbstractUIPlugin {
       console.shutdown();
     }
     plugin = null;
-    LoggerFactory.getLogger(SonarPlugin.class).info("Sonar plugin stopped");
+    LoggerFactory.getLogger(SonarPlugin.class).info("SonarPlugin stopped");
     super.stop(context);
   }
 

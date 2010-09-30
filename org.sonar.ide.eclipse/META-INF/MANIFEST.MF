@@ -33,5 +33,6 @@ Export-Package: org.sonar.ide.eclipse,
  org.sonar.ide.eclipse.views,
  org.sonar.ide.eclipse.jobs,
  org.sonar.ide.eclipse.views.model,
- org.sonar.ide.eclipse.wizards
+ org.sonar.ide.eclipse.wizards,
+ org.sonar.ide.eclipse.utils
 Bundle-Localization: OSGI-INF/l10n/bundle

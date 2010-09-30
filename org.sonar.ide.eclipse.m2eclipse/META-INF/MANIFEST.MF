@@ -4,7 +4,7 @@ Bundle-Name: Sonar Integration for Eclipse Maven
 Bundle-SymbolicName: org.sonar.ide.eclipse.m2eclipse;singleton:=true
 Bundle-Version: 0.3.0.qualifier
 Bundle-Vendor: Evgeny Mandrikov
-Bundle-Activator: org.maven.ide.eclipse.sonar.Activator
+Bundle-Activator: org.maven.ide.eclipse.sonar.SonarMavenPlugin
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.sonar.ide.eclipse,

@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.slf4j.LoggerFactory;
 
 public class SonarLogger {
 
@@ -31,6 +32,7 @@ public class SonarLogger {
   }
 
   public static void log(String msg) {
+    LoggerFactory.getLogger(SonarLogger.class).info(msg);
     log(new Status(IStatus.OK, ISonarConstants.PLUGIN_ID, msg));
   }
 
