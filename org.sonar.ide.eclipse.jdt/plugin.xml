@@ -5,5 +5,9 @@
                class="org.sonar.ide.eclipse.jdt.internal.JavaElementsAdapterFactory">
          <adapter type="org.sonar.wsclient.services.Resource"/>
       </factory>
+      <factory adaptableType="org.sonar.wsclient.services.Resource"
+               class="org.sonar.ide.eclipse.jdt.internal.JavaElementsAdapterFactory">
+         <adapter type="org.eclipse.core.resources.IFile"/>
+      </factory>
    </extension>
 </plugin>

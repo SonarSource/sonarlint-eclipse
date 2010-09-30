@@ -166,7 +166,8 @@ public class HotspotsView extends ViewPart {
   private void update(final Object content) {
     Display.getDefault().asyncExec(new Runnable() {
       public void run() {
-        resourceLabel.setText("for project " + selection);
+        IProject project = PlatformUtils.adapt(selection, IProject.class);
+        resourceLabel.setText("for project " + project.getName());
         column2.getColumn().setText(metricKey);
         viewer.setInput(content);
       }
