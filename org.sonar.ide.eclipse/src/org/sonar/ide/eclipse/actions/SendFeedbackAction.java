@@ -1,8 +1,5 @@
 package org.sonar.ide.eclipse.actions;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -10,6 +7,10 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.SonarLogger;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class SendFeedbackAction implements IWorkbenchWindowActionDelegate {
 
@@ -29,11 +30,9 @@ public class SendFeedbackAction implements IWorkbenchWindowActionDelegate {
         browserSupport.getExternalBrowser().openURL(url);
       }
     } catch (PartInitException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      SonarLogger.log(e);
     } catch (MalformedURLException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      SonarLogger.log(e);
     }
   }
 

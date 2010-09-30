@@ -18,8 +18,8 @@
 
 package org.sonar.ide.eclipse;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.widgets.Display;
+import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.preferences.PreferenceConstants;
 import org.sonar.ide.shared.DefaultServerManager;
 import org.sonar.wsclient.Host;
@@ -46,7 +46,7 @@ public class SonarServerManager extends DefaultServerManager {
           try {
             listener.serverSetChanged(eventType, serverList);
           } catch (Throwable t) {
-            SonarPlugin.getDefault().writeLog(IStatus.ERROR, t.getMessage(), t);
+            SonarLogger.log(t);
           }
         }
       });

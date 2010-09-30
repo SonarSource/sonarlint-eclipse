@@ -18,8 +18,6 @@
 
 package org.sonar.ide.eclipse.wizards;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -44,7 +42,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.wsclient.Host;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author Jérémie Lagarde
@@ -107,6 +109,7 @@ public class ServerLocationWizardPage extends WizardPage {
 
     testConnectionButton.addSelectionListener(new SelectionAdapter() {
 
+      @Override
       public void widgetSelected(SelectionEvent e) {
         // We need those variables - in other case we would get an IllegalAccessException
         final String serverUrl = getServerUrl();
@@ -119,9 +122,9 @@ public class ServerLocationWizardPage extends WizardPage {
               monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
               try {
                 if (SonarPlugin.getServerManager().testSonar(serverUrl, username, password)) {
-                  status = new Status(Status.OK, SonarPlugin.PLUGIN_ID, Messages.getString("test.server.dialog.msg"));
+                  status = new Status(Status.OK, ISonarConstants.PLUGIN_ID, Messages.getString("test.server.dialog.msg"));
                 } else {
-                  status = new Status(Status.ERROR, SonarPlugin.PLUGIN_ID, Messages.getString("test.server.dialog.error"));
+                  status = new Status(Status.ERROR, ISonarConstants.PLUGIN_ID, Messages.getString("test.server.dialog.error"));
                 }
               } catch (CoreException e) {
                 status = e.getStatus();
@@ -136,8 +139,7 @@ public class ServerLocationWizardPage extends WizardPage {
             }
           });
         } catch (InvocationTargetException e1) {
-          // TODO Auto-generated catch block
-          e1.printStackTrace();
+          SonarLogger.log(e1);
         } catch (InterruptedException e1) {
           // canceled
         }
@@ -146,11 +148,11 @@ public class ServerLocationWizardPage extends WizardPage {
         String message = status.getMessage();
         switch (status.getSeverity()) {
           case IStatus.OK:
-            setMessage(message, IMessageProvider.INFORMATION);
+                    setMessage(message, IMessageProvider.INFORMATION);
             break;
 
           default:
-            setMessage(message, IMessageProvider.ERROR);
+                    setMessage(message, IMessageProvider.ERROR);
             break;
         }
       }
@@ -167,13 +169,16 @@ public class ServerLocationWizardPage extends WizardPage {
     Host host = SonarPlugin.getServerManager().findServer(defaultServerUrl);
     if (host != null) {
       serverUrlText.setText(host.getHost());
-      if (StringUtils.isNotBlank(host.getUsername()))
+      if (StringUtils.isNotBlank(host.getUsername())) {
         serverUsernameText.setText(host.getUsername());
-      if (StringUtils.isNotBlank(host.getPassword()))
+      }
+      if (StringUtils.isNotBlank(host.getPassword())) {
         serverPasswordText.setText(host.getPassword());
+      }
     } else {
-      if (defaultServerUrl != null)
+      if (defaultServerUrl != null) {
         serverUrlText.setText(defaultServerUrl);
+      }
     }
   }
 

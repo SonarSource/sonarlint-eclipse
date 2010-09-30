@@ -19,20 +19,19 @@
 package org.sonar.ide.eclipse.properties;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonar.ide.api.SonarIdeException;
 import org.sonar.ide.eclipse.Messages;
-import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.SonarLogger;
 
 /**
  * Property page for projects to configure sonar server connection. It store in
  * <project>/.settings/org.sonar.ide.eclipse.prefs following properties:
- *   - url,
- *   - groupId, artifactId, branch
+ * - url,
+ * - groupId, artifactId, branch
  * 
  * @author Jérémie Lagarde
  */
@@ -66,7 +65,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
   @Override
   protected void performApply() {
     ProjectProperties projectProperties = ProjectProperties.getInstance(getProject());
-    if (projectProperties == null || block ==null) {
+    if (projectProperties == null || block == null) {
       return;
     }
     projectProperties.setUrl(block.getUrl());
@@ -76,7 +75,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
     try {
       projectProperties.save();
     } catch (SonarIdeException e) {
-      SonarPlugin.getDefault().writeLog(IStatus.ERROR, e.getMessage(), e);
+      SonarLogger.log(e);
     }
   }
 

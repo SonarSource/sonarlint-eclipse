@@ -18,16 +18,10 @@
 
 package org.sonar.ide.eclipse;
 
-import java.net.Authenticator;
-import java.net.MalformedURLException;
-import java.net.ProxySelector;
-import java.net.URL;
-
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -36,6 +30,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.console.SonarConsole;
+import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.jobs.RefreshViolationsJob;
 
@@ -45,17 +41,24 @@ import ch.qos.logback.core.joran.JoranConfiguratorBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 
-/**
- * @author Jérémie Lagarde
- */
+import java.net.Authenticator;
+import java.net.MalformedURLException;
+import java.net.ProxySelector;
+import java.net.URL;
+
 public class SonarPlugin extends AbstractUIPlugin {
 
-  // The plug-in ID
-  public static final String PLUGIN_ID = "org.sonar.ide.eclipse";
+  /**
+   * @deprecated use {@link ISonarConstants#MARKER_ID} instead
+   */
+  @Deprecated
+  public static final String MARKER_VIOLATION_ID = ISonarConstants.PLUGIN_ID + ".sonarViolationMarker"; //$NON-NLS-1$
 
-  // Markers
-  public static final String MARKER_VIOLATION_ID = PLUGIN_ID + ".sonarViolationMarker"; //$NON-NLS-1$
-  public static final String MARKER_DUPLICATION_ID = PLUGIN_ID + ".sonarDuplicationMarker"; //$NON-NLS-1$
+  /**
+   * @deprecated use {@link ISonarConstants#MARKER_ID} instead
+   */
+  @Deprecated
+  public static final String MARKER_DUPLICATION_ID = ISonarConstants.PLUGIN_ID + ".sonarDuplicationMarker"; //$NON-NLS-1$
 
   // Images
   private static ImageDescriptor SONARWIZBAN_IMG;
@@ -104,6 +107,8 @@ public class SonarPlugin extends AbstractUIPlugin {
     super.start(context);
     plugin = this;
 
+    SonarLogger.setLog(getLog());
+
     setupLogging();
     setupConsole();
     setupProxy(context);
@@ -146,7 +151,7 @@ public class SonarPlugin extends AbstractUIPlugin {
       }
       StatusPrinter.printIfErrorsOccured(lc);
     } else {
-      System.err.println("logback.xml not found");
+      SonarLogger.log("logback.xml not found");
     }
   }
 
@@ -163,7 +168,7 @@ public class SonarPlugin extends AbstractUIPlugin {
     try {
       console = new SonarConsole();
     } catch (final RuntimeException e) {
-      writeLog(IStatus.ERROR, "Errors occurred starting the Sonar console", e); //$NON-NLS-1$
+      SonarLogger.log("Error occurred during Sonar console startup", e);
     }
   }
 
@@ -172,42 +177,16 @@ public class SonarPlugin extends AbstractUIPlugin {
   }
 
   private IStatus createStatus(final int severity, final String msg, final Throwable t) {
-    return new Status(severity, PLUGIN_ID, msg, t);
-  }
-
-  public void writeLog(final int severity, final String msg, final Throwable t) {
-    super.getLog().log(createStatus(severity, msg, t));
-  }
-
-  public void writeLog(final IStatus status) {
-    super.getLog().log(status);
-  }
-
-  public void displayMessage(final int severity, final String msg) {
-    final Display display = PlatformUI.getWorkbench().getDisplay();
-    display.syncExec(new Runnable() {
-
-      public void run() {
-        switch (severity) {
-          case IStatus.ERROR:
-            MessageDialog.openError(display.getActiveShell(), Messages.getString("error"), msg); //$NON-NLS-1$
-            break;
-          case IStatus.WARNING:
-            MessageDialog.openWarning(display.getActiveShell(), Messages.getString("warning"), msg); //$NON-NLS-1$
-            break;
-        }
-      }
-    });
+    return new Status(severity, ISonarConstants.PLUGIN_ID, msg, t);
   }
 
   public void displayError(final int severity, final String msg, final Throwable t, final boolean shouldLog) {
     final IStatus status = createStatus(severity, msg, t);
     if (shouldLog) {
-      writeLog(status);
+      SonarLogger.log(status);
     }
     final Display display = PlatformUI.getWorkbench().getDisplay();
     display.syncExec(new Runnable() {
-
       public void run() {
         ErrorDialog.openError(display.getActiveShell(), null, Messages.getString("error"), status); //$NON-NLS-1$
       }

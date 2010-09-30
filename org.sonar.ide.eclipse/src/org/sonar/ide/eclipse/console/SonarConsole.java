@@ -18,8 +18,6 @@
 
 package org.sonar.ide.eclipse.console;
 
-import java.io.IOException;
-
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.JFaceResources;
@@ -35,8 +33,11 @@ import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.preferences.PreferenceConstants;
 import org.sonar.ide.ui.ISonarConsole;
+
+import java.io.IOException;
 
 /**
  * 
@@ -72,6 +73,7 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
     SonarPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(this);
   }
 
+  @Override
   protected void init() {
     super.init();
     Display.getDefault().asyncExec(new Runnable() {
@@ -143,7 +145,7 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
               break;
           }
         } catch (IOException e) {
-          SonarPlugin.getDefault().writeLog(0, e.getMessage(), e);
+          SonarLogger.log(e);
         }
       } else {
         document.appendConsoleLine(type, line);
@@ -159,6 +161,7 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
     manager.showConsoleView(this);
   }
 
+  @Override
   protected void dispose() {
     // Here we can't call super.dispose() because we actually want the
     // partitioner to remain

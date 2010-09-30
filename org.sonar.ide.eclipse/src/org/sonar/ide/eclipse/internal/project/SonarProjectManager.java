@@ -7,7 +7,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonar.ide.api.Logs;
-import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 
 /**
@@ -26,7 +26,7 @@ public class SonarProjectManager {
   public ProjectProperties readSonarConfiguration(IProject project) {
     Logs.INFO.debug("Rading configuration for project " + project.getName());
     IScopeContext projectScope = new ProjectScope(project);
-    IEclipsePreferences projectNode = projectScope.getNode(SonarPlugin.PLUGIN_ID);
+    IEclipsePreferences projectNode = projectScope.getNode(ISonarConstants.PLUGIN_ID);
     if (projectNode == null) {
       Logs.INFO.warn("Unable to read configuration");
       return new ProjectProperties(project);
@@ -53,7 +53,7 @@ public class SonarProjectManager {
    */
   public boolean saveSonarConfiguration(IProject project, ProjectProperties configuration) {
     IScopeContext projectScope = new ProjectScope(project);
-    IEclipsePreferences projectNode = projectScope.getNode(SonarPlugin.PLUGIN_ID);
+    IEclipsePreferences projectNode = projectScope.getNode(ISonarConstants.PLUGIN_ID);
     if (projectNode != null) {
       Logs.INFO.debug("Saving configuration for project " + project.getName());
       projectNode.put(P_VERSION, VERSION);

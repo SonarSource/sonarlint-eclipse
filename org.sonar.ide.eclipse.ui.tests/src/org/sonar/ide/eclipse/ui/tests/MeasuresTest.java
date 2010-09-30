@@ -28,7 +28,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.sonar.ide.eclipse.SonarUI;
+import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.views.MeasuresView;
 
 /**
@@ -49,7 +49,7 @@ public class MeasuresTest extends UITestCase {
     importAndConfigureNonMavenProject(projectName);
 
     // Open measures view
-    openPerspective(SonarUI.ID_PERSPECTIVE);
+    openPerspective(ISonarConstants.PERSPECTIVE_ID);
     bot.viewById(MeasuresView.ID).setFocus();
 
     SWTBotTable table = bot.table();

@@ -20,7 +20,7 @@ package org.sonar.ide.eclipse.ui.tests;
 
 import org.eclipse.jdt.ui.JavaUI;
 import org.junit.Test;
-import org.sonar.ide.eclipse.SonarUI;
+import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.views.MeasuresView;
 import org.sonar.ide.eclipse.views.NavigatorView;
 import org.sonar.ide.eclipse.views.ViolationsView;
@@ -32,7 +32,7 @@ public class PerspectiveTest extends UITestCase {
 
   @Test
   public void allViewsArePresent() {
-    openPerspective(SonarUI.ID_PERSPECTIVE);
+    openPerspective(ISonarConstants.PERSPECTIVE_ID);
 
     bot.viewById(JavaUI.ID_PACKAGES);
 
