@@ -47,6 +47,7 @@ import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.AbstractPackageExplorerListener;
+import org.sonar.ide.eclipse.ui.EnhancedFilteredTree;
 import org.sonar.ide.eclipse.utils.PlatformUtils;
 
 import com.google.common.base.Function;
@@ -88,8 +89,7 @@ public class MeasuresView extends ViewPart {
         return super.isParentMatch(viewer, element);
       }
     };
-    // TODO incompatible with Eclipse 3.4
-    FilteredTree filteredTree = new FilteredTree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
+    FilteredTree filteredTree = new EnhancedFilteredTree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, filter);
     viewer = filteredTree.getViewer();
     viewer.setContentProvider(new MapContentProvider());
     viewer.setLabelProvider(new MeasuresLabelProvider());
