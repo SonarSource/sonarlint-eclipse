@@ -40,6 +40,8 @@ public class HotspotsView extends ViewPart {
 
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.HotspotsView";
 
+  private static final int LIMIT = 5;
+
   private TableViewer viewer;
   private Combo combo;
   private Object selection;
@@ -196,6 +198,6 @@ public class HotspotsView extends ViewPart {
     return ResourceQuery.createForMetrics(resource.getKey(), getMetricKey())
         .setScopes(Resource.SCOPE_ENTITY)
         .setDepth(ResourceQuery.DEPTH_UNLIMITED)
-        .setLimit(5);
+        .setLimit(LIMIT);
   }
 }

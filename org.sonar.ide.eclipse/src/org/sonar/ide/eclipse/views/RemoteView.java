@@ -3,10 +3,6 @@ package org.sonar.ide.eclipse.views;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -19,6 +15,7 @@ import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.ui.AbstractPackageExplorerListener;
+import org.sonar.ide.eclipse.utils.PlatformUtils;
 
 /**
  * @author Evgeny Mandrikov
@@ -66,15 +63,11 @@ public class RemoteView extends ViewPart {
           // no selection
           return;
         }
-
-        // TODO SONARIDE-101
-        if (o instanceof IJavaProject || o instanceof IPackageFragment || o instanceof ICompilationUnit) {
-          IJavaElement javaElement = (IJavaElement) o;
-          IResource resource = javaElement.getResource();
-          IProject project = resource.getProject();
-          updateBrowser(project, resource);
-        } else {
+        IResource resource = PlatformUtils.adapt(o, IResource.class);
+        if (resource == null) {
           clear();
+        } else {
+          updateBrowser(resource.getProject(), resource);
         }
       }
     }

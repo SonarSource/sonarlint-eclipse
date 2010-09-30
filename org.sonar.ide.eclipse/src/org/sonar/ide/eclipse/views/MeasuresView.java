@@ -18,20 +18,12 @@
 
 package org.sonar.ide.eclipse.views;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelection;
@@ -55,10 +47,15 @@ import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.AbstractPackageExplorerListener;
+import org.sonar.ide.eclipse.utils.PlatformUtils;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Evgeny Mandrikov
@@ -180,14 +177,11 @@ public class MeasuresView extends ViewPart {
           // no selection
           return;
         }
-        // TODO SONARIDE-101
-        if (o instanceof IJavaProject || o instanceof IPackageFragment || o instanceof ICompilationUnit) {
-          IJavaElement javaElement = (IJavaElement) o;
-          IResource resource = javaElement.getResource();
-          IProject project = resource.getProject();
-          updateMeasures(project, resource);
-        } else {
+        IResource resource = PlatformUtils.adapt(o, IResource.class);
+        if (resource == null) {
           clear();
+        } else {
+          updateMeasures(resource.getProject(), resource);
         }
       }
     }
