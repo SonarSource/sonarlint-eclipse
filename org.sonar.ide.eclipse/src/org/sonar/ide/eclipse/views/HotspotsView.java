@@ -40,7 +40,7 @@ public class HotspotsView extends ViewPart {
 
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.HotspotsView";
 
-  private static final int LIMIT = 5;
+  private static final int LIMIT = 20;
 
   private TableViewer viewer;
   private Combo combo;
