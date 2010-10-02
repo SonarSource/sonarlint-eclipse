@@ -224,7 +224,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
   /**
    * Tries to get a Sonar resource out of the given element.
    */
-  private ISonarResource findSonarResource(Object element) {
+  protected ISonarResource findSonarResource(Object element) {
     if (element == null) {
       return null;
     }

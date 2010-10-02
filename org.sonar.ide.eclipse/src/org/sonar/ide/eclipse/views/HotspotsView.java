@@ -1,6 +1,7 @@
 package org.sonar.ide.eclipse.views;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -139,6 +140,18 @@ public class HotspotsView extends AbstractSonarInfoView {
         viewer.setInput(content);
       }
     });
+  }
+
+  @Override
+  protected ISonarResource findSonarResource(Object element) {
+    ISonarResource sonarResource = super.findSonarResource(element);
+    if (sonarResource == null) {
+      return null;
+    }
+    if ( !(sonarResource.getResource() instanceof IProject)) {
+      sonarResource = super.findSonarResource(sonarResource.getProject());
+    }
+    return sonarResource;
   }
 
   /**
