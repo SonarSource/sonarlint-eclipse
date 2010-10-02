@@ -18,37 +18,32 @@
 
 package org.sonar.ide.eclipse.views;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
-import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
-import org.sonar.ide.eclipse.ui.AbstractPackageExplorerListener;
+import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
 import org.sonar.ide.eclipse.ui.EnhancedFilteredTree;
-import org.sonar.ide.eclipse.utils.PlatformUtils;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
@@ -61,14 +56,14 @@ import java.util.Map;
 /**
  * @author Evgeny Mandrikov
  */
-public class MeasuresView extends ViewPart {
+public class MeasuresView extends AbstractSonarInfoView {
 
   public static final String ID = "org.sonar.ide.eclipse.views.MeasuresView";
 
   private TreeViewer viewer;
 
   @Override
-  public void createPartControl(Composite parent) {
+  protected void internalCreatePartControl(Composite parent) {
     PatternFilter filter = new PatternFilter() {
       /**
        * This is a workaround to show measures, which belongs to specified category.
@@ -104,6 +99,11 @@ public class MeasuresView extends ViewPart {
     column2.setWidth(100);
 
     clear();
+  }
+
+  @Override
+  protected Control getControl() {
+    return viewer.getControl();
   }
 
   class MeasuresLabelProvider implements ITableLabelProvider, ILabelProvider {
@@ -155,43 +155,12 @@ public class MeasuresView extends ViewPart {
     }
   }
 
-  @Override
-  public void init(IViewSite site) throws PartInitException {
-    selectionListener.init(site);
-    super.init(site);
-  }
-
-  @Override
-  public void dispose() {
-    super.dispose();
-    selectionListener.dispose(getViewSite());
-  }
-
-  private AbstractPackageExplorerListener selectionListener = new AbstractPackageExplorerListener(this) {
-    @Override
-    protected void handleSlection(ISelection selection) {
-      if (selection instanceof IStructuredSelection) {
-        IStructuredSelection sel = (IStructuredSelection) selection;
-        Object o = sel.getFirstElement();
-        if (o == null) {
-          // no selection
-          return;
-        }
-        IResource resource = PlatformUtils.adapt(o, IResource.class);
-        if (resource == null) {
-          clear();
-        } else {
-          updateMeasures(resource.getProject(), resource);
-        }
-      }
-    }
-  };
-
   private void clear() {
     update("Select Java project, package or class in Package Explorer to see measures.", null);
   }
 
   private void update(final String description, final Object content) {
+    // TODO Godin: use syncExec to avoid "Unhandled event loop exception" ?
     Display.getDefault().asyncExec(new Runnable() {
       public void run() {
         setContentDescription(description);
@@ -201,32 +170,30 @@ public class MeasuresView extends ViewPart {
     });
   }
 
-  /**
-   * Passing the focus request to the viewer's control.
-   */
   @Override
-  public void setFocus() {
-    viewer.getControl().setFocus();
-  }
-
-  private void updateMeasures(final IProject project, final IResource resource) {
+  protected void doSetInput(Object input) {
+    final ISonarResource element = (ISonarResource) input;
     Job job = new Job("Loading measures") {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
-        monitor.beginTask("Loading measures for " + resource.toString(), IProgressMonitor.UNKNOWN);
-        update("Loading...", null);
-        final SourceCode sourceCode = EclipseSonar.getInstance(project).search(resource);
-        if (sourceCode == null) {
-          update("Not found.", null);
-        } else {
-          Collection<IMeasure> measures = sourceCode.getMeasures();
-          // Group by domain
-          final Multimap<String, IMeasure> measuresByDomain = Multimaps.index(measures, new Function<IMeasure, String>() {
-            public String apply(IMeasure measure) {
-              return measure.getMetricDef().getDomain();
-            }
-          });
-          update(sourceCode.getKey(), measuresByDomain.asMap());
+        monitor.beginTask("Loading measures for " + element.getKey(), IProgressMonitor.UNKNOWN);
+        try {
+          update("Loading...", null);
+          final SourceCode sourceCode = EclipseSonar.getInstance(element.getProject()).search(element);
+          if (sourceCode == null) {
+            update("Not found.", null);
+          } else {
+            Collection<IMeasure> measures = sourceCode.getMeasures();
+            // Group by domain
+            final Multimap<String, IMeasure> measuresByDomain = Multimaps.index(measures, new Function<IMeasure, String>() {
+              public String apply(IMeasure measure) {
+                return measure.getMetricDef().getDomain();
+              }
+            });
+            update(sourceCode.getKey(), measuresByDomain.asMap());
+          }
+        } catch (Exception e) {
+          SonarLogger.log(e);
         }
         monitor.done();
         return Status.OK_STATUS;

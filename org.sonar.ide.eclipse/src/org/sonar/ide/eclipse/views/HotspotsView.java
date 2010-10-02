@@ -1,15 +1,12 @@
 package org.sonar.ide.eclipse.views;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -20,15 +17,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
-import org.sonar.ide.eclipse.ui.AbstractPackageExplorerListener;
+import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
 import org.sonar.ide.eclipse.ui.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.utils.PlatformUtils;
 import org.sonar.wsclient.services.Resource;
@@ -36,7 +31,7 @@ import org.sonar.wsclient.services.ResourceQuery;
 
 import java.util.List;
 
-public class HotspotsView extends ViewPart {
+public class HotspotsView extends AbstractSonarInfoView {
 
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.HotspotsView";
 
@@ -44,13 +39,12 @@ public class HotspotsView extends ViewPart {
 
   private TableViewer viewer;
   private Combo combo;
-  private Object selection;
   private String metricKey;
   private Label resourceLabel;
   private TableViewerColumn column2;
 
   @Override
-  public void createPartControl(Composite parent) {
+  protected void internalCreatePartControl(Composite parent) {
     Composite container = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout(3, false);
     container.setLayout(layout);
@@ -75,9 +69,10 @@ public class HotspotsView extends ViewPart {
     gridData.verticalAlignment = SWT.FILL;
     viewer.getTable().setLayoutData(gridData);
     viewer.getTable().setHeaderVisible(true);
+    viewer.getTable().setLinesVisible(true);
 
     TableViewerColumn column1 = new TableViewerColumn(viewer, SWT.LEFT);
-    column1.getColumn().setText("File");
+    column1.getColumn().setText("Resource");
     column1.getColumn().setWidth(200);
     column2 = new TableViewerColumn(viewer, SWT.LEFT);
     column2.getColumn().setWidth(200);
@@ -87,6 +82,7 @@ public class HotspotsView extends ViewPart {
     viewer.addDoubleClickListener(new IDoubleClickListener() {
       public void doubleClick(DoubleClickEvent event) {
         Object object = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+        // adapt org.sonar.wsclient.services.Resource to IFile
         IFile file = PlatformUtils.adapt(object, IFile.class);
         if (file != null) {
           PlatformUtils.openEditor(file);
@@ -104,7 +100,7 @@ public class HotspotsView extends ViewPart {
       @Override
       public void widgetSelected(SelectionEvent e) {
         metricKey = combo.getText();
-        updateHotspots();
+        doSetInput(getInput());
       }
     });
     combo.select(0);
@@ -127,65 +123,36 @@ public class HotspotsView extends ViewPart {
   }
 
   @Override
-  public void setFocus() {
-    viewer.getControl().setFocus();
+  protected Control getControl() {
+    return viewer.getControl();
   }
-
-  @Override
-  public void init(IViewSite site) throws PartInitException {
-    selectionListener.init(site);
-    super.init(site);
-  }
-
-  @Override
-  public void dispose() {
-    super.dispose();
-    selectionListener.dispose(getViewSite());
-  }
-
-  private AbstractPackageExplorerListener selectionListener = new AbstractPackageExplorerListener(this) {
-    @Override
-    protected void handleSlection(ISelection selection) {
-      if (selection instanceof IStructuredSelection) {
-        IStructuredSelection sel = (IStructuredSelection) selection;
-        Object o = sel.getFirstElement();
-        if (o == null) {
-          // no selection
-          return;
-        }
-        HotspotsView.this.selection = o;
-        updateHotspots();
-      }
-    }
-  };
 
   private String getMetricKey() {
     return metricKey;
   }
 
   private void update(final Object content) {
-    Display.getDefault().asyncExec(new Runnable() {
+    getSite().getShell().getDisplay().asyncExec(new Runnable() {
       public void run() {
-        IProject project = PlatformUtils.adapt(selection, IProject.class);
-        resourceLabel.setText("for project " + project.getName());
+        resourceLabel.setText("for " + getInput().getKey());
         column2.getColumn().setText(metricKey);
         viewer.setInput(content);
       }
     });
   }
 
-  private void updateHotspots() {
-    final Resource resource = PlatformUtils.adapt(selection, Resource.class);
-    if (resource == null) {
-      return;
-    }
+  /**
+   * @param input ISonarResource to be showin in the view
+   */
+  @Override
+  protected void doSetInput(Object input) {
+    final ISonarResource sonarResource = (ISonarResource) input;
     Job job = new Job("Loading hotspots") {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
-        monitor.beginTask("Loading hotspots for " + resource.getKey(), IProgressMonitor.UNKNOWN);
-        IProject project = PlatformUtils.adapt(selection, IResource.class).getProject();
-        EclipseSonar index = EclipseSonar.getInstance(project);
-        List<Resource> resources = index.getSonar().findAll(getResourceQuery(resource));
+        monitor.beginTask("Loading hotspots for " + sonarResource.getKey(), IProgressMonitor.UNKNOWN);
+        EclipseSonar index = EclipseSonar.getInstance(sonarResource.getProject());
+        List<Resource> resources = index.getSonar().findAll(getResourceQuery(sonarResource));
         update(resources);
         monitor.done();
         return Status.OK_STATUS;
@@ -195,10 +162,11 @@ public class HotspotsView extends ViewPart {
     siteService.schedule(job);
   }
 
-  private ResourceQuery getResourceQuery(Resource resource) {
+  private ResourceQuery getResourceQuery(ISonarResource resource) {
     return ResourceQuery.createForMetrics(resource.getKey(), getMetricKey())
         .setScopes(Resource.SCOPE_ENTITY)
         .setDepth(ResourceQuery.DEPTH_UNLIMITED)
         .setLimit(LIMIT);
   }
+
 }

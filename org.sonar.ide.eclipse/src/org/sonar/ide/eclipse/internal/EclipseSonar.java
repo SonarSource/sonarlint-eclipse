@@ -1,21 +1,20 @@
 package org.sonar.ide.eclipse.internal;
 
-import java.io.IOException;
-
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
-import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
+import org.sonar.ide.eclipse.utils.PlatformUtils;
 import org.sonar.ide.wsclient.RemoteSonar;
 import org.sonar.wsclient.Host;
+
+import java.io.IOException;
 
 /**
  * This is experimental class, which maybe removed in future.
@@ -39,12 +38,19 @@ public final class EclipseSonar extends RemoteSonar {
   }
 
   /**
-   * For Eclipse use {@link #search(IResource)} instead of it. {@inheritDoc}
+   * For Eclipse use {@link #search(ISonarResource)} instead of it. {@inheritDoc}
    */
   @Override
   @Deprecated
   public SourceCode search(String key) {
     return super.search(key);
+  }
+
+  /**
+   * @return null, if not found
+   */
+  public SourceCode search(ISonarResource resource) {
+    return super.search(resource.getKey());
   }
 
   private static void displayError(Throwable e) {
@@ -55,23 +61,18 @@ public final class EclipseSonar extends RemoteSonar {
    * @return null, if not found
    */
   public SourceCode search(IResource resource) {
-    if (resource instanceof IProject) {
-      String key = EclipseResourceUtils.getInstance().getProjectKey(resource);
-      return search(key);
-    } else if (resource instanceof IFolder) {
-      String projectKey = EclipseResourceUtils.getInstance().getProjectKey(resource);
-      String packageKey = EclipseResourceUtils.getInstance().getPackageName(resource);
-      if (StringUtils.isBlank(packageKey)) {
-        packageKey = EclipseResourceUtils.DEFAULT_PACKAGE_NAME;
-      }
-      String key = projectKey + ":" + packageKey;
-      return search(key);
-    } else if (resource instanceof IFile) {
-      String key = EclipseResourceUtils.getInstance().getFileKey(resource);
-      SourceCode code = search(key);
-      if (code == null) {
-        return null;
-      }
+    ISonarResource element = PlatformUtils.adapt(resource, ISonarResource.class);
+    if (element == null) {
+      return null;
+    }
+    String key = element.getKey();
+
+    SourceCode code = search(key);
+    if (code == null) {
+      return null;
+    }
+
+    if (resource instanceof IFile) {
       IFile file = (IFile) resource;
       try {
         String content = IOUtils.toString(file.getContents(), file.getCharset());
@@ -81,9 +82,8 @@ public final class EclipseSonar extends RemoteSonar {
       } catch (IOException e) {
         displayError(e);
       }
-      return code;
     }
-    return null;
+    return code;
   }
 
 }

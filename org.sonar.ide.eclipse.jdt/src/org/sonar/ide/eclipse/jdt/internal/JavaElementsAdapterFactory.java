@@ -2,18 +2,24 @@ package org.sonar.ide.eclipse.jdt.internal;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
-import org.sonar.ide.eclipse.utils.EclipseResourceUtils;
 import org.sonar.wsclient.services.Resource;
 
 /**
@@ -22,20 +28,53 @@ import org.sonar.wsclient.services.Resource;
 @SuppressWarnings("unchecked")
 public class JavaElementsAdapterFactory implements IAdapterFactory {
 
-  private static Class[] ADAPTER_LIST = { Resource.class, IFile.class };
+  private static final char DELIMITER = ':';
+
+  private static final char PACKAGE_DELIMITER = '.';
+
+  /**
+   * Default package name for classes without package definition.
+   */
+  private static final String DEFAULT_PACKAGE_NAME = "[default]";
+
+  private static Class[] ADAPTER_LIST = { ISonarResource.class, Resource.class, IFile.class };
 
   public Object getAdapter(Object adaptableObject, Class adapterType) {
-    if (adapterType == Resource.class) {
+    if (ISonarResource.class.equals(adapterType)) {
+      if (adaptableObject instanceof IJavaElement) {
+        IJavaElement javaElement = (IJavaElement) adaptableObject;
+        return getAdapter(javaElement.getResource(), adapterType);
+      } else if (adaptableObject instanceof IProject) {
+        IProject project = (IProject) adaptableObject;
+        return SonarPlugin.createSonarResource(project, getProjectKey(project));
+      } else if (adaptableObject instanceof IFolder) {
+        IFolder folder = (IFolder) adaptableObject;
+        String projectKey = getProjectKey(folder.getProject());
+        String packageKey = getPackageKey(JavaCore.create(folder));
+        if (packageKey != null) {
+          return SonarPlugin.createSonarResource(folder, projectKey + DELIMITER + packageKey);
+        }
+      } else if (adaptableObject instanceof IFile) {
+        IFile file = (IFile) adaptableObject;
+        String projectKey = getProjectKey(file.getProject());
+        IJavaElement javaElement = JavaCore.create(file);
+        if (javaElement instanceof ICompilationUnit) {
+          String packageKey = getPackageKey(javaElement.getParent());
+          String classKey = StringUtils.substringBeforeLast(javaElement.getElementName(), ".");
+          return SonarPlugin.createSonarResource(file, projectKey + DELIMITER + packageKey + PACKAGE_DELIMITER + classKey);
+        }
+      }
+    } else if (adapterType == Resource.class) {
       if (adaptableObject instanceof IJavaProject) {
         IJavaProject javaProject = (IJavaProject) adaptableObject;
-        String key = EclipseResourceUtils.getInstance().getProjectKey(javaProject.getResource());
+        String key = getProjectKey(javaProject.getProject());
         return new Resource().setKey(key);
       }
     } else if (adapterType == IFile.class) {
       if (adaptableObject instanceof Resource) {
         Resource resource = (Resource) adaptableObject;
         String key = resource.getKey();
-        String[] parts = StringUtils.split(key, ":");
+        String[] parts = StringUtils.split(key, DELIMITER);
         String groupId = parts[0];
         String artifactId = parts[1];
         String className = parts[2];
@@ -64,4 +103,33 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
     return ADAPTER_LIST;
   }
 
+  private String getPackageKey(IJavaElement javaElement) {
+    String packageName = null;
+    if (javaElement instanceof IPackageFragmentRoot) {
+      packageName = DEFAULT_PACKAGE_NAME;
+    } else if (javaElement instanceof IPackageFragment) {
+      IPackageFragment packageFragment = (IPackageFragment) javaElement;
+      packageName = packageFragment.getElementName();
+      if ("".equals(packageName)) {
+        return DEFAULT_PACKAGE_NAME;
+      }
+    }
+    return packageName;
+  }
+
+  private String getProjectKey(IProject project) {
+    ProjectProperties properties = ProjectProperties.getInstance(project);
+    return getProjectKey(properties.getGroupId(), properties.getArtifactId(), properties.getBranch());
+  }
+
+  private String getProjectKey(String groupId, String artifactId, String branch) {
+    if (StringUtils.isBlank(groupId) || StringUtils.isBlank(artifactId)) {
+      return null;
+    }
+    StringBuilder sb = new StringBuilder().append(groupId).append(DELIMITER).append(artifactId);
+    if (StringUtils.isNotBlank(branch)) {
+      sb.append(DELIMITER).append(branch);
+    }
+    return sb.toString();
+  }
 }

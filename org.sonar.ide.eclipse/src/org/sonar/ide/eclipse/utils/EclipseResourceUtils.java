@@ -32,8 +32,9 @@ import org.sonar.ide.shared.AbstractResourceUtils;
 
 /**
  * @author Jérémie Lagarde
- * 
+ * @deprecated since 0.3, use {@link PlatformUtils#adapt(Object, Class)} instead
  */
+@Deprecated
 public class EclipseResourceUtils extends AbstractResourceUtils<IResource> {
 
   private static EclipseResourceUtils instance;
