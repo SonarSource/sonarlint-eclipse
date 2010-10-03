@@ -135,7 +135,7 @@ public class HotspotsView extends AbstractSonarInfoView {
   private void update(final Object content) {
     getSite().getShell().getDisplay().asyncExec(new Runnable() {
       public void run() {
-        resourceLabel.setText("for " + getInput().getKey());
+        resourceLabel.setText("for project " + getInput().getProject().getName());
         column2.getColumn().setText(metricKey);
         viewer.setInput(content);
       }
