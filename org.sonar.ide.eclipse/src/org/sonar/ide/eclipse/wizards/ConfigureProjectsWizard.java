@@ -12,8 +12,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+import org.sonar.ide.api.SonarIdeException;
+import org.sonar.ide.eclipse.SonarImages;
+import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.wsclient.Host;
 
 import java.util.List;
 
@@ -53,7 +57,7 @@ public class ConfigureProjectsWizard extends Wizard {
     private CheckboxTableViewer viewer;
 
     public ConfigureProjectsPage(List<IProject> projects, List<IProject> selected) {
-      super("configureProjects", "Associate with Sonar", null);
+      super("configureProjects", "Associate with Sonar", SonarImages.getImageDescriptor(SonarImages.IMG_SONARWIZBAN));
       setDescription("Select projects to add Sonar capability.");
       this.projects = projects.toArray(new IProject[projects.size()]);
       this.selected = selected.toArray(new IProject[selected.size()]);
@@ -68,10 +72,10 @@ public class ConfigureProjectsWizard extends Wizard {
       layout.marginWidth = 5;
       container.setLayout(layout);
 
-      // TODO server selection
       GridData gridData;
 
       if (DEVELOP) {
+        // List of Sonar servers
         ComboViewer comboViewer = new ComboViewer(container);
         gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1);
         comboViewer.getCombo().setLayoutData(gridData);
@@ -79,13 +83,14 @@ public class ConfigureProjectsWizard extends Wizard {
         comboViewer.setLabelProvider(new LabelProvider() {
           @Override
           public String getText(Object element) {
-            return "" + element;
+            return ((Host) element).getHost();
           }
         });
-        comboViewer.setInput(new String[] { "http://nemo.sonarsource.org/", "http://localhost:9000/" });
+        comboViewer.setInput(SonarPlugin.getServerManager().getServers());
         comboViewer.getCombo().select(0);
       }
 
+      // List of projects
       viewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
       gridData = new GridData(GridData.FILL, GridData.FILL, true, true, 1, 1);
       viewer.getTable().setLayoutData(gridData);
@@ -188,7 +193,7 @@ public class ConfigureProjectsWizard extends Wizard {
           case 3:
             return "todo branch";
           default:
-            return ""; // should never happen
+            throw new SonarIdeException("Should never happen");
         }
       }
     }

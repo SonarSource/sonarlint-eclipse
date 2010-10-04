@@ -29,29 +29,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
 
   public Object getAdapter(Object adaptableObject, Class adapterType) {
     if (ISonarResource.class.equals(adapterType)) {
-      if (adaptableObject instanceof IJavaElement) {
-        IJavaElement javaElement = (IJavaElement) adaptableObject;
-        return getAdapter(javaElement.getResource(), adapterType);
-      } else if (adaptableObject instanceof IProject) {
-        IProject project = (IProject) adaptableObject;
-        return SonarPlugin.createSonarResource(project, getProjectKey(project));
-      } else if (adaptableObject instanceof IFolder) {
-        IFolder folder = (IFolder) adaptableObject;
-        String projectKey = getProjectKey(folder.getProject());
-        String packageKey = getPackageKey(JavaCore.create(folder));
-        if (packageKey != null) {
-          return SonarPlugin.createSonarResource(folder, projectKey + DELIMITER + packageKey);
-        }
-      } else if (adaptableObject instanceof IFile) {
-        IFile file = (IFile) adaptableObject;
-        String projectKey = getProjectKey(file.getProject());
-        IJavaElement javaElement = JavaCore.create(file);
-        if (javaElement instanceof ICompilationUnit) {
-          String packageKey = getPackageKey(javaElement.getParent());
-          String classKey = StringUtils.substringBeforeLast(javaElement.getElementName(), ".");
-          return SonarPlugin.createSonarResource(file, projectKey + DELIMITER + packageKey + PACKAGE_DELIMITER + classKey);
-        }
-      }
+      return getSonarResource(adaptableObject);
     } else if (adapterType == Resource.class) {
       if (adaptableObject instanceof IJavaProject) {
         IJavaProject javaProject = (IJavaProject) adaptableObject;
@@ -88,6 +66,48 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
       }
     }
     return null;
+  }
+
+  private Object getSonarResource(Object adaptableObject) {
+    if (adaptableObject instanceof IJavaElement) {
+      IJavaElement javaElement = (IJavaElement) adaptableObject;
+      return getAdapter(javaElement.getResource(), ISonarResource.class);
+    } else if (adaptableObject instanceof IProject) {
+      IProject project = (IProject) adaptableObject;
+      if ( !isOpenAndHasSonarNature(project)) {
+        return null;
+      }
+      return SonarPlugin.createSonarResource(project, getProjectKey(project));
+    } else if (adaptableObject instanceof IFolder) {
+      IFolder folder = (IFolder) adaptableObject;
+      IProject project = folder.getProject();
+      if ( !isOpenAndHasSonarNature(project)) {
+        return null;
+      }
+      String projectKey = getProjectKey(folder.getProject());
+      String packageKey = getPackageKey(JavaCore.create(folder));
+      if (packageKey != null) {
+        return SonarPlugin.createSonarResource(folder, projectKey + DELIMITER + packageKey);
+      }
+    } else if (adaptableObject instanceof IFile) {
+      IFile file = (IFile) adaptableObject;
+      IProject project = file.getProject();
+      if ( !isOpenAndHasSonarNature(project)) {
+        return null;
+      }
+      String projectKey = getProjectKey(file.getProject());
+      IJavaElement javaElement = JavaCore.create(file);
+      if (javaElement instanceof ICompilationUnit) {
+        String packageKey = getPackageKey(javaElement.getParent());
+        String classKey = StringUtils.substringBeforeLast(javaElement.getElementName(), ".");
+        return SonarPlugin.createSonarResource(file, projectKey + DELIMITER + packageKey + PACKAGE_DELIMITER + classKey);
+      }
+    }
+    return null;
+  }
+
+  private boolean isOpenAndHasSonarNature(IProject project) {
+    return project.isAccessible() && SonarPlugin.hasSonarNature(project);
   }
 
   public Class[] getAdapterList() {

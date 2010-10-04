@@ -20,6 +20,8 @@ import java.util.List;
 
 /**
  * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertProjectsAction
+ * 
+ * @see ConfigureProjectsWizard
  */
 public class ConfigureProjectsAction implements IObjectActionDelegate {
 

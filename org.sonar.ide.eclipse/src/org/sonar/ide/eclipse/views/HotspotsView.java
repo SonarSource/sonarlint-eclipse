@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
+import org.sonar.ide.api.SonarIdeException;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
@@ -124,7 +125,7 @@ public class HotspotsView extends AbstractSonarInfoView {
         case 1:
           return measure.getValue();
         default:
-          throw new RuntimeException("Should not happen");
+          throw new SonarIdeException("Should never happen");
       }
     }
   }

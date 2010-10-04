@@ -18,9 +18,6 @@
 
 package org.sonar.ide.eclipse.actions;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
@@ -34,8 +31,12 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.IWorkingSet;
 import org.sonar.ide.eclipse.jobs.AutoConfigureProjectJob;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 /**
  * @author Jérémie Lagarde
+ * @deprecated since 0.3 replaced by {@link ConfigureProjectsAction}
  */
 public class AutoConfigureProjectAction implements IWorkbenchWindowActionDelegate {
 

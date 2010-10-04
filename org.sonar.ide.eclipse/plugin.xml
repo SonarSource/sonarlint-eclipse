@@ -194,15 +194,6 @@
            </separator>
         </menu>
         <action
-              class="org.sonar.ide.eclipse.actions.AutoConfigureProjectAction"
-              enablesFor="+"
-              id="org.sonar.ide.eclipse.autoConfigureProjectAction"
-              label="%sonar.action.autoconfiguration.label"
-              menubarPath="org.sonar.ide.eclipse.sonar/group1"
-              state="true"
-              style="push">
-        </action>
-        <action
               class="org.sonar.ide.eclipse.actions.OpenInBrowserAction"
               enablesFor="+"
               id="org.sonar.ide.eclipse.openInBrowserAction"
@@ -324,26 +315,8 @@
          </enablement>
       </consolePageParticipant>
    </extension>
-   <extension
-         point="org.eclipse.ui.actionSets">
-     <actionSet
-           id="org.sonar.ide.eclipse.actionSet"
-           label="%actionSet.label"
-           visible="true">
-        <menu
-              id="sonarMenu"
-              label="%sonar.menu.label"
-              path="project/additions">
-        </menu>
-        <action
-              class="org.sonar.ide.eclipse.actions.AutoConfigureProjectAction"
-              icon="icons/sonar.png"
-              id="org.sonar.ide.eclipse.actions.AutoConfigureProjectAction"
-              label="%sonar.action.allautoconiguration.label"
-              menubarPath="project/additions"
-              tooltip="%sonar.action.allautoconiguration.tooltip">
-        </action>   
-     </actionSet>
+   
+   <extension point="org.eclipse.ui.actionSets">
      <actionSet
            id="org.sonar.ide.eclipse.ui.menu.help"
            label="Feedback Helpers"
@@ -357,6 +330,7 @@
         </action>
      </actionSet>
    </extension>
+
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective

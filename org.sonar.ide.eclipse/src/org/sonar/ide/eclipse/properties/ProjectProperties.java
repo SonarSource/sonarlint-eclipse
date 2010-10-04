@@ -25,8 +25,6 @@ import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.preferences.PreferenceConstants;
 
 /**
- * TODO Godin: move into commons library
- * 
  * @author Evgeny Mandrikov
  */
 public class ProjectProperties {
@@ -91,6 +89,10 @@ public class ProjectProperties {
     this.branch = branch;
   }
 
+  /**
+   * @deprecated since 0.3 use {@link SonarPlugin#hasSonarNature(IProject)}
+   */
+  @Deprecated
   public boolean isProjectConfigured() {
     return StringUtils.isNotBlank(getArtifactId()) && StringUtils.isNotBlank(getGroupId()) && StringUtils.isNotBlank(getUrl());
   }
