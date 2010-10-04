@@ -69,15 +69,17 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
 
         IWorkspace root = ResourcesPlugin.getWorkspace();
         for (IProject project : root.getRoot().getProjects()) {
-          ProjectProperties props = ProjectProperties.getInstance(project);
-          if (StringUtils.equals(props.getGroupId(), groupId) && StringUtils.equals(props.getArtifactId(), artifactId)) {
-            IJavaProject javaProject = JavaCore.create(project);
-            try {
-              IType type = javaProject.findType(className);
-              IResource result = type.getCompilationUnit().getResource();
-              return result instanceof IFile ? result : null;
-            } catch (JavaModelException e) {
-              SonarLogger.log(e);
+          if (project.isAccessible()) {
+            ProjectProperties props = ProjectProperties.getInstance(project);
+            if (StringUtils.equals(props.getGroupId(), groupId) && StringUtils.equals(props.getArtifactId(), artifactId)) {
+              IJavaProject javaProject = JavaCore.create(project);
+              try {
+                IType type = javaProject.findType(className);
+                IResource result = type.getCompilationUnit().getResource();
+                return result instanceof IFile ? result : null;
+              } catch (JavaModelException e) {
+                SonarLogger.log(e);
+              }
             }
           }
         }

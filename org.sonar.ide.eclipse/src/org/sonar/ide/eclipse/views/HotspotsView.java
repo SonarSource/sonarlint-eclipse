@@ -2,11 +2,15 @@ package org.sonar.ide.eclipse.views;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -23,8 +27,12 @@ import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
 import org.sonar.ide.eclipse.ui.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.utils.PlatformUtils;
+import org.sonar.ide.eclipse.utils.SelectionUtils;
+import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
+
+import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -78,7 +86,7 @@ public class HotspotsView extends AbstractSonarInfoView {
     viewer.setLabelProvider(new HotspotsLabelProvider());
     viewer.addDoubleClickListener(new IDoubleClickListener() {
       public void doubleClick(DoubleClickEvent event) {
-        Object object = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+        Object object = SelectionUtils.getSingleElement(viewer.getSelection());
         // adapt org.sonar.wsclient.services.Resource to IFile
         IFile file = PlatformUtils.adapt(object, IFile.class);
         if (file != null) {
@@ -107,12 +115,12 @@ public class HotspotsView extends AbstractSonarInfoView {
   private class HotspotsLabelProvider extends AbstractTableLabelProvider {
     @Override
     public String getColumnText(Object element, int columnIndex) {
-      Resource resource = (Resource) element;
+      HotspotMeasure measure = (HotspotMeasure) element;
       switch (columnIndex) {
         case 0:
-          return resource.getName();
+          return measure.getName();
         case 1:
-          return resource.getMeasureFormattedValue(getMetricKey(), "");
+          return measure.getValue();
         default:
           throw new RuntimeException("Should not happen");
       }
@@ -150,6 +158,33 @@ public class HotspotsView extends AbstractSonarInfoView {
     return sonarResource;
   }
 
+  class HotspotMeasure implements IAdaptable {
+
+    private Resource resource;
+    private String value;
+
+    public HotspotMeasure(Resource resource, Measure measure) {
+      this.resource = resource;
+      this.value = measure.getFormattedValue("");
+    }
+
+    public String getName() {
+      return resource.getName();
+    }
+
+    public String getValue() {
+      return value;
+    }
+
+    public Object getAdapter(Class adapter) {
+      if (adapter == IFile.class) {
+        return PlatformUtils.adapt(resource, IFile.class);
+      }
+      return null;
+    }
+
+  }
+
   /**
    * @param input ISonarResource to be shown in the view
    */
@@ -162,7 +197,13 @@ public class HotspotsView extends AbstractSonarInfoView {
         monitor.beginTask("Loading hotspots for " + sonarResource.getKey(), IProgressMonitor.UNKNOWN);
         EclipseSonar index = EclipseSonar.getInstance(sonarResource.getProject());
         List<Resource> resources = index.getSonar().findAll(getResourceQuery(sonarResource));
-        update(resources);
+        List<HotspotMeasure> measures = Lists.newArrayList();
+        for (Resource resource : resources) {
+          for (Measure measure : resource.getMeasures()) {
+            measures.add(new HotspotMeasure(resource, measure));
+          }
+        }
+        update(measures);
         monitor.done();
         return Status.OK_STATUS;
       }
