@@ -25,7 +25,6 @@ import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.sonar.ide.eclipse.views.HotspotsView;
 import org.sonar.ide.eclipse.views.MeasuresView;
-import org.sonar.ide.eclipse.views.NavigatorView;
 import org.sonar.ide.eclipse.views.RemoteView;
 import org.sonar.ide.eclipse.views.ViolationsView;
 
@@ -60,7 +59,6 @@ public class SonarPerspectiveFactory implements IPerspectiveFactory {
     bottom.addView(RemoteView.ID);
     bottom.addView(HotspotsView.ID);
     bottom.addView(ViolationsView.ID);
-    bottom.addView(NavigatorView.ID);
     bottom.addView(IConsoleConstants.ID_CONSOLE_VIEW);
   }
 

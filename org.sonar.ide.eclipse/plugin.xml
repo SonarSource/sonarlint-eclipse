@@ -27,13 +27,6 @@
         id="org.sonar.ide.eclipse">
     </category>
     <view
-        category="org.sonar.ide.eclipse"
-        class="org.sonar.ide.eclipse.views.NavigatorView"
-        icon="icons/sonar.png"
-        id="org.sonar.ide.eclipse.views.NavigatorView"
-        name="%sonar.navigator.view.name">
-    </view>
-    <view
     	category="org.sonar.ide.eclipse"
     	class="org.sonar.ide.eclipse.views.MeasuresView"
     	icon="icons/sonar.png"

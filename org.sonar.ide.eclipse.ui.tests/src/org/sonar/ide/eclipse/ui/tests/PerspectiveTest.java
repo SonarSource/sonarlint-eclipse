@@ -21,8 +21,8 @@ package org.sonar.ide.eclipse.ui.tests;
 import org.eclipse.jdt.ui.JavaUI;
 import org.junit.Test;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.views.HotspotsView;
 import org.sonar.ide.eclipse.views.MeasuresView;
-import org.sonar.ide.eclipse.views.NavigatorView;
 import org.sonar.ide.eclipse.views.ViolationsView;
 
 /**
@@ -37,8 +37,7 @@ public class PerspectiveTest extends UITestCase {
     bot.viewById(JavaUI.ID_PACKAGES);
 
     bot.viewById(MeasuresView.ID);
-    bot.viewById(NavigatorView.ID);
-
+    bot.viewById(HotspotsView.ID);
     bot.viewById(ViolationsView.ID);
   }
 

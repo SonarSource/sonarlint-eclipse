@@ -1,21 +1,9 @@
 package org.sonar.ide.eclipse.jdt.internal;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.*;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarLogger;
@@ -25,7 +13,7 @@ import org.sonar.wsclient.services.Resource;
 /**
  * Adapter factory for Java elements.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings("rawtypes")
 public class JavaElementsAdapterFactory implements IAdapterFactory {
 
   private static final char DELIMITER = ':';
@@ -37,7 +25,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
    */
   private static final String DEFAULT_PACKAGE_NAME = "[default]";
 
-  private static Class[] ADAPTER_LIST = { ISonarResource.class, Resource.class, IFile.class };
+  private static Class<?>[] ADAPTER_LIST = { ISonarResource.class, Resource.class, IFile.class };
 
   public Object getAdapter(Object adaptableObject, Class adapterType) {
     if (ISonarResource.class.equals(adapterType)) {

@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.markers.MarkerSupportView;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarImages;
-import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.jobs.RefreshAllViolationsJob;
 
 /**
@@ -32,7 +32,7 @@ import org.sonar.ide.eclipse.jobs.RefreshAllViolationsJob;
  */
 public class ViolationsView extends MarkerSupportView {
 
-  public static final String ID = "org.sonar.ide.eclipse.views.ViolationsView";
+  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.ViolationsView";
 
   private Action refreshAction;
 
