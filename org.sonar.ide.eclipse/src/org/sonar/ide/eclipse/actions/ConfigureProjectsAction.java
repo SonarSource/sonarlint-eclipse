@@ -54,10 +54,13 @@ public class ConfigureProjectsAction implements IObjectActionDelegate {
     });
   }
 
+  /**
+   * @return open projects from workspace with Java nature and without Sonar nature
+   */
   private List<IProject> getUnconfiguredProjects() {
     ArrayList<IProject> unconfigured = Lists.newArrayList();
     for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-      if (project.isOpen() && !SonarPlugin.hasSonarNature(project)) {
+      if (project.isOpen() && !SonarPlugin.hasSonarNature(project) && SonarPlugin.hasJavaNature(project)) {
         unconfigured.add(project);
       }
     }
@@ -66,8 +69,9 @@ public class ConfigureProjectsAction implements IObjectActionDelegate {
 
   public Display getDisplay() {
     Display display = Display.getCurrent();
-    if (display == null)
+    if (display == null) {
       display = Display.getDefault();
+    }
     return display;
   }
 
