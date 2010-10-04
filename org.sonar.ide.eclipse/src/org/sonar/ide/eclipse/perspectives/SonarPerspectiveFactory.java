@@ -18,7 +18,6 @@
 
 package org.sonar.ide.eclipse.perspectives;
 
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
@@ -50,7 +49,7 @@ public class SonarPerspectiveFactory implements IPerspectiveFactory {
 
   private void addViews() {
     IFolderLayout left = layout.createFolder("left", IPageLayout.LEFT, 0.25f, layout.getEditorArea()); //$NON-NLS-1$
-    left.addView(JavaUI.ID_PACKAGES);
+    left.addView("org.eclipse.jdt.ui.PackageExplorer");
 
     IFolderLayout right = layout.createFolder("right", IPageLayout.RIGHT, 0.75f, layout.getEditorArea()); //$NON-NLS-1$
     right.addView(MeasuresView.ID);
@@ -69,8 +68,8 @@ public class SonarPerspectiveFactory implements IPerspectiveFactory {
     layout.addActionSet("org.eclipse.jdt.debug.ui.JDTDebugActionSet"); // NON-NLS-1
     layout.addActionSet("org.eclipse.jdt.junit.JUnitActionSet"); // NON-NLS-1
     layout.addActionSet("org.eclipse.team.ui.actionSet"); // NON-NLS-1
-    layout.addActionSet(JavaUI.ID_ACTION_SET);
-    layout.addActionSet(JavaUI.ID_ELEMENT_CREATION_ACTION_SET);
+    layout.addActionSet("org.eclipse.jdt.ui.JavaActionSet");
+    layout.addActionSet("org.eclipse.jdt.ui.JavaElementCreationActionSet");
     layout.addActionSet(IPageLayout.ID_NAVIGATE_ACTION_SET); // NON-NLS-1
   }
 
@@ -84,7 +83,7 @@ public class SonarPerspectiveFactory implements IPerspectiveFactory {
 
   private void addViewShortcuts() {
     layout.addShowViewShortcut(IConsoleConstants.ID_CONSOLE_VIEW);
-    layout.addShowViewShortcut(JavaUI.ID_PACKAGES);
+    layout.addShowViewShortcut("org.eclipse.jdt.ui.PackageExplorer");
     layout.addShowViewShortcut(IPageLayout.ID_PROBLEM_VIEW);
     layout.addShowViewShortcut(IPageLayout.ID_OUTLINE);
   }

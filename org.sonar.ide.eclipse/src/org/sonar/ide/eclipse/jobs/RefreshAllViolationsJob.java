@@ -1,20 +1,14 @@
 package org.sonar.ide.eclipse.jobs;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaCore;
-import org.sonar.ide.api.Logs;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.utils.PlatformUtils;
+import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.Violation;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -36,21 +30,11 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
   }
 
   @Override
-  protected IStatus run(IProgressMonitor monitor) {
-    // TODO Godin: remove before commit - it's just for performance testing
-    long time = System.currentTimeMillis();
-    IStatus status = super.run(monitor);
-    time = System.currentTimeMillis() - time;
-    Logs.INFO.info("Loaded in {}ms = {}s", time, time / 1000);
-    return status;
-  }
-
-  @Override
   public boolean visit(final IResource resource) throws CoreException {
     if (resource instanceof IProject) {
       IProject project = (IProject) resource;
-      // We will work only with Java projects
-      if ( !project.hasNature(JavaCore.NATURE_ID)) {
+      // TODO We will work only with Java projects
+      if ( !project.hasNature("org.eclipse.jdt.core.javanature")) {
         return false;
       }
 
@@ -66,18 +50,14 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
           }
         }
         // Associate violations with resources
-        IJavaProject javaProject = JavaCore.create(project);
         for (String resourceKey : mm.keySet()) {
-          String className = StringUtils.substringAfterLast(resourceKey, ":");
-          IType type = javaProject.findType(className);
-
-          if (type != null) {
-            ICompilationUnit unit = type.getCompilationUnit();
-            if (unit != null) {
-              cleanMarkers((IFile) type.getResource());
-              for (Violation violation : mm.get(resourceKey)) {
-                createMarker((IFile) unit.getResource(), violation);
-              }
+          Resource sonarResource = new Resource().setKey(resourceKey);
+          // adapt org.sonar.wsclient.services.Resource to IFile
+          IFile file = PlatformUtils.adapt(sonarResource, IFile.class);
+          if (file != null) {
+            cleanMarkers(file);
+            for (Violation violation : mm.get(resourceKey)) {
+              createMarker(file, violation);
             }
           }
         }

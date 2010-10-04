@@ -16,19 +16,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.markers.resolvers;
+package org.sonar.ide.eclipse.jdt.internal;
 
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.*;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -37,6 +35,7 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.markers.resolvers.ISonarResolver;
 
 import java.text.MessageFormat;
 
@@ -70,6 +69,14 @@ public class NoSonarResolver implements ISonarResolver {
 
   public String getLabel() {
     return label;
+  }
+
+  public boolean resolve(final IMarker marker, final IFile file) {
+    final IJavaElement element = JavaCore.create(file);
+    if (element instanceof ICompilationUnit) {
+      return resolve(marker, (ICompilationUnit) element);
+    }
+    return false;
   }
 
   public boolean resolve(final IMarker marker, final ICompilationUnit cu) {

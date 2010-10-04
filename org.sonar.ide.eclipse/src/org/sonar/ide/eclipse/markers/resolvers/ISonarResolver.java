@@ -18,8 +18,8 @@
 
 package org.sonar.ide.eclipse.markers.resolvers;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.jdt.core.ICompilationUnit;
 
 /**
  * @author Jérémie Lagarde
@@ -32,5 +32,5 @@ public interface ISonarResolver {
 
   boolean canResolve(IMarker marker);
 
-  boolean resolve(IMarker marker, ICompilationUnit cu);
+  boolean resolve(IMarker marker, IFile file);
 }

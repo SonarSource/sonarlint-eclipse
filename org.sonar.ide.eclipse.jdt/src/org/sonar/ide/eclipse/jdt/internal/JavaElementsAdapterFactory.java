@@ -68,6 +68,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
         String className = parts[2];
 
         IWorkspace root = ResourcesPlugin.getWorkspace();
+        // TODO this is not optimal
         for (IProject project : root.getRoot().getProjects()) {
           if (project.isAccessible()) {
             ProjectProperties props = ProjectProperties.getInstance(project);

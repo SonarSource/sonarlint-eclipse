@@ -18,9 +18,9 @@
 
 package org.sonar.ide.eclipse.markers.resolvers;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 
@@ -55,7 +55,7 @@ public class IgnoreMarkerResolver implements ISonarResolver {
     return label;
   }
 
-  public boolean resolve(final IMarker marker, final ICompilationUnit cu) {
+  public boolean resolve(final IMarker marker, final IFile cu) {
     return true;
   }
 }
