@@ -160,11 +160,13 @@
   <extension
       point="org.eclipse.ui.propertyPages">
     <page
-      objectClass="org.eclipse.core.resources.IProject"
-       adaptable="true"
       class="org.sonar.ide.eclipse.properties.SonarProjectPropertyPage"
        id="org.sonar.ide.eclipse.properties.sonarProjectPropertyPage"
        name="%sonar.properties.page.name">
+       <enabledWhen>
+          <adapt type="org.eclipse.core.resources.IProject">
+          </adapt>
+       </enabledWhen>
     </page>
   </extension>
 
@@ -371,7 +373,6 @@
   <extension
         point="org.eclipse.ui.workbench.texteditor.quickDiffReferenceProvider">
      <referenceprovider
-            name="Sonar source"
             label="Sonar source"
            class="org.sonar.ide.eclipse.compare.SonarReferenceProvider"
            id="org.sonar.ide.eclipse.referenceprovider">

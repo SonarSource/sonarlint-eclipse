@@ -17,6 +17,10 @@
 
   <name>Sonar Integration for Eclipse (parent)</name>
 
+  <prerequisites>
+    <maven>3.0</maven>
+  </prerequisites>
+
   <properties>
     <maven.min.version>3.0-beta-1</maven.min.version>
 
@@ -27,7 +31,7 @@
     <sonar-ide-commons.version>0.3-SNAPSHOT</sonar-ide-commons.version>
 
     <!-- Version of Sonar for integration tests -->
-    <sonarVersion>2.1.2</sonarVersion>
+    <sonar.runtimeVersion>2.1.2</sonar.runtimeVersion>
 
     <!-- disable accidental deployment -->
     <sonar-ide.site>dav:http://localhost</sonar-ide.site>
@@ -180,6 +184,7 @@
           <artifactId>maven-osgi-test-plugin</artifactId>
           <version>${tycho.version}</version>
           <configuration>
+            <skipExec>${skipTests}</skipExec>
             <useUIHarness>false</useUIHarness>
             <includes>
               <include>**/*Test.java</include>
@@ -190,9 +195,9 @@
         </plugin>
         <plugin>
           <groupId>org.codehaus.sonar</groupId>
-          <artifactId>sonar-dev-mojo</artifactId>
+          <artifactId>sonar-dev-maven-plugin</artifactId>
           <!-- TODO Godin: define version using property -->
-          <version>2.2M1</version>
+          <version>0.7</version>
         </plugin>
       </plugins>
     </pluginManagement>
