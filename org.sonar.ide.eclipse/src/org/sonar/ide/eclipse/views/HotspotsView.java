@@ -105,7 +105,9 @@ public class HotspotsView extends AbstractSonarInfoView {
       @Override
       public void widgetSelected(SelectionEvent e) {
         metricKey = combo.getText();
-        doSetInput(getInput());
+        if (getInput() != null) {
+          doSetInput(getInput());
+        }
       }
     });
     combo.select(0);
@@ -186,7 +188,7 @@ public class HotspotsView extends AbstractSonarInfoView {
   }
 
   /**
-   * @param input ISonarResource to be shown in the view
+   * @param input ISonarResource to be shown in the view (can't be null)
    */
   @Override
   protected void doSetInput(Object input) {
