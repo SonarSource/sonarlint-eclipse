@@ -51,7 +51,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
     }
   }
 
-  private void enableNature(IProject project) throws CoreException {
+  public static void enableNature(IProject project) throws CoreException {
     IProjectDescription description = project.getDescription();
     String[] prevNatures = description.getNatureIds();
     String[] newNatures = new String[prevNatures.length + 1];

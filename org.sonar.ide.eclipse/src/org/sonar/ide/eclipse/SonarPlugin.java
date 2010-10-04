@@ -19,7 +19,9 @@
 package org.sonar.ide.eclipse;
 
 import org.eclipse.core.net.proxy.IProxyService;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -167,6 +169,15 @@ public class SonarPlugin extends AbstractUIPlugin {
 
   public static ISonarResource createSonarResource(IResource resource, String key) {
     return new SonarResource(resource, key);
+  }
+
+  public static boolean hasSonarNature(IProject project) {
+    try {
+      return project.hasNature(ISonarConstants.NATURE_ID);
+    } catch (CoreException e) {
+      SonarLogger.log(e);
+      return false;
+    }
   }
 
 }

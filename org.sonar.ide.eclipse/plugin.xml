@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
 <plugin>
+
+<!-- Extension points -->
+
    <extension-point id="resolver" name="sonar resolver" schema="schema/org.sonar.ide.eclipse.markers.resolver.exsd"/>
+
+<!-- Extensions -->
 
   <extension point="org.eclipse.ui.preferencePages">
     <page
@@ -176,6 +181,9 @@
            id="org.sonar.ide.eclipse.contribution1"
            objectClass="org.eclipse.core.resources.IResource"
            adaptable="true">
+        <visibility>
+          <objectState name="nature" value="org.sonar.ide.eclipse.sonarNature"/>
+        </visibility>   
         <menu
               icon="icons/sonar.png"
               id="org.sonar.ide.eclipse.sonar"
@@ -203,8 +211,7 @@
               state="true"
               style="push"
               icon="icons/web.gif">
-         </action> 
-        
+        </action>
         <action
               label="Sonar server"
               class="org.sonar.ide.eclipse.compare.CompareWithSonarAction"
@@ -212,24 +219,43 @@
               id="org.sonar.ide.eclipse.compareWithSonar"
               icon="icons/sonar.png">
         </action>
-     </objectContribution>
+    </objectContribution>
 
+	<!-- TODO just for testing purposes -->
     <objectContribution id="org.sonar.ide.eclipse.projectMenu"
         				adaptable="true"
         				objectClass="org.eclipse.core.resources.IProject">
+		<visibility>
+          <objectState name="nature" value="org.sonar.ide.eclipse.sonarNature"/>
+        </visibility>
 		<action id="org.sonar.ide.eclipse.addRemoveNatureAction"
                 class="org.sonar.ide.eclipse.actions.ToggleNatureAction"
                 enablesFor="+"
-                label="Add/Remove Sonar Nature"
+                label="Remove Sonar Nature"
                 menubarPath="org.sonar.ide.eclipse.sonar/group1">
         </action>
-        <visibility>
-          <and>
-        	<objectState name="open" value="true"/>
-        	<objectState name="nature" value="org.eclipse.jdt.core.javanature"/>
-          </and>
-        </visibility>
     </objectContribution>
+    
+    <objectContribution id="org.sonar.ide.eclipse.objectContribution1"
+                        adaptable="true"
+                        objectClass="org.eclipse.core.resources.IProject">
+      	<visibility>
+        	<and>
+          		<not>
+            		<objectState name="nature" value="org.sonar.ide.eclipse.sonarNature"/>
+          		</not>
+          		<objectState name="nature" value="org.eclipse.jdt.core.javanature"/>
+        	</and>
+      	</visibility>
+      	<!-- about this menubarPath see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=231611 -->
+      	<action id="org.sonar.ide.ui.ConvertedProjectWizard" 
+        	    label="Associate with Sonar"
+            	class="org.sonar.ide.eclipse.actions.ConfigureProjectsAction"
+              	menubarPath="org.eclipse.ui.projectConfigure/additions"
+              	enablesFor="+"
+              	icon="icons/sonar.png">
+      	</action>
+	</objectContribution>
   </extension>
   
   <extension
