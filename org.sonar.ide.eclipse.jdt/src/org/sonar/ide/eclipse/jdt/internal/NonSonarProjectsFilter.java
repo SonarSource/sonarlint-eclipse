@@ -14,13 +14,12 @@ public class NonSonarProjectsFilter extends ViewerFilter {
   @Override
   public boolean select(Viewer viewer, Object parentElement, Object element) {
     if (element instanceof IJavaProject) {
-      IJavaProject javaProject = (IJavaProject) element;
-      IProject project = javaProject.getProject();
-      if ( !SonarPlugin.hasSonarNature(project)) {
-        return false;
-      }
+      // For Package Explorer
+      return SonarPlugin.hasSonarNature(((IJavaProject) element).getProject());
+    } else if (element instanceof IProject) {
+      // For Project Explorer
+      return SonarPlugin.hasSonarNature((IProject) element);
     }
     return true;
   }
-
 }

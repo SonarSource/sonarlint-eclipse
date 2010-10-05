@@ -27,4 +27,26 @@
             targetId="org.eclipse.jdt.ui.PackageExplorer">
       </filter>
    </extension>
+   
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewerContentBinding
+            viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+         <includes>
+            <contentExtension
+                  pattern="org.sonar.ide.eclipse.jdt.ui.filters.*">
+            </contentExtension>
+         </includes>
+      </viewerContentBinding>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <commonFilter
+            class="org.sonar.ide.eclipse.jdt.internal.NonSonarProjectsFilter"
+            description="Filters non-Sonar projects"
+            id="org.sonar.ide.eclipse.jdt.ui.filters.HideNonSonarProjects"
+            name="Non-Sonar projects">
+      </commonFilter>
+   </extension>   
 </plugin>
