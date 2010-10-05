@@ -92,8 +92,6 @@ public class MeasuresView extends AbstractSonarInfoView {
     TreeColumn column2 = new TreeColumn(tree, SWT.LEFT);
     column2.setText("Value");
     column2.setWidth(100);
-
-    clear();
   }
 
   @Override
@@ -148,10 +146,6 @@ public class MeasuresView extends AbstractSonarInfoView {
     public String getText(Object element) {
       return getColumnText(element, 0);
     }
-  }
-
-  private void clear() {
-    update("Select Java project, package or class in Package Explorer to see measures.", null);
   }
 
   private void update(final String description, final Object content) {

@@ -54,9 +54,9 @@
     </view>
     <view
           category="org.sonar.ide.eclipse"
-          class="org.sonar.ide.eclipse.views.RemoteView"
+          class="org.sonar.ide.eclipse.views.WebView"
           icon="icons/sonar.png"
-          id="org.sonar.ide.eclipse.views.RemoteView"
+          id="org.sonar.ide.eclipse.views.WebView"
           name="Web">
     </view>
   </extension>

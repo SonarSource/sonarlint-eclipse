@@ -27,7 +27,7 @@ import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.progress.IProgressConstants;
 import org.sonar.ide.eclipse.views.HotspotsView;
 import org.sonar.ide.eclipse.views.MeasuresView;
-import org.sonar.ide.eclipse.views.RemoteView;
+import org.sonar.ide.eclipse.views.WebView;
 import org.sonar.ide.eclipse.views.ViolationsView;
 
 public class SonarPerspectiveFactory implements IPerspectiveFactory {
@@ -43,7 +43,7 @@ public class SonarPerspectiveFactory implements IPerspectiveFactory {
     left.addPlaceholder(IPageLayout.ID_PROJECT_EXPLORER);
 
     IFolderLayout bottom = layout.createFolder("bottom", IPageLayout.BOTTOM, 0.75f, editorArea); // $NON-NLS-1$
-    bottom.addView(RemoteView.ID);
+    bottom.addView(WebView.ID);
     bottom.addView(HotspotsView.ID);
     bottom.addView(ViolationsView.ID);
     bottom.addPlaceholder(IProgressConstants.PROGRESS_VIEW_ID);
@@ -56,7 +56,7 @@ public class SonarPerspectiveFactory implements IPerspectiveFactory {
     layout.addActionSet(IPageLayout.ID_NAVIGATE_ACTION_SET);
 
     // views - Sonar
-    layout.addShowViewShortcut(RemoteView.ID);
+    layout.addShowViewShortcut(WebView.ID);
     layout.addShowViewShortcut(HotspotsView.ID);
     layout.addShowViewShortcut(MeasuresView.ID);
     layout.addShowViewShortcut(ViolationsView.ID);

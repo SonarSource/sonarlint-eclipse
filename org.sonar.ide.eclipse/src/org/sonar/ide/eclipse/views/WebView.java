@@ -34,9 +34,9 @@ import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
 /**
  * @author Evgeny Mandrikov
  */
-public class RemoteView extends AbstractSonarInfoView {
+public class WebView extends AbstractSonarInfoView {
 
-  public static final String ID = "org.sonar.ide.eclipse.views.RemoteView";
+  public static final String ID = "org.sonar.ide.eclipse.views.WebView";
 
   private Browser browser;
 
@@ -48,7 +48,6 @@ public class RemoteView extends AbstractSonarInfoView {
   @Override
   protected void internalCreatePartControl(Composite parent) {
     browser = new Browser(parent, SWT.NONE);
-    clear();
   }
 
   /**
@@ -70,9 +69,5 @@ public class RemoteView extends AbstractSonarInfoView {
       url.append("?page=dashboard");
     }
     browser.setUrl(url.toString());
-  }
-
-  private void clear() {
-    browser.setText("Select Java project, package or class in Package Explorer.");
   }
 }
