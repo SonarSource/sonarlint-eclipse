@@ -165,6 +165,7 @@
        name="%sonar.properties.page.name">
        <enabledWhen>
           <adapt type="org.eclipse.core.resources.IProject">
+            <test property="org.eclipse.core.resources.projectNature" value="org.sonar.ide.eclipse.sonarNature"/>
           </adapt>
        </enabledWhen>
     </page>
