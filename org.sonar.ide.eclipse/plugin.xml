@@ -243,7 +243,7 @@
       	</visibility>
       	<!-- about this menubarPath see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=231611 -->
       	<action id="org.sonar.ide.ui.ConvertedProjectWizard" 
-        	    label="Associate with Sonar"
+        	    label="Associate with Sonar..."
             	class="org.sonar.ide.eclipse.actions.ConfigureProjectsAction"
               	menubarPath="org.eclipse.ui.projectConfigure/additions"
               	enablesFor="+"

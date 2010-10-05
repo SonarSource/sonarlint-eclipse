@@ -1,19 +1,27 @@
 package org.sonar.ide.eclipse.wizards;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.property.value.IValueProperty;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.actions.ToggleNatureAction;
@@ -23,9 +31,13 @@ import org.sonar.ide.eclipse.ui.AbstractModelObject;
 import org.sonar.ide.eclipse.ui.InlineEditingSupport;
 import org.sonar.ide.eclipse.utils.SelectionUtils;
 import org.sonar.wsclient.Host;
+import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.services.Resource;
+import org.sonar.wsclient.services.ResourceQuery;
 
 import com.google.common.collect.Lists;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -145,7 +157,35 @@ public class ConfigureProjectsWizard extends Wizard {
        });
       viewer.setCheckedElements(selectedList.toArray(new SonarProject[selectedList.size()]));
 
+      Button autoConfigButton = new Button(container, SWT.PUSH);
+      autoConfigButton.setText(Messages.getString("action.autoconfig")); //$NON-NLS-1$
+      autoConfigButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
+      autoConfigButton.addSelectionListener(new SelectionAdapter() {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+          String serverUrl = getServerUrl();
+          Object[] checkedElements = viewer.getCheckedElements();
+          SonarProject[] projects = new SonarProject[checkedElements.length];
+          for (int i = 0; i < checkedElements.length; i++) {
+            projects[i] = (SonarProject) checkedElements[i];
+          }
+
+          try {
+            getWizard().getContainer().run(true, false, new AssociateProjects(serverUrl, projects));
+          } catch (InvocationTargetException ex) {
+            SonarLogger.log(ex);
+          } catch (InterruptedException ex) {
+            SonarLogger.log(ex);
+          }
+        }
+      });
+
       setControl(container);
+    }
+
+    private String getServerUrl() {
+      Host host = (Host) SelectionUtils.getSingleElement(comboViewer.getSelection());
+      return host.getHost();
     }
 
     public boolean finish() {
@@ -155,8 +195,7 @@ public class ConfigureProjectsWizard extends Wizard {
         try {
           IProject project = sonarProject.getProject();
           ProjectProperties properties = ProjectProperties.getInstance(project);
-          Host host = (Host) SelectionUtils.getSingleElement(comboViewer.getSelection());
-          properties.setUrl(host.getHost());
+          properties.setUrl(getServerUrl());
           properties.setArtifactId(sonarProject.getArtifactId());
           properties.setGroupId(sonarProject.getGroupId());
           properties.setBranch(sonarProject.getBranch());
@@ -168,6 +207,36 @@ public class ConfigureProjectsWizard extends Wizard {
         }
       }
       return true;
+    }
+
+    public class AssociateProjects implements IRunnableWithProgress {
+
+      private String url;
+      private SonarProject[] projects;
+
+      public AssociateProjects(String url, SonarProject[] projects) {
+        Assert.isNotNull(url);
+        Assert.isNotNull(projects);
+        this.url = url;
+        this.projects = projects;
+      }
+
+      public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        monitor.beginTask("Requesting " + url, IProgressMonitor.UNKNOWN);
+        ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT, Resource.QUALIFIER_MODULE);
+        Sonar sonar = SonarPlugin.getServerManager().getSonar(url);
+        List<Resource> resources = sonar.findAll(query);
+        for (SonarProject sonarProject : projects) {
+          for (Resource resource : resources) {
+            if (resource.getKey().endsWith(":" + sonarProject.getName())) {
+              sonarProject.setGroupId(StringUtils.substringBefore(resource.getKey(), ":"));
+              sonarProject.setArtifactId(sonarProject.getName());
+            }
+          }
+        }
+        monitor.done();
+      }
+
     }
 
     public class SonarProject extends AbstractModelObject {
