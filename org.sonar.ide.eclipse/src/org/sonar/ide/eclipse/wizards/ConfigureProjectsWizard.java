@@ -79,7 +79,7 @@ public class ConfigureProjectsWizard extends Wizard {
         ComboViewer comboViewer = new ComboViewer(container);
         gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1);
         comboViewer.getCombo().setLayoutData(gridData);
-        comboViewer.setContentProvider(new ArrayContentProvider());
+        comboViewer.setContentProvider(ArrayContentProvider.getInstance());
         comboViewer.setLabelProvider(new LabelProvider() {
           @Override
           public String getText(Object element) {
@@ -137,7 +137,7 @@ public class ConfigureProjectsWizard extends Wizard {
         });
       }
 
-      viewer.setContentProvider(new ProjectContentProvider());
+      viewer.setContentProvider(ArrayContentProvider.getInstance());
       viewer.setLabelProvider(new ProjectLabelProvider());
       viewer.setInput(projects);
       viewer.setCheckedElements(selected);
@@ -157,21 +157,6 @@ public class ConfigureProjectsWizard extends Wizard {
         }
       }
       return true;
-    }
-
-    public class ProjectContentProvider implements IStructuredContentProvider {
-      public Object[] getElements(Object parent) {
-        if (projects != null) {
-          return projects;
-        }
-        return new Object[0];
-      }
-
-      public void dispose() {
-      }
-
-      public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-      }
     }
 
     public class ProjectLabelProvider extends LabelProvider implements ITableLabelProvider {
