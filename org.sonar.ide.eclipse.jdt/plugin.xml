@@ -16,4 +16,15 @@
          <adapter type="org.sonar.ide.eclipse.core.ISonarResource"/>
       </factory>
    </extension>
+
+   <extension
+         point="org.eclipse.jdt.ui.javaElementFilters">
+      <filter
+            class="org.sonar.ide.eclipse.jdt.internal.NonSonarProjectsFilter"
+            description="Filters non-Sonar projects"
+            id="org.sonar.ide.eclipse.jdt.ui.filters.HideNonSonarProjects"
+            name="Non-Sonar projects"
+            targetId="org.eclipse.jdt.ui.PackageExplorer">
+      </filter>
+   </extension>
 </plugin>
