@@ -18,20 +18,14 @@
 
 package org.maven.ide.eclipse.sonar;
 
-import java.util.Properties;
-
 import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.maven.ide.eclipse.project.IMavenProjectFacade;
 import org.maven.ide.eclipse.project.MavenProjectChangedEvent;
 import org.maven.ide.eclipse.project.configurator.AbstractProjectConfigurator;
 import org.maven.ide.eclipse.project.configurator.ProjectConfigurationRequest;
-import org.sonar.ide.api.SonarIdeException;
-import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
 
 /**
  * @author Evgeny Mandrikov
@@ -54,21 +48,21 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
   }
 
   private void configureProject(IProject project, MavenProject mavenProject) {
-    ProjectProperties projectProperties = ProjectProperties.getInstance(project);
-
-    projectProperties.setGroupId(mavenProject.getGroupId());
-    projectProperties.setArtifactId(mavenProject.getArtifactId());
-
-    Properties mavenProjectProperties = mavenProject.getProperties();
-    // Don't change branch, if not set in pom.xml
-    if (mavenProjectProperties.containsKey(PROJECT_BRANCH_PROPERTY)) {
-      projectProperties.setBranch(mavenProjectProperties.getProperty(PROJECT_BRANCH_PROPERTY));
-    }
-
-    try {
-      projectProperties.save();
-    } catch (SonarIdeException e) {
-      SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
-    }
+    // ProjectProperties projectProperties = ProjectProperties.getInstance(project);
+    //
+    // projectProperties.setGroupId(mavenProject.getGroupId());
+    // projectProperties.setArtifactId(mavenProject.getArtifactId());
+    //
+    // Properties mavenProjectProperties = mavenProject.getProperties();
+    // // Don't change branch, if not set in pom.xml
+    // if (mavenProjectProperties.containsKey(PROJECT_BRANCH_PROPERTY)) {
+    // projectProperties.setBranch(mavenProjectProperties.getProperty(PROJECT_BRANCH_PROPERTY));
+    // }
+    //
+    // try {
+    // projectProperties.save();
+    // } catch (SonarIdeException e) {
+    // SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
+    // }
   }
 }

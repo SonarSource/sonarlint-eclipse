@@ -1,23 +1,30 @@
 package org.sonar.ide.eclipse.wizards;
 
+import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.observable.list.WritableList;
+import org.eclipse.core.databinding.property.value.IValueProperty;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.databinding.viewers.ViewerSupport;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
-import org.sonar.ide.api.SonarIdeException;
 import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.ui.AbstractModelObject;
+import org.sonar.ide.eclipse.ui.InlineEditingSupport;
+import org.sonar.ide.eclipse.utils.SelectionUtils;
 import org.sonar.wsclient.Host;
+
+import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -25,8 +32,6 @@ import java.util.List;
  * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertedProjectWizard
  */
 public class ConfigureProjectsWizard extends Wizard {
-
-  private static final boolean DEVELOP = false;
 
   private ConfigureProjectsPage mainPage;
   private List<IProject> projects;
@@ -52,15 +57,16 @@ public class ConfigureProjectsWizard extends Wizard {
 
   // TODO move to top level
   public class ConfigureProjectsPage extends WizardPage {
-    private IProject[] projects;
-    private IProject[] selected;
+    private List<IProject> projects;
+    private List<IProject> selected;
     private CheckboxTableViewer viewer;
+    private ComboViewer comboViewer;
 
     public ConfigureProjectsPage(List<IProject> projects, List<IProject> selected) {
       super("configureProjects", "Associate with Sonar", SonarImages.getImageDescriptor(SonarImages.IMG_SONARWIZBAN));
       setDescription("Select projects to add Sonar capability.");
-      this.projects = projects.toArray(new IProject[projects.size()]);
-      this.selected = selected.toArray(new IProject[selected.size()]);
+      this.projects = projects;
+      this.selected = selected;
     }
 
     public void createControl(Composite parent) {
@@ -74,82 +80,87 @@ public class ConfigureProjectsWizard extends Wizard {
 
       GridData gridData;
 
-      if (DEVELOP) {
-        // List of Sonar servers
-        ComboViewer comboViewer = new ComboViewer(container);
-        gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1);
-        comboViewer.getCombo().setLayoutData(gridData);
-        comboViewer.setContentProvider(ArrayContentProvider.getInstance());
-        comboViewer.setLabelProvider(new LabelProvider() {
-          @Override
-          public String getText(Object element) {
-            return ((Host) element).getHost();
-          }
-        });
-        comboViewer.setInput(SonarPlugin.getServerManager().getServers());
-        comboViewer.getCombo().select(0);
-      }
+      // List of Sonar servers
+      comboViewer = new ComboViewer(container);
+      gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1);
+      comboViewer.getCombo().setLayoutData(gridData);
+      comboViewer.setContentProvider(ArrayContentProvider.getInstance());
+      comboViewer.setLabelProvider(new LabelProvider() {
+        @Override
+        public String getText(Object element) {
+          return ((Host) element).getHost();
+        }
+      });
+      comboViewer.setInput(SonarPlugin.getServerManager().getServers());
+      comboViewer.getCombo().select(0);
 
       // List of projects
       viewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
       gridData = new GridData(GridData.FILL, GridData.FILL, true, true, 1, 1);
       viewer.getTable().setLayoutData(gridData);
 
-      if (DEVELOP) {
-        viewer.getTable().setHeaderVisible(true);
+      DataBindingContext dbc = new DataBindingContext();
 
-        TableViewerColumn column1 = new TableViewerColumn(viewer, SWT.LEFT);
-        column1.getColumn().setText("Project");
-        column1.getColumn().setWidth(200);
+      viewer.getTable().setHeaderVisible(true);
 
-        TableViewerColumn column2 = new TableViewerColumn(viewer, SWT.LEFT);
-        column2.getColumn().setText("GroupId");
-        column2.getColumn().setWidth(100);
+      TableViewerColumn columnProject = new TableViewerColumn(viewer, SWT.LEFT);
+      columnProject.getColumn().setText("Project");
+      columnProject.getColumn().setWidth(200);
 
-        TableViewerColumn column3 = new TableViewerColumn(viewer, SWT.LEFT);
-        column3.getColumn().setText("ArtifactId");
-        column3.getColumn().setWidth(100);
+      TableViewerColumn columnGroupId = new TableViewerColumn(viewer, SWT.LEFT);
+      columnGroupId.getColumn().setText("GroupId");
+      columnGroupId.getColumn().setWidth(200);
 
-        TableViewerColumn column4 = new TableViewerColumn(viewer, SWT.LEFT);
-        column4.getColumn().setText("Branch");
-        column4.getColumn().setWidth(100);
-        column4.setEditingSupport(new EditingSupport(viewer) {
-          @Override
-          protected CellEditor getCellEditor(Object element) {
-            return new TextCellEditor(viewer.getTable());
-          }
+      TableViewerColumn columnArtifactId = new TableViewerColumn(viewer, SWT.LEFT);
+      columnArtifactId.getColumn().setText("ArtifactId");
+      columnArtifactId.getColumn().setWidth(200);
 
-          @Override
-          protected boolean canEdit(Object element) {
-            return true;
-          }
+      TableViewerColumn columnBranch = new TableViewerColumn(viewer, SWT.LEFT);
+      columnBranch.getColumn().setText("Branch");
+      columnBranch.getColumn().setWidth(200);
 
-          @Override
-          protected Object getValue(Object element) {
-            // TODO
-            return "";
-          }
+      columnGroupId.setEditingSupport(new InlineEditingSupport(viewer, dbc, SonarProject.PROPERTY_GROUP_ID));
+      columnArtifactId.setEditingSupport(new InlineEditingSupport(viewer, dbc, SonarProject.PROPERTY_ARTIFACT_ID));
+      columnBranch.setEditingSupport(new InlineEditingSupport(viewer, dbc, SonarProject.PROPERTY_BRANCH));
 
-          @Override
-          protected void setValue(Object element, Object value) {
-            // TODO Auto-generated method stub
-          }
-        });
+      List<SonarProject> list = Lists.newArrayList();
+      List<SonarProject> selectedList = Lists.newArrayList();
+      for (IProject project : projects) {
+        SonarProject sonarProject = new SonarProject(project);
+        list.add(sonarProject);
+        if (selected.contains(project)) {
+          selectedList.add(sonarProject);
+        }
       }
 
-      viewer.setContentProvider(ArrayContentProvider.getInstance());
-      viewer.setLabelProvider(new ProjectLabelProvider());
-      viewer.setInput(projects);
-      viewer.setCheckedElements(selected);
+      // TODO we can improve UI of table by adding image to first element :
+      // PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
+      ViewerSupport.bind(viewer,
+        new WritableList(list, SonarProject.class),
+        new IValueProperty[] {
+        BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_PROJECT_NAME),
+        BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_GROUP_ID),
+        BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_ARTIFACT_ID),
+        BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_BRANCH)
+       });
+      viewer.setCheckedElements(selectedList.toArray(new SonarProject[selectedList.size()]));
+
       setControl(container);
     }
 
     public boolean finish() {
       Object[] checked = viewer.getCheckedElements();
       for (Object obj : checked) {
-        IProject project = (IProject) obj;
+        SonarProject sonarProject = (SonarProject) obj;
         try {
-          // TODO not only enable nature, but also set server, groupId, artifactId, ...
+          IProject project = sonarProject.getProject();
+          ProjectProperties properties = ProjectProperties.getInstance(project);
+          Host host = (Host) SelectionUtils.getSingleElement(comboViewer.getSelection());
+          properties.setUrl(host.getHost());
+          properties.setArtifactId(sonarProject.getArtifactId());
+          properties.setGroupId(sonarProject.getGroupId());
+          properties.setBranch(sonarProject.getBranch());
+          properties.save();
           ToggleNatureAction.enableNature(project);
         } catch (CoreException e) {
           SonarLogger.log(e);
@@ -159,28 +170,57 @@ public class ConfigureProjectsWizard extends Wizard {
       return true;
     }
 
-    public class ProjectLabelProvider extends LabelProvider implements ITableLabelProvider {
-      public Image getColumnImage(Object element, int index) {
-        if (index == 0) {
-          return PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
-        }
-        return null;
+    public class SonarProject extends AbstractModelObject {
+      public static final String PROPERTY_PROJECT_NAME = "name";
+      public static final String PROPERTY_GROUP_ID = "groupId";
+      public static final String PROPERTY_ARTIFACT_ID = "artifactId";
+      public static final String PROPERTY_BRANCH = "branch";
+
+      private IProject project;
+      private String groupId;
+      private String artifactId;
+      private String branch;
+
+      public SonarProject(IProject project) {
+        this.project = project;
+        this.groupId = "";
+        this.artifactId = "";
+        this.branch = "";
       }
 
-      public String getColumnText(Object obj, int index) {
-        switch (index) {
-          case 0:
-            return ((IProject) obj).getName();
-          case 1:
-            return "todo groupId";
-          case 2:
-            return "todo artifacId";
-          case 3:
-            return "todo branch";
-          default:
-            throw new SonarIdeException("Should never happen");
-        }
+      public IProject getProject() {
+        return project;
+      }
+
+      public String getGroupId() {
+        return groupId;
+      }
+
+      public void setGroupId(String groupId) {
+        firePropertyChange("groupId", this.groupId, this.groupId = groupId);
+      }
+
+      public String getArtifactId() {
+        return artifactId;
+      }
+
+      public void setArtifactId(String artifactId) {
+        firePropertyChange("artifactId", this.artifactId, this.artifactId = artifactId);
+      }
+
+      public String getName() {
+        return project.getName();
+      }
+
+      public void setBranch(String branch) {
+        firePropertyChange("branch", this.branch, this.branch = branch);
+      }
+
+      public String getBranch() {
+        return branch;
       }
     }
+
   }
+
 }
