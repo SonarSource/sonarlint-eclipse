@@ -20,17 +20,18 @@
 
 package org.sonar.ide.eclipse.jdt.internal;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.junit.Test;
+import org.sonar.ide.eclipse.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 public class JavaElementsAdapterFactoryTest extends SonarTestCase {
 
@@ -45,6 +46,7 @@ public class JavaElementsAdapterFactoryTest extends SonarTestCase {
     properties.setGroupId(groupId);
     properties.setArtifactId(artifactId);
     properties.save();
+    ToggleNatureAction.enableNature(project);
 
     JavaElementsAdapterFactory factory = new JavaElementsAdapterFactory();
 

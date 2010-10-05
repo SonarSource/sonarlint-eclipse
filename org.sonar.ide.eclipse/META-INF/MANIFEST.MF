@@ -29,6 +29,7 @@ Import-Package: org.apache.commons.io,
  org.sonar.ide.ui
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonar.ide.eclipse,
+ org.sonar.ide.eclipse.actions,
  org.sonar.ide.eclipse.core,
  org.sonar.ide.eclipse.jobs,
  org.sonar.ide.eclipse.markers.resolvers,

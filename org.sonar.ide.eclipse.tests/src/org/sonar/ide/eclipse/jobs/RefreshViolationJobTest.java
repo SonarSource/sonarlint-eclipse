@@ -20,8 +20,6 @@
 
 package org.sonar.ide.eclipse.jobs;
 
-import static org.junit.Assert.assertTrue;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -37,6 +35,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
@@ -44,6 +43,8 @@ import org.sonar.wsclient.Host;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test case for refresh violations.
@@ -78,6 +79,7 @@ public class RefreshViolationJobTest extends SonarTestCase {
     properties.setGroupId("org.sonar-ide.tests.SimpleProject");
     properties.setArtifactId("SimpleProject");
     properties.save();
+    ToggleNatureAction.enableNature(project);
     LOG.debug("Project configured");
   }
 
