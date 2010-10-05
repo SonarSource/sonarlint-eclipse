@@ -16,6 +16,10 @@
   <version>0.3.0-SNAPSHOT</version>
 
   <name>Sonar Integration for Eclipse (parent)</name>
+  <organization>
+    <name>SonarSource</name>
+    <url>http://www.sonarsource.com</url>
+  </organization>
 
   <prerequisites>
     <maven>3.0</maven>
