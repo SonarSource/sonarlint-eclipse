@@ -22,6 +22,7 @@ package org.sonar.ide.eclipse.internal.core;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Assert;
 import org.sonar.ide.eclipse.core.ISonarResource;
 
 public class SonarResource implements ISonarResource {
@@ -30,6 +31,8 @@ public class SonarResource implements ISonarResource {
   private String key;
 
   public SonarResource(IResource resource, String key) {
+    Assert.isNotNull(resource);
+    Assert.isNotNull(key);
     this.key = key;
     this.resource = resource;
   }

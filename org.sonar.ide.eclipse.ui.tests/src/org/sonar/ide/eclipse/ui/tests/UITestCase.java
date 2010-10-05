@@ -20,43 +20,33 @@
 
 package org.sonar.ide.eclipse.ui.tests;
 
-import java.io.File;
-import java.io.IOException;
-
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
-import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.utils.SWTUtils;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
 import org.sonar.ide.eclipse.tests.common.JobHelpers;
 import org.sonar.ide.eclipse.tests.common.VersionHelpers;
 import org.sonar.ide.eclipse.tests.common.WorkspaceHelpers;
 import org.sonar.ide.test.SonarIdeTestCase;
 import org.sonar.ide.test.SonarTestServer;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
  * TODO use Xvfb ("fake" X-server)
  * 
  * @author Evgeny Mandrikov
  */
-@RunWith(SWTBotJunit4ClassRunner.class)
+// @RunWith(SWTBotJunit4ClassRunner.class)
 public abstract class UITestCase extends SonarIdeTestCase {
 
   private static final String SCREENSHOTS_DIR = "target/screenshots";
@@ -119,22 +109,10 @@ public abstract class UITestCase extends SonarIdeTestCase {
   }
 
   /**
-   * @throws WidgetNotFoundException
-   *           if view not found
+   * @throws WidgetNotFoundException if view not found
    */
   protected static void closeView(final String id) {
     bot.viewById(id).close();
-  }
-
-  protected IEditorPart openFile(IProject project, String relPath) throws PartInitException {
-    IFile file = project.getFile(relPath);
-    // TODO next line should be executed in UI Thread
-    return IDE.openEditor(getActivePage(), file, true);
-  }
-
-  protected static IWorkbenchPage getActivePage() {
-    IWorkbench workbench = PlatformUI.getWorkbench();
-    return workbench.getWorkbenchWindows()[0].getActivePage();
   }
 
   /**
