@@ -22,8 +22,9 @@
       <filter
             class="org.sonar.ide.eclipse.jdt.internal.NonSonarProjectsFilter"
             description="Filters non-Sonar projects"
+            enabled="false"
             id="org.sonar.ide.eclipse.jdt.ui.filters.HideNonSonarProjects"
-            name="Non-Sonar projects"
+            name="Hides all projects without Sonar nature"
             targetId="org.eclipse.jdt.ui.PackageExplorer">
       </filter>
    </extension>
@@ -43,8 +44,9 @@
    <extension
          point="org.eclipse.ui.navigator.navigatorContent">
       <commonFilter
+            activeByDefault="false"
             class="org.sonar.ide.eclipse.jdt.internal.NonSonarProjectsFilter"
-            description="Filters non-Sonar projects"
+            description="Hides all projects without Sonar nature"
             id="org.sonar.ide.eclipse.jdt.ui.filters.HideNonSonarProjects"
             name="Non-Sonar projects">
       </commonFilter>
