@@ -18,7 +18,8 @@ public class NonSonarProjectsFilter extends ViewerFilter {
       return SonarPlugin.hasSonarNature(((IJavaProject) element).getProject());
     } else if (element instanceof IProject) {
       // For Project Explorer
-      return SonarPlugin.hasSonarNature((IProject) element);
+      IProject project = (IProject) element;
+      return !project.isOpen() || SonarPlugin.hasSonarNature(project);
     }
     return true;
   }
