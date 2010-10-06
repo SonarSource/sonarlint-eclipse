@@ -50,6 +50,7 @@ import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.ui.AbstractModelObject;
 import org.sonar.ide.eclipse.ui.InlineEditingSupport;
 import org.sonar.ide.eclipse.utils.SelectionUtils;
+import org.sonar.ide.eclipse.utils.SonarKeyUtils;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.Resource;
@@ -184,12 +185,7 @@ public class ConfigureProjectsWizard extends Wizard {
         @Override
         public void widgetSelected(SelectionEvent e) {
           String serverUrl = getServerUrl();
-          Object[] checkedElements = viewer.getCheckedElements();
-          SonarProject[] projects = new SonarProject[checkedElements.length];
-          for (int i = 0; i < checkedElements.length; i++) {
-            projects[i] = (SonarProject) checkedElements[i];
-          }
-
+          SonarProject[] projects = getProjects();
           try {
             getWizard().getContainer().run(true, false, new AssociateProjects(serverUrl, projects));
           } catch (InvocationTargetException ex) {
@@ -208,14 +204,67 @@ public class ConfigureProjectsWizard extends Wizard {
       return host.getHost();
     }
 
+    String errorMessage;
+
     public boolean finish() {
-      Object[] checked = viewer.getCheckedElements();
-      for (Object obj : checked) {
-        SonarProject sonarProject = (SonarProject) obj;
+      final String serverUrl = getServerUrl();
+      final SonarProject[] projects = getProjects();
+      try {
+        getWizard().getContainer().run(true, true, new IRunnableWithProgress() {
+          public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            errorMessage = null;
+            monitor.beginTask("Verifying", projects.length);
+            for (SonarProject project : projects) {
+              monitor.subTask("project '" + project.getName() + "'");
+
+              if (StringUtils.isBlank(project.getGroupId())) {
+                errorMessage = "empty GroupId for project '" + project.getName() + "'";
+                break;
+              }
+              if (StringUtils.isBlank(project.getArtifactId())) {
+                errorMessage = "empty ArtifactId for project '" + project.getName() + "'";
+                break;
+              }
+
+              // Check project on server
+              String key = SonarKeyUtils.getKeyForProject(project.getGroupId(), project.getArtifactId(), project.getBranch());
+              String message = "project '" + project.getName() + "' with key '" + key + "'";
+              monitor.subTask(message);
+
+              Sonar sonar = SonarPlugin.getServerManager().getSonar(serverUrl);
+              // TODO Godin: sonar.find throws NPE here
+              List<Resource> resources = sonar.findAll(new ResourceQuery(key));
+              if (resources.isEmpty()) {
+                errorMessage = message + " not found on server";
+                break;
+              }
+
+              monitor.worked(1);
+              if (monitor.isCanceled()) {
+                throw new InterruptedException();
+              }
+            }
+            monitor.done();
+          }
+        });
+      } catch (InvocationTargetException e) {
+        errorMessage = "unknown error";
+        SonarLogger.log(e);
+      } catch (InterruptedException e) {
+        errorMessage = "interrupted";
+        SonarLogger.log(e);
+      }
+
+      if (errorMessage != null) {
+        setMessage(errorMessage, ERROR);
+        return false;
+      }
+
+      for (SonarProject sonarProject : projects) {
         try {
           IProject project = sonarProject.getProject();
           ProjectProperties properties = ProjectProperties.getInstance(project);
-          properties.setUrl(getServerUrl());
+          properties.setUrl(serverUrl);
           properties.setArtifactId(sonarProject.getArtifactId());
           properties.setGroupId(sonarProject.getGroupId());
           properties.setBranch(sonarProject.getBranch());
@@ -227,6 +276,15 @@ public class ConfigureProjectsWizard extends Wizard {
         }
       }
       return true;
+    }
+
+    private SonarProject[] getProjects() {
+      Object[] checkedElements = viewer.getCheckedElements();
+      SonarProject[] projects = new SonarProject[checkedElements.length];
+      for (int i = 0; i < checkedElements.length; i++) {
+        projects[i] = (SonarProject) checkedElements[i];
+      }
+      return projects;
     }
 
     public class AssociateProjects implements IRunnableWithProgress {
