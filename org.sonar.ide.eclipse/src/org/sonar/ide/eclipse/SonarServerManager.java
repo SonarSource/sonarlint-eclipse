@@ -20,19 +20,19 @@
 
 package org.sonar.ide.eclipse;
 
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.EncodingUtils;
-import org.eclipse.equinox.security.storage.ISecurePreferences;
-import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
-import org.eclipse.equinox.security.storage.StorageException;
+import org.osgi.service.prefs.BackingStoreException;
+import org.osgi.service.prefs.Preferences;
 import org.sonar.ide.client.SonarClient;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.SonarLogger;
-import org.sonar.ide.eclipse.core.SonarServer;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 
 import com.google.common.collect.Lists;
 
+import java.util.Collections;
 import java.util.List;
 
 public class SonarServerManager {
@@ -45,38 +45,50 @@ public class SonarServerManager {
   }
 
   public void addServer(Host server) {
-    SonarServer sonarServer = new SonarServer(server.getHost());
-    sonarServer.setCredentials(server.getUsername(), server.getPassword());
+    Preferences preferences = getPreferences();
+    String encodedUrl = EncodingUtils.encodeSlashes(server.getHost());
+    preferences = preferences.node(encodedUrl);
+    preferences.put("username", server.getUsername());
+    preferences.put("password", server.getPassword());
   }
 
-  private ISecurePreferences getSecurePreferences() {
-    return SecurePreferencesFactory.getDefault().node(ISonarConstants.PLUGIN_ID);
+  // private ISecurePreferences getSecurePreferences() {
+  // return SecurePreferencesFactory.getDefault().node(ISonarConstants.PLUGIN_ID);
+  // }
+
+  private Preferences getPreferences() {
+    return new InstanceScope().getNode(ISonarConstants.PLUGIN_ID).node("servers");
   }
 
   public List<Host> getServers() {
     List<Host> servers = Lists.newArrayList();
-    ISecurePreferences securePreferences = SecurePreferencesFactory.getDefault().node(ISonarConstants.PLUGIN_ID);
-    for (String encodedUrl : securePreferences.childrenNames()) {
-      ISecurePreferences serverNode = securePreferences.node(encodedUrl);
-      String url = EncodingUtils.decodeSlashes(encodedUrl);
-      try {
+    try {
+      Preferences preferences = getPreferences();
+      for (String encodedUrl : preferences.childrenNames()) {
+        Preferences serverNode = preferences.node(encodedUrl);
+        String url = EncodingUtils.decodeSlashes(encodedUrl);
         String username = serverNode.get("username", "");
         String password = serverNode.get("password", "");
         servers.add(new Host(url, username, password));
-      } catch (StorageException e) {
-        SonarLogger.log(e);
       }
+      return servers;
+    } catch (BackingStoreException e) {
+      SonarLogger.log(e);
+      return Collections.emptyList();
     }
-    return servers;
   }
 
   public boolean removeServer(String host) {
-    ISecurePreferences securePreferences = getSecurePreferences();
+    Preferences preferences = getPreferences();
     String encodedUrl = EncodingUtils.encodeSlashes(host);
-    if (securePreferences.nodeExists(encodedUrl)) {
-      securePreferences.node(encodedUrl).removeNode();
+    try {
+      if (preferences.nodeExists(encodedUrl)) {
+        preferences.node(encodedUrl).removeNode();
+      }
+      return true;
+    } catch (BackingStoreException e) {
+      return false;
     }
-    return true;
   }
 
   /**
@@ -88,19 +100,13 @@ public class SonarServerManager {
   }
 
   public Host findServer(String host) {
-    ISecurePreferences securePreferences = getSecurePreferences();
+    Preferences preferences = getPreferences();
     String encodedUrl = EncodingUtils.encodeSlashes(host);
-    Host result = new Host(host, "", "");
-    if (securePreferences.nodeExists(encodedUrl)) {
-      securePreferences = securePreferences.node(encodedUrl);
-      try {
-        String username = securePreferences.get("username", "");
-        String password = securePreferences.get("password", "");
-        result = new Host(host, username, password);
-      } catch (StorageException e) {
-        SonarLogger.log(e);
-      }
-    }
+    Host result;
+    preferences = preferences.node(encodedUrl);
+    String username = preferences.get("username", "");
+    String password = preferences.get("password", "");
+    result = new Host(host, username, password);
     return result;
   }
 
