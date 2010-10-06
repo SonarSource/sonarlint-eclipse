@@ -20,7 +20,6 @@
 
 package org.sonar.ide.eclipse.actions;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
@@ -31,7 +30,6 @@ import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
-import org.sonar.ide.eclipse.utils.PlatformUtils;
 
 import java.net.URL;
 
@@ -39,7 +37,6 @@ import java.net.URL;
  * Open the internal web browser to show the page of the sonar server corresponding to the selection.
  * 
  * @author Jérémie Lagarde
- * 
  */
 public class OpenInBrowserAction implements IObjectActionDelegate {
 
@@ -55,20 +52,19 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
   public void run(IAction action) {
     try {
       Object element = selection.getFirstElement();
-      if (element instanceof IResource) {
-        openBrowser((IResource) element);
+      if (element instanceof ISonarResource) {
+        openBrowser((ISonarResource) element);
       }
     } catch (Exception e) {
       SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
     }
   }
 
-  protected void openBrowser(IResource resource) {
-    ISonarResource sonarResource = PlatformUtils.adapt(resource, ISonarResource.class);
+  protected void openBrowser(ISonarResource sonarResource) {
     String key = sonarResource.getKey();
 
     IWorkbenchBrowserSupport browserSupport = SonarPlugin.getDefault().getWorkbench().getBrowserSupport();
-    ProjectProperties properties = ProjectProperties.getInstance(resource);
+    ProjectProperties properties = ProjectProperties.getInstance(sonarResource.getProject());
     try {
       URL consoleURL = new URL(properties.getUrl() + "/resource/index/" + key);
       if (browserSupport.isInternalWebBrowserAvailable()) {

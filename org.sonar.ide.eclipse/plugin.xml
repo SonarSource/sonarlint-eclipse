@@ -173,13 +173,10 @@
   </extension>
 
   <extension point="org.eclipse.ui.popupMenus">
-     <objectContribution
+    <objectContribution
            id="org.sonar.ide.eclipse.contribution1"
-           objectClass="org.eclipse.core.resources.IResource"
+           objectClass="org.sonar.ide.eclipse.core.ISonarResource"
            adaptable="true">
-        <visibility>
-          <objectState name="nature" value="org.sonar.ide.eclipse.sonarNature"/>
-        </visibility>   
         <menu
               icon="icons/sonar.png"
               id="org.sonar.ide.eclipse.sonar"
@@ -191,7 +188,7 @@
         </menu>
         <action
               class="org.sonar.ide.eclipse.actions.OpenInBrowserAction"
-              enablesFor="+"
+              enablesFor="1"
               id="org.sonar.ide.eclipse.openInBrowserAction"
               label="%sonar.action.openinbrowser.label"
               menubarPath="org.sonar.ide.eclipse.sonar/group1"
@@ -201,13 +198,14 @@
         </action>
         <action
               label="Sonar server"
+              enablesFor="1"
               class="org.sonar.ide.eclipse.compare.CompareWithSonarAction"
               menubarPath="compareWithMenu/compareWithGroup"
               id="org.sonar.ide.eclipse.compareWithSonar"
               icon="icons/sonar.png">
         </action>
     </objectContribution>
-
+    
 	<!-- TODO just for testing purposes -->
     <objectContribution id="org.sonar.ide.eclipse.projectMenu"
         				adaptable="true"

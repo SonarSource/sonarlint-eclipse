@@ -21,13 +21,12 @@
 package org.sonar.ide.eclipse.compare;
 
 import org.eclipse.compare.CompareUI;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 
 /**
@@ -35,7 +34,7 @@ import org.sonar.ide.eclipse.internal.EclipseSonar;
  */
 public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
 
-  private IResource resource;
+  private ISonarResource resource;
 
   public void dispose() {
     resource = null;
@@ -46,18 +45,15 @@ public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
 
   public void selectionChanged(final IAction action, final ISelection selection) {
     resource = null;
-    if (selection instanceof IResource) {
-      resource = (IResource) selection;
-    }
-    if (selection instanceof IStructuredSelection) {
-      resource = (IResource) ((IStructuredSelection) selection).getFirstElement();
+    if (selection instanceof ISonarResource) {
+      resource = (ISonarResource) selection;
     }
   }
 
   public void run(final IAction action) {
     if (resource != null) {
       final SourceCode sourceCode = EclipseSonar.getInstance(resource.getProject()).search(resource);
-      CompareUI.openCompareEditor(new SonarCompareInput(resource, sourceCode.getRemoteContent()));
+      CompareUI.openCompareEditor(new SonarCompareInput(resource.getResource(), sourceCode.getRemoteContent()));
     }
   }
 
