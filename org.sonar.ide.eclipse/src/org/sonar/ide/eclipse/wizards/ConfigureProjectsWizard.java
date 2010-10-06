@@ -227,7 +227,7 @@ public class ConfigureProjectsWizard extends Wizard {
               }
 
               // Check project on server
-              String key = SonarKeyUtils.getKeyForProject(project.getGroupId(), project.getArtifactId(), project.getBranch());
+              String key = SonarKeyUtils.projectKey(project.getGroupId(), project.getArtifactId(), project.getBranch());
               String message = "project '" + project.getName() + "' with key '" + key + "'";
               monitor.subTask(message);
 
