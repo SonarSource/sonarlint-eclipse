@@ -58,8 +58,6 @@ public class SonarProjectPropertyBlock {
   private Text projectArtifactIdText;
   private Text projectBranchText;
 
-  private Button autoConfigButton;
-
   public SonarProjectPropertyBlock(IProject project) {
     this.project = project;
   }
