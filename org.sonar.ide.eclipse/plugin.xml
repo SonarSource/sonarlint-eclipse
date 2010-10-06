@@ -164,10 +164,9 @@
       class="org.sonar.ide.eclipse.properties.SonarProjectPropertyPage"
        id="org.sonar.ide.eclipse.properties.sonarProjectPropertyPage"
        name="%sonar.properties.page.name">
+       <filter name="projectNature" value="org.sonar.ide.eclipse.sonarNature"/>
        <enabledWhen>
-          <adapt type="org.eclipse.core.resources.IProject">
-            <test property="org.eclipse.core.resources.projectNature" value="org.sonar.ide.eclipse.sonarNature"/>
-          </adapt>
+          <adapt type="org.eclipse.core.resources.IProject"/>
        </enabledWhen>
     </page>
   </extension>
