@@ -20,38 +20,98 @@
 
 package org.sonar.ide.eclipse;
 
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.equinox.security.storage.EncodingUtils;
+import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
+import org.eclipse.equinox.security.storage.StorageException;
+import org.sonar.ide.client.SonarClient;
+import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.SonarLogger;
-import org.sonar.ide.eclipse.preferences.PreferenceConstants;
-import org.sonar.ide.shared.DefaultServerManager;
+import org.sonar.ide.eclipse.core.SonarServer;
 import org.sonar.wsclient.Host;
+import org.sonar.wsclient.Sonar;
 
-/**
- * @author Jérémie Lagarde
- */
-public class SonarServerManager extends DefaultServerManager {
+import com.google.common.collect.Lists;
+
+import java.util.List;
+
+public class SonarServerManager {
 
   protected SonarServerManager() {
-    super(SonarPlugin.getDefault().getStateLocation().makeAbsolute().toOSString());
   }
 
-  public Host getDefaultServer() throws Exception {
-    String url = SonarPlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL);
+  public void addServer(String location, String username, String password) throws Exception {
+    addServer(new Host(location, username, password));
+  }
+
+  public void addServer(Host server) {
+    SonarServer sonarServer = new SonarServer(server.getHost());
+    sonarServer.setCredentials(server.getUsername(), server.getPassword());
+  }
+
+  private ISecurePreferences getSecurePreferences() {
+    return SecurePreferencesFactory.getDefault().node(ISonarConstants.PLUGIN_ID);
+  }
+
+  public List<Host> getServers() {
+    List<Host> servers = Lists.newArrayList();
+    ISecurePreferences securePreferences = SecurePreferencesFactory.getDefault().node(ISonarConstants.PLUGIN_ID);
+    for (String encodedUrl : securePreferences.childrenNames()) {
+      ISecurePreferences serverNode = securePreferences.node(encodedUrl);
+      String url = EncodingUtils.decodeSlashes(encodedUrl);
+      try {
+        String username = serverNode.get("username", "");
+        String password = serverNode.get("password", "");
+        servers.add(new Host(url, username, password));
+      } catch (StorageException e) {
+        SonarLogger.log(e);
+      }
+    }
+    return servers;
+  }
+
+  public boolean removeServer(String host) {
+    ISecurePreferences securePreferences = getSecurePreferences();
+    String encodedUrl = EncodingUtils.encodeSlashes(host);
+    if (securePreferences.nodeExists(encodedUrl)) {
+      securePreferences.node(encodedUrl).removeNode();
+    }
+    return true;
+  }
+
+  /**
+   * @deprecated since 0.3 use {@link #findServer(String)} instead
+   */
+  @Deprecated
+  public Host createServer(String url) {
     return findServer(url);
   }
 
-  @Override
-  protected void notifyListeners(final int eventType) {
-    for (final IServerSetListener listener : serverSetListeners) {
-      Display.getDefault().asyncExec(new Runnable() {
-        public void run() {
-          try {
-            listener.serverSetChanged(eventType, serverList);
-          } catch (Throwable t) {
-            SonarLogger.log(t);
-          }
-        }
-      });
+  public Host findServer(String host) {
+    ISecurePreferences securePreferences = getSecurePreferences();
+    String encodedUrl = EncodingUtils.encodeSlashes(host);
+    Host result = new Host(host, "", "");
+    if (securePreferences.nodeExists(encodedUrl)) {
+      securePreferences = securePreferences.node(encodedUrl);
+      try {
+        String username = securePreferences.get("username", "");
+        String password = securePreferences.get("password", "");
+        result = new Host(host, username, password);
+      } catch (StorageException e) {
+        SonarLogger.log(e);
+      }
     }
+    return result;
   }
+
+  public Sonar getSonar(String url) {
+    final Host server = createServer(url);
+    return new SonarClient(server.getHost(), server.getUsername(), server.getPassword());
+  }
+
+  public boolean testSonar(String url, String user, String password) throws Exception {
+    SonarClient sonar = new SonarClient(url, user, password);
+    return sonar.isAvailable();
+  }
+
 }

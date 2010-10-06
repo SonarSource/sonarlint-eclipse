@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.wizards.ConfigureProjectsWizard;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.Resource;
@@ -45,6 +46,7 @@ import java.util.Map;
  * @link http://jira.codehaus.org/browse/SONARIDE-47
  * 
  * @author Jérémie Lagarde
+ * @deprecated since 0.3 replaced by {@link ConfigureProjectsWizard}
  */
 public class AutoConfigureProjectJob extends Job {
 

@@ -21,15 +21,10 @@
 package org.sonar.ide.eclipse.wizards;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -43,6 +38,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.sonar.ide.eclipse.Messages;
+import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.SonarLogger;
@@ -50,24 +46,22 @@ import org.sonar.wsclient.Host;
 
 import java.lang.reflect.InvocationTargetException;
 
-/**
- * @author Jérémie Lagarde
- */
 public class ServerLocationWizardPage extends WizardPage {
 
   private Text serverUrlText;
   private Text serverUsernameText;
   private Text serverPasswordText;
-  private String defaultServerUrl;
   private Button testConnectionButton;
 
-  public ServerLocationWizardPage(String pageName) {
-    super(pageName);
+  private Host host;
+
+  public ServerLocationWizardPage() {
+    this(new Host("http://localhost:9000"));
   }
 
-  public ServerLocationWizardPage(String pageName, String title, ImageDescriptor titleImage, String defaultServerUrl) {
-    super(pageName, title, titleImage);
-    this.defaultServerUrl = defaultServerUrl;
+  public ServerLocationWizardPage(Host host) {
+    super("server_location_page", "Sonar Server Configuration", SonarImages.getImageDescriptor(SonarImages.IMG_SONARWIZBAN));
+    this.host = host;
   }
 
   /**
@@ -85,7 +79,6 @@ public class ServerLocationWizardPage extends WizardPage {
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     serverUrlText.setLayoutData(gd);
     serverUrlText.addModifyListener(new ModifyListener() {
-
       public void modifyText(ModifyEvent e) {
         dialogChanged();
       }
@@ -150,11 +143,10 @@ public class ServerLocationWizardPage extends WizardPage {
         String message = status.getMessage();
         switch (status.getSeverity()) {
           case IStatus.OK:
-                    setMessage(message, IMessageProvider.INFORMATION);
+            setMessage(message, IMessageProvider.INFORMATION);
             break;
-
           default:
-                    setMessage(message, IMessageProvider.ERROR);
+            setMessage(message, IMessageProvider.ERROR);
             break;
         }
       }
@@ -165,31 +157,16 @@ public class ServerLocationWizardPage extends WizardPage {
     setControl(container);
   }
 
-  private IStatus status;
-
   private void initialize() {
-    Host host = SonarPlugin.getServerManager().findServer(defaultServerUrl);
-    if (host != null) {
-      serverUrlText.setText(host.getHost());
-      if (StringUtils.isNotBlank(host.getUsername())) {
-        serverUsernameText.setText(host.getUsername());
-      }
-      if (StringUtils.isNotBlank(host.getPassword())) {
-        serverPasswordText.setText(host.getPassword());
-      }
-    } else {
-      if (defaultServerUrl != null) {
-        serverUrlText.setText(defaultServerUrl);
-      }
-    }
+    serverUrlText.setText(StringUtils.defaultString(host.getHost()));
+    serverUsernameText.setText(StringUtils.defaultString(host.getUsername()));
+    serverPasswordText.setText(StringUtils.defaultString(host.getPassword()));
   }
 
-  /**
-   * Uses the standard container selection dialog to choose the new value for the container field.
-   */
+  private IStatus status;
 
   private void dialogChanged() {
-    if (getServerUrl().length() == 0) {
+    if (StringUtils.isBlank(getServerUrl())) {
       updateStatus("Server url must be specified");
       return;
     }
@@ -212,4 +189,5 @@ public class ServerLocationWizardPage extends WizardPage {
   public String getPassword() {
     return serverPasswordText.getText();
   }
+
 }

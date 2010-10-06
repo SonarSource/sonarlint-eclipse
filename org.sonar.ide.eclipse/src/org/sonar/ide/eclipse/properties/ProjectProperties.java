@@ -24,7 +24,6 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.preferences.PreferenceConstants;
 
 /**
  * @author Evgeny Mandrikov
@@ -57,9 +56,6 @@ public class ProjectProperties {
   }
 
   public String getUrl() {
-    if (StringUtils.isBlank(url)) {
-      url = SonarPlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_SONAR_SERVER_URL);
-    }
     return url;
   }
 
