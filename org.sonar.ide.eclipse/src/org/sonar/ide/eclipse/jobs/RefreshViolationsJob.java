@@ -25,25 +25,17 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.*;
 import org.eclipse.ui.progress.UIJob;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.utils.PlatformUtils;
 import org.sonar.ide.shared.violations.ViolationUtils;
 import org.sonar.wsclient.services.Violation;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class load violations in background.
@@ -119,7 +111,10 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
         IEditorInput input = ((IEditorPart) part).getEditorInput();
         if (input instanceof IFileEditorInput) {
           IResource resource = ((IFileEditorInput) input).getFile();
-          new RefreshViolationsJob(Collections.singletonList(resource)).schedule();
+          ISonarResource sonarResource = PlatformUtils.adapt(resource, ISonarResource.class);
+          if (sonarResource != null) {
+            new RefreshViolationsJob(Collections.singletonList(resource)).schedule();
+          }
         }
       }
     }
