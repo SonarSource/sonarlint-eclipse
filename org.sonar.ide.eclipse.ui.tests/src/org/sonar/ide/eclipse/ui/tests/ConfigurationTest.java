@@ -20,116 +20,60 @@
 
 package org.sonar.ide.eclipse.ui.tests;
 
-import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
-import org.eclipse.swtbot.swt.finder.waits.Conditions;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.sonar.ide.eclipse.ui.tests.bots.SonarPreferencesBot;
+import org.sonar.ide.eclipse.ui.tests.bots.SonarServerWizardBot;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
 
 public class ConfigurationTest extends UITestCase {
 
-  private static SWTBotShell shell;
-  private static SWTBotTable table;
+  private static SonarPreferencesBot preferencesBot;
 
   @BeforeClass
   public static void openProperties() throws Exception {
-    shell = showGlobalSonarPropertiesPage();
-    table = bot.table();
+    preferencesBot = new SonarPreferencesBot();
   }
 
   @AfterClass
   public static void closeProperties() {
-    shell.bot().button("OK").click();
-    bot.waitUntil(Conditions.shellCloses(shell));
-  }
-
-  private static void closeWizard(SWTBotShell wizard) {
-    wizard.activate();
-    bot.button("Finish").click();
-    bot.waitUntil(Conditions.shellCloses(wizard));
+    preferencesBot.ok();
   }
 
   @Test
   public void test() throws Exception {
-    assertThat(table.rowCount(), is(0));
+    assertThat(preferencesBot.getServersCount(), is(0));
 
-    assertThat(table.selectionCount(), is(0));
-    assertThat("Add button enabled", bot.button("Add...").isEnabled(), is(true));
-    assertThat("Edit button enabled", bot.button("Edit...").isEnabled(), is(false));
-    assertThat("Remove button enabled", bot.button("Remove").isEnabled(), is(false));
+    // can add
+    SonarServerWizardBot addWizard = preferencesBot.add();
+    assertThat(addWizard.getServerUrl(), is("http://localhost:9000")); // default url
+    assertThat(addWizard.getUsername(), is(""));
+    assertThat(addWizard.getPassword(), is(""));
+    testConnection(addWizard, getSonarServerUrl() + "/", true); // test for SONARIDE-90
+    testConnection(addWizard, getSonarServerUrl(), true);
+    testConnection(addWizard, "http://fake", false);
+    addWizard.finish();
+    assertThat(preferencesBot.getServersCount(), is(1));
 
-    // test add
-    bot.button("Add...").click();
-    bot.waitUntil(Conditions.shellIsActive("Add Sonar Server"));
-    SWTBotShell wizard = bot.shell("Add Sonar Server");
-    wizard.activate();
+    // can edit
+    SonarServerWizardBot editWizard = preferencesBot.select("http://fake").edit();
+    assertThat(editWizard.getServerUrl(), is("http://fake"));
+    assertThat(editWizard.getUsername(), is(""));
+    assertThat(editWizard.getPassword(), is(""));
+    editWizard.setServerUrl("http://fake2");
+    editWizard.finish();
+    assertThat(preferencesBot.getServersCount(), is(1));
 
-    testConnection(getSonarServerUrl() + "/", true); // test for SONARIDE-90
-    testConnection(getSonarServerUrl(), true);
-    testConnection("http://fake", false);
-    closeWizard(wizard);
-
-    assertThat(table.rowCount(), is(1));
-    assertThat(table.containsItem("http://fake"), is(true));
-
-    assertThat(table.selectionCount(), is(0));
-    assertThat("Add button enabled", bot.button("Add...").isEnabled(), is(true));
-    assertThat("Edit button enabled", bot.button("Edit...").isEnabled(), is(false));
-    assertThat("Remove button enabled", bot.button("Remove").isEnabled(), is(false));
-
-    // test edit
-    table.getTableItem(0).select();
-    assertThat("Edit button enabled", bot.button("Edit...").isEnabled(), is(true));
-    bot.button("Edit...").click();
-    bot.waitUntil(Conditions.shellIsActive("Edit Sonar Server"));
-    wizard = bot.shell("Edit Sonar Server");
-    wizard.activate();
-    assertThat(bot.textWithLabel("Sonar server URL :").getText(), is("http://fake"));
-    assertThat(bot.textWithLabel("Username :").getText(), is(""));
-    assertThat(bot.textWithLabel("Password :").getText(), is(""));
-    bot.textWithLabel("Sonar server URL :").setText("http://fake2");
-    closeWizard(wizard);
-
-    assertThat(table.rowCount(), is(1));
-    assertThat(table.containsItem("http://fake2"), is(true));
-
-    assertThat(table.selectionCount(), is(0));
-    assertThat("Add button enabled", bot.button("Add...").isEnabled(), is(true));
-    assertThat("Edit button enabled", bot.button("Edit...").isEnabled(), is(false));
-    assertThat("Remove button enabled", bot.button("Remove").isEnabled(), is(false));
-
-    // test remove
-    table.getTableItem("http://fake2").select();
-    assertThat("Remove button enabled", bot.button("Remove").isEnabled(), is(true));
-    bot.button("Remove").click();
-    bot.waitUntil(Conditions.shellIsActive("Remove sonar server connection"));
-    bot.button("OK").click();
-
-    assertThat(table.rowCount(), is(0));
-
-    assertThat("Add button enabled", bot.button("Add...").isEnabled(), is(true));
-    assertThat("Edit button enabled", bot.button("Edit...").isEnabled(), is(false));
-    assertThat("Remove button enabled", bot.button("Remove").isEnabled(), is(false));
+    // can remove
+    preferencesBot.select("http://fake2").remove();
+    assertThat(preferencesBot.getServersCount(), is(0));
   }
 
-  private void testConnection(String serverUrl, boolean expectedSuccess) {
-    bot.textWithLabel("Sonar server URL :").setText(serverUrl);
-    SWTBotButton button = bot.button("Test connection");
-    button.click();
-    bot.waitUntil(Conditions.widgetIsEnabled(button), 1000 * 30);
-
-    String message = expectedSuccess ? "Successfully connected!" : "Unable to connect.";
-    try {
-      bot.text(" " + message);
-    } catch (WidgetNotFoundException e) {
-      fail("Expected '" + message + "'");
-    }
+  private void testConnection(SonarServerWizardBot addWizard, String serverUrl, boolean expectedSuccess) {
+    String message = expectedSuccess ? " Successfully connected!" : " Unable to connect.";
+    assertThat(addWizard.setServerUrl(serverUrl).testConnection().getStatus(), is(message));
   }
 }

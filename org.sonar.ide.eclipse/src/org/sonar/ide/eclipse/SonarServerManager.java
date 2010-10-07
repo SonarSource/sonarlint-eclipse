@@ -48,6 +48,13 @@ public class SonarServerManager {
     useSecureStorage = enable;
   }
 
+  /**
+   * For tests
+   */
+  public void clean() {
+    servers.clear();
+  }
+
   private Map<String, Host> servers;
 
   protected SonarServerManager() {

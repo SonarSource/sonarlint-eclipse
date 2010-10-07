@@ -30,10 +30,12 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.SonarServerManager;
 import org.sonar.ide.eclipse.tests.common.JobHelpers;
 import org.sonar.ide.eclipse.tests.common.VersionHelpers;
 import org.sonar.ide.eclipse.tests.common.WorkspaceHelpers;
+import org.sonar.ide.eclipse.ui.tests.bots.ImportProjectBot;
 import org.sonar.ide.eclipse.ui.tests.utils.ContextMenuHelper;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
 import org.sonar.ide.test.SonarIdeTestCase;
@@ -57,6 +59,8 @@ public abstract class UITestCase extends SonarIdeTestCase {
   public final static void beforeClass() throws Exception {
     // Disable Secure Storage during tests
     SonarServerManager.enableSecureStorate(false);
+    // Remove all configured server
+    SonarPlugin.getServerManager().clean();
 
     System.out.println("Eclipse version : " + VersionHelpers.getEclipseVersion());
 
@@ -118,19 +122,8 @@ public abstract class UITestCase extends SonarIdeTestCase {
   protected File importNonMavenProject(String projectName) throws Exception {
     File project = getProject(projectName);
     waitForAllBuildsToComplete();
-    bot.menu("File").menu("Import...").click();
-    SWTBotShell shell = bot.shell("Import");
-    try {
-      shell.activate();
-      bot.tree().expandNode("General").select("Existing Projects into Workspace");
-      bot.button("Next >").click();
-      bot.text().setText(project.getCanonicalPath());
-      bot.button("Refresh").click();
-      bot.button("Finish").click();
-      waitForAllBuildsToComplete();
-    } finally {
-      waitForClose(shell);
-    }
+    new ImportProjectBot().setPath(project.getCanonicalPath()).finish();
+    waitForAllBuildsToComplete();
     return project;
   }
 
@@ -175,12 +168,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
   }
 
   protected void waitForAllBuildsToComplete() {
-    waitForAllEditorsToSave();
     JobHelpers.waitForJobsToComplete();
-  }
-
-  protected void waitForAllEditorsToSave() {
-    // TODO JobHelpers.waitForJobs(EDITOR_JOB_MATCHER, 30 * 1000);
   }
 
   public static boolean waitForClose(SWTBotShell shell) {
