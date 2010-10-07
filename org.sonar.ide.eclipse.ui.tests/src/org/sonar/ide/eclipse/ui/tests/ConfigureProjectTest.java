@@ -28,6 +28,7 @@ public class ConfigureProjectTest extends UITestCase {
   public void canAssociateWithSonar() throws Exception {
     projectWizardBot.finish();
     assertThat(projectWizardBot.getStatus(), is(" empty GroupId for project 'SimpleProject'"));
+    projectWizardBot.find();
     projectWizardBot.cancel();
   }
 

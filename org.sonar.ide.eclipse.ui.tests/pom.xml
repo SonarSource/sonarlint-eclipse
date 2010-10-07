@@ -66,26 +66,34 @@
         <plugins>
           <plugin>
             <groupId>org.codehaus.sonar</groupId>
-            <artifactId>sonar-dev-mojo</artifactId>
+            <artifactId>sonar-dev-maven-plugin</artifactId>
             <executions>
               <execution>
                 <id>start-server</id>
                 <phase>pre-integration-test</phase>
                 <configuration>
-                  <wait>false</wait>
-                  <sonarVersion>${sonarVersion}</sonarVersion>
-                  <analyzeProjects>true</analyzeProjects>
-                  <mavenProjectsDir>${basedir}/target/projects-source</mavenProjectsDir>
+                  <background>true</background>
+                  <clean>true</clean>
                 </configuration>
                 <goals>
-                  <goal>start</goal>
+                  <goal>start-war</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>analyze-projects</id>
+                <phase>pre-integration-test</phase>
+                <configuration>
+                  <projectsDir>${project.build.directory}/../projects</projectsDir>
+                </configuration>
+                <goals>
+                  <goal>analyze</goal>
                 </goals>
               </execution>
               <execution>
                 <id>stop-server</id>
                 <phase>post-integration-test</phase>
                 <goals>
-                  <goal>stop</goal>
+                  <goal>stop-war</goal>
                 </goals>
               </execution>
             </executions>

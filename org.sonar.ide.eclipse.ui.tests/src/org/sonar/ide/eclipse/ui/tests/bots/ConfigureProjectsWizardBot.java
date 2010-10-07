@@ -24,4 +24,10 @@ public class ConfigureProjectsWizardBot {
     button.click();
     bot.waitUntil(Conditions.widgetIsEnabled(button), 1000 * 30);
   }
+
+  public void find() {
+    SWTBotButton button = bot.button("Find on server");
+    button.click();
+    bot.waitUntil(Conditions.widgetIsEnabled(button), 1000 * 30);
+  }
 }
