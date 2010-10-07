@@ -39,14 +39,25 @@ import java.util.Map;
 
 public class SonarServerManager {
 
+  private static boolean useSecureStorage = true;
+
+  /**
+   * For tests
+   */
+  public static void enableSecureStorate(boolean enable) {
+    useSecureStorage = enable;
+  }
+
   private Map<String, Host> servers;
 
   protected SonarServerManager() {
-    loadServers();
+    servers = Maps.newHashMap();
+    if (useSecureStorage) {
+      loadServers();
+    }
   }
 
   private void loadServers() {
-    servers = Maps.newHashMap();
     ISecurePreferences securePreferences = SecurePreferencesFactory.getDefault().node(ISonarConstants.PLUGIN_ID);
     for (String encodedUrl : securePreferences.childrenNames()) {
       ISecurePreferences serverNode = securePreferences.node(encodedUrl);
@@ -62,8 +73,10 @@ public class SonarServerManager {
   }
 
   public void addServer(String location, String username, String password) throws Exception {
-    SonarServer sonarServer = new SonarServer(location);
-    sonarServer.setCredentials(username, password);
+    if (useSecureStorage) {
+      SonarServer sonarServer = new SonarServer(location);
+      sonarServer.setCredentials(username, password);
+    }
     servers.put(location, new Host(location, username, password));
   }
 
@@ -77,10 +90,12 @@ public class SonarServerManager {
 
   public boolean removeServer(String host) {
     servers.remove(host);
-    ISecurePreferences securePreferences = getSecurePreferences();
-    String encodedUrl = EncodingUtils.encodeSlashes(host);
-    if (securePreferences.nodeExists(encodedUrl)) {
-      securePreferences.node(encodedUrl).removeNode();
+    if (useSecureStorage) {
+      ISecurePreferences securePreferences = getSecurePreferences();
+      String encodedUrl = EncodingUtils.encodeSlashes(host);
+      if (securePreferences.nodeExists(encodedUrl)) {
+        securePreferences.node(encodedUrl).removeNode();
+      }
     }
     return true;
   }
@@ -94,21 +109,11 @@ public class SonarServerManager {
   }
 
   public Host findServer(String host) {
-    ISecurePreferences securePreferences = getSecurePreferences();
-    String encodedUrl = EncodingUtils.encodeSlashes(host);
-    Host result = new Host(host, "", "");
-    if (securePreferences.nodeExists(encodedUrl)) {
-      securePreferences = securePreferences.node(encodedUrl);
-      try {
-        String username = securePreferences.get("username", "");
-        String password = securePreferences.get("password", "");
-        result = new Host(host, username, password);
-        return result;
-      } catch (StorageException e) {
-        SonarLogger.log(e);
-      }
+    Host result = servers.get(host);
+    if (result == null) {
+      result = new Host(host, "", "");
+      servers.put(host, result);
     }
-    servers.put(host, result);
     return result;
   }
 

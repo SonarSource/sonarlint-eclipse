@@ -20,25 +20,23 @@
 
 package org.sonar.ide.eclipse.ui.tests;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import org.eclipse.jdt.ui.JavaUI;
 import org.junit.Test;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
 import org.sonar.ide.eclipse.views.HotspotsView;
 import org.sonar.ide.eclipse.views.MeasuresView;
 import org.sonar.ide.eclipse.views.ViolationsView;
 import org.sonar.ide.eclipse.views.WebView;
 
-/**
- * @author Evgeny Mandrikov
- */
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 public class PerspectiveTest extends UITestCase {
 
   @Test
   public void allViewsArePresent() {
-    openPerspective(ISonarConstants.PERSPECTIVE_ID);
+    SwtBotUtils.openPerspective(bot, ISonarConstants.PERSPECTIVE_ID);
 
     bot.viewById(JavaUI.ID_PACKAGES);
 

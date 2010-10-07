@@ -18,20 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.ui.tests;
-
-import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withMnemonic;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.instanceOf;
-
-import java.util.Arrays;
+package org.sonar.ide.eclipse.ui.tests.utils;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.Widget;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
@@ -39,18 +29,20 @@ import org.eclipse.swtbot.swt.finder.results.WidgetResult;
 import org.eclipse.swtbot.swt.finder.widgets.AbstractSWTBot;
 import org.hamcrest.Matcher;
 
+import java.util.Arrays;
+
+import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withMnemonic;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.instanceOf;
+
 /**
  * Inspired by http://dev.eclipse.org/mhonarc/newsLists/news.eclipse.swtbot/msg01038.html
- * 
- * @author Evgeny Mandrikov
  */
 public class ContextMenuHelper {
 
-  public static void clickContextMenu(final AbstractSWTBot<? extends Control> bot,
-      final Matcher<? extends org.eclipse.swt.widgets.Widget>... matchers) {
+  public static void clickContextMenu(final AbstractSWTBot<? extends Control> bot, final Matcher<? extends org.eclipse.swt.widgets.Widget>... matchers) {
     // show
     final MenuItem menuItem = UIThreadRunnable.syncExec(new WidgetResult<MenuItem>() {
-
       @SuppressWarnings("unchecked")
       public MenuItem run() {
         MenuItem menuItem = null;
@@ -63,14 +55,11 @@ public class ContextMenuHelper {
             menu = menuItem.getMenu();
           } else {
             hide(menu);
-            throw new WidgetNotFoundException("ContextMenuHelper was looking for: '" + m + "' but only found: '" + availableItems(menu)
-                + "'");
+            throw new WidgetNotFoundException("ContextMenuHelper was looking for: '" + m + "' but only found: '" + availableItems(menu) + "'");
           }
         }
-
         return menuItem;
       }
-
     });
     if (menuItem == null) {
       throw new WidgetNotFoundException("Could not find menu: " + Arrays.asList(matchers));
@@ -81,21 +70,17 @@ public class ContextMenuHelper {
 
     // hide
     UIThreadRunnable.syncExec(new VoidResult() {
-
       public void run() {
         hide(menuItem.getParent());
       }
     });
-
   }
 
   /**
    * Clicks the context menu matching the text.
    * 
-   * @param text
-   *          the text on the context menu.
-   * @throws WidgetNotFoundException
-   *           if the widget is not found.
+   * @param text the text on the context menu.
+   * @throws WidgetNotFoundException if the widget is not found.
    */
   @SuppressWarnings("unchecked")
   public static void clickContextMenu(final AbstractSWTBot<? extends Control> bot, final String... texts) {
@@ -122,17 +107,14 @@ public class ContextMenuHelper {
 
   static String availableItems(Menu menu) {
     StringBuilder sb = new StringBuilder();
-
     if (menu != null) {
       MenuItem[] items = menu.getItems();
       for (final MenuItem menuItem : items) {
         sb.append(menuItem.getText().replace("&", ""));
-
         sb.append(", ");
       }
     }
     return sb.toString();
-
   }
 
   private static void click(final MenuItem menuItem) {
@@ -143,7 +125,6 @@ public class ContextMenuHelper {
     event.type = SWT.Selection;
 
     UIThreadRunnable.asyncExec(menuItem.getDisplay(), new VoidResult() {
-
       public void run() {
         menuItem.notifyListeners(SWT.Selection, event);
       }

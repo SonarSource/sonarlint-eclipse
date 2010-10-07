@@ -22,19 +22,20 @@ package org.sonar.ide.eclipse.ui.tests;
 
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.utils.SWTUtils;
 import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.sonar.ide.eclipse.SonarServerManager;
 import org.sonar.ide.eclipse.tests.common.JobHelpers;
 import org.sonar.ide.eclipse.tests.common.VersionHelpers;
 import org.sonar.ide.eclipse.tests.common.WorkspaceHelpers;
+import org.sonar.ide.eclipse.ui.tests.utils.ContextMenuHelper;
+import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
 import org.sonar.ide.test.SonarIdeTestCase;
 import org.sonar.ide.test.SonarTestServer;
 
@@ -46,7 +47,6 @@ import java.io.IOException;
  * 
  * @author Evgeny Mandrikov
  */
-// @RunWith(SWTBotJunit4ClassRunner.class)
 public abstract class UITestCase extends SonarIdeTestCase {
 
   private static final String SCREENSHOTS_DIR = "target/screenshots";
@@ -55,34 +55,29 @@ public abstract class UITestCase extends SonarIdeTestCase {
 
   @BeforeClass
   public final static void beforeClass() throws Exception {
+    // Disable Secure Storage during tests
+    SonarServerManager.enableSecureStorate(false);
+
     System.out.println("Eclipse version : " + VersionHelpers.getEclipseVersion());
 
     SWTBotPreferences.SCREENSHOTS_DIR = SCREENSHOTS_DIR;
     SWTBotPreferences.SCREENSHOT_FORMAT = "png";
     bot = new SWTWorkbenchBot();
 
-    try {
-      closeView("org.eclipse.ui.internal.introview");
-    } catch (WidgetNotFoundException e) {
-      // ignore
-    }
-    try {
-      closeView("org.eclipse.ui.views.ContentOutline");
-    } catch (WidgetNotFoundException e) {
-      // ignore
-    }
+    SwtBotUtils.closeViewQuietly(bot, "org.eclipse.ui.internal.introview");
+    SwtBotUtils.closeViewQuietly(bot, "org.eclipse.ui.views.ContentOutline");
 
     // Clean out projects left over from previous test runs
-    clearProjects();
+    WorkspaceHelpers.cleanWorkspace();
 
-    openPerspective(JavaUI.ID_PERSPECTIVE);
+    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
   }
 
   @AfterClass
   public final static void afterClass() throws Exception {
-    clearProjects();
+    WorkspaceHelpers.cleanWorkspace();
     bot.sleep(2000);
-    // bot.resetWorkbench();
+    bot.resetWorkbench();
   }
 
   @After
@@ -102,24 +97,6 @@ public abstract class UITestCase extends SonarIdeTestCase {
   protected String getSonarServerUrl() throws Exception {
     // TODO Godin: should be possible to use real Sonar server
     return getTestServer().getBaseUrl();
-  }
-
-  protected static void openPerspective(final String id) {
-    bot.perspectiveById(id).activate();
-  }
-
-  /**
-   * @throws WidgetNotFoundException if view not found
-   */
-  protected static void closeView(final String id) {
-    bot.viewById(id).close();
-  }
-
-  /**
-   * Cleans workspace.
-   */
-  public static void clearProjects() throws Exception {
-    WorkspaceHelpers.cleanWorkspace();
   }
 
   public static File takeScreenShot(String classifier) throws IOException {
@@ -218,7 +195,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
   }
 
   protected static SWTBotShell showSonarPropertiesPage(String projectName) {
-    SWTBotTree tree = selectProject(projectName);
+    SWTBotTree tree = SwtBotUtils.selectProject(bot, projectName);
     ContextMenuHelper.clickContextMenu(tree, "Properties");
     SWTBotShell shell = bot.shell("Properties for " + projectName);
     shell.activate();
@@ -232,41 +209,6 @@ public abstract class UITestCase extends SonarIdeTestCase {
     shell.activate();
     bot.tree().select("Sonar");
     return shell;
-  }
-
-  protected static SWTBotTree selectProject(String projectName) {
-    SWTBotTree tree = bot.viewById(JavaUI.ID_PACKAGES).bot().tree();
-    SWTBotTreeItem treeItem = null;
-    treeItem = tree.getTreeItem(projectName);
-    treeItem.select();
-    return tree;
-  }
-
-  protected static void configureDefaultSonarServer(String serverUrl) {
-    SWTBotShell shell = showGlobalSonarPropertiesPage();
-
-    bot.table().getTableItem(0).select();
-
-    bot.button("Edit...").click();
-
-    bot.waitUntil(Conditions.shellIsActive("Edit Sonar server connection"));
-    SWTBotShell shell2 = bot.shell("Edit Sonar server connection");
-    shell2.activate();
-    bot.textWithLabel("Sonar server URL :").setText(serverUrl);
-
-    // Close wizard
-    bot.button("Finish").click();
-    bot.waitUntil(Conditions.shellCloses(shell2));
-
-    bot.table().getTableItem(0).check(); // TODO
-
-    // Close properties
-    shell.bot().button("OK").click();
-    bot.waitUntil(Conditions.shellCloses(shell));
-  }
-
-  protected void configureDefaultSonarServer() throws Exception {
-    configureDefaultSonarServer(getSonarServerUrl());
   }
 
   protected static String getGroupId(String projectName) {
