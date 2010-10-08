@@ -20,8 +20,16 @@
 
 package org.sonar.ide.eclipse.ui.tests.utils;
 
+import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withMnemonic;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.instanceOf;
+
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.results.VoidResult;
@@ -31,10 +39,6 @@ import org.hamcrest.Matcher;
 
 import java.util.Arrays;
 
-import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withMnemonic;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.instanceOf;
-
 /**
  * Inspired by http://dev.eclipse.org/mhonarc/newsLists/news.eclipse.swtbot/msg01038.html
  */
@@ -42,25 +46,32 @@ public class ContextMenuHelper {
 
   public static void clickContextMenu(final AbstractSWTBot<? extends Control> bot, final Matcher<? extends org.eclipse.swt.widgets.Widget>... matchers) {
     // show
-    final MenuItem menuItem = UIThreadRunnable.syncExec(new WidgetResult<MenuItem>() {
-      @SuppressWarnings("unchecked")
-      public MenuItem run() {
-        MenuItem menuItem = null;
-        Control control = bot.widget;
-        Menu menu = control.getMenu();
-        for (Matcher<? extends org.eclipse.swt.widgets.Widget> m : matchers) {
-          Matcher<?> matcher = allOf(instanceOf(MenuItem.class), m);
-          menuItem = show(menu, matcher);
-          if (menuItem != null) {
-            menu = menuItem.getMenu();
-          } else {
-            hide(menu);
-            throw new WidgetNotFoundException("ContextMenuHelper was looking for: '" + m + "' but only found: '" + availableItems(menu) + "'");
+    MenuItem menuItem = null;
+    try {
+      menuItem = UIThreadRunnable.syncExec(new WidgetResult<MenuItem>() {
+        @SuppressWarnings("unchecked")
+        public MenuItem run() {
+          MenuItem menuItem = null;
+          Control control = bot.widget;
+          Menu menu = control.getMenu();
+          for (Matcher<? extends org.eclipse.swt.widgets.Widget> m : matchers) {
+            Matcher<?> matcher = allOf(instanceOf(MenuItem.class), m);
+            menuItem = show(menu, matcher);
+            if (menuItem != null) {
+              menu = menuItem.getMenu();
+            } else {
+              hide(menu);
+              throw new WidgetNotFoundException("Could not find " + matcher + " among " + availableItems(menu));
+            }
           }
+          return menuItem;
         }
-        return menuItem;
+      });
+    } catch (Exception e) {
+      if (e.getCause() instanceof WidgetNotFoundException) {
+        throw new WidgetNotFoundException("Could not find menu: " + Arrays.asList(matchers), e.getCause());
       }
-    });
+    }
     if (menuItem == null) {
       throw new WidgetNotFoundException("Could not find menu: " + Arrays.asList(matchers));
     }
@@ -68,10 +79,11 @@ public class ContextMenuHelper {
     // click
     click(menuItem);
 
+    final MenuItem menuItemToHide = menuItem;
     // hide
     UIThreadRunnable.syncExec(new VoidResult() {
       public void run() {
-        hide(menuItem.getParent());
+        hide(menuItemToHide.getParent());
       }
     });
   }

@@ -1,10 +1,8 @@
 package org.sonar.ide.eclipse.ui.tests.utils;
 
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 
 public final class SwtBotUtils {
 
@@ -20,12 +18,15 @@ public final class SwtBotUtils {
     bot.perspectiveById(id).activate();
   }
 
-  public static SWTBotTree selectProject(SWTWorkbenchBot bot, String projectName) {
-    SWTBotTree tree = bot.viewById(JavaUI.ID_PACKAGES).bot().tree();
-    SWTBotTreeItem treeItem = null;
-    treeItem = tree.getTreeItem(projectName);
-    treeItem.select();
-    return tree;
+  public static boolean waitForClose(SWTBotShell shell) {
+    for (int i = 0; i < 50; i++) {
+      if ( !shell.isOpen()) {
+        return true;
+      }
+      shell.bot().sleep(200);
+    }
+    shell.close();
+    return false;
   }
 
   private SwtBotUtils() {

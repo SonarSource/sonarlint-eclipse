@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.utils.SelectionUtils;
 
 /**
  * @author Jérémie Lagarde
@@ -45,8 +46,9 @@ public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
 
   public void selectionChanged(final IAction action, final ISelection selection) {
     resource = null;
-    if (selection instanceof ISonarResource) {
-      resource = (ISonarResource) selection;
+    Object element = SelectionUtils.getSingleElement(selection);
+    if (element instanceof ISonarResource) {
+      resource = (ISonarResource) element;
     }
   }
 

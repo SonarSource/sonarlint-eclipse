@@ -34,4 +34,4 @@ Require-Bundle: org.junit4;bundle-version="4.0.0",
  org.apache.log4j,
  org.sonar.ide.eclipse.tests.common;bundle-version="[0.3.0,0.4.0)",
  org.sonar.ide.eclipse;bundle-version="[0.3.0,0.4.0)",
- org.sonar.ide.eclipse.m2eclipse;bundle-version="[0.3.0,0.4.0)"
+ org.sonar.ide.eclipse.jdt;bundle-version="[0.3.0,0.4.0)"

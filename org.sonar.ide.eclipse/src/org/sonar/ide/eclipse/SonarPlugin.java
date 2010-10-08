@@ -21,6 +21,7 @@
 package org.sonar.ide.eclipse;
 
 import org.eclipse.core.net.proxy.IProxyService;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -35,8 +36,10 @@ import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.console.SonarConsole;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.internal.core.SonarFile;
 import org.sonar.ide.eclipse.internal.core.SonarResource;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.jobs.RefreshViolationsJob;
@@ -171,6 +174,10 @@ public class SonarPlugin extends AbstractUIPlugin {
 
   public static ISonarResource createSonarResource(IResource resource, String key) {
     return new SonarResource(resource, key);
+  }
+
+  public static ISonarFile createSonarFile(IFile file, String key) {
+    return new SonarFile(file, key);
   }
 
   public static boolean hasSonarNature(IProject project) {

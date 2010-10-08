@@ -20,5 +20,6 @@ public class ImportProjectBot {
 
   public void finish() {
     bot.button("Finish").click();
+    bot.sleep(5000);
   }
 }

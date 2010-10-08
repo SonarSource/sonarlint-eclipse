@@ -11,6 +11,10 @@
                class="org.sonar.ide.eclipse.jdt.internal.JavaElementsAdapterFactory">
       	 <adapter type="org.sonar.ide.eclipse.core.ISonarResource"/>
       </factory>
+      <factory adaptableType="org.eclipse.jdt.core.ICompilationUnit"
+               class="org.sonar.ide.eclipse.jdt.internal.JavaElementsAdapterFactory">
+      	 <adapter type="org.sonar.ide.eclipse.core.ISonarFile"/>
+      </factory>
       <factory adaptableType="org.eclipse.core.resources.IResource"
                class="org.sonar.ide.eclipse.jdt.internal.JavaElementsAdapterFactory">
          <adapter type="org.sonar.ide.eclipse.core.ISonarResource"/>

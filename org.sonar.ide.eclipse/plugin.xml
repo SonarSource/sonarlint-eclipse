@@ -195,6 +195,20 @@
               style="push"
               icon="icons/web.gif">
         </action>
+        <!--action
+              label="Sonar server"
+              enablesFor="1"
+              class="org.sonar.ide.eclipse.compare.CompareWithSonarAction"
+              menubarPath="compareWithMenu/compareWithGroup"
+              id="org.sonar.ide.eclipse.compareWithSonar"
+              icon="icons/sonar.png">
+        </action-->
+    </objectContribution>
+
+    <objectContribution
+           id="org.sonar.ide.eclipse.contribution2"
+           objectClass="org.sonar.ide.eclipse.core.ISonarFile"
+           adaptable="true">
         <action
               label="Sonar server"
               enablesFor="1"
@@ -204,7 +218,7 @@
               icon="icons/sonar.png">
         </action>
     </objectContribution>
-    
+        
 	<!-- TODO just for testing purposes -->
     <objectContribution id="org.sonar.ide.eclipse.projectMenu"
         				adaptable="true"

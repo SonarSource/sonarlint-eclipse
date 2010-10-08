@@ -61,7 +61,7 @@ public class SonarResource implements ISonarResource {
 
   @Override
   public String toString() {
-    return "SonarResource [key=" + key + "]";
+    return getClass().getSimpleName() + " [key=" + key + "]";
   }
 
 }

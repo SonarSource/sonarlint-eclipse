@@ -21,10 +21,23 @@
 package org.sonar.ide.eclipse.jdt.internal;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.*;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.eclipse.jdt.core.*;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
@@ -37,10 +50,10 @@ import org.sonar.wsclient.services.Resource;
 @SuppressWarnings("rawtypes")
 public class JavaElementsAdapterFactory implements IAdapterFactory {
 
-  private static Class<?>[] ADAPTER_LIST = { ISonarResource.class, Resource.class, IFile.class };
+  private static Class<?>[] ADAPTER_LIST = { ISonarResource.class, ISonarFile.class, Resource.class, IFile.class };
 
   public Object getAdapter(Object adaptableObject, Class adapterType) {
-    if (ISonarResource.class.equals(adapterType)) {
+    if (ISonarResource.class.equals(adapterType) || ISonarFile.class.equals(adapterType)) {
       return getSonarResource(adaptableObject);
     } else if (adapterType == Resource.class) {
       if (adaptableObject instanceof IJavaProject) {
@@ -113,7 +126,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
       if (javaElement instanceof ICompilationUnit) {
         String packageName = getPackageName(javaElement.getParent());
         String className = StringUtils.substringBeforeLast(javaElement.getElementName(), ".");
-        return SonarPlugin.createSonarResource(file, SonarKeyUtils.classKey(projectKey, packageName, className));
+        return SonarPlugin.createSonarFile(file, SonarKeyUtils.classKey(projectKey, packageName, className));
       }
     }
     return null;

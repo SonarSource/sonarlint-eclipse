@@ -20,54 +20,79 @@
 
 package org.sonar.ide.eclipse.jdt.internal;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.junit.Test;
-import org.sonar.ide.eclipse.actions.ToggleNatureAction;
-import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
-import org.sonar.ide.eclipse.tests.common.SonarTestCase;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.sonar.ide.eclipse.actions.ToggleNatureAction;
+import org.sonar.ide.eclipse.core.ISonarFile;
+import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.tests.common.SonarTestCase;
+
 public class JavaElementsAdapterFactoryTest extends SonarTestCase {
 
-  @Test
-  public void shouldAdaptResourceToSonar() throws Exception {
-    IProject project = importEclipseProject("SimpleProject");
+  private static final String groupId = "org.sonar-ide.tests.SimpleProject";
+  private static final String artifactId = "SimpleProject";
+  private static IProject project;
+
+  /**
+   * Workaround for accessing non static method {@link #importEclipseProject(String)} from static method {@link #importProject()}
+   */
+  static class TTT extends SonarTestCase {
+  }
+
+  @BeforeClass
+  public static void importProject() throws Exception {
+    project = new TTT().importEclipseProject("SimpleProject");
     // Configure the project
     ProjectProperties properties = ProjectProperties.getInstance(project);
     properties.setUrl("http://localhost:9000");
-    String groupId = "org.sonar-ide.tests.SimpleProject";
-    String artifactId = "SimpleProject";
     properties.setGroupId(groupId);
     properties.setArtifactId(artifactId);
     properties.save();
     ToggleNatureAction.enableNature(project);
+  }
 
-    JavaElementsAdapterFactory factory = new JavaElementsAdapterFactory();
+  private JavaElementsAdapterFactory factory;
 
-    {
-      ISonarResource sonarElement = (ISonarResource) factory.getAdapter(project, ISonarResource.class);
-      assertThat(sonarElement, notNullValue());
-      assertThat(sonarElement.getKey(), is(groupId + ":" + artifactId));
-    }
+  @Before
+  public void setUp() {
+    factory = new JavaElementsAdapterFactory();
+  }
 
-    {
-      IFolder folder = project.getFolder("src/main/java");
-      ISonarResource sonarElement = (ISonarResource) factory.getAdapter(folder, ISonarResource.class);
-      assertThat(sonarElement, notNullValue());
-      assertThat(sonarElement.getKey(), is(groupId + ":" + artifactId + ":[default]"));
-    }
+  @Test
+  public void testAdapterList() {
+    assertThat(factory.getAdapterList().length, is(4));
 
-    {
-      IFile file = project.getFile("src/main/java/ViolationOnFile.java");
-      ISonarResource sonarElement = (ISonarResource) factory.getAdapter(file, ISonarResource.class);
-      assertThat(sonarElement, notNullValue());
-      assertThat(sonarElement.getKey(), is(groupId + ":" + artifactId + ":[default].ViolationOnFile"));
-    }
+  }
+
+  @Test
+  public void shouldAdaptProjectToSonarResource() {
+    ISonarResource sonarElement = (ISonarResource) factory.getAdapter(project, ISonarResource.class);
+    assertThat(sonarElement, notNullValue());
+    assertThat(sonarElement.getKey(), is(groupId + ":" + artifactId));
+  }
+
+  @Test
+  public void shouldAdaptFolderToSonarResource() {
+    IFolder folder = project.getFolder("src/main/java");
+    ISonarResource sonarElement = (ISonarResource) factory.getAdapter(folder, ISonarResource.class);
+    assertThat(sonarElement, notNullValue());
+    assertThat(sonarElement.getKey(), is(groupId + ":" + artifactId + ":[default]"));
+  }
+
+  @Test
+  public void shouldAdaptFileToSonarFile() {
+    IFile file = project.getFile("src/main/java/ViolationOnFile.java");
+    ISonarFile sonarElement = (ISonarFile) factory.getAdapter(file, ISonarFile.class);
+    assertThat(sonarElement, notNullValue());
+    assertThat(sonarElement.getKey(), is(groupId + ":" + artifactId + ":[default].ViolationOnFile"));
   }
 }

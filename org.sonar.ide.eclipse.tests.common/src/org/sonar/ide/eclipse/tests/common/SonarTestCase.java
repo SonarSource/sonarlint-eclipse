@@ -126,7 +126,7 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
    * 
    * @return created projects
    */
-  protected IProject importEclipseProject(final String projectdir) throws IOException, CoreException {
+  public IProject importEclipseProject(final String projectdir) throws IOException, CoreException {
     Logs.INFO.info("Importing Eclipse project : " + projectdir);
     final IWorkspaceRoot root = workspace.getRoot();
 
