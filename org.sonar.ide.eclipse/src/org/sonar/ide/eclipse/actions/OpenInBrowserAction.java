@@ -28,6 +28,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 
@@ -66,7 +67,12 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
     IWorkbenchBrowserSupport browserSupport = SonarPlugin.getDefault().getWorkbench().getBrowserSupport();
     ProjectProperties properties = ProjectProperties.getInstance(sonarResource.getProject());
     try {
-      URL consoleURL = new URL(properties.getUrl() + "/resource/index/" + key);
+      final URL consoleURL;
+      if (sonarResource instanceof ISonarFile) {
+        consoleURL = new URL(properties.getUrl() + "/resource/index/" + key);
+      } else {
+        consoleURL = new URL(properties.getUrl() + "/project/index/" + key);
+      }
       if (browserSupport.isInternalWebBrowserAvailable()) {
         browserSupport.createBrowser("id" + properties.getUrl().hashCode()).openURL(consoleURL);
       } else {

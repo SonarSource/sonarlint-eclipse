@@ -20,14 +20,14 @@
 
 package org.sonar.ide.eclipse.compare;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
 import org.eclipse.compare.IModificationDate;
 import org.eclipse.compare.IStreamContentAccessor;
 import org.eclipse.compare.ITypedElement;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 /**
  * @author Jérémie Lagarde
@@ -55,10 +55,6 @@ public class SonarCompareNode implements IStreamContentAccessor, ITypedElement, 
 
   public String getName() {
     return name;
-  }
-
-  public String getString() {
-    return contents;
   }
 
   public String getType() {

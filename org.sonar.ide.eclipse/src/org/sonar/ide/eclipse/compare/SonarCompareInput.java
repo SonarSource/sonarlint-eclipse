@@ -49,7 +49,7 @@ public class SonarCompareInput extends CompareEditorInput {
     final ITypedElement right = new SonarCompareNode(resource.getName(), sourceCode);
     final CompareConfiguration config = getCompareConfiguration();
     config.setLeftLabel(left.getName());
-    config.setLeftEditable(true);
+    config.setLeftEditable(false);
     config.setRightLabel(right.getName() + " (sonar server)");
     config.setRightEditable(false);
     config.setRightImage(SonarImages.getImageDescriptor(SonarImages.IMG_SONAR16).createImage());
