@@ -26,9 +26,11 @@
 <unit id="org.eclipse.swtbot.eclipse.test.junit4.feature.group" version="2.0.0.568-dev-e36"/>
 <repository location="http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/"/>
 </location>
+<!--
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
 <unit id="org.maven.ide.eclipse.feature.feature.group" version="0.10.0.20100209-0800"/>
 <repository location="http://m2eclipse.sonatype.org/sites/m2e"/>
 </location>
+-->
 </locations>
 </target>

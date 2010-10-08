@@ -54,11 +54,13 @@
 
     <module>../org.sonar.ide.eclipse.tests</module>
 
-    <module>../org.sonar.ide.eclipse.m2eclipse</module>
-
     <!-- features -->
     <module>../org.sonar.ide.eclipse.feature</module>
+    
+    <!--
+    <module>../org.sonar.ide.eclipse.m2eclipse</module>
     <module>../org.sonar.ide.eclipse.m2eclipse.feature</module>
+    -->
 
     <module>../target-platform</module>
   </modules>
