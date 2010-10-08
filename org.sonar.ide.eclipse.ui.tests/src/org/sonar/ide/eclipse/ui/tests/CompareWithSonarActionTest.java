@@ -2,16 +2,13 @@ package org.sonar.ide.eclipse.ui.tests;
 
 import static org.junit.Assert.fail;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.actions.ToggleNatureAction;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.ui.tests.bots.ImportProjectBot;
 import org.sonar.ide.eclipse.ui.tests.bots.PackageExplorerBot;
+import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 
 public class CompareWithSonarActionTest extends UITestCase {
   private static final String[] MENUBAR_PATH = { "Compare With", "Sonar server" };
@@ -29,13 +26,7 @@ public class CompareWithSonarActionTest extends UITestCase {
 
     new ImportProjectBot().setPath(getProject("SimpleProject").getCanonicalPath()).finish();
 
-    IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];
-    ProjectProperties properties = ProjectProperties.getInstance(project);
-    properties.setUrl(url);
-    properties.setGroupId("org.sonar-ide.tests.SimpleProject");
-    properties.setArtifactId("SimpleProject");
-    properties.save();
-    ToggleNatureAction.enableNature(project);
+    ProjectUtils.configureProject("SimpleProject", url);
   }
 
   @Test
