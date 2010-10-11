@@ -24,18 +24,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
@@ -43,7 +35,6 @@ import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
 import org.sonar.ide.eclipse.ui.EnhancedFilteredTree;
@@ -173,23 +164,19 @@ public class MeasuresView extends AbstractSonarInfoView {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Loading measures for " + element.getKey(), IProgressMonitor.UNKNOWN);
-        try {
-          update("Loading...", null);
-          final SourceCode sourceCode = EclipseSonar.getInstance(element.getProject()).search(element);
-          if (sourceCode == null) {
-            update("Not found.", null);
-          } else {
-            Collection<IMeasure> measures = sourceCode.getMeasures();
-            // Group by domain
-            final Multimap<String, IMeasure> measuresByDomain = Multimaps.index(measures, new Function<IMeasure, String>() {
-              public String apply(IMeasure measure) {
-                return measure.getMetricDef().getDomain();
-              }
-            });
-            update(sourceCode.getKey(), measuresByDomain.asMap());
-          }
-        } catch (Exception e) {
-          SonarLogger.log(e);
+        update("Loading...", null);
+        final SourceCode sourceCode = EclipseSonar.getInstance(element.getProject()).search(element);
+        if (sourceCode == null) {
+          update("Not found.", null);
+        } else {
+          Collection<IMeasure> measures = sourceCode.getMeasures();
+          // Group by domain
+          final Multimap<String, IMeasure> measuresByDomain = Multimaps.index(measures, new Function<IMeasure, String>() {
+            public String apply(IMeasure measure) {
+              return measure.getMetricDef().getDomain();
+            }
+          });
+          update(sourceCode.getKey(), measuresByDomain.asMap());
         }
         monitor.done();
         return Status.OK_STATUS;

@@ -1,6 +1,5 @@
 package org.sonar.ide.eclipse.core;
 
-
 /**
  * Represents a view of a file in terms of Sonar.
  * 
