@@ -1,38 +1,31 @@
 package org.sonar.ide.eclipse.ui.tests;
 
-import static org.junit.Assert.fail;
-
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.ui.tests.bots.ImportProjectBot;
 import org.sonar.ide.eclipse.ui.tests.bots.PackageExplorerBot;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 
-public class CompareWithSonarActionTest extends UITestCase {
-  private static final String[] MENUBAR_PATH = { "Compare With", "Sonar server" };
+import static org.junit.Assert.fail;
 
-  /**
-   * Workaround for accessing non static method {@link #getSonarServerUrl()} from static method {@link #importProject()}
-   */
-  static class TTT extends UITestCase {
-  }
+public class CompareWithSonarActionTest extends UITestCase {
+  private static final String PROJECT_NAME = "reference";
+
+  private static final String[] MENUBAR_PATH = { "Compare With", "Sonar server" };
 
   @BeforeClass
   public static void importProject() throws Exception {
-    String url = new TTT().getSonarServerUrl();
-    SonarPlugin.getServerManager().findServer(url);
+    new ImportProjectBot().setPath(getProjectPath(PROJECT_NAME)).finish();
 
-    new ImportProjectBot().setPath(getProject("SimpleProject").getCanonicalPath()).finish();
-
-    ProjectUtils.configureProject("SimpleProject", url);
+    // Enable Sonar nature
+    ProjectUtils.configureProject(PROJECT_NAME);
   }
 
   @Test
   public void canCompareFile() {
     new PackageExplorerBot()
-        .expandAndSelect("SimpleProject", "src/main/java", "(default package)", "ViolationOnFile.java")
+        .expandAndSelect(PROJECT_NAME, "src/main/java", "(default package)", "ClassOnDefaultPackage.java")
         .clickContextMenu(MENUBAR_PATH);
     bot.editorByTitle("Compare");
     bot.closeAllEditors();
@@ -41,7 +34,7 @@ public class CompareWithSonarActionTest extends UITestCase {
   @Test
   public void cantComparePackage() {
     PackageExplorerBot packageExplorerBot = new PackageExplorerBot()
-        .expandAndSelect("SimpleProject", "src/main/java", "(default package)");
+        .expandAndSelect(PROJECT_NAME, "src/main/java", "(default package)");
     try {
       packageExplorerBot.clickContextMenu(MENUBAR_PATH);
     } catch (WidgetNotFoundException e) {
@@ -53,7 +46,7 @@ public class CompareWithSonarActionTest extends UITestCase {
   @Test
   public void cantCompareProject() {
     PackageExplorerBot packageExplorerBot = new PackageExplorerBot()
-        .expandAndSelect("SimpleProject");
+        .expandAndSelect(PROJECT_NAME);
     try {
       packageExplorerBot.clickContextMenu(MENUBAR_PATH);
     } catch (WidgetNotFoundException e) {

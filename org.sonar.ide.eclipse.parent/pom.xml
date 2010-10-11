@@ -35,7 +35,7 @@
     <sonar-ide-commons.version>0.3-SNAPSHOT</sonar-ide-commons.version>
 
     <!-- Version of Sonar for integration tests -->
-    <sonar.runtimeVersion>2.1.2</sonar.runtimeVersion>
+    <sonar.runtimeVersion>2.2</sonar.runtimeVersion>
 
     <!-- disable accidental deployment -->
     <sonar-ide.site>dav:http://localhost</sonar-ide.site>
@@ -203,7 +203,7 @@
           <groupId>org.codehaus.sonar</groupId>
           <artifactId>sonar-dev-maven-plugin</artifactId>
           <!-- TODO Godin: define version using property -->
-          <version>0.7</version>
+          <version>0.9</version>
         </plugin>
       </plugins>
     </pluginManagement>

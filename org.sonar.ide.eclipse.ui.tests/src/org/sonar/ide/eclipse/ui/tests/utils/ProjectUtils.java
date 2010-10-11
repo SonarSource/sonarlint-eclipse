@@ -7,9 +7,9 @@ import org.sonar.ide.eclipse.properties.ProjectProperties;
 
 public class ProjectUtils {
 
-  public static void configureProject(String name, String url) throws Exception {
+  public static void configureProject(String name) throws Exception {
     IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(name);
-    configureProject(project, url, "org.sonar-ide.tests.SimpleProject", name);
+    configureProject(project, getSonarServerUrl(), "org.sonar-ide.tests", name);
   }
 
   // TODO should be in core
@@ -20,6 +20,10 @@ public class ProjectUtils {
     properties.setArtifactId(artifactId);
     properties.save();
     ToggleNatureAction.enableNature(project);
+  }
+
+  public static String getSonarServerUrl() {
+    return "http://localhost:9000";
   }
 
 }

@@ -31,76 +31,61 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
+        <artifactId>maven-resources-plugin</artifactId>
         <executions>
           <execution>
-            <id>extract-projects</id>
-            <phase>generate-test-resources</phase>
+            <id>copy-projects</id>
+            <phase>validate</phase>
             <goals>
-              <goal>unpack</goal>
+              <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.codehaus.sonar-ide</groupId>
-                  <artifactId>sonar-ide-testing-harness</artifactId>
-                  <version>${sonar-ide-commons.version}</version>
-                  <type>tar.gz</type>
-                  <classifier>projects</classifier>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>${project.build.directory}</outputDirectory>
+              <outputDirectory>${basedir}/target/projects-source</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>projects</directory>
+                </resource>
+              </resources>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.sonar</groupId>
+        <artifactId>sonar-dev-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>start-server</id>
+            <phase>pre-integration-test</phase>
+            <configuration>
+              <background>true</background>
+              <clean>true</clean>
+            </configuration>
+            <goals>
+              <goal>start-war</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>analyze-projects</id>
+            <phase>pre-integration-test</phase>
+            <configuration>
+              <projectsDir>${basedir}/target/projects-source</projectsDir>
+            </configuration>
+            <goals>
+              <goal>analyze</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>stop-server</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop-war</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>real-sonar</id>
-
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.sonar</groupId>
-            <artifactId>sonar-dev-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>start-server</id>
-                <phase>pre-integration-test</phase>
-                <configuration>
-                  <background>true</background>
-                  <clean>true</clean>
-                </configuration>
-                <goals>
-                  <goal>start-war</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>analyze-projects</id>
-                <phase>pre-integration-test</phase>
-                <configuration>
-                  <projectsDir>${project.build.directory}/../projects</projectsDir>
-                </configuration>
-                <goals>
-                  <goal>analyze</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>stop-server</id>
-                <phase>post-integration-test</phase>
-                <goals>
-                  <goal>stop-war</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
 </project>

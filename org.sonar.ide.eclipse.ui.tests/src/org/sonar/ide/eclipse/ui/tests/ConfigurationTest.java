@@ -23,8 +23,10 @@ package org.sonar.ide.eclipse.ui.tests;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.ui.tests.bots.SonarPreferencesBot;
 import org.sonar.ide.eclipse.ui.tests.bots.SonarServerWizardBot;
+import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -35,6 +37,9 @@ public class ConfigurationTest extends UITestCase {
 
   @BeforeClass
   public static void openProperties() throws Exception {
+    // Remove all configured servers
+    SonarPlugin.getServerManager().clean();
+
     preferencesBot = new SonarPreferencesBot();
   }
 
@@ -52,8 +57,8 @@ public class ConfigurationTest extends UITestCase {
     assertThat(addWizard.getServerUrl(), is("http://localhost:9000")); // default url
     assertThat(addWizard.getUsername(), is(""));
     assertThat(addWizard.getPassword(), is(""));
-    testConnection(addWizard, getSonarServerUrl() + "/", true); // test for SONARIDE-90
-    testConnection(addWizard, getSonarServerUrl(), true);
+    testConnection(addWizard, ProjectUtils.getSonarServerUrl() + "/", true); // test for SONARIDE-90
+    testConnection(addWizard, ProjectUtils.getSonarServerUrl(), true);
     testConnection(addWizard, "http://fake", false);
     addWizard.finish();
     assertThat(preferencesBot.getServersCount(), is(1));

@@ -24,18 +24,16 @@ import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.utils.SWTUtils;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.SonarServerManager;
-import org.sonar.ide.eclipse.tests.common.JobHelpers;
 import org.sonar.ide.eclipse.tests.common.VersionHelpers;
 import org.sonar.ide.eclipse.tests.common.WorkspaceHelpers;
+import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
 import org.sonar.ide.test.SonarIdeTestCase;
-import org.sonar.ide.test.SonarTestServer;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,8 +53,9 @@ public abstract class UITestCase extends SonarIdeTestCase {
   public final static void beforeClass() throws Exception {
     // Disable Secure Storage during tests
     SonarServerManager.enableSecureStorate(false);
-    // Remove all configured server
+    // Remove all configured servers and set default
     SonarPlugin.getServerManager().clean();
+    SonarPlugin.getServerManager().findServer(ProjectUtils.getSonarServerUrl());
 
     System.out.println("Eclipse version : " + VersionHelpers.getEclipseVersion());
 
@@ -86,20 +85,6 @@ public abstract class UITestCase extends SonarIdeTestCase {
     takeScreenShot(getClass().getSimpleName());
   }
 
-  /**
-   * Don't use this method for UI testing, because in future we'd like to use real Sonar server. Use {@link #getSonarServerUrl()} instead of
-   * it.
-   */
-  @Override
-  protected SonarTestServer getTestServer() throws Exception {
-    return super.getTestServer();
-  }
-
-  public String getSonarServerUrl() throws Exception {
-    // TODO Godin: should be possible to use real Sonar server
-    return getTestServer().getBaseUrl();
-  }
-
   public static File takeScreenShot(String classifier) throws IOException {
     File parent = new File(SCREENSHOTS_DIR);
     parent.mkdirs();
@@ -113,36 +98,7 @@ public abstract class UITestCase extends SonarIdeTestCase {
     return new Exception(e.getMessage() + " - " + output, e);
   }
 
-  /**
-   * Imports maven project. <br/>
-   * Don't use this method a lot, because we shouldn't depend closely on m2eclipse. <br/>
-   * TODO Move it out of here into m2eclipse module.
-   */
-  protected File importMavenProject(String projectName) throws Exception {
-    File project = getProject(projectName);
-    waitForAllBuildsToComplete();
-    bot.menu("File").menu("Import...").click();
-    SWTBotShell shell = bot.shell("Import");
-    try {
-      shell.activate();
-      bot.tree().expandNode("Maven").select("Existing Maven Projects");
-      bot.button("Next >").click();
-      bot.comboBoxWithLabel("Root Directory:").setText(project.getCanonicalPath());
-      bot.button("Refresh").click();
-      bot.button("Finish").click();
-    } finally {
-      SwtBotUtils.waitForClose(shell);
-    }
-    waitForAllBuildsToComplete();
-    return project;
+  public static String getProjectPath(String name) throws IOException {
+    return getProject(name).getCanonicalPath();
   }
-
-  protected void waitForAllBuildsToComplete() {
-    JobHelpers.waitForJobsToComplete();
-  }
-
-  protected static String getGroupId(String projectName) {
-    return "org.sonar-ide.tests." + projectName;
-  }
-
 }
