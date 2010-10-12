@@ -32,6 +32,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.jobs.RefreshAllViolationsJob;
 
 import com.google.common.collect.Lists;
 
@@ -79,6 +80,9 @@ public class ToggleNatureAction implements IObjectActionDelegate {
     newNatures[0] = ISonarConstants.NATURE_ID;
     description.setNatureIds(newNatures);
     project.setDescription(description, null);
+
+    // see http://jira.codehaus.org/browse/SONARIDE-167
+    RefreshAllViolationsJob.createAndSchedule(project);
   }
 
   private void disableNature(IProject project) throws CoreException {

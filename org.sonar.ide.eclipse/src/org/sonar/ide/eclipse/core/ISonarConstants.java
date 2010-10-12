@@ -30,6 +30,8 @@ public interface ISonarConstants {
 
   String NATURE_ID = PLUGIN_ID + ".sonarNature";
 
+  String BUILDER_ID = PLUGIN_ID + ".sonarBuilder";
+
   /**
    * Godin: It would be better to use only one MARKER_ID at least at first time.
    */

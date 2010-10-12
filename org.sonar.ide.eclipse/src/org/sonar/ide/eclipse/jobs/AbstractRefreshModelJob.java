@@ -89,12 +89,6 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
 
   public boolean visit(final IResource resource) throws CoreException {
     if (resource instanceof IFile) {
-      // final IJavaElement element = JavaCore.create((IFile) resource);
-      // if (element instanceof ICompilationUnit) {
-      // final ICompilationUnit unit = (ICompilationUnit) element;
-      // cleanMarkers(resource);
-      // retrieveMarkers(unit, monitor);
-      // }
       IFile file = (IFile) resource;
       cleanMarkers(file);
       retrieveMarkers(file, monitor);

@@ -390,6 +390,22 @@
      <runtime>
         <run class="org.sonar.ide.eclipse.internal.builder.SonarNature"/>
      </runtime>
+     <builder
+           id="org.sonar.ide.eclipse.sonarBuilder">
+     </builder>
+  </extension>
+  <extension
+        id="sonarBuilder"
+        name="Sonar Builder"
+        point="org.eclipse.core.resources.builders">
+     <builder
+           callOnEmptyDelta="false"
+           hasNature="true"
+           isConfigurable="false">
+        <run
+              class="org.sonar.ide.eclipse.internal.builder.SonarBuilder">
+        </run>
+     </builder>
   </extension>
 
 </plugin>

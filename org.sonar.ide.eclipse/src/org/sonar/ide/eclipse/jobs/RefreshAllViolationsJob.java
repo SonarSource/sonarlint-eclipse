@@ -45,6 +45,10 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
     new RefreshAllViolationsJob(resources).schedule();
   }
 
+  public static void createAndSchedule(IResource resource) {
+    new RefreshAllViolationsJob(Collections.singletonList(resource)).schedule();
+  }
+
   protected RefreshAllViolationsJob(List<IResource> resources) {
     super(resources);
   }
