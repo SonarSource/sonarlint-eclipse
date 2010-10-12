@@ -48,6 +48,7 @@ public class SonarCompareInput extends CompareEditorInput {
     final ITypedElement left = new ResourceNode(resource);
     final ITypedElement right = new SonarCompareNode(resource.getName(), sourceCode);
     final CompareConfiguration config = getCompareConfiguration();
+    config.setProperty(CompareConfiguration.IGNORE_WHITESPACE, true);
     config.setLeftLabel(left.getName());
     config.setLeftEditable(false);
     config.setRightLabel(right.getName() + " (sonar server)");
