@@ -27,7 +27,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -52,13 +56,26 @@ import org.sonar.wsclient.services.ResourceQuery;
 
 import com.google.common.collect.Lists;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HotspotsView extends AbstractSonarInfoView {
 
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.HotspotsView";
 
   private static final int LIMIT = 20;
+
+  private static final Map<String, String> metrics = new HashMap<String, String>();
+
+  static {
+    metrics.put("Complexity", "complexity");
+    metrics.put("Uncovered lines", "uncovered_lines");
+    metrics.put("Complexity /method", "function_complexity");
+    metrics.put("Public undocumented API", "public_undocumented_api");
+    metrics.put("Weighted violations", "weighted_violations");
+    metrics.put("Duplicated lines", "duplicated_lines");
+  }
 
   private TableViewer viewer;
   private Combo combo;
@@ -113,23 +130,20 @@ public class HotspotsView extends AbstractSonarInfoView {
       }
     });
 
-    combo.add("complexity");
-    combo.add("uncovered_lines");
-    combo.add("function_complexity");
-    combo.add("public_undocumented_api");
-    combo.add("weighted_violations");
-    combo.add("duplicated_lines");
+    for (String s : metrics.keySet()) {
+      combo.add(s);
+    }
     combo.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        metricKey = combo.getText();
+        metricKey = metrics.get(combo.getText());
         if (getInput() != null) {
           doSetInput(getInput());
         }
       }
     });
     combo.select(0);
-    metricKey = combo.getText();
+    metricKey = metrics.get(combo.getText());
   }
 
   private class HotspotsLabelProvider extends AbstractTableLabelProvider {
@@ -160,7 +174,7 @@ public class HotspotsView extends AbstractSonarInfoView {
     getSite().getShell().getDisplay().asyncExec(new Runnable() {
       public void run() {
         resourceLabel.setText("for project " + getInput().getProject().getName());
-        column2.getColumn().setText(metricKey);
+        column2.getColumn().setText(combo.getText());
         viewer.setInput(content);
       }
     });
