@@ -109,39 +109,38 @@
       </menuContribution>
   </extension>
   
-  <extension 
-      point="org.eclipse.ui.ide.markerSupport"> 
-    <markerContentGenerator 
-         id="org.sonar.ide.eclipse.markers.violationMarkerGenerator" 
-         name="Sonar Violation Marker Generator"> 
+  <extension
+      point="org.eclipse.ui.ide.markerSupport">
+    <markerContentGenerator
+         id="org.sonar.ide.eclipse.markers.violationMarkerGenerator"
+         name="Sonar Violation Marker Generator">
         <markerTypeReference
-             id="org.sonar.ide.eclipse.sonarProblem"/>
+              id="org.sonar.ide.eclipse.sonarProblem"/>
         <markerFieldReference
-             id="org.sonar.ide.eclipse.views.violationRuleKeyField"
-             visible="false"/>  
+              id="org.sonar.ide.eclipse.views.violationRuleKeyField"
+              visible="false"/>  
         <markerFieldReference
-             id="org.sonar.ide.eclipse.views.violationRuleNameField"/>  
+              id="org.sonar.ide.eclipse.views.violationSeverityAndRuleNameField"
+              visible="true"/>
         <markerFieldReference
-             id="org.sonar.ide.eclipse.views.violationRulePriorityField"/>        
+              id="org.eclipse.ui.ide.resourceField"
+              visible="true"/>
         <markerFieldReference
-             id="org.eclipse.ui.ide.resourceField"/>
+              id="org.eclipse.ui.ide.descriptionField"
+              visible="true"/>
         <markerFieldReference
-             id="org.eclipse.ui.ide.descriptionField"/>
+              id="org.eclipse.ui.ide.pathField"
+              visible="true"/>
     </markerContentGenerator>
     <markerField 
-        class="org.sonar.ide.eclipse.views.ViolationRuleNameField" 
-        id="org.sonar.ide.eclipse.views.violationRuleNameField" 
-        name="%sonar.violation.view.rulenamefield"> 
+        class="org.sonar.ide.eclipse.views.ViolationSeverityAndRuleNameField" 
+        id="org.sonar.ide.eclipse.views.violationSeverityAndRuleNameField" 
+        name="Rule"> 
     </markerField> 
     <markerField 
         class="org.sonar.ide.eclipse.views.ViolationRuleKeyField" 
         id="org.sonar.ide.eclipse.views.violationRuleKeyField" 
         name="%sonar.violation.view.rulekeyfield"> 
-    </markerField> 
-    <markerField 
-        class="org.sonar.ide.eclipse.views.ViolationRulePriorityField" 
-        id="org.sonar.ide.eclipse.views.violationRulePriorityField" 
-        name="%sonar.violation.view.rulepriorityfield"> 
     </markerField> 
   </extension>
   
@@ -258,7 +257,7 @@
   
   <extension
         id="sonarProblem"
-        name="sonar violation"
+        name="Sonar Violation"
         point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.problemmarker">
@@ -284,28 +283,29 @@
     <extension
         point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
-            annotationType="org.sonar.ide.eclipse.violationAnnotationType"
-            annotationImageProvider="org.sonar.ide.eclipse.markers.SonarMarkerImageProvider"
-            presentationLayer="5"
-            label="%sonar.marker.specification.label"
-            verticalRulerPreferenceKey="org.sonar.ide.eclipse.violation.verticalruler"
-            verticalRulerPreferenceValue="true"
-            overviewRulerPreferenceKey="org.sonar.ide.eclipse.violation.overviewruler"
-            overviewRulerPreferenceValue="true"
-            showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.violation.dropdown"
-            showInNextPrevDropdownToolbarAction="true"
-            isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.violation.previous"
-            isGoToPreviousNavigationTarget="true"
-            isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.violation.next"
-            isGoToNextNavigationTarget="true"
-            highlightPreferenceKey="org.sonar.ide.eclipse.violation.highlight"
-            highlightPreferenceValue="true"
-            textPreferenceKey="org.sonar.ide.eclipse.violation.error.text"
-            textPreferenceValue="true"
-            textStylePreferenceKey="org.sonar.ide.eclipse.violation.text.style"
-            textStylePreferenceValue="BOX"
-            colorPreferenceKey="org.sonar.ide.eclipse.violation.color"
-            colorPreferenceValue="255,246,191"/>
+              annotationImageProvider="org.sonar.ide.eclipse.markers.SonarMarkerImageProvider"
+              annotationType="org.sonar.ide.eclipse.violationAnnotationType"
+              colorPreferenceKey="org.sonar.ide.eclipse.violation.color"
+              colorPreferenceValue="255,246,191"
+              highlightPreferenceKey="org.sonar.ide.eclipse.violation.highlight"
+              highlightPreferenceValue="true"
+              icon="icons/sonar.png"
+              isGoToNextNavigationTarget="true"
+              isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.violation.next"
+              isGoToPreviousNavigationTarget="true"
+              isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.violation.previous"
+              label="%sonar.marker.specification.label"
+              overviewRulerPreferenceKey="org.sonar.ide.eclipse.violation.overviewruler"
+              overviewRulerPreferenceValue="true"
+              presentationLayer="5"
+              showInNextPrevDropdownToolbarAction="true"
+              showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.violation.dropdown"
+              textPreferenceKey="org.sonar.ide.eclipse.violation.error.text"
+              textPreferenceValue="true"
+              textStylePreferenceKey="org.sonar.ide.eclipse.violation.text.style"
+              textStylePreferenceValue="BOX"
+              verticalRulerPreferenceKey="org.sonar.ide.eclipse.violation.verticalruler"
+              verticalRulerPreferenceValue="true"/>
     </extension>
 
    <extension point="org.eclipse.ui.console.consoleFactories">

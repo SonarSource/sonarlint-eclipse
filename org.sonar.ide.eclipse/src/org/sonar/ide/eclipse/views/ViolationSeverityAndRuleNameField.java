@@ -23,46 +23,46 @@ package org.sonar.ide.eclipse.views;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.shared.violations.ViolationUtils;
 
 /**
- * @author Jérémie Lagarde
+ * Each rule in Sonar has severity, so it seems logical to combine rule name and severity in one field.
  */
-public class ViolationRulePriorityField extends MarkerField {
+public class ViolationSeverityAndRuleNameField extends MarkerField {
 
   private static Image[] images = null;
 
   @Override
   public int compare(MarkerItem item1, MarkerItem item2) {
-    return -(ViolationUtils.convertPriority(item1.getMarker().getAttribute("rulepriority", ""))-
-        ViolationUtils.convertPriority(item2.getMarker().getAttribute("rulepriority", "")));
+    int severity1 = getSeverity(item1);
+    int severity2 = getSeverity(item2);
+    if (severity1 == severity2) {
+      super.compare(item1, item2);
+    }
+    return severity2 - severity1;
+  }
+
+  private int getSeverity(MarkerItem item) {
+    return ViolationUtils.convertPriority(item.getMarker().getAttribute("rulepriority", ""));
   }
 
   @Override
-  public String getColumnHeaderText() {
-    return "";
+  public String getValue(MarkerItem item) {
+    if (item == null || item.getMarker() == null) {
+      return null;
+    }
+    return item.getMarker().getAttribute("rulename", "");
   }
 
-  @Override
-  public String getColumnTooltipText() {
-    return "Priority";
+  private Image getImage(MarkerItem item) {
+    return getSeverityImage(getSeverity(item));
   }
 
-  @Override
-  public int getDefaultColumnWidth(Control control) {
-    return getPriorityImage("info").getBounds().width;
-  }
-
-  private Image getPriorityImage(MarkerItem item) {
-    return getPriorityImage(item.getMarker().getAttribute("rulepriority", ""));
-  }
-
-  private Image getPriorityImage(String priority) {
-    if(images == null) {
+  private Image getSeverityImage(int severity) {
+    if (images == null) {
       images = new Image[5];
       images[0] = ImageDescriptor.createFromFile(SonarPlugin.class, "/org/sonar/ide/images/priority/blocker.gif").createImage(); //$NON-NLS-1$
       images[1] = ImageDescriptor.createFromFile(SonarPlugin.class, "/org/sonar/ide/images/priority/critical.gif").createImage(); //$NON-NLS-1$
@@ -70,22 +70,18 @@ public class ViolationRulePriorityField extends MarkerField {
       images[3] = ImageDescriptor.createFromFile(SonarPlugin.class, "/org/sonar/ide/images/priority/minor.gif").createImage(); //$NON-NLS-1$
       images[4] = ImageDescriptor.createFromFile(SonarPlugin.class, "/org/sonar/ide/images/priority/info.gif").createImage(); //$NON-NLS-1$
     }
-    return images[ViolationUtils.convertPriority(priority)];
+    return images[severity];
   }
 
-  @Override
-  public String getValue(MarkerItem item) {
-    return "";
-  }
-
+  /**
+   * TODO see {@link #annotateImage(MarkerItem, Image)}
+   */
   @Override
   public void update(ViewerCell cell) {
     super.update(cell);
-    try {
-      Image image = getPriorityImage((MarkerItem) cell.getElement());
-      cell.setImage(image);
-    } catch (NumberFormatException e) {
-      return;
-    }
+
+    MarkerItem item = (MarkerItem) cell.getElement();
+    cell.setImage(getImage(item));
   }
+
 }
