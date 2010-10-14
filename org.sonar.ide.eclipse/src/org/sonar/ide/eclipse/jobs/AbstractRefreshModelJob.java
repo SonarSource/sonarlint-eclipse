@@ -90,7 +90,6 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
   public boolean visit(final IResource resource) throws CoreException {
     if (resource instanceof IFile) {
       IFile file = (IFile) resource;
-      cleanMarkers(file);
       retrieveMarkers(file, monitor);
       return false; // do not visit members of this resource
     }
@@ -106,6 +105,7 @@ public abstract class AbstractRefreshModelJob<M> extends Job implements IResourc
     try {
       monitor.beginTask("Retrieve sonar informations for " + resource.getName(), 1);
       final Collection<M> datas = retrieveDatas(EclipseSonar.getInstance(resource.getProject()), resource);
+      cleanMarkers(resource);
       for (final M data : datas) {
         // create a marker for the actual resource
         createMarker(resource, data);
