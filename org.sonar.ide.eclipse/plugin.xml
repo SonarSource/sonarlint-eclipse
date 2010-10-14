@@ -131,6 +131,12 @@
         <markerFieldReference
               id="org.eclipse.ui.ide.pathField"
               visible="true"/>
+        <markerFieldConfiguration
+              enabled="true"
+              id="org.sonar.ide.eclipse.violationsGrouping"
+              name="Violations"
+              scope="ON_SELECTED_AND_CHILDREN">
+        </markerFieldConfiguration>
     </markerContentGenerator>
     <markerField 
         class="org.sonar.ide.eclipse.views.ViolationSeverityAndRuleNameField" 

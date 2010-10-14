@@ -24,6 +24,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.views.markers.MarkerSupportView;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarImages;
@@ -71,6 +72,9 @@ public class ViolationsView extends MarkerSupportView {
     return refreshAction;
   }
 
+  /**
+   * TODO quote from {@link WorkbenchPart#getContentDescription()} : "It is considered bad practise to overload or extend this method."
+   */
   @Override
   public String getContentDescription() {
     // TODO : add some metrics about violation makers.
