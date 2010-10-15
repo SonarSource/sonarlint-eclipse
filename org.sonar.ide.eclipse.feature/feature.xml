@@ -2,7 +2,7 @@
 <feature
       id="org.sonar.ide.eclipse.feature"
       label="Sonar Integration for Eclipse (Required)"
-      version="0.3.0.qualifier"
+      version="0.4.0.qualifier"
       plugin="org.sonar.ide.eclipse">
 
    <description url="http://sonar-ide.codehaus.org/">
