@@ -68,7 +68,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
         String[] parts = StringUtils.split(key, SonarKeyUtils.PROJECT_DELIMITER);
         String groupId = parts[0];
         String artifactId = parts[1];
-        String className = parts[2];
+        String className = StringUtils.removeStart(parts[2], "[default].");
         // FIXME branch
 
         IWorkspace root = ResourcesPlugin.getWorkspace();
