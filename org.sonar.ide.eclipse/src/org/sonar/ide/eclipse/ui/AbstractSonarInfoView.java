@@ -20,6 +20,7 @@
 
 package org.sonar.ide.eclipse.ui;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
@@ -30,10 +31,9 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.*;
+import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.ViewPart;
 import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.core.ISonarResource;
@@ -235,7 +235,12 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
    * Finds and returns the Sonar resource selected in the given part.
    */
   private ISonarResource findSelectedSonarResource(IWorkbenchPart part, ISelection selection) {
-    if (selection instanceof IStructuredSelection) {
+    if (part instanceof EditorPart) {
+      EditorPart editor = (EditorPart) part;
+      IEditorInput editorInput = editor.getEditorInput();
+      IResource resource = ResourceUtil.getResource(editorInput);
+      return findSonarResource(resource);
+    } else if (selection instanceof IStructuredSelection) {
       return findSonarResource(SelectionUtils.getSingleElement(selection));
     }
     return null;
