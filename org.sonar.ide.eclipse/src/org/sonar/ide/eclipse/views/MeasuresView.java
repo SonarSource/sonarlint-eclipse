@@ -54,7 +54,7 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
-import org.sonar.ide.eclipse.core.FavouriteMetricsManager;
+import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
@@ -135,7 +135,7 @@ public class MeasuresView extends AbstractSonarInfoView {
       public void run() {
         IMeasure measure = (IMeasure) getSelectedElement();
         String metricKey = measure.getMetricDef().getKey();
-        FavouriteMetricsManager.getInstance().toggle(metricKey);
+        FavoriteMetricsManager.getInstance().toggle(metricKey);
         toggleFavorite(measure);
       }
     };
@@ -164,7 +164,7 @@ public class MeasuresView extends AbstractSonarInfoView {
     Object selectedElement = getSelectedElement();
     if (selectedElement instanceof IMeasure) {
       IMeasure measure = (IMeasure) selectedElement;
-      if (FavouriteMetricsManager.getInstance().isFavorite(measure.getMetricDef().getKey())) {
+      if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricDef().getKey())) {
         toggleFavoriteAction.setText("Remove from favorites");
       } else {
         toggleFavoriteAction.setText("Add to favorites");
@@ -277,7 +277,7 @@ public class MeasuresView extends AbstractSonarInfoView {
           // Group by domain
           final Multimap<String, IMeasure> measuresByDomain = Multimaps.index(measures, new Function<IMeasure, String>() {
             public String apply(IMeasure measure) {
-              if (FavouriteMetricsManager.getInstance().isFavorite(measure.getMetricDef().getKey())) {
+              if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricDef().getKey())) {
                 favorites.add(measure);
               }
               return measure.getMetricDef().getDomain();

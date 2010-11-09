@@ -20,6 +20,10 @@
 
 package org.sonar.ide.eclipse;
 
+import java.net.Authenticator;
+import java.net.ProxySelector;
+import java.net.URL;
+
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -27,6 +31,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -35,6 +41,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.console.SonarConsole;
+import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
@@ -49,10 +56,6 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.JoranConfiguratorBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
-
-import java.net.Authenticator;
-import java.net.ProxySelector;
-import java.net.URL;
 
 public class SonarPlugin extends AbstractUIPlugin {
 
@@ -93,11 +96,18 @@ public class SonarPlugin extends AbstractUIPlugin {
     setupProxy(context);
     RefreshViolationsJob.setupViolationsUpdater();
 
+    IEclipsePreferences prefs = (new InstanceScope()).getNode(ISonarConstants.PLUGIN_ID);
+    FavoriteMetricsManager.getInstance().load(prefs);
+
     LoggerFactory.getLogger(SonarPlugin.class).info("SonarPlugin started");
   }
 
   @Override
   public void stop(final BundleContext context) throws Exception {
+    IEclipsePreferences prefs = (new InstanceScope()).getNode(ISonarConstants.PLUGIN_ID);
+    FavoriteMetricsManager.getInstance().save(prefs);
+    prefs.flush();
+
     if (console != null) {
       console.shutdown();
     }
