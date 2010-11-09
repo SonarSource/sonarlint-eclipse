@@ -79,6 +79,7 @@ public class MeasuresView extends AbstractSonarInfoView {
 
   private TreeViewer viewer;
   private IAction toggleFavoriteAction;
+  private Map<String, Collection<IMeasure>> measuresByDomain;
 
   @Override
   protected void internalCreatePartControl(Composite parent) {
@@ -162,6 +163,12 @@ public class MeasuresView extends AbstractSonarInfoView {
     // populate menu
     Object selectedElement = getSelectedElement();
     if (selectedElement instanceof IMeasure) {
+      IMeasure measure = (IMeasure) selectedElement;
+      if (FavouriteMetricsManager.getInstance().isFavorite(measure.getMetricDef().getKey())) {
+        toggleFavoriteAction.setText("Remove from favorites");
+      } else {
+        toggleFavoriteAction.setText("Add to favorites");
+      }
       mgr.add(toggleFavoriteAction);
     }
     // required, for extensions
@@ -235,8 +242,6 @@ public class MeasuresView extends AbstractSonarInfoView {
       }
     });
   }
-
-  private Map<String, Collection<IMeasure>> measuresByDomain;
 
   private void toggleFavorite(IMeasure measure) {
     Collection<IMeasure> favorites = measuresByDomain.get(FAVORITES_CATEGORY);
