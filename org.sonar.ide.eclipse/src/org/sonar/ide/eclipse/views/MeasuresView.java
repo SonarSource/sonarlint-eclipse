@@ -20,32 +20,53 @@
 
 package org.sonar.ide.eclipse.views;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.core.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
 import org.sonar.ide.eclipse.ui.EnhancedFilteredTree;
+import org.sonar.ide.eclipse.utils.SelectionUtils;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Evgeny Mandrikov
@@ -54,7 +75,10 @@ public class MeasuresView extends AbstractSonarInfoView {
 
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.MeasuresView";
 
+  private static final String FAVORITES_CATEGORY = "Favorites";
+
   private TreeViewer viewer;
+  private IAction toggleFavoriteAction;
 
   @Override
   protected void internalCreatePartControl(Composite parent) {
@@ -82,6 +106,20 @@ public class MeasuresView extends AbstractSonarInfoView {
     viewer = filteredTree.getViewer();
     viewer.setContentProvider(new MapContentProvider());
     viewer.setLabelProvider(new MeasuresLabelProvider());
+    viewer.setComparator(new ViewerComparator() {
+      @Override
+      public int category(Object element) {
+        if (element instanceof Map.Entry) {
+          String s = (String) ((Map.Entry) element).getKey();
+          if (FAVORITES_CATEGORY.equals(s)) {
+            return 0;
+          } else {
+            return 1;
+          }
+        }
+        return super.category(element);
+      }
+    });
     Tree tree = viewer.getTree();
     tree.setHeaderVisible(true);
     tree.setLinesVisible(true);
@@ -91,6 +129,47 @@ public class MeasuresView extends AbstractSonarInfoView {
     TreeColumn column2 = new TreeColumn(tree, SWT.LEFT);
     column2.setText("Value");
     column2.setWidth(100);
+
+    toggleFavoriteAction = new Action("Toggle favorite") {
+      public void run() {
+        IMeasure measure = (IMeasure) getSelectedElement();
+        String metricKey = measure.getMetricDef().getKey();
+        FavouriteMetricsManager.getInstance().toggle(metricKey);
+        toggleFavorite(measure);
+      }
+    };
+
+    hookContextMenu();
+  }
+
+  private void hookContextMenu() {
+    // Create menu manager
+    MenuManager menuMgr = new MenuManager("#PopupMenu");
+    menuMgr.setRemoveAllWhenShown(true);
+    menuMgr.addMenuListener(new IMenuListener() {
+      public void menuAboutToShow(IMenuManager mgr) {
+        fillContextMenu(mgr);
+      }
+    });
+    // Create menu
+    Menu menu = menuMgr.createContextMenu(viewer.getControl());
+    viewer.getControl().setMenu(menu);
+    // Register menu for extension
+    getSite().registerContextMenu(menuMgr, viewer);
+  }
+
+  private void fillContextMenu(IMenuManager mgr) {
+    // populate menu
+    Object selectedElement = getSelectedElement();
+    if (selectedElement instanceof IMeasure) {
+      mgr.add(toggleFavoriteAction);
+    }
+    // required, for extensions
+    mgr.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+  }
+
+  private Object getSelectedElement() {
+    return SelectionUtils.getSingleElement(viewer.getSelection());
   }
 
   @Override
@@ -157,6 +236,25 @@ public class MeasuresView extends AbstractSonarInfoView {
     });
   }
 
+  private Map<String, Collection<IMeasure>> measuresByDomain;
+
+  private void toggleFavorite(IMeasure measure) {
+    Collection<IMeasure> favorites = measuresByDomain.get(FAVORITES_CATEGORY);
+    if (favorites == null) {
+      favorites = Lists.newArrayList();
+      measuresByDomain.put(FAVORITES_CATEGORY, favorites);
+    }
+    if (favorites.contains(measure)) {
+      favorites.remove(measure);
+    } else {
+      favorites.add(measure);
+    }
+    if (favorites.isEmpty()) {
+      measuresByDomain.remove(FAVORITES_CATEGORY);
+    }
+    viewer.refresh();
+  }
+
   @Override
   protected void doSetInput(Object input) {
     final ISonarResource element = (ISonarResource) input;
@@ -170,13 +268,21 @@ public class MeasuresView extends AbstractSonarInfoView {
           update("Not found.", null);
         } else {
           Collection<IMeasure> measures = sourceCode.getMeasures();
+          final List<IMeasure> favorites = Lists.newArrayList();
           // Group by domain
           final Multimap<String, IMeasure> measuresByDomain = Multimaps.index(measures, new Function<IMeasure, String>() {
             public String apply(IMeasure measure) {
+              if (FavouriteMetricsManager.getInstance().isFavorite(measure.getMetricDef().getKey())) {
+                favorites.add(measure);
+              }
               return measure.getMetricDef().getDomain();
             }
           });
-          update(sourceCode.getKey(), measuresByDomain.asMap());
+          MeasuresView.this.measuresByDomain = Maps.newHashMap(measuresByDomain.asMap());
+          if ( !favorites.isEmpty()) {
+            MeasuresView.this.measuresByDomain.put(FAVORITES_CATEGORY, favorites);
+          }
+          update(sourceCode.getKey(), MeasuresView.this.measuresByDomain);
         }
         monitor.done();
         return Status.OK_STATUS;
@@ -185,5 +291,4 @@ public class MeasuresView extends AbstractSonarInfoView {
     IWorkbenchSiteProgressService siteService = (IWorkbenchSiteProgressService) getSite().getAdapter(IWorkbenchSiteProgressService.class);
     siteService.schedule(job);
   }
-
 }
