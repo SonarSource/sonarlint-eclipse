@@ -20,10 +20,10 @@
 
 package org.sonar.ide.eclipse;
 
-import org.eclipse.jface.resource.ImageDescriptor;
-
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import org.eclipse.jface.resource.ImageDescriptor;
 
 public class SonarImages {
 
@@ -34,6 +34,8 @@ public class SonarImages {
   public static ImageDescriptor SONARSYNCHRO_IMG;
   public static ImageDescriptor SONARREFRESH_IMG;
   public static ImageDescriptor SONARCLOSE_IMG;
+  public static ImageDescriptor STAR_IMG;
+  public static ImageDescriptor STAR_OFF_IMG;
 
   public static final String IMG_SONARWIZBAN = "sonar_wizban.gif"; //$NON-NLS-1$
   public static final String IMG_SONAR16 = "sonar.png"; //$NON-NLS-1$
@@ -42,6 +44,8 @@ public class SonarImages {
   public static final String IMG_SONARSYNCHRO = "synced.gif"; //$NON-NLS-1$
   public static final String IMG_SONARREFRESH = "refresh.gif"; //$NON-NLS-1$
   public static final String IMG_SONARCLOSE = "close.gif"; //$NON-NLS-1$
+  public static final String IMG_STAR = "star.png"; //$NON-NLS-1$
+  public static final String IMG_STAR_OFF = "star_off.png"; //$NON-NLS-1$
 
   public static ImageDescriptor getImageDescriptor(final String id) {
     ImageDescriptor img = SonarImages.getCachedImageDescriptor(id);
@@ -53,6 +57,18 @@ public class SonarImages {
 
   private static ImageDescriptor getCachedImageDescriptor(final String id) {
     ImageDescriptor img = null;
+    if (id.equals(IMG_STAR)) {
+      if (STAR_IMG == null) {
+        STAR_IMG = SonarImages.loadImageDescriptor(IMG_STAR);
+      }
+      img = STAR_IMG;
+    }
+    if (id.equals(IMG_STAR_OFF)) {
+      if (STAR_OFF_IMG == null) {
+        STAR_OFF_IMG = SonarImages.loadImageDescriptor(IMG_STAR_OFF);
+      }
+      img = STAR_OFF_IMG;
+    }
     if (id.equals(SonarImages.IMG_SONARWIZBAN)) {
       if (SONARWIZBAN_IMG == null) {
         SONARWIZBAN_IMG = SonarImages.loadImageDescriptor(SonarImages.IMG_SONARWIZBAN);

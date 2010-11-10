@@ -54,6 +54,7 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarResource;
@@ -166,8 +167,10 @@ public class MeasuresView extends AbstractSonarInfoView {
       IMeasure measure = (IMeasure) selectedElement;
       if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricDef().getKey())) {
         toggleFavoriteAction.setText("Remove from favorites");
+        toggleFavoriteAction.setImageDescriptor(SonarImages.getImageDescriptor(SonarImages.IMG_STAR_OFF));
       } else {
         toggleFavoriteAction.setText("Add to favorites");
+        toggleFavoriteAction.setImageDescriptor(SonarImages.getImageDescriptor(SonarImages.IMG_STAR));
       }
       mgr.add(toggleFavoriteAction);
     }
