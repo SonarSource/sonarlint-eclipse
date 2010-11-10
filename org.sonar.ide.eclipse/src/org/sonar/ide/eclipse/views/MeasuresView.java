@@ -167,10 +167,10 @@ public class MeasuresView extends AbstractSonarInfoView {
       IMeasure measure = (IMeasure) selectedElement;
       if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricDef().getKey())) {
         toggleFavoriteAction.setText("Remove from favorites");
-        toggleFavoriteAction.setImageDescriptor(SonarImages.getImageDescriptor(SonarImages.IMG_STAR_OFF));
+        toggleFavoriteAction.setImageDescriptor(SonarImages.STAR_OFF);
       } else {
         toggleFavoriteAction.setText("Add to favorites");
-        toggleFavoriteAction.setImageDescriptor(SonarImages.getImageDescriptor(SonarImages.IMG_STAR));
+        toggleFavoriteAction.setImageDescriptor(SonarImages.STAR);
       }
       mgr.add(toggleFavoriteAction);
     }

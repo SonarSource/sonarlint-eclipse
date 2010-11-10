@@ -47,7 +47,7 @@ public class SonarMarkerResolution implements IMarkerResolution2 {
   }
 
   public Image getImage() {
-    return SonarImages.getImageDescriptor(SonarImages.IMG_SONAR16).createImage();
+    return SonarImages.SONAR16_IMG.createImage();
   }
 
   public String getLabel() {

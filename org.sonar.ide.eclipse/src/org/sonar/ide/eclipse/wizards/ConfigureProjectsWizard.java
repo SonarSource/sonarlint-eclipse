@@ -20,6 +20,9 @@
 
 package org.sonar.ide.eclipse.wizards;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
@@ -31,7 +34,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -57,9 +64,6 @@ import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
 
 import com.google.common.collect.Lists;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 /**
  * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertedProjectWizard
@@ -96,7 +100,7 @@ public class ConfigureProjectsWizard extends Wizard {
     private ComboViewer comboViewer;
 
     public ConfigureProjectsPage(List<IProject> projects, List<IProject> selected) {
-      super("configureProjects", "Associate with Sonar", SonarImages.getImageDescriptor(SonarImages.IMG_SONARWIZBAN));
+      super("configureProjects", "Associate with Sonar", SonarImages.SONARWIZBAN_IMG);
       setDescription("Select projects to add Sonar capability.");
       this.projects = projects;
       this.selected = selected;
@@ -168,14 +172,13 @@ public class ConfigureProjectsWizard extends Wizard {
 
       // TODO we can improve UI of table by adding image to first element :
       // PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
-      ViewerSupport.bind(viewer,
-        new WritableList(list, SonarProject.class),
-        new IValueProperty[] {
-        BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_PROJECT_NAME),
-        BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_GROUP_ID),
-        BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_ARTIFACT_ID),
-        BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_BRANCH)
-       });
+      ViewerSupport.bind(
+          viewer,
+          new WritableList(list, SonarProject.class),
+          new IValueProperty[] { BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_PROJECT_NAME),
+              BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_GROUP_ID),
+              BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_ARTIFACT_ID),
+              BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_BRANCH) });
       viewer.setCheckedElements(selectedList.toArray(new SonarProject[selectedList.size()]));
 
       Button autoConfigButton = new Button(container, SWT.PUSH);
@@ -301,7 +304,8 @@ public class ConfigureProjectsWizard extends Wizard {
 
       public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         monitor.beginTask("Requesting " + url, IProgressMonitor.UNKNOWN);
-        ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT, Resource.QUALIFIER_MODULE);
+        ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT,
+            Resource.QUALIFIER_MODULE);
         Sonar sonar = SonarPlugin.getServerManager().getSonar(url);
         List<Resource> resources = sonar.findAll(query);
         for (SonarProject sonarProject : projects) {

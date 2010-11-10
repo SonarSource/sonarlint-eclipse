@@ -67,7 +67,7 @@ public class ViolationsView extends MarkerSupportView {
       };
       refreshAction.setText(Messages.getString("action.refresh.violations")); //$NON-NLS-1$
       refreshAction.setToolTipText(Messages.getString("action.refresh.violations.desc")); //$NON-NLS-1$
-      refreshAction.setImageDescriptor(SonarImages.getImageDescriptor(SonarImages.IMG_SONARREFRESH));
+      refreshAction.setImageDescriptor(SonarImages.SONARREFRESH_IMG);
     }
     return refreshAction;
   }

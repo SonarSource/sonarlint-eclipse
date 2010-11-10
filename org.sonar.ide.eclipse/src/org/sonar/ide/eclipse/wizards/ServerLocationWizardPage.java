@@ -20,8 +20,14 @@
 
 package org.sonar.ide.eclipse.wizards;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -44,8 +50,6 @@ import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.wsclient.Host;
 
-import java.lang.reflect.InvocationTargetException;
-
 public class ServerLocationWizardPage extends WizardPage {
 
   private Text serverUrlText;
@@ -60,7 +64,7 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   public ServerLocationWizardPage(Host host) {
-    super("server_location_page", "Sonar Server Configuration", SonarImages.getImageDescriptor(SonarImages.IMG_SONARWIZBAN));
+    super("server_location_page", "Sonar Server Configuration", SonarImages.SONARWIZBAN_IMG);
     this.host = host;
   }
 

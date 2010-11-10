@@ -20,6 +20,8 @@
 
 package org.sonar.ide.eclipse.console;
 
+import java.io.IOException;
+
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.JFaceResources;
@@ -39,8 +41,6 @@ import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.preferences.PreferenceConstants;
 import org.sonar.ide.ui.ISonarConsole;
-
-import java.io.IOException;
 
 /**
  * 
@@ -71,7 +71,7 @@ public class SonarConsole extends IOConsole implements ISonarConsole, IPropertyC
   private boolean showOnMessage;
 
   public SonarConsole() {
-    super(Messages.getString("console.view.title"), SONAR_CONSOLE_TYPE, SonarImages.getImageDescriptor(SonarImages.IMG_SONARCONSOLE)); //$NON-NLS-1$
+    super(Messages.getString("console.view.title"), SONAR_CONSOLE_TYPE, SonarImages.SONAR16_IMG); //$NON-NLS-1$
     document = new ConsoleDocument();
     SonarPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(this);
   }

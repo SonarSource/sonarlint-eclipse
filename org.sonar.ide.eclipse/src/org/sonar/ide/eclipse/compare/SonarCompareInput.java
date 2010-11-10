@@ -53,7 +53,7 @@ public class SonarCompareInput extends CompareEditorInput {
     config.setLeftEditable(false);
     config.setRightLabel(right.getName() + " (sonar server)");
     config.setRightEditable(false);
-    config.setRightImage(SonarImages.getImageDescriptor(SonarImages.IMG_SONAR16).createImage());
+    config.setRightImage(SonarImages.SONAR16_IMG.createImage());
     return new DiffNode(left, right);
   }
 }

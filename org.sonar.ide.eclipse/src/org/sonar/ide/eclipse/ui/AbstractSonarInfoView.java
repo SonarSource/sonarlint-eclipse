@@ -31,7 +31,11 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IPartListener2;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.ViewPart;
@@ -41,8 +45,7 @@ import org.sonar.ide.eclipse.utils.PlatformUtils;
 import org.sonar.ide.eclipse.utils.SelectionUtils;
 
 /**
- * Abstract class for views which show information for a given element.
- * Inspired by org.eclipse.jdt.internal.ui.infoviews.AbstractInfoView
+ * Abstract class for views which show information for a given element. Inspired by org.eclipse.jdt.internal.ui.infoviews.AbstractInfoView
  * 
  * @since 0.3
  */
@@ -101,7 +104,8 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
   /**
    * Create the part control.
    * 
-   * @param parent the parent control
+   * @param parent
+   *          the parent control
    * @see IWorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
    */
   abstract protected void internalCreatePartControl(Composite parent);
@@ -140,7 +144,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
     public LinkAction() {
       super("Link with Selection", SWT.TOGGLE);
       setTitleToolTip("Link with Selection");
-      setImageDescriptor(SonarImages.getImageDescriptor(SonarImages.IMG_SONARSYNCHRO));
+      setImageDescriptor(SonarImages.SONARSYNCHRO_IMG);
       setChecked(isLinkingEnabled());
     }
 
@@ -151,10 +155,10 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
   }
 
   /**
-   * Sets whether this info view reacts to selection
-   * changes in the workbench.
+   * Sets whether this info view reacts to selection changes in the workbench.
    * 
-   * @param enabled if true then the input is set on selection changes
+   * @param enabled
+   *          if true then the input is set on selection changes
    */
   protected void setLinkingEnabled(boolean enabled) {
     linking = enabled;
@@ -164,8 +168,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
   }
 
   /**
-   * Returns whether this info view reacts to selection
-   * changes in the workbench.
+   * Returns whether this info view reacts to selection changes in the workbench.
    * 
    * @return true if linking with selection is enabled
    */
