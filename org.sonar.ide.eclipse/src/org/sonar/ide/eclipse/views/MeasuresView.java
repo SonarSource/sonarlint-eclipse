@@ -166,9 +166,9 @@ public class MeasuresView extends AbstractSonarInfoView {
   private void fillContextMenu(IMenuManager mgr) {
     // populate menu
     Object selectedElement = getSelectedElement();
-    if (selectedElement instanceof IMeasure) {
-      IMeasure measure = (IMeasure) selectedElement;
-      if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricDef().getKey())) {
+    if (selectedElement instanceof ISonarMeasure) {
+      ISonarMeasure measure = (ISonarMeasure) selectedElement;
+      if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricKey())) {
         toggleFavoriteAction.setText("Remove from favorites");
         toggleFavoriteAction.setImageDescriptor(SonarImages.STAR_OFF);
       } else {
