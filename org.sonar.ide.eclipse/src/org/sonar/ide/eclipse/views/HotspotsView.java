@@ -20,9 +20,7 @@
 
 package org.sonar.ide.eclipse.views;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -67,17 +65,6 @@ public class HotspotsView extends AbstractSonarInfoView {
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.HotspotsView";
 
   private static final int LIMIT = 20;
-
-  private static final Map<String, String> metrics = new HashMap<String, String>();
-
-  static {
-    metrics.put("Complexity", "complexity");
-    metrics.put("Uncovered lines", "uncovered_lines");
-    metrics.put("Complexity /method", "function_complexity");
-    metrics.put("Public undocumented API", "public_undocumented_api");
-    metrics.put("Weighted violations", "weighted_violations");
-    metrics.put("Duplicated lines", "duplicated_lines");
-  }
 
   private TableViewer viewer;
   private ComboViewer comboViewer;
