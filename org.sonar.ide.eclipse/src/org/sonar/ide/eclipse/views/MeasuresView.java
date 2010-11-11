@@ -38,9 +38,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
@@ -67,6 +64,7 @@ import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.jobs.AbstractRemoteSonarJob;
 import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
+import org.sonar.ide.eclipse.ui.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.ui.EnhancedFilteredTree;
 import org.sonar.ide.eclipse.utils.SelectionUtils;
 import org.sonar.wsclient.services.Measure;
@@ -199,7 +197,7 @@ public class MeasuresView extends AbstractSonarInfoView {
     return viewer.getControl();
   }
 
-  class MeasuresLabelProvider implements ITableLabelProvider, ILabelProvider {
+  class MeasuresLabelProvider extends AbstractTableLabelProvider {
 
     public Image getColumnImage(Object element, int columnIndex) {
       if ((columnIndex == 1) && (element instanceof ISonarMeasure)) {
@@ -233,33 +231,12 @@ public class MeasuresView extends AbstractSonarInfoView {
       }
       return "";
     }
-
-    public void addListener(ILabelProviderListener listener) {
-    }
-
-    public void dispose() {
-    }
-
-    public boolean isLabelProperty(Object element, String property) {
-      return false;
-    }
-
-    public void removeListener(ILabelProviderListener listener) {
-    }
-
-    public Image getImage(Object element) {
-      return null;
-    }
-
-    public String getText(Object element) {
-      return getColumnText(element, 0);
-    }
   }
 
-  private void update(final String description, final Object content) {
+  private void update(final Object content) {
     Display.getDefault().asyncExec(new Runnable() {
       public void run() {
-        setContentDescription(description);
+        setContentDescription(getInput().getName());
         viewer.setInput(content);
         viewer.expandAll();
       }
@@ -290,12 +267,10 @@ public class MeasuresView extends AbstractSonarInfoView {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Loading measures for " + element.getKey(), IProgressMonitor.UNKNOWN);
-        update("Loading...", null);
+        update(null);
         EclipseSonar index = EclipseSonar.getInstance(element.getProject());
         final SourceCode sourceCode = index.search(element);
-        if (sourceCode == null) {
-          update("Not found.", null);
-        } else {
+        if (sourceCode != null) {
           Collection<ISonarMeasure> measures = getMeasures(index, element);
           final List<ISonarMeasure> favorites = Lists.newArrayList();
 
@@ -313,7 +288,7 @@ public class MeasuresView extends AbstractSonarInfoView {
           if ( !favorites.isEmpty()) {
             MeasuresView.this.measuresByDomain.put(FAVORITES_CATEGORY, favorites);
           }
-          update(element.getName(), MeasuresView.this.measuresByDomain);
+          update(MeasuresView.this.measuresByDomain);
         }
         monitor.done();
         return Status.OK_STATUS;

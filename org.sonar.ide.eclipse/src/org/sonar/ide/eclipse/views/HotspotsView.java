@@ -20,6 +20,8 @@
 
 package org.sonar.ide.eclipse.views;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -33,6 +35,7 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
@@ -73,29 +76,32 @@ public class HotspotsView extends AbstractSonarInfoView {
   private ComboViewer comboViewer;
   private Combo combo;
   private String metricKey;
-  private Label resourceLabel;
   private TableViewerColumn column2;
+
+  private PropertyChangeListener favouriteMetricsListener = new PropertyChangeListener() {
+    public void propertyChange(PropertyChangeEvent evt) {
+      updateFavouriteMetrics();
+    }
+  };
 
   @Override
   protected void internalCreatePartControl(Composite parent) {
     Composite container = new Composite(parent, SWT.NULL);
-    GridLayout layout = new GridLayout(3, false);
+    GridLayout layout = new GridLayout(2, false);
     container.setLayout(layout);
 
     Label hotspotsLabel = new Label(container, SWT.NONE);
     hotspotsLabel.setText("Hotspots by");
 
     comboViewer = new ComboViewer(container, SWT.READ_ONLY | SWT.TOP);
-
-    resourceLabel = new Label(container, SWT.NONE);
     GridData gridData = new GridData();
     gridData.horizontalAlignment = SWT.FILL;
     gridData.grabExcessHorizontalSpace = true;
-    resourceLabel.setLayoutData(gridData);
+    comboViewer.getCombo().setLayoutData(gridData);
 
     viewer = new TableViewer(container);
     gridData = new GridData();
-    gridData.horizontalSpan = 3;
+    gridData.horizontalSpan = 2;
     gridData.horizontalAlignment = SWT.FILL;
     gridData.grabExcessHorizontalSpace = true;
     gridData.grabExcessVerticalSpace = true;
@@ -124,7 +130,8 @@ public class HotspotsView extends AbstractSonarInfoView {
 
     combo = comboViewer.getCombo();
     comboViewer.setContentProvider(ArrayContentProvider.getInstance());
-    comboViewer.setInput(FavoriteMetricsManager.getInstance().get());
+    updateFavouriteMetrics();
+    FavoriteMetricsManager.getInstance().addListener(favouriteMetricsListener);
 
     combo.addSelectionListener(new SelectionAdapter() {
       @Override
@@ -163,10 +170,18 @@ public class HotspotsView extends AbstractSonarInfoView {
     return metricKey;
   }
 
+  private void updateFavouriteMetrics() {
+    comboViewer.setInput(FavoriteMetricsManager.getInstance().get());
+    if (getMetricKey() != null) {
+      comboViewer.setSelection(new StructuredSelection(getMetricKey()));
+    }
+  }
+
   private void update(final Object content) {
     getSite().getShell().getDisplay().asyncExec(new Runnable() {
       public void run() {
-        resourceLabel.setText("for project " + getInput().getName());
+        setContentDescription(getInput().getName());
+        updateFavouriteMetrics();
         column2.getColumn().setText(combo.getText());
         viewer.setInput(content);
       }
@@ -217,6 +232,12 @@ public class HotspotsView extends AbstractSonarInfoView {
   private ResourceQuery getResourceQuery(ISonarResource resource) {
     return ResourceQuery.createForMetrics(resource.getKey(), getMetricKey()).setScopes(Resource.SCOPE_ENTITY)
         .setDepth(ResourceQuery.DEPTH_UNLIMITED).setLimit(LIMIT);
+  }
+
+  @Override
+  public void dispose() {
+    FavoriteMetricsManager.getInstance().removeListener(favouriteMetricsListener);
+    super.dispose();
   }
 
 }
