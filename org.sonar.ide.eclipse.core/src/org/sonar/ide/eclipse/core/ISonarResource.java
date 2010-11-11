@@ -37,6 +37,11 @@ public interface ISonarResource {
   String getKey();
 
   /**
+   * @return resource name
+   */
+  String getName();
+
+  /**
    * @return project which contains this resource
    */
   IProject getProject();

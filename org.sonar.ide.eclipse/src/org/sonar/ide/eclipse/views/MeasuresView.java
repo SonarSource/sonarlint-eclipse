@@ -291,7 +291,7 @@ public class MeasuresView extends AbstractSonarInfoView {
           if ( !favorites.isEmpty()) {
             MeasuresView.this.measuresByDomain.put(FAVORITES_CATEGORY, favorites);
           }
-          update(sourceCode.getKey(), MeasuresView.this.measuresByDomain);
+          update(element.getName(), MeasuresView.this.measuresByDomain);
         }
         monitor.done();
         return Status.OK_STATUS;

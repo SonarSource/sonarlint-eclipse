@@ -104,7 +104,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
       if ( !isConfigured(project)) {
         return null;
       }
-      return SonarCorePlugin.createSonarResource(project, getProjectKey(project));
+      return SonarCorePlugin.createSonarResource(project, getProjectKey(project), project.getName());
     } else if (adaptableObject instanceof IFolder) {
       IFolder folder = (IFolder) adaptableObject;
       IProject project = folder.getProject();
@@ -114,7 +114,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
       String projectKey = getProjectKey(folder.getProject());
       String packageName = getPackageName(JavaCore.create(folder));
       if (packageName != null) {
-        return SonarCorePlugin.createSonarResource(folder, SonarKeyUtils.packageKey(projectKey, packageName));
+        return SonarCorePlugin.createSonarResource(folder, SonarKeyUtils.packageKey(projectKey, packageName), packageName);
       }
     } else if (adaptableObject instanceof IFile) {
       IFile file = (IFile) adaptableObject;
@@ -127,7 +127,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
       if (javaElement instanceof ICompilationUnit) {
         String packageName = getPackageName(javaElement.getParent());
         String className = StringUtils.substringBeforeLast(javaElement.getElementName(), ".");
-        return SonarCorePlugin.createSonarFile(file, SonarKeyUtils.classKey(projectKey, packageName, className));
+        return SonarCorePlugin.createSonarFile(file, SonarKeyUtils.classKey(projectKey, packageName, className), className);
       }
     }
     return null;

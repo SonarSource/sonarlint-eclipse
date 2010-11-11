@@ -26,11 +26,11 @@ public class SonarCorePlugin extends Plugin {
     plugin = null;
   }
 
-  public static ISonarResource createSonarResource(IResource resource, String key) {
-    return new SonarResource(resource, key);
+  public static ISonarResource createSonarResource(IResource resource, String key, String name) {
+    return new SonarResource(resource, key, name);
   }
 
-  public static ISonarFile createSonarFile(IFile file, String key) {
-    return new SonarFile(file, key);
+  public static ISonarFile createSonarFile(IFile file, String key, String name) {
+    return new SonarFile(file, key, name);
   }
 }

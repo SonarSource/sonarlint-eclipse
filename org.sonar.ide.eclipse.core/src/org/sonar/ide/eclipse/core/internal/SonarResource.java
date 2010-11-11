@@ -27,18 +27,25 @@ import org.sonar.ide.eclipse.core.ISonarResource;
 
 public class SonarResource implements ISonarResource {
 
-  private IResource resource;
-  private String key;
+  private final IResource resource;
+  private final String key;
+  private final String name;
 
-  public SonarResource(IResource resource, String key) {
+  public SonarResource(IResource resource, String key, String name) {
     Assert.isNotNull(resource);
     Assert.isNotNull(key);
-    this.key = key;
+    Assert.isNotNull(name);
     this.resource = resource;
+    this.key = key;
+    this.name = name;
   }
 
   public String getKey() {
     return key;
+  }
+
+  public String getName() {
+    return name;
   }
 
   public IProject getProject() {
