@@ -202,7 +202,7 @@ public class MeasuresView extends AbstractSonarInfoView {
   class MeasuresLabelProvider implements ITableLabelProvider, ILabelProvider {
 
     public Image getColumnImage(Object element, int columnIndex) {
-      if ((columnIndex == 0) && (element instanceof ISonarMeasure)) {
+      if ((columnIndex == 1) && (element instanceof ISonarMeasure)) {
         ISonarMeasure measure = (ISonarMeasure) element;
         ImageDescriptor imageDescriptor = SonarImages.forTendency(measure);
         if (imageDescriptor != null) {
