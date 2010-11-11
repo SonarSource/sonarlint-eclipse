@@ -99,11 +99,11 @@ public class MeasuresView extends AbstractSonarInfoView {
         return false;
       }
       if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricKey())) {
-        toggleFavoriteAction.setText("Remove from favorites");
-        toggleFavoriteAction.setImageDescriptor(SonarImages.STAR_OFF);
+        setText("Remove from favorites");
+        setImageDescriptor(SonarImages.STAR_OFF);
       } else {
-        toggleFavoriteAction.setText("Add to favorites");
-        toggleFavoriteAction.setImageDescriptor(SonarImages.STAR);
+        setText("Add to favorites");
+        setImageDescriptor(SonarImages.STAR);
       }
       return true;
     };
