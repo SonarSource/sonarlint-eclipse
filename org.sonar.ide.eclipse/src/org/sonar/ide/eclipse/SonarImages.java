@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.sonar.ide.eclipse.core.ISonarMeasure;
 
 public class SonarImages {
 
@@ -38,6 +39,24 @@ public class SonarImages {
   public static ImageDescriptor SONARSYNCHRO_IMG = create("synced.gif"); //$NON-NLS-1$
   public static ImageDescriptor SONARREFRESH_IMG = create("refresh.gif"); //$NON-NLS-1$
   public static ImageDescriptor SONARCLOSE_IMG = create("close.gif"); //$NON-NLS-1$
+
+  private static ImageDescriptor[][] TENDENCY = {
+      { createTendency("-2-red"), createTendency("-1-red"), createTendency("1-red"), createTendency("2-red") },
+      { createTendency("-2-black"), createTendency("-1-black"), createTendency("1-black"), createTendency("2-black") },
+      { createTendency("-2-green"), createTendency("-1-green"), createTendency("1-green"), createTendency("2-green") } };
+
+  public static ImageDescriptor forTendency(ISonarMeasure measure) {
+    int trend = measure.getTrend(); // color
+    int var = measure.getVar(); // value
+    if (var == 0) {
+      return null;
+    }
+    return TENDENCY[trend + 1][var + 2];
+  }
+
+  private static ImageDescriptor createTendency(String name) {
+    return create("tendency/" + name + ".png");
+  }
 
   public static ImageDescriptor create(String name) {
     try {

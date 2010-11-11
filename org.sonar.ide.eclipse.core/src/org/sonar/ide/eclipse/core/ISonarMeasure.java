@@ -35,9 +35,15 @@ public interface ISonarMeasure {
 
   String getMetricName();
 
+  String getMetricDomain();
+
   /**
    * @return value
    */
   String getValue();
+
+  int getTrend();
+
+  int getVar();
 
 }

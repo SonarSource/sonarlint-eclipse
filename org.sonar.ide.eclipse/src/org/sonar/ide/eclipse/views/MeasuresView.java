@@ -24,7 +24,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -35,6 +37,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -66,7 +69,13 @@ import org.sonar.ide.eclipse.jobs.AbstractRemoteSonarJob;
 import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
 import org.sonar.ide.eclipse.ui.EnhancedFilteredTree;
 import org.sonar.ide.eclipse.utils.SelectionUtils;
+import org.sonar.wsclient.services.Measure;
+import org.sonar.wsclient.services.Metric;
+import org.sonar.wsclient.services.MetricQuery;
+import org.sonar.wsclient.services.Resource;
+import org.sonar.wsclient.services.ResourceQuery;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -193,6 +202,13 @@ public class MeasuresView extends AbstractSonarInfoView {
   class MeasuresLabelProvider implements ITableLabelProvider, ILabelProvider {
 
     public Image getColumnImage(Object element, int columnIndex) {
+      if ((columnIndex == 0) && (element instanceof ISonarMeasure)) {
+        ISonarMeasure measure = (ISonarMeasure) element;
+        ImageDescriptor imageDescriptor = SonarImages.forTendency(measure);
+        if (imageDescriptor != null) {
+          return imageDescriptor.createImage();
+        }
+      }
       return null;
     }
 
@@ -275,23 +291,22 @@ public class MeasuresView extends AbstractSonarInfoView {
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Loading measures for " + element.getKey(), IProgressMonitor.UNKNOWN);
         update("Loading...", null);
-        final SourceCode sourceCode = EclipseSonar.getInstance(element.getProject()).search(element);
+        EclipseSonar index = EclipseSonar.getInstance(element.getProject());
+        final SourceCode sourceCode = index.search(element);
         if (sourceCode == null) {
           update("Not found.", null);
         } else {
-          Collection<IMeasure> measures = sourceCode.getMeasures();
+          Collection<ISonarMeasure> measures = getMeasures(index, element);
           final List<ISonarMeasure> favorites = Lists.newArrayList();
 
           // Group by domain
           final Multimap<String, ISonarMeasure> measuresByDomain = ArrayListMultimap.create();
-          for (IMeasure measure : measures) {
-            ISonarMeasure sonarMeasure = SonarCorePlugin.createSonarMeasure(element, measure);
-
-            if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricDef().getKey())) {
-              favorites.add(sonarMeasure);
+          for (ISonarMeasure measure : measures) {
+            if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricKey())) {
+              favorites.add(measure);
             }
-            String domain = measure.getMetricDef().getDomain();
-            measuresByDomain.put(domain, sonarMeasure);
+            String domain = measure.getMetricDomain();
+            measuresByDomain.put(domain, measure);
           }
 
           MeasuresView.this.measuresByDomain = Maps.newHashMap(measuresByDomain.asMap());
@@ -306,5 +321,32 @@ public class MeasuresView extends AbstractSonarInfoView {
     };
     IWorkbenchSiteProgressService siteService = (IWorkbenchSiteProgressService) getSite().getAdapter(IWorkbenchSiteProgressService.class);
     siteService.schedule(job);
+  }
+
+  public List<ISonarMeasure> getMeasures(EclipseSonar index, ISonarResource sonarResource) {
+    Map<String, Metric> metricsByKey = getMetrics(index);
+    Set<String> keys = metricsByKey.keySet();
+    String[] metricKeys = keys.toArray(new String[keys.size()]);
+    ResourceQuery query = ResourceQuery.createForMetrics(sonarResource.getKey(), metricKeys).setIncludeTrends(true);
+    Resource resource = index.getSonar().find(query);
+    List<ISonarMeasure> result = Lists.newArrayList();
+    for (Measure measure : resource.getMeasures()) {
+      final Metric metric = metricsByKey.get(measure.getMetricKey());
+      // Hacks around SONAR-1620
+      if ( !metric.getHidden() && !"DATA".equals(metric.getType()) && StringUtils.isNotBlank(measure.getFormattedValue())) {
+        result.add(SonarCorePlugin.createSonarMeasure(sonarResource, metric, measure));
+      }
+    }
+    return result;
+  }
+
+  public Map<String, Metric> getMetrics(EclipseSonar index) {
+    // TODO Godin: This is not optimal. Would be better to load metrics only once.
+    List<Metric> metrics = index.getSonar().findAll(MetricQuery.all());
+    return Maps.uniqueIndex(metrics, new Function<Metric, String>() {
+      public String apply(Metric metric) {
+        return metric.getKey();
+      }
+    });
   }
 }

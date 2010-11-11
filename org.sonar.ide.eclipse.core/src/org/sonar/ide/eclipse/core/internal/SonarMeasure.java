@@ -24,27 +24,25 @@ import org.eclipse.core.runtime.Assert;
 import org.sonar.ide.eclipse.core.ISonarMeasure;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.wsclient.services.Measure;
+import org.sonar.wsclient.services.Metric;
 
 public class SonarMeasure implements ISonarMeasure {
 
   private final ISonarResource resource;
-  private final String metricKey;
-  private final String metricName;
-  private final String value;
+  private final Metric metric;
+  private final Measure measure;
 
   public SonarMeasure(ISonarResource resource, Measure measure) {
-    this(resource, measure.getMetricKey(), measure.getMetricName(), measure.getFormattedValue());
+    this(resource, new Metric().setKey(measure.getMetricKey()).setName(measure.getMetricName()), measure);
   }
 
-  public SonarMeasure(ISonarResource resource, String metricKey, String metricName, String value) {
-    Assert.isNotNull(resource);
-    Assert.isNotNull(metricKey);
-    Assert.isNotNull(metricName);
-    Assert.isNotNull(value);
+  public SonarMeasure(ISonarResource resource, Metric metric, Measure measure) {
+    Assert.isNotNull(resource, "sonar resource");
+    Assert.isNotNull(metric, "metric");
+    Assert.isNotNull(measure, "measure");
     this.resource = resource;
-    this.metricKey = metricKey;
-    this.metricName = metricName;
-    this.value = value;
+    this.metric = metric;
+    this.measure = measure;
   }
 
   public ISonarResource getSonarResource() {
@@ -52,15 +50,27 @@ public class SonarMeasure implements ISonarMeasure {
   }
 
   public String getMetricKey() {
-    return metricKey;
+    return metric.getKey();
   }
 
   public String getMetricName() {
-    return metricName;
+    return metric.getName();
+  }
+
+  public String getMetricDomain() {
+    return metric.getDomain();
   }
 
   public String getValue() {
-    return value;
+    return measure.getFormattedValue();
+  }
+
+  public int getTrend() {
+    return measure.getTrend() == null ? 0 : measure.getTrend();
+  }
+
+  public int getVar() {
+    return measure.getVar() == null ? 0 : measure.getVar();
   }
 
 }
