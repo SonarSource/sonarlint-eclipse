@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -48,7 +48,9 @@ import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.SonarIdeException;
 import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.core.ISonarMeasure;
 import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.jobs.AbstractRemoteSonarJob;
 import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
@@ -112,11 +114,10 @@ public class HotspotsView extends AbstractSonarInfoView {
     viewer.setLabelProvider(new HotspotsLabelProvider());
     viewer.addDoubleClickListener(new IDoubleClickListener() {
       public void doubleClick(DoubleClickEvent event) {
-        Object object = SelectionUtils.getSingleElement(viewer.getSelection());
-        // adapt org.sonar.wsclient.services.Resource to IFile
-        IFile file = PlatformUtils.adapt(object, IFile.class);
-        if (file != null) {
-          PlatformUtils.openEditor(file);
+        ISonarMeasure measure = (ISonarMeasure) SelectionUtils.getSingleElement(viewer.getSelection());
+        IResource resource = measure.getSonarResource().getResource();
+        if (resource instanceof IFile) {
+          PlatformUtils.openEditor((IFile) resource);
         }
       }
     });
@@ -141,10 +142,10 @@ public class HotspotsView extends AbstractSonarInfoView {
   private class HotspotsLabelProvider extends AbstractTableLabelProvider {
     @Override
     public String getColumnText(Object element, int columnIndex) {
-      HotspotMeasure measure = (HotspotMeasure) element;
+      ISonarMeasure measure = (ISonarMeasure) element;
       switch (columnIndex) {
         case 0:
-          return measure.getName();
+          return measure.getSonarResource().getName();
         case 1:
           return measure.getValue();
         default:
@@ -165,7 +166,7 @@ public class HotspotsView extends AbstractSonarInfoView {
   private void update(final Object content) {
     getSite().getShell().getDisplay().asyncExec(new Runnable() {
       public void run() {
-        resourceLabel.setText("for project " + getInput().getProject().getName());
+        resourceLabel.setText("for project " + getInput().getName());
         column2.getColumn().setText(combo.getText());
         viewer.setInput(content);
       }
@@ -184,33 +185,6 @@ public class HotspotsView extends AbstractSonarInfoView {
     return sonarResource;
   }
 
-  class HotspotMeasure implements IAdaptable {
-
-    private Resource resource;
-    private String value;
-
-    public HotspotMeasure(Resource resource, Measure measure) {
-      this.resource = resource;
-      this.value = measure.getFormattedValue("");
-    }
-
-    public String getName() {
-      return resource.getName();
-    }
-
-    public String getValue() {
-      return value;
-    }
-
-    public Object getAdapter(Class adapter) {
-      if (adapter == IFile.class) {
-        return PlatformUtils.adapt(resource, IFile.class);
-      }
-      return null;
-    }
-
-  }
-
   /**
    * @param input ISonarResource to be shown in the view (can't be null)
    */
@@ -223,10 +197,12 @@ public class HotspotsView extends AbstractSonarInfoView {
         monitor.beginTask("Loading hotspots for " + sonarResource.getKey(), IProgressMonitor.UNKNOWN);
         EclipseSonar index = EclipseSonar.getInstance(sonarResource.getProject());
         List<Resource> resources = index.getSonar().findAll(getResourceQuery(sonarResource));
-        List<HotspotMeasure> measures = Lists.newArrayList();
+        List<ISonarMeasure> measures = Lists.newArrayList();
         for (Resource resource : resources) {
           for (Measure measure : resource.getMeasures()) {
-            measures.add(new HotspotMeasure(resource, measure));
+            IFile file = PlatformUtils.adapt(resource, IFile.class);
+            ISonarResource sonarResource = PlatformUtils.adapt(file, ISonarResource.class);
+            measures.add(SonarCorePlugin.createSonarMeasure(sonarResource, measure));
           }
         }
         update(measures);

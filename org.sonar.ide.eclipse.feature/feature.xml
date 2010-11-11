@@ -7,11 +7,11 @@
       plugin="org.sonar.ide.eclipse">
 
    <description url="http://sonar-ide.codehaus.org/">
-      %description
+     %description
    </description>
 
    <copyright url="http://www.sonarsource.com">
-      %copyright
+     %copyright
    </copyright>
 
    <license url="http://www.gnu.org/licenses/lgpl.txt">
