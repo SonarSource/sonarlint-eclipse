@@ -15,6 +15,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.core,
  org.eclipse.jdt.ui,
  org.sonar.ide.eclipse,
+ org.sonar.ide.eclipse.core,
  org.sonar.ide.eclipse.sonar_embedder
 Export-Package: org.sonar.ide.eclipse.jdt,
  org.sonar.ide.eclipse.jdt.internal;x-friends:="org.sonar.ide.eclipse.tests"

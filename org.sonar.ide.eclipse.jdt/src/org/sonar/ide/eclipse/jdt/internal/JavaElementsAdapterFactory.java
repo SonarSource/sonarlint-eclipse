@@ -39,9 +39,10 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.core.utils.SonarKeyUtils;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
-import org.sonar.ide.eclipse.utils.SonarKeyUtils;
 import org.sonar.wsclient.services.Resource;
 
 /**
@@ -103,7 +104,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
       if ( !isConfigured(project)) {
         return null;
       }
-      return SonarPlugin.createSonarResource(project, getProjectKey(project));
+      return SonarCorePlugin.createSonarResource(project, getProjectKey(project));
     } else if (adaptableObject instanceof IFolder) {
       IFolder folder = (IFolder) adaptableObject;
       IProject project = folder.getProject();
@@ -113,7 +114,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
       String projectKey = getProjectKey(folder.getProject());
       String packageName = getPackageName(JavaCore.create(folder));
       if (packageName != null) {
-        return SonarPlugin.createSonarResource(folder, SonarKeyUtils.packageKey(projectKey, packageName));
+        return SonarCorePlugin.createSonarResource(folder, SonarKeyUtils.packageKey(projectKey, packageName));
       }
     } else if (adaptableObject instanceof IFile) {
       IFile file = (IFile) adaptableObject;
@@ -126,7 +127,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
       if (javaElement instanceof ICompilationUnit) {
         String packageName = getPackageName(javaElement.getParent());
         String className = StringUtils.substringBeforeLast(javaElement.getElementName(), ".");
-        return SonarPlugin.createSonarFile(file, SonarKeyUtils.classKey(projectKey, packageName, className));
+        return SonarCorePlugin.createSonarFile(file, SonarKeyUtils.classKey(projectKey, packageName, className));
       }
     }
     return null;

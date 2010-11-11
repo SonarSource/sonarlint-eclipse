@@ -25,9 +25,7 @@ import java.net.ProxySelector;
 import java.net.URL;
 
 import org.eclipse.core.net.proxy.IProxyService;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -43,9 +41,6 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.console.SonarConsole;
 import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
-import org.sonar.ide.eclipse.core.ISonarFile;
-import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.jobs.RefreshViolationsJob;
@@ -179,20 +174,6 @@ public class SonarPlugin extends AbstractUIPlugin {
         ErrorDialog.openError(display.getActiveShell(), null, Messages.getString("error"), status); //$NON-NLS-1$
       }
     });
-  }
-
-  /**
-   * @deprecated use {@link SonarCorePlugin#createSonarResource(IResource, String)} instead of this
-   */
-  public static ISonarResource createSonarResource(IResource resource, String key) {
-    return SonarCorePlugin.createSonarResource(resource, key);
-  }
-
-  /**
-   * @deprecated use {@link SonarCorePlugin#createSonarFile(IFile, String)} instead of this
-   */
-  public static ISonarFile createSonarFile(IFile file, String key) {
-    return SonarCorePlugin.createSonarFile(file, key);
   }
 
   public static boolean hasSonarNature(IProject project) {

@@ -15,4 +15,5 @@ Import-Package: org.apache.commons.io,
  org.eclipse.core.resources,
  org.sonar.ide.ui
 Bundle-ActivationPolicy: lazy
-Export-Package: org.sonar.ide.eclipse.core
+Export-Package: org.sonar.ide.eclipse.core,
+ org.sonar.ide.eclipse.core.utils
