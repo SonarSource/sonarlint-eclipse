@@ -10,10 +10,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
-Import-Package: org.apache.commons.io,
- org.apache.commons.lang,
- org.eclipse.core.resources,
- org.sonar.ide.ui
+Import-Package: org.apache.commons.lang,
+ org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
-Export-Package: org.sonar.ide.eclipse.core,
- org.sonar.ide.eclipse.core.utils
+Export-Package: org.sonar.ide.eclipse.core

@@ -57,4 +57,7 @@ public class PlatformUtils {
     }
   }
 
+  private PlatformUtils() {
+  }
+
 }

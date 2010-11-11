@@ -1,4 +1,4 @@
-package org.sonar.ide.eclipse.core.utils;
+package org.sonar.ide.eclipse.core;
 
 import org.apache.commons.lang.StringUtils;
 

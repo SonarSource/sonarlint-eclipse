@@ -50,6 +50,7 @@ import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.jobs.AbstractRemoteSonarJob;
 import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
 import org.sonar.ide.eclipse.ui.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.utils.PlatformUtils;
@@ -216,7 +217,7 @@ public class HotspotsView extends AbstractSonarInfoView {
   @Override
   protected void doSetInput(Object input) {
     final ISonarResource sonarResource = (ISonarResource) input;
-    Job job = new Job("Loading hotspots") {
+    Job job = new AbstractRemoteSonarJob("Loading hotspots") {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Loading hotspots for " + sonarResource.getKey(), IProgressMonitor.UNKNOWN);

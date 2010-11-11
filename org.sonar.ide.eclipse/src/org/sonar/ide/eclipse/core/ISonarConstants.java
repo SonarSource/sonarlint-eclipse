@@ -40,4 +40,6 @@ public interface ISonarConstants {
   // TODO change value to .sonarPerspective
   String PERSPECTIVE_ID = PLUGIN_ID + ".perspectives.SonarPerspective";
 
+  Object REMOTE_SONAR_JOB_FAMILY = new Object();
+
 }

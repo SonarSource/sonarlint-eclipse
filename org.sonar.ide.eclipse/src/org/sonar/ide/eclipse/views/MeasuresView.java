@@ -59,6 +59,7 @@ import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.jobs.AbstractRemoteSonarJob;
 import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
 import org.sonar.ide.eclipse.ui.EnhancedFilteredTree;
 import org.sonar.ide.eclipse.utils.SelectionUtils;
@@ -266,7 +267,7 @@ public class MeasuresView extends AbstractSonarInfoView {
   @Override
   protected void doSetInput(Object input) {
     final ISonarResource element = (ISonarResource) input;
-    Job job = new Job("Loading measures") {
+    Job job = new AbstractRemoteSonarJob("Loading measures") {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Loading measures for " + element.getKey(), IProgressMonitor.UNKNOWN);

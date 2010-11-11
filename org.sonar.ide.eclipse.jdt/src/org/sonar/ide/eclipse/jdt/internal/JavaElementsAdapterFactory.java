@@ -40,8 +40,8 @@ import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.SonarKeyUtils;
 import org.sonar.ide.eclipse.core.SonarLogger;
-import org.sonar.ide.eclipse.core.utils.SonarKeyUtils;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.wsclient.services.Resource;
 

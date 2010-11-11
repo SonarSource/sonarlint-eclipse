@@ -20,6 +20,13 @@
 
 package org.sonar.ide.eclipse.jobs;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
@@ -36,17 +43,10 @@ import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * @author Jérémie Lagarde
  */
-public abstract class AbstractRefreshModelJob<M> extends Job implements IResourceVisitor {
+public abstract class AbstractRefreshModelJob<M> extends AbstractRemoteSonarJob implements IResourceVisitor {
 
   private final List<IResource> resources;
   private final String markerId;
