@@ -31,13 +31,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
@@ -50,6 +49,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.actions.BaseSelectionListenerAction;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
@@ -89,8 +89,41 @@ public class MeasuresView extends AbstractSonarInfoView {
   private static final String FAVORITES_CATEGORY = "Favorites";
 
   private TreeViewer viewer;
-  private IAction toggleFavoriteAction;
   private HashMap<String, Collection<ISonarMeasure>> measuresByDomain;
+
+  private BaseSelectionListenerAction toggleFavoriteAction = new BaseSelectionListenerAction("") {
+    @Override
+    protected boolean updateSelection(IStructuredSelection selection) {
+      ISonarMeasure measure = getMeasure(selection);
+      if (measure == null) {
+        return false;
+      }
+      if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricKey())) {
+        toggleFavoriteAction.setText("Remove from favorites");
+        toggleFavoriteAction.setImageDescriptor(SonarImages.STAR_OFF);
+      } else {
+        toggleFavoriteAction.setText("Add to favorites");
+        toggleFavoriteAction.setImageDescriptor(SonarImages.STAR);
+      }
+      return true;
+    };
+
+    @Override
+    public void run() {
+      ISonarMeasure measure = getMeasure(getStructuredSelection());
+      String metricKey = measure.getMetricKey();
+      FavoriteMetricsManager.getInstance().toggle(metricKey);
+      toggleFavorite(measure);
+    };
+
+    private ISonarMeasure getMeasure(IStructuredSelection selection) {
+      Object sel = SelectionUtils.getSingleElement(selection);
+      if (sel instanceof ISonarMeasure) {
+        return (ISonarMeasure) sel;
+      }
+      return null;
+    }
+  };
 
   @Override
   protected void internalCreatePartControl(Composite parent) {
@@ -142,14 +175,7 @@ public class MeasuresView extends AbstractSonarInfoView {
     column2.setText("Value");
     column2.setWidth(100);
 
-    toggleFavoriteAction = new Action("Toggle favorite") {
-      public void run() {
-        ISonarMeasure measure = (ISonarMeasure) getSelectedElement();
-        String metricKey = measure.getMetricKey();
-        FavoriteMetricsManager.getInstance().toggle(metricKey);
-        toggleFavorite(measure);
-      }
-    };
+    viewer.addSelectionChangedListener(toggleFavoriteAction);
 
     hookContextMenu();
   }
@@ -172,24 +198,9 @@ public class MeasuresView extends AbstractSonarInfoView {
 
   private void fillContextMenu(IMenuManager mgr) {
     // populate menu
-    Object selectedElement = getSelectedElement();
-    if (selectedElement instanceof ISonarMeasure) {
-      ISonarMeasure measure = (ISonarMeasure) selectedElement;
-      if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricKey())) {
-        toggleFavoriteAction.setText("Remove from favorites");
-        toggleFavoriteAction.setImageDescriptor(SonarImages.STAR_OFF);
-      } else {
-        toggleFavoriteAction.setText("Add to favorites");
-        toggleFavoriteAction.setImageDescriptor(SonarImages.STAR);
-      }
-      mgr.add(toggleFavoriteAction);
-    }
+    mgr.add(toggleFavoriteAction);
     // required, for extensions
     mgr.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-  }
-
-  private Object getSelectedElement() {
-    return SelectionUtils.getSingleElement(viewer.getSelection());
   }
 
   @Override
