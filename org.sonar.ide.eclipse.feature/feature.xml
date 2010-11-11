@@ -24,6 +24,13 @@ which accompanies this distribution, and is available at http://www.gnu.org/lice
    </requires>
 
    <plugin
+         id="org.sonar.ide.eclipse.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
          id="org.sonar.ide.eclipse"
          download-size="0"
          install-size="0"

@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %sonar.bundle.name
+Bundle-SymbolicName: org.sonar.ide.eclipse.core;singleton:=true
+Bundle-Version: 0.4.0.qualifier
+Bundle-Vendor: Evgeny Mandrikov
+Bundle-ClassPath: .
+Bundle-Activator: org.sonar.ide.eclipse.core.SonarCorePlugin
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources
+Bundle-RequiredExecutionEnvironment: J2SE-1.5,
+ JavaSE-1.6
+Import-Package: org.apache.commons.io,
+ org.apache.commons.lang,
+ org.eclipse.core.resources,
+ org.sonar.ide.ui
+Bundle-ActivationPolicy: lazy
+Export-Package: org.sonar.ide.eclipse.core

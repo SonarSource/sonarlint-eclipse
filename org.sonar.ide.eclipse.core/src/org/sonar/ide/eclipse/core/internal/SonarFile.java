@@ -1,4 +1,4 @@
-package org.sonar.ide.eclipse.internal.core;
+package org.sonar.ide.eclipse.core.internal;
 
 import org.eclipse.core.resources.IFile;
 import org.sonar.ide.eclipse.core.ISonarFile;

@@ -45,9 +45,8 @@ import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.SonarLogger;
-import org.sonar.ide.eclipse.internal.core.SonarFile;
-import org.sonar.ide.eclipse.internal.core.SonarResource;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.jobs.RefreshViolationsJob;
 
@@ -182,12 +181,18 @@ public class SonarPlugin extends AbstractUIPlugin {
     });
   }
 
+  /**
+   * @deprecated use {@link SonarCorePlugin#createSonarResource(IResource, String)} instead of this
+   */
   public static ISonarResource createSonarResource(IResource resource, String key) {
-    return new SonarResource(resource, key);
+    return SonarCorePlugin.createSonarResource(resource, key);
   }
 
+  /**
+   * @deprecated use {@link SonarCorePlugin#createSonarFile(IFile, String)} instead of this
+   */
   public static ISonarFile createSonarFile(IFile file, String key) {
-    return new SonarFile(file, key);
+    return SonarCorePlugin.createSonarFile(file, key);
   }
 
   public static boolean hasSonarNature(IProject project) {
