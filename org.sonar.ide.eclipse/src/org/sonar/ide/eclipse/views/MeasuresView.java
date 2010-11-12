@@ -36,6 +36,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
@@ -189,7 +190,7 @@ public class MeasuresView extends AbstractSonarInfoView {
     return viewer.getControl();
   }
 
-  class MeasuresLabelProvider extends AbstractTableLabelProvider {
+  class MeasuresLabelProvider extends AbstractTableLabelProvider implements ILabelProvider {
 
     public Image getColumnImage(Object element, int columnIndex) {
       if ((columnIndex == 1) && (element instanceof ISonarMeasure)) {
@@ -222,6 +223,14 @@ public class MeasuresView extends AbstractSonarInfoView {
         }
       }
       return "";
+    }
+
+    public Image getImage(Object element) {
+      return null;
+    }
+
+    public String getText(Object element) {
+      return getColumnText(element, 0);
     }
   }
 

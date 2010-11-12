@@ -37,6 +37,10 @@ public class ToggleFavouriteMetricAction extends BaseSelectionListenerAction {
   };
 
   private ISonarMetric getSelectedMetric(IStructuredSelection selection) {
-    return PlatformUtils.adapt(SelectionUtils.getSingleElement(selection), ISonarMetric.class);
+    Object obj = SelectionUtils.getSingleElement(selection);
+    if (obj == null) {
+      return null;
+    }
+    return PlatformUtils.adapt(obj, ISonarMetric.class);
   }
 }
