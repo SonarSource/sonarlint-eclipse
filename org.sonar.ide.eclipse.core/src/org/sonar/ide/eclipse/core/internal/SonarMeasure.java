@@ -82,6 +82,8 @@ public class SonarMeasure extends PlatformObject implements ISonarMeasure {
   public Object getAdapter(Class adapter) {
     if (adapter == ISonarMetric.class) {
       return metric;
+    } else if (adapter == ISonarResource.class) {
+      return resource;
     }
     return super.getAdapter(adapter);
   }

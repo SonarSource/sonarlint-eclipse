@@ -152,9 +152,14 @@ public class HotspotsView extends AbstractSonarInfoView {
     });
     combo.select(0);
     metric = getSelectedMetric();
+
+    getSite().setSelectionProvider(viewer);
   }
 
-  static class MetricNameLabelProvider extends BaseLabelProvider implements ILabelProvider {
+  /**
+   * TODO Godin: extract to upper level
+   */
+  public static class MetricNameLabelProvider extends BaseLabelProvider implements ILabelProvider {
     public String getText(Object element) {
       return ((ISonarMetric) element).getName();
     }
