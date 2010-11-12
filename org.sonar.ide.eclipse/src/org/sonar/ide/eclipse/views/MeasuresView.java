@@ -246,6 +246,9 @@ public class MeasuresView extends AbstractSonarInfoView {
 
   private void toggleFavourite(String metricKey) {
     ISonarMeasure measure = measuresByKey.get(metricKey);
+    if (measure == null) {
+      return;
+    }
     Collection<ISonarMeasure> favorites = measuresByDomain.get(FAVORITES_CATEGORY);
     if (favorites == null) {
       favorites = Lists.newArrayList();
