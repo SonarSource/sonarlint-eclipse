@@ -21,15 +21,17 @@
 package org.sonar.ide.eclipse.core.internal;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.PlatformObject;
 import org.sonar.ide.eclipse.core.ISonarMeasure;
+import org.sonar.ide.eclipse.core.ISonarMetric;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Metric;
 
-public class SonarMeasure implements ISonarMeasure {
+public class SonarMeasure extends PlatformObject implements ISonarMeasure {
 
   private final ISonarResource resource;
-  private final Metric metric;
+  private final SonarMetric metric;
   private final Measure measure;
 
   public SonarMeasure(ISonarResource resource, Measure measure) {
@@ -41,7 +43,7 @@ public class SonarMeasure implements ISonarMeasure {
     Assert.isNotNull(metric, "metric");
     Assert.isNotNull(measure, "measure");
     this.resource = resource;
-    this.metric = metric;
+    this.metric = new SonarMetric(metric);
     this.measure = measure;
   }
 
@@ -50,15 +52,19 @@ public class SonarMeasure implements ISonarMeasure {
   }
 
   public String getMetricKey() {
-    return metric.getKey();
+    return getMetricDef().getKey();
   }
 
   public String getMetricName() {
-    return metric.getName();
+    return getMetricDef().getName();
   }
 
   public String getMetricDomain() {
-    return metric.getDomain();
+    return getMetricDef().getDomain();
+  }
+
+  public ISonarMetric getMetricDef() {
+    return metric;
   }
 
   public String getValue() {
@@ -73,4 +79,10 @@ public class SonarMeasure implements ISonarMeasure {
     return measure.getVar() == null ? 0 : measure.getVar();
   }
 
+  public Object getAdapter(Class adapter) {
+    if (adapter == ISonarMetric.class) {
+      return metric;
+    }
+    return super.getAdapter(adapter);
+  }
 }

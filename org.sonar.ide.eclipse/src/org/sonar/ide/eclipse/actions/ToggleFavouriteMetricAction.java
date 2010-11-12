@@ -4,7 +4,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.actions.BaseSelectionListenerAction;
 import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
-import org.sonar.ide.eclipse.core.ISonarMeasure;
+import org.sonar.ide.eclipse.core.ISonarMetric;
+import org.sonar.ide.eclipse.utils.PlatformUtils;
 import org.sonar.ide.eclipse.utils.SelectionUtils;
 
 public class ToggleFavouriteMetricAction extends BaseSelectionListenerAction {
@@ -14,11 +15,11 @@ public class ToggleFavouriteMetricAction extends BaseSelectionListenerAction {
 
   @Override
   protected boolean updateSelection(IStructuredSelection selection) {
-    ISonarMeasure measure = getMeasure(selection);
-    if (measure == null) {
+    ISonarMetric metric = getSelectedMetric(selection);
+    if (metric == null) {
       return false;
     }
-    if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricKey())) {
+    if (FavoriteMetricsManager.getInstance().isFavorite(metric.getKey())) {
       setText("Remove from favourites");
       setImageDescriptor(SonarImages.STAR_OFF);
     } else {
@@ -30,17 +31,13 @@ public class ToggleFavouriteMetricAction extends BaseSelectionListenerAction {
 
   @Override
   public void run() {
-    ISonarMeasure measure = getMeasure(getStructuredSelection());
-    String metricKey = measure.getMetricKey();
-    FavoriteMetricsManager.getInstance().toggle(metricKey);
+    ISonarMetric metric = getSelectedMetric(getStructuredSelection());
+    FavoriteMetricsManager.getInstance().toggle(metric.getKey());
     selectionChanged(getStructuredSelection());
   };
 
-  private ISonarMeasure getMeasure(IStructuredSelection selection) {
-    Object sel = SelectionUtils.getSingleElement(selection);
-    if (sel instanceof ISonarMeasure) {
-      return (ISonarMeasure) sel;
-    }
-    return null;
+  private ISonarMetric getSelectedMetric(IStructuredSelection selection) {
+    Object obj = SelectionUtils.getSingleElement(selection);
+    return PlatformUtils.adapt(obj, ISonarMetric.class);
   }
 }

@@ -31,11 +31,10 @@ public interface ISonarMeasure {
    */
   ISonarResource getSonarResource();
 
-  String getMetricKey();
-
-  String getMetricName();
-
-  String getMetricDomain();
+  /**
+   * @return corresponding metric
+   */
+  ISonarMetric getMetricDef();
 
   /**
    * @return value

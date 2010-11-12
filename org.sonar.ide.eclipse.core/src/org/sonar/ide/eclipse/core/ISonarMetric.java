@@ -20,10 +20,29 @@
 
 package org.sonar.ide.eclipse.core;
 
-public interface IFavouriteMetricsListener {
+/**
+ * @noimplement This interface is not intended to be implemented by clients.
+ * @noextend This interface is not intended to be extended by clients.
+ */
+public interface ISonarMetric {
 
-  void metricAdded(String metricKey);
+  /**
+   * @return metric key
+   */
+  String getKey();
 
-  void metricRemoved(String metricKey);
+  /**
+   * @return metric name
+   */
+  String getName();
 
+  /**
+   * @return metric domain
+   */
+  String getDomain();
+
+  /**
+   * @return metric description
+   */
+  String getDescription();
 }

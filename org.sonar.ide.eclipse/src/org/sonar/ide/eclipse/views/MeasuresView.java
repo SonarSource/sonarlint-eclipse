@@ -213,7 +213,7 @@ public class MeasuresView extends AbstractSonarInfoView {
         ISonarMeasure measure = (ISonarMeasure) element;
         switch (columnIndex) {
           case 0:
-            return measure.getMetricName();
+            return measure.getMetricDef().getName();
           case 1:
             return measure.getValue();
           default:
@@ -270,12 +270,12 @@ public class MeasuresView extends AbstractSonarInfoView {
           final Map<String, ISonarMeasure> measuresByKey = Maps.newHashMap();
           final Multimap<String, ISonarMeasure> measuresByDomain = ArrayListMultimap.create();
           for (ISonarMeasure measure : measures) {
-            if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricKey())) {
+            if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricDef().getKey())) {
               favorites.add(measure);
             }
-            String domain = measure.getMetricDomain();
+            String domain = measure.getMetricDef().getDomain();
             measuresByDomain.put(domain, measure);
-            measuresByKey.put(measure.getMetricKey(), measure);
+            measuresByKey.put(measure.getMetricDef().getKey(), measure);
           }
 
           MeasuresView.this.measuresByDomain = Maps.newHashMap(measuresByDomain.asMap());
