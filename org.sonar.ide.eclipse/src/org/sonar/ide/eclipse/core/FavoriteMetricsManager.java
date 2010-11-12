@@ -1,15 +1,16 @@
 package org.sonar.ide.eclipse.core;
 
-import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.core.runtime.SafeRunner;
 import org.osgi.service.prefs.Preferences;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class FavoriteMetricsManager {
 
@@ -22,8 +23,9 @@ public class FavoriteMetricsManager {
     return INSTANCE;
   }
 
+  private Set<IFavouriteMetricsListener> listeners = Sets.newHashSet();
+
   private List<String> metrics = Lists.newArrayList();
-  private ListenerList listeners = new ListenerList();
 
   public List<String> get() {
     return Collections.unmodifiableList(metrics);
@@ -33,14 +35,25 @@ public class FavoriteMetricsManager {
     return metrics.contains(metricKey);
   }
 
-  public void toggle(String metricKey) {
+  public void toggle(final String metricKey) {
     if (metrics.contains(metricKey)) {
       metrics.remove(metricKey);
+      for (final IFavouriteMetricsListener listener : listeners) {
+        SafeRunner.run(new AbstractSafeRunnable() {
+          public void run() throws Exception {
+            listener.metricRemoved(metricKey);
+          }
+        });
+      }
     } else {
       metrics.add(metricKey);
-    }
-    for (Object o : listeners.getListeners()) {
-      ((PropertyChangeListener) o).propertyChange(null);
+      for (final IFavouriteMetricsListener listener : listeners) {
+        SafeRunner.run(new AbstractSafeRunnable() {
+          public void run() throws Exception {
+            listener.metricRemoved(metricKey);
+          }
+        });
+      }
     }
   }
 
@@ -55,11 +68,12 @@ public class FavoriteMetricsManager {
     prefs.put(PREFS_KEY, StringUtils.join(metrics, ','));
   }
 
-  public void addListener(PropertyChangeListener listener) {
+  public void addListener(IFavouriteMetricsListener listener) {
     listeners.add(listener);
   }
 
-  public void removeListener(PropertyChangeListener listener) {
+  public void removeListener(IFavouriteMetricsListener listener) {
     listeners.remove(listener);
   }
+
 }

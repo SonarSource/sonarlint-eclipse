@@ -20,8 +20,6 @@
 
 package org.sonar.ide.eclipse.views;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -50,6 +48,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.SonarIdeException;
 import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
+import org.sonar.ide.eclipse.core.IFavouriteMetricsListener;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarMeasure;
 import org.sonar.ide.eclipse.core.ISonarResource;
@@ -78,8 +77,12 @@ public class HotspotsView extends AbstractSonarInfoView {
   private String metricKey;
   private TableViewerColumn column2;
 
-  private PropertyChangeListener favouriteMetricsListener = new PropertyChangeListener() {
-    public void propertyChange(PropertyChangeEvent evt) {
+  private IFavouriteMetricsListener favouriteMetricsListener = new IFavouriteMetricsListener() {
+    public void metricRemoved(String metricKey) {
+      updateFavouriteMetrics();
+    }
+
+    public void metricAdded(String metricKey) {
       updateFavouriteMetrics();
     }
   };

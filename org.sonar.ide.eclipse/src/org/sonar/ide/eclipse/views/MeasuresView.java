@@ -36,7 +36,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
@@ -56,7 +55,9 @@ import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.SonarImages;
+import org.sonar.ide.eclipse.actions.ToggleFavouriteMetricAction;
 import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
+import org.sonar.ide.eclipse.core.IFavouriteMetricsListener;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarMeasure;
 import org.sonar.ide.eclipse.core.ISonarResource;
@@ -66,7 +67,6 @@ import org.sonar.ide.eclipse.jobs.AbstractRemoteSonarJob;
 import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
 import org.sonar.ide.eclipse.ui.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.ui.EnhancedFilteredTree;
-import org.sonar.ide.eclipse.utils.SelectionUtils;
 import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Metric;
 import org.sonar.wsclient.services.MetricQuery;
@@ -86,42 +86,21 @@ public class MeasuresView extends AbstractSonarInfoView {
 
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.MeasuresView";
 
-  private static final String FAVORITES_CATEGORY = "Favorites";
+  private static final String FAVORITES_CATEGORY = "Favourites";
 
   private TreeViewer viewer;
+  private Map<String, ISonarMeasure> measuresByKey;
   private HashMap<String, Collection<ISonarMeasure>> measuresByDomain;
 
-  private BaseSelectionListenerAction toggleFavoriteAction = new BaseSelectionListenerAction("") {
-    @Override
-    protected boolean updateSelection(IStructuredSelection selection) {
-      ISonarMeasure measure = getMeasure(selection);
-      if (measure == null) {
-        return false;
-      }
-      if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricKey())) {
-        setText("Remove from favorites");
-        setImageDescriptor(SonarImages.STAR_OFF);
-      } else {
-        setText("Add to favorites");
-        setImageDescriptor(SonarImages.STAR);
-      }
-      return true;
-    };
+  private BaseSelectionListenerAction toggleFavoriteAction = new ToggleFavouriteMetricAction();
 
-    @Override
-    public void run() {
-      ISonarMeasure measure = getMeasure(getStructuredSelection());
-      String metricKey = measure.getMetricKey();
-      FavoriteMetricsManager.getInstance().toggle(metricKey);
-      toggleFavorite(measure);
-    };
+  private IFavouriteMetricsListener favouriteMetricsListener = new IFavouriteMetricsListener() {
+    public void metricRemoved(String metricKey) {
+      toggleFavourite(metricKey);
+    }
 
-    private ISonarMeasure getMeasure(IStructuredSelection selection) {
-      Object sel = SelectionUtils.getSingleElement(selection);
-      if (sel instanceof ISonarMeasure) {
-        return (ISonarMeasure) sel;
-      }
-      return null;
+    public void metricAdded(String metricKey) {
+      toggleFavourite(metricKey);
     }
   };
 
@@ -178,6 +157,7 @@ public class MeasuresView extends AbstractSonarInfoView {
     viewer.addSelectionChangedListener(toggleFavoriteAction);
 
     hookContextMenu();
+    FavoriteMetricsManager.getInstance().addListener(favouriteMetricsListener);
   }
 
   private void hookContextMenu() {
@@ -254,7 +234,8 @@ public class MeasuresView extends AbstractSonarInfoView {
     });
   }
 
-  private void toggleFavorite(ISonarMeasure measure) {
+  private void toggleFavourite(String metricKey) {
+    ISonarMeasure measure = measuresByKey.get(metricKey);
     Collection<ISonarMeasure> favorites = measuresByDomain.get(FAVORITES_CATEGORY);
     if (favorites == null) {
       favorites = Lists.newArrayList();
@@ -285,7 +266,8 @@ public class MeasuresView extends AbstractSonarInfoView {
           Collection<ISonarMeasure> measures = getMeasures(index, element);
           final List<ISonarMeasure> favorites = Lists.newArrayList();
 
-          // Group by domain
+          // Group by key and domain
+          final Map<String, ISonarMeasure> measuresByKey = Maps.newHashMap();
           final Multimap<String, ISonarMeasure> measuresByDomain = ArrayListMultimap.create();
           for (ISonarMeasure measure : measures) {
             if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricKey())) {
@@ -293,9 +275,11 @@ public class MeasuresView extends AbstractSonarInfoView {
             }
             String domain = measure.getMetricDomain();
             measuresByDomain.put(domain, measure);
+            measuresByKey.put(measure.getMetricKey(), measure);
           }
 
           MeasuresView.this.measuresByDomain = Maps.newHashMap(measuresByDomain.asMap());
+          MeasuresView.this.measuresByKey = measuresByKey;
           if ( !favorites.isEmpty()) {
             MeasuresView.this.measuresByDomain.put(FAVORITES_CATEGORY, favorites);
           }
@@ -334,5 +318,11 @@ public class MeasuresView extends AbstractSonarInfoView {
         return metric.getKey();
       }
     });
+  }
+
+  @Override
+  public void dispose() {
+    FavoriteMetricsManager.getInstance().removeListener(favouriteMetricsListener);
+    super.dispose();
   }
 }
