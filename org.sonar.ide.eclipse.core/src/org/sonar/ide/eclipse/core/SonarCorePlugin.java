@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.core.internal.SonarFile;
 import org.sonar.ide.eclipse.core.internal.SonarMeasure;
+import org.sonar.ide.eclipse.core.internal.SonarMetric;
 import org.sonar.ide.eclipse.core.internal.SonarResource;
 import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Metric;
@@ -63,6 +64,10 @@ public class SonarCorePlugin extends Plugin {
 
   public static ISonarMeasure createSonarMeasure(ISonarResource sonarResource, Metric metric, Measure measure) {
     return new SonarMeasure(sonarResource, metric, measure);
+  }
+
+  public static ISonarMetric createSonarMetric(String metricKey) {
+    return new SonarMetric(new Metric().setKey(metricKey).setName(metricKey));
   }
 
 }

@@ -19,7 +19,7 @@ public class ToggleFavouriteMetricAction extends BaseSelectionListenerAction {
     if (metric == null) {
       return false;
     }
-    if (FavoriteMetricsManager.getInstance().isFavorite(metric.getKey())) {
+    if (FavoriteMetricsManager.getInstance().isFavorite(metric)) {
       setText("Remove from favourites");
       setImageDescriptor(SonarImages.STAR_OFF);
     } else {
@@ -32,7 +32,7 @@ public class ToggleFavouriteMetricAction extends BaseSelectionListenerAction {
   @Override
   public void run() {
     ISonarMetric metric = getSelectedMetric(getStructuredSelection());
-    FavoriteMetricsManager.getInstance().toggle(metric.getKey());
+    FavoriteMetricsManager.getInstance().toggle(metric);
     selectionChanged(getStructuredSelection());
   };
 

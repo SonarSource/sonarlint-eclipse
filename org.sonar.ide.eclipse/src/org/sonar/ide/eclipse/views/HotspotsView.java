@@ -30,15 +30,18 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.BaseLabelProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -51,6 +54,7 @@ import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
 import org.sonar.ide.eclipse.core.IFavouriteMetricsListener;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarMeasure;
+import org.sonar.ide.eclipse.core.ISonarMetric;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
@@ -74,15 +78,15 @@ public class HotspotsView extends AbstractSonarInfoView {
   private TableViewer viewer;
   private ComboViewer comboViewer;
   private Combo combo;
-  private String metricKey;
+  private ISonarMetric metric;
   private TableViewerColumn column2;
 
   private IFavouriteMetricsListener favouriteMetricsListener = new IFavouriteMetricsListener() {
-    public void metricRemoved(String metricKey) {
+    public void metricRemoved(ISonarMetric metric) {
       updateFavouriteMetrics();
     }
 
-    public void metricAdded(String metricKey) {
+    public void metricAdded(ISonarMetric metric) {
       updateFavouriteMetrics();
     }
   };
@@ -133,20 +137,35 @@ public class HotspotsView extends AbstractSonarInfoView {
 
     combo = comboViewer.getCombo();
     comboViewer.setContentProvider(ArrayContentProvider.getInstance());
+    comboViewer.setLabelProvider(new MetricNameLabelProvider());
     updateFavouriteMetrics();
     FavoriteMetricsManager.getInstance().addListener(favouriteMetricsListener);
 
     combo.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        metricKey = (String) SelectionUtils.getSingleElement(comboViewer.getSelection());
+        metric = getSelectedMetric();
         if (getInput() != null) {
           doSetInput(getInput());
         }
       }
     });
     combo.select(0);
-    metricKey = (String) SelectionUtils.getSingleElement(comboViewer.getSelection());
+    metric = getSelectedMetric();
+  }
+
+  static class MetricNameLabelProvider extends BaseLabelProvider implements ILabelProvider {
+    public String getText(Object element) {
+      return ((ISonarMetric) element).getName();
+    }
+
+    public Image getImage(Object element) {
+      return null;
+    }
+  }
+
+  private ISonarMetric getSelectedMetric() {
+    return ((ISonarMetric) SelectionUtils.getSingleElement(comboViewer.getSelection()));
   }
 
   private class HotspotsLabelProvider extends AbstractTableLabelProvider {
@@ -170,13 +189,16 @@ public class HotspotsView extends AbstractSonarInfoView {
   }
 
   private String getMetricKey() {
-    return metricKey;
+    if (metric == null) {
+      return null;
+    }
+    return metric.getKey();
   }
 
   private void updateFavouriteMetrics() {
     comboViewer.setInput(FavoriteMetricsManager.getInstance().get());
     if (getMetricKey() != null) {
-      comboViewer.setSelection(new StructuredSelection(getMetricKey()));
+      comboViewer.setSelection(new StructuredSelection(metric));
     }
   }
 

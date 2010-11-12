@@ -60,6 +60,7 @@ import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
 import org.sonar.ide.eclipse.core.IFavouriteMetricsListener;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarMeasure;
+import org.sonar.ide.eclipse.core.ISonarMetric;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
@@ -95,12 +96,12 @@ public class MeasuresView extends AbstractSonarInfoView {
   private BaseSelectionListenerAction toggleFavoriteAction = new ToggleFavouriteMetricAction();
 
   private IFavouriteMetricsListener favouriteMetricsListener = new IFavouriteMetricsListener() {
-    public void metricRemoved(String metricKey) {
-      toggleFavourite(metricKey);
+    public void metricRemoved(ISonarMetric metric) {
+      toggleFavourite(metric.getKey());
     }
 
-    public void metricAdded(String metricKey) {
-      toggleFavourite(metricKey);
+    public void metricAdded(ISonarMetric metric) {
+      toggleFavourite(metric.getKey());
     }
   };
 
@@ -270,7 +271,7 @@ public class MeasuresView extends AbstractSonarInfoView {
           final Map<String, ISonarMeasure> measuresByKey = Maps.newHashMap();
           final Multimap<String, ISonarMeasure> measuresByDomain = ArrayListMultimap.create();
           for (ISonarMeasure measure : measures) {
-            if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricDef().getKey())) {
+            if (FavoriteMetricsManager.getInstance().isFavorite(measure.getMetricDef())) {
               favorites.add(measure);
             }
             String domain = measure.getMetricDef().getDomain();
