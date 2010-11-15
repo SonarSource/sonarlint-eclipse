@@ -41,21 +41,24 @@ public class SonarImages {
   public static ImageDescriptor SONARCLOSE_IMG = create("close.gif"); //$NON-NLS-1$
 
   private static ImageDescriptor[][] TENDENCY = {
-      { createTendency("-2-red"), createTendency("-1-red"), createTendency("1-red"), createTendency("2-red") },
-      { createTendency("-2-black"), createTendency("-1-black"), createTendency("1-black"), createTendency("2-black") },
-      { createTendency("-2-green"), createTendency("-1-green"), createTendency("1-green"), createTendency("2-green") } };
+      { createTendency("-2-red"), createTendency("-1-red"), null, createTendency("1-red"), createTendency("2-red") },
+      { createTendency("-2-black"), createTendency("-1-black"), null, createTendency("1-black"), createTendency("2-black") },
+      { createTendency("-2-green"), createTendency("-1-green"), null, createTendency("1-green"), createTendency("2-green") } };
 
   public static ImageDescriptor forTendency(ISonarMeasure measure) {
-    int trend = measure.getTrend(); // color
-    int var = measure.getVar(); // value
-    if (var == 0) {
-      return null;
+    int trend = measure.getTrend(); // color: -1 = red; 0 = black, 1 = green
+    int var = measure.getVar(); // value: from -2 to 2
+    if ((trend < -1) || (trend > 1)) {
+      return null; // should never happen
+    }
+    if ((var < -2) || (var > 2)) {
+      return null; // should never happen
     }
     return TENDENCY[trend + 1][var + 2];
   }
 
   private static ImageDescriptor createTendency(String name) {
-    return create("tendency/" + name + ".png");
+    return create("tendency/" + name + "-small.png");
   }
 
   public static ImageDescriptor create(String name) {
