@@ -20,12 +20,6 @@
 
 package org.sonar.ide.eclipse.views;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -42,12 +36,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.actions.BaseSelectionListenerAction;
 import org.eclipse.ui.dialogs.FilteredTree;
@@ -57,29 +46,22 @@ import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.actions.ToggleFavouriteMetricAction;
-import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
-import org.sonar.ide.eclipse.core.IFavouriteMetricsListener;
-import org.sonar.ide.eclipse.core.ISonarConstants;
-import org.sonar.ide.eclipse.core.ISonarMeasure;
-import org.sonar.ide.eclipse.core.ISonarMetric;
-import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.*;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.jobs.AbstractRemoteSonarJob;
 import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
 import org.sonar.ide.eclipse.ui.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.ui.EnhancedFilteredTree;
-import org.sonar.wsclient.services.Measure;
-import org.sonar.wsclient.services.Metric;
-import org.sonar.wsclient.services.MetricQuery;
-import org.sonar.wsclient.services.Resource;
-import org.sonar.wsclient.services.ResourceQuery;
+import org.sonar.wsclient.services.*;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+
+import java.util.*;
+import java.util.List;
 
 /**
  * @author Evgeny Mandrikov
@@ -97,12 +79,25 @@ public class MeasuresView extends AbstractSonarInfoView {
   private BaseSelectionListenerAction toggleFavoriteAction = new ToggleFavouriteMetricAction();
 
   private IFavouriteMetricsListener favouriteMetricsListener = new IFavouriteMetricsListener() {
-    public void metricRemoved(ISonarMetric metric) {
-      toggleFavourite(metric.getKey());
-    }
+    public void updated() {
+      Collection<ISonarMeasure> favourites = measuresByDomain.get(FAVORITES_CATEGORY);
+      if (favourites == null) {
+        favourites = Lists.newArrayList();
+        measuresByDomain.put(FAVORITES_CATEGORY, favourites);
+      }
 
-    public void metricAdded(ISonarMetric metric) {
-      toggleFavourite(metric.getKey());
+      favourites.clear();
+      for (ISonarMetric metric : FavoriteMetricsManager.getInstance().get()) {
+        ISonarMeasure measure = measuresByKey.get(metric.getKey());
+        if (measure != null) {
+          favourites.add(measure);
+        }
+      }
+
+      if (favourites.isEmpty()) {
+        measuresByDomain.remove(FAVORITES_CATEGORY);
+      }
+      viewer.refresh();
     }
   };
 
@@ -242,27 +237,6 @@ public class MeasuresView extends AbstractSonarInfoView {
         viewer.expandAll();
       }
     });
-  }
-
-  private void toggleFavourite(String metricKey) {
-    ISonarMeasure measure = measuresByKey.get(metricKey);
-    if (measure == null) {
-      return;
-    }
-    Collection<ISonarMeasure> favorites = measuresByDomain.get(FAVORITES_CATEGORY);
-    if (favorites == null) {
-      favorites = Lists.newArrayList();
-      measuresByDomain.put(FAVORITES_CATEGORY, favorites);
-    }
-    if (favorites.contains(measure)) {
-      favorites.remove(measure);
-    } else {
-      favorites.add(measure);
-    }
-    if (favorites.isEmpty()) {
-      measuresByDomain.remove(FAVORITES_CATEGORY);
-    }
-    viewer.refresh();
   }
 
   @Override

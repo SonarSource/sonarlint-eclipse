@@ -20,6 +20,12 @@
           id="org.sonar.ide.eclipse.preferences.SonarConsolePreferencePage"
           name="Console">
     </page>
+    <page
+          category="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
+          class="org.sonar.ide.eclipse.preferences.FavouriteMetricsPreferencePage"
+          id="org.sonar.ide.eclipse.preferences.FavouriteMetricsPreferencePage"
+          name="Favourite Metrics">
+    </page>
   </extension>
   <extension point="org.eclipse.core.runtime.preferences">
     <initializer

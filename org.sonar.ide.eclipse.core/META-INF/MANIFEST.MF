@@ -3,17 +3,17 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %bundle_name
 Bundle-SymbolicName: org.sonar.ide.eclipse.core;singleton:=true
 Bundle-Version: 0.4.0.qualifier
-Bundle-Vendor: %bundle_vendor
 Bundle-ClassPath: .
 Bundle-Activator: org.sonar.ide.eclipse.core.SonarCorePlugin
+Bundle-Vendor: %bundle_vendor
+Bundle-Localization: OSGI-INF/l10n/bundle
+Export-Package: org.sonar.ide.eclipse.core,
+ org.sonar.ide.eclipse.core.internal;x-internal:=true
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.sonar.ide.eclipse.sonar_embedder
-Bundle-RequiredExecutionEnvironment: J2SE-1.5,
- JavaSE-1.6
 Import-Package: org.apache.commons.lang,
  org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
-Export-Package: org.sonar.ide.eclipse.core,
- org.sonar.ide.eclipse.core.internal;x-internal:=true
-Bundle-Localization: OSGI-INF/l10n/bundle
+Bundle-RequiredExecutionEnvironment: J2SE-1.5,
+ JavaSE-1.6

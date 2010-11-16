@@ -1,9 +1,5 @@
 package org.sonar.ide.eclipse.core;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.SafeRunner;
 import org.osgi.service.prefs.Preferences;
@@ -11,6 +7,11 @@ import org.osgi.service.prefs.Preferences;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 public class FavoriteMetricsManager {
 
@@ -35,25 +36,28 @@ public class FavoriteMetricsManager {
     return metrics.contains(metric);
   }
 
+  public void set(List<ISonarMetric> list) {
+    metrics.clear();
+    metrics.addAll(list);
+    notifyListeners();
+  }
+
   public void toggle(final ISonarMetric metric) {
     if (metrics.contains(metric)) {
       metrics.remove(metric);
-      for (final IFavouriteMetricsListener listener : listeners) {
-        SafeRunner.run(new AbstractSafeRunnable() {
-          public void run() throws Exception {
-            listener.metricRemoved(metric);
-          }
-        });
-      }
     } else {
       metrics.add(metric);
-      for (final IFavouriteMetricsListener listener : listeners) {
-        SafeRunner.run(new AbstractSafeRunnable() {
-          public void run() throws Exception {
-            listener.metricAdded(metric);
-          }
-        });
-      }
+    }
+    notifyListeners();
+  }
+
+  private void notifyListeners() {
+    for (final IFavouriteMetricsListener listener : listeners) {
+      SafeRunner.run(new AbstractSafeRunnable() {
+        public void run() throws Exception {
+          listener.updated();
+        }
+      });
     }
   }
 
@@ -81,6 +85,14 @@ public class FavoriteMetricsManager {
 
   public void removeListener(IFavouriteMetricsListener listener) {
     listeners.remove(listener);
+  }
+
+  public void restoreDefaults() {
+    set(Arrays.asList(
+      SonarCorePlugin.createSonarMetric("complexity", "Complexity"),
+      SonarCorePlugin.createSonarMetric("violations", "Violations"),
+      SonarCorePlugin.createSonarMetric("duplicated_lines", "Duplicated lines"),
+      SonarCorePlugin.createSonarMetric("uncovered_lines", "Uncovered lines")));
   }
 
 }

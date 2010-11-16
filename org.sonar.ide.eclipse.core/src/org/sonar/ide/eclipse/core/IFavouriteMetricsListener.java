@@ -22,8 +22,6 @@ package org.sonar.ide.eclipse.core;
 
 public interface IFavouriteMetricsListener {
 
-  void metricAdded(ISonarMetric metric);
-
-  void metricRemoved(ISonarMetric metric);
+  void updated();
 
 }

@@ -29,6 +29,7 @@ public class SonarMetric implements ISonarMetric {
   private final Metric metric;
 
   public SonarMetric(Metric metric) {
+    Assert.isNotNull(metric.getKey(), "metric key");
     Assert.isNotNull(metric, "metric");
     this.metric = metric;
   }

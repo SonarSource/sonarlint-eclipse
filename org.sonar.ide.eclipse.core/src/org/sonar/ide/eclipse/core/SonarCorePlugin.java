@@ -70,4 +70,8 @@ public class SonarCorePlugin extends Plugin {
     return new SonarMetric(new Metric().setKey(metricKey).setName(metricKey));
   }
 
+  public static ISonarMetric createSonarMetric(String metricKey, String metricName) {
+    return new SonarMetric(new Metric().setKey(metricKey).setName(metricName));
+  }
+
 }
