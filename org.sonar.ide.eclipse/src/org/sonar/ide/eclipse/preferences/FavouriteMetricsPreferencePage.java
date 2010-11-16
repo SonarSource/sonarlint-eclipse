@@ -6,8 +6,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.PlatformUI;
 import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarMetric;
 
@@ -46,6 +48,7 @@ public class FavouriteMetricsPreferencePage extends PreferencePage implements IW
     removeButton = new Button(composite, SWT.PUSH);
     removeButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
     removeButton.setText("Remove");
+    removeButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE).createImage());
     removeButton.setEnabled(false);
     removeButton.addListener(SWT.Selection, new Listener() {
       public void handleEvent(Event e) {
