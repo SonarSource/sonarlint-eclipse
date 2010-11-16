@@ -1,27 +1,28 @@
 package org.sonar.ide.eclipse.core;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.SafeRunner;
-import org.osgi.service.prefs.Preferences;
+import org.sonar.ide.eclipse.ui.SonarUiPreferenceInitializer;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class FavoriteMetricsManager {
+public final class FavoriteMetricsManager {
 
   public static FavoriteMetricsManager INSTANCE;
 
-  public static FavoriteMetricsManager getInstance() {
+  public static synchronized FavoriteMetricsManager getInstance() {
     if (INSTANCE == null) {
       INSTANCE = new FavoriteMetricsManager();
     }
     return INSTANCE;
+  }
+
+  private FavoriteMetricsManager() {
   }
 
   private Set<IFavouriteMetricsListener> listeners = Sets.newHashSet();
@@ -36,9 +37,9 @@ public class FavoriteMetricsManager {
     return metrics.contains(metric);
   }
 
-  public void set(List<ISonarMetric> list) {
-    metrics.clear();
-    metrics.addAll(list);
+  public void set(Collection<ISonarMetric> metrics) {
+    this.metrics.clear();
+    this.metrics.addAll(metrics);
     notifyListeners();
   }
 
@@ -61,24 +62,6 @@ public class FavoriteMetricsManager {
     }
   }
 
-  private static String PREFS_KEY = "favoriteMetrics";
-
-  public void load(Preferences prefs) {
-    String[] keys = StringUtils.split(prefs.get(PREFS_KEY, ""), ',');
-    for (String key : keys) {
-      metrics.add(SonarCorePlugin.createSonarMetric(key));
-    }
-  }
-
-  public void save(Preferences prefs) {
-    List<String> keys = Lists.transform(metrics, new Function<ISonarMetric, String>() {
-      public String apply(ISonarMetric metric) {
-        return metric.getKey();
-      }
-    });
-    prefs.put(PREFS_KEY, StringUtils.join(keys, ','));
-  }
-
   public void addListener(IFavouriteMetricsListener listener) {
     listeners.add(listener);
   }
@@ -88,11 +71,7 @@ public class FavoriteMetricsManager {
   }
 
   public void restoreDefaults() {
-    set(Arrays.asList(
-      SonarCorePlugin.createSonarMetric("complexity", "Complexity"),
-      SonarCorePlugin.createSonarMetric("violations", "Violations"),
-      SonarCorePlugin.createSonarMetric("duplicated_lines", "Duplicated lines"),
-      SonarCorePlugin.createSonarMetric("uncovered_lines", "Uncovered lines")));
+    set(SonarUiPreferenceInitializer.getDefaults());
   }
 
 }

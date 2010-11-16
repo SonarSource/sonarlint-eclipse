@@ -20,17 +20,11 @@
 
 package org.sonar.ide.eclipse;
 
-import java.net.Authenticator;
-import java.net.ProxySelector;
-import java.net.URL;
-
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -44,12 +38,17 @@ import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.jobs.RefreshViolationsJob;
+import org.sonar.ide.eclipse.ui.SonarUiPreferenceInitializer;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.JoranConfiguratorBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
+
+import java.net.Authenticator;
+import java.net.ProxySelector;
+import java.net.URL;
 
 public class SonarPlugin extends AbstractUIPlugin {
 
@@ -90,17 +89,14 @@ public class SonarPlugin extends AbstractUIPlugin {
     setupProxy(context);
     RefreshViolationsJob.setupViolationsUpdater();
 
-    IEclipsePreferences prefs = (new InstanceScope()).getNode(ISonarConstants.PLUGIN_ID);
-    FavoriteMetricsManager.getInstance().load(prefs);
+    FavoriteMetricsManager.getInstance().set(SonarUiPreferenceInitializer.getFavouriteMetrics());
 
     LoggerFactory.getLogger(SonarPlugin.class).info("SonarPlugin started");
   }
 
   @Override
   public void stop(final BundleContext context) throws Exception {
-    IEclipsePreferences prefs = (new InstanceScope()).getNode(ISonarConstants.PLUGIN_ID);
-    FavoriteMetricsManager.getInstance().save(prefs);
-    prefs.flush();
+    SonarUiPreferenceInitializer.setFavouriteMetrics(FavoriteMetricsManager.getInstance().get());
 
     if (console != null) {
       console.shutdown();
