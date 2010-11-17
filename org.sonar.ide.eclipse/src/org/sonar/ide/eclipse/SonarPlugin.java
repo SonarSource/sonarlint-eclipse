@@ -142,12 +142,8 @@ public class SonarPlugin extends AbstractUIPlugin {
     }
   }
 
-  private IStatus createStatus(final int severity, final String msg, final Throwable t) {
-    return new Status(severity, ISonarConstants.PLUGIN_ID, msg, t);
-  }
-
   public void displayError(final int severity, final String msg, final Throwable t, final boolean shouldLog) {
-    final IStatus status = createStatus(severity, msg, t);
+    final IStatus status = new Status(severity, ISonarConstants.PLUGIN_ID, msg, t);
     if (shouldLog) {
       SonarLogger.log(status);
     }

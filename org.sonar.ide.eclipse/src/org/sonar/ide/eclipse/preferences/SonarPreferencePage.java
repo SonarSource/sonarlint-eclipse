@@ -21,6 +21,7 @@
 package org.sonar.ide.eclipse.preferences;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -32,8 +33,13 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
@@ -49,7 +55,7 @@ import java.util.List;
 /**
  * Preference page for the workspace.
  */
-public class SonarPreferencePage extends AbstractSonarPreferencePage {
+public class SonarPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 
   private TableViewer serversViewer;
 
@@ -60,24 +66,21 @@ public class SonarPreferencePage extends AbstractSonarPreferencePage {
     noDefaultAndApplyButton();
   }
 
+  public void init(IWorkbench workbench) {
+    setDescription("Add, remove or edit Sonar servers:");
+  }
+
   @Override
   protected Control createContents(Composite parent) {
     Composite container = new Composite(parent, SWT.NONE);
     GridLayout layout = new GridLayout(3, false);
     container.setLayout(layout);
 
-    Label link = new Label(container, SWT.NONE);
-    link.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 3, 1));
-    link.setText("Add, remove or edit Sonar servers.");
     createTable(container);
 
     initTable();
 
     return container;
-  }
-
-  @Override
-  protected void performApply() {
   }
 
   private Host getSelectedServer() {

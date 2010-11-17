@@ -20,9 +20,6 @@
 
 package org.sonar.ide.eclipse.wizards;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
@@ -34,11 +31,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.CheckboxTableViewer;
-import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -64,6 +57,9 @@ import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
 
 import com.google.common.collect.Lists;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 /**
  * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertedProjectWizard
@@ -110,17 +106,14 @@ public class ConfigureProjectsWizard extends Wizard {
       Composite container = new Composite(parent, SWT.NONE);
 
       GridLayout layout = new GridLayout();
-      layout.numColumns = 1;
+      layout.numColumns = 2;
       layout.marginHeight = 0;
       layout.marginWidth = 5;
       container.setLayout(layout);
 
-      GridData gridData;
-
       // List of Sonar servers
       comboViewer = new ComboViewer(container);
-      gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1);
-      comboViewer.getCombo().setLayoutData(gridData);
+      comboViewer.getCombo().setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 2, 1));
       comboViewer.setContentProvider(ArrayContentProvider.getInstance());
       comboViewer.setLabelProvider(new LabelProvider() {
         @Override
@@ -133,8 +126,7 @@ public class ConfigureProjectsWizard extends Wizard {
 
       // List of projects
       viewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
-      gridData = new GridData(GridData.FILL, GridData.FILL, true, true, 1, 1);
-      viewer.getTable().setLayoutData(gridData);
+      viewer.getTable().setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1, 3));
 
       DataBindingContext dbc = new DataBindingContext();
 
@@ -183,7 +175,7 @@ public class ConfigureProjectsWizard extends Wizard {
 
       Button autoConfigButton = new Button(container, SWT.PUSH);
       autoConfigButton.setText(Messages.getString("action.autoconfig")); //$NON-NLS-1$
-      autoConfigButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
+      autoConfigButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
       autoConfigButton.addSelectionListener(new SelectionAdapter() {
         @Override
         public void widgetSelected(SelectionEvent e) {
@@ -196,6 +188,26 @@ public class ConfigureProjectsWizard extends Wizard {
           } catch (InterruptedException ex) {
             SonarLogger.log(ex);
           }
+        }
+      });
+
+      Button selectAllButton = new Button(container, SWT.NONE);
+      selectAllButton.setText("Select All");
+      selectAllButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+      selectAllButton.addSelectionListener(new SelectionAdapter() {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+          viewer.setAllChecked(true);
+        }
+      });
+
+      Button deselectAllButton = new Button(container, SWT.NONE);
+      deselectAllButton.setText("Deselect All");
+      deselectAllButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+      deselectAllButton.addSelectionListener(new SelectionAdapter() {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+          viewer.setAllChecked(false);
         }
       });
 
