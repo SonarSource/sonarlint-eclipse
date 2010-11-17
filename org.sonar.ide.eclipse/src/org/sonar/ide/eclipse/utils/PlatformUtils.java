@@ -30,27 +30,35 @@ import org.eclipse.ui.ide.IDE;
 import org.sonar.ide.eclipse.core.SonarLogger;
 
 @SuppressWarnings("unchecked")
-public class PlatformUtils {
+public final class PlatformUtils {
 
-  public static <T> T adapt(Object object, Class<T> cls) {
-    if (object == null) {
+  /**
+   * Returns an object that is an instance of the given class associated
+   * with the given object. Returns <code>null</code> if no such object can
+   * be found or if given object is <code>null</code>.
+   */
+  public static <T> T adapt(Object adaptable, Class<T> adapter) {
+    if (adaptable == null) {
       return null;
     }
-    if (cls.isInstance(object)) {
-      return (T) object;
+    if (adapter.isInstance(adaptable)) {
+      return (T) adaptable;
     }
-    T result = null;
-    if (object instanceof IAdaptable) {
-      result = (T) ((IAdaptable) object).getAdapter(cls);
+    Object result = null;
+    if (adaptable instanceof IAdaptable) {
+      result = ((IAdaptable) adaptable).getAdapter(adapter);
     }
     if (result == null) {
       // From IAdapterManager :
       // this method should be used judiciously, in order to avoid unnecessary plug-in activations
-      result = (T) Platform.getAdapterManager().loadAdapter(object, cls.getName());
+      result = Platform.getAdapterManager().loadAdapter(adaptable, adapter.getName());
     }
-    return result;
+    return (T) result;
   }
 
+  /**
+   * Opens editor for given file.
+   */
   public static void openEditor(IFile file) {
     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     try {

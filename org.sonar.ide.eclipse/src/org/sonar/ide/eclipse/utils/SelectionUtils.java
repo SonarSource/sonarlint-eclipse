@@ -23,7 +23,7 @@ package org.sonar.ide.eclipse.utils;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
-public class SelectionUtils {
+public final class SelectionUtils {
 
   /**
    * Returns the selected element if the selection consists of a single
