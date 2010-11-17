@@ -11,21 +11,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public final class FavoriteMetricsManager {
+public final class FavouriteMetricsManager {
 
-  public static FavoriteMetricsManager INSTANCE;
-
-  public static synchronized FavoriteMetricsManager getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new FavoriteMetricsManager();
-    }
-    return INSTANCE;
+  public interface Listener {
+    void updated();
   }
 
-  private FavoriteMetricsManager() {
-  }
-
-  private Set<IFavouriteMetricsListener> listeners = Sets.newHashSet();
+  private Set<Listener> listeners = Sets.newHashSet();
 
   private List<ISonarMetric> metrics = Lists.newArrayList();
 
@@ -53,7 +45,7 @@ public final class FavoriteMetricsManager {
   }
 
   private void notifyListeners() {
-    for (final IFavouriteMetricsListener listener : listeners) {
+    for (final Listener listener : listeners) {
       SafeRunner.run(new AbstractSafeRunnable() {
         public void run() throws Exception {
           listener.updated();
@@ -62,11 +54,11 @@ public final class FavoriteMetricsManager {
     }
   }
 
-  public void addListener(IFavouriteMetricsListener listener) {
+  public void addListener(Listener listener) {
     listeners.add(listener);
   }
 
-  public void removeListener(IFavouriteMetricsListener listener) {
+  public void removeListener(Listener listener) {
     listeners.remove(listener);
   }
 

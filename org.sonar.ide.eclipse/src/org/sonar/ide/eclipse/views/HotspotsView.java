@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.SonarIdeException;
+import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.*;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.jobs.AbstractRemoteSonarJob;
@@ -67,7 +68,7 @@ public class HotspotsView extends AbstractSonarInfoView {
   private ISonarMetric metric;
   private TableViewerColumn column2;
 
-  private IFavouriteMetricsListener favouriteMetricsListener = new IFavouriteMetricsListener() {
+  private FavouriteMetricsManager.Listener favouriteMetricsListener = new FavouriteMetricsManager.Listener() {
     public void updated() {
       updateFavouriteMetrics();
     }
@@ -121,7 +122,7 @@ public class HotspotsView extends AbstractSonarInfoView {
     comboViewer.setContentProvider(ArrayContentProvider.getInstance());
     comboViewer.setLabelProvider(new MetricNameLabelProvider());
     updateFavouriteMetrics();
-    FavoriteMetricsManager.getInstance().addListener(favouriteMetricsListener);
+    SonarPlugin.getFavouriteMetricsManager().addListener(favouriteMetricsListener);
 
     combo.addSelectionListener(new SelectionAdapter() {
       @Override
@@ -183,7 +184,7 @@ public class HotspotsView extends AbstractSonarInfoView {
   }
 
   private void updateFavouriteMetrics() {
-    comboViewer.setInput(FavoriteMetricsManager.getInstance().get());
+    comboViewer.setInput(SonarPlugin.getFavouriteMetricsManager().get());
     if (getMetricKey() != null) {
       comboViewer.setSelection(new StructuredSelection(metric));
     }
@@ -228,8 +229,10 @@ public class HotspotsView extends AbstractSonarInfoView {
         for (Resource resource : resources) {
           for (Measure measure : resource.getMeasures()) {
             IFile file = PlatformUtils.adapt(resource, IFile.class);
-            ISonarResource sonarResource = PlatformUtils.adapt(file, ISonarResource.class);
-            measures.add(SonarCorePlugin.createSonarMeasure(sonarResource, measure));
+            if (file != null) { // Sonar resource doesn't exist in working copy
+              ISonarResource sonarResource = PlatformUtils.adapt(file, ISonarResource.class);
+              measures.add(SonarCorePlugin.createSonarMeasure(sonarResource, measure));
+            }
           }
         }
         update(measures);
@@ -248,7 +251,7 @@ public class HotspotsView extends AbstractSonarInfoView {
 
   @Override
   public void dispose() {
-    FavoriteMetricsManager.getInstance().removeListener(favouriteMetricsListener);
+    SonarPlugin.getFavouriteMetricsManager().removeListener(favouriteMetricsListener);
     super.dispose();
   }
 

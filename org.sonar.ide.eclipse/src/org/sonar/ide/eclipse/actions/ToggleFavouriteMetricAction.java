@@ -3,7 +3,7 @@ package org.sonar.ide.eclipse.actions;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.actions.BaseSelectionListenerAction;
 import org.sonar.ide.eclipse.SonarImages;
-import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
+import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarMetric;
 import org.sonar.ide.eclipse.utils.PlatformUtils;
 import org.sonar.ide.eclipse.utils.SelectionUtils;
@@ -19,7 +19,7 @@ public class ToggleFavouriteMetricAction extends BaseSelectionListenerAction {
     if (metric == null) {
       return false;
     }
-    if (FavoriteMetricsManager.getInstance().isFavorite(metric)) {
+    if (SonarPlugin.getFavouriteMetricsManager().isFavorite(metric)) {
       setText("Remove from favourites");
       setImageDescriptor(SonarImages.STAR_OFF);
     } else {
@@ -32,7 +32,7 @@ public class ToggleFavouriteMetricAction extends BaseSelectionListenerAction {
   @Override
   public void run() {
     ISonarMetric metric = getSelectedMetric(getStructuredSelection());
-    FavoriteMetricsManager.getInstance().toggle(metric);
+    SonarPlugin.getFavouriteMetricsManager().toggle(metric);
     selectionChanged(getStructuredSelection());
   };
 

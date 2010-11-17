@@ -33,6 +33,9 @@ import org.sonar.ide.eclipse.core.SonarLogger;
 public class PlatformUtils {
 
   public static <T> T adapt(Object object, Class<T> cls) {
+    if (object == null) {
+      return null;
+    }
     if (cls.isInstance(object)) {
       return (T) object;
     }

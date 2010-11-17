@@ -33,7 +33,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.console.SonarConsole;
-import org.sonar.ide.eclipse.core.FavoriteMetricsManager;
+import org.sonar.ide.eclipse.core.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
@@ -58,6 +58,8 @@ public class SonarPlugin extends AbstractUIPlugin {
   private static SonarServerManager serverManager;
   private static SonarProjectManager projectManager;
 
+  private FavouriteMetricsManager favouriteMetricsManager = new FavouriteMetricsManager();
+
   private SonarConsole console;
 
   public SonarPlugin() {
@@ -77,6 +79,10 @@ public class SonarPlugin extends AbstractUIPlugin {
     return projectManager;
   }
 
+  public static FavouriteMetricsManager getFavouriteMetricsManager() {
+    return getDefault().favouriteMetricsManager;
+  }
+
   @Override
   public void start(final BundleContext context) throws Exception {
     super.start(context);
@@ -89,14 +95,14 @@ public class SonarPlugin extends AbstractUIPlugin {
     setupProxy(context);
     RefreshViolationsJob.setupViolationsUpdater();
 
-    FavoriteMetricsManager.getInstance().set(SonarUiPreferenceInitializer.getFavouriteMetrics());
+    getFavouriteMetricsManager().set(SonarUiPreferenceInitializer.getFavouriteMetrics());
 
     LoggerFactory.getLogger(SonarPlugin.class).info("SonarPlugin started");
   }
 
   @Override
   public void stop(final BundleContext context) throws Exception {
-    SonarUiPreferenceInitializer.setFavouriteMetrics(FavoriteMetricsManager.getInstance().get());
+    SonarUiPreferenceInitializer.setFavouriteMetrics(getFavouriteMetricsManager().get());
 
     if (console != null) {
       console.shutdown();
