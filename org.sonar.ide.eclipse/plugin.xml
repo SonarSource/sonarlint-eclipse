@@ -16,12 +16,6 @@
     </page>
     <page
           category="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
-          class="org.sonar.ide.eclipse.preferences.SonarConsolePreferencePage"
-          id="org.sonar.ide.eclipse.preferences.SonarConsolePreferencePage"
-          name="Console">
-    </page>
-    <page
-          category="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
           class="org.sonar.ide.eclipse.preferences.FavouriteMetricsPreferencePage"
           id="org.sonar.ide.eclipse.preferences.FavouriteMetricsPreferencePage"
           name="Favourite Metrics">
@@ -319,21 +313,6 @@
               verticalRulerPreferenceKey="org.sonar.ide.eclipse.violation.verticalruler"
               verticalRulerPreferenceValue="true"/>
     </extension>
-
-   <extension point="org.eclipse.ui.console.consoleFactories">
-      <consoleFactory label="%sonar.consolefactory.label" icon="icons/sonar.png"
-            class="org.sonar.ide.eclipse.console.SonarConsoleFactory"/>
-   </extension>
-
-   <extension point="org.eclipse.ui.console.consolePageParticipants">
-      <consolePageParticipant
-            class="org.sonar.ide.eclipse.console.SonarConsolePageParticipant"
-            id="org.sonar.ide.eclipse.launch.console.SonarConsolePageParticipant">
-         <enablement>
-            <instanceof value="org.sonar.ide.eclipse.console.SonarConsole"/>
-         </enablement>
-      </consolePageParticipant>
-   </extension>
    
    <extension point="org.eclipse.ui.actionSets">
      <actionSet

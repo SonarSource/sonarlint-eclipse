@@ -32,7 +32,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.console.SonarConsole;
 import org.sonar.ide.eclipse.core.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.SonarLogger;
@@ -59,8 +58,6 @@ public class SonarPlugin extends AbstractUIPlugin {
   private static SonarProjectManager projectManager;
 
   private FavouriteMetricsManager favouriteMetricsManager = new FavouriteMetricsManager();
-
-  private SonarConsole console;
 
   public SonarPlugin() {
   }
@@ -91,7 +88,6 @@ public class SonarPlugin extends AbstractUIPlugin {
     SonarLogger.setLog(getLog());
 
     setupLogging();
-    setupConsole();
     setupProxy(context);
     RefreshViolationsJob.setupViolationsUpdater();
 
@@ -104,9 +100,6 @@ public class SonarPlugin extends AbstractUIPlugin {
   public void stop(final BundleContext context) throws Exception {
     SonarUiPreferenceInitializer.setFavouriteMetrics(getFavouriteMetricsManager().get());
 
-    if (console != null) {
-      console.shutdown();
-    }
     plugin = null;
     LoggerFactory.getLogger(SonarPlugin.class).info("SonarPlugin stopped");
     super.stop(context);
@@ -147,18 +140,6 @@ public class SonarPlugin extends AbstractUIPlugin {
       ProxySelector.setDefault(new EclipseProxySelector(proxyService));
       Authenticator.setDefault(new EclipseProxyAuthenticator(proxyService));
     }
-  }
-
-  private void setupConsole() {
-    try {
-      console = new SonarConsole();
-    } catch (final RuntimeException e) {
-      SonarLogger.log("Error occurred during Sonar console startup", e);
-    }
-  }
-
-  public SonarConsole getConsole() {
-    return this.console;
   }
 
   private IStatus createStatus(final int severity, final String msg, final Throwable t) {
