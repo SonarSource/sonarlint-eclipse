@@ -21,27 +21,11 @@
 package org.sonar.ide.eclipse.jdt.internal;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.*;
 import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.core.ISonarFile;
-import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.core.SonarKeyUtils;
-import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.core.*;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.wsclient.services.Resource;
 
@@ -81,6 +65,9 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
               IJavaProject javaProject = JavaCore.create(project);
               try {
                 IType type = javaProject.findType(className);
+                if (type == null) {
+                  return null;
+                }
                 IResource result = type.getCompilationUnit().getResource();
                 return result instanceof IFile ? result : null;
               } catch (JavaModelException e) {
