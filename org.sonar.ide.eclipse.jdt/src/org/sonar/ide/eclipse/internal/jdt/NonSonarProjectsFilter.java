@@ -1,4 +1,4 @@
-package org.sonar.ide.eclipse.jdt.internal;
+package org.sonar.ide.eclipse.internal.jdt;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;

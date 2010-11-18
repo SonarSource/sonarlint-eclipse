@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.sonar.ide.eclipse.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.internal.jdt.JavaElementsAdapterFactory;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 

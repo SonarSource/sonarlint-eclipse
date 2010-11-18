@@ -3,20 +3,20 @@
    <extension point="org.eclipse.core.runtime.adapters">
       <!-- used in HotspotsView -->
       <factory adaptableType="org.sonar.wsclient.services.Resource"
-               class="org.sonar.ide.eclipse.jdt.internal.JavaElementsAdapterFactory">
+               class="org.sonar.ide.eclipse.internal.jdt.JavaElementsAdapterFactory">
          <adapter type="org.eclipse.core.resources.IFile"/>
       </factory>
       
       <factory adaptableType="org.eclipse.jdt.core.IJavaElement"
-               class="org.sonar.ide.eclipse.jdt.internal.JavaElementsAdapterFactory">
+               class="org.sonar.ide.eclipse.internal.jdt.JavaElementsAdapterFactory">
       	 <adapter type="org.sonar.ide.eclipse.core.ISonarResource"/>
       </factory>
       <factory adaptableType="org.eclipse.jdt.core.ICompilationUnit"
-               class="org.sonar.ide.eclipse.jdt.internal.JavaElementsAdapterFactory">
+               class="org.sonar.ide.eclipse.internal.jdt.JavaElementsAdapterFactory">
       	 <adapter type="org.sonar.ide.eclipse.core.ISonarFile"/>
       </factory>
       <factory adaptableType="org.eclipse.core.resources.IResource"
-               class="org.sonar.ide.eclipse.jdt.internal.JavaElementsAdapterFactory">
+               class="org.sonar.ide.eclipse.internal.jdt.JavaElementsAdapterFactory">
          <adapter type="org.sonar.ide.eclipse.core.ISonarResource"/>
       </factory>
    </extension>
@@ -24,7 +24,7 @@
    <extension
          point="org.eclipse.jdt.ui.javaElementFilters">
       <filter
-            class="org.sonar.ide.eclipse.jdt.internal.NonSonarProjectsFilter"
+            class="org.sonar.ide.eclipse.internal.jdt.NonSonarProjectsFilter"
             id="org.sonar.ide.eclipse.jdt.ui.filters.HideNonSonarProjects"
             name="Non-Sonar projects"
             description="Hides all projects without Sonar nature"
@@ -48,7 +48,7 @@
    <extension
          point="org.eclipse.ui.navigator.navigatorContent">
       <commonFilter
-            class="org.sonar.ide.eclipse.jdt.internal.NonSonarProjectsFilter"
+            class="org.sonar.ide.eclipse.internal.jdt.NonSonarProjectsFilter"
             id="org.sonar.ide.eclipse.jdt.ui.filters.HideNonSonarProjects"
             name="Non-Sonar projects"
             description="Hides all projects without Sonar nature"

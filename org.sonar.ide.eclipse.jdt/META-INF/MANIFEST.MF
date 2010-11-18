@@ -17,8 +17,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.sonar.ide.eclipse,
  org.sonar.ide.eclipse.core,
  org.sonar.ide.eclipse.sonar_embedder
-Export-Package: org.sonar.ide.eclipse.jdt,
- org.sonar.ide.eclipse.jdt.internal;x-friends:="org.sonar.ide.eclipse.tests"
+Export-Package: org.sonar.ide.eclipse.internal.jdt;x-friends:="org.sonar.ide.eclipse.tests",
+ org.sonar.ide.eclipse.jdt
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
 Bundle-ActivationPolicy: lazy

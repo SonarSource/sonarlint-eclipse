@@ -24,10 +24,10 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
-import org.sonar.ide.eclipse.core.internal.SonarFile;
-import org.sonar.ide.eclipse.core.internal.SonarMeasure;
-import org.sonar.ide.eclipse.core.internal.SonarMetric;
-import org.sonar.ide.eclipse.core.internal.SonarResource;
+import org.sonar.ide.eclipse.internal.core.SonarFile;
+import org.sonar.ide.eclipse.internal.core.SonarMeasure;
+import org.sonar.ide.eclipse.internal.core.SonarMetric;
+import org.sonar.ide.eclipse.internal.core.SonarResource;
 import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Metric;
 
