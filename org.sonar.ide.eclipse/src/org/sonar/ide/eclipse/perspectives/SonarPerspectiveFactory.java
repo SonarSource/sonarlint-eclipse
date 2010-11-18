@@ -25,10 +25,10 @@ import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.progress.IProgressConstants;
-import org.sonar.ide.eclipse.views.HotspotsView;
-import org.sonar.ide.eclipse.views.MeasuresView;
-import org.sonar.ide.eclipse.views.WebView;
-import org.sonar.ide.eclipse.views.ViolationsView;
+import org.sonar.ide.eclipse.internal.ui.views.HotspotsView;
+import org.sonar.ide.eclipse.internal.ui.views.MeasuresView;
+import org.sonar.ide.eclipse.internal.ui.views.ViolationsView;
+import org.sonar.ide.eclipse.internal.ui.views.WebView;
 
 public class SonarPerspectiveFactory implements IPerspectiveFactory {
 

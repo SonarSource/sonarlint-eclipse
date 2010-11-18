@@ -23,11 +23,11 @@ package org.sonar.ide.eclipse.ui.tests;
 import org.eclipse.jdt.ui.JavaUI;
 import org.junit.Test;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.ui.views.HotspotsView;
+import org.sonar.ide.eclipse.internal.ui.views.MeasuresView;
+import org.sonar.ide.eclipse.internal.ui.views.ViolationsView;
+import org.sonar.ide.eclipse.internal.ui.views.WebView;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
-import org.sonar.ide.eclipse.views.HotspotsView;
-import org.sonar.ide.eclipse.views.MeasuresView;
-import org.sonar.ide.eclipse.views.ViolationsView;
-import org.sonar.ide.eclipse.views.WebView;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;

@@ -1,4 +1,4 @@
-package org.sonar.ide.eclipse.actions;
+package org.sonar.ide.eclipse.internal.ui.actions;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.actions.BaseSelectionListenerAction;

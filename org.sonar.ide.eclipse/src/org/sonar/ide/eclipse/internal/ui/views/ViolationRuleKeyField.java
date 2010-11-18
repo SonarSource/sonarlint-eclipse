@@ -18,14 +18,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.wizards;
+package org.sonar.ide.eclipse.internal.ui.views;
 
-import org.eclipse.ui.INewWizard;
+import org.eclipse.ui.views.markers.MarkerField;
+import org.eclipse.ui.views.markers.MarkerItem;
 
-public class NewServerLocationWizard extends AbstractServerLocationWizard implements INewWizard {
+/**
+ * @author Jérémie Lagarde
+ */
+public class ViolationRuleKeyField extends MarkerField {
 
-  public NewServerLocationWizard() {
-    super(new ServerLocationWizardPage(), "Add Sonar Server");
+  @Override
+  public String getValue(MarkerItem item) {
+    return item.getMarker().getAttribute("rulekey", "");
   }
 
 }

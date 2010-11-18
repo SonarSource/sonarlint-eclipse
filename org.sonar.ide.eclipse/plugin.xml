@@ -10,13 +10,13 @@
 
   <extension point="org.eclipse.ui.preferencePages">
     <page
-        class="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
+        class="org.sonar.ide.eclipse.internal.ui.preferences.SonarPreferencePage"
         id="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
         name="%sonar.preference.page.name">
     </page>
     <page
           category="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
-          class="org.sonar.ide.eclipse.preferences.FavouriteMetricsPreferencePage"
+          class="org.sonar.ide.eclipse.internal.ui.preferences.FavouriteMetricsPreferencePage"
           id="org.sonar.ide.eclipse.preferences.FavouriteMetricsPreferencePage"
           name="Favourite Metrics">
     </page>
@@ -33,28 +33,28 @@
     </category>
     <view
     	category="org.sonar.ide.eclipse"
-    	class="org.sonar.ide.eclipse.views.MeasuresView"
+    	class="org.sonar.ide.eclipse.internal.ui.views.MeasuresView"
     	icon="icons/sonar.png"
     	id="org.sonar.ide.eclipse.views.MeasuresView"
     	name="%sonar.measures.view.name">
     </view>
     <view
     	category="org.sonar.ide.eclipse"
-    	class="org.sonar.ide.eclipse.views.HotspotsView"
+    	class="org.sonar.ide.eclipse.internal.ui.views.HotspotsView"
     	icon="icons/sonar.png"
     	id="org.sonar.ide.eclipse.views.HotspotsView"
     	name="Hotspots">
     </view>
     <view
         category="org.sonar.ide.eclipse"
-        class="org.sonar.ide.eclipse.views.ViolationsView"
+        class="org.sonar.ide.eclipse.internal.ui.views.ViolationsView"
         icon="icons/sonar.png"
         id="org.sonar.ide.eclipse.views.ViolationsView"
         name="%sonar.violation.view.name">
     </view>
     <view
           category="org.sonar.ide.eclipse"
-          class="org.sonar.ide.eclipse.views.WebView"
+          class="org.sonar.ide.eclipse.internal.ui.views.WebView"
           icon="icons/sonar.png"
           id="org.sonar.ide.eclipse.views.WebView"
           name="Web">
@@ -139,12 +139,12 @@
         </markerFieldConfiguration>
     </markerContentGenerator>
     <markerField 
-        class="org.sonar.ide.eclipse.views.ViolationSeverityAndRuleNameField" 
+        class="org.sonar.ide.eclipse.internal.ui.views.ViolationSeverityAndRuleNameField" 
         id="org.sonar.ide.eclipse.views.violationSeverityAndRuleNameField" 
         name="Rule"> 
     </markerField> 
     <markerField 
-        class="org.sonar.ide.eclipse.views.ViolationRuleKeyField" 
+        class="org.sonar.ide.eclipse.internal.ui.views.ViolationRuleKeyField" 
         id="org.sonar.ide.eclipse.views.violationRuleKeyField" 
         name="%sonar.violation.view.rulekeyfield"> 
     </markerField> 
@@ -155,7 +155,7 @@
     <wizard
         canFinishEarly="true"
         category="org.sonar.ide.eclipse.wizcat"
-        class="org.sonar.ide.eclipse.wizards.NewServerLocationWizard"
+        class="org.sonar.ide.eclipse.internal.ui.wizards.NewServerLocationWizard"
         descriptionImage="icons/sonar-large.gif"
         icon="icons/sonar.png"
         id="org.sonar.ide.eclipse.wizards.newserverlocationwizard"
@@ -191,7 +191,7 @@
            </separator>
         </menu>
         <action
-              class="org.sonar.ide.eclipse.actions.OpenInBrowserAction"
+              class="org.sonar.ide.eclipse.internal.ui.actions.OpenInBrowserAction"
               enablesFor="1"
               id="org.sonar.ide.eclipse.openInBrowserAction"
               label="%sonar.action.openinbrowser.label"
@@ -217,7 +217,7 @@
         <action
               label="Sonar server"
               enablesFor="1"
-              class="org.sonar.ide.eclipse.compare.CompareWithSonarAction"
+              class="org.sonar.ide.eclipse.internal.ui.compare.CompareWithSonarAction"
               menubarPath="compareWithMenu/compareWithGroup"
               id="org.sonar.ide.eclipse.compareWithSonar"
               icon="icons/sonar.png">
@@ -232,7 +232,7 @@
           <objectState name="nature" value="org.sonar.ide.eclipse.sonarNature"/>
         </visibility>
 		<action id="org.sonar.ide.eclipse.addRemoveNatureAction"
-                class="org.sonar.ide.eclipse.actions.ToggleNatureAction"
+                class="org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction"
                 enablesFor="+"
                 label="Remove Sonar Nature"
                 menubarPath="org.sonar.ide.eclipse.sonar/group1">
@@ -253,7 +253,7 @@
       	<!-- about this menubarPath see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=231611 -->
       	<action id="org.sonar.ide.ui.ConvertedProjectWizard" 
         	    label="Associate with Sonar..."
-            	class="org.sonar.ide.eclipse.actions.ConfigureProjectsAction"
+            	class="org.sonar.ide.eclipse.internal.ui.actions.ConfigureProjectsAction"
               	menubarPath="org.eclipse.ui.projectConfigure/additions"
               	enablesFor="+"
               	icon="icons/sonar.png">
@@ -322,7 +322,7 @@
         <action
               id="org.sonar.ide.eclipse.ui.SendFeedback"
               menubarPath="help/feedback"
-              class="org.sonar.ide.eclipse.actions.SendFeedbackAction"
+              class="org.sonar.ide.eclipse.internal.ui.actions.SendFeedbackAction"
               label="Report Sonar Issue"
               icon="icons/sonar.png">
         </action>
@@ -370,7 +370,7 @@
         point="org.eclipse.ui.workbench.texteditor.quickDiffReferenceProvider">
      <referenceprovider
             label="Sonar source"
-           class="org.sonar.ide.eclipse.compare.SonarReferenceProvider"
+           class="org.sonar.ide.eclipse.internal.ui.compare.SonarReferenceProvider"
            id="org.sonar.ide.eclipse.referenceprovider">
      </referenceprovider>
   </extension>

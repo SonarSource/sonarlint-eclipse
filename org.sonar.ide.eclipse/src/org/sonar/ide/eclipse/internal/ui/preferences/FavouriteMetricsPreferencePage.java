@@ -1,4 +1,4 @@
-package org.sonar.ide.eclipse.preferences;
+package org.sonar.ide.eclipse.internal.ui.preferences;
 
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.TableViewer;

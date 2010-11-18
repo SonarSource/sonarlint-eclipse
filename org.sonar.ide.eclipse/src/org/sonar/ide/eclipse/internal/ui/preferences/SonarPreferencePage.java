@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.preferences;
+package org.sonar.ide.eclipse.internal.ui.preferences;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferencePage;
@@ -43,10 +43,10 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.internal.ui.wizards.EditServerLocationWizard;
+import org.sonar.ide.eclipse.internal.ui.wizards.NewServerLocationWizard;
 import org.sonar.ide.eclipse.ui.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.utils.SelectionUtils;
-import org.sonar.ide.eclipse.wizards.EditServerLocationWizard;
-import org.sonar.ide.eclipse.wizards.NewServerLocationWizard;
 import org.sonar.wsclient.Host;
 
 import java.text.MessageFormat;

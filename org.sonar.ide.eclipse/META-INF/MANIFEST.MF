@@ -31,13 +31,20 @@ Import-Package: org.apache.commons.io,
  org.sonar.ide.ui
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonar.ide.eclipse,
- org.sonar.ide.eclipse.actions,
  org.sonar.ide.eclipse.core,
+ org.sonar.ide.eclipse.internal;x-internal:=true,
+ org.sonar.ide.eclipse.internal.builder;x-internal:=true,
+ org.sonar.ide.eclipse.internal.project;x-internal:=true,
+ org.sonar.ide.eclipse.internal.ui.actions;x-internal:=true,
+ org.sonar.ide.eclipse.internal.ui.compare;x-internal:=true,
+ org.sonar.ide.eclipse.internal.ui.preferences;x-internal:=true,
+ org.sonar.ide.eclipse.internal.ui.views;x-internal:=true,
+ org.sonar.ide.eclipse.internal.ui.wizards;x-internal:=true,
  org.sonar.ide.eclipse.jobs,
+ org.sonar.ide.eclipse.markers,
  org.sonar.ide.eclipse.markers.resolvers,
- org.sonar.ide.eclipse.preferences,
+ org.sonar.ide.eclipse.perspectives,
  org.sonar.ide.eclipse.properties,
- org.sonar.ide.eclipse.utils,
- org.sonar.ide.eclipse.views,
- org.sonar.ide.eclipse.wizards
+ org.sonar.ide.eclipse.ui,
+ org.sonar.ide.eclipse.utils
 Bundle-Localization: OSGI-INF/l10n/bundle

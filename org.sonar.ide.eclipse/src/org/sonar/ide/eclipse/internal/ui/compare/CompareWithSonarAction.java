@@ -18,45 +18,45 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.actions;
+package org.sonar.ide.eclipse.internal.ui.compare;
 
+import org.eclipse.compare.CompareUI;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
-import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.utils.SelectionUtils;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+/**
+ * @author Jérémie Lagarde
+ */
+public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
 
-public class SendFeedbackAction implements IWorkbenchWindowActionDelegate {
+  private ISonarResource resource;
 
   public void dispose() {
+    resource = null;
   }
 
-  public void init(IWorkbenchWindow window) {
+  public void init(final IWorkbenchWindow window) {
   }
 
-  public void run(IAction action) {
-    IWorkbenchBrowserSupport browserSupport = SonarPlugin.getDefault().getWorkbench().getBrowserSupport();
-    try {
-      URL url = new URL("http://jira.codehaus.org/browse/SONARIDE");
-      if (browserSupport.isInternalWebBrowserAvailable()) {
-        browserSupport.createBrowser(null).openURL(url);
-      } else {
-        browserSupport.getExternalBrowser().openURL(url);
-      }
-    } catch (PartInitException e) {
-      SonarLogger.log(e);
-    } catch (MalformedURLException e) {
-      SonarLogger.log(e);
+  public void selectionChanged(final IAction action, final ISelection selection) {
+    resource = null;
+    Object element = SelectionUtils.getSingleElement(selection);
+    if (element instanceof ISonarResource) {
+      resource = (ISonarResource) element;
     }
   }
 
-  public void selectionChanged(IAction action, ISelection selection) {
+  public void run(final IAction action) {
+    if (resource != null) {
+      final SourceCode sourceCode = EclipseSonar.getInstance(resource.getProject()).search(resource);
+      CompareUI.openCompareEditor(new SonarCompareInput(resource.getResource(), sourceCode.getRemoteContent()));
+    }
   }
 
 }

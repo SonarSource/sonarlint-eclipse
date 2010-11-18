@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.wizards;
+package org.sonar.ide.eclipse.internal.ui.wizards;
 
 import java.lang.reflect.InvocationTargetException;
 
