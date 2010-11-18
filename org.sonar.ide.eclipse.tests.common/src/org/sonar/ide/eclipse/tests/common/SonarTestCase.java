@@ -20,9 +20,11 @@
 
 package org.sonar.ide.eclipse.tests.common;
 
-import static org.junit.Assert.fail;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -38,16 +40,10 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.sonar.ide.api.Logs;
-import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.test.SonarIdeTestCase;
 import org.sonar.ide.test.SonarTestServer;
 import org.sonar.wsclient.Host;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Common test case for sonar-ide/eclipse projects.
@@ -60,10 +56,12 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
   protected static IWorkspace workspace;
   protected static SonarUiPlugin plugin;
   private static SonarTestServer testServer;
-  private List<MarkerChecker> markerCheckerList;
 
   @BeforeClass
   final static public void prepareWorkspace() throws Exception {
+    // Override default location "target/projects-source"
+    SonarIdeTestCase.projectsSource = new File("testdata");
+
     workspace = ResourcesPlugin.getWorkspace();
     final IWorkspaceDescription description = workspace.getDescription();
     description.setAutoBuilding(false);
@@ -160,40 +158,6 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
     while ( !Job.getJobManager().isIdle()) {
       Thread.sleep(1000);
     }
-  }
-
-  protected void cleanMarckerInfo() {
-    markerCheckerList = null;
-  }
-
-  protected void addMarckerInfo(final int priority, final long line, final String message) {
-    if (markerCheckerList == null) {
-      markerCheckerList = new ArrayList<MarkerChecker>();
-    }
-    markerCheckerList.add(new MarkerChecker(priority, line, message));
-  }
-
-  protected void assertMarkers(final IMarker[] markers) throws CoreException {
-    for (final IMarker marker : markers) {
-      assertMarker(marker);
-    }
-  }
-
-  protected void assertMarker(final IMarker marker) throws CoreException {
-    if (Logs.INFO.isDebugEnabled()) {
-      Logs.INFO.debug("Checker marker[" + marker.getId() + "] (" + marker.getAttribute(IMarker.PRIORITY) + ") : line "
-          + marker.getAttribute(IMarker.LINE_NUMBER) + " : " + marker.getAttribute(IMarker.MESSAGE));
-    }
-    if ( !ISonarConstants.MARKER_ID.equals(marker.getType())) {
-      return;
-    }
-    for (final MarkerChecker checker : markerCheckerList) {
-      if (checker.check(marker)) {
-        return;
-      }
-    }
-    fail("MarckerChecker faild for marker[" + marker.getId() + "] (" + marker.getAttribute(IMarker.PRIORITY) + ") : line "
-        + marker.getAttribute(IMarker.LINE_NUMBER) + " : " + marker.getAttribute(IMarker.MESSAGE));
   }
 
 }

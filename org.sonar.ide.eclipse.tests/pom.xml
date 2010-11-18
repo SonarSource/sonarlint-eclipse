@@ -25,34 +25,6 @@
         </excludes>
       </resource>
     </resources>
-
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>extract-projects</id>
-            <phase>generate-test-resources</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.codehaus.sonar-ide</groupId>
-                  <artifactId>sonar-ide-testing-harness</artifactId>
-                  <version>${sonar-ide-commons.version}</version>
-                  <type>tar.gz</type>
-                  <classifier>projects</classifier>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>${project.build.directory}</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
   </build>
 
 </project>
