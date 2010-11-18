@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.sonar.ide.eclipse.jdt;singleton:=true
 Bundle-Version: 0.4.0.qualifier
 Bundle-Vendor: %bundle_vendor
 Bundle-ClassPath: .
-Bundle-Activator: org.sonar.ide.eclipse.jdt.SonarJdtPlugin
+Bundle-Activator: org.sonar.ide.eclipse.internal.jdt.SonarJdtPlugin
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.ui,
@@ -17,8 +17,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.sonar.ide.eclipse,
  org.sonar.ide.eclipse.core,
  org.sonar.ide.eclipse.sonar_embedder
-Export-Package: org.sonar.ide.eclipse.internal.jdt;x-friends:="org.sonar.ide.eclipse.tests",
- org.sonar.ide.eclipse.jdt
+Export-Package: org.sonar.ide.eclipse.internal.jdt;x-friends:="org.sonar.ide.eclipse.tests"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
 Bundle-ActivationPolicy: lazy
