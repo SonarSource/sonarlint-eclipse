@@ -29,7 +29,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import java.net.URL;

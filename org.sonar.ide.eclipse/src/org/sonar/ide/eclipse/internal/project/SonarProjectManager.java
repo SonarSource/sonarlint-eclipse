@@ -28,7 +28,7 @@ import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonar.ide.api.Logs;
 import org.sonar.ide.eclipse.core.ISonarConstants;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 
 /**
  * @author Evgeny Mandrikov

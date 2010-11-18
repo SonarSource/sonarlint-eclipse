@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse;
+package org.sonar.ide.eclipse.internal.ui;
 
 import java.net.MalformedURLException;
 import java.net.URL;

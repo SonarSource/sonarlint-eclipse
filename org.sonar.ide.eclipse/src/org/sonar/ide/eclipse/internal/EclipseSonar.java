@@ -28,9 +28,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-import org.sonar.ide.eclipse.utils.PlatformUtils;
+import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.ide.wsclient.RemoteSonar;
 import org.sonar.wsclient.Host;
 

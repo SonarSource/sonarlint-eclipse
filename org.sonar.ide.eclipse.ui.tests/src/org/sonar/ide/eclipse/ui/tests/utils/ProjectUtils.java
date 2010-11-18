@@ -3,7 +3,7 @@ package org.sonar.ide.eclipse.ui.tests.utils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 
 public class ProjectUtils {
 

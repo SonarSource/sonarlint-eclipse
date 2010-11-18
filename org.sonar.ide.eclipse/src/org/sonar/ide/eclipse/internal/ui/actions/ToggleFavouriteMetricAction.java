@@ -2,11 +2,11 @@ package org.sonar.ide.eclipse.internal.ui.actions;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.actions.BaseSelectionListenerAction;
-import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.core.ISonarMetric;
+import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-import org.sonar.ide.eclipse.utils.PlatformUtils;
-import org.sonar.ide.eclipse.utils.SelectionUtils;
+import org.sonar.ide.eclipse.ui.util.PlatformUtils;
+import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 
 public class ToggleFavouriteMetricAction extends BaseSelectionListenerAction {
   public ToggleFavouriteMetricAction() {

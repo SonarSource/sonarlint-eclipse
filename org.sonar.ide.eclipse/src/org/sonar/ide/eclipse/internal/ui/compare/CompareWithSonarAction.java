@@ -28,7 +28,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
-import org.sonar.ide.eclipse.utils.SelectionUtils;
+import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 
 /**
  * @author Jérémie Lagarde

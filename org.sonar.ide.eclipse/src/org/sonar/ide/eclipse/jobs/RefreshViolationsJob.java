@@ -31,7 +31,7 @@ import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-import org.sonar.ide.eclipse.utils.PlatformUtils;
+import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.ide.shared.violations.ViolationUtils;
 import org.sonar.wsclient.services.Violation;
 

@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
-import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.Host;

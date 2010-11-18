@@ -46,7 +46,7 @@ import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.wizards.EditServerLocationWizard;
 import org.sonar.ide.eclipse.internal.ui.wizards.NewServerLocationWizard;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-import org.sonar.ide.eclipse.utils.SelectionUtils;
+import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 import org.sonar.wsclient.Host;
 
 import java.text.MessageFormat;

@@ -20,13 +20,11 @@
 
 package org.sonar.ide.eclipse.internal.ui;
 
-import org.sonar.ide.eclipse.core.ISonarConstants;
-
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 public class Messages {
-  private static final String BUNDLE_NAME = ISonarConstants.PLUGIN_ID + ".messages"; //$NON-NLS-1$
+  private static final String BUNDLE_NAME = "org.sonar.ide.eclipse.internal.ui.messages"; //$NON-NLS-1$
 
   private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 

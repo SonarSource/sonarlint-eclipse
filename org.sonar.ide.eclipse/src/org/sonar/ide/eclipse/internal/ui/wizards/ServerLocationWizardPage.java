@@ -43,10 +43,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.ui.Messages;
+import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.Host;
 

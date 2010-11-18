@@ -27,7 +27,7 @@ import org.eclipse.compare.ResourceNode;
 import org.eclipse.compare.structuremergeviewer.DiffNode;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonar.ide.eclipse.SonarImages;
+import org.sonar.ide.eclipse.internal.ui.SonarImages;
 
 /**
  * @author Jérémie Lagarde

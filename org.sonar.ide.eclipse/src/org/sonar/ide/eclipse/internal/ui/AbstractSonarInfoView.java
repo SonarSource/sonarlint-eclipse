@@ -39,10 +39,9 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.ViewPart;
-import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.utils.PlatformUtils;
-import org.sonar.ide.eclipse.utils.SelectionUtils;
+import org.sonar.ide.eclipse.ui.util.PlatformUtils;
+import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 
 /**
  * Abstract class for views which show information for a given element. Inspired by org.eclipse.jdt.internal.ui.infoviews.AbstractInfoView

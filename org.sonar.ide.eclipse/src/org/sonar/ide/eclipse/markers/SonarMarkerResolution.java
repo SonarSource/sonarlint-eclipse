@@ -27,7 +27,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMarkerResolution2;
-import org.sonar.ide.eclipse.SonarImages;
+import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.markers.resolvers.ISonarResolver;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 

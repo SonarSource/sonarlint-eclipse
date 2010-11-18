@@ -166,7 +166,7 @@
   <extension
       point="org.eclipse.ui.propertyPages">
     <page
-      class="org.sonar.ide.eclipse.properties.SonarProjectPropertyPage"
+      class="org.sonar.ide.eclipse.internal.ui.properties.SonarProjectPropertyPage"
        id="org.sonar.ide.eclipse.properties.sonarProjectPropertyPage"
        name="%sonar.properties.page.name">
        <filter name="projectNature" value="org.sonar.ide.eclipse.sonarNature"/>
@@ -332,7 +332,7 @@
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            class="org.sonar.ide.eclipse.perspectives.SonarPerspectiveFactory"
+            class="org.sonar.ide.eclipse.internal.ui.SonarPerspectiveFactory"
             icon="icons/sonar.png"
             id="org.sonar.ide.eclipse.perspectives.SonarPerspective"
             name="%sonar.perspective.name">

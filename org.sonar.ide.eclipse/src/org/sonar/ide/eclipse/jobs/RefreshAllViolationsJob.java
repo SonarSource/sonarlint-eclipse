@@ -27,7 +27,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
-import org.sonar.ide.eclipse.utils.PlatformUtils;
+import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.Violation;
 
