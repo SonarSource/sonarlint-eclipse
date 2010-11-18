@@ -27,10 +27,10 @@ import org.eclipse.swtbot.swt.finder.utils.SWTUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.sonar.ide.eclipse.SonarPlugin;
-import org.sonar.ide.eclipse.SonarServerManager;
+import org.sonar.ide.eclipse.internal.SonarServerManager;
 import org.sonar.ide.eclipse.tests.common.VersionHelpers;
 import org.sonar.ide.eclipse.tests.common.WorkspaceHelpers;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
 import org.sonar.ide.test.SonarIdeTestCase;
@@ -54,8 +54,8 @@ public abstract class UITestCase extends SonarIdeTestCase {
     // Disable Secure Storage during tests
     SonarServerManager.enableSecureStorate(false);
     // Remove all configured servers and set default
-    SonarPlugin.getServerManager().clean();
-    SonarPlugin.getServerManager().findServer(ProjectUtils.getSonarServerUrl());
+    SonarUiPlugin.getServerManager().clean();
+    SonarUiPlugin.getServerManager().findServer(ProjectUtils.getSonarServerUrl());
 
     System.out.println("Eclipse version : " + VersionHelpers.getEclipseVersion());
 

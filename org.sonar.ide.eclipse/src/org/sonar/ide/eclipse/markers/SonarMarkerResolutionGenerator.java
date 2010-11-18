@@ -27,9 +27,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.markers.resolvers.ISonarResolver;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +63,7 @@ public class SonarMarkerResolutionGenerator implements IMarkerResolutionGenerato
         }
       }
     } catch (final CoreException ex) {
-      SonarPlugin.getDefault().displayError(IStatus.WARNING, "Error in SonarMarkerResolutionGenerator.", ex, true);
+      SonarUiPlugin.getDefault().displayError(IStatus.WARNING, "Error in SonarMarkerResolutionGenerator.", ex, true);
     }
     return resolutions.toArray(new IMarkerResolution[resolutions.size()]);
   }

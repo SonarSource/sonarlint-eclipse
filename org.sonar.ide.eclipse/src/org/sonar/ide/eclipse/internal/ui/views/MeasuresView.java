@@ -45,14 +45,14 @@ import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.SonarImages;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.*;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.internal.ui.AbstractSonarInfoView;
+import org.sonar.ide.eclipse.internal.ui.AbstractTableLabelProvider;
+import org.sonar.ide.eclipse.internal.ui.EnhancedFilteredTree;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleFavouriteMetricAction;
 import org.sonar.ide.eclipse.jobs.AbstractRemoteSonarJob;
-import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
-import org.sonar.ide.eclipse.ui.AbstractTableLabelProvider;
-import org.sonar.ide.eclipse.ui.EnhancedFilteredTree;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.services.*;
 
 import com.google.common.base.Function;
@@ -88,7 +88,7 @@ public class MeasuresView extends AbstractSonarInfoView {
       }
 
       favourites.clear();
-      for (ISonarMetric metric : SonarPlugin.getFavouriteMetricsManager().get()) {
+      for (ISonarMetric metric : SonarUiPlugin.getFavouriteMetricsManager().get()) {
         ISonarMeasure measure = measuresByKey.get(metric.getKey());
         if (measure != null) {
           favourites.add(measure);
@@ -155,7 +155,7 @@ public class MeasuresView extends AbstractSonarInfoView {
     viewer.addSelectionChangedListener(toggleFavoriteAction);
 
     hookContextMenu();
-    SonarPlugin.getFavouriteMetricsManager().addListener(favouriteMetricsListener);
+    SonarUiPlugin.getFavouriteMetricsManager().addListener(favouriteMetricsListener);
   }
 
   private void hookContextMenu() {
@@ -258,7 +258,7 @@ public class MeasuresView extends AbstractSonarInfoView {
           final Map<String, ISonarMeasure> measuresByKey = Maps.newHashMap();
           final Multimap<String, ISonarMeasure> measuresByDomain = ArrayListMultimap.create();
           for (ISonarMeasure measure : measures) {
-            if (SonarPlugin.getFavouriteMetricsManager().isFavorite(measure.getMetricDef())) {
+            if (SonarUiPlugin.getFavouriteMetricsManager().isFavorite(measure.getMetricDef())) {
               favorites.add(measure);
             }
             String domain = measure.getMetricDef().getDomain();
@@ -310,7 +310,7 @@ public class MeasuresView extends AbstractSonarInfoView {
 
   @Override
   public void dispose() {
-    SonarPlugin.getFavouriteMetricsManager().removeListener(favouriteMetricsListener);
+    SonarUiPlugin.getFavouriteMetricsManager().removeListener(favouriteMetricsListener);
     super.dispose();
   }
 }

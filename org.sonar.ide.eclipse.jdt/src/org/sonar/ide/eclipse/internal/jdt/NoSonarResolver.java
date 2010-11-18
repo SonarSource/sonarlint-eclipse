@@ -20,12 +20,19 @@
 
 package org.sonar.ide.eclipse.internal.jdt;
 
+import java.text.MessageFormat;
+
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
@@ -34,12 +41,9 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.sonar.ide.eclipse.Messages;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.markers.resolvers.ISonarResolver;
-
-import java.text.MessageFormat;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 /**
  * @author Jérémie Lagarde
@@ -55,8 +59,8 @@ public class NoSonarResolver implements ISonarResolver {
     try {
       if (ISonarConstants.MARKER_ID.equals(marker.getType())) {
         final Object ruleName = marker.getAttribute("rulename"); //$NON-NLS-1$
-        label = MessageFormat.format(Messages.getString("resolver.nosonartag.label"), ruleName); //$NON-NLS-1$
-        description = MessageFormat.format(Messages.getString("resolver.nosonartag.description"), ruleName); //$NON-NLS-1$
+        label = MessageFormat.format(Messages.NoSonarResolver_label, ruleName);
+        description = MessageFormat.format(Messages.NoSonarResolver_description, ruleName);
         return true;
       }
     } catch (final CoreException e) {
@@ -98,7 +102,7 @@ public class NoSonarResolver implements ISonarResolver {
       addNoSonarComments(cu, endOfLine, new NullProgressMonitor());
       return true;
     } catch (final Exception e) {
-      SonarPlugin.getDefault().displayError(IStatus.WARNING, "Error in NOSONAR tag resolver.", e, true); //$NON-NLS-1$
+      SonarUiPlugin.getDefault().displayError(IStatus.WARNING, "Error in NOSONAR tag resolver.", e, true); //$NON-NLS-1$
     }
     return true;
   }

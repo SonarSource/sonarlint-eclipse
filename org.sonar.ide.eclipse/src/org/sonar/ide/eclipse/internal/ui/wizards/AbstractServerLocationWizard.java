@@ -28,7 +28,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -63,7 +63,7 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
         try {
           doFinish(serverUrl, username, password, monitor);
         } catch (Exception e) {
-          SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
+          SonarUiPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
         } finally {
           monitor.done();
         }
@@ -82,6 +82,6 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
   }
 
   protected void doFinish(String serverUrl, String username, String password, IProgressMonitor monitor) throws Exception {
-    SonarPlugin.getServerManager().addServer(serverUrl, username, password);
+    SonarUiPlugin.getServerManager().addServer(serverUrl, username, password);
   }
 }

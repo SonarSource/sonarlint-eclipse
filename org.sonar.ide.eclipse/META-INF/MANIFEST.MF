@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.sonar.ide.eclipse;singleton:=true
 Bundle-Version: 0.4.0.qualifier
 Bundle-Vendor: %bundle_vendor
 Bundle-ClassPath: .
-Bundle-Activator: org.sonar.ide.eclipse.SonarPlugin
+Bundle-Activator: org.sonar.ide.eclipse.ui.SonarUiPlugin
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.net,
  org.eclipse.core.databinding,

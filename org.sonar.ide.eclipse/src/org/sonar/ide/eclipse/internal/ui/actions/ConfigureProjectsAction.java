@@ -30,8 +30,8 @@ import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.internal.ui.wizards.ConfigureProjectsWizard;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import com.google.common.collect.Lists;
 
@@ -80,7 +80,7 @@ public class ConfigureProjectsAction implements IObjectActionDelegate {
   private List<IProject> getUnconfiguredProjects() {
     ArrayList<IProject> unconfigured = Lists.newArrayList();
     for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-      if (project.isOpen() && !SonarPlugin.hasSonarNature(project) && SonarPlugin.hasJavaNature(project)) {
+      if (project.isOpen() && !SonarUiPlugin.hasSonarNature(project) && SonarUiPlugin.hasJavaNature(project)) {
         unconfigured.add(project);
       }
     }

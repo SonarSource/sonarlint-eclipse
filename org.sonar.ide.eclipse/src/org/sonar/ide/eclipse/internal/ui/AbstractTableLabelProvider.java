@@ -18,26 +18,46 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse;
+package org.sonar.ide.eclipse.internal.ui;
 
-import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.swt.graphics.Image;
 
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+public abstract class AbstractTableLabelProvider implements ITableLabelProvider {
 
-public class Messages {
-  private static final String BUNDLE_NAME = ISonarConstants.PLUGIN_ID + ".messages"; //$NON-NLS-1$
-
-  private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
-
-  private Messages() {
+  /**
+   * {@inheritDoc}
+   */
+  public Image getColumnImage(Object element, int columnIndex) {
+    return null;
   }
 
-  public static String getString(String key) {
-    try {
-      return RESOURCE_BUNDLE.getString(key);
-    } catch (MissingResourceException e) {
-      return '!' + key + '!';
-    }
+  public abstract String getColumnText(Object element, int columnIndex);
+
+  /**
+   * {@inheritDoc}
+   */
+  public void addListener(ILabelProviderListener listener) {
   }
+
+  /**
+   * {@inheritDoc}
+   */
+  public void dispose() {
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public boolean isLabelProperty(Object element, String property) {
+    return false;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public void removeListener(ILabelProviderListener listener) {
+  }
+
 }

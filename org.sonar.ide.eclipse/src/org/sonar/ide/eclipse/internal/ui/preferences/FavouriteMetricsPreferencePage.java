@@ -10,8 +10,8 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarMetric;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import com.google.common.collect.Lists;
 
@@ -56,7 +56,7 @@ public class FavouriteMetricsPreferencePage extends PreferencePage implements IW
       }
     });
 
-    fillTable(SonarPlugin.getFavouriteMetricsManager().get());
+    fillTable(SonarUiPlugin.getFavouriteMetricsManager().get());
 
     return composite;
   }
@@ -90,14 +90,14 @@ public class FavouriteMetricsPreferencePage extends PreferencePage implements IW
       ISonarMetric metric = (ISonarMetric) item.getData();
       metrics.add(metric);
     }
-    SonarPlugin.getFavouriteMetricsManager().set(metrics);
+    SonarUiPlugin.getFavouriteMetricsManager().set(metrics);
     return true;
   }
 
   @Override
   protected void performDefaults() {
     super.performDefaults();
-    SonarPlugin.getFavouriteMetricsManager().restoreDefaults();
-    fillTable(SonarPlugin.getFavouriteMetricsManager().get());
+    SonarUiPlugin.getFavouriteMetricsManager().restoreDefaults();
+    fillTable(SonarUiPlugin.getFavouriteMetricsManager().get());
   }
 }

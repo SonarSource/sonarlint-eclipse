@@ -5,6 +5,8 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.junit.Test;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.SonarServerManager;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.Host;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -17,7 +19,7 @@ public class SonarServerManagerTest {
     SonarServerManager.enableSecureStorate(false);
 
     String url = "http://new";
-    SonarServerManager serverManager = SonarPlugin.getServerManager();
+    SonarServerManager serverManager = SonarUiPlugin.getServerManager();
     assertThat(serverManager.getServers().size(), is(0));
 
     Host host = serverManager.findServer(url);
@@ -33,7 +35,7 @@ public class SonarServerManagerTest {
     SonarServerManager.enableSecureStorate(true);
 
     String url = "http://secure";
-    SonarServerManager serverManager = SonarPlugin.getServerManager();
+    SonarServerManager serverManager = SonarUiPlugin.getServerManager();
     serverManager.addServer(url, "tester", "secret");
 
     ISecurePreferences securePreferences = SecurePreferencesFactory.getDefault().node(ISonarConstants.PLUGIN_ID);

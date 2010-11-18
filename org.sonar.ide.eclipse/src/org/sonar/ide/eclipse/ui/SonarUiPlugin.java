@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse;
+package org.sonar.ide.eclipse.ui;
 
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
@@ -32,12 +32,16 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.EclipseProxyAuthenticator;
+import org.sonar.ide.eclipse.EclipseProxySelector;
 import org.sonar.ide.eclipse.core.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.internal.SonarServerManager;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
+import org.sonar.ide.eclipse.internal.ui.Messages;
+import org.sonar.ide.eclipse.internal.ui.SonarUiPreferenceInitializer;
 import org.sonar.ide.eclipse.jobs.RefreshViolationsJob;
-import org.sonar.ide.eclipse.ui.SonarUiPreferenceInitializer;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -49,17 +53,17 @@ import java.net.Authenticator;
 import java.net.ProxySelector;
 import java.net.URL;
 
-public class SonarPlugin extends AbstractUIPlugin {
+public class SonarUiPlugin extends AbstractUIPlugin {
 
   // The shared instance
-  private static SonarPlugin plugin;
+  private static SonarUiPlugin plugin;
 
   private static SonarServerManager serverManager;
   private static SonarProjectManager projectManager;
 
   private FavouriteMetricsManager favouriteMetricsManager = new FavouriteMetricsManager();
 
-  public SonarPlugin() {
+  public SonarUiPlugin() {
   }
 
   public static SonarServerManager getServerManager() {
@@ -93,7 +97,7 @@ public class SonarPlugin extends AbstractUIPlugin {
 
     getFavouriteMetricsManager().set(SonarUiPreferenceInitializer.getFavouriteMetrics());
 
-    LoggerFactory.getLogger(SonarPlugin.class).info("SonarPlugin started");
+    LoggerFactory.getLogger(SonarUiPlugin.class).info("SonarPlugin started");
   }
 
   @Override
@@ -101,14 +105,14 @@ public class SonarPlugin extends AbstractUIPlugin {
     SonarUiPreferenceInitializer.setFavouriteMetrics(getFavouriteMetricsManager().get());
 
     plugin = null;
-    LoggerFactory.getLogger(SonarPlugin.class).info("SonarPlugin stopped");
+    LoggerFactory.getLogger(SonarUiPlugin.class).info("SonarPlugin stopped");
     super.stop(context);
   }
 
   /**
    * @return the shared instance
    */
-  public static SonarPlugin getDefault() {
+  public static SonarUiPlugin getDefault() {
     return plugin;
   }
 

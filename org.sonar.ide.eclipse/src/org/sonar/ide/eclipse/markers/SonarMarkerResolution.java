@@ -28,8 +28,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMarkerResolution2;
 import org.sonar.ide.eclipse.SonarImages;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.markers.resolvers.ISonarResolver;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 /**
  * @author Jérémie Lagarde
@@ -61,7 +61,7 @@ public class SonarMarkerResolution implements IMarkerResolution2 {
         try {
           marker.delete();
         } catch (final CoreException e) {
-          SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
+          SonarUiPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
         }
       }
     }

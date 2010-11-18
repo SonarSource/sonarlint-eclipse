@@ -25,7 +25,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
-import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.shared.violations.ViolationUtils;
 
 /**
@@ -64,11 +64,11 @@ public class ViolationSeverityAndRuleNameField extends MarkerField {
   private Image getSeverityImage(int severity) {
     if (images == null) {
       images = new Image[5];
-      images[0] = ImageDescriptor.createFromFile(SonarPlugin.class, "/org/sonar/ide/images/priority/blocker.gif").createImage(); //$NON-NLS-1$
-      images[1] = ImageDescriptor.createFromFile(SonarPlugin.class, "/org/sonar/ide/images/priority/critical.gif").createImage(); //$NON-NLS-1$
-      images[2] = ImageDescriptor.createFromFile(SonarPlugin.class, "/org/sonar/ide/images/priority/major.gif").createImage(); //$NON-NLS-1$
-      images[3] = ImageDescriptor.createFromFile(SonarPlugin.class, "/org/sonar/ide/images/priority/minor.gif").createImage(); //$NON-NLS-1$
-      images[4] = ImageDescriptor.createFromFile(SonarPlugin.class, "/org/sonar/ide/images/priority/info.gif").createImage(); //$NON-NLS-1$
+      images[0] = ImageDescriptor.createFromFile(SonarUiPlugin.class, "/org/sonar/ide/images/priority/blocker.gif").createImage(); //$NON-NLS-1$
+      images[1] = ImageDescriptor.createFromFile(SonarUiPlugin.class, "/org/sonar/ide/images/priority/critical.gif").createImage(); //$NON-NLS-1$
+      images[2] = ImageDescriptor.createFromFile(SonarUiPlugin.class, "/org/sonar/ide/images/priority/major.gif").createImage(); //$NON-NLS-1$
+      images[3] = ImageDescriptor.createFromFile(SonarUiPlugin.class, "/org/sonar/ide/images/priority/minor.gif").createImage(); //$NON-NLS-1$
+      images[4] = ImageDescriptor.createFromFile(SonarUiPlugin.class, "/org/sonar/ide/images/priority/info.gif").createImage(); //$NON-NLS-1$
     }
     return images[severity];
   }

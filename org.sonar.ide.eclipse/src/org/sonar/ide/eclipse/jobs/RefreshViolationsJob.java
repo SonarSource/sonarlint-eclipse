@@ -27,10 +27,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.*;
 import org.eclipse.ui.progress.UIJob;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.utils.PlatformUtils;
 import org.sonar.ide.shared.violations.ViolationUtils;
 import org.sonar.wsclient.services.Violation;
@@ -97,7 +97,7 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
     new UIJob("Prepare violations updater") {
       @Override
       public IStatus runInUIThread(IProgressMonitor monitor) {
-        final IWorkbenchPage page = SonarPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        final IWorkbenchPage page = SonarUiPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
         page.addPartListener(new ViolationsUpdater());
         return Status.OK_STATUS;
       }

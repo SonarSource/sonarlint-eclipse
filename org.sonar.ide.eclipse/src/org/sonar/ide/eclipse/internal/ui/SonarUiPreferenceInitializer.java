@@ -1,13 +1,13 @@
-package org.sonar.ide.eclipse.ui;
+package org.sonar.ide.eclipse.internal.ui;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.XMLMemento;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarMetric;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import com.google.common.collect.Lists;
 
@@ -37,11 +37,11 @@ public class SonarUiPreferenceInitializer extends AbstractPreferenceInitializer 
 
   @Override
   public void initializeDefaultPreferences() {
-    SonarPlugin.getDefault().getPreferenceStore().setDefault(PREF_FAVOURITE_METRICS, createFavouriteMetricsMemento(getDefaults()));
+    SonarUiPlugin.getDefault().getPreferenceStore().setDefault(PREF_FAVOURITE_METRICS, createFavouriteMetricsMemento(getDefaults()));
   }
 
   public static Collection<ISonarMetric> getFavouriteMetrics() {
-    return getFavouriteMetricsFromMemento(SonarPlugin.getDefault().getPreferenceStore().getString(PREF_FAVOURITE_METRICS));
+    return getFavouriteMetricsFromMemento(SonarUiPlugin.getDefault().getPreferenceStore().getString(PREF_FAVOURITE_METRICS));
   }
 
   /**
@@ -54,7 +54,7 @@ public class SonarUiPreferenceInitializer extends AbstractPreferenceInitializer 
   public static synchronized void setFavouriteMetrics(Collection<ISonarMetric> metrics) {
     String memento = createFavouriteMetricsMemento(metrics);
     if (memento != null) {
-      SonarPlugin.getDefault().getPreferenceStore().setValue(PREF_FAVOURITE_METRICS, memento);
+      SonarUiPlugin.getDefault().getPreferenceStore().setValue(PREF_FAVOURITE_METRICS, memento);
     }
   }
 

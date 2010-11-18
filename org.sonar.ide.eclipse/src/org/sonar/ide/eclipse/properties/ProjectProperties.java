@@ -23,7 +23,7 @@ package org.sonar.ide.eclipse.properties;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 /**
  * @author Evgeny Mandrikov
@@ -48,11 +48,11 @@ public class ProjectProperties {
     if (project == null || !project.isAccessible()) {
       return null;
     }
-    return SonarPlugin.getDefault().getProjectManager().readSonarConfiguration(project);
+    return SonarUiPlugin.getDefault().getProjectManager().readSonarConfiguration(project);
   }
 
   public void save() {
-    SonarPlugin.getDefault().getProjectManager().saveSonarConfiguration(project, this);
+    SonarUiPlugin.getDefault().getProjectManager().saveSonarConfiguration(project, this);
   }
 
   public String getUrl() {
@@ -88,7 +88,7 @@ public class ProjectProperties {
   }
 
   /**
-   * @deprecated since 0.3 use {@link SonarPlugin#hasSonarNature(IProject)}
+   * @deprecated since 0.3 use {@link SonarUiPlugin#hasSonarNature(IProject)}
    */
   @Deprecated
   public boolean isProjectConfigured() {

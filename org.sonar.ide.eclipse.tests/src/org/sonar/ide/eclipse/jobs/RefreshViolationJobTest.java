@@ -34,11 +34,11 @@ import org.eclipse.jdt.core.JavaCore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.Host;
 
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public class RefreshViolationJobTest extends SonarTestCase {
   protected void prepareTest() throws Exception {
     // start the mock sonar server.
     final String url = addLocalTestServer();
-    final List<Host> hosts = SonarPlugin.getServerManager().getServers();
+    final List<Host> hosts = SonarUiPlugin.getServerManager().getServers();
     assertTrue("There isn't server configured.", hosts != null && hosts.size() > 0);
 
     if (LOG.isDebugEnabled()) {

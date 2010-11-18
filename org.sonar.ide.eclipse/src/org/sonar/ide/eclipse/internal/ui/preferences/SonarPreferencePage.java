@@ -41,11 +41,11 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
-import org.sonar.ide.eclipse.Messages;
-import org.sonar.ide.eclipse.SonarPlugin;
+import org.sonar.ide.eclipse.internal.ui.AbstractTableLabelProvider;
+import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.wizards.EditServerLocationWizard;
 import org.sonar.ide.eclipse.internal.ui.wizards.NewServerLocationWizard;
-import org.sonar.ide.eclipse.ui.AbstractTableLabelProvider;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.utils.SelectionUtils;
 import org.sonar.wsclient.Host;
 
@@ -89,7 +89,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
 
   private void initTable() {
     // retrieve list of servers
-    servers = SonarPlugin.getServerManager().getServers();
+    servers = SonarUiPlugin.getServerManager().getServers();
     serversViewer.setInput(servers);
   }
 
@@ -115,7 +115,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
       @Override
       public void widgetSelected(SelectionEvent e) {
         NewServerLocationWizard wiz = new NewServerLocationWizard();
-        wiz.init(SonarPlugin.getDefault().getWorkbench(), null);
+        wiz.init(SonarUiPlugin.getDefault().getWorkbench(), null);
         WizardDialog dialog = new WizardDialog(addButton.getShell(), wiz);
         dialog.create();
         if (dialog.open() == Window.OK) {
@@ -133,7 +133,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
       @Override
       public void widgetSelected(SelectionEvent e) {
         EditServerLocationWizard wizard = new EditServerLocationWizard(getSelectedServer());
-        wizard.init(SonarPlugin.getDefault().getWorkbench(), null);
+        wizard.init(SonarUiPlugin.getDefault().getWorkbench(), null);
         WizardDialog dialog = new WizardDialog(editButton.getShell(), wizard);
         dialog.create();
         if (dialog.open() == Window.OK) {
@@ -156,7 +156,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
         if (MessageDialog.openConfirm(SonarPreferencePage.this.getShell(), Messages.getString("remove.server.dialog.caption"), //$NON-NLS-1$
         MessageFormat.format(Messages.getString("remove.server.dialog.msg"), //$NON-NLS-1$
         new Object[] { selected.getHost() }))) {
-          SonarPlugin.getServerManager().removeServer(selected.getHost());
+          SonarUiPlugin.getServerManager().removeServer(selected.getHost());
           servers.remove(selected);
           serversViewer.refresh();
           removeButton.setEnabled(false);

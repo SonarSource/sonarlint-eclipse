@@ -26,8 +26,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -41,7 +41,7 @@ public class SendFeedbackAction implements IWorkbenchWindowActionDelegate {
   }
 
   public void run(IAction action) {
-    IWorkbenchBrowserSupport browserSupport = SonarPlugin.getDefault().getWorkbench().getBrowserSupport();
+    IWorkbenchBrowserSupport browserSupport = SonarUiPlugin.getDefault().getWorkbench().getBrowserSupport();
     try {
       URL url = new URL("http://jira.codehaus.org/browse/SONARIDE");
       if (browserSupport.isInternalWebBrowserAvailable()) {

@@ -23,8 +23,8 @@ package org.sonar.ide.eclipse.markers.resolvers;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.ui.Messages;
 
 import java.text.MessageFormat;
 

@@ -26,9 +26,9 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.views.markers.MarkerSupportView;
-import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarImages;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.jobs.RefreshAllViolationsJob;
 
 /**

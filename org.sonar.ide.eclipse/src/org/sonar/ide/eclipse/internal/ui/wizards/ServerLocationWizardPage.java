@@ -43,11 +43,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.SonarImages;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.internal.ui.Messages;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.Host;
 
 public class ServerLocationWizardPage extends WizardPage {
@@ -120,7 +120,7 @@ public class ServerLocationWizardPage extends WizardPage {
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
               monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
               try {
-                if (SonarPlugin.getServerManager().testSonar(serverUrl, username, password)) {
+                if (SonarUiPlugin.getServerManager().testSonar(serverUrl, username, password)) {
                   status = new Status(Status.OK, ISonarConstants.PLUGIN_ID, Messages.getString("test.server.dialog.msg"));
                 } else {
                   status = new Status(Status.ERROR, ISonarConstants.PLUGIN_ID, Messages.getString("test.server.dialog.error"));

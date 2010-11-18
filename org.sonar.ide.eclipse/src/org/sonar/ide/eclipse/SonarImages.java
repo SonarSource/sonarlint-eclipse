@@ -25,10 +25,11 @@ import java.net.URL;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.sonar.ide.eclipse.core.ISonarMeasure;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 public class SonarImages {
 
-  private static final URL baseUrl = SonarPlugin.getDefault().getBundle().getEntry("/icons/"); //$NON-NLS-1$
+  private static final URL baseUrl = SonarUiPlugin.getDefault().getBundle().getEntry("/icons/"); //$NON-NLS-1$
 
   public static ImageDescriptor STAR = create("star.png"); //$NON-NLS-1$
   public static ImageDescriptor STAR_OFF = create("star_off.png"); //$NON-NLS-1$

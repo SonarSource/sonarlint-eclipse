@@ -26,8 +26,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonar.ide.api.SonarIdeException;
-import org.sonar.ide.eclipse.Messages;
 import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.internal.ui.Messages;
 
 /**
  * Property page for projects to configure sonar server connection. It store in

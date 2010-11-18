@@ -40,12 +40,12 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.SonarIdeException;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.*;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.internal.ui.AbstractSonarInfoView;
+import org.sonar.ide.eclipse.internal.ui.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.jobs.AbstractRemoteSonarJob;
-import org.sonar.ide.eclipse.ui.AbstractSonarInfoView;
-import org.sonar.ide.eclipse.ui.AbstractTableLabelProvider;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.utils.PlatformUtils;
 import org.sonar.ide.eclipse.utils.SelectionUtils;
 import org.sonar.wsclient.services.Measure;
@@ -122,7 +122,7 @@ public class HotspotsView extends AbstractSonarInfoView {
     comboViewer.setContentProvider(ArrayContentProvider.getInstance());
     comboViewer.setLabelProvider(new MetricNameLabelProvider());
     updateFavouriteMetrics();
-    SonarPlugin.getFavouriteMetricsManager().addListener(favouriteMetricsListener);
+    SonarUiPlugin.getFavouriteMetricsManager().addListener(favouriteMetricsListener);
 
     combo.addSelectionListener(new SelectionAdapter() {
       @Override
@@ -184,7 +184,7 @@ public class HotspotsView extends AbstractSonarInfoView {
   }
 
   private void updateFavouriteMetrics() {
-    comboViewer.setInput(SonarPlugin.getFavouriteMetricsManager().get());
+    comboViewer.setInput(SonarUiPlugin.getFavouriteMetricsManager().get());
     if (getMetricKey() != null) {
       comboViewer.setSelection(new StructuredSelection(metric));
     }
@@ -251,7 +251,7 @@ public class HotspotsView extends AbstractSonarInfoView {
 
   @Override
   public void dispose() {
-    SonarPlugin.getFavouriteMetricsManager().removeListener(favouriteMetricsListener);
+    SonarUiPlugin.getFavouriteMetricsManager().removeListener(favouriteMetricsListener);
     super.dispose();
   }
 

@@ -18,7 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse;
+package org.sonar.ide.eclipse.internal;
+
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
@@ -33,9 +36,6 @@ import org.sonar.wsclient.Sonar;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
-import java.util.List;
-import java.util.Map;
 
 public class SonarServerManager {
 
@@ -57,7 +57,7 @@ public class SonarServerManager {
 
   private Map<String, Host> servers;
 
-  protected SonarServerManager() {
+  public SonarServerManager() {
     servers = Maps.newHashMap();
     if (useSecureStorage) {
       loadServers();

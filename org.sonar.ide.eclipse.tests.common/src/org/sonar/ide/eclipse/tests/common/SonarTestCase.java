@@ -38,8 +38,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.sonar.ide.api.Logs;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.test.SonarIdeTestCase;
 import org.sonar.ide.test.SonarTestServer;
 import org.sonar.wsclient.Host;
@@ -58,7 +58,7 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
 
   protected static final IProgressMonitor monitor = new NullProgressMonitor();
   protected static IWorkspace workspace;
-  protected static SonarPlugin plugin;
+  protected static SonarUiPlugin plugin;
   private static SonarTestServer testServer;
   private List<MarkerChecker> markerCheckerList;
 
@@ -69,7 +69,7 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
     description.setAutoBuilding(false);
     workspace.setDescription(description);
 
-    plugin = SonarPlugin.getDefault();
+    plugin = SonarUiPlugin.getDefault();
     cleanWorkspace();
   }
 
@@ -87,7 +87,7 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
 
   final protected String addLocalTestServer() throws Exception {
     final String url = startTestServer();
-    SonarPlugin.getServerManager().createServer(url);
+    SonarUiPlugin.getServerManager().createServer(url);
     return url;
   }
 
@@ -111,9 +111,9 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
     // waitForJobs();
 
     final List<Host> hosts = new ArrayList<Host>();
-    hosts.addAll(SonarPlugin.getServerManager().getServers());
+    hosts.addAll(SonarUiPlugin.getServerManager().getServers());
     for (final Host host : hosts) {
-      SonarPlugin.getServerManager().removeServer(host.getHost());
+      SonarUiPlugin.getServerManager().removeServer(host.getHost());
     }
     final IWorkspaceRoot root = workspace.getRoot();
     for (final IProject project : root.getProjects()) {

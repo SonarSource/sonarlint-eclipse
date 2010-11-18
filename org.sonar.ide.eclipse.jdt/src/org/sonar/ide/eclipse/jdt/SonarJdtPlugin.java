@@ -26,17 +26,17 @@ import org.sonar.ide.eclipse.core.SonarLogger;
 
 public class SonarJdtPlugin extends Plugin {
 
-  public static final String PLUGIN_ID = "org.sonar.ide.eclipse.jdt";
+  public static final String PLUGIN_ID = "org.sonar.ide.eclipse.jdt"; //$NON-NLS-1$
 
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
-    SonarLogger.log("SonarJdtPlugin started");
+    SonarLogger.log("SonarJdtPlugin started"); //$NON-NLS-1$
   }
 
   @Override
   public void stop(BundleContext context) throws Exception {
-    SonarLogger.log("SonarJdtPlugin stopped");
+    SonarLogger.log("SonarJdtPlugin stopped"); //$NON-NLS-1$
     super.stop(context);
   }
 

@@ -24,9 +24,9 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jdt.core.*;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.*;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.services.Resource;
 
 /**
@@ -53,7 +53,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
         String[] parts = StringUtils.split(key, SonarKeyUtils.PROJECT_DELIMITER);
         String groupId = parts[0];
         String artifactId = parts[1];
-        String className = StringUtils.removeStart(parts[2], "[default].");
+        String className = StringUtils.removeStart(parts[2], "[default]."); //$NON-NLS-1$
         // FIXME branch
 
         IWorkspace root = ResourcesPlugin.getWorkspace();
@@ -113,7 +113,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
       IJavaElement javaElement = JavaCore.create(file);
       if (javaElement instanceof ICompilationUnit) {
         String packageName = getPackageName(javaElement.getParent());
-        String className = StringUtils.substringBeforeLast(javaElement.getElementName(), ".");
+        String className = StringUtils.substringBeforeLast(javaElement.getElementName(), "."); //$NON-NLS-1$
         return SonarCorePlugin.createSonarFile(file, SonarKeyUtils.classKey(projectKey, packageName, className), className);
       }
     }
@@ -121,7 +121,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
   }
 
   private boolean isConfigured(IProject project) {
-    return project.isAccessible() && SonarPlugin.hasSonarNature(project) && SonarPlugin.hasJavaNature(project);
+    return project.isAccessible() && SonarUiPlugin.hasSonarNature(project) && SonarUiPlugin.hasJavaNature(project);
   }
 
   public Class[] getAdapterList() {
@@ -131,7 +131,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
   private String getPackageName(IJavaElement javaElement) {
     String packageName = null;
     if (javaElement instanceof IPackageFragmentRoot) {
-      packageName = "";
+      packageName = ""; //$NON-NLS-1$
     } else if (javaElement instanceof IPackageFragment) {
       IPackageFragment packageFragment = (IPackageFragment) javaElement;
       packageName = packageFragment.getElementName();

@@ -27,10 +27,10 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
-import org.sonar.ide.eclipse.SonarPlugin;
 import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.properties.ProjectProperties;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import java.net.URL;
 
@@ -57,14 +57,14 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
         openBrowser((ISonarResource) element);
       }
     } catch (Exception e) {
-      SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
+      SonarUiPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
     }
   }
 
   protected void openBrowser(ISonarResource sonarResource) {
     String key = sonarResource.getKey();
 
-    IWorkbenchBrowserSupport browserSupport = SonarPlugin.getDefault().getWorkbench().getBrowserSupport();
+    IWorkbenchBrowserSupport browserSupport = SonarUiPlugin.getDefault().getWorkbench().getBrowserSupport();
     ProjectProperties properties = ProjectProperties.getInstance(sonarResource.getProject());
     try {
       final URL consoleURL;
@@ -79,7 +79,7 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
         browserSupport.getExternalBrowser().openURL(consoleURL);
       }
     } catch (Exception e) {
-      SonarPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
+      SonarUiPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
     }
   }
 
