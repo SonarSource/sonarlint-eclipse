@@ -40,7 +40,7 @@ import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.SonarServerManager;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.internal.ui.Messages;
-import org.sonar.ide.eclipse.internal.ui.SonarUiPreferenceInitializer;
+import org.sonar.ide.eclipse.internal.ui.preferences.SonarUiPreferenceInitializer;
 import org.sonar.ide.eclipse.jobs.RefreshViolationsJob;
 
 import ch.qos.logback.classic.LoggerContext;

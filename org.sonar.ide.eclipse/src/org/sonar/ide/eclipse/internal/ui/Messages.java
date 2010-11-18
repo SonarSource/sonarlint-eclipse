@@ -23,8 +23,15 @@ package org.sonar.ide.eclipse.internal.ui;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-public class Messages {
+import org.eclipse.osgi.util.NLS;
+
+public class Messages extends NLS {
   private static final String BUNDLE_NAME = "org.sonar.ide.eclipse.internal.ui.messages"; //$NON-NLS-1$
+
+  static {
+    // load message values from bundle file
+    NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+  }
 
   private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 
@@ -38,4 +45,6 @@ public class Messages {
       return '!' + key + '!';
     }
   }
+
+  public static String SonarProjectPropertyPage_title;
 }

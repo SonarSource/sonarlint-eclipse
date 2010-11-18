@@ -20,8 +20,9 @@
 
 package org.sonar.ide.eclipse.internal.ui.properties;
 
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -42,15 +43,12 @@ import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.Host;
 
-import java.util.List;
-
 /**
  * @author Jérémie Lagarde
  * 
  */
 public class SonarProjectPropertyBlock {
 
-  private final IProject project;
   private Combo serversCombo;
   private Button serverConfigButton;
 
@@ -58,8 +56,7 @@ public class SonarProjectPropertyBlock {
   private Text projectArtifactIdText;
   private Text projectBranchText;
 
-  public SonarProjectPropertyBlock(IProject project) {
-    this.project = project;
+  public SonarProjectPropertyBlock() {
   }
 
   public Control createContents(Composite parent, ProjectProperties projectProperties) {

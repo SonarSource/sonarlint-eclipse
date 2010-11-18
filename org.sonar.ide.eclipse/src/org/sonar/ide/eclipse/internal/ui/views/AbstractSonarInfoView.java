@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.internal.ui;
+package org.sonar.ide.eclipse.internal.ui.views;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
@@ -40,6 +40,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.ViewPart;
 import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 

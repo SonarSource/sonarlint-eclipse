@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Control;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
-import org.sonar.ide.eclipse.internal.ui.AbstractSonarInfoView;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 
 /**

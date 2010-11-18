@@ -42,7 +42,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
   private SonarProjectPropertyBlock block;
 
   public SonarProjectPropertyPage() {
-    setTitle(Messages.getString("pref.project.title"));
+    setTitle(Messages.SonarProjectPropertyPage_title);
   }
 
   @Override
@@ -54,7 +54,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
     if (projectProperties == null) {
       return new Composite(parent, SWT.NULL);
     }
-    block = new SonarProjectPropertyBlock(getProject());
+    block = new SonarProjectPropertyBlock();
     return block.createContents(parent, projectProperties);
   }
 

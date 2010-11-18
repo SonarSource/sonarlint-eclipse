@@ -1,4 +1,4 @@
-package org.sonar.ide.eclipse.internal.ui;
+package org.sonar.ide.eclipse.internal.ui.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.ui.IMemento;
