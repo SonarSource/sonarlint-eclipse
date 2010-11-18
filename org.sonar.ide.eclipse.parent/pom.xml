@@ -20,10 +20,77 @@
     <name>SonarSource</name>
     <url>http://www.sonarsource.com</url>
   </organization>
+  <developers>
+    <developer>
+      <id>godin</id>
+      <name>Evgeny Mandrikov</name>
+      <timezone>+3</timezone>
+      <roles>
+        <role>Project Leader</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jer</id>
+      <name>Jérémie Lagarde</name>
+      <timezone>+1</timezone>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
 
   <prerequisites>
     <maven>3.0</maven>
   </prerequisites>
+
+  <modules>
+    <module>../org.sonar.ide.eclipse.core</module>
+    <module>../org.sonar.ide.eclipse.sonar_embedder</module>
+    <module>../org.sonar.ide.eclipse</module>
+    <module>../org.sonar.ide.eclipse.jdt</module>
+    <module>../org.sonar.ide.eclipse.site</module>
+
+    <module>../org.sonar.ide.eclipse.tests.common</module>
+
+    <module>../org.sonar.ide.eclipse.tests</module>
+
+    <!-- features -->
+    <module>../org.sonar.ide.eclipse.feature</module>
+
+    <!--
+    <module>../org.sonar.ide.eclipse.help</module>
+    <module>../org.sonar.ide.eclipse.m2eclipse</module>
+    <module>../org.sonar.ide.eclipse.m2eclipse.feature</module>
+    -->
+
+    <module>../target-platform</module>
+  </modules>
+
+  <scm>
+    <connection>scm:svn:http://svn.codehaus.org/sonar-ide/trunk/eclipse/org.sonar.ide.eclipse.parent</connection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/sonar-ide/trunk/eclipse/org.sonar.ide.eclipse.parent</developerConnection>
+  </scm>
+  <issueManagement>
+    <system>JIRA</system>
+    <url>http://jira.codehaus.org/browse/SONARIDE/component/14315</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Bamboo</system>
+    <url>http://bamboo.ci.codehaus.org/browse/SONARIDE-ECLIPSE</url>
+  </ciManagement>
+  <distributionManagement>
+    <repository>
+      <id>sonar-ide</id>
+      <name>Sonar IDEs repository</name>
+      <url>${sonar-ide.releases}</url>
+    </repository>
+    <snapshotRepository>
+      <id>sonar-ide</id>
+      <name>Sonar IDEs snapshot repository</name>
+      <url>${sonar-ide.snapshots}</url>
+      <uniqueVersion>false</uniqueVersion>
+    </snapshotRepository>
+  </distributionManagement>
 
   <properties>
     <maven.min.version>3.0-beta-1</maven.min.version>
@@ -35,36 +102,13 @@
     <sonar-ide-commons.version>0.3-SNAPSHOT</sonar-ide-commons.version>
 
     <!-- Version of Sonar for integration tests -->
-    <sonar.runtimeVersion>2.2</sonar.runtimeVersion>
+    <sonar.runtimeVersion>2.4</sonar.runtimeVersion>
 
     <!-- disable accidental deployment -->
     <sonar-ide.site>dav:http://localhost</sonar-ide.site>
     <sonar-ide.snapshots>http://localhost</sonar-ide.snapshots>
     <sonar-ide.releases>http://localhost</sonar-ide.releases>
   </properties>
-
-  <modules>
-    <module>../org.sonar.ide.eclipse.core</module>
-    <module>../org.sonar.ide.eclipse.sonar_embedder</module>
-    <module>../org.sonar.ide.eclipse</module>
-    <module>../org.sonar.ide.eclipse.jdt</module>
-    <module>../org.sonar.ide.eclipse.help</module>
-    <module>../org.sonar.ide.eclipse.site</module>
-
-    <module>../org.sonar.ide.eclipse.tests.common</module>
-
-    <module>../org.sonar.ide.eclipse.tests</module>
-
-    <!-- features -->
-    <module>../org.sonar.ide.eclipse.feature</module>
-    
-    <!--
-    <module>../org.sonar.ide.eclipse.m2eclipse</module>
-    <module>../org.sonar.ide.eclipse.m2eclipse.feature</module>
-    -->
-
-    <module>../target-platform</module>
-  </modules>
 
   <dependencyManagement>
     <dependencies>
@@ -81,7 +125,62 @@
     </dependencies>
   </dependencyManagement>
 
+  <pluginRepositories>
+    <pluginRepository>
+      <id>sonatype-public</id>
+      <url>http://repository.sonatype.org/content/groups/sonatype-public-grid</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
+
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.sonatype.tycho</groupId>
+          <artifactId>maven-osgi-packaging-plugin</artifactId>
+          <version>${tycho.version}</version>
+          <configuration>
+            <!-- workaround for TYCHO-349 or TYCHO-313 -->
+            <strictVersions>false</strictVersions>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.tycho</groupId>
+          <artifactId>maven-osgi-compiler-plugin</artifactId>
+          <version>${tycho.version}</version>
+          <configuration>
+            <source>${jdk.min.version}</source>
+            <target>${jdk.min.version}</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.tycho</groupId>
+          <artifactId>maven-osgi-test-plugin</artifactId>
+          <version>${tycho.version}</version>
+          <configuration>
+            <skipExec>${skipTests}</skipExec>
+            <useUIHarness>false</useUIHarness>
+            <includes>
+              <include>**/*Test.java</include>
+            </includes>
+            <!-- kill test JVM it tests take more than 10 minutes (600 seconds) to finish -->
+            <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.sonar</groupId>
+          <artifactId>sonar-dev-maven-plugin</artifactId>
+          <version>1.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -165,86 +264,17 @@
         </configuration>
       </plugin>
     </plugins>
-
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.sonatype.tycho</groupId>
-          <artifactId>maven-osgi-packaging-plugin</artifactId>
-          <version>${tycho.version}</version>
-          <configuration>
-            <!-- workaround for TYCHO-349 or TYCHO-313 -->
-            <strictVersions>false</strictVersions>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.sonatype.tycho</groupId>
-          <artifactId>maven-osgi-compiler-plugin</artifactId>
-          <version>${tycho.version}</version>
-          <configuration>
-            <source>${jdk.min.version}</source>
-            <target>${jdk.min.version}</target>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.sonatype.tycho</groupId>
-          <artifactId>maven-osgi-test-plugin</artifactId>
-          <version>${tycho.version}</version>
-          <configuration>
-            <skipExec>${skipTests}</skipExec>
-            <useUIHarness>false</useUIHarness>
-            <includes>
-              <include>**/*Test.java</include>
-            </includes>
-            <!-- kill test JVM it tests take more than 10 minutes (600 seconds) to finish -->
-            <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.sonar</groupId>
-          <artifactId>sonar-dev-maven-plugin</artifactId>
-          <!-- TODO Godin: define version using property -->
-          <version>0.9</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
   </build>
 
-  <pluginRepositories>
-    <pluginRepository>
-      <id>sonatype-public</id>
-      <url>http://repository.sonatype.org/content/groups/sonatype-public-grid</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
-
-  <distributionManagement>
-    <repository>
-      <id>sonar-ide</id>
-      <name>Sonar IDEs repository</name>
-      <url>${sonar-ide.releases}</url>
-    </repository>
-    <snapshotRepository>
-      <id>sonar-ide</id>
-      <name>Sonar IDEs snapshot repository</name>
-      <url>${sonar-ide.snapshots}</url>
-      <uniqueVersion>false</uniqueVersion>
-    </snapshotRepository>
-  </distributionManagement>
-
   <profiles>
+    <!-- This profile is used to launch integration tests -->
     <profile>
       <id>its</id>
       <modules>
         <module>../org.sonar.ide.eclipse.ui.tests</module>
       </modules>
     </profile>
-
+    <!-- TODO This profile is used to sign artifacts -->
     <profile>
       <id>sign</id>
       <activation>
@@ -271,43 +301,4 @@
       </build>
     </profile>
   </profiles>
-
-  <issueManagement>
-    <system>JIRA</system>
-    <url>http://jira.codehaus.org/browse/SONARIDE/component/14315</url>
-  </issueManagement>
-
-  <scm>
-    <connection>
-      scm:svn:http://svn.codehaus.org/sonar-ide/trunk/eclipse/org.sonar.ide.eclipse.parent
-    </connection>
-    <developerConnection>
-      scm:svn:https://svn.codehaus.org/sonar-ide/trunk/eclipse/org.sonar.ide.eclipse.parent
-    </developerConnection>
-  </scm>
-
-  <ciManagement>
-    <system>Bamboo</system>
-    <url>http://bamboo.ci.codehaus.org/browse/SONARIDE-ECLIPSE</url>
-  </ciManagement>
-
-  <developers>
-    <developer>
-      <id>godin</id>
-      <name>Evgeny Mandrikov</name>
-      <timezone>+3</timezone>
-      <roles>
-        <role>Project Leader</role>
-      </roles>
-    </developer>
-    <developer>
-      <id>jer</id>
-      <name>Jérémie Lagarde</name>
-      <timezone>+1</timezone>
-      <roles>
-        <role>Developer</role>
-      </roles>
-    </developer>
-  </developers>
-
 </project>

@@ -20,7 +20,6 @@
 
 package org.sonar.ide.eclipse.internal.ui.properties;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
@@ -87,11 +86,4 @@ public class ProjectProperties {
     this.branch = branch;
   }
 
-  /**
-   * @deprecated since 0.3 use {@link SonarUiPlugin#hasSonarNature(IProject)}
-   */
-  @Deprecated
-  public boolean isProjectConfigured() {
-    return StringUtils.isNotBlank(getArtifactId()) && StringUtils.isNotBlank(getGroupId()) && StringUtils.isNotBlank(getUrl());
-  }
 }
