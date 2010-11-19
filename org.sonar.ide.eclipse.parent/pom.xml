@@ -171,6 +171,7 @@
             </includes>
             <!-- kill test JVM it tests take more than 10 minutes (600 seconds) to finish -->
             <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
+            <argLine>${jacoco.argLine}</argLine>
           </configuration>
         </plugin>
         <plugin>
@@ -273,6 +274,15 @@
       <modules>
         <module>../org.sonar.ide.eclipse.ui.tests</module>
       </modules>
+    </profile>
+    <!-- This profile is used to gather code coverage for Sonar -->
+    <profile>
+      <id>sonar</id>
+      <properties>
+        <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
+        <sonar.jacoco.itReportPath>../org.sonar.ide.eclipse.parent/target/jacoco-it.exec</sonar.jacoco.itReportPath>
+        <jacoco.argLine>-javaagent:../jacoco-agent-all.jar=destfile=${sonar.jacoco.itReportPath}</jacoco.argLine>
+      </properties>
     </profile>
     <!-- TODO This profile is used to sign artifacts -->
     <profile>
