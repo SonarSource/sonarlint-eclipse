@@ -39,8 +39,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.ui.Messages;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.Host;
 
 /**
@@ -86,7 +86,7 @@ public class SonarProjectPropertyBlock {
 
     // Create select list of servers.
     serversCombo = new Combo(group, SWT.READ_ONLY);
-    List<Host> servers = SonarUiPlugin.getServerManager().getHosts();
+    List<Host> servers = SonarCorePlugin.getServersManager().getHosts();
     String defaultServer = projectProperties.getUrl();
     int index = -1;
     for (int i = 0; i < servers.size(); i++) {
@@ -114,7 +114,7 @@ public class SonarProjectPropertyBlock {
             "org.sonar.ide.eclipse.preferences.SonarPreferencePage", null, null);
         if (preference != null && (preference.open() == Window.OK)) {
           serversCombo.removeAll();
-          List<Host> servers = SonarUiPlugin.getServerManager().getHosts();
+          List<Host> servers = SonarCorePlugin.getServersManager().getHosts();
           for (Host server : servers) {
             serversCombo.add(server.getHost());
           }

@@ -44,6 +44,7 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.ui.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.wizards.EditServerLocationWizard;
@@ -89,7 +90,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
 
   private void initTable() {
     // retrieve list of servers
-    servers = SonarUiPlugin.getServerManager().getHosts();
+    servers = SonarCorePlugin.getServersManager().getHosts();
     serversViewer.setInput(servers);
   }
 
@@ -156,7 +157,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
         if (MessageDialog.openConfirm(SonarPreferencePage.this.getShell(), Messages.getString("remove.server.dialog.caption"), //$NON-NLS-1$
             MessageFormat.format(Messages.getString("remove.server.dialog.msg"), //$NON-NLS-1$
                 new Object[] { selected.getHost() }))) {
-          SonarUiPlugin.getServerManager().removeServer(selected.getHost());
+          SonarCorePlugin.getServersManager().removeServer(selected.getHost());
           servers.remove(selected);
           serversViewer.refresh();
           removeButton.setEnabled(false);

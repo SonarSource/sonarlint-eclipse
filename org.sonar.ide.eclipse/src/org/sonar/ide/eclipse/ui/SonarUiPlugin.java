@@ -36,8 +36,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.ISonarServersManager;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseProxyAuthenticator;
 import org.sonar.ide.eclipse.internal.EclipseProxySelector;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
@@ -64,13 +62,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   private FavouriteMetricsManager favouriteMetricsManager = new FavouriteMetricsManager();
 
   public SonarUiPlugin() {
-  }
-
-  /**
-   * @deprecated since 1.0 use {@link SonarCorePlugin#getServersManager()}
-   */
-  public static ISonarServersManager getServerManager() {
-    return SonarCorePlugin.getServersManager();
   }
 
   public SonarProjectManager getProjectManager() {

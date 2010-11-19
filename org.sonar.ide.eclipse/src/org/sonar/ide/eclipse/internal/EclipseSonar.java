@@ -20,6 +20,8 @@
 
 package org.sonar.ide.eclipse.internal;
 
+import java.io.IOException;
+
 import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -28,17 +30,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.ide.wsclient.RemoteSonar;
 import org.sonar.wsclient.Host;
 
-import java.io.IOException;
-
 /**
- * This is experimental class, which maybe removed in future.
- * Used for migration to new API.
+ * This is experimental class, which maybe removed in future. Used for migration to new API.
  * 
  * @author Evgeny Mandrikov
  */
@@ -46,7 +46,7 @@ public final class EclipseSonar extends RemoteSonar {
 
   public static EclipseSonar getInstance(IProject project) {
     ProjectProperties properties = ProjectProperties.getInstance(project);
-    Host host = SonarUiPlugin.getServerManager().createServer(properties.getUrl());
+    Host host = SonarCorePlugin.getServersManager().createServer(properties.getUrl());
     return new EclipseSonar(host);
   }
 

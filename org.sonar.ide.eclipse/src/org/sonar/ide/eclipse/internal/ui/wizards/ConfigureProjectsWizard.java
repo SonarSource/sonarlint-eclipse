@@ -48,6 +48,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.SonarKeyUtils;
 import org.sonar.ide.eclipse.internal.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.ui.AbstractModelObject;
@@ -56,7 +57,6 @@ import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
@@ -125,7 +125,7 @@ public class ConfigureProjectsWizard extends Wizard {
           return ((Host) element).getHost();
         }
       });
-      comboViewer.setInput(SonarUiPlugin.getServerManager().getHosts());
+      comboViewer.setInput(SonarCorePlugin.getServersManager().getHosts());
       comboViewer.getCombo().select(0);
 
       // List of projects
@@ -250,7 +250,7 @@ public class ConfigureProjectsWizard extends Wizard {
               String message = "project '" + project.getName() + "' with key '" + key + "'";
               monitor.subTask(message);
 
-              Sonar sonar = SonarUiPlugin.getServerManager().getSonar(serverUrl);
+              Sonar sonar = SonarCorePlugin.getServersManager().getSonar(serverUrl);
               // TODO Godin: sonar.find throws NPE here
               List<Resource> resources = sonar.findAll(new ResourceQuery(key));
               if (resources.isEmpty()) {
@@ -322,7 +322,7 @@ public class ConfigureProjectsWizard extends Wizard {
         monitor.beginTask("Requesting " + url, IProgressMonitor.UNKNOWN);
         ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT,
             Resource.QUALIFIER_MODULE);
-        Sonar sonar = SonarUiPlugin.getServerManager().getSonar(url);
+        Sonar sonar = SonarCorePlugin.getServersManager().getSonar(url);
         List<Resource> resources = sonar.findAll(query);
         for (SonarProject sonarProject : projects) {
           for (Resource resource : resources) {

@@ -20,6 +20,8 @@
 
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -28,9 +30,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-
-import java.lang.reflect.InvocationTargetException;
 
 public abstract class AbstractServerLocationWizard extends Wizard implements INewWizard {
 
@@ -82,6 +83,6 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
   }
 
   protected void doFinish(String serverUrl, String username, String password, IProgressMonitor monitor) throws Exception {
-    SonarUiPlugin.getServerManager().addServer(serverUrl, username, password);
+    SonarCorePlugin.getServersManager().addServer(serverUrl, username, password);
   }
 }

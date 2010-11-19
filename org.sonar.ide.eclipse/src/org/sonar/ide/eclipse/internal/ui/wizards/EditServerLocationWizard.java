@@ -23,7 +23,7 @@ package org.sonar.ide.eclipse.internal.ui.wizards;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.INewWizard;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.wsclient.Host;
 
 public class EditServerLocationWizard extends AbstractServerLocationWizard implements INewWizard {
@@ -37,8 +37,8 @@ public class EditServerLocationWizard extends AbstractServerLocationWizard imple
 
   protected void doFinish(String serverUrl, String username, String password, IProgressMonitor monitor) throws Exception {
     String oldServerUrl = host.getHost();
-    if (StringUtils.isNotBlank(oldServerUrl) && SonarUiPlugin.getServerManager().findServer(oldServerUrl) != null) {
-      SonarUiPlugin.getServerManager().removeServer(oldServerUrl);
+    if (StringUtils.isNotBlank(oldServerUrl) && SonarCorePlugin.getServersManager().findServer(oldServerUrl) != null) {
+      SonarCorePlugin.getServersManager().removeServer(oldServerUrl);
     }
     super.doFinish(serverUrl, username, password, monitor);
   }
