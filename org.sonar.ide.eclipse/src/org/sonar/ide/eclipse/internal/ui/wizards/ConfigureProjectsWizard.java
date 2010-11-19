@@ -20,6 +20,9 @@
 
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
@@ -31,7 +34,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -57,9 +64,6 @@ import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
 
 import com.google.common.collect.Lists;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 /**
  * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertedProjectWizard
@@ -121,7 +125,7 @@ public class ConfigureProjectsWizard extends Wizard {
           return ((Host) element).getHost();
         }
       });
-      comboViewer.setInput(SonarUiPlugin.getServerManager().getServers());
+      comboViewer.setInput(SonarUiPlugin.getServerManager().getHosts());
       comboViewer.getCombo().select(0);
 
       // List of projects
