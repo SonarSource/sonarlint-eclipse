@@ -26,8 +26,8 @@ import static org.hamcrest.Matchers.is;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.core.ServersManager;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.tests.bots.SonarPreferencesBot;
 import org.sonar.ide.eclipse.ui.tests.bots.SonarServerWizardBot;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
@@ -39,7 +39,7 @@ public class ConfigurationTest extends UITestCase {
   @BeforeClass
   public static void openProperties() throws Exception {
     // Remove all configured servers
-    ((ServersManager) SonarUiPlugin.getServerManager()).clean();
+    ((ServersManager) SonarCorePlugin.getServersManager()).clean();
 
     preferencesBot = new SonarPreferencesBot();
   }

@@ -40,6 +40,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.sonar.ide.api.Logs;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.test.SonarIdeTestCase;
 import org.sonar.ide.test.SonarTestServer;
@@ -85,7 +86,7 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
 
   final protected String addLocalTestServer() throws Exception {
     final String url = startTestServer();
-    SonarUiPlugin.getServerManager().createServer(url);
+    SonarCorePlugin.getServersManager().addServer(url, "", "");
     return url;
   }
 
@@ -109,9 +110,9 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
     // waitForJobs();
 
     final List<Host> hosts = new ArrayList<Host>();
-    hosts.addAll(SonarUiPlugin.getServerManager().getHosts());
+    hosts.addAll(SonarCorePlugin.getServersManager().getHosts());
     for (final Host host : hosts) {
-      SonarUiPlugin.getServerManager().removeServer(host.getHost());
+      SonarCorePlugin.getServersManager().removeServer(host.getHost());
     }
     final IWorkspaceRoot root = workspace.getRoot();
     for (final IProject project : root.getProjects()) {

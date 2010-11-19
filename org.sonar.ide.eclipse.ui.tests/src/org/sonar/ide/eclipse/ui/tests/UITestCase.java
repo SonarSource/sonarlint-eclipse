@@ -30,10 +30,10 @@ import org.eclipse.swtbot.swt.finder.utils.SWTUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.core.ServersManager;
 import org.sonar.ide.eclipse.tests.common.VersionHelpers;
 import org.sonar.ide.eclipse.tests.common.WorkspaceHelpers;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
 import org.sonar.ide.test.SonarIdeTestCase;
@@ -52,8 +52,9 @@ public abstract class UITestCase extends SonarIdeTestCase {
   @BeforeClass
   public final static void beforeClass() throws Exception {
     // Remove all configured servers and set default
-    ((ServersManager) SonarUiPlugin.getServerManager()).clean();
-    SonarUiPlugin.getServerManager().findServer(ProjectUtils.getSonarServerUrl());
+    ServersManager serversManager = ((ServersManager) SonarCorePlugin.getServersManager());
+    serversManager.clean();
+    serversManager.findServer(ProjectUtils.getSonarServerUrl());
 
     System.out.println("Eclipse version : " + VersionHelpers.getEclipseVersion());
 
