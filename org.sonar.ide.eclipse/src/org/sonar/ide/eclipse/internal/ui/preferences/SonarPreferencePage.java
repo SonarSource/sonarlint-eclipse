@@ -20,6 +20,9 @@
 
 package org.sonar.ide.eclipse.internal.ui.preferences;
 
+import java.text.MessageFormat;
+import java.util.List;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -48,9 +51,6 @@ import org.sonar.ide.eclipse.internal.ui.wizards.NewServerLocationWizard;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 import org.sonar.wsclient.Host;
-
-import java.text.MessageFormat;
-import java.util.List;
 
 /**
  * Preference page for the workspace.
@@ -89,7 +89,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
 
   private void initTable() {
     // retrieve list of servers
-    servers = SonarUiPlugin.getServerManager().getServers();
+    servers = SonarUiPlugin.getServerManager().getHosts();
     serversViewer.setInput(servers);
   }
 
@@ -154,8 +154,8 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
       public void widgetSelected(SelectionEvent e) {
         Host selected = getSelectedServer();
         if (MessageDialog.openConfirm(SonarPreferencePage.this.getShell(), Messages.getString("remove.server.dialog.caption"), //$NON-NLS-1$
-        MessageFormat.format(Messages.getString("remove.server.dialog.msg"), //$NON-NLS-1$
-        new Object[] { selected.getHost() }))) {
+            MessageFormat.format(Messages.getString("remove.server.dialog.msg"), //$NON-NLS-1$
+                new Object[] { selected.getHost() }))) {
           SonarUiPlugin.getServerManager().removeServer(selected.getHost());
           servers.remove(selected);
           serversViewer.refresh();

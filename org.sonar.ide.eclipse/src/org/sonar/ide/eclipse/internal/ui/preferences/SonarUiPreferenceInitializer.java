@@ -1,43 +1,42 @@
 package org.sonar.ide.eclipse.internal.ui.preferences;
 
-import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.eclipse.ui.IMemento;
-import org.eclipse.ui.WorkbenchException;
-import org.eclipse.ui.XMLMemento;
-import org.sonar.ide.eclipse.core.ISonarConstants;
-import org.sonar.ide.eclipse.core.ISonarMetric;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-
-import com.google.common.collect.Lists;
-
-import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.IMemento;
+import org.eclipse.ui.WorkbenchException;
+import org.eclipse.ui.XMLMemento;
+import org.sonar.ide.eclipse.core.ISonarMetric;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
+import org.sonar.ide.eclipse.ui.util.PlatformUtils;
+
+import com.google.common.collect.Lists;
+
 public class SonarUiPreferenceInitializer extends AbstractPreferenceInitializer {
 
-  public static final String PREF_FAVOURITE_METRICS = ISonarConstants.PLUGIN_ID + ".favouriteMetrics";
+  private static final String PREF_FAVOURITE_METRICS = "favouriteMetrics";
 
   private static final String KEY_METRICS = "metrics";
   private static final String KEY_METRIC = "metric";
   private static final String KEY_METRIC_KEY = "key";
   private static final String KEY_METRIC_NAME = "name";
 
-  public static List<ISonarMetric> getDefaults() {
-    return Arrays.asList(
-      SonarCorePlugin.createSonarMetric("complexity", "Complexity"),
-      SonarCorePlugin.createSonarMetric("violations", "Violations"),
-      SonarCorePlugin.createSonarMetric("duplicated_lines", "Duplicated lines"),
-      SonarCorePlugin.createSonarMetric("uncovered_lines", "Uncovered lines"));
+  public static List<ISonarMetric> getDefaultFavouriteMetrics() {
+    return Arrays.asList(SonarCorePlugin.createSonarMetric("complexity", "Complexity"),
+        SonarCorePlugin.createSonarMetric("violations", "Violations"),
+        SonarCorePlugin.createSonarMetric("duplicated_lines", "Duplicated lines"),
+        SonarCorePlugin.createSonarMetric("uncovered_lines", "Uncovered lines"));
   }
 
   @Override
   public void initializeDefaultPreferences() {
-    SonarUiPlugin.getDefault().getPreferenceStore().setDefault(PREF_FAVOURITE_METRICS, createFavouriteMetricsMemento(getDefaults()));
+    IPreferenceStore store = SonarUiPlugin.getDefault().getPreferenceStore();
+    store.setDefault(PREF_FAVOURITE_METRICS, createFavouriteMetricsMemento(getDefaultFavouriteMetrics()));
   }
 
   public static Collection<ISonarMetric> getFavouriteMetrics() {
@@ -48,7 +47,7 @@ public class SonarUiPreferenceInitializer extends AbstractPreferenceInitializer 
    * Restores default favourite metrics.
    */
   public static void restoreDefaultFavouriteMetrics() {
-    setFavouriteMetrics(getDefaults());
+    setFavouriteMetrics(getDefaultFavouriteMetrics());
   }
 
   public static synchronized void setFavouriteMetrics(Collection<ISonarMetric> metrics) {
@@ -65,15 +64,7 @@ public class SonarUiPreferenceInitializer extends AbstractPreferenceInitializer 
       memento.putString(KEY_METRIC_KEY, metric.getKey());
       memento.putString(KEY_METRIC_NAME, metric.getName());
     }
-    String memento = null;
-    try {
-      StringWriter writer = new StringWriter();
-      rootMemento.save(writer);
-      memento = writer.getBuffer().toString();
-    } catch (IOException e) {
-      // TODO handle
-    }
-    return memento;
+    return PlatformUtils.convertMementoToString(rootMemento);
   }
 
   private static Collection<ISonarMetric> getFavouriteMetricsFromMemento(String mementoString) {

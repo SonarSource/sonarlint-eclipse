@@ -20,6 +20,10 @@
 
 package org.sonar.ide.eclipse.ui;
 
+import java.net.Authenticator;
+import java.net.ProxySelector;
+import java.net.URL;
+
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -36,8 +40,9 @@ import org.sonar.ide.eclipse.EclipseProxyAuthenticator;
 import org.sonar.ide.eclipse.EclipseProxySelector;
 import org.sonar.ide.eclipse.core.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.core.ISonarServersManager;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.SonarLogger;
-import org.sonar.ide.eclipse.internal.SonarServerManager;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.preferences.SonarUiPreferenceInitializer;
@@ -49,16 +54,11 @@ import ch.qos.logback.core.joran.JoranConfiguratorBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 
-import java.net.Authenticator;
-import java.net.ProxySelector;
-import java.net.URL;
-
 public class SonarUiPlugin extends AbstractUIPlugin {
 
   // The shared instance
   private static SonarUiPlugin plugin;
 
-  private static SonarServerManager serverManager;
   private static SonarProjectManager projectManager;
 
   private FavouriteMetricsManager favouriteMetricsManager = new FavouriteMetricsManager();
@@ -66,11 +66,11 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   public SonarUiPlugin() {
   }
 
-  public static SonarServerManager getServerManager() {
-    if (serverManager == null) {
-      serverManager = new SonarServerManager();
-    }
-    return serverManager;
+  /**
+   * @deprecated since 1.0 use {@link SonarCorePlugin#getServersManager()}
+   */
+  public static ISonarServersManager getServerManager() {
+    return SonarCorePlugin.getServersManager();
   }
 
   public SonarProjectManager getProjectManager() {

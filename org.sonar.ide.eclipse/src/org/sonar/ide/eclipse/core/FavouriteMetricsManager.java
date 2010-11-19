@@ -63,7 +63,7 @@ public final class FavouriteMetricsManager {
   }
 
   public void restoreDefaults() {
-    set(SonarUiPreferenceInitializer.getDefaults());
+    set(SonarUiPreferenceInitializer.getDefaultFavouriteMetrics());
   }
 
 }

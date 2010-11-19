@@ -7,47 +7,45 @@ import static org.junit.Assert.assertThat;
 import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-import org.sonar.ide.eclipse.core.ISonarConstants;
-import org.sonar.ide.eclipse.internal.SonarServerManager;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.internal.core.ServersManager;
 import org.sonar.wsclient.Host;
 
 public class SonarServerManagerTest {
+
+  private ServersManager serversManager;
+
+  @Before
+  public void setUp() {
+    serversManager = (ServersManager) SonarCorePlugin.getServersManager();
+    serversManager.clean();
+  }
+
   @Test
   public void shouldCreateFakeServer() throws Exception {
-    SonarServerManager.enableSecureStorate(false);
-
-    SonarServerManager serverManager = SonarUiPlugin.getServerManager();
-    for (Host host : serverManager.getServers()) {
-      serverManager.removeServer(host.getHost());
-    }
-
     String url = "http://new";
-    Host host = serverManager.findServer(url);
+    Host host = serversManager.findServer(url);
     assertThat(host, notNullValue());
-    assertThat(serverManager.getServers().size(), is(1));
-
-    // Cleanup
-    serverManager.removeServer(url);
+    assertThat(serversManager.getServers().size(), is(1));
   }
 
   @Test
   public void shouldUseSecureStorage() throws Exception {
-    SonarServerManager.enableSecureStorate(true);
-
     String url = "http://secure";
-    SonarServerManager serverManager = SonarUiPlugin.getServerManager();
-    serverManager.addServer(url, "tester", "secret");
+    serversManager.addServer(url, "tester", "secret");
 
-    ISecurePreferences securePreferences = SecurePreferencesFactory.getDefault().node(ISonarConstants.PLUGIN_ID);
+    ISecurePreferences securePreferences = SecurePreferencesFactory.getDefault().node(ServersManager.NODE);
     securePreferences = securePreferences.node(EncodingUtils.encodeSlashes(url));
     assertThat(securePreferences.get("username", null), is("tester"));
     assertThat(securePreferences.get("password", null), is("secret"));
-
-    // Cleanup
-    serverManager.removeServer(url);
-
-    SonarServerManager.enableSecureStorate(true);
   }
+
+  @After
+  public void tearDown() {
+    serversManager.clean();
+  }
+
 }

@@ -9,7 +9,8 @@ Bundle-Vendor: %bundle_vendor
 Bundle-Localization: OSGI-INF/l10n/bundle
 Export-Package: org.sonar.ide.eclipse.core,
  org.sonar.ide.eclipse.internal.core;x-internal:=true
-Require-Bundle: org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.equinox.security,
+ org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.sonar.ide.eclipse.sonar_embedder
 Import-Package: org.apache.commons.lang,

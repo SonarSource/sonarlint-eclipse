@@ -86,7 +86,7 @@ public class SonarProjectPropertyBlock {
 
     // Create select list of servers.
     serversCombo = new Combo(group, SWT.READ_ONLY);
-    List<Host> servers = SonarUiPlugin.getServerManager().getServers();
+    List<Host> servers = SonarUiPlugin.getServerManager().getHosts();
     String defaultServer = projectProperties.getUrl();
     int index = -1;
     for (int i = 0; i < servers.size(); i++) {
@@ -114,7 +114,7 @@ public class SonarProjectPropertyBlock {
             "org.sonar.ide.eclipse.preferences.SonarPreferencePage", null, null);
         if (preference != null && (preference.open() == Window.OK)) {
           serversCombo.removeAll();
-          List<Host> servers = SonarUiPlugin.getServerManager().getServers();
+          List<Host> servers = SonarUiPlugin.getServerManager().getHosts();
           for (Host server : servers) {
             serversCombo.add(server.getHost());
           }

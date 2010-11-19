@@ -20,12 +20,16 @@
 
 package org.sonar.ide.eclipse.ui.util;
 
+import java.io.IOException;
+import java.io.StringWriter;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.XMLMemento;
 import org.eclipse.ui.ide.IDE;
 import org.sonar.ide.eclipse.core.SonarLogger;
 
@@ -33,9 +37,8 @@ import org.sonar.ide.eclipse.core.SonarLogger;
 public final class PlatformUtils {
 
   /**
-   * Returns an object that is an instance of the given class associated
-   * with the given object. Returns <code>null</code> if no such object can
-   * be found or if given object is <code>null</code>.
+   * Returns an object that is an instance of the given class associated with the given object. Returns <code>null</code> if no such object
+   * can be found or if given object is <code>null</code>.
    */
   public static <T> T adapt(Object adaptable, Class<T> adapter) {
     if (adaptable == null) {
@@ -66,6 +69,18 @@ public final class PlatformUtils {
     } catch (PartInitException e) {
       SonarLogger.log(e);
     }
+  }
+
+  public static String convertMementoToString(XMLMemento memento) {
+    String result = null;
+    try {
+      StringWriter writer = new StringWriter();
+      memento.save(writer);
+      result = writer.getBuffer().toString();
+    } catch (IOException e) {
+      // TODO handle
+    }
+    return result;
   }
 
   private PlatformUtils() {

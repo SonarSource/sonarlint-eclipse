@@ -109,7 +109,7 @@ public abstract class SonarTestCase extends SonarIdeTestCase {
     // waitForJobs();
 
     final List<Host> hosts = new ArrayList<Host>();
-    hosts.addAll(SonarUiPlugin.getServerManager().getServers());
+    hosts.addAll(SonarUiPlugin.getServerManager().getHosts());
     for (final Host host : hosts) {
       SonarUiPlugin.getServerManager().removeServer(host.getHost());
     }

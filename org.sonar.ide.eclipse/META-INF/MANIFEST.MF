@@ -15,7 +15,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
  org.eclipse.ui.ide;visibility:=reexport,
  org.eclipse.ui.console,
- org.eclipse.ui.editors,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.jface.databinding,
  org.eclipse.jface.text,
@@ -27,8 +26,7 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
 Import-Package: org.apache.commons.io,
  org.apache.commons.lang,
- org.eclipse.core.resources,
- org.sonar.ide.ui
+ org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonar.ide.eclipse,
  org.sonar.ide.eclipse.core,
