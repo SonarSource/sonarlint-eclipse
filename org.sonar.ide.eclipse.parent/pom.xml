@@ -277,7 +277,7 @@
     </profile>
     <!-- This profile is used to gather code coverage for Sonar -->
     <profile>
-      <id>sonar</id>
+      <id>jacoco</id>
       <properties>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
         <sonar.jacoco.itReportPath>../org.sonar.ide.eclipse.parent/target/jacoco-it.exec</sonar.jacoco.itReportPath>
