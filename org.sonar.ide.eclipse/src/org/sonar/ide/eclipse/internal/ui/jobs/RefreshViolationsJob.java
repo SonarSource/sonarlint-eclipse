@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.jobs;
+package org.sonar.ide.eclipse.internal.ui.jobs;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -27,9 +27,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.*;
 import org.eclipse.ui.progress.UIJob;
-import org.sonar.ide.eclipse.core.ISonarConstants;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.ide.shared.violations.ViolationUtils;

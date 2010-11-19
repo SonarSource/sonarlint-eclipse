@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.is;
 
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.junit.Test;
-import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.views.ViolationsView;
 import org.sonar.ide.eclipse.ui.tests.bots.ImportProjectBot;
 import org.sonar.ide.eclipse.ui.tests.bots.PackageExplorerBot;

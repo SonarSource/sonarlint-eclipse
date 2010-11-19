@@ -31,7 +31,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.XMLMemento;
 import org.eclipse.ui.ide.IDE;
-import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.internal.core.SonarLogger;
 
 @SuppressWarnings("unchecked")
 public final class PlatformUtils {

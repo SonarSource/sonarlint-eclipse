@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.jobs;
+package org.sonar.ide.eclipse.internal.ui.jobs;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;

@@ -30,9 +30,9 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
-import org.sonar.ide.eclipse.core.ISonarConstants;
-import org.sonar.ide.eclipse.core.SonarLogger;
-import org.sonar.ide.eclipse.jobs.RefreshAllViolationsJob;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.core.SonarLogger;
+import org.sonar.ide.eclipse.internal.ui.jobs.RefreshAllViolationsJob;
 
 import com.google.common.collect.Lists;
 

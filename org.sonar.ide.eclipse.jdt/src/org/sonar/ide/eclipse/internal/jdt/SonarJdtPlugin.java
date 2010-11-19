@@ -22,7 +22,7 @@ package org.sonar.ide.eclipse.internal.jdt;
 
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
-import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.internal.core.SonarLogger;
 
 public class SonarJdtPlugin extends Plugin {
 

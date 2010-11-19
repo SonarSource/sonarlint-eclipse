@@ -26,7 +26,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
-import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.internal.core.SonarLogger;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import java.net.MalformedURLException;

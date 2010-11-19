@@ -41,8 +41,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.sonar.ide.eclipse.core.ISonarConstants;
-import org.sonar.ide.eclipse.markers.resolvers.ISonarResolver;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+import org.sonar.ide.eclipse.ui.ISonarResolver;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 /**

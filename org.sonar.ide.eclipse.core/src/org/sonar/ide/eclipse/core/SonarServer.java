@@ -1,6 +1,7 @@
 package org.sonar.ide.eclipse.core;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
@@ -14,8 +15,7 @@ public final class SonarServer {
   private final boolean auth;
 
   public SonarServer(String url, String username, String password) {
-    this.url = url;
-    auth = StringUtils.isNotBlank(password) && StringUtils.isNotBlank(username);
+    this(url, StringUtils.isNotBlank(password) && StringUtils.isNotBlank(username));
     if (auth) {
       setKeyForServerNode("username", username, false);
       setKeyForServerNode("password", password, true);
@@ -27,6 +27,7 @@ public final class SonarServer {
   }
 
   public SonarServer(String url, boolean auth) {
+    Assert.isNotNull(url);
     this.url = url;
     this.auth = auth;
   }
@@ -65,16 +66,33 @@ public final class SonarServer {
     }
   }
 
-  @Override
-  public String toString() {
-    return "SonarServer [url=" + url + ", auth=" + auth + "]";
-  }
-
   /**
    * For sonar-ws-client
    */
   public Host getHost() {
     return new Host(getUrl(), getUsername(), getPassword());
+  }
+
+  @Override
+  public String toString() {
+    return "SonarServer [url=" + url + ", auth=" + auth + "]";
+  }
+
+  @Override
+  public int hashCode() {
+    return getUrl().hashCode();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+    if (obj instanceof SonarServer) {
+      SonarServer sonarServer = (SonarServer) obj;
+      return getUrl().equals(sonarServer.getUrl());
+    }
+    return false;
   }
 
 }

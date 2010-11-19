@@ -289,7 +289,7 @@
     <extension
         point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
-              annotationImageProvider="org.sonar.ide.eclipse.markers.SonarMarkerImageProvider"
+              annotationImageProvider="org.sonar.ide.eclipse.internal.ui.markers.SonarMarkerImageProvider"
               annotationType="org.sonar.ide.eclipse.violationAnnotationType"
               colorPreferenceKey="org.sonar.ide.eclipse.violation.color"
               colorPreferenceValue="255,246,191"
@@ -353,7 +353,7 @@
   <extension
         point="org.eclipse.ui.ide.markerResolution">
      <markerResolutionGenerator
-           class="org.sonar.ide.eclipse.markers.SonarMarkerResolutionGenerator"
+           class="org.sonar.ide.eclipse.internal.ui.markers.SonarMarkerResolutionGenerator"
            markerType="org.sonar.ide.eclipse.sonarProblem">
      </markerResolutionGenerator>
   </extension>
@@ -361,7 +361,7 @@
   <extension
         point="org.sonar.ide.eclipse.resolver">
      <resolver
-           class="org.sonar.ide.eclipse.markers.resolvers.IgnoreMarkerResolver">
+           class="org.sonar.ide.eclipse.internal.ui.markers.IgnoreMarkerResolver">
      </resolver>
   </extension>
   

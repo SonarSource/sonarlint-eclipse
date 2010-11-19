@@ -1,7 +1,7 @@
-package org.sonar.ide.eclipse.jobs;
+package org.sonar.ide.eclipse.internal.ui.jobs;
 
 import org.eclipse.core.runtime.jobs.Job;
-import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 
 public abstract class AbstractRemoteSonarJob extends Job {
   public AbstractRemoteSonarJob(String name) {

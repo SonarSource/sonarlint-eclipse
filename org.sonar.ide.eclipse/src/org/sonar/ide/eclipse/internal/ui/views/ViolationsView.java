@@ -26,10 +26,10 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.views.markers.MarkerSupportView;
-import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
-import org.sonar.ide.eclipse.jobs.RefreshAllViolationsJob;
+import org.sonar.ide.eclipse.internal.ui.jobs.RefreshAllViolationsJob;
 
 /**
  * @author Jérémie Lagarde

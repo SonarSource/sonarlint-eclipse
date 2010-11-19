@@ -46,11 +46,13 @@ import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.*;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.internal.ui.EnhancedFilteredTree;
+import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleFavouriteMetricAction;
-import org.sonar.ide.eclipse.jobs.AbstractRemoteSonarJob;
+import org.sonar.ide.eclipse.internal.ui.jobs.AbstractRemoteSonarJob;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.services.*;
 

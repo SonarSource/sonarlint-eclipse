@@ -22,7 +22,7 @@ package org.sonar.ide.eclipse.ui.tests;
 
 import org.eclipse.jdt.ui.JavaUI;
 import org.junit.Test;
-import org.sonar.ide.eclipse.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.views.HotspotsView;
 import org.sonar.ide.eclipse.internal.ui.views.MeasuresView;
 import org.sonar.ide.eclipse.internal.ui.views.ViolationsView;

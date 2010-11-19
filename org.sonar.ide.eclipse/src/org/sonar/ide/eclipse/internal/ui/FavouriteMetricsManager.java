@@ -1,6 +1,8 @@
-package org.sonar.ide.eclipse.core;
+package org.sonar.ide.eclipse.internal.ui;
 
 import org.eclipse.core.runtime.SafeRunner;
+import org.sonar.ide.eclipse.core.AbstractSafeRunnable;
+import org.sonar.ide.eclipse.core.ISonarMetric;
 import org.sonar.ide.eclipse.internal.ui.preferences.SonarUiPreferenceInitializer;
 
 import com.google.common.collect.Lists;

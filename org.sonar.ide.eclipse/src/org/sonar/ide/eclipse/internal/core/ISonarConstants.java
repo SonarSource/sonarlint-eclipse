@@ -18,21 +18,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.markers.resolvers;
-
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
+package org.sonar.ide.eclipse.internal.core;
 
 /**
- * @author Jérémie Lagarde
+ * @noimplement This interface is not intended to be implemented by clients.
+ * @noextend This interface is not intended to be extended by clients.
  */
-public interface ISonarResolver {
+public interface ISonarConstants {
 
-  String getDescription();
+  String PLUGIN_ID = "org.sonar.ide.eclipse";
 
-  String getLabel();
+  String NATURE_ID = PLUGIN_ID + ".sonarNature";
 
-  boolean canResolve(IMarker marker);
+  String BUILDER_ID = PLUGIN_ID + ".sonarBuilder";
 
-  boolean resolve(IMarker marker, IFile file);
+  /**
+   * Godin: It would be better to use only one MARKER_ID at least at first time.
+   */
+  String MARKER_ID = PLUGIN_ID + ".sonarProblem";
+
+  // TODO change value to .sonarPerspective
+  String PERSPECTIVE_ID = PLUGIN_ID + ".perspectives.SonarPerspective";
+
+  Object REMOTE_SONAR_JOB_FAMILY = new Object();
+
 }

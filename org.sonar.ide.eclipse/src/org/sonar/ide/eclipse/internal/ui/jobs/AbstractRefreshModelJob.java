@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.jobs;
+package org.sonar.ide.eclipse.internal.ui.jobs;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,9 +39,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonar.ide.api.SonarIdeException;
-import org.sonar.ide.eclipse.core.ISonarConstants;
-import org.sonar.ide.eclipse.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.core.SonarLogger;
 
 /**
  * @author Jérémie Lagarde

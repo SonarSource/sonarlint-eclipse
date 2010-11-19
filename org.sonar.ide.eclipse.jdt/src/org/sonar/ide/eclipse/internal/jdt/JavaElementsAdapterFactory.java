@@ -25,6 +25,7 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jdt.core.*;
 import org.sonar.ide.eclipse.core.*;
+import org.sonar.ide.eclipse.internal.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.services.Resource;

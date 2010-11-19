@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.markers;
+package org.sonar.ide.eclipse.internal.ui.markers;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -27,8 +27,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
-import org.sonar.ide.eclipse.core.ISonarConstants;
-import org.sonar.ide.eclipse.markers.resolvers.ISonarResolver;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+import org.sonar.ide.eclipse.ui.ISonarResolver;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import java.util.ArrayList;

@@ -42,7 +42,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.sonar.ide.eclipse.core.SonarKeyUtils;
-import org.sonar.ide.eclipse.core.SonarLogger;
+import org.sonar.ide.eclipse.internal.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.ui.AbstractModelObject;
 import org.sonar.ide.eclipse.internal.ui.InlineEditingSupport;
 import org.sonar.ide.eclipse.internal.ui.Messages;
