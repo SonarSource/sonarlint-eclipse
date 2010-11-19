@@ -13,7 +13,7 @@
   <artifactId>org.sonar.ide.eclipse</artifactId>
   <packaging>eclipse-plugin</packaging>
 
-  <name>Sonar Integration for Eclipse</name>
+  <name>Sonar Integration for Eclipse UI</name>
 
   <build>
     <sourceDirectory>src</sourceDirectory>
