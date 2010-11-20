@@ -108,6 +108,8 @@
     <sonar-ide.site>dav:http://localhost</sonar-ide.site>
     <sonar-ide.snapshots>http://localhost</sonar-ide.snapshots>
     <sonar-ide.releases>http://localhost</sonar-ide.releases>
+
+    <jacoco.argLine></jacoco.argLine>
   </properties>
 
   <dependencyManagement>
@@ -177,7 +179,7 @@
         <plugin>
           <groupId>org.codehaus.sonar</groupId>
           <artifactId>sonar-dev-maven-plugin</artifactId>
-          <version>1.0</version>
+          <version>1.0.1</version>
         </plugin>
       </plugins>
     </pluginManagement>
