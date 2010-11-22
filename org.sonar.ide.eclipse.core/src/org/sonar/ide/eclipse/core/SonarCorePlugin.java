@@ -33,6 +33,8 @@ import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Metric;
 
 public class SonarCorePlugin extends Plugin {
+  public static final String PLUGIN_ID = "org.sonar.ide.eclipse.core";
+
   private static SonarCorePlugin plugin;
 
   public static SonarCorePlugin getDefault() {

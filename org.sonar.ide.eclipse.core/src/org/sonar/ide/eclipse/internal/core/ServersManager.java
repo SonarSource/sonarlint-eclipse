@@ -122,10 +122,6 @@ public class ServersManager implements ISonarServersManager {
     servers.put(url, new SonarServer(url, username, password));
   }
 
-  public Host createServer(String url) {
-    return findServer(url);
-  }
-
   public Host findServer(String url) {
     SonarServer server = servers.get(url);
     if (server == null) { // FIXME dirty hack
@@ -137,7 +133,7 @@ public class ServersManager implements ISonarServersManager {
   }
 
   public Sonar getSonar(String url) {
-    final Host server = createServer(url);
+    final Host server = findServer(url);
     return new SonarClient(server.getHost(), server.getUsername(), server.getPassword());
   }
 

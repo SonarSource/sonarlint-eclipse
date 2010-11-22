@@ -42,11 +42,6 @@ public interface ISonarServersManager {
 
   void addServer(String location, String username, String password);
 
-  /**
-   * @deprecated since 0.3 use {@link #findServer(String)} instead
-   */
-  Host createServer(String url);
-
   Host findServer(String host);
 
   Sonar getSonar(String url);
