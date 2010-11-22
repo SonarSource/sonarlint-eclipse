@@ -36,6 +36,11 @@ public class JavaElementFiltersDialogBot {
     return this;
   }
 
+  public JavaElementFiltersDialogBot uncheck(String filter) {
+    bot.table().getTableItem(filter).uncheck();
+    return this;
+  }
+
   public void ok() {
     SWTBotShell shell = bot.shell("Java Element Filters").activate();
     bot.button("OK").click();
