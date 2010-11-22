@@ -92,8 +92,7 @@
                 ch.qos.logback.core.joran.spi,
               </exportPackages>
               <manifestAttributes>
-                <Bundle-RequiredExecutionEnvironment>J2SE-1.5, JavaSE-1.6
-                </Bundle-RequiredExecutionEnvironment>
+                <Bundle-RequiredExecutionEnvironment>J2SE-1.5, JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
               </manifestAttributes>
             </configuration>
           </plugin>
