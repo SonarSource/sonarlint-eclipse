@@ -35,6 +35,7 @@ public class ConfigureProjectTest extends UITestCase {
   public void canAssociateWithSonar() throws Exception {
     new ImportProjectBot().setPath(getProjectPath(PROJECT_NAME)).finish();
 
+    bot.sleep(10000);
     new PackageExplorerBot()
         .expandAndSelect(PROJECT_NAME)
         .clickContextMenu("Configure", "Associate with Sonar...");
