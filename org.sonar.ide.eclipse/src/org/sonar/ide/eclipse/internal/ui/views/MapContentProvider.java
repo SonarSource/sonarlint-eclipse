@@ -34,7 +34,7 @@ public class MapContentProvider implements ITreeContentProvider {
   /**
    * {@inheritDoc}
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   public Object[] getChildren(Object parentElement) {
     if (parentElement instanceof Map) {
       return ((Map) parentElement).entrySet().toArray();

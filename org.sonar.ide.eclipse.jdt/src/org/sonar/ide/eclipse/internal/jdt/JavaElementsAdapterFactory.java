@@ -21,12 +21,26 @@
 package org.sonar.ide.eclipse.internal.jdt;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.*;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.eclipse.jdt.core.*;
-import org.sonar.ide.eclipse.core.*;
-import org.sonar.ide.eclipse.internal.core.SonarLogger;
-import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.sonar.ide.eclipse.core.ISonarFile;
+import org.sonar.ide.eclipse.core.ISonarProject;
+import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.SonarKeyUtils;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.services.Resource;
 
@@ -61,8 +75,9 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
         // TODO this is not optimal
         for (IProject project : root.getRoot().getProjects()) {
           if (project.isAccessible()) {
-            ProjectProperties props = ProjectProperties.getInstance(project);
-            if (StringUtils.equals(props.getGroupId(), groupId) && StringUtils.equals(props.getArtifactId(), artifactId)) {
+            ISonarProject sonarProject = SonarUiPlugin.getSonarProject(project);
+            if (sonarProject != null && StringUtils.equals(sonarProject.getGroupId(), groupId)
+                && StringUtils.equals(sonarProject.getArtifactId(), artifactId)) {
               IJavaProject javaProject = JavaCore.create(project);
               try {
                 IType type = javaProject.findType(className);
@@ -72,7 +87,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
                 IResource result = type.getCompilationUnit().getResource();
                 return result instanceof IFile ? result : null;
               } catch (JavaModelException e) {
-                SonarLogger.log(e);
+                SonarJdtPlugin.log(e);
               }
             }
           }
@@ -83,16 +98,16 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
     return null;
   }
 
-  private Object getSonarResource(Object adaptableObject) {
+  private ISonarResource getSonarResource(Object adaptableObject) {
     if (adaptableObject instanceof IJavaElement) {
       IJavaElement javaElement = (IJavaElement) adaptableObject;
-      return getAdapter(javaElement.getResource(), ISonarResource.class);
+      return (ISonarResource) getAdapter(javaElement.getResource(), ISonarResource.class);
     } else if (adaptableObject instanceof IProject) {
       IProject project = (IProject) adaptableObject;
       if ( !isConfigured(project)) {
         return null;
       }
-      return SonarCorePlugin.createSonarResource(project, getProjectKey(project), project.getName());
+      return SonarUiPlugin.getSonarProject(project);
     } else if (adaptableObject instanceof IFolder) {
       IFolder folder = (IFolder) adaptableObject;
       IProject project = folder.getProject();
@@ -141,8 +156,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
   }
 
   private String getProjectKey(IProject project) {
-    ProjectProperties properties = ProjectProperties.getInstance(project);
-    return SonarKeyUtils.projectKey(properties.getGroupId(), properties.getArtifactId(), properties.getBranch());
+    return SonarUiPlugin.getSonarProject(project).getKey();
   }
 
 }

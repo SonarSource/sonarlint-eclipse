@@ -36,6 +36,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.internal.EclipseProxyAuthenticator;
 import org.sonar.ide.eclipse.internal.EclipseProxySelector;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
@@ -45,6 +46,7 @@ import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshViolationsJob;
 import org.sonar.ide.eclipse.internal.ui.preferences.SonarUiPreferenceInitializer;
+import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -62,6 +64,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   private FavouriteMetricsManager favouriteMetricsManager = new FavouriteMetricsManager();
 
   public SonarUiPlugin() {
+    plugin = this;
   }
 
   public SonarProjectManager getProjectManager() {
@@ -78,7 +81,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   @Override
   public void start(final BundleContext context) throws Exception {
     super.start(context);
-    plugin = this;
 
     SonarLogger.setLog(getLog());
 
@@ -87,17 +89,15 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     RefreshViolationsJob.setupViolationsUpdater();
 
     getFavouriteMetricsManager().set(SonarUiPreferenceInitializer.getFavouriteMetrics());
-
-    LoggerFactory.getLogger(SonarUiPlugin.class).info("SonarPlugin started");
   }
 
   @Override
   public void stop(final BundleContext context) throws Exception {
-    SonarUiPreferenceInitializer.setFavouriteMetrics(getFavouriteMetricsManager().get());
-
-    plugin = null;
-    LoggerFactory.getLogger(SonarUiPlugin.class).info("SonarPlugin stopped");
-    super.stop(context);
+    try {
+      SonarUiPreferenceInitializer.setFavouriteMetrics(getFavouriteMetricsManager().get());
+    } finally {
+      super.stop(context);
+    }
   }
 
   /**
@@ -166,6 +166,10 @@ public class SonarUiPlugin extends AbstractUIPlugin {
       SonarLogger.log(e);
       return false;
     }
+  }
+
+  public static ISonarProject getSonarProject(IProject project) {
+    return ProjectProperties.getInstance(project);
   }
 
 }

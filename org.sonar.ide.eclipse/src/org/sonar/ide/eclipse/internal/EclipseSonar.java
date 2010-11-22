@@ -46,7 +46,7 @@ public final class EclipseSonar extends RemoteSonar {
 
   public static EclipseSonar getInstance(IProject project) {
     ProjectProperties properties = ProjectProperties.getInstance(project);
-    Host host = SonarCorePlugin.getServersManager().createServer(properties.getUrl());
+    Host host = SonarCorePlugin.getServersManager().findServer(properties.getUrl());
     return new EclipseSonar(host);
   }
 

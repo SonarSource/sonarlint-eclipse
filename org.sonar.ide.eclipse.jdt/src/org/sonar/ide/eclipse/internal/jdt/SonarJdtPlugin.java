@@ -20,24 +20,39 @@
 
 package org.sonar.ide.eclipse.internal.jdt;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
-import org.sonar.ide.eclipse.internal.core.SonarLogger;
 
 public class SonarJdtPlugin extends Plugin {
 
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.jdt"; //$NON-NLS-1$
 
+  private static SonarJdtPlugin plugin;
+
+  public SonarJdtPlugin() {
+    plugin = this;
+  }
+
+  public static void log(Throwable e) {
+    plugin.getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, e.getMessage(), e));
+  }
+
+  public static void log(String message) {
+    plugin.getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));
+  }
+
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
-    SonarLogger.log("SonarJdtPlugin started"); //$NON-NLS-1$
+    log("SonarJdtPlugin started");
   }
 
   @Override
   public void stop(BundleContext context) throws Exception {
-    SonarLogger.log("SonarJdtPlugin stopped"); //$NON-NLS-1$
     super.stop(context);
+    log("SonarJdtPlugin stopped");
   }
 
 }

@@ -22,12 +22,14 @@ package org.sonar.ide.eclipse.internal.ui.properties;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.sonar.ide.eclipse.core.ISonarProject;
+import org.sonar.ide.eclipse.core.SonarKeyUtils;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 /**
  * @author Evgeny Mandrikov
  */
-public class ProjectProperties {
+public class ProjectProperties implements ISonarProject {
 
   private IProject project;
   private String url;
@@ -84,6 +86,22 @@ public class ProjectProperties {
 
   public void setBranch(String branch) {
     this.branch = branch;
+  }
+
+  public IProject getProject() {
+    return project;
+  }
+
+  public IResource getResource() {
+    return project;
+  }
+
+  public String getKey() {
+    return SonarKeyUtils.projectKey(getGroupId(), getArtifactId(), getBranch());
+  }
+
+  public String getName() {
+    return project.getName();
   }
 
 }

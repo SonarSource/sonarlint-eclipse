@@ -20,6 +20,12 @@
 
 package org.sonar.ide.eclipse.internal.ui.views;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -36,7 +42,12 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.actions.BaseSelectionListenerAction;
 import org.eclipse.ui.dialogs.FilteredTree;
@@ -44,7 +55,10 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
 import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
-import org.sonar.ide.eclipse.core.*;
+import org.sonar.ide.eclipse.core.ISonarMeasure;
+import org.sonar.ide.eclipse.core.ISonarMetric;
+import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.AbstractTableLabelProvider;
@@ -54,16 +68,17 @@ import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleFavouriteMetricAction;
 import org.sonar.ide.eclipse.internal.ui.jobs.AbstractRemoteSonarJob;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-import org.sonar.wsclient.services.*;
+import org.sonar.wsclient.services.Measure;
+import org.sonar.wsclient.services.Metric;
+import org.sonar.wsclient.services.MetricQuery;
+import org.sonar.wsclient.services.Resource;
+import org.sonar.wsclient.services.ResourceQuery;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-
-import java.util.*;
-import java.util.List;
 
 /**
  * @author Evgeny Mandrikov
@@ -130,6 +145,7 @@ public class MeasuresView extends AbstractSonarInfoView {
     viewer.setContentProvider(new MapContentProvider());
     viewer.setLabelProvider(new MeasuresLabelProvider());
     viewer.setComparator(new ViewerComparator() {
+      @SuppressWarnings("rawtypes")
       @Override
       public int category(Object element) {
         if (element instanceof Map.Entry) {
@@ -200,7 +216,7 @@ public class MeasuresView extends AbstractSonarInfoView {
       return null;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public String getColumnText(Object element, int columnIndex) {
       if (element instanceof Map.Entry) {
         if (columnIndex > 0) {
