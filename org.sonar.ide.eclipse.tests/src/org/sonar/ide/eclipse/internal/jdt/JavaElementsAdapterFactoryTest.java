@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonar.ide.eclipse.core.ISonarFile;
+import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
@@ -69,13 +70,12 @@ public class JavaElementsAdapterFactoryTest extends SonarTestCase {
 
   @Test
   public void testAdapterList() {
-    assertThat(factory.getAdapterList().length, is(4));
-
+    assertThat(factory.getAdapterList().length, is(5));
   }
 
   @Test
-  public void shouldAdaptProjectToSonarResource() {
-    ISonarResource sonarElement = (ISonarResource) factory.getAdapter(project, ISonarResource.class);
+  public void shouldAdaptProjectToSonarProject() {
+    ISonarProject sonarElement = (ISonarProject) factory.getAdapter(project, ISonarProject.class);
     assertThat(sonarElement, notNullValue());
     assertThat(sonarElement.getKey(), is(groupId + ":" + artifactId));
   }

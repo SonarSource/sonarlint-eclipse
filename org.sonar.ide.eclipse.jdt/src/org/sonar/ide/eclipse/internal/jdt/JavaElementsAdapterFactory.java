@@ -50,10 +50,10 @@ import org.sonar.wsclient.services.Resource;
 @SuppressWarnings("rawtypes")
 public class JavaElementsAdapterFactory implements IAdapterFactory {
 
-  private static Class<?>[] ADAPTER_LIST = { ISonarResource.class, ISonarFile.class, Resource.class, IFile.class };
+  private static Class<?>[] ADAPTER_LIST = { ISonarResource.class, ISonarFile.class, ISonarProject.class, Resource.class, IFile.class };
 
   public Object getAdapter(Object adaptableObject, Class adapterType) {
-    if (ISonarResource.class.equals(adapterType) || ISonarFile.class.equals(adapterType)) {
+    if (ISonarResource.class.equals(adapterType) || ISonarFile.class.equals(adapterType) || ISonarProject.class.equals(adapterType)) {
       return getSonarResource(adaptableObject);
     } else if (adapterType == Resource.class) {
       if (adaptableObject instanceof IJavaProject) {
