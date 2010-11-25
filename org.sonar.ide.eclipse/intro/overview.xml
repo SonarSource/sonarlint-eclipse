@@ -4,7 +4,7 @@
     style="css/overview.css" alt-style="css/overview.properties" path="overview/@">
     <group id="content-group" style-id="content-group">
       <link id="sonar" style-id="content-link" label="Sonar Integration for Eclipse"
-        url="http://docs.codehaus.org/display/SONAR/Eclipse+Plugin">
+        url="http://docs.codehaus.org/display/SONAR/Sonar+Eclipse">
         <text>See an overview of the features provided by Sonar
           Integration for Eclipse.</text>
       </link>
