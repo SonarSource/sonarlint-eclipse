@@ -10,7 +10,7 @@
     <relativePath>../org.sonar.ide.eclipse.parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>org.sonar.ide.eclipse</artifactId>
+  <artifactId>org.sonar.ide.eclipse.ui</artifactId>
   <packaging>eclipse-plugin</packaging>
 
   <name>Sonar Integration for Eclipse UI</name>
