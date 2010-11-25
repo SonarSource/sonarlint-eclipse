@@ -46,7 +46,7 @@
   <modules>
     <module>../org.sonar.ide.eclipse.core</module>
     <module>../org.sonar.ide.eclipse.sonar_embedder</module>
-    <module>../org.sonar.ide.eclipse</module>
+    <module>../org.sonar.ide.eclipse.ui</module>
     <module>../org.sonar.ide.eclipse.jdt</module>
     <module>../org.sonar.ide.eclipse.site</module>
 
