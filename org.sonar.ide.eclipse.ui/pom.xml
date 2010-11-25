@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.codehaus.sonar-ide.eclipse</groupId>
     <artifactId>eclipse-parent</artifactId>
-    <version>0.4.0-SNAPSHOT</version>
+    <version>1.0.0.201011251615</version>
     <relativePath>../org.sonar.ide.eclipse.parent/pom.xml</relativePath>
   </parent>
 
