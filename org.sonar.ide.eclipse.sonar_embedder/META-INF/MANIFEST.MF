@@ -17,7 +17,7 @@ Bundle-ClassPath: jars/sonar-ide-commons-0.3-SNAPSHOT.jar,jars/slf4j-a
  ent-2.2.jar,jars/json-simple-1.1.jar,jars/commons-httpclient-3.1.jar,
  jars/commons-codec-1.2.jar,jars/logback-classic-0.9.18.jar,jars/logba
  ck-core-0.9.18.jar,jars/commons-io-1.4.jar
-Bundle-Version: 1.0.0.201011251615
+Bundle-Version: 1.1.0.qualifier
 Bundle-Name: Sonar Embedder Bundle
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.sonar.ide.eclipse.sonar_embedder;singleton:=t

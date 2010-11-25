@@ -7,7 +7,7 @@ Bundle-SymbolicName: org.sonar.ide.eclipse.ui.tests;singleton:=true
 Bundle-ManifestVersion: 2
 Bundle-ActivationPolicy: lazy
 MavenArtifact-GroupId: org.codehaus.sonar-ide.eclipse
-Bundle-Version: 1.0.0.201011251615
+Bundle-Version: 1.1.0.qualifier
 Bundle-Vendor: SonarSource
 MavenArtifact-ArtifactId: org.sonar.ide.eclipse.ui.test
 Export-Package: org.sonar.ide.eclipse.ui.tests

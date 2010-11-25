@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundle_name
 Bundle-SymbolicName: org.sonar.ide.eclipse.ui;singleton:=true
-Bundle-Version: 1.0.0.201011251615
+Bundle-Version: 1.1.0.qualifier
 Bundle-Vendor: %bundle_vendor
 Bundle-ClassPath: .
 Bundle-Activator: org.sonar.ide.eclipse.ui.SonarUiPlugin
