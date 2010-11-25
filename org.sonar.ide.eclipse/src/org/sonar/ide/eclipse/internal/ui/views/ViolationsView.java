@@ -41,7 +41,7 @@ public class ViolationsView extends MarkerSupportView {
   private Action refreshAction;
 
   public ViolationsView() {
-    super("org.sonar.ide.eclipse.markers.violationMarkerGenerator");
+    super(ISonarConstants.PLUGIN_ID + ".markers.violationMarkerGenerator");
   }
 
   @Override
@@ -73,7 +73,7 @@ public class ViolationsView extends MarkerSupportView {
   }
 
   /**
-   * TODO quote from {@link WorkbenchPart#getContentDescription()} : "It is considered bad practise to overload or extend this method."
+   * TODO quote from {@link WorkbenchPart#getContentDescription()} : "It is considered bad practice to overload or extend this method."
    */
   @Override
   public String getContentDescription() {

@@ -25,6 +25,7 @@ import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.progress.IProgressConstants;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.views.HotspotsView;
 import org.sonar.ide.eclipse.internal.ui.views.MeasuresView;
 import org.sonar.ide.eclipse.internal.ui.views.ViolationsView;
@@ -76,7 +77,7 @@ public class SonarPerspectiveFactory implements IPerspectiveFactory {
     layout.addShowViewShortcut(IPageLayout.ID_PROJECT_EXPLORER);
 
     // new actions
-    layout.addNewWizardShortcut("org.sonar.ide.eclipse.wizards.newserverlocationwizard"); //$NON-NLS-1$
+    layout.addNewWizardShortcut(ISonarConstants.PLUGIN_ID + ".wizards.newserverlocationwizard"); //$NON-NLS-1$
   }
 
 }

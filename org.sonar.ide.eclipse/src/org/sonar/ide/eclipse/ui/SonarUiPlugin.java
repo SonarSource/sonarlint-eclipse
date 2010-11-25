@@ -37,6 +37,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarProject;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseProxyAuthenticator;
 import org.sonar.ide.eclipse.internal.EclipseProxySelector;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
@@ -152,7 +153,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
   public static boolean hasSonarNature(IProject project) {
     try {
-      return project.hasNature(ISonarConstants.NATURE_ID);
+      return project.hasNature(SonarCorePlugin.NATURE_ID);
     } catch (CoreException e) {
       SonarLogger.log(e);
       return false;

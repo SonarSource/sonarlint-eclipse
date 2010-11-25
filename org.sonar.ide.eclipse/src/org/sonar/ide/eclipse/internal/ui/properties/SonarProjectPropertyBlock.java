@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.wsclient.Host;
 
@@ -111,7 +112,7 @@ public class SonarProjectPropertyBlock {
       @Override
       public void widgetSelected(SelectionEvent e) {
         PreferenceDialog preference = PreferencesUtil.createPreferenceDialogOn(PlatformUI.getWorkbench().getDisplay().getActiveShell(),
-            "org.sonar.ide.eclipse.preferences.SonarPreferencePage", null, null);
+            ISonarConstants.PLUGIN_ID + ".preferences.SonarPreferencePage", null, null);
         if (preference != null && (preference.open() == Window.OK)) {
           serversCombo.removeAll();
           List<Host> servers = SonarCorePlugin.getServersManager().getHosts();

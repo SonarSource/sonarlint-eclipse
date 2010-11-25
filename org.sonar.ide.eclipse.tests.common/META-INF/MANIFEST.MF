@@ -3,7 +3,7 @@ Export-Package: org.sonar.ide.test,org.sonar.ide.eclipse.tests.common,
  org.apache.commons.io
 Require-Bundle: org.junit4;bundle-version="4.0.0",org.eclipse.core.res
  ources,org.eclipse.core.runtime,org.sonar.ide.eclipse.core,org.sonar.
- ide.eclipse,org.sonar.ide.eclipse.sonar_embedder
+ ide.eclipse.ui,org.sonar.ide.eclipse.sonar_embedder
 Bundle-Vendor: SonarSource
 Bundle-ClassPath: .,jars/sonar-ide-testing-harness-0.3-SNAPSHOT.jar,ja
  rs/sonar-ws-client-2.2.jar,jars/json-simple-1.1.jar,jars/jetty-servle

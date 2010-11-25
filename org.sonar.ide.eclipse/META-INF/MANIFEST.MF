@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundle_name
-Bundle-SymbolicName: org.sonar.ide.eclipse;singleton:=true
+Bundle-SymbolicName: org.sonar.ide.eclipse.ui;singleton:=true
 Bundle-Version: 0.4.0.qualifier
 Bundle-Vendor: %bundle_vendor
 Bundle-ClassPath: .
@@ -29,7 +29,6 @@ Import-Package: org.apache.commons.io,
  org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonar.ide.eclipse.internal;x-internal:=true,
- org.sonar.ide.eclipse.internal.builder;x-internal:=true,
  org.sonar.ide.eclipse.internal.core;x-internal:=true,
  org.sonar.ide.eclipse.internal.project;x-internal:=true,
  org.sonar.ide.eclipse.internal.ui;x-internal:=true,

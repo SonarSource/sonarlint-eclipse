@@ -35,6 +35,13 @@ import org.sonar.wsclient.services.Metric;
 public class SonarCorePlugin extends Plugin {
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.core";
 
+  public static final String NATURE_ID = PLUGIN_ID + ".sonarNature";
+
+  /**
+   * Godin: It would be better to use only one MARKER_ID at least at first time.
+   */
+  public static final String MARKER_ID = PLUGIN_ID + ".sonarProblem";
+
   private static SonarCorePlugin plugin;
 
   public static SonarCorePlugin getDefault() {

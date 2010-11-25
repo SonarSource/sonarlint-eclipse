@@ -15,7 +15,7 @@ Require-Bundle: org.junit4;bundle-version="4.0.0",
  org.sonar.ide.eclipse.core;bundle-version="[0.4.0,0.5.0)",
  org.sonar.ide.eclipse.sonar_embedder;bundle-version="[0.4.0,0.5.0)",
  org.sonar.ide.eclipse.tests.common;bundle-version="[0.4.0,0.5.0)";visibility:=reexport,
- org.sonar.ide.eclipse;bundle-version="[0.4.0,0.5.0)",
+ org.sonar.ide.eclipse.ui;bundle-version="[0.4.0,0.5.0)",
  org.sonar.ide.eclipse.jdt;bundle-version="[0.4.0,0.5.0)"
 Bundle-ClassPath: .
 Eclipse-RegisterBuddy: org.sonar.ide.eclipse.tests.common

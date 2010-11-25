@@ -11,13 +11,13 @@
   <extension point="org.eclipse.ui.preferencePages">
     <page
         class="org.sonar.ide.eclipse.internal.ui.preferences.SonarPreferencePage"
-        id="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
+        id="org.sonar.ide.eclipse.ui.preferences.SonarPreferencePage"
         name="%sonar.preference.page.name">
     </page>
     <page
-          category="org.sonar.ide.eclipse.preferences.SonarPreferencePage"
+          category="org.sonar.ide.eclipse.ui.preferences.SonarPreferencePage"
           class="org.sonar.ide.eclipse.internal.ui.preferences.FavouriteMetricsPreferencePage"
-          id="org.sonar.ide.eclipse.preferences.FavouriteMetricsPreferencePage"
+          id="org.sonar.ide.eclipse.ui.preferences.FavouriteMetricsPreferencePage"
           name="Favourite Metrics">
     </page>
   </extension>
@@ -35,28 +35,28 @@
     	category="org.sonar.ide.eclipse"
     	class="org.sonar.ide.eclipse.internal.ui.views.MeasuresView"
     	icon="icons/sonar.png"
-    	id="org.sonar.ide.eclipse.views.MeasuresView"
+    	id="org.sonar.ide.eclipse.ui.views.MeasuresView"
     	name="%sonar.measures.view.name">
     </view>
     <view
     	category="org.sonar.ide.eclipse"
     	class="org.sonar.ide.eclipse.internal.ui.views.HotspotsView"
     	icon="icons/sonar.png"
-    	id="org.sonar.ide.eclipse.views.HotspotsView"
+    	id="org.sonar.ide.eclipse.ui.views.HotspotsView"
     	name="Hotspots">
     </view>
     <view
         category="org.sonar.ide.eclipse"
         class="org.sonar.ide.eclipse.internal.ui.views.ViolationsView"
         icon="icons/sonar.png"
-        id="org.sonar.ide.eclipse.views.ViolationsView"
+        id="org.sonar.ide.eclipse.ui.views.ViolationsView"
         name="%sonar.violation.view.name">
     </view>
     <view
           category="org.sonar.ide.eclipse"
           class="org.sonar.ide.eclipse.internal.ui.views.WebView"
           icon="icons/sonar.png"
-          id="org.sonar.ide.eclipse.views.WebView"
+          id="org.sonar.ide.eclipse.ui.views.WebView"
           name="Web">
     </view>
   </extension>
@@ -64,7 +64,7 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="menu:org.sonar.ide.eclipse.views.ViolationsView">
+            locationURI="menu:org.sonar.ide.eclipse.ui.views.ViolationsView">
          <!-- menu
                id="org.eclipse.ui.ide.problems.filtersMenu"
                label="Show">
@@ -112,15 +112,15 @@
   <extension
       point="org.eclipse.ui.ide.markerSupport">
     <markerContentGenerator
-         id="org.sonar.ide.eclipse.markers.violationMarkerGenerator"
+         id="org.sonar.ide.eclipse.ui.markers.violationMarkerGenerator"
          name="Sonar Violation Marker Generator">
         <markerTypeReference
-              id="org.sonar.ide.eclipse.sonarProblem"/>
+              id="org.sonar.ide.eclipse.core.sonarProblem"/>
         <markerFieldReference
-              id="org.sonar.ide.eclipse.views.violationRuleKeyField"
+              id="org.sonar.ide.eclipse.ui.views.violationRuleKeyField"
               visible="false"/>  
         <markerFieldReference
-              id="org.sonar.ide.eclipse.views.violationSeverityAndRuleNameField"
+              id="org.sonar.ide.eclipse.ui.views.violationSeverityAndRuleNameField"
               visible="true"/>
         <markerFieldReference
               id="org.eclipse.ui.ide.resourceField"
@@ -133,32 +133,32 @@
               visible="true"/>
         <markerFieldConfiguration
               enabled="true"
-              id="org.sonar.ide.eclipse.violationsGrouping"
+              id="org.sonar.ide.eclipse.ui.violationsGrouping"
               name="Violations"
               scope="ON_SELECTED_AND_CHILDREN">
         </markerFieldConfiguration>
     </markerContentGenerator>
     <markerField 
         class="org.sonar.ide.eclipse.internal.ui.views.ViolationSeverityAndRuleNameField" 
-        id="org.sonar.ide.eclipse.views.violationSeverityAndRuleNameField" 
+        id="org.sonar.ide.eclipse.ui.views.violationSeverityAndRuleNameField" 
         name="Rule"> 
     </markerField> 
     <markerField 
         class="org.sonar.ide.eclipse.internal.ui.views.ViolationRuleKeyField" 
-        id="org.sonar.ide.eclipse.views.violationRuleKeyField" 
+        id="org.sonar.ide.eclipse.ui.views.violationRuleKeyField" 
         name="%sonar.violation.view.rulekeyfield"> 
     </markerField> 
   </extension>
   
   <extension point="org.eclipse.ui.newWizards">
-    <category id="org.sonar.ide.eclipse.wizcat" name="%sonar.category.wizard.name"/>
+    <category id="org.sonar.ide.eclipse.ui.wizcat" name="%sonar.category.wizard.name"/>
     <wizard
         canFinishEarly="true"
         category="org.sonar.ide.eclipse.wizcat"
         class="org.sonar.ide.eclipse.internal.ui.wizards.NewServerLocationWizard"
         descriptionImage="icons/sonar-large.gif"
         icon="icons/sonar.png"
-        id="org.sonar.ide.eclipse.wizards.newserverlocationwizard"
+        id="org.sonar.ide.eclipse.ui.wizards.newserverlocationwizard"
         name="%sonar.wizard.newserverlocation.name ">
     </wizard>
   </extension>
@@ -167,9 +167,9 @@
       point="org.eclipse.ui.propertyPages">
     <page
       class="org.sonar.ide.eclipse.internal.ui.properties.SonarProjectPropertyPage"
-       id="org.sonar.ide.eclipse.properties.sonarProjectPropertyPage"
+       id="org.sonar.ide.eclipse.ui.properties.sonarProjectPropertyPage"
        name="%sonar.properties.page.name">
-       <filter name="projectNature" value="org.sonar.ide.eclipse.sonarNature"/>
+       <filter name="projectNature" value="org.sonar.ide.eclipse.core.sonarNature"/>
        <enabledWhen>
           <adapt type="org.eclipse.core.resources.IProject"/>
        </enabledWhen>
@@ -178,7 +178,7 @@
 
   <extension point="org.eclipse.ui.popupMenus">
     <objectContribution
-           id="org.sonar.ide.eclipse.contribution1"
+           id="org.sonar.ide.eclipse.ui.contribution1"
            objectClass="org.sonar.ide.eclipse.core.ISonarResource"
            adaptable="true">
         <menu
@@ -229,7 +229,7 @@
         				adaptable="true"
         				objectClass="org.eclipse.core.resources.IProject">
 		<visibility>
-          <objectState name="nature" value="org.sonar.ide.eclipse.sonarNature"/>
+          <objectState name="nature" value="org.sonar.ide.eclipse.core.sonarNature"/>
         </visibility>
 		<action id="org.sonar.ide.eclipse.addRemoveNatureAction"
                 class="org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction"
@@ -245,7 +245,7 @@
       	<visibility>
         	<and>
           		<not>
-            		<objectState name="nature" value="org.sonar.ide.eclipse.sonarNature"/>
+            		<objectState name="nature" value="org.sonar.ide.eclipse.core.sonarNature"/>
           		</not>
           		<objectState name="nature" value="org.eclipse.jdt.core.javanature"/>
         	</and>
@@ -261,29 +261,11 @@
 	</objectContribution>
   </extension>
   
-  <extension
-        id="sonarProblem"
-        name="Sonar Violation"
-        point="org.eclipse.core.resources.markers">
-      <super
-            type="org.eclipse.core.resources.problemmarker">
-      </super>
-      <persistent	
-            value="true">
-      </persistent>
-      <attribute
-            name="rulename">
-      </attribute>
-      <attribute
-            name="rulekey">
-      </attribute>
-   </extension>
-
    <extension
         point="org.eclipse.ui.editors.annotationTypes">
         <type
             name="org.sonar.ide.eclipse.violationAnnotationType"
-            markerType="org.sonar.ide.eclipse.sonarProblem"/>
+            markerType="org.sonar.ide.eclipse.core.sonarProblem"/>
     </extension>
 
     <extension
@@ -291,9 +273,9 @@
         <specification
               annotationImageProvider="org.sonar.ide.eclipse.internal.ui.markers.SonarMarkerImageProvider"
               annotationType="org.sonar.ide.eclipse.violationAnnotationType"
-              colorPreferenceKey="org.sonar.ide.eclipse.violation.color"
+              colorPreferenceKey="org.sonar.ide.eclipse.ui.violation.color"
               colorPreferenceValue="255,246,191"
-              highlightPreferenceKey="org.sonar.ide.eclipse.violation.highlight"
+              highlightPreferenceKey="org.sonar.ide.eclipse.ui.violation.highlight"
               highlightPreferenceValue="true"
               icon="icons/sonar.png"
               isGoToNextNavigationTarget="true"
@@ -301,16 +283,16 @@
               isGoToPreviousNavigationTarget="true"
               isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.violation.previous"
               label="%sonar.marker.specification.label"
-              overviewRulerPreferenceKey="org.sonar.ide.eclipse.violation.overviewruler"
+              overviewRulerPreferenceKey="org.sonar.ide.eclipse.ui.violation.overviewruler"
               overviewRulerPreferenceValue="true"
               presentationLayer="5"
               showInNextPrevDropdownToolbarAction="true"
               showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.violation.dropdown"
-              textPreferenceKey="org.sonar.ide.eclipse.violation.error.text"
+              textPreferenceKey="org.sonar.ide.eclipse.ui.violation.error.text"
               textPreferenceValue="true"
-              textStylePreferenceKey="org.sonar.ide.eclipse.violation.text.style"
+              textStylePreferenceKey="org.sonar.ide.eclipse.ui.violation.text.style"
               textStylePreferenceValue="BOX"
-              verticalRulerPreferenceKey="org.sonar.ide.eclipse.violation.verticalruler"
+              verticalRulerPreferenceKey="org.sonar.ide.eclipse.ui.violation.verticalruler"
               verticalRulerPreferenceValue="true"/>
     </extension>
    
@@ -334,7 +316,7 @@
       <perspective
             class="org.sonar.ide.eclipse.internal.ui.SonarPerspectiveFactory"
             icon="icons/sonar.png"
-            id="org.sonar.ide.eclipse.perspectives.SonarPerspective"
+            id="org.sonar.ide.eclipse.ui.perspectives.SonarPerspective"
             name="%sonar.perspective.name">
       </perspective>
    </extension>
@@ -354,12 +336,12 @@
         point="org.eclipse.ui.ide.markerResolution">
      <markerResolutionGenerator
            class="org.sonar.ide.eclipse.internal.ui.markers.SonarMarkerResolutionGenerator"
-           markerType="org.sonar.ide.eclipse.sonarProblem">
+           markerType="org.sonar.ide.eclipse.core.sonarProblem">
      </markerResolutionGenerator>
   </extension>
   
   <extension
-        point="org.sonar.ide.eclipse.resolver">
+        point="org.sonar.ide.eclipse.ui.resolver">
      <resolver
            class="org.sonar.ide.eclipse.internal.ui.markers.IgnoreMarkerResolver">
      </resolver>
@@ -373,30 +355,6 @@
            class="org.sonar.ide.eclipse.internal.ui.compare.SonarReferenceProvider"
            id="org.sonar.ide.eclipse.referenceprovider">
      </referenceprovider>
-  </extension>
-
-  <extension point="org.eclipse.core.resources.natures"
-        id="sonarNature"
-        name="Sonar Nature">
-     <runtime>
-        <run class="org.sonar.ide.eclipse.internal.builder.SonarNature"/>
-     </runtime>
-     <builder
-           id="org.sonar.ide.eclipse.sonarBuilder">
-     </builder>
-  </extension>
-  <extension
-        id="sonarBuilder"
-        name="Sonar Builder"
-        point="org.eclipse.core.resources.builders">
-     <builder
-           callOnEmptyDelta="false"
-           hasNature="true"
-           isConfigurable="false">
-        <run
-              class="org.sonar.ide.eclipse.internal.builder.SonarBuilder">
-        </run>
-     </builder>
   </extension>
 
 </plugin>

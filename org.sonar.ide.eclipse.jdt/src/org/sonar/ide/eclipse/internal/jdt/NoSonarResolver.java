@@ -41,7 +41,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
-import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.ISonarResolver;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
@@ -57,7 +57,7 @@ public class NoSonarResolver implements ISonarResolver {
 
   public boolean canResolve(final IMarker marker) {
     try {
-      if (ISonarConstants.MARKER_ID.equals(marker.getType())) {
+      if (SonarCorePlugin.MARKER_ID.equals(marker.getType())) {
         final Object ruleName = marker.getAttribute("rulename"); //$NON-NLS-1$
         label = MessageFormat.format(Messages.NoSonarResolver_label, ruleName);
         description = MessageFormat.format(Messages.NoSonarResolver_description, ruleName);

@@ -4,7 +4,7 @@
       label="%feature_name"
       version="0.4.0.qualifier"
       provider-name="%provider_name"
-      plugin="org.sonar.ide.eclipse">
+      plugin="org.sonar.ide.eclipse.ui">
 
    <description url="http://sonar-ide.codehaus.org/">
      %description
@@ -30,7 +30,7 @@
          unpack="false"/>
 
    <plugin
-         id="org.sonar.ide.eclipse"
+         id="org.sonar.ide.eclipse.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"

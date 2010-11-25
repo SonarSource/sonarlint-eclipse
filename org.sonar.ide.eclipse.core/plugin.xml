@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+   <extension
+         id="sonarNature"
+         name="Sonar Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="org.sonar.ide.eclipse.internal.core.SonarNature">
+         </run>
+      </runtime>
+   </extension>
+   
+   <extension
+        id="sonarProblem"
+        name="Sonar Violation"
+        point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent	
+            value="true">
+      </persistent>
+      <attribute
+            name="rulename">
+      </attribute>
+      <attribute
+            name="rulekey">
+      </attribute>
+   </extension>
+   
+</plugin>

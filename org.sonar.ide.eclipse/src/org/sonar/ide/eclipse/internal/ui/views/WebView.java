@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Control;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 
 /**
@@ -35,7 +36,7 @@ import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
  */
 public class WebView extends AbstractSonarInfoView {
 
-  public static final String ID = "org.sonar.ide.eclipse.views.WebView";
+  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.WebView";
 
   private Browser browser;
 

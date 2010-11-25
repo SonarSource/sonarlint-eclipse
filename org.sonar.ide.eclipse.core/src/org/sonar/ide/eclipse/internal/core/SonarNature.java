@@ -18,18 +18,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
 
-package org.sonar.ide.eclipse.internal.builder;
+package org.sonar.ide.eclipse.internal.core;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 
-import java.util.Map;
+public class SonarNature implements IProjectNature {
 
-public class SonarBuilder extends IncrementalProjectBuilder {
-  @SuppressWarnings("rawtypes")
-  protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
-    return null;
+  private IProject project;
+
+  public void configure() throws CoreException {
   }
+
+  public void deconfigure() throws CoreException {
+  }
+
+  public IProject getProject() {
+    return project;
+  }
+
+  public void setProject(IProject project) {
+    this.project = project;
+  }
+
 }

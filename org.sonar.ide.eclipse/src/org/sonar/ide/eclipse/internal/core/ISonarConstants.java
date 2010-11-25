@@ -26,16 +26,7 @@ package org.sonar.ide.eclipse.internal.core;
  */
 public interface ISonarConstants {
 
-  String PLUGIN_ID = "org.sonar.ide.eclipse";
-
-  String NATURE_ID = PLUGIN_ID + ".sonarNature";
-
-  String BUILDER_ID = PLUGIN_ID + ".sonarBuilder";
-
-  /**
-   * Godin: It would be better to use only one MARKER_ID at least at first time.
-   */
-  String MARKER_ID = PLUGIN_ID + ".sonarProblem";
+  String PLUGIN_ID = "org.sonar.ide.eclipse.ui";
 
   // TODO change value to .sonarPerspective
   String PERSPECTIVE_ID = PLUGIN_ID + ".perspectives.SonarPerspective";
