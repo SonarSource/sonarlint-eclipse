@@ -61,7 +61,7 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
       if ( !project.hasNature("org.eclipse.jdt.core.javanature")) {
         return false;
       }
-
+      cleanMarkers(project);
       EclipseSonar sonar = EclipseSonar.getInstance(project);
       SourceCode sourceCode = sonar.search(project);
       if (sourceCode != null) {
@@ -79,7 +79,6 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
           // adapt org.sonar.wsclient.services.Resource to IFile
           IFile file = PlatformUtils.adapt(sonarResource, IFile.class);
           if (file != null) {
-            cleanMarkers(file);
             for (Violation violation : mm.get(resourceKey)) {
               createMarker(file, violation);
             }

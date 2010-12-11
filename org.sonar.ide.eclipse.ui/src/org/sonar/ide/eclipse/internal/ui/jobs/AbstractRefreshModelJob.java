@@ -178,8 +178,8 @@ public abstract class AbstractRefreshModelJob<M> extends AbstractRemoteSonarJob 
   /**
    * Remove all Sonar markers.
    */
-  protected void cleanMarkers(final IFile file) throws CoreException {
-    file.deleteMarkers(markerId, true, IResource.DEPTH_ZERO);
+  protected void cleanMarkers(final IResource resource) throws CoreException {
+    resource.deleteMarkers(markerId, true, IResource.DEPTH_INFINITE);
   }
 
   // TODO : need to refactor it.
