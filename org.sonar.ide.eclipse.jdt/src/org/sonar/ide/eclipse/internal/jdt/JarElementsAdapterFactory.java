@@ -23,6 +23,7 @@ package org.sonar.ide.eclipse.internal.jdt;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
@@ -49,6 +50,8 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
   public Object getAdapter(Object adaptableObject, Class adapterType) {
     if (adaptableObject instanceof IClassFile) {
       return new SonarClass((IClassFile) adaptableObject);
+    } else if(adaptableObject instanceof IPackageFragmentRoot){
+      return new SonarJar((IPackageFragmentRoot) adaptableObject);
     }
     return null;
   }
@@ -58,11 +61,64 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
     return ADAPTER_LIST;
   }
 
-  private static class SonarClass implements ISonarFile {
+  private static class SonarJar  extends AbstractSonarJarElement implements ISonarProject {
+
+    private final IPackageFragmentRoot file;
+    private String key;
+    
+    public SonarJar(IPackageFragmentRoot fragmentRoot) {
+      file = fragmentRoot;
+    }
+    
+    public String getKey() {
+      if(key ==null) {
+        key = getProjectKey(file);
+      }
+      return key;
+    }
+    @Override
+    public String getName() {
+      return file.getElementName();
+    }
+    @Override
+    public IProject getProject() {
+      return file.getJavaProject().getProject();
+    }
+    @Override
+    public IResource getResource() {
+      return file.getResource();
+    }
+    @Override
+    public String getGroupId() {
+      return StringUtils.substringBefore(getKey(), ":");
+    }
+    @Override
+    public String getArtifactId() {
+      return StringUtils.substringAfter(getKey(), ":");
+    }
+    @Override
+    public String getBranch() {
+      // TODO Auto-generated method stub
+      return null;
+    }
+    
+    @Override
+    public int hashCode() {
+      return file.getElementName().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      return ((obj instanceof SonarJar) && obj != null && (file.getElementName().equals(((SonarJar) obj).file.getElementName())));
+    }
+  }
+  
+  private static class SonarClass extends AbstractSonarJarElement implements ISonarFile {
 
     private final IClassFile file;
     private String key;
     private String name;
+    private String packageName;
 
     public SonarClass(IClassFile file) {
       Assert.isNotNull(file);
@@ -73,7 +129,7 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
       if (key == null) {
         IProject project = file.getJavaProject().getProject();
         String projectKey = getProjectKey(file.getParent());
-        String packageName = getPackageName(file.getParent());
+        String packageName = getPackageName();
         key = SonarKeyUtils.classKey(projectKey, packageName, getName());
       }
       return key;
@@ -100,12 +156,18 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
 
     @Override
     public boolean equals(Object obj) {
-      return (obj instanceof SonarClass) && (getKey().equals(((SonarClass) obj).getKey()));
+      return ((obj instanceof SonarClass) && obj != null && (file.getElementName().equals(((SonarClass) obj).file.getElementName())));
     }
 
     @Override
     public String toString() {
       return getClass().getSimpleName() + " [key=" + getKey() + "]";
+    }
+
+    public String getPackageName() {
+      if (packageName == null)
+        packageName = getPackageName(file);
+      return packageName;
     }
 
     private String getPackageName(IJavaElement javaElement) {
@@ -115,14 +177,20 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
       } else if (javaElement instanceof IPackageFragment) {
         IPackageFragment packageFragment = (IPackageFragment) javaElement;
         packageName = packageFragment.getElementName();
+      } if (javaElement instanceof IClassFile) {
+        packageName = getPackageName(javaElement.getParent());
       }
       return packageName;
     }
 
+  }
+
+  private static class AbstractSonarJarElement {
+
     // TODO : Just for dev, need to find a better way!
     private static List<Resource> cachedResources = null;
 
-    private String getProjectKey(IJavaElement javaElement) {
+    protected String getProjectKey(IJavaElement javaElement) {
       if ( !(javaElement instanceof IPackageFragmentRoot))
         return getProjectKey(javaElement.getParent());
       IPackageFragmentRoot jarElement = (IPackageFragmentRoot) javaElement;
@@ -142,7 +210,6 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
       }
       return null;
     }
-
+    
   }
-
 }
