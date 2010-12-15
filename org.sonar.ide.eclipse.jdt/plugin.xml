@@ -19,6 +19,7 @@
                class="org.sonar.ide.eclipse.internal.jdt.JavaElementsAdapterFactory">
          <adapter type="org.sonar.ide.eclipse.core.ISonarResource"/>
       </factory>
+      <!-- TODO : Waiting for resolution of SONAR-2047. 
       <factory adaptableType="org.eclipse.jdt.core.IClassFile"
                class="org.sonar.ide.eclipse.internal.jdt.JarElementsAdapterFactory">
       	 <adapter type="org.sonar.ide.eclipse.core.ISonarResource"/>
@@ -27,6 +28,7 @@
                class="org.sonar.ide.eclipse.internal.jdt.JarElementsAdapterFactory">
       	 <adapter type="org.sonar.ide.eclipse.core.ISonarResource"/>
       </factory>
+      --> 
    </extension>
 
    <extension
