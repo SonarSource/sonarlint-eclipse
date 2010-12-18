@@ -76,27 +76,27 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
       }
       return key;
     }
-    @Override
+
     public String getName() {
       return file.getElementName();
     }
-    @Override
+
     public IProject getProject() {
       return file.getJavaProject().getProject();
     }
-    @Override
+
     public IResource getResource() {
       return file.getResource();
     }
-    @Override
+
     public String getGroupId() {
       return StringUtils.substringBefore(getKey(), ":");
     }
-    @Override
+
     public String getArtifactId() {
       return StringUtils.substringAfter(getKey(), ":");
     }
-    @Override
+
     public String getBranch() {
       // TODO Auto-generated method stub
       return null;
