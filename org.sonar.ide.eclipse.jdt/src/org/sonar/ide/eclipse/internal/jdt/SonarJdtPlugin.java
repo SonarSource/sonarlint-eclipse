@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
+import org.sonar.ide.eclipse.internal.jdt.profiles.RetrieveSonarProfileJob;
 
 public class SonarJdtPlugin extends Plugin {
 
@@ -46,6 +47,8 @@ public class SonarJdtPlugin extends Plugin {
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
+    // TODO: find a better way.
+    new RetrieveSonarProfileJob().schedule();
     log("SonarJdtPlugin started");
   }
 
