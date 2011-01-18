@@ -47,8 +47,6 @@ public class SonarJdtPlugin extends Plugin {
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
-    // TODO: find a better way.
-    new RetrieveSonarProfileJob().schedule();
     log("SonarJdtPlugin started");
   }
 
