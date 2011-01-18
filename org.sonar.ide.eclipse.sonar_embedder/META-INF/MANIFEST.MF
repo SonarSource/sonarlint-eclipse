@@ -6,10 +6,10 @@ Export-Package: ch.qos.logback.core.spi,org.sonar.ide.images.tendency,
  wsclient,ch.qos.logback.core.joran,org.apache.commons.io,org.sonar.id
  e.images.priority,org.sonar.ide.images,org.sonar.ide.shared.duplicati
  ons,com.google.common.collect,org.sonar.ide.ui,ch.qos.logback.classic
- ,com.google.common.base.internal,org.slf4j,ch.qos.logback.classic.jor
- an,org.sonar.ide.shared.measures,org.sonar.ide.shared,org.sonar.ide.c
- lient,ch.qos.logback.core.util,org.sonar.ide.api,com.google.common.an
- notations,org.sonar.wsclient.services
+ ,com.google.common.base.internal,org.sonar.ide.shared.profile,org.slf
+ 4j,ch.qos.logback.classic.joran,org.sonar.ide.shared.measures,org.son
+ ar.ide.shared,org.sonar.ide.client,ch.qos.logback.core.util,org.sonar
+ .ide.api,com.google.common.annotations,org.sonar.wsclient.services
 Bundle-Vendor: SonarSource
 Bundle-ClassPath: jars/sonar-ide-commons-0.3-SNAPSHOT.jar,jars/slf4j-a
  pi-1.5.11.jar,jars/jcl-over-slf4j-1.5.11.jar,jars/google-collections-
