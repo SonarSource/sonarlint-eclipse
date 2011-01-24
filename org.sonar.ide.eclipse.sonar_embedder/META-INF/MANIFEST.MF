@@ -1,26 +1,26 @@
 Manifest-Version: 1.0
-Export-Package: ch.qos.logback.core.spi,org.sonar.ide.images.tendency,
- com.google.common.base,org.sonar.ide.shared.coverage,ch.qos.logback.c
- ore,ch.qos.logback.core.joran.spi,org.sonar.ide.wsclient,org.apache.c
- ommons.lang,org.sonar.ide.shared.violations,org.slf4j.impl,org.sonar.
- wsclient,ch.qos.logback.core.joran,org.apache.commons.io,org.sonar.id
- e.images.priority,org.sonar.ide.images,org.sonar.ide.shared.duplicati
- ons,com.google.common.collect,org.sonar.ide.ui,ch.qos.logback.classic
- ,com.google.common.base.internal,org.sonar.ide.shared.profile,org.slf
- 4j,ch.qos.logback.classic.joran,org.sonar.ide.shared.measures,org.son
- ar.ide.shared,org.sonar.ide.client,ch.qos.logback.core.util,org.sonar
- .ide.api,com.google.common.annotations,org.sonar.wsclient.services
-Bundle-Vendor: SonarSource
+Bundle-Name: Sonar Embedder Bundle
 Bundle-ClassPath: jars/sonar-ide-commons-0.3-SNAPSHOT.jar,jars/slf4j-a
  pi-1.5.11.jar,jars/jcl-over-slf4j-1.5.11.jar,jars/google-collections-
  1.0.jar,jars/commons-lang-2.5.jar,jars/jdom-1.1.jar,jars/sonar-ws-cli
  ent-2.5.jar,jars/json-simple-1.1.jar,jars/commons-httpclient-3.1.jar,
  jars/commons-codec-1.2.jar,jars/logback-classic-0.9.18.jar,jars/logba
  ck-core-0.9.18.jar,jars/commons-io-1.4.jar
-Bundle-Version: 1.1.0.qualifier
-Bundle-Name: Sonar Embedder Bundle
+Bundle-RequiredExecutionEnvironment: J2SE-1.5, JavaSE-1.6
+Bundle-Vendor: SonarSource
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.sonar.ide.eclipse.sonar_embedder;singleton:=t
  rue
-Bundle-RequiredExecutionEnvironment: J2SE-1.5, JavaSE-1.6
+Export-Package: org.sonar.ide.shared.measures,org.sonar.ide.images.pri
+ ority,org.sonar.wsclient,ch.qos.logback.core.joran,org.sonar.ide.wscl
+ ient,org.sonar.ide.ui,org.sonar.ide.images,org.slf4j.impl,org.slf4j,c
+ h.qos.logback.core.joran.spi,com.google.common.annotations,com.google
+ .common.base,org.sonar.ide.client,org.sonar.wsclient.services,org.son
+ ar.ide.shared.duplications,org.sonar.ide.shared.coverage,com.google.c
+ ommon.base.internal,ch.qos.logback.core.spi,ch.qos.logback.classic.jo
+ ran,ch.qos.logback.core,com.google.common.collect,org.apache.commons.
+ lang,ch.qos.logback.classic,org.sonar.ide.shared.profile,org.sonar.id
+ e.shared.violations,org.apache.commons.io,org.sonar.ide.api,org.sonar
+ .ide.shared,ch.qos.logback.core.util,org.sonar.ide.images.tendency
+Bundle-Version: 1.1.0.qualifier
 
