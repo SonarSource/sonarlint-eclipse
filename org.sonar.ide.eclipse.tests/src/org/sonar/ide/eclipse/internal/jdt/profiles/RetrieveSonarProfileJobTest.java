@@ -19,30 +19,30 @@
  */
 
 package org.sonar.ide.eclipse.internal.jdt.profiles;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.List;
-
+//
+//import static org.hamcrest.CoreMatchers.is;
+//import static org.junit.Assert.assertThat;
+//import static org.junit.Assert.fail;
+//
+//import java.util.ArrayList;
+//import java.util.List;
+//
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.preferences.IScopeContext;
-import org.eclipse.jdt.internal.ui.preferences.PreferencesAccess;
-import org.eclipse.jdt.internal.ui.preferences.formatter.FormatterProfileManager;
-import org.eclipse.jdt.internal.ui.preferences.formatter.FormatterProfileStore;
-import org.eclipse.jdt.internal.ui.preferences.formatter.IProfileVersioner;
-import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileManager;
-import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileManager.Profile;
-import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileStore;
-import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileVersioner;
+//import org.eclipse.core.runtime.NullProgressMonitor;
+//import org.eclipse.core.runtime.jobs.Job;
+//import org.eclipse.core.runtime.preferences.IScopeContext;
+//import org.eclipse.jdt.internal.ui.preferences.PreferencesAccess;
+//import org.eclipse.jdt.internal.ui.preferences.formatter.FormatterProfileManager;
+//import org.eclipse.jdt.internal.ui.preferences.formatter.FormatterProfileStore;
+//import org.eclipse.jdt.internal.ui.preferences.formatter.IProfileVersioner;
+//import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileManager;
+//import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileManager.Profile;
+//import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileStore;
+//import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileVersioner;
 import org.junit.Test;
-import org.sonar.ide.eclipse.internal.core.ISonarConstants;
-import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
-import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
+//import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+//import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
+//import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
 /**
@@ -57,50 +57,50 @@ public class RetrieveSonarProfileJobTest extends SonarTestCase {
 
   @Test
   public void testImportProfile() throws Exception {
-    IProject project = getProject();
-    try {
-      Job job = new RetrieveSonarProfileJob();
-      job.schedule();
-      Job.getJobManager().join(ISonarConstants.REMOTE_SONAR_JOB_FAMILY, new NullProgressMonitor());
-      // waitForJobs();
-    } catch (Throwable e) {
-      fail("Updating sonar profile with error : " + e.getMessage());
-    }
-
-    PreferencesAccess access = PreferencesAccess.getOriginalPreferences();
-
-    IScopeContext instanceScope = access.getInstanceScope();
-    IScopeContext scope = access.getProjectScope(project);
-
-    IProfileVersioner versioner = new ProfileVersioner();
-    ProfileStore profilesStore = new FormatterProfileStore(versioner);
-    List<Profile> profiles = profilesStore.readProfiles(instanceScope);
-
-    if (profiles == null) {
-      profiles = new ArrayList<Profile>();
-    }
-
-    ProfileManager manager = new FormatterProfileManager(profiles, scope, access, versioner);
-
-    Profile profile = manager.getSelected();
-    
-    assertThat(profile.getID(), is("_Sonar for Sonar"));
-    assertThat(profile.getName(), is("Sonar for Sonar"));
-  }
-
-  private IProject getProject() throws Exception {
-    if (project == null) {
-      project = importEclipseProject(artifactId);
-
-      // Configure the project
-      ProjectProperties properties = ProjectProperties.getInstance(project);
-      properties.setUrl(startTestServer());
-      properties.setGroupId(groupId);
-      properties.setArtifactId(artifactId);
-      properties.save();
-      ToggleNatureAction.enableNature(project);
-    }
-    return project;
+//    IProject project = getProject();
+//    try {
+//      Job job = new RetrieveSonarProfileJob();
+//      job.schedule();
+//      Job.getJobManager().join(ISonarConstants.REMOTE_SONAR_JOB_FAMILY, new NullProgressMonitor());
+//      // waitForJobs();
+//    } catch (Throwable e) {
+//      fail("Updating sonar profile with error : " + e.getMessage());
+//    }
+//
+//    PreferencesAccess access = PreferencesAccess.getOriginalPreferences();
+//
+//    IScopeContext instanceScope = access.getInstanceScope();
+//    IScopeContext scope = access.getProjectScope(project);
+//
+//    IProfileVersioner versioner = new ProfileVersioner();
+//    ProfileStore profilesStore = new FormatterProfileStore(versioner);
+//    List<Profile> profiles = profilesStore.readProfiles(instanceScope);
+//
+//    if (profiles == null) {
+//      profiles = new ArrayList<Profile>();
+//    }
+//
+//    ProfileManager manager = new FormatterProfileManager(profiles, scope, access, versioner);
+//
+//    Profile profile = manager.getSelected();
+//    
+//    assertThat(profile.getID(), is("_Sonar for Sonar"));
+//    assertThat(profile.getName(), is("Sonar for Sonar"));
+//  }
+//
+//  private IProject getProject() throws Exception {
+//    if (project == null) {
+//      project = importEclipseProject(artifactId);
+//
+//      // Configure the project
+//      ProjectProperties properties = ProjectProperties.getInstance(project);
+//      properties.setUrl(startTestServer());
+//      properties.setGroupId(groupId);
+//      properties.setArtifactId(artifactId);
+//      properties.save();
+//      ToggleNatureAction.enableNature(project);
+//    }
+//    return project;
 
   }
 }
