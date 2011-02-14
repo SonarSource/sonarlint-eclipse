@@ -1,6 +1,9 @@
 # Maven
 target/
 
+# Tycho
+jars/
+
 # Eclipse
 .classpath
 .project
