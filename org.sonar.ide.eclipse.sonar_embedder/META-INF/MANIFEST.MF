@@ -23,4 +23,3 @@ Export-Package: org.sonar.ide.shared.measures,org.sonar.ide.images.pri
  e.shared.violations,org.apache.commons.io,org.sonar.ide.api,org.sonar
  .ide.shared,ch.qos.logback.core.util,org.sonar.ide.images.tendency
 Bundle-Version: 1.1.0.qualifier
-
