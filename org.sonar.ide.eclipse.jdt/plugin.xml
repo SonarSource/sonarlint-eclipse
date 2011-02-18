@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
+
+
+<!-- Extension points -->
+
+   <extension-point id="ruleconverter" name="sonar rule converter" schema="schema/org.sonar.ide.eclipse.jdt.profiles.ruleconverter.exsd"/>
+
+<!-- Extensions -->
+
    <extension point="org.eclipse.core.runtime.adapters">
       <!-- used in HotspotsView -->
       <factory adaptableType="org.sonar.wsclient.services.Resource"
@@ -64,5 +72,14 @@
             description="Hides all projects without Sonar nature"
             activeByDefault="false">
       </commonFilter>
-   </extension>   
-</plugin>
+   </extension>
+   <extension
+         point="org.sonar.ide.eclipse.jdt.ruleconverter">
+      <ruleconverter 
+     	    class="org.sonar.ide.eclipse.internal.jdt.profiles.checkstyle.LineLengthCheckstyleConverter">
+      </ruleconverter>
+      <ruleconverter 
+     	    class="org.sonar.ide.eclipse.internal.jdt.profiles.checkstyle.WhitespaceCheckstyleConverter">
+      </ruleconverter>
+   </extension>
+   </plugin>
