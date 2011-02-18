@@ -26,39 +26,32 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.preferences.DefaultScope;
-import org.eclipse.core.runtime.preferences.IScopeContext;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
-import org.eclipse.jdt.internal.ui.preferences.PreferencesAccess;
-import org.eclipse.jdt.internal.ui.preferences.formatter.FormatterProfileManager;
-import org.eclipse.jdt.internal.ui.preferences.formatter.FormatterProfileStore;
-import org.eclipse.jdt.internal.ui.preferences.formatter.IProfileVersioner;
-import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileManager;
-import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileManager.CustomProfile;
-import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileStore;
-import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileVersioner;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.jdt.SonarJdtPlugin;
 import org.sonar.ide.eclipse.internal.ui.jobs.AbstractRemoteSonarJob;
+import org.sonar.ide.eclipse.jdt.profiles.ISonarRuleConverter;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
+import org.sonar.ide.shared.profile.ProfileUtil;
 import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
+import org.sonar.wsclient.services.Rule;
 
 /**
  * @author Jérémie Lagarde
  * @since 1.1.0
  */
+@SuppressWarnings("restriction")
 public class RetrieveSonarProfileJob extends AbstractRemoteSonarJob {
 
-  protected IProfileVersioner profileVersioner;
-  protected ProfileStore profileStore;
-  protected PreferencesAccess access;
-  protected IScopeContext instanceScope;
-  protected ProfileManager profileManager;
+  // ID from converter extension point
+  private static final String CONVERTER_ID = SonarJdtPlugin.PLUGIN_ID + ".ruleconverter";
 
   public RetrieveSonarProfileJob() {
     super("Retrieve sonar profile");
@@ -66,45 +59,19 @@ public class RetrieveSonarProfileJob extends AbstractRemoteSonarJob {
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
-    profileVersioner =  new ProfileVersioner();
-    profileStore = new FormatterProfileStore(profileVersioner);
-    access = PreferencesAccess.getOriginalPreferences(); // PreferencesAccess.getWorkingCopyPreferences(new WorkingCopyManager());
-
-    instanceScope = access.getInstanceScope();
-    List profiles = null;
-    try {
-      profiles = profileStore.readProfiles(instanceScope);
-    } catch (CoreException e) {
-      SonarJdtPlugin.log(e);
-    }
-    if (profiles == null) {
-      try {
-        // bug 129427
-        profiles = profileStore.readProfiles(new DefaultScope());
-      } catch (CoreException e) {
-        JavaPlugin.log(e);
-      }
-    }
-
-    if (profiles == null)
-      profiles = new ArrayList();
-
-    profileManager =  new FormatterProfileManager(profiles, instanceScope, access, profileVersioner);
-
     IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-    for (int i = 0; i < projects.length; i++) {
-      if ( !monitor.isCanceled() && projects[i].isAccessible()) {
-        EclipseSonar index = EclipseSonar.getInstance(projects[i]);
-        SourceCode sourceCode = index.search(projects[i]);
+    for (IProject project : projects) {
+      if ( !monitor.isCanceled() && project.isAccessible()) {
+        EclipseSonar index = EclipseSonar.getInstance(project);
+        SourceCode sourceCode = index.search(project);
         if (sourceCode != null) {
-          final Resource resource = index.getSonar().find(ResourceQuery.createForMetrics(sourceCode.getKey(), "profile" /*
-                                                                                                                         * TODO :
-                                                                                                                         * ProfileUtil
-                                                                                                                         * .METRIC_KEY
-                                                                                                                         */));
-          final Measure measure = resource.getMeasure("profile" /* TODO : ProfileUtil.METRIC_KEY */);
-          if (measure != null) {
-            create(measure.getData());
+          final Resource resource = index.getSonar().find(ResourceQuery.createForMetrics(sourceCode.getKey(), ProfileUtil.METRIC_KEY));
+          final Measure measure = resource.getMeasure(ProfileUtil.METRIC_KEY);
+          if ( !monitor.isCanceled() && measure != null) {
+            List<Rule> rules = sourceCode.getRules();
+            if ( !monitor.isCanceled() && rules != null) {
+              convertProfile(measure.getData(), project, rules, monitor);
+            }
           }
         }
       }
@@ -112,18 +79,31 @@ public class RetrieveSonarProfileJob extends AbstractRemoteSonarJob {
     return Status.OK_STATUS;
   }
 
-  private void create(String profileName) {
+  private void convertProfile(String profileName, IProject project, List<Rule> rules, IProgressMonitor monitor) {
+    ProfileConfiguration configuration = new ProfileConfiguration(profileName, project);
+    List<ISonarRuleConverter> converters = getConverters();
+    for (Rule rule : rules) {
+      for (ISonarRuleConverter converter : converters) {
+        if (converter.canConvert(rule))
+          converter.convert(configuration, rule);
+      }
+    }
+    configuration.apply();
+  }
 
-    if ( !profileManager.containsName(profileName)) {
-      CustomProfile profile = new CustomProfile(profileName, profileManager.getDefaultProfile().getSettings(),
-          profileVersioner.getCurrentVersion(), profileVersioner.getProfileKind());
-      profileManager.addProfile(profile);
-    }
+  private List<ISonarRuleConverter> getConverters() {
+    final List<ISonarRuleConverter> converters = new ArrayList<ISonarRuleConverter>();
+    final IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(CONVERTER_ID);
     try {
-      profileStore.writeProfiles(profileManager.getSortedProfiles(), instanceScope); // update profile store
-      profileManager.commitChanges(instanceScope);
-    } catch (CoreException x) {
-      JavaPlugin.log(x);
+      for (final IConfigurationElement element : config) {
+        final Object converter = element.createExecutableExtension("class");
+        if (converter instanceof ISonarRuleConverter) {
+          converters.add((ISonarRuleConverter) converter);
+        }
+      }
+    } catch (final CoreException ex) {
+      SonarUiPlugin.getDefault().displayError(IStatus.WARNING, "Error in RetrieveSonarProfileJob.", ex, true);
     }
+    return converters;
   }
 }

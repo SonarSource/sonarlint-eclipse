@@ -21,9 +21,11 @@
 package org.sonar.ide.eclipse.internal.ui.preferences;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -39,6 +41,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
@@ -58,13 +61,17 @@ import org.sonar.wsclient.Host;
  */
 public class SonarPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 
+  private static final String PREF_SYNCHRONISE_PROFILE = "synchroniseProfile";
+  
   private TableViewer serversViewer;
+  private ArrayList<Button> checkBoxes;
 
   private List<Host> servers;
 
   public SonarPreferencePage() {
     super(Messages.getString("pref.global.title")); //$NON-NLS-1$
     noDefaultAndApplyButton();
+    checkBoxes = new ArrayList<Button>();
   }
 
   public void init(IWorkbench workbench) {
@@ -77,9 +84,9 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     GridLayout layout = new GridLayout(3, false);
     container.setLayout(layout);
 
-    createTable(container);
-
-    initTable();
+    createServersTable(container);
+    initServersTable();
+    createStartupPreferences(container);
 
     return container;
   }
@@ -88,13 +95,13 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     return (Host) SelectionUtils.getSingleElement(serversViewer.getSelection());
   }
 
-  private void initTable() {
+  private void initServersTable() {
     // retrieve list of servers
     servers = SonarCorePlugin.getServersManager().getHosts();
     serversViewer.setInput(servers);
   }
 
-  private void createTable(Composite composite) {
+  private void createServersTable(Composite composite) {
     serversViewer = new TableViewer(composite, SWT.BORDER | SWT.FULL_SELECTION);
     serversViewer.setContentProvider(ArrayContentProvider.getInstance());
     serversViewer.setLabelProvider(new ServersLabelProvider());
@@ -113,6 +120,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     addButton.setToolTipText(Messages.getString("action.add.server.desc")); //$NON-NLS-1$
     addButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
     addButton.addSelectionListener(new SelectionAdapter() {
+
       @Override
       public void widgetSelected(SelectionEvent e) {
         NewServerLocationWizard wiz = new NewServerLocationWizard();
@@ -120,7 +128,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
         WizardDialog dialog = new WizardDialog(addButton.getShell(), wiz);
         dialog.create();
         if (dialog.open() == Window.OK) {
-          initTable();
+          initServersTable();
         }
       }
     });
@@ -131,6 +139,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     editButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
     editButton.setEnabled(false);
     editButton.addSelectionListener(new SelectionAdapter() {
+
       @Override
       public void widgetSelected(SelectionEvent e) {
         EditServerLocationWizard wizard = new EditServerLocationWizard(getSelectedServer());
@@ -138,7 +147,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
         WizardDialog dialog = new WizardDialog(editButton.getShell(), wizard);
         dialog.create();
         if (dialog.open() == Window.OK) {
-          initTable();
+          initServersTable();
         }
         removeButton.setEnabled(false);
         editButton.setEnabled(false);
@@ -151,6 +160,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     removeButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE).createImage());
     removeButton.setEnabled(false);
     removeButton.addSelectionListener(new SelectionAdapter() {
+
       @Override
       public void widgetSelected(SelectionEvent e) {
         Host selected = getSelectedServer();
@@ -167,6 +177,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     });
 
     serversViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
       public void selectionChanged(SelectionChangedEvent event) {
         removeButton.setEnabled( !servers.isEmpty());
         editButton.setEnabled(true);
@@ -175,6 +186,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
   }
 
   private class ServersLabelProvider extends AbstractTableLabelProvider {
+
     @Override
     public String getColumnText(Object element, int columnIndex) {
       Host host = (Host) element;
@@ -182,4 +194,35 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     }
   }
 
+  private void createStartupPreferences(Composite composite) {
+    Group group = new Group(composite, SWT.NONE);
+    group.setLayout(new GridLayout());
+    group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    group.setText("Quality profile");
+
+    addCheckBox(group, "Synchronise profile with eclipse formatter at startup", PREF_SYNCHRONISE_PROFILE);
+  }
+
+  private Button addCheckBox(Composite parent, String label, String key) {
+    GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+
+    Button button = new Button(parent, SWT.CHECK);
+    button.setText(label);
+    button.setData(key);
+    button.setLayoutData(gd);
+
+    button.setSelection(SonarUiPlugin.getDefault().getPreferenceStore().getBoolean(key));
+
+    checkBoxes.add(button);
+    return button;
+  }
+
+  public boolean performOk() {
+    IPreferenceStore store = SonarUiPlugin.getDefault().getPreferenceStore();
+    for (Button button : checkBoxes) {
+      String key = (String) button.getData();
+      store.setValue(key, button.getSelection());
+    }
+    return super.performOk();
+  }
 }

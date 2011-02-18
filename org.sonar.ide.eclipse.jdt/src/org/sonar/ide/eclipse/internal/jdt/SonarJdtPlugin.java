@@ -25,9 +25,12 @@ import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.internal.jdt.profiles.RetrieveSonarProfileJob;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 public class SonarJdtPlugin extends Plugin {
 
+  private static final String PREF_SYNCHRONISE_PROFILE = "synchroniseProfile";
+  
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.jdt"; //$NON-NLS-1$
 
   private static SonarJdtPlugin plugin;
@@ -47,6 +50,9 @@ public class SonarJdtPlugin extends Plugin {
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
+    if(SonarUiPlugin.getDefault().getPreferenceStore().getBoolean(PREF_SYNCHRONISE_PROFILE)) {
+        new RetrieveSonarProfileJob().schedule();
+    }
     log("SonarJdtPlugin started");
   }
 
