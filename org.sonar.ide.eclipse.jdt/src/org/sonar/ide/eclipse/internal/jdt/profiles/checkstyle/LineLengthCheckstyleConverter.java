@@ -46,10 +46,10 @@ public class LineLengthCheckstyleConverter extends AbstractCheckstyleConverter {
 
   public void convert(ProfileConfiguration config, Rule rule) {
     String max = getParam(rule, "max", "80");
-    String tabWith = getParam(rule, "tabWith", "8");
+    String tabWidth = getParam(rule, "tabWidth", "8");
     config.add(DefaultCodeFormatterConstants.FORMATTER_LINE_SPLIT, max);
     config.add(DefaultCodeFormatterConstants.FORMATTER_COMMENT_LINE_LENGTH, max);
-    config.add(DefaultCodeFormatterConstants.FORMATTER_TAB_SIZE, tabWith);
+    config.add(DefaultCodeFormatterConstants.FORMATTER_TAB_SIZE, tabWidth);
   }
 
 }

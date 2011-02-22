@@ -40,40 +40,29 @@ import org.sonar.wsclient.services.Rule;
  *        "status":"INACTIVE", 
  *        "params":[{"name":"tokens","description":"tokens to check","value":"TK_SEMI,TK_COMMA"}]}
  */
-public class WhitespaceCheckstyleConverter extends AbstractCheckstyleConverter {
+public class WhitespaceAfterCheckstyleConverter extends AbstractCheckstyleConverter {
 
-  protected final static String KEY = "checkstyle:com.puppycrawl.tools.checkstyle.checks.sizes.LineLengthCheck";
+  protected final static String KEY = "checkstyle:com.puppycrawl.tools.checkstyle.checks.whitespace.WhitespaceAfterCheck";
   
   private final static String TK_COMMA = "COMMA";
   private final static String TK_SEMI = "SEMI";
   private final static String TK_TYPECAST = "TYPECAST";
   private final static String[] TK_DEFAULT = new String[] { TK_COMMA, TK_SEMI, TK_TYPECAST };
 
-  public WhitespaceCheckstyleConverter() {
+  public WhitespaceAfterCheckstyleConverter() {
     super(KEY);
   }
 
   public void convert(ProfileConfiguration config, Rule rule) {
     String[] tokens = getParams(rule, "tokens", TK_DEFAULT);
 
-    if (ArrayUtils.contains(tokens, TK_COMMA))
-      setComma(config, JavaCore.INSERT);
-    else 
-      setComma(config, JavaCore.DO_NOT_INSERT);
-
-    if (ArrayUtils.contains(tokens, TK_SEMI))
-      setSemi(config, JavaCore.INSERT);
-    else
-      setSemi(config, JavaCore.DO_NOT_INSERT);
-
-    if (ArrayUtils.contains(tokens, TK_TYPECAST))
-      setType(config, JavaCore.INSERT);
-    else
-      setType(config, JavaCore.DO_NOT_INSERT);
-
+    setComma(config, ArrayUtils.contains(tokens, TK_COMMA));
+    setSemi(config, ArrayUtils.contains(tokens, TK_SEMI));
+    setType(config, ArrayUtils.contains(tokens, TK_TYPECAST));
   }
 
-  private void setComma(ProfileConfiguration config, String value) {
+  private void setComma(ProfileConfiguration config, boolean insert) {
+    String value = (insert)?JavaCore.INSERT:JavaCore.DO_NOT_INSERT;
     config.add(DefaultCodeFormatterConstants.FORMATTER_INSERT_SPACE_AFTER_COMMA_IN_ALLOCATION_EXPRESSION, value);
     config.add(DefaultCodeFormatterConstants.FORMATTER_INSERT_SPACE_AFTER_COMMA_IN_ANNOTATION, value);
     config.add(DefaultCodeFormatterConstants.FORMATTER_INSERT_SPACE_AFTER_COMMA_IN_ARRAY_INITIALIZER, value);
@@ -95,11 +84,13 @@ public class WhitespaceCheckstyleConverter extends AbstractCheckstyleConverter {
     config.add(DefaultCodeFormatterConstants.FORMATTER_INSERT_SPACE_AFTER_COMMA_IN_TYPE_PARAMETERS, value);
   }
 
-  private void setSemi(ProfileConfiguration config, String value) {
+  private void setSemi(ProfileConfiguration config, boolean insert) {
+    String value = (insert)?JavaCore.INSERT:JavaCore.DO_NOT_INSERT;
     config.add(DefaultCodeFormatterConstants.FORMATTER_INSERT_SPACE_AFTER_SEMICOLON_IN_FOR, value);
   }
 
-  private void setType(ProfileConfiguration config, String value) {
+  private void setType(ProfileConfiguration config, boolean insert) {
+    String value = (insert)?JavaCore.INSERT:JavaCore.DO_NOT_INSERT;
     config.add(DefaultCodeFormatterConstants.FORMATTER_INSERT_SPACE_AFTER_CLOSING_PAREN_IN_CAST, value);
   }
 

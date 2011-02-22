@@ -53,6 +53,7 @@ public class ProfileConfiguration {
   protected ProfileStore profileStore;
   protected PreferencesAccess access;
   protected IScopeContext instanceScope;
+  protected IScopeContext projectScope;
   protected ProfileManager profileManager;
   private final Profile profile;
   private final Map workingValues;
@@ -77,7 +78,8 @@ public class ProfileConfiguration {
     this.profileVersioner = new ProfileVersioner();
     this.profileStore = new FormatterProfileStore(profileVersioner);
     this.access = PreferencesAccess.getOriginalPreferences(); // PreferencesAccess.getWorkingCopyPreferences(new WorkingCopyManager());
-    this.instanceScope = access.getProjectScope(project);
+    this.instanceScope = access.getInstanceScope();
+    this.projectScope = access.getProjectScope(project);
     List profiles = null;
     try {
       profiles = profileStore.readProfiles(instanceScope);
@@ -118,7 +120,10 @@ public class ProfileConfiguration {
         profile.setSettings(new HashMap(workingValues));
         profileManager.setSelected(profile);
         profileStore.writeProfiles(profileManager.getSortedProfiles(), instanceScope);
+        // Save as global preferences.
         profileManager.commitChanges(instanceScope);
+        // Save as project preferences.
+        profileManager.commitChanges(projectScope);
       } catch (Exception e) {
         SonarJdtPlugin.log(e);
       }
