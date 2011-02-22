@@ -79,6 +79,9 @@
      	    class="org.sonar.ide.eclipse.internal.jdt.profiles.checkstyle.LineLengthCheckstyleConverter">
       </ruleconverter>
       <ruleconverter 
+     	    class="org.sonar.ide.eclipse.internal.jdt.profiles.checkstyle.UnusedImportsCheckstyleConverter">
+      </ruleconverter>
+      <ruleconverter 
      	    class="org.sonar.ide.eclipse.internal.jdt.profiles.checkstyle.WhitespaceAfterCheckstyleConverter">
       </ruleconverter>
       <ruleconverter 

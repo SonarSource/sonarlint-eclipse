@@ -30,8 +30,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IScopeContext;
+import org.eclipse.jdt.internal.corext.fix.CleanUpConstants;
+import org.eclipse.jdt.internal.corext.fix.CleanUpPreferenceUtil;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.preferences.PreferencesAccess;
+import org.eclipse.jdt.internal.ui.preferences.cleanup.CleanUpProfileManager;
+import org.eclipse.jdt.internal.ui.preferences.cleanup.CleanUpProfileVersioner;
 import org.eclipse.jdt.internal.ui.preferences.formatter.FormatterProfileManager;
 import org.eclipse.jdt.internal.ui.preferences.formatter.FormatterProfileStore;
 import org.eclipse.jdt.internal.ui.preferences.formatter.IProfileVersioner;
@@ -48,63 +52,72 @@ import org.sonar.ide.eclipse.internal.jdt.SonarJdtPlugin;
  */
 @SuppressWarnings("restriction")
 public class ProfileConfiguration {
-
-  protected IProfileVersioner profileVersioner;
-  protected ProfileStore profileStore;
+  protected ProfileStore formatterProfileStore;
+  protected ProfileStore cleanUpprofileStore;
   protected PreferencesAccess access;
   protected IScopeContext instanceScope;
   protected IScopeContext projectScope;
-  protected ProfileManager profileManager;
+  protected ProfileManager formatterProfileManager;
+  protected ProfileManager cleanUpProfileManager;
   private final Profile profile;
   private final Map workingValues;
 
   public ProfileConfiguration(String profileName, IProject project) {
     createProfileManager(project);
-    if ( profileManager.containsName(profileName)) {
-      profileManager.deleteProfile((CustomProfile) getProfile(profileName));
+    if(formatterProfileManager.containsName(profileName)) {
+      formatterProfileManager.deleteProfile((CustomProfile) getProfile(profileName));
     }
-    if ( !profileManager.containsName(profileName)) {
-      IProfileVersioner profileVersioner = profileManager.getProfileVersioner();
-      this.profile = new CustomProfile(profileName, profileManager.getDefaultProfile().getSettings(), profileVersioner.getCurrentVersion(),
-          profileVersioner.getProfileKind());
-      profileManager.addProfile((CustomProfile) profile);
+    if( !formatterProfileManager.containsName(profileName)) {
+      IProfileVersioner profileVersioner = formatterProfileManager.getProfileVersioner();
+      this.profile = new CustomProfile(profileName, formatterProfileManager.getDefaultProfile().getSettings(),
+          profileVersioner.getCurrentVersion(), profileVersioner.getProfileKind());
+      formatterProfileManager.addProfile((CustomProfile) profile);
     } else {
       this.profile = getProfile(profileName);
     }
+
+    if( !cleanUpProfileManager.containsName(profileName)) {
+      cleanUpProfileManager.addProfile((CustomProfile) profile);
+    }
+
     this.workingValues = new HashMap(profile.getSettings());
   }
 
   private void createProfileManager(IProject project) {
-    this.profileVersioner = new ProfileVersioner();
-    this.profileStore = new FormatterProfileStore(profileVersioner);
+    ProfileVersioner formatterProfileVersioner = new ProfileVersioner();
+    this.formatterProfileStore = new FormatterProfileStore(formatterProfileVersioner);
+    CleanUpProfileVersioner cleanUpProfileVersioner = new CleanUpProfileVersioner();
+    this.cleanUpprofileStore= new ProfileStore(CleanUpConstants.CLEANUP_PROFILES,cleanUpProfileVersioner);
     this.access = PreferencesAccess.getOriginalPreferences(); // PreferencesAccess.getWorkingCopyPreferences(new WorkingCopyManager());
     this.instanceScope = access.getInstanceScope();
     this.projectScope = access.getProjectScope(project);
     List profiles = null;
     try {
-      profiles = profileStore.readProfiles(instanceScope);
-    } catch (CoreException e) {
+      profiles = formatterProfileStore.readProfiles(instanceScope);
+    } catch(CoreException e) {
       SonarJdtPlugin.log(e);
     }
-    if (profiles == null) {
+    if(profiles == null) {
       try {
         // bug 129427
-        profiles = profileStore.readProfiles(new DefaultScope());
-      } catch (CoreException e) {
+        profiles = formatterProfileStore.readProfiles(new DefaultScope());
+      } catch(CoreException e) {
         JavaPlugin.log(e);
       }
     }
 
-    if (profiles == null)
+    if(profiles == null)
       profiles = new ArrayList();
 
-    this.profileManager = new FormatterProfileManager(profiles, instanceScope, access, profileVersioner);
+    this.formatterProfileManager = new FormatterProfileManager(profiles, instanceScope, access, formatterProfileVersioner);
+    this.cleanUpProfileManager = new CleanUpProfileManager(CleanUpPreferenceUtil.getBuiltInProfiles(), instanceScope, access,
+        cleanUpProfileVersioner);
   }
 
   private Profile getProfile(String profileName) {
-    for (Iterator iterator = profileManager.getSortedProfiles().iterator(); iterator.hasNext();) {
+    for(Iterator iterator = formatterProfileManager.getSortedProfiles().iterator(); iterator.hasNext();) {
       Profile p = (Profile) iterator.next();
-      if (p.getName().equals(profileName))
+      if(p.getName().equals(profileName))
         return p;
     }
     return null;
@@ -115,16 +128,20 @@ public class ProfileConfiguration {
   }
 
   public void apply() {
-    if (hasChanges()) {
+    if(hasChanges()) {
       try {
         profile.setSettings(new HashMap(workingValues));
-        profileManager.setSelected(profile);
-        profileStore.writeProfiles(profileManager.getSortedProfiles(), instanceScope);
+        formatterProfileManager.setSelected(profile);
+        cleanUpProfileManager.setSelected(profile);
+        formatterProfileStore.writeProfiles(formatterProfileManager.getSortedProfiles(), instanceScope);
+        cleanUpprofileStore.writeProfiles(cleanUpProfileManager.getSortedProfiles(), instanceScope);
         // Save as global preferences.
-        profileManager.commitChanges(instanceScope);
+        formatterProfileManager.commitChanges(instanceScope);
+        cleanUpProfileManager.commitChanges(instanceScope);
         // Save as project preferences.
-        profileManager.commitChanges(projectScope);
-      } catch (Exception e) {
+        formatterProfileManager.commitChanges(projectScope);
+        cleanUpProfileManager.commitChanges(projectScope);
+      } catch(Exception e) {
         SonarJdtPlugin.log(e);
       }
     }
@@ -132,9 +149,9 @@ public class ProfileConfiguration {
 
   private boolean hasChanges() {
     Iterator iter = profile.getSettings().entrySet().iterator();
-    for (; iter.hasNext();) {
+    for(; iter.hasNext();) {
       Map.Entry entry = (Map.Entry) iter.next();
-      if ( workingValues.get(entry.getKey())!= entry.getValue()) {
+      if(workingValues.get(entry.getKey()) != entry.getValue()) {
         return true;
       }
     }
