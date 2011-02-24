@@ -156,7 +156,7 @@ public class WhitespaceAroundCheckstyleConverter extends AbstractCheckstyleConve
   private void configure(ProfileConfiguration config, boolean insert, String... formats) {
     String value = (insert) ? JavaCore.INSERT : JavaCore.DO_NOT_INSERT;
     for(String format : formats) {
-      config.add(format, value);
+      config.addFormat(format, value);
     }
   }
 }

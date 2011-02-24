@@ -23,7 +23,7 @@ public class UnusedImportsCheckstyleConverter extends AbstractCheckstyleConverte
     super(KEY);
   }
   public void convert(ProfileConfiguration config, Rule rule) {
-    config.add(CleanUpConstants.REMOVE_UNUSED_CODE_IMPORTS,CleanUpOptions.TRUE);
+    config.addFormat(CleanUpConstants.REMOVE_UNUSED_CODE_IMPORTS,CleanUpOptions.TRUE);
   }
 
 }

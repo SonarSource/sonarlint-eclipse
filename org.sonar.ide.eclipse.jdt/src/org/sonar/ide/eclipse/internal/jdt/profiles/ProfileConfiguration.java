@@ -29,7 +29,9 @@ import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.DefaultScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.corext.fix.CleanUpConstants;
 import org.eclipse.jdt.internal.corext.fix.CleanUpPreferenceUtil;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
@@ -44,6 +46,10 @@ import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileManager.CustomPr
 import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileManager.Profile;
 import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileStore;
 import org.eclipse.jdt.internal.ui.preferences.formatter.ProfileVersioner;
+import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.ui.preferences.IWorkingCopyManager;
+import org.eclipse.ui.preferences.WorkingCopyManager;
+import org.osgi.service.prefs.BackingStoreException;
 import org.sonar.ide.eclipse.internal.jdt.SonarJdtPlugin;
 
 /**
@@ -61,6 +67,7 @@ public class ProfileConfiguration {
   protected ProfileManager cleanUpProfileManager;
   private final Profile profile;
   private final Map workingValues;
+  private final Map<String,String> workingOptions;
 
   public ProfileConfiguration(String profileName, IProject project) {
     createProfileManager(project);
@@ -81,6 +88,7 @@ public class ProfileConfiguration {
     }
 
     this.workingValues = new HashMap(profile.getSettings());
+    this.workingOptions = new HashMap<String,String>();
   }
 
   private void createProfileManager(IProject project) {
@@ -123,8 +131,12 @@ public class ProfileConfiguration {
     return null;
   }
 
-  public void add(String key, String value) {
+  public void addFormat(String key, String value) {
     workingValues.put(key, value);
+  }
+
+  public void addOption(String key, String value) {
+    workingOptions.put(key, value);
   }
 
   public void apply() {
@@ -141,6 +153,7 @@ public class ProfileConfiguration {
         // Save as project preferences.
         formatterProfileManager.commitChanges(projectScope);
         cleanUpProfileManager.commitChanges(projectScope);
+        saveOptions();
       } catch(Exception e) {
         SonarJdtPlugin.log(e);
       }
@@ -156,5 +169,16 @@ public class ProfileConfiguration {
       }
     }
     return false;
+  }
+  
+  private void saveOptions() throws BackingStoreException {
+    if(!workingOptions.isEmpty()){
+      IWorkingCopyManager manager = new WorkingCopyManager();
+      IEclipsePreferences pref = projectScope.getNode(JavaCore.PLUGIN_ID);
+      for(String key : workingOptions.keySet()) {
+        manager.getWorkingCopy(pref).put(key, workingOptions.get(key));
+      }
+      manager.applyChanges();
+    }
   }
 }

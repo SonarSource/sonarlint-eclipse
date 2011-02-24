@@ -87,5 +87,8 @@
       <ruleconverter 
      	    class="org.sonar.ide.eclipse.internal.jdt.profiles.checkstyle.WhitespaceAroundCheckstyleConverter">
       </ruleconverter>
+      <ruleconverter 
+     	    class="org.sonar.ide.eclipse.internal.jdt.profiles.pmd.VariableNamingConventionsPmdConverter">
+      </ruleconverter>
    </extension>
    </plugin>
