@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<plugin>
-  <extension point="org.maven.ide.eclipse.projectConfigurators">
-    <configurator id="org.maven.ide.eclipse.sonar"
-                  class="org.maven.ide.eclipse.sonar.SonarProjectConfigurator"
-                  name="Sonar"/>
-  </extension>
-</plugin>

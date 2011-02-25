@@ -59,8 +59,6 @@
 
     <!--
     <module>../org.sonar.ide.eclipse.help</module>
-    <module>../org.sonar.ide.eclipse.m2eclipse</module>
-    <module>../org.sonar.ide.eclipse.m2eclipse.feature</module>
     -->
 
     <module>../target-platform</module>
