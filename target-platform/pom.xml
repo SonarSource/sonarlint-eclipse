@@ -44,6 +44,11 @@
                   <type>target</type>
                   <classifier>e36</classifier>
                 </artifact>
+                <artifact>
+                  <file>e37.target</file>
+                  <type>target</type>
+                  <classifier>e37</classifier>
+                </artifact>
               </artifacts>
             </configuration>
           </execution>
