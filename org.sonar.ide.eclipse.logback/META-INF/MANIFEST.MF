@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %Bundle-Name
+Bundle-SymbolicName: org.sonar.ide.eclipse.logback;singleton:=true
+Bundle-Version: 1.1.0.qualifier
+Bundle-Activator: org.sonar.ide.eclipse.logback.LogbackPlugin
+Bundle-Vendor: %Bundle-Vendor
+Export-Package: org.sonar.ide.eclipse.logback
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.5.0",
+ ch.qos.logback.classic;bundle-version="0.9.24",
+ ch.qos.logback.core;bundle-version="0.9.24",
+ org.slf4j.api;bundle-version="1.6.1"
+Bundle-RequiredExecutionEnvironment: J2SE-1.5,
+ JavaSE-1.6
+Bundle-ActivationPolicy: lazy

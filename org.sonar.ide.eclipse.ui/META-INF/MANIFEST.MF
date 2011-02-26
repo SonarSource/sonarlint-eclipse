@@ -21,6 +21,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.compare,
  org.sonar.ide.eclipse.core,
  org.sonar.ide.eclipse.sonar_embedder,
+ org.slf4j.api;bundle-version="1.6.1",
  org.eclipse.core.resources
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6

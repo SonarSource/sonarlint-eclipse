@@ -19,12 +19,16 @@
     <dependency>
       <groupId>org.codehaus.sonar-ide</groupId>
       <artifactId>sonar-ide-commons</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <!-- TODO Godin: remove version from here -->
-      <version>0.9.18</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jcl-over-slf4j</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -78,21 +82,13 @@
                 org.sonar.ide.*,
                 org.sonar.wsclient,
                 org.sonar.wsclient.services,
-                org.slf4j,
-                org.slf4j.impl,
                 com.google.*,
                 org.apache.commons.lang,
-                org.apache.commons.io,
-                ch.qos.logback.classic,
-                ch.qos.logback.classic.joran,
-                ch.qos.logback.core,
-                ch.qos.logback.core.spi,
-                ch.qos.logback.core.util,
-                ch.qos.logback.core.joran,
-                ch.qos.logback.core.joran.spi,
+                org.apache.commons.io
               </exportPackages>
               <manifestAttributes>
                 <Bundle-RequiredExecutionEnvironment>J2SE-1.5, JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
+                <Require-Bundle>org.slf4j.api;bundle-version="1.6.1",org.slf4j.jcl;bundle-version="1.6.1",org.slf4j.log4j;bundle-version="1.6.1"</Require-Bundle>
               </manifestAttributes>
             </configuration>
           </plugin>

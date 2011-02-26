@@ -21,7 +21,6 @@ package org.sonar.ide.eclipse.ui;
 
 import java.net.Authenticator;
 import java.net.ProxySelector;
-import java.net.URL;
 
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
@@ -34,7 +33,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseProxyAuthenticator;
@@ -47,12 +45,6 @@ import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshViolationsJob;
 import org.sonar.ide.eclipse.internal.ui.preferences.SonarUiPreferenceInitializer;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
-
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.JoranConfiguratorBase;
-import ch.qos.logback.core.joran.spi.JoranException;
-import ch.qos.logback.core.util.StatusPrinter;
 
 public class SonarUiPlugin extends AbstractUIPlugin {
 
@@ -84,7 +76,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
     SonarLogger.setLog(getLog());
 
-    setupLogging();
     setupProxy(context);
     RefreshViolationsJob.setupViolationsUpdater();
 
@@ -105,27 +96,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
    */
   public static SonarUiPlugin getDefault() {
     return plugin;
-  }
-
-  /**
-   * Godin: I'm not sure is it correct way or not, but it works.
-   */
-  private void setupLogging() {
-    final URL url = getBundle().getEntry("/conf/logback.xml");
-    if (url != null) {
-      final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-      try {
-        final JoranConfiguratorBase configurator = new JoranConfigurator();
-        configurator.setContext(lc);
-        lc.reset();
-        configurator.doConfigure(url);
-      } catch (final JoranException e) {
-        e.printStackTrace();
-      }
-      StatusPrinter.printIfErrorsOccured(lc);
-    } else {
-      SonarLogger.log("logback.xml not found");
-    }
   }
 
   private void setupProxy(final BundleContext context) {
