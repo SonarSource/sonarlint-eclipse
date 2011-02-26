@@ -279,6 +279,12 @@
           <artifactId>wagon-maven-plugin</artifactId>
           <version>1.0-beta-3</version>
         </plugin>
+
+        <plugin>
+          <groupId>com.mycila.maven-license-plugin</groupId>
+          <artifactId>maven-license-plugin</artifactId>
+          <version>1.9.0</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -392,6 +398,37 @@
         <sonar.jacoco.itReportPath>../org.sonar.ide.eclipse.parent/target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <jacoco.argLine>-javaagent:../jacoco-agent-all.jar=destfile=${sonar.jacoco.itReportPath}</jacoco.argLine>
       </properties>
+    </profile>
+    <!-- This profile is used to check copyright/license headers -->
+    <profile>
+      <id>license</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.mycila.maven-license-plugin</groupId>
+            <artifactId>maven-license-plugin</artifactId>
+            <configuration>
+              <header>${project.basedir}/../LICENSE.txt</header>
+              <strictCheck>true</strictCheck>
+              <includes>
+                <include>src/**/*.java</include>
+              </includes>
+              <mapping>
+                <java>SLASHSTAR_STYLE</java>
+              </mapping>
+            </configuration>
+            <executions>
+              <execution>
+                <id>enforce-license-headers</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <!-- TODO This profile is used to sign artifacts -->
     <profile>
