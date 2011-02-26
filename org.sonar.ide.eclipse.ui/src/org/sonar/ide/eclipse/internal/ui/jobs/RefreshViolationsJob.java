@@ -19,24 +19,14 @@
  */
 package org.sonar.ide.eclipse.internal.ui.jobs;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.*;
 import org.eclipse.ui.progress.UIJob;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
@@ -76,13 +66,13 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
 
   @Override
   protected Integer getPriority(final Violation violation) {
-    if (ViolationUtils.PRIORITY_BLOCKER.equalsIgnoreCase(violation.getPriority())) {
+    if (ViolationUtils.PRIORITY_BLOCKER.equalsIgnoreCase(violation.getSeverity())) {
       return new Integer(IMarker.PRIORITY_HIGH);
     }
-    if (ViolationUtils.PRIORITY_CRITICAL.equalsIgnoreCase(violation.getPriority())) {
+    if (ViolationUtils.PRIORITY_CRITICAL.equalsIgnoreCase(violation.getSeverity())) {
       return new Integer(IMarker.PRIORITY_HIGH);
     }
-    if (ViolationUtils.PRIORITY_MAJOR.equalsIgnoreCase(violation.getPriority())) {
+    if (ViolationUtils.PRIORITY_MAJOR.equalsIgnoreCase(violation.getSeverity())) {
       return new Integer(IMarker.PRIORITY_NORMAL);
     }
     return new Integer(IMarker.PRIORITY_LOW);
@@ -98,7 +88,7 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
     final Map<String, Object> extraInfos = new HashMap<String, Object>();
     extraInfos.put("rulekey", violation.getRuleKey());
     extraInfos.put("rulename", violation.getRuleName());
-    extraInfos.put("rulepriority", violation.getPriority());
+    extraInfos.put("rulepriority", violation.getSeverity());
     return extraInfos;
   }
 

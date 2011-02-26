@@ -33,12 +33,12 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseProxyAuthenticator;
 import org.sonar.ide.eclipse.internal.EclipseProxySelector;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
-import org.sonar.ide.eclipse.internal.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.internal.ui.Messages;
@@ -76,8 +76,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   public void start(final BundleContext context) throws Exception {
     super.start(context);
 
-    SonarLogger.setLog(getLog());
-
     setupProxy(context);
     RefreshViolationsJob.setupViolationsUpdater();
 
@@ -111,9 +109,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
   public void displayError(final int severity, final String msg, final Throwable t, final boolean shouldLog) {
     final IStatus status = new Status(severity, ISonarConstants.PLUGIN_ID, msg, t);
-    if (shouldLog) {
-      SonarLogger.log(status);
-    }
     final Display display = PlatformUI.getWorkbench().getDisplay();
     display.syncExec(new Runnable() {
       public void run() {
@@ -126,7 +121,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     try {
       return project.hasNature(SonarCorePlugin.NATURE_ID);
     } catch (CoreException e) {
-      SonarLogger.log(e);
+      LoggerFactory.getLogger(SonarUiPlugin.class).error(e.getMessage(), e);
       return false;
     }
   }
@@ -135,7 +130,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     try {
       return project.hasNature("org.eclipse.jdt.core.javanature");
     } catch (CoreException e) {
-      SonarLogger.log(e);
+      LoggerFactory.getLogger(SonarUiPlugin.class).error(e.getMessage(), e);
       return false;
     }
   }

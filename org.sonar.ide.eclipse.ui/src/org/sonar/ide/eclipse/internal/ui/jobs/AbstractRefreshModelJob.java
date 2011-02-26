@@ -37,10 +37,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SonarIdeException;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
-import org.sonar.ide.eclipse.internal.core.SonarLogger;
 
 /**
  * @author Jérémie Lagarde
@@ -66,14 +66,14 @@ public abstract class AbstractRefreshModelJob<M> extends AbstractRemoteSonarJob 
       monitor.beginTask("Retrieve sonar data", resources.size());
 
       for (final IResource resource : resources) {
-        if ( !monitor.isCanceled() && resource.isAccessible()) {
+        if (!monitor.isCanceled() && resource.isAccessible()) {
           monitor.subTask("updating " + resource.getName());
           resource.accept(this);
         }
         monitor.worked(1);
       }
 
-      if ( !monitor.isCanceled()) {
+      if (!monitor.isCanceled()) {
         status = Status.OK_STATUS;
       } else {
         status = Status.CANCEL_STATUS;
@@ -110,7 +110,7 @@ public abstract class AbstractRefreshModelJob<M> extends AbstractRemoteSonarJob 
         createMarker(resource, data);
       }
     } catch (final Exception ex) {
-      SonarLogger.log(ex);
+      LoggerFactory.getLogger(getClass()).error(ex.getMessage(), ex);
     } finally {
       monitor.done();
     }

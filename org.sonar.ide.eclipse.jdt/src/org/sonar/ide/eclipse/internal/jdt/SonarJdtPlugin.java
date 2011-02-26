@@ -19,11 +19,9 @@
  */
 package org.sonar.ide.eclipse.internal.jdt;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
-import org.sonar.ide.eclipse.internal.jdt.profiles.RetrieveSonarProfileJob;
+import org.slf4j.LoggerFactory;
 
 public class SonarJdtPlugin extends Plugin {
 
@@ -35,24 +33,23 @@ public class SonarJdtPlugin extends Plugin {
     plugin = this;
   }
 
-  public static void log(Throwable e) {
-    plugin.getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, e.getMessage(), e));
-  }
-
-  public static void log(String message) {
-    plugin.getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));
+  /**
+   * @return the shared instance
+   */
+  public static SonarJdtPlugin getDefault() {
+    return plugin;
   }
 
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
-    log("SonarJdtPlugin started");
+    LoggerFactory.getLogger(getClass()).debug("SonarJdtPlugin started");
   }
 
   @Override
   public void stop(BundleContext context) throws Exception {
     super.stop(context);
-    log("SonarJdtPlugin stopped");
+    LoggerFactory.getLogger(getClass()).debug("SonarJdtPlugin stopped");
   }
 
 }

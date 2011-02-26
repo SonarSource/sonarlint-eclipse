@@ -22,6 +22,7 @@ package org.sonar.ide.eclipse.internal.ui.actions;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -32,11 +33,9 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshAllViolationsJob;
-
-import com.google.common.collect.Lists;
 
 public class ToggleNatureAction implements IObjectActionDelegate {
 
@@ -56,7 +55,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
           try {
             toggleNature(project);
           } catch (CoreException e) {
-            SonarLogger.log(e);
+            LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
           }
         }
       }
@@ -90,7 +89,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
     IProjectDescription description = project.getDescription();
     List<String> newNatures = Lists.newArrayList();
     for (String natureId : description.getNatureIds()) {
-      if ( !SonarCorePlugin.NATURE_ID.equals(natureId)) {
+      if (!SonarCorePlugin.NATURE_ID.equals(natureId)) {
         newNatures.add(natureId);
       }
     }

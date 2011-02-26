@@ -30,7 +30,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.XMLMemento;
 import org.eclipse.ui.ide.IDE;
-import org.sonar.ide.eclipse.internal.core.SonarLogger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unchecked")
 public final class PlatformUtils {
@@ -66,7 +66,7 @@ public final class PlatformUtils {
     try {
       IDE.openEditor(page, file);
     } catch (PartInitException e) {
-      SonarLogger.log(e);
+      LoggerFactory.getLogger(PlatformUtils.class).error(e.getMessage(), e);
     }
   }
 

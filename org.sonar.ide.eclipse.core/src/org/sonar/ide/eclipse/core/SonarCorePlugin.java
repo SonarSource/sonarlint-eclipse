@@ -21,13 +21,10 @@ package org.sonar.ide.eclipse.core;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
-import org.sonar.ide.eclipse.internal.core.ServersManager;
-import org.sonar.ide.eclipse.internal.core.SonarFile;
-import org.sonar.ide.eclipse.internal.core.SonarMeasure;
-import org.sonar.ide.eclipse.internal.core.SonarMetric;
-import org.sonar.ide.eclipse.internal.core.SonarResource;
+import org.sonar.ide.eclipse.internal.core.*;
 import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Metric;
 
@@ -47,12 +44,17 @@ public class SonarCorePlugin extends Plugin {
     return plugin;
   }
 
+  private LogListener logListener;
+
   private ServersManager serversManager;
 
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
     plugin = this;
+
+    logListener = new LogListener();
+    Platform.addLogListener(logListener);
 
     serversManager = new ServersManager();
     serversManager.load();
@@ -61,6 +63,8 @@ public class SonarCorePlugin extends Plugin {
   @Override
   public void stop(BundleContext context) throws Exception {
     serversManager.save();
+
+    Platform.removeLogListener(logListener);
 
     super.stop(context);
     plugin = null;
