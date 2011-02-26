@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Sonar Eclipse" basedir="." default="build">
+
+  <target name="build" description="Complete build" depends="update-dependencies">
+    <mvn dir="org.sonar.ide.eclipse.parent" args="clean install" />
+  </target>
+
+  <target name="update-dependencies" description="Update dependencies">
+    <update dir="org.sonar.ide.eclipse.sonar_embedder" />
+    <update dir="org.sonar.ide.eclipse.tests.common" />
+  </target>
+
+  <macrodef name="update">
+    <attribute name="dir" />
+
+    <sequential>
+      <mvn dir="@{dir}" args="-Dtycho.mode=maven -Pupdate-dependencies clean org.sonatype.tycho:maven-osgi-packaging-plugin:generate-bundle" />
+    </sequential>
+  </macrodef>
+
+  <macrodef name="mvn">
+    <attribute name="failonerror" default="true" />
+    <attribute name="args" default="" />
+    <attribute name="dir" />
+
+    <sequential>
+      <echo>Executing @{dir}$ mvn @{args}</echo>
+      <exec dir="@{dir}" failonerror="@{failonerror}" executable="mvn.bat" osfamily="Windows">
+        <arg line="@{args} -B -V -e" />
+        <env key="MAVEN_OPTS" value="-Xmx384m" />
+      </exec>
+      <exec dir="@{dir}" failonerror="@{failonerror}" executable="mvn" osfamily="unix">
+        <arg line="@{args} -B -V -e" />
+        <env key="MAVEN_OPTS" value="-Xmx384m" />
+      </exec>
+    </sequential>
+  </macrodef>
+
+</project>
