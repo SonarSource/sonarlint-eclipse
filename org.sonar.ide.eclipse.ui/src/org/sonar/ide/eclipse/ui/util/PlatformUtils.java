@@ -77,7 +77,7 @@ public final class PlatformUtils {
       memento.save(writer);
       result = writer.getBuffer().toString();
     } catch (IOException e) {
-      // TODO handle
+      LoggerFactory.getLogger(PlatformUtils.class).error(e.getMessage(), e);
     }
     return result;
   }

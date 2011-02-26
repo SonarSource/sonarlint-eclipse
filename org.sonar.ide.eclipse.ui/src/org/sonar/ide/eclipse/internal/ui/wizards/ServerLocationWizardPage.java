@@ -135,7 +135,7 @@ public class ServerLocationWizardPage extends WizardPage {
         } catch (InvocationTargetException e1) {
           LoggerFactory.getLogger(getClass()).error(e1.getMessage(), e1);
         } catch (InterruptedException e1) {
-          // canceled
+          // NOSONAR - canceled
         }
         getWizard().getContainer().updateButtons();
 

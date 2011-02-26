@@ -21,7 +21,7 @@ package org.sonar.ide.eclipse.core;
 
 import org.apache.commons.lang.StringUtils;
 
-public class SonarKeyUtils {
+public final class SonarKeyUtils {
 
   public static final char PROJECT_DELIMITER = ':';
 

@@ -30,7 +30,7 @@ public class SonarJdtPlugin extends Plugin {
   private static SonarJdtPlugin plugin;
 
   public SonarJdtPlugin() {
-    plugin = this;
+    plugin = this; // NOSONAR
   }
 
   /**

@@ -51,7 +51,7 @@ public class SonarCorePlugin extends Plugin {
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
-    plugin = this;
+    plugin = this; // NOSONAR
 
     logListener = new LogListener();
     Platform.addLogListener(logListener);
@@ -67,7 +67,7 @@ public class SonarCorePlugin extends Plugin {
     Platform.removeLogListener(logListener);
 
     super.stop(context);
-    plugin = null;
+    plugin = null; // NOSONAR
   }
 
   public static ISonarServersManager getServersManager() {

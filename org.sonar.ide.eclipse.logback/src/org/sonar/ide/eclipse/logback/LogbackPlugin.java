@@ -32,13 +32,9 @@ import org.slf4j.LoggerFactory;
 
 public class LogbackPlugin extends Plugin {
 
-  private BundleContext bundleContext;
-
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
-    bundleContext = context;
-
     configureLogback();
 
     LoggerFactory.getLogger(getClass()).info("Yippee - Logback configured!");

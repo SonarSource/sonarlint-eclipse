@@ -30,6 +30,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.LoggerFactory;
+
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
 
@@ -84,6 +86,7 @@ public class EclipseProxySelector extends ProxySelector {
       list.add(new Proxy(type, new InetSocketAddress(InetAddress.getByName(d.getHost()), d.getPort())));
     } catch (UnknownHostException uhe) {
       // Oh well.
+      LoggerFactory.getLogger(getClass()).error(uhe.getMessage(), uhe);
     }
   }
 

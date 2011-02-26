@@ -67,20 +67,20 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
   @Override
   protected Integer getPriority(final Violation violation) {
     if (ViolationUtils.PRIORITY_BLOCKER.equalsIgnoreCase(violation.getSeverity())) {
-      return new Integer(IMarker.PRIORITY_HIGH);
+      return Integer.valueOf(IMarker.PRIORITY_HIGH);
     }
     if (ViolationUtils.PRIORITY_CRITICAL.equalsIgnoreCase(violation.getSeverity())) {
-      return new Integer(IMarker.PRIORITY_HIGH);
+      return Integer.valueOf(IMarker.PRIORITY_HIGH);
     }
     if (ViolationUtils.PRIORITY_MAJOR.equalsIgnoreCase(violation.getSeverity())) {
-      return new Integer(IMarker.PRIORITY_NORMAL);
+      return Integer.valueOf(IMarker.PRIORITY_NORMAL);
     }
-    return new Integer(IMarker.PRIORITY_LOW);
+    return Integer.valueOf(IMarker.PRIORITY_LOW);
   }
 
   @Override
   protected Integer getSeverity(final Violation violation) {
-    return new Integer(IMarker.SEVERITY_WARNING);
+    return Integer.valueOf(IMarker.SEVERITY_WARNING);
   }
 
   @Override

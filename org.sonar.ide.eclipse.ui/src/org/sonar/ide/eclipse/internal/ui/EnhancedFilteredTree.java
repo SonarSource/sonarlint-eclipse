@@ -19,11 +19,11 @@
  */
 package org.sonar.ide.eclipse.internal.ui;
 
+import java.lang.reflect.Field;
+
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
-
-import java.lang.reflect.Field;
 
 /**
  * A {@link FilteredTree} that uses the new look on Eclipse 3.5 and later.
@@ -58,7 +58,7 @@ public class EnhancedFilteredTree extends FilteredTree {
       newStyleField.setBoolean(tree, true);
       return newStyleField.getBoolean(tree);
     } catch (Exception e) {
-      // ignore
+      // NOSONAR ignore
     }
     return false;
   }

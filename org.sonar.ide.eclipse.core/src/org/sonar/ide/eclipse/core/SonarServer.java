@@ -25,6 +25,7 @@ import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.internal.core.ServersManager;
 import org.sonar.wsclient.Host;
 
@@ -81,7 +82,7 @@ public final class SonarServer {
           .node(EncodingUtils.encodeSlashes(getUrl()));
       serverNode.put(key, value, encrypt);
     } catch (StorageException e) {
-      // TODO handle
+      LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
     }
   }
 

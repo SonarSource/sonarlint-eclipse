@@ -35,7 +35,7 @@ public interface ISonarServersManager {
 
   // TODO From old implementation, so should be reviewed :
 
-  public List<Host> getHosts();
+  List<Host> getHosts();
 
   void removeServer(String host);
 

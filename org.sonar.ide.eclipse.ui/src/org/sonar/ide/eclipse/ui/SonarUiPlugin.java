@@ -58,7 +58,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   private FavouriteMetricsManager favouriteMetricsManager = new FavouriteMetricsManager();
 
   public SonarUiPlugin() {
-    plugin = this;
+    plugin = this; // NOSONAR
   }
 
   public SonarProjectManager getProjectManager() {

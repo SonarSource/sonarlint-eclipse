@@ -24,17 +24,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.XMLMemento;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarMetric;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
-
-import com.google.common.collect.Lists;
 
 public class SonarUiPreferenceInitializer extends AbstractPreferenceInitializer {
 
@@ -96,7 +96,7 @@ public class SonarUiPreferenceInitializer extends AbstractPreferenceInitializer 
         metrics.add(SonarCorePlugin.createSonarMetric(key, name));
       }
     } catch (WorkbenchException e) {
-      // TODO handle
+      LoggerFactory.getLogger(SonarUiPreferenceInitializer.class).error(e.getMessage(), e);
     }
     return metrics;
   }

@@ -24,19 +24,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.client.SonarClient;
 import org.sonar.ide.eclipse.core.ISonarServersManager;
 import org.sonar.ide.eclipse.core.SonarServer;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class ServersManager implements ISonarServersManager {
 
@@ -73,7 +73,7 @@ public class ServersManager implements ISonarServersManager {
         return Arrays.asList(new SonarServer("http://localhost:9000"), new SonarServer("http://nemo.sonarsource.org"));
       }
     } catch (BackingStoreException e) {
-      // TODO handle
+      LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
     }
     return servers;
   }
@@ -88,7 +88,7 @@ public class ServersManager implements ISonarServersManager {
       }
       serversNode.flush();
     } catch (BackingStoreException e) {
-      // TODO handle
+      LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
     }
   }
 
