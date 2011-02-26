@@ -357,4 +357,12 @@
      </referenceprovider>
   </extension>
 
+  <extension
+        point="org.eclipse.ui.console.consoleFactories">
+     <consoleFactory
+           class="org.sonar.ide.eclipse.internal.ui.console.SonarConsoleFactory"
+           icon="icons/sonar.png"
+           label="%consoleFactory.label">
+     </consoleFactory>
+  </extension>
 </plugin>

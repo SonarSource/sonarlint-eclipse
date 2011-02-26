@@ -17,34 +17,22 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.ui;
+package org.sonar.ide.eclipse.internal.ui.console;
 
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import org.eclipse.ui.console.IConsoleFactory;
+import org.sonar.ide.eclipse.ui.ISonarConsole;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
-import org.eclipse.osgi.util.NLS;
+/**
+ * Used to show the console from the "Open Console" drop-down action in Console view.
+ * 
+ * @see org.eclipse.ui.console.consoleFactory extension point
+ */
+public class SonarConsoleFactory implements IConsoleFactory {
 
-public class Messages extends NLS {
-  private static final String BUNDLE_NAME = "org.sonar.ide.eclipse.internal.ui.messages"; //$NON-NLS-1$
-
-  static {
-    // load message values from bundle file
-    NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+  public void openConsole() {
+    ISonarConsole console = SonarUiPlugin.getDefault().getSonarConsole();
+    ((SonarConsole) console).showConsole();
   }
 
-  private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
-
-  private Messages() {
-  }
-
-  public static String getString(String key) {
-    try {
-      return RESOURCE_BUNDLE.getString(key);
-    } catch (MissingResourceException e) {
-      return '!' + key + '!';
-    }
-  }
-
-  public static String SonarProjectPropertyPage_title;
-  public static String SonarConsole_title;
 }

@@ -33,10 +33,13 @@
     </filter>
   </appender>
 
+  <appender name="SonarConsole" class="org.sonar.ide.eclipse.logback.appenders.SonarConsoleAppender" />
+
   <root level="INFO">
     <appender-ref ref="STDOUT"/>
     <appender-ref ref="FILE" />
     <appender-ref ref="EclipseLog" />
+    <appender-ref ref="SonarConsole" />
   </root>
 
   <logger name="org.mortbay.log" level="WARN" />

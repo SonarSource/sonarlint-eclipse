@@ -17,34 +17,20 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.ui;
+package org.sonar.ide.eclipse.ui;
 
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+/**
+ * Sonar Console.
+ * 
+ * @noimplement This interface is not intended to be implemented by clients.
+ * @noextend This interface is not intended to be extended by clients.
+ */
+public interface ISonarConsole {
 
-import org.eclipse.osgi.util.NLS;
+  void debug(String msg);
 
-public class Messages extends NLS {
-  private static final String BUNDLE_NAME = "org.sonar.ide.eclipse.internal.ui.messages"; //$NON-NLS-1$
+  void info(String msg);
 
-  static {
-    // load message values from bundle file
-    NLS.initializeMessages(BUNDLE_NAME, Messages.class);
-  }
+  void error(String msg);
 
-  private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
-
-  private Messages() {
-  }
-
-  public static String getString(String key) {
-    try {
-      return RESOURCE_BUNDLE.getString(key);
-    } catch (MissingResourceException e) {
-      return '!' + key + '!';
-    }
-  }
-
-  public static String SonarProjectPropertyPage_title;
-  public static String SonarConsole_title;
 }

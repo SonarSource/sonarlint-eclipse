@@ -5,6 +5,7 @@ Bundle-SymbolicName: org.sonar.ide.eclipse.logback.appenders;singleton:=true
 Bundle-Version: 1.1.0.qualifier
 Fragment-Host: ch.qos.logback.classic
 Export-Package: org.sonar.ide.eclipse.logback.appenders
-Require-Bundle: org.eclipse.core.runtime
+Require-Bundle: org.eclipse.core.runtime,
+ org.sonar.ide.eclipse.ui
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6

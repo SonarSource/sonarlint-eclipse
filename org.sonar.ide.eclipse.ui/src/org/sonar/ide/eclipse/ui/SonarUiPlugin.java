@@ -42,6 +42,8 @@ import org.sonar.ide.eclipse.internal.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.internal.ui.Messages;
+import org.sonar.ide.eclipse.internal.ui.SonarImages;
+import org.sonar.ide.eclipse.internal.ui.console.SonarConsole;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshViolationsJob;
 import org.sonar.ide.eclipse.internal.ui.preferences.SonarUiPreferenceInitializer;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
@@ -140,6 +142,15 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
   public static ISonarProject getSonarProject(IProject project) {
     return ProjectProperties.getInstance(project);
+  }
+
+  private SonarConsole console;
+
+  public synchronized ISonarConsole getSonarConsole() {
+    if (console == null) {
+      console = new SonarConsole(SonarImages.SONAR16_IMG);
+    }
+    return console;
   }
 
 }
