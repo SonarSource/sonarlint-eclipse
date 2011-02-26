@@ -36,6 +36,7 @@ import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
+@SuppressWarnings("restriction")
 public class JavaElementsAdapterFactoryTest extends SonarTestCase {
 
   private static final String groupId = "org.sonar-ide.tests.SimpleProject";

@@ -33,6 +33,7 @@ import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.core.ServersManager;
 import org.sonar.wsclient.Host;
 
+@SuppressWarnings("restriction")
 public class SonarServerManagerTest {
 
   private ServersManager serversManager;
