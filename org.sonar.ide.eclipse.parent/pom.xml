@@ -57,10 +57,6 @@
     <!-- features -->
     <module>../org.sonar.ide.eclipse.feature</module>
 
-    <!--
-    <module>../org.sonar.ide.eclipse.help</module>
-    -->
-
     <module>../target-platform</module>
   </modules>
 
