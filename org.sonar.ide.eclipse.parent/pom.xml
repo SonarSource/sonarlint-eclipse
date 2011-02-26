@@ -97,7 +97,7 @@
 
     <tycho.version>0.10.0</tycho.version>
 
-    <target.platform>e35</target.platform>
+    <target.platform>e36</target.platform>
 
     <sonar-ide-commons.version>0.3-SNAPSHOT</sonar-ide-commons.version>
 
