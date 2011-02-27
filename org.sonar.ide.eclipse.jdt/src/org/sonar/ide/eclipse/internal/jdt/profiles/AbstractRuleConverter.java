@@ -40,7 +40,7 @@ public abstract class AbstractRuleConverter implements ISonarRuleConverter {
   }
 
   public final boolean canConvert(Rule rule) {
-    return (rule != null && plugin.equalsIgnoreCase(rule.getRepository()) && key.equalsIgnoreCase(rule.getKey()));
+    return (rule != null && rule.isActive() && plugin.equalsIgnoreCase(rule.getRepository()) && key.equalsIgnoreCase(rule.getKey()));
   }
   
   protected String getParam(Rule rule, String name) {
