@@ -40,6 +40,7 @@ public class LogListener implements ILogListener {
         break;
       case IStatus.WARNING:
         logLevel = WARN;
+        break;
       default:
         logLevel = INFO;
         break;
