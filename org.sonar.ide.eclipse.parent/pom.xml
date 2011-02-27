@@ -157,9 +157,28 @@
             <includes>
               <include>**/*Test.java</include>
             </includes>
-            <!-- kill test JVM it tests take more than 10 minutes (600 seconds) to finish -->
+            <!-- Kill test JVM if tests take more than 10 minutes (600 seconds) to finish -->
             <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
             <argLine>${jacoco.argLine}</argLine>
+            <!-- Activate org.sonar.ide.eclipse.logback during execution of tests -->
+            <bundleStartLevel>
+              <bundle>
+                <id>org.sonar.ide.eclipse.logback</id>
+                <level>4</level>
+                <autoStart>true</autoStart>
+              </bundle>
+            </bundleStartLevel>
+            <!-- See https://docs.sonatype.org/display/TYCHO/FAQ about how to include additional bundles (eg. fragments) -->
+            <dependencies>
+              <dependency>
+                <artifactId>org.sonar.ide.eclipse.logback.appenders</artifactId>
+                <type>p2-installable-unit</type>
+              </dependency>
+              <dependency>
+                <artifactId>org.sonar.ide.eclipse.logback</artifactId>
+                <type>p2-installable-unit</type>
+              </dependency>
+            </dependencies>
           </configuration>
         </plugin>
 
