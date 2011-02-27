@@ -1,20 +1,12 @@
 Manifest-Version: 1.0
 Require-Bundle: org.slf4j.api;bundle-version="1.6.1",org.slf4j.jcl;bun
- dle-version="1.6.1",org.slf4j.log4j;bundle-version="1.6.1"
-Export-Package: com.google.common.collect,com.google.common.base,org.s
- onar.ide.images.tendency,org.sonar.ide.ui,org.sonar.ide.shared.covera
- ge,com.google.common.base.internal,org.sonar.ide.wsclient,org.sonar.i
- de.shared.profile,org.apache.commons.lang,org.sonar.ide.shared.violat
- ions,org.sonar.wsclient,org.sonar.ide.shared.measures,org.sonar.ide.s
- hared,org.apache.commons.io,org.sonar.ide.client,org.sonar.ide.images
- .priority,org.sonar.ide.images,org.sonar.wsclient.services,com.google
- .common.annotations,org.sonar.ide.api,org.sonar.ide.shared.duplicatio
- ns
+ dle-version="1.6.1",org.slf4j.log4j;bundle-version="1.6.1";org.apache
+ .commons.httpclient;bundle-version="3.1.0";resolution:=optional
+Export-Package: org.sonar.wsclient,org.sonar.wsclient.connectors,org.s
+ onar.wsclient.unmarshallers,org.sonar.wsclient.services
 Bundle-Vendor: SonarSource
-Bundle-ClassPath: jars/sonar-ide-commons-0.3-SNAPSHOT.jar,jars/google-
- collections-1.0.jar,jars/commons-lang-2.5.jar,jars/jdom-1.1.jar,jars/
- sonar-ws-client-2.5.jar,jars/json-simple-1.1.jar,jars/commons-httpcli
- ent-3.1.jar,jars/commons-codec-1.2.jar,jars/commons-io-1.4.jar
+Bundle-ClassPath: jars/sonar-ws-client-2.5.jar,jars/json-simple-1.1.ja
+ r
 Bundle-Version: 1.1.0.qualifier
 Bundle-Name: Sonar Embedder Bundle
 Bundle-ManifestVersion: 2

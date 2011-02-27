@@ -10,19 +10,21 @@
     <relativePath>../org.sonar.ide.eclipse.parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>org.sonar.ide.eclipse.tests</artifactId>
-  <packaging>eclipse-test-plugin</packaging>
+  <artifactId>org.sonar.ide.eclipse.deprecated</artifactId>
+  <packaging>eclipse-plugin</packaging>
 
-  <name>Sonar Integration for Eclipse Tests</name>
+  <name>Sonar Integration for Eclipse Deprecated</name>
+  <description>Temporary, should be removed in future</description>
 
   <build>
     <sourceDirectory>src</sourceDirectory>
+
     <resources>
       <resource>
-        <directory>src</directory>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
+        <directory>${basedir}/src</directory>
+        <includes>
+          <include>**/*.properties</include>
+        </includes>
       </resource>
     </resources>
   </build>

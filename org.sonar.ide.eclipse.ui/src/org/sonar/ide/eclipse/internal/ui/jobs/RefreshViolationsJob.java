@@ -33,7 +33,6 @@ import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
-import org.sonar.ide.shared.violations.ViolationUtils;
 import org.sonar.wsclient.services.Violation;
 
 /**
@@ -61,20 +60,27 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
 
   @Override
   protected String getMessage(final Violation violation) {
-    return ViolationUtils.getDescription(violation);
+    return violation.getRuleName() + " : " + violation.getMessage();
   }
 
   @Override
   protected Integer getPriority(final Violation violation) {
-    if (ViolationUtils.PRIORITY_BLOCKER.equalsIgnoreCase(violation.getSeverity())) {
+    if ("blocker".equalsIgnoreCase(violation.getSeverity())) {
       return Integer.valueOf(IMarker.PRIORITY_HIGH);
     }
-    if (ViolationUtils.PRIORITY_CRITICAL.equalsIgnoreCase(violation.getSeverity())) {
+    if ("critical".equalsIgnoreCase(violation.getSeverity())) {
       return Integer.valueOf(IMarker.PRIORITY_HIGH);
     }
-    if (ViolationUtils.PRIORITY_MAJOR.equalsIgnoreCase(violation.getSeverity())) {
+    if ("major".equalsIgnoreCase(violation.getSeverity())) {
       return Integer.valueOf(IMarker.PRIORITY_NORMAL);
     }
+    if ("minor".equalsIgnoreCase(violation.getSeverity())) {
+      return Integer.valueOf(IMarker.PRIORITY_LOW);
+    }
+    if ("info".equalsIgnoreCase(violation.getSeverity())) {
+      return Integer.valueOf(IMarker.PRIORITY_LOW);
+    }
+    // TODO handle unknown severity
     return Integer.valueOf(IMarker.PRIORITY_LOW);
   }
 

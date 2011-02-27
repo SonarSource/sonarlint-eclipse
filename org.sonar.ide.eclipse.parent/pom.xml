@@ -49,6 +49,7 @@
 
   <modules>
     <module>../org.sonar.ide.eclipse.core</module>
+    <module>../org.sonar.ide.eclipse.deprecated</module>
     <module>../org.sonar.ide.eclipse.sonar_embedder</module>
     <module>../org.sonar.ide.eclipse.ui</module>
     <module>../org.sonar.ide.eclipse.jdt</module>
@@ -101,8 +102,6 @@
 
     <target.platform>e36</target.platform>
 
-    <sonar-ide-commons.version>0.3-SNAPSHOT</sonar-ide-commons.version>
-
     <!-- Version of Sonar for integration tests -->
     <sonar.runtimeVersion>2.4</sonar.runtimeVersion>
 
@@ -113,21 +112,6 @@
 
     <jacoco.argLine></jacoco.argLine>
   </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.codehaus.sonar-ide</groupId>
-        <artifactId>sonar-ide-commons</artifactId>
-        <version>${sonar-ide-commons.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.sonar-ide</groupId>
-        <artifactId>sonar-ide-testing-harness</artifactId>
-        <version>${sonar-ide-commons.version}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <pluginRepositories>
     <pluginRepository>

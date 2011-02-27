@@ -24,8 +24,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.slf4j.LoggerFactory;
-import org.sonar.ide.api.SonarIdeException;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 
 /**
@@ -73,11 +71,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
     projectProperties.setGroupId(block.getGroupId());
     projectProperties.setArtifactId(block.getArtifactId());
     projectProperties.setBranch(block.getBranch());
-    try {
-      projectProperties.save();
-    } catch (SonarIdeException e) {
-      LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
-    }
+    projectProperties.save();
   }
 
   private IProject getProject() {

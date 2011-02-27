@@ -14,26 +14,14 @@
   <packaging>eclipse-plugin</packaging>
 
   <name>Sonar Embedder Bundle</name>
+  <description>Provides sonar-ws-client</description>
 
   <dependencies>
     <dependency>
-      <groupId>org.codehaus.sonar-ide</groupId>
-      <artifactId>sonar-ide-commons</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>jcl-over-slf4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>1.4</version>
+      <!-- Note that sonar-ws-client supports both of httpclient 3.x and 4.x -->
+      <groupId>org.codehaus.sonar</groupId>
+      <artifactId>sonar-ws-client</artifactId>
+      <version>2.5</version>
     </dependency>
   </dependencies>
 
@@ -77,18 +65,12 @@
             </executions>
             <configuration>
               <packageSources>false</packageSources>
-              <!-- TODO don't export org.sonar.wsclient -->
               <exportPackages>
-                org.sonar.ide.*,
-                org.sonar.wsclient,
-                org.sonar.wsclient.services,
-                com.google.*,
-                org.apache.commons.lang,
-                org.apache.commons.io
+                org.sonar.wsclient.*
               </exportPackages>
               <manifestAttributes>
                 <Bundle-RequiredExecutionEnvironment>J2SE-1.5, JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
-                <Require-Bundle>org.slf4j.api;bundle-version="1.6.1",org.slf4j.jcl;bundle-version="1.6.1",org.slf4j.log4j;bundle-version="1.6.1"</Require-Bundle>
+                <Require-Bundle>org.slf4j.api;bundle-version="1.6.1",org.slf4j.jcl;bundle-version="1.6.1",org.slf4j.log4j;bundle-version="1.6.1";org.apache.commons.httpclient;bundle-version="3.1.0";resolution:=optional</Require-Bundle>
               </manifestAttributes>
             </configuration>
           </plugin>

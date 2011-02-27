@@ -32,18 +32,18 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.core.ServersManager;
+import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 import org.sonar.ide.eclipse.tests.common.VersionHelpers;
 import org.sonar.ide.eclipse.tests.common.WorkspaceHelpers;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
-import org.sonar.ide.test.SonarIdeTestCase;
 
 /**
  * TODO use Xvfb ("fake" X-server)
  * 
  * @author Evgeny Mandrikov
  */
-public abstract class UITestCase extends SonarIdeTestCase {
+public abstract class UITestCase extends SonarTestCase {
 
   private static final String SCREENSHOTS_DIR = "target/screenshots";
 
@@ -51,6 +51,8 @@ public abstract class UITestCase extends SonarIdeTestCase {
 
   @BeforeClass
   public final static void beforeClass() throws Exception {
+    projectsSource = new File("projects");
+
     // Remove all configured servers and set default
     ServersManager serversManager = ((ServersManager) SonarCorePlugin.getServersManager());
     serversManager.clean();

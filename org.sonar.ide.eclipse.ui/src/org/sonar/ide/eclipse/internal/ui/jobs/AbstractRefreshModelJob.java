@@ -38,7 +38,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.api.SonarIdeException;
+import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 
@@ -128,7 +128,7 @@ public abstract class AbstractRefreshModelJob<M> extends AbstractRemoteSonarJob 
     try {
       source = IOUtils.toString(inputStream, file.getCharset());
     } catch (IOException e) {
-      throw new SonarIdeException(e.getMessage(), e);
+      throw new SonarEclipseException(e.getMessage(), e);
     } finally {
       IOUtils.closeQuietly(inputStream);
     }

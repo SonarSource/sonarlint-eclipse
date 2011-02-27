@@ -20,14 +20,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface.text,
  org.eclipse.compare,
  org.sonar.ide.eclipse.core,
- org.sonar.ide.eclipse.sonar_embedder,
- org.slf4j.api;bundle-version="1.6.1",
  org.eclipse.core.resources
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
-Import-Package: org.apache.commons.io,
- org.apache.commons.lang,
- org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonar.ide.eclipse.internal;x-internal:=true,
  org.sonar.ide.eclipse.internal.core;x-internal:=true,

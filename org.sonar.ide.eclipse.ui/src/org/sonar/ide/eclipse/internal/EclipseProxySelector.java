@@ -20,20 +20,13 @@
 package org.sonar.ide.eclipse.internal;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.SocketAddress;
-import java.net.URI;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.LoggerFactory;
-
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link ProxySelector}, which selects the proxy server to use via {@link IProxyService}.
@@ -64,6 +57,7 @@ public class EclipseProxySelector extends ProxySelector {
     }
 
     // TODO Godin: by some reasons service.select(uri) doesn't work here
+    @SuppressWarnings("deprecation")
     final IProxyData data = service.getProxyDataForHost(host, type);
     if (data != null) {
       if (IProxyData.HTTP_PROXY_TYPE.equals(data.getType())) {

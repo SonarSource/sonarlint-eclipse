@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.sonar.ide.wsclient.SonarClient;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -32,7 +34,6 @@ import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.client.SonarClient;
 import org.sonar.ide.eclipse.core.ISonarServersManager;
 import org.sonar.ide.eclipse.core.SonarServer;
 import org.sonar.wsclient.Host;
