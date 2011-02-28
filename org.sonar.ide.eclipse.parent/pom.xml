@@ -365,6 +365,20 @@
           </environments>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>com.mycila.maven-license-plugin</groupId>
+        <artifactId>maven-license-plugin</artifactId>
+        <configuration>
+          <header>${project.basedir}/../LICENSE.txt</header>
+          <strictCheck>true</strictCheck>
+          <includes>
+            <include>src/**/*.java</include>
+          </includes>
+          <mapping>
+            <java>SLASHSTAR_STYLE</java>
+          </mapping>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -393,16 +407,6 @@
           <plugin>
             <groupId>com.mycila.maven-license-plugin</groupId>
             <artifactId>maven-license-plugin</artifactId>
-            <configuration>
-              <header>${project.basedir}/../LICENSE.txt</header>
-              <strictCheck>true</strictCheck>
-              <includes>
-                <include>src/**/*.java</include>
-              </includes>
-              <mapping>
-                <java>SLASHSTAR_STYLE</java>
-              </mapping>
-            </configuration>
             <executions>
               <execution>
                 <id>enforce-license-headers</id>
