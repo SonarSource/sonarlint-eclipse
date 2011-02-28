@@ -11,11 +11,9 @@
   </appender>
 
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <!-- TODO -->
-    <File>/tmp/sonar-eclipse/0.log</File>
+    <File>${log.dir}/0.log</File>
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-      <!-- TODO -->
-      <FileNamePattern>/tmp/sonar-eclipse/%i.log</FileNamePattern>
+      <FileNamePattern>${log.dir}/%i.log</FileNamePattern>
       <MinIndex>1</MinIndex>
       <MaxIndex>10</MaxIndex>
     </rollingPolicy>

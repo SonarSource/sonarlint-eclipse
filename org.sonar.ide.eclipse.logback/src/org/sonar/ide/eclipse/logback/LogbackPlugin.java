@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.logback;
 
+import java.io.File;
 import java.net.URL;
 
 import ch.qos.logback.classic.LoggerContext;
@@ -31,6 +32,11 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 
 public class LogbackPlugin extends Plugin {
+
+  /**
+   * Should match name in "conf/logback.xml"
+   */
+  private static final String LOG_DIR_PROPERTY = "log.dir";
 
   @Override
   public void start(BundleContext context) throws Exception {
@@ -48,6 +54,11 @@ public class LogbackPlugin extends Plugin {
    * Godin: I'm not sure is it correct way or not, but it works.
    */
   private synchronized void configureLogback() {
+    File stateDir = getStateLocation().toFile();
+    if (System.getProperty(LOG_DIR_PROPERTY) == null) {
+      System.setProperty(LOG_DIR_PROPERTY, stateDir.getAbsolutePath());
+    }
+
     final URL url = getBundle().getEntry("/conf/logback.xml");
     if (url != null) {
       final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
