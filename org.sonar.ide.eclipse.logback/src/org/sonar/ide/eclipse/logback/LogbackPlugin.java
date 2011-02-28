@@ -24,14 +24,19 @@ import java.net.URL;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.classic.util.ContextInitializer;
 import ch.qos.logback.core.joran.JoranConfiguratorBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 
 public class LogbackPlugin extends Plugin {
+
+  private static final String PLUGIN_ID = "org.sonar.ide.eclipse.logback";
 
   /**
    * Should match name in "conf/logback.xml"
@@ -41,39 +46,40 @@ public class LogbackPlugin extends Plugin {
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
-    configureLogback();
 
-    LoggerFactory.getLogger(getClass()).info("Yippee - Logback configured!");
+    String configFileProperty = System.getProperty(ContextInitializer.CONFIG_FILE_PROPERTY);
+    if (configFileProperty != null) {
+      // The standard logback config file property is set - don't force our configuration
+      System.out.println(ContextInitializer.CONFIG_FILE_PROPERTY + "=" + configFileProperty);
+    } else {
+      configureLogback();
+      LoggerFactory.getLogger(getClass()).info("Yippee - Logback configured!");
+    }
   }
 
-  private void printErr(String message) {
-    System.err.println(message);
-  }
-
-  /**
-   * Godin: I'm not sure is it correct way or not, but it works.
-   */
   private synchronized void configureLogback() {
     File stateDir = getStateLocation().toFile();
     if (System.getProperty(LOG_DIR_PROPERTY) == null) {
       System.setProperty(LOG_DIR_PROPERTY, stateDir.getAbsolutePath());
     }
 
-    final URL url = getBundle().getEntry("/conf/logback.xml");
-    if (url != null) {
-      final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-      try {
-        final JoranConfiguratorBase configurator = new JoranConfigurator();
-        configurator.setContext(lc);
-        lc.reset();
-        configurator.doConfigure(url);
-      } catch (final JoranException e) {
-        e.printStackTrace();
-      }
-      StatusPrinter.printIfErrorsOccured(lc);
-    } else {
-      printErr("logback.xml not found");
+    try {
+      final URL url = getBundle().getEntry("/conf/logback.xml");
+      loadConfig(url);
+    } catch (Exception e) {
+      e.printStackTrace();
+      getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, "Exception while configuring logging: " + e.getMessage(), e));
     }
+  }
+
+  private void loadConfig(URL url) throws JoranException {
+    System.out.println("Initializing logback");
+    final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+    final JoranConfiguratorBase configurator = new JoranConfigurator();
+    configurator.setContext(lc);
+    lc.reset();
+    configurator.doConfigure(url);
+    StatusPrinter.printIfErrorsOccured(lc);
   }
 
 }
