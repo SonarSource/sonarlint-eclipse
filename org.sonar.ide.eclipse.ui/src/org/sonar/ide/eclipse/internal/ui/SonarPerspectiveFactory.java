@@ -28,6 +28,7 @@ import org.eclipse.ui.progress.IProgressConstants;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.views.HotspotsView;
 import org.sonar.ide.eclipse.internal.ui.views.MeasuresView;
+import org.sonar.ide.eclipse.internal.ui.views.QualityProfilesView;
 import org.sonar.ide.eclipse.internal.ui.views.ViolationsView;
 import org.sonar.ide.eclipse.internal.ui.views.WebView;
 
@@ -47,6 +48,7 @@ public class SonarPerspectiveFactory implements IPerspectiveFactory {
     bottom.addView(WebView.ID);
     bottom.addView(HotspotsView.ID);
     bottom.addView(ViolationsView.ID);
+    bottom.addView(QualityProfilesView.ID);
     bottom.addPlaceholder(IProgressConstants.PROGRESS_VIEW_ID);
     bottom.addPlaceholder(IConsoleConstants.ID_CONSOLE_VIEW);
 
@@ -61,6 +63,7 @@ public class SonarPerspectiveFactory implements IPerspectiveFactory {
     layout.addShowViewShortcut(HotspotsView.ID);
     layout.addShowViewShortcut(MeasuresView.ID);
     layout.addShowViewShortcut(ViolationsView.ID);
+    layout.addShowViewShortcut(QualityProfilesView.ID);
 
     // views - java
     layout.addShowViewShortcut("org.eclipse.jdt.ui.PackageExplorer"); // $NON-NLS-1$

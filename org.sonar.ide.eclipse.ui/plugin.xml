@@ -53,6 +53,13 @@
         name="%sonar.violation.view.name">
     </view>
     <view
+    	category="org.sonar.ide.eclipse"
+    	class="org.sonar.ide.eclipse.internal.ui.views.QualityProfilesView"
+    	icon="icons/sonar.png"
+    	id="org.sonar.ide.eclipse.ui.views.QualityProfilesView"
+    	name="Quality profiles">
+    </view>
+    <view
           category="org.sonar.ide.eclipse"
           class="org.sonar.ide.eclipse.internal.ui.views.WebView"
           icon="icons/sonar.png"
