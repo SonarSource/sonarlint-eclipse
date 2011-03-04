@@ -19,11 +19,17 @@
  */
 package org.sonar.ide.shared.violations;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.sonar.ide.api.SourceCodeDiff;
 import org.sonar.wsclient.services.Violation;
-
-import java.util.*;
 
 /**
  * @author Evgeny Mandrikov
@@ -37,7 +43,7 @@ public final class ViolationUtils {
 
   /**
    * Sorts violations by priority in descending order.
-   *
+   * 
    * @param violations list of violations to sort
    * @return sorted list of violations
    */
@@ -63,7 +69,7 @@ public final class ViolationUtils {
 
   /**
    * Converts priority from string to integer.
-   *
+   * 
    * @param priority priority to convert
    * @return converted priority
    */
@@ -109,8 +115,8 @@ public final class ViolationUtils {
 
   static class PriorityComparator implements Comparator<Violation> {
     public int compare(Violation o1, Violation o2) {
-      int p1 = convertPriority(o1.getPriority());
-      int p2 = convertPriority(o2.getPriority());
+      int p1 = convertPriority(o1.getSeverity());
+      int p2 = convertPriority(o2.getSeverity());
       return p1 - p2;
     }
   }
@@ -131,7 +137,7 @@ public final class ViolationUtils {
 
   /**
    * TODO Godin: can we include this method into sonar-ws-client for debug purposes ?
-   *
+   * 
    * @param violation violation to convert to string
    * @return string representation of violation
    * @see #toString(java.util.Collection)
@@ -139,7 +145,7 @@ public final class ViolationUtils {
   public static String toString(Violation violation) {
     return new ToStringBuilder(violation)
         .append("message", violation.getMessage())
-        .append("priority", violation.getPriority())
+        .append("priority", violation.getSeverity())
         .append("line", violation.getLine())
         .toString();
   }
