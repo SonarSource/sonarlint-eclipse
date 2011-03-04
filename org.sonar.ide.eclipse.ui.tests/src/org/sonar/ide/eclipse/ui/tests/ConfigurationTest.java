@@ -31,6 +31,7 @@ import org.sonar.ide.eclipse.ui.tests.bots.SonarPreferencesBot;
 import org.sonar.ide.eclipse.ui.tests.bots.SonarServerWizardBot;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 
+@SuppressWarnings("restriction")
 public class ConfigurationTest extends UITestCase {
 
   private static SonarPreferencesBot preferencesBot;

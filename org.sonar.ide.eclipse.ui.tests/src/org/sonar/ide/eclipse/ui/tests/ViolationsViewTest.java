@@ -31,6 +31,7 @@ import org.sonar.ide.eclipse.ui.tests.bots.PackageExplorerBot;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
 
+@SuppressWarnings("restriction")
 public class ViolationsViewTest extends UITestCase {
   private static final String PROJECT_NAME = "reference";
 

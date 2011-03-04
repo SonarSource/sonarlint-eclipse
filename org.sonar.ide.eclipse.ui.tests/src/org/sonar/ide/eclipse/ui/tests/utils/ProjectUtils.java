@@ -24,6 +24,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 
+@SuppressWarnings("restriction")
 public class ProjectUtils {
 
   public static void configureProject(String name) throws Exception {

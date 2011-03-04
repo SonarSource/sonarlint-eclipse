@@ -42,6 +42,7 @@ import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
  * 
  * @author Evgeny Mandrikov
  */
+@SuppressWarnings("restriction")
 public abstract class UITestCase extends SonarTestCase {
 
   private static final String SCREENSHOTS_DIR = "target/screenshots";
