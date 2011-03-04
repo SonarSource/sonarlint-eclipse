@@ -39,8 +39,8 @@ public class IgnoreMarkerResolver implements ISonarResolver {
     try {
       if (SonarCorePlugin.MARKER_ID.equals(marker.getType())) {
         final Object ruleName = marker.getAttribute("rulename"); //$NON-NLS-1$
-        label = MessageFormat.format(Messages.getString("resolver.ignoremarker.label"), ruleName); //$NON-NLS-1$
-        description = MessageFormat.format(Messages.getString("resolver.ignoremarker.description"), ruleName); //$NON-NLS-1$
+        label = MessageFormat.format(Messages.IgnoreMarkerResolver_label, ruleName);
+        description = MessageFormat.format(Messages.IgnoreMarkerResolver_description, ruleName);
         return true;
       }
     } catch (final CoreException e) {

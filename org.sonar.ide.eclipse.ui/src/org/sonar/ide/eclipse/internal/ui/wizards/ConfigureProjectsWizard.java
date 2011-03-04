@@ -34,7 +34,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -175,7 +179,7 @@ public class ConfigureProjectsWizard extends Wizard {
       viewer.setCheckedElements(selectedList.toArray(new SonarProject[selectedList.size()]));
 
       Button autoConfigButton = new Button(container, SWT.PUSH);
-      autoConfigButton.setText(Messages.getString("action.autoconfig")); //$NON-NLS-1$
+      autoConfigButton.setText(Messages.ConfigureProjectsWizard_action_autoconfig);
       autoConfigButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
       autoConfigButton.addSelectionListener(new SelectionAdapter() {
         @Override

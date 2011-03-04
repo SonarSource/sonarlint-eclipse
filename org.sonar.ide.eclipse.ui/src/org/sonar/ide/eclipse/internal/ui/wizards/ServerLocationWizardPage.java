@@ -22,7 +22,11 @@ package org.sonar.ide.eclipse.internal.ui.wizards;
 import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -73,7 +77,7 @@ public class ServerLocationWizardPage extends WizardPage {
     layout.numColumns = 2;
     layout.verticalSpacing = 9;
     Label label = new Label(container, SWT.NULL);
-    label.setText(Messages.getString("pref.project.label.host")); //$NON-NLS-1$
+    label.setText(Messages.ServerLocationWizardPage_label_host);
     serverUrlText = new Text(container, SWT.BORDER | SWT.SINGLE);
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     serverUrlText.setLayoutData(gd);
@@ -85,20 +89,20 @@ public class ServerLocationWizardPage extends WizardPage {
 
     // Sonar Server Username
     Label labelUsername = new Label(container, SWT.NULL);
-    labelUsername.setText(Messages.getString("pref.project.label.username")); //$NON-NLS-1$
+    labelUsername.setText(Messages.ServerLocationWizardPage_label_username);
     serverUsernameText = new Text(container, SWT.BORDER | SWT.SINGLE);
     serverUsernameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
     // Sonar Server password
     Label labelPassword = new Label(container, SWT.NULL);
-    labelPassword.setText(Messages.getString("pref.project.label.password")); //$NON-NLS-1$
+    labelPassword.setText(Messages.ServerLocationWizardPage_label_password);
     serverPasswordText = new Text(container, SWT.BORDER | SWT.SINGLE | SWT.PASSWORD);
     serverPasswordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
     // Sonar test connection button
     testConnectionButton = new Button(container, SWT.PUSH);
-    testConnectionButton.setText(Messages.getString("action.testconnection.server")); //$NON-NLS-1$
-    testConnectionButton.setToolTipText(Messages.getString("action.testconnection.server.desc")); //$NON-NLS-1$
+    testConnectionButton.setText(Messages.ServerLocationWizardPage_action_test);
+    testConnectionButton.setToolTipText(Messages.ServerLocationWizardPage_action_test_tooltip);
     testConnectionButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
 
     testConnectionButton.addSelectionListener(new SelectionAdapter() {
@@ -116,9 +120,9 @@ public class ServerLocationWizardPage extends WizardPage {
               monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
               try {
                 if (SonarCorePlugin.getServersManager().testSonar(serverUrl, username, password)) {
-                  status = new Status(Status.OK, ISonarConstants.PLUGIN_ID, Messages.getString("test.server.dialog.msg"));
+                  status = new Status(Status.OK, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);
                 } else {
-                  status = new Status(Status.ERROR, ISonarConstants.PLUGIN_ID, Messages.getString("test.server.dialog.error"));
+                  status = new Status(Status.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
                 }
               } catch (CoreException e) {
                 status = e.getStatus();

@@ -80,7 +80,7 @@ public class SonarProjectPropertyBlock {
     data.horizontalSpan = 2;
     data.grabExcessHorizontalSpace = true;
     group.setLayoutData(data);
-    group.setText(Messages.getString("pref.project.label.host")); //$NON-NLS-1$
+    group.setText(Messages.SonarProjectPropertyBlock_label_host);
     GridLayout gridLayout = new GridLayout(3, false);
     group.setLayout(gridLayout);
 
@@ -104,7 +104,7 @@ public class SonarProjectPropertyBlock {
 
     // Create open preference button.
     serverConfigButton = new Button(group, SWT.PUSH);
-    serverConfigButton.setText(Messages.getString("action.open.sonar.preference")); //$NON-NLS-1$
+    serverConfigButton.setText(Messages.SonarProjectPropertyBlock_action_server);
     serverConfigButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
     serverConfigButton.addSelectionListener(new SelectionAdapter() {
 
@@ -136,21 +136,21 @@ public class SonarProjectPropertyBlock {
   private void addProjectData(Composite container, ProjectProperties projectProperties) {
     // Project groupId
     Label labelGroupId = new Label(container, SWT.NULL);
-    labelGroupId.setText(Messages.getString("pref.project.label.groupid")); //$NON-NLS-1$
+    labelGroupId.setText(Messages.SonarProjectPropertyBlock_label_groupId);
     projectGroupIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
     projectGroupIdText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     projectGroupIdText.setText(projectProperties.getGroupId());
 
     // Project artifactId
     Label labelArtifactId = new Label(container, SWT.NULL);
-    labelArtifactId.setText(Messages.getString("pref.project.label.artifactid")); //$NON-NLS-1$
+    labelArtifactId.setText(Messages.SonarProjectPropertyBlock_label_artifactId);
     projectArtifactIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
     projectArtifactIdText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     projectArtifactIdText.setText(projectProperties.getArtifactId());
 
     // Project branch
     Label labelBranch = new Label(container, SWT.NULL);
-    labelBranch.setText(Messages.getString("pref.project.label.branch")); //$NON-NLS-1$
+    labelBranch.setText(Messages.SonarProjectPropertyBlock_label_branch);
     projectBranchText = new Text(container, SWT.BORDER | SWT.SINGLE);
     projectBranchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     projectBranchText.setText(projectProperties.getBranch());

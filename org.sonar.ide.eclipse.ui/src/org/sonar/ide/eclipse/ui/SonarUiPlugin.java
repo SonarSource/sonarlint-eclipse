@@ -41,7 +41,6 @@ import org.sonar.ide.eclipse.internal.EclipseProxySelector;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
-import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.console.SonarConsole;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshViolationsJob;
@@ -112,7 +111,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     final Display display = PlatformUI.getWorkbench().getDisplay();
     display.syncExec(new Runnable() {
       public void run() {
-        ErrorDialog.openError(display.getActiveShell(), null, Messages.getString("error"), status); //$NON-NLS-1$
+        ErrorDialog.openError(display.getActiveShell(), null, "Error", status);
       }
     });
   }
