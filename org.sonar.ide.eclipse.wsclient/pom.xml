@@ -10,11 +10,8 @@
     <relativePath>../org.sonar.ide.eclipse.parent/pom.xml</relativePath>
   </parent>
 
-  <artifactId>org.sonar.ide.eclipse.sonar_embedder</artifactId>
+  <artifactId>org.sonar.ide.eclipse.wsclient</artifactId>
   <packaging>eclipse-plugin</packaging>
-
-  <name>Sonar Embedder Bundle</name>
-  <description>Provides sonar-ws-client</description>
 
   <dependencies>
     <dependency>
@@ -24,6 +21,10 @@
       <version>2.5</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+  </build>
 
   <profiles>
     <profile>
@@ -65,12 +66,20 @@
             </executions>
             <configuration>
               <packageSources>false</packageSources>
+              <bundleClasspath>
+                <bundleClasspath>.</bundleClasspath>
+              </bundleClasspath>
               <exportPackages>
-                org.sonar.wsclient.*
+                org.sonar.wsclient,
+                org.sonar.wsclient.services,
+                org.sonar.wsclient.connectors,
               </exportPackages>
               <manifestAttributes>
                 <Bundle-RequiredExecutionEnvironment>J2SE-1.5, JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
-                <Require-Bundle>org.slf4j.api;bundle-version="1.6.1",org.slf4j.jcl;bundle-version="1.6.1",org.slf4j.log4j;bundle-version="1.6.1";org.apache.commons.httpclient;bundle-version="3.1.0";resolution:=optional</Require-Bundle>
+                <Require-Bundle>org.eclipse.core.runtime,org.eclipse.core.net,org.slf4j.api;bundle-version="1.6.1",org.slf4j.jcl;bundle-version="1.6.1",org.slf4j.log4j;bundle-version="1.6.1",org.apache.commons.httpclient;bundle-version="3.1.0"</Require-Bundle>
+                <Bundle-Activator>org.sonar.wsclient.internal.WSClientPlugin</Bundle-Activator>
+                <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
+                <Bundle-Name>Sonar Web Service Client</Bundle-Name>
               </manifestAttributes>
             </configuration>
           </plugin>

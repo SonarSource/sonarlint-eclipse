@@ -19,10 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui;
 
-import java.net.Authenticator;
-import java.net.ProxySelector;
-
-import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -32,12 +28,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.EclipseProxyAuthenticator;
-import org.sonar.ide.eclipse.internal.EclipseProxySelector;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
@@ -75,7 +68,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   public void start(final BundleContext context) throws Exception {
     super.start(context);
 
-    setupProxy(context);
     RefreshViolationsJob.setupViolationsUpdater();
 
     getFavouriteMetricsManager().set(SonarUiPreferenceInitializer.getFavouriteMetrics());
@@ -95,15 +87,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
    */
   public static SonarUiPlugin getDefault() {
     return plugin;
-  }
-
-  private void setupProxy(final BundleContext context) {
-    ServiceReference proxyServiceReference = context.getServiceReference(IProxyService.class.getName());
-    if (proxyServiceReference != null) {
-      IProxyService proxyService = (IProxyService) context.getService(proxyServiceReference);
-      ProxySelector.setDefault(new EclipseProxySelector(proxyService));
-      Authenticator.setDefault(new EclipseProxyAuthenticator(proxyService));
-    }
   }
 
   public void displayError(final int severity, final String msg, final Throwable t, final boolean shouldLog) {

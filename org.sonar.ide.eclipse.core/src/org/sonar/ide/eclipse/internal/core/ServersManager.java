@@ -24,8 +24,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.sonar.ide.wsclient.SonarClient;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -38,6 +36,10 @@ import org.sonar.ide.eclipse.core.ISonarServersManager;
 import org.sonar.ide.eclipse.core.SonarServer;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.WSClientFactory;
+import org.sonar.wsclient.connectors.ConnectionException;
+import org.sonar.wsclient.services.Server;
+import org.sonar.wsclient.services.ServerQuery;
 
 public class ServersManager implements ISonarServersManager {
 
@@ -134,11 +136,18 @@ public class ServersManager implements ISonarServersManager {
 
   public Sonar getSonar(String url) {
     final Host server = findServer(url);
-    return new SonarClient(server.getHost(), server.getUsername(), server.getPassword());
+    return WSClientFactory.create(server);
   }
 
   public boolean testSonar(String url, String user, String password) throws Exception {
-    SonarClient sonar = new SonarClient(url, user, password);
-    return sonar.isAvailable();
+    try {
+      Sonar sonar = WSClientFactory.create(new Host(url, user, password));
+      Server server = sonar.find(new ServerQuery());
+      LoggerFactory.getLogger(getClass()).info("Connected to Sonar " + server.getVersion());
+      return true;
+    } catch (ConnectionException e) {
+      LoggerFactory.getLogger(getClass()).error("Unable to connect", e);
+      return false;
+    }
   }
 }

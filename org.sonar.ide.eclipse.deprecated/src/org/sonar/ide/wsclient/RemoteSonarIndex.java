@@ -32,6 +32,7 @@ import org.sonar.ide.api.SourceCodeDiffEngine;
 import org.sonar.ide.api.SourceCodeSearchEngine;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.WSClientFactory;
 import org.sonar.wsclient.services.Metric;
 import org.sonar.wsclient.services.MetricQuery;
 import org.sonar.wsclient.services.Resource;
@@ -59,7 +60,7 @@ class RemoteSonarIndex implements SourceCodeSearchEngine {
   }
 
   public RemoteSonarIndex(Host host, SourceCodeDiffEngine diffEngine) {
-    this(host, new Sonar(new ExtendedHttpClient3Connector(host)), diffEngine);
+    this(host, WSClientFactory.create(host), diffEngine);
   }
 
   private RemoteSonarIndex(Host host, Sonar sonar, SourceCodeDiffEngine diffEngine) {

@@ -9,8 +9,7 @@ Export-Package: org.sonar.ide.api,
  org.sonar.ide.shared.measures,
  org.sonar.ide.shared.violations,
  org.sonar.ide.wsclient
-Require-Bundle: org.sonar.ide.eclipse.sonar_embedder,
- org.apache.commons.httpclient;bundle-version="3.1.0",
+Require-Bundle: org.sonar.ide.eclipse.wsclient,
  org.apache.commons.lang;bundle-version="2.4.0",
  com.google.collect;bundle-version="1.0.0",
  org.slf4j.api;bundle-version="1.6.1"
