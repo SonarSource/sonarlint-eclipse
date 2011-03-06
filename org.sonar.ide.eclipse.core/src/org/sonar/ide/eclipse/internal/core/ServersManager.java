@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.core;
 
 import java.util.Arrays;
@@ -25,19 +24,20 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.sonar.ide.wsclient.SonarClient;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
-import org.sonar.ide.client.SonarClient;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarServersManager;
 import org.sonar.ide.eclipse.core.SonarServer;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class ServersManager implements ISonarServersManager {
 
@@ -74,7 +74,7 @@ public class ServersManager implements ISonarServersManager {
         return Arrays.asList(new SonarServer("http://localhost:9000"), new SonarServer("http://nemo.sonarsource.org"));
       }
     } catch (BackingStoreException e) {
-      // TODO handle
+      LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
     }
     return servers;
   }
@@ -89,7 +89,7 @@ public class ServersManager implements ISonarServersManager {
       }
       serversNode.flush();
     } catch (BackingStoreException e) {
-      // TODO handle
+      LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
     }
   }
 

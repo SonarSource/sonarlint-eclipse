@@ -27,6 +27,12 @@
 
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
 <unit id="org.slf4j.api" version="1.6.1.v20100831-0715"/>
+<unit id="org.slf4j.jcl" version="1.6.1.v20100831-0715"/>
+<unit id="org.slf4j.log4j" version="1.6.1.v20100831-0715"/>
+<unit id="com.google.collect" version="1.0.0.v201003051000"/>
+<unit id="org.apache.commons.httpclient" version="3.1.0.v20080605-1935"/>
+<unit id="org.apache.commons.io" version="1.4.0.v20081110-1000"/>
+<unit id="org.apache.commons.lang" version="2.4.0.v201005080502"/>
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/S20101014084557/repository"/>
 </location>
 

@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.ui.markers;
 
 import java.text.MessageFormat;
@@ -40,8 +39,8 @@ public class IgnoreMarkerResolver implements ISonarResolver {
     try {
       if (SonarCorePlugin.MARKER_ID.equals(marker.getType())) {
         final Object ruleName = marker.getAttribute("rulename"); //$NON-NLS-1$
-        label = MessageFormat.format(Messages.getString("resolver.ignoremarker.label"), ruleName); //$NON-NLS-1$
-        description = MessageFormat.format(Messages.getString("resolver.ignoremarker.description"), ruleName); //$NON-NLS-1$
+        label = MessageFormat.format(Messages.IgnoreMarkerResolver_label, ruleName);
+        description = MessageFormat.format(Messages.IgnoreMarkerResolver_description, ruleName);
         return true;
       }
     } catch (final CoreException e) {

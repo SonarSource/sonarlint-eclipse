@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
@@ -51,6 +52,7 @@ import org.eclipse.ui.preferences.IWorkingCopyManager;
 import org.eclipse.ui.preferences.WorkingCopyManager;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonar.ide.eclipse.internal.jdt.SonarJdtPlugin;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 /**
  * @author Jérémie Lagarde
@@ -103,14 +105,14 @@ public class ProfileConfiguration {
     try {
       profiles = formatterProfileStore.readProfiles(instanceScope);
     } catch(CoreException e) {
-      SonarJdtPlugin.log(e);
+      SonarUiPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
     }
     if(profiles == null) {
       try {
         // bug 129427
         profiles = formatterProfileStore.readProfiles(new DefaultScope());
       } catch(CoreException e) {
-        JavaPlugin.log(e);
+        SonarUiPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
       }
     }
 
@@ -155,7 +157,7 @@ public class ProfileConfiguration {
         cleanUpProfileManager.commitChanges(projectScope);
         saveOptions();
       } catch(Exception e) {
-        SonarJdtPlugin.log(e);
+        SonarUiPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
       }
     }
   }

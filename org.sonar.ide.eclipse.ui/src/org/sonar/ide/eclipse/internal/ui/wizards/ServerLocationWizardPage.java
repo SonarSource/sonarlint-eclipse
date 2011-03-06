@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
 import java.lang.reflect.InvocationTargetException;
@@ -43,9 +42,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
-import org.sonar.ide.eclipse.internal.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.wsclient.Host;
@@ -78,7 +77,7 @@ public class ServerLocationWizardPage extends WizardPage {
     layout.numColumns = 2;
     layout.verticalSpacing = 9;
     Label label = new Label(container, SWT.NULL);
-    label.setText(Messages.getString("pref.project.label.host")); //$NON-NLS-1$
+    label.setText(Messages.ServerLocationWizardPage_label_host);
     serverUrlText = new Text(container, SWT.BORDER | SWT.SINGLE);
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     serverUrlText.setLayoutData(gd);
@@ -90,20 +89,20 @@ public class ServerLocationWizardPage extends WizardPage {
 
     // Sonar Server Username
     Label labelUsername = new Label(container, SWT.NULL);
-    labelUsername.setText(Messages.getString("pref.project.label.username")); //$NON-NLS-1$
+    labelUsername.setText(Messages.ServerLocationWizardPage_label_username);
     serverUsernameText = new Text(container, SWT.BORDER | SWT.SINGLE);
     serverUsernameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
     // Sonar Server password
     Label labelPassword = new Label(container, SWT.NULL);
-    labelPassword.setText(Messages.getString("pref.project.label.password")); //$NON-NLS-1$
+    labelPassword.setText(Messages.ServerLocationWizardPage_label_password);
     serverPasswordText = new Text(container, SWT.BORDER | SWT.SINGLE | SWT.PASSWORD);
     serverPasswordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
     // Sonar test connection button
     testConnectionButton = new Button(container, SWT.PUSH);
-    testConnectionButton.setText(Messages.getString("action.testconnection.server")); //$NON-NLS-1$
-    testConnectionButton.setToolTipText(Messages.getString("action.testconnection.server.desc")); //$NON-NLS-1$
+    testConnectionButton.setText(Messages.ServerLocationWizardPage_action_test);
+    testConnectionButton.setToolTipText(Messages.ServerLocationWizardPage_action_test_tooltip);
     testConnectionButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
 
     testConnectionButton.addSelectionListener(new SelectionAdapter() {
@@ -121,9 +120,9 @@ public class ServerLocationWizardPage extends WizardPage {
               monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
               try {
                 if (SonarCorePlugin.getServersManager().testSonar(serverUrl, username, password)) {
-                  status = new Status(Status.OK, ISonarConstants.PLUGIN_ID, Messages.getString("test.server.dialog.msg"));
+                  status = new Status(Status.OK, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);
                 } else {
-                  status = new Status(Status.ERROR, ISonarConstants.PLUGIN_ID, Messages.getString("test.server.dialog.error"));
+                  status = new Status(Status.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
                 }
               } catch (CoreException e) {
                 status = e.getStatus();
@@ -138,9 +137,9 @@ public class ServerLocationWizardPage extends WizardPage {
             }
           });
         } catch (InvocationTargetException e1) {
-          SonarLogger.log(e1);
+          LoggerFactory.getLogger(getClass()).error(e1.getMessage(), e1);
         } catch (InterruptedException e1) {
-          // canceled
+          // NOSONAR - canceled
         }
         getWizard().getContainer().updateButtons();
 

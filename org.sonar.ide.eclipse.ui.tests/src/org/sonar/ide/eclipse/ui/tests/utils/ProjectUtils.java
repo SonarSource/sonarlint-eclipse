@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.ui.tests.utils;
 
 import org.eclipse.core.resources.IProject;
@@ -25,6 +24,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 
+@SuppressWarnings("restriction")
 public class ProjectUtils {
 
   public static void configureProject(String name) throws Exception {

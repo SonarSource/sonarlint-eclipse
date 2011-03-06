@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.ui.tests;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,6 +31,7 @@ import org.sonar.ide.eclipse.ui.tests.bots.PackageExplorerBot;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
 
+@SuppressWarnings("restriction")
 public class ViolationsViewTest extends UITestCase {
   private static final String PROJECT_NAME = "reference";
 

@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.ui.util;
 
 import java.io.IOException;
@@ -31,7 +30,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.XMLMemento;
 import org.eclipse.ui.ide.IDE;
-import org.sonar.ide.eclipse.internal.core.SonarLogger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unchecked")
 public final class PlatformUtils {
@@ -67,7 +66,7 @@ public final class PlatformUtils {
     try {
       IDE.openEditor(page, file);
     } catch (PartInitException e) {
-      SonarLogger.log(e);
+      LoggerFactory.getLogger(PlatformUtils.class).error(e.getMessage(), e);
     }
   }
 
@@ -78,7 +77,7 @@ public final class PlatformUtils {
       memento.save(writer);
       result = writer.getBuffer().toString();
     } catch (IOException e) {
-      // TODO handle
+      LoggerFactory.getLogger(PlatformUtils.class).error(e.getMessage(), e);
     }
     return result;
   }

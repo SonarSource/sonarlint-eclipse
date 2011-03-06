@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.core;
 
 import java.util.Collection;
@@ -36,7 +35,7 @@ public interface ISonarServersManager {
 
   // TODO From old implementation, so should be reviewed :
 
-  public List<Host> getHosts();
+  List<Host> getHosts();
 
   void removeServer(String host);
 

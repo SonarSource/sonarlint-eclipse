@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,14 +17,13 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.ui;
+
+import java.lang.reflect.Field;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
-
-import java.lang.reflect.Field;
 
 /**
  * A {@link FilteredTree} that uses the new look on Eclipse 3.5 and later.
@@ -59,7 +58,7 @@ public class EnhancedFilteredTree extends FilteredTree {
       newStyleField.setBoolean(tree, true);
       return newStyleField.getBoolean(tree);
     } catch (Exception e) {
-      // ignore
+      // NOSONAR ignore
     }
     return false;
   }

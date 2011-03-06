@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,11 +17,11 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.ui.views;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -29,15 +29,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.BaseLabelProvider;
-import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -49,11 +41,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
-import org.sonar.ide.api.SonarIdeException;
-import org.sonar.ide.eclipse.core.ISonarMeasure;
-import org.sonar.ide.eclipse.core.ISonarMetric;
-import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.*;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.AbstractTableLabelProvider;
@@ -65,8 +53,6 @@ import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
-
-import com.google.common.collect.Lists;
 
 public class HotspotsView extends AbstractSonarInfoView {
 
@@ -178,7 +164,7 @@ public class HotspotsView extends AbstractSonarInfoView {
         case 1:
           return measure.getValue();
         default:
-          throw new SonarIdeException("Should never happen");
+          throw new SonarEclipseException("Should never happen");
       }
     }
   }
@@ -219,7 +205,7 @@ public class HotspotsView extends AbstractSonarInfoView {
     if (sonarResource == null) {
       return null;
     }
-    if ( !(sonarResource.getResource() instanceof IProject)) {
+    if (!(sonarResource.getResource() instanceof IProject)) {
       sonarResource = super.findSonarResource(sonarResource.getProject());
     }
     return sonarResource;

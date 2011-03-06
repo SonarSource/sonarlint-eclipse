@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,22 +17,16 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.SocketAddress;
-import java.net.URI;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link ProxySelector}, which selects the proxy server to use via {@link IProxyService}.
@@ -63,6 +57,7 @@ public class EclipseProxySelector extends ProxySelector {
     }
 
     // TODO Godin: by some reasons service.select(uri) doesn't work here
+    @SuppressWarnings("deprecation")
     final IProxyData data = service.getProxyDataForHost(host, type);
     if (data != null) {
       if (IProxyData.HTTP_PROXY_TYPE.equals(data.getType())) {
@@ -85,6 +80,7 @@ public class EclipseProxySelector extends ProxySelector {
       list.add(new Proxy(type, new InetSocketAddress(InetAddress.getByName(d.getHost()), d.getPort())));
     } catch (UnknownHostException uhe) {
       // Oh well.
+      LoggerFactory.getLogger(getClass()).error(uhe.getMessage(), uhe);
     }
   }
 

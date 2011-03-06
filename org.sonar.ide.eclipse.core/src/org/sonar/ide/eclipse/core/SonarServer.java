@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.core;
 
 import org.apache.commons.lang.StringUtils;
@@ -26,6 +25,7 @@ import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.internal.core.ServersManager;
 import org.sonar.wsclient.Host;
 
@@ -82,7 +82,7 @@ public final class SonarServer {
           .node(EncodingUtils.encodeSlashes(getUrl()));
       serverNode.put(key, value, encrypt);
     } catch (StorageException e) {
-      // TODO handle
+      LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
     }
   }
 

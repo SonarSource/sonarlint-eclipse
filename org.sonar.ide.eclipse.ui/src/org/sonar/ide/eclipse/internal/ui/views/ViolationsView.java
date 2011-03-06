@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.ui.views;
 
 import org.eclipse.jface.action.Action;
@@ -65,8 +64,8 @@ public class ViolationsView extends MarkerSupportView {
           RefreshAllViolationsJob.createAndSchedule();
         }
       };
-      refreshAction.setText(Messages.getString("action.refresh.violations")); //$NON-NLS-1$
-      refreshAction.setToolTipText(Messages.getString("action.refresh.violations.desc")); //$NON-NLS-1$
+      refreshAction.setText(Messages.ViolationsView_action_refresh);
+      refreshAction.setToolTipText(Messages.ViolationsView_action_refresh_tooltip);
       refreshAction.setImageDescriptor(SonarImages.SONARREFRESH_IMG);
     }
     return refreshAction;

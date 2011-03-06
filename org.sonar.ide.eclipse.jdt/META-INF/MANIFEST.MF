@@ -15,8 +15,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.core,
  org.eclipse.jdt.ui,
  org.sonar.ide.eclipse.ui,
- org.sonar.ide.eclipse.core,
- org.sonar.ide.eclipse.sonar_embedder
+ org.sonar.ide.eclipse.core
 Export-Package: org.sonar.ide.eclipse.internal.jdt;x-internal:=true
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6

@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,8 +17,10 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.ui.tests;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 import org.eclipse.jdt.ui.JavaUI;
 import org.junit.Test;
@@ -29,9 +31,7 @@ import org.sonar.ide.eclipse.internal.ui.views.ViolationsView;
 import org.sonar.ide.eclipse.internal.ui.views.WebView;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
+@SuppressWarnings("restriction")
 public class PerspectiveTest extends UITestCase {
 
   @Test

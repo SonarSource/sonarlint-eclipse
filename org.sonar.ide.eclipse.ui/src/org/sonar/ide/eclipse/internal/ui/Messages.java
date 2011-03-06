@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,11 +17,7 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.ui;
-
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 import org.eclipse.osgi.util.NLS;
 
@@ -33,18 +29,42 @@ public class Messages extends NLS {
     NLS.initializeMessages(BUNDLE_NAME, Messages.class);
   }
 
-  private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
-
   private Messages() {
   }
 
-  public static String getString(String key) {
-    try {
-      return RESOURCE_BUNDLE.getString(key);
-    } catch (MissingResourceException e) {
-      return '!' + key + '!';
-    }
-  }
+  public static String SonarConsole_title;
 
   public static String SonarProjectPropertyPage_title;
+
+  public static String ViolationsView_action_refresh;
+  public static String ViolationsView_action_refresh_tooltip;
+
+  public static String ConfigureProjectsWizard_action_autoconfig;
+
+  public static String ServerLocationWizardPage_label_host;
+  public static String ServerLocationWizardPage_label_username;
+  public static String ServerLocationWizardPage_label_password;
+  public static String ServerLocationWizardPage_action_test;
+  public static String ServerLocationWizardPage_action_test_tooltip;
+  public static String ServerLocationWizardPage_msg_connected;
+  public static String ServerLocationWizardPage_msg_error;
+
+  public static String SonarProjectPropertyBlock_label_host;
+  public static String SonarProjectPropertyBlock_label_groupId;
+  public static String SonarProjectPropertyBlock_label_artifactId;
+  public static String SonarProjectPropertyBlock_label_branch;
+  public static String SonarProjectPropertyBlock_action_server;
+
+  public static String SonarPreferencePage_title;
+  public static String SonarPreferencePage_description;
+  public static String SonarPreferencePage_action_add;
+  public static String SonarPreferencePage_action_add_tooltip;
+  public static String SonarPreferencePage_action_edit;
+  public static String SonarPreferencePage_action_edit_tooltip;
+  public static String SonarPreferencePage_action_delete;
+  public static String SonarPreferencePage_action_delete_tooltip;
+
+  public static String IgnoreMarkerResolver_label;
+  public static String IgnoreMarkerResolver_description;
+
 }

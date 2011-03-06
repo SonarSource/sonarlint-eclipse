@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.ui.properties;
 
 import org.eclipse.core.resources.IProject;
@@ -25,8 +24,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.sonar.ide.api.SonarIdeException;
-import org.sonar.ide.eclipse.internal.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 
 /**
@@ -74,11 +71,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
     projectProperties.setGroupId(block.getGroupId());
     projectProperties.setArtifactId(block.getArtifactId());
     projectProperties.setBranch(block.getBranch());
-    try {
-      projectProperties.save();
-    } catch (SonarIdeException e) {
-      SonarLogger.log(e);
-    }
+    projectProperties.save();
   }
 
   private IProject getProject() {

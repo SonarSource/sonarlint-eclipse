@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.ui.tests;
 
 import java.io.File;
@@ -32,18 +31,19 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.core.ServersManager;
+import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 import org.sonar.ide.eclipse.tests.common.VersionHelpers;
 import org.sonar.ide.eclipse.tests.common.WorkspaceHelpers;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
-import org.sonar.ide.test.SonarIdeTestCase;
 
 /**
  * TODO use Xvfb ("fake" X-server)
  * 
  * @author Evgeny Mandrikov
  */
-public abstract class UITestCase extends SonarIdeTestCase {
+@SuppressWarnings("restriction")
+public abstract class UITestCase extends SonarTestCase {
 
   private static final String SCREENSHOTS_DIR = "target/screenshots";
 
@@ -51,6 +51,8 @@ public abstract class UITestCase extends SonarIdeTestCase {
 
   @BeforeClass
   public final static void beforeClass() throws Exception {
+    projectsSource = new File("projects");
+
     // Remove all configured servers and set default
     ServersManager serversManager = ((ServersManager) SonarCorePlugin.getServersManager());
     serversManager.clean();

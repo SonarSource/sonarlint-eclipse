@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,13 +17,11 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.jdt;
 
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
@@ -50,7 +48,7 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
   public Object getAdapter(Object adaptableObject, Class adapterType) {
     if (adaptableObject instanceof IClassFile) {
       return new SonarClass((IClassFile) adaptableObject);
-    } else if(adaptableObject instanceof IPackageFragmentRoot){
+    } else if (adaptableObject instanceof IPackageFragmentRoot) {
       return new SonarJar((IPackageFragmentRoot) adaptableObject);
     }
     return null;
@@ -61,17 +59,17 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
     return ADAPTER_LIST;
   }
 
-  private static class SonarJar  extends AbstractSonarJarElement implements ISonarProject {
+  private static class SonarJar extends AbstractSonarJarElement implements ISonarProject {
 
     private final IPackageFragmentRoot file;
     private String key;
-    
+
     public SonarJar(IPackageFragmentRoot fragmentRoot) {
       file = fragmentRoot;
     }
-    
+
     public String getKey() {
-      if(key ==null) {
+      if (key == null) {
         key = getProjectKey(file);
       }
       return key;
@@ -101,7 +99,7 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
       // TODO Auto-generated method stub
       return null;
     }
-    
+
     @Override
     public int hashCode() {
       return file.getElementName().hashCode();
@@ -112,7 +110,7 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
       return ((obj instanceof SonarJar) && obj != null && (file.getElementName().equals(((SonarJar) obj).file.getElementName())));
     }
   }
-  
+
   private static class SonarClass extends AbstractSonarJarElement implements ISonarFile {
 
     private final IClassFile file;
@@ -177,7 +175,8 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
       } else if (javaElement instanceof IPackageFragment) {
         IPackageFragment packageFragment = (IPackageFragment) javaElement;
         packageName = packageFragment.getElementName();
-      } if (javaElement instanceof IClassFile) {
+      }
+      if (javaElement instanceof IClassFile) {
         packageName = getPackageName(javaElement.getParent());
       }
       return packageName;
@@ -191,7 +190,7 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
     private static List<Resource> cachedResources = null;
 
     protected String getProjectKey(IJavaElement javaElement) {
-      if ( !(javaElement instanceof IPackageFragmentRoot))
+      if (!(javaElement instanceof IPackageFragmentRoot))
         return getProjectKey(javaElement.getParent());
       IPackageFragmentRoot jarElement = (IPackageFragmentRoot) javaElement;
       IProject project = jarElement.getJavaProject().getProject();
@@ -210,6 +209,6 @@ public class JarElementsAdapterFactory implements IAdapterFactory {
       }
       return null;
     }
-    
+
   }
 }

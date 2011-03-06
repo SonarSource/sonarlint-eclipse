@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,30 +17,14 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.jdt;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
-import org.sonar.ide.eclipse.core.ISonarFile;
-import org.sonar.ide.eclipse.core.ISonarProject;
-import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.core.SonarKeyUtils;
+import org.eclipse.jdt.core.*;
+import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.*;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.services.Resource;
 
@@ -87,7 +71,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
                 IResource result = type.getCompilationUnit().getResource();
                 return result instanceof IFile ? result : null;
               } catch (JavaModelException e) {
-                SonarJdtPlugin.log(e);
+                LoggerFactory.getLogger(getClass()).warn(e.getMessage(), e);
               }
             }
           }
@@ -104,14 +88,14 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
       return (ISonarResource) getAdapter(javaElement.getResource(), ISonarResource.class);
     } else if (adaptableObject instanceof IProject) {
       IProject project = (IProject) adaptableObject;
-      if ( !isConfigured(project)) {
+      if (!isConfigured(project)) {
         return null;
       }
       return SonarUiPlugin.getSonarProject(project);
     } else if (adaptableObject instanceof IFolder) {
       IFolder folder = (IFolder) adaptableObject;
       IProject project = folder.getProject();
-      if ( !isConfigured(project)) {
+      if (!isConfigured(project)) {
         return null;
       }
       String projectKey = getProjectKey(folder.getProject());
@@ -122,7 +106,7 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
     } else if (adaptableObject instanceof IFile) {
       IFile file = (IFile) adaptableObject;
       IProject project = file.getProject();
-      if ( !isConfigured(project)) {
+      if (!isConfigured(project)) {
         return null;
       }
       String projectKey = getProjectKey(file.getProject());

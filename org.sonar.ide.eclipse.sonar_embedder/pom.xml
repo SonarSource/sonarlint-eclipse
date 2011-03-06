@@ -14,22 +14,14 @@
   <packaging>eclipse-plugin</packaging>
 
   <name>Sonar Embedder Bundle</name>
+  <description>Provides sonar-ws-client</description>
 
   <dependencies>
     <dependency>
-      <groupId>org.codehaus.sonar-ide</groupId>
-      <artifactId>sonar-ide-commons</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <!-- TODO Godin: remove version from here -->
-      <version>0.9.18</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>1.4</version>
+      <!-- Note that sonar-ws-client supports both of httpclient 3.x and 4.x -->
+      <groupId>org.codehaus.sonar</groupId>
+      <artifactId>sonar-ws-client</artifactId>
+      <version>2.5</version>
     </dependency>
   </dependencies>
 
@@ -73,26 +65,12 @@
             </executions>
             <configuration>
               <packageSources>false</packageSources>
-              <!-- TODO don't export org.sonar.wsclient -->
               <exportPackages>
-                org.sonar.ide.*,
-                org.sonar.wsclient,
-                org.sonar.wsclient.services,
-                org.slf4j,
-                org.slf4j.impl,
-                com.google.*,
-                org.apache.commons.lang,
-                org.apache.commons.io,
-                ch.qos.logback.classic,
-                ch.qos.logback.classic.joran,
-                ch.qos.logback.core,
-                ch.qos.logback.core.spi,
-                ch.qos.logback.core.util,
-                ch.qos.logback.core.joran,
-                ch.qos.logback.core.joran.spi,
+                org.sonar.wsclient.*
               </exportPackages>
               <manifestAttributes>
                 <Bundle-RequiredExecutionEnvironment>J2SE-1.5, JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
+                <Require-Bundle>org.slf4j.api;bundle-version="1.6.1",org.slf4j.jcl;bundle-version="1.6.1",org.slf4j.log4j;bundle-version="1.6.1";org.apache.commons.httpclient;bundle-version="3.1.0";resolution:=optional</Require-Bundle>
               </manifestAttributes>
             </configuration>
           </plugin>

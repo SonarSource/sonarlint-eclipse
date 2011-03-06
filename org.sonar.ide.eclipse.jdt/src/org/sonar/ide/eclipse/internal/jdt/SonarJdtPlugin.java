@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,15 +17,13 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.jdt;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.internal.jdt.profiles.RetrieveSonarProfileJob;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
+import org.slf4j.LoggerFactory;
 
 public class SonarJdtPlugin extends Plugin {
 
@@ -36,15 +34,14 @@ public class SonarJdtPlugin extends Plugin {
   private static SonarJdtPlugin plugin;
 
   public SonarJdtPlugin() {
-    plugin = this;
+    plugin = this; // NOSONAR
   }
 
-  public static void log(Throwable e) {
-    plugin.getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, e.getMessage(), e));
-  }
-
-  public static void log(String message) {
-    plugin.getLog().log(new Status(IStatus.INFO, PLUGIN_ID, message));
+  /**
+   * @return the shared instance
+   */
+  public static SonarJdtPlugin getDefault() {
+    return plugin;
   }
 
   @Override
@@ -53,13 +50,13 @@ public class SonarJdtPlugin extends Plugin {
     if(SonarUiPlugin.getDefault().getPreferenceStore().getBoolean(PREF_SYNCHRONISE_PROFILE)) {
         new RetrieveSonarProfileJob().schedule();
     }
-    log("SonarJdtPlugin started");
+    LoggerFactory.getLogger(getClass()).debug("SonarJdtPlugin started");
   }
 
   @Override
   public void stop(BundleContext context) throws Exception {
     super.stop(context);
-    log("SonarJdtPlugin stopped");
+    LoggerFactory.getLogger(getClass()).debug("SonarJdtPlugin stopped");
   }
 
 }

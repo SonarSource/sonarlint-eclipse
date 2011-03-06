@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.ui.views;
 
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -26,7 +25,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-import org.sonar.ide.shared.violations.ViolationUtils;
 
 /**
  * Each rule in Sonar has severity, so it seems logical to combine rule name and severity in one field.
@@ -46,7 +44,22 @@ public class ViolationSeverityAndRuleNameField extends MarkerField {
   }
 
   private int getSeverity(MarkerItem item) {
-    return ViolationUtils.convertPriority(item.getMarker().getAttribute("rulepriority", ""));
+    return convertPriority(item.getMarker().getAttribute("rulepriority", ""));
+  }
+
+  public static int convertPriority(String priority) {
+    if ("blocker".equalsIgnoreCase(priority))
+      return 0;
+    if ("critical".equalsIgnoreCase(priority))
+      return 1;
+    if ("major".equalsIgnoreCase(priority))
+      return 2;
+    if ("minor".equalsIgnoreCase(priority))
+      return 3;
+    if ("info".equalsIgnoreCase(priority)) {
+      return 4;
+    }
+    return 4;
   }
 
   @Override

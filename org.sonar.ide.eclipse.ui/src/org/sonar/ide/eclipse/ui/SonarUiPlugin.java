@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,12 +17,10 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.ui;
 
 import java.net.Authenticator;
 import java.net.ProxySelector;
-import java.net.URL;
 
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
@@ -41,19 +39,13 @@ import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseProxyAuthenticator;
 import org.sonar.ide.eclipse.internal.EclipseProxySelector;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
-import org.sonar.ide.eclipse.internal.core.SonarLogger;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
-import org.sonar.ide.eclipse.internal.ui.Messages;
+import org.sonar.ide.eclipse.internal.ui.SonarImages;
+import org.sonar.ide.eclipse.internal.ui.console.SonarConsole;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshViolationsJob;
 import org.sonar.ide.eclipse.internal.ui.preferences.SonarUiPreferenceInitializer;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
-
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.JoranConfiguratorBase;
-import ch.qos.logback.core.joran.spi.JoranException;
-import ch.qos.logback.core.util.StatusPrinter;
 
 public class SonarUiPlugin extends AbstractUIPlugin {
 
@@ -65,7 +57,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   private FavouriteMetricsManager favouriteMetricsManager = new FavouriteMetricsManager();
 
   public SonarUiPlugin() {
-    plugin = this;
+    plugin = this; // NOSONAR
   }
 
   public SonarProjectManager getProjectManager() {
@@ -83,9 +75,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   public void start(final BundleContext context) throws Exception {
     super.start(context);
 
-    SonarLogger.setLog(getLog());
-
-    setupLogging();
     setupProxy(context);
     RefreshViolationsJob.setupViolationsUpdater();
 
@@ -108,27 +97,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     return plugin;
   }
 
-  /**
-   * Godin: I'm not sure is it correct way or not, but it works.
-   */
-  private void setupLogging() {
-    final URL url = getBundle().getEntry("/conf/logback.xml");
-    if (url != null) {
-      final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-      try {
-        final JoranConfiguratorBase configurator = new JoranConfigurator();
-        configurator.setContext(lc);
-        lc.reset();
-        configurator.doConfigure(url);
-      } catch (final JoranException e) {
-        e.printStackTrace();
-      }
-      StatusPrinter.printIfErrorsOccured(lc);
-    } else {
-      SonarLogger.log("logback.xml not found");
-    }
-  }
-
   private void setupProxy(final BundleContext context) {
     ServiceReference proxyServiceReference = context.getServiceReference(IProxyService.class.getName());
     if (proxyServiceReference != null) {
@@ -140,13 +108,10 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
   public void displayError(final int severity, final String msg, final Throwable t, final boolean shouldLog) {
     final IStatus status = new Status(severity, ISonarConstants.PLUGIN_ID, msg, t);
-    if (shouldLog) {
-      SonarLogger.log(status);
-    }
     final Display display = PlatformUI.getWorkbench().getDisplay();
     display.syncExec(new Runnable() {
       public void run() {
-        ErrorDialog.openError(display.getActiveShell(), null, Messages.getString("error"), status); //$NON-NLS-1$
+        ErrorDialog.openError(display.getActiveShell(), null, "Error", status);
       }
     });
   }
@@ -155,7 +120,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     try {
       return project.hasNature(SonarCorePlugin.NATURE_ID);
     } catch (CoreException e) {
-      SonarLogger.log(e);
+      LoggerFactory.getLogger(SonarUiPlugin.class).error(e.getMessage(), e);
       return false;
     }
   }
@@ -164,13 +129,22 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     try {
       return project.hasNature("org.eclipse.jdt.core.javanature");
     } catch (CoreException e) {
-      SonarLogger.log(e);
+      LoggerFactory.getLogger(SonarUiPlugin.class).error(e.getMessage(), e);
       return false;
     }
   }
 
   public static ISonarProject getSonarProject(IProject project) {
     return ProjectProperties.getInstance(project);
+  }
+
+  private SonarConsole console;
+
+  public synchronized ISonarConsole getSonarConsole() {
+    if (console == null) {
+      console = new SonarConsole(SonarImages.SONAR16_IMG);
+    }
+    return console;
   }
 
 }

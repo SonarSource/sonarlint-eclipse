@@ -20,13 +20,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface.text,
  org.eclipse.compare,
  org.sonar.ide.eclipse.core,
- org.sonar.ide.eclipse.sonar_embedder,
  org.eclipse.core.resources
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
-Import-Package: org.apache.commons.io,
- org.apache.commons.lang,
- org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonar.ide.eclipse.internal;x-internal:=true,
  org.sonar.ide.eclipse.internal.core;x-internal:=true,
@@ -34,6 +30,7 @@ Export-Package: org.sonar.ide.eclipse.internal;x-internal:=true,
  org.sonar.ide.eclipse.internal.ui;x-internal:=true,
  org.sonar.ide.eclipse.internal.ui.actions;x-internal:=true,
  org.sonar.ide.eclipse.internal.ui.compare;x-internal:=true,
+ org.sonar.ide.eclipse.internal.ui.console;x-internal:=true,
  org.sonar.ide.eclipse.internal.ui.jobs;x-internal:=true,
  org.sonar.ide.eclipse.internal.ui.markers;x-internal:=true,
  org.sonar.ide.eclipse.internal.ui.preferences;x-internal:=true,

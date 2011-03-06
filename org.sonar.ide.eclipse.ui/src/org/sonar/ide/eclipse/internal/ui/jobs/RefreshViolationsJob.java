@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,34 +17,22 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.ui.jobs;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.*;
 import org.eclipse.ui.progress.UIJob;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
-import org.sonar.ide.shared.violations.ViolationUtils;
 import org.sonar.wsclient.services.Violation;
 
 /**
@@ -72,26 +60,33 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
 
   @Override
   protected String getMessage(final Violation violation) {
-    return ViolationUtils.getDescription(violation);
+    return violation.getRuleName() + " : " + violation.getMessage();
   }
 
   @Override
   protected Integer getPriority(final Violation violation) {
-    if (ViolationUtils.PRIORITY_BLOCKER.equalsIgnoreCase(violation.getPriority())) {
-      return new Integer(IMarker.PRIORITY_HIGH);
+    if ("blocker".equalsIgnoreCase(violation.getSeverity())) {
+      return Integer.valueOf(IMarker.PRIORITY_HIGH);
     }
-    if (ViolationUtils.PRIORITY_CRITICAL.equalsIgnoreCase(violation.getPriority())) {
-      return new Integer(IMarker.PRIORITY_HIGH);
+    if ("critical".equalsIgnoreCase(violation.getSeverity())) {
+      return Integer.valueOf(IMarker.PRIORITY_HIGH);
     }
-    if (ViolationUtils.PRIORITY_MAJOR.equalsIgnoreCase(violation.getPriority())) {
-      return new Integer(IMarker.PRIORITY_NORMAL);
+    if ("major".equalsIgnoreCase(violation.getSeverity())) {
+      return Integer.valueOf(IMarker.PRIORITY_NORMAL);
     }
-    return new Integer(IMarker.PRIORITY_LOW);
+    if ("minor".equalsIgnoreCase(violation.getSeverity())) {
+      return Integer.valueOf(IMarker.PRIORITY_LOW);
+    }
+    if ("info".equalsIgnoreCase(violation.getSeverity())) {
+      return Integer.valueOf(IMarker.PRIORITY_LOW);
+    }
+    // TODO handle unknown severity
+    return Integer.valueOf(IMarker.PRIORITY_LOW);
   }
 
   @Override
   protected Integer getSeverity(final Violation violation) {
-    return new Integer(IMarker.SEVERITY_WARNING);
+    return Integer.valueOf(IMarker.SEVERITY_WARNING);
   }
 
   @Override
@@ -99,7 +94,7 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
     final Map<String, Object> extraInfos = new HashMap<String, Object>();
     extraInfos.put("rulekey", violation.getRuleKey());
     extraInfos.put("rulename", violation.getRuleName());
-    extraInfos.put("rulepriority", violation.getPriority());
+    extraInfos.put("rulepriority", violation.getSeverity());
     return extraInfos;
   }
 

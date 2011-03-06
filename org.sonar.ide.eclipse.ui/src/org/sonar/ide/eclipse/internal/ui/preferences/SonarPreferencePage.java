@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.ui.preferences;
 
 import java.text.MessageFormat;
@@ -69,13 +68,13 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
   private List<Host> servers;
 
   public SonarPreferencePage() {
-    super(Messages.getString("pref.global.title")); //$NON-NLS-1$
+    super(Messages.SonarPreferencePage_title);
     noDefaultAndApplyButton();
     checkBoxes = new ArrayList<Button>();
   }
 
   public void init(IWorkbench workbench) {
-    setDescription("Add, remove or edit Sonar servers:");
+    setDescription(Messages.SonarPreferencePage_description);
   }
 
   @Override
@@ -116,8 +115,8 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     final Button removeButton = new Button(composite, SWT.NONE);
 
     addButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-    addButton.setText(Messages.getString("action.add.server")); //$NON-NLS-1$
-    addButton.setToolTipText(Messages.getString("action.add.server.desc")); //$NON-NLS-1$
+    addButton.setText(Messages.SonarPreferencePage_action_add);
+    addButton.setToolTipText(Messages.SonarPreferencePage_action_add_tooltip);
     addButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
     addButton.addSelectionListener(new SelectionAdapter() {
 
@@ -134,8 +133,8 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     });
 
     editButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-    editButton.setText(Messages.getString("action.edit.server")); //$NON-NLS-1$
-    editButton.setToolTipText(Messages.getString("action.edit.server.desc")); //$NON-NLS-1$
+    editButton.setText(Messages.SonarPreferencePage_action_edit);
+    editButton.setToolTipText(Messages.SonarPreferencePage_action_edit_tooltip);
     editButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
     editButton.setEnabled(false);
     editButton.addSelectionListener(new SelectionAdapter() {
@@ -155,8 +154,8 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     });
 
     removeButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-    removeButton.setText(Messages.getString("action.delete.server")); //$NON-NLS-1$
-    removeButton.setToolTipText(Messages.getString("action.delete.server.desc")); //$NON-NLS-1$
+    removeButton.setText(Messages.SonarPreferencePage_action_delete);
+    removeButton.setToolTipText(Messages.SonarPreferencePage_action_delete_tooltip);
     removeButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE).createImage());
     removeButton.setEnabled(false);
     removeButton.addSelectionListener(new SelectionAdapter() {
@@ -164,8 +163,8 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
       @Override
       public void widgetSelected(SelectionEvent e) {
         Host selected = getSelectedServer();
-        if (MessageDialog.openConfirm(SonarPreferencePage.this.getShell(), Messages.getString("remove.server.dialog.caption"), //$NON-NLS-1$
-            MessageFormat.format(Messages.getString("remove.server.dialog.msg"), //$NON-NLS-1$
+        if (MessageDialog.openConfirm(SonarPreferencePage.this.getShell(), "Remove sonar server connection",
+            MessageFormat.format("Confirm removing {0}",
                 new Object[] { selected.getHost() }))) {
           SonarCorePlugin.getServersManager().removeServer(selected.getHost());
           servers.remove(selected);
@@ -179,7 +178,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
     serversViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
       public void selectionChanged(SelectionChangedEvent event) {
-        removeButton.setEnabled( !servers.isEmpty());
+        removeButton.setEnabled(!servers.isEmpty());
         editButton.setEnabled(true);
       }
     });

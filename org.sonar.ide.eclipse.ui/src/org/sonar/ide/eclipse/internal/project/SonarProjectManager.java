@@ -1,6 +1,6 @@
 /*
  * Sonar, open source software quality management tool.
- * Copyright (C) 2010 SonarSource
+ * Copyright (C) 2010-2011 SonarSource
  * mailto:contact AT sonarsource DOT com
  *
  * Sonar is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-
 package org.sonar.ide.eclipse.internal.project;
 
 import org.apache.commons.lang.StringUtils;
@@ -26,7 +25,8 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
-import org.sonar.ide.api.Logs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 
@@ -34,6 +34,8 @@ import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
  * @author Evgeny Mandrikov
  */
 public class SonarProjectManager {
+
+  private static final Logger LOG = LoggerFactory.getLogger(SonarProjectManager.class);
 
   private static final String P_VERSION = "version";
   private static final String P_SONAR_SERVER_URL = "serverUrl";
@@ -44,11 +46,11 @@ public class SonarProjectManager {
   private static final String VERSION = "1";
 
   public ProjectProperties readSonarConfiguration(IProject project) {
-    Logs.INFO.debug("Rading configuration for project " + project.getName());
+    LOG.debug("Rading configuration for project " + project.getName());
     IScopeContext projectScope = new ProjectScope(project);
     IEclipsePreferences projectNode = projectScope.getNode(SonarCorePlugin.PLUGIN_ID);
     if (projectNode == null) {
-      Logs.INFO.warn("Unable to read configuration");
+      LOG.warn("Unable to read configuration");
       return new ProjectProperties(project);
     }
     String version = projectNode.get(P_VERSION, null);
@@ -75,7 +77,7 @@ public class SonarProjectManager {
     IScopeContext projectScope = new ProjectScope(project);
     IEclipsePreferences projectNode = projectScope.getNode(SonarCorePlugin.PLUGIN_ID);
     if (projectNode != null) {
-      Logs.INFO.debug("Saving configuration for project " + project.getName());
+      LOG.debug("Saving configuration for project " + project.getName());
       projectNode.put(P_VERSION, VERSION);
 
       projectNode.put(P_SONAR_SERVER_URL, configuration.getUrl());
@@ -87,7 +89,7 @@ public class SonarProjectManager {
         projectNode.flush();
         return true;
       } catch (BackingStoreException e) {
-        Logs.INFO.error("Failed to save project configuration", e);
+        LOG.error("Failed to save project configuration", e);
       }
     }
     return false;

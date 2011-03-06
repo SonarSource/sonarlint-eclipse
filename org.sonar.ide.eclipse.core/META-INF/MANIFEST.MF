@@ -12,9 +12,12 @@ Export-Package: org.sonar.ide.eclipse.core,
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
- org.sonar.ide.eclipse.sonar_embedder
-Import-Package: org.apache.commons.lang,
- org.eclipse.core.resources
+ org.slf4j.api;bundle-version="1.6.1";visibility:=reexport,
+ com.google.collect;bundle-version="1.0.0";visibility:=reexport,
+ org.apache.commons.lang;bundle-version="2.4.0";visibility:=reexport,
+ org.apache.commons.io;bundle-version="1.4.0";visibility:=reexport,
+ org.sonar.ide.eclipse.deprecated;visibility:=reexport,
+ org.sonar.ide.eclipse.sonar_embedder;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6

@@ -15,13 +15,6 @@
 
   <name>Sonar Integration for Eclipse Tests Common</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.codehaus.sonar-ide</groupId>
-      <artifactId>sonar-ide-testing-harness</artifactId>
-    </dependency>
-  </dependencies>
-
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
@@ -34,78 +27,4 @@
     </resources>
   </build>
 
-  <profiles>
-    <profile>
-      <id>update-dependencies</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-clean-plugin</artifactId>
-            <configuration>
-              <filesets>
-                <fileset>
-                  <directory>jars</directory>
-                  <followSymlinks>false</followSymlinks>
-                  <includes>
-                    <include>**/*.jar</include>
-                  </includes>
-                </fileset>
-                <fileset>
-                  <directory>META-INF</directory>
-                  <followSymlinks>false</followSymlinks>
-                  <includes>
-                    <include>**/MANIFEST.MF</include>
-                  </includes>
-                </fileset>
-              </filesets>
-            </configuration>
-          </plugin>
-
-          <plugin>
-            <groupId>org.sonatype.tycho</groupId>
-            <artifactId>maven-osgi-packaging-plugin</artifactId>
-            <executions>
-              <execution>
-                <phase>generate-resources</phase>
-                <goals>
-                  <goal>generate-bundle</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <packageSources>false</packageSources>
-              <bundleClasspath>
-                <bundleClasspath>.</bundleClasspath>
-              </bundleClasspath>
-              <!--
-              <requireBundles>
-                <requireBundle>
-                  <groupId>org.codehaus.sonar-ide.eclipse</groupId>
-                  <artifactId>org.sonar.ide.eclipse</artifactId>
-                  <version>0.0.1-SNAPSHOT</version>
-                </requireBundle>
-                <requireBundle>
-                  <groupId>org.codehaus.sonar-ide.eclipse</groupId>
-                  <artifactId>org.sonar.ide.eclipse.sonar_embedder</artifactId>
-                  <version>0.0.1-SNAPSHOT</version>
-                </requireBundle>
-              </requireBundles>
-              <exportPackages>
-                org.sonar.ide.eclipse.tests,
-              </exportPackages>
-              -->
-              <manifestAttributes>
-                <Require-Bundle>
-                  org.junit4;bundle-version="4.0.0",org.eclipse.core.resources,org.eclipse.core.runtime,org.sonar.ide.eclipse.core,org.sonar.ide.eclipse.ui,org.sonar.ide.eclipse.sonar_embedder
-                </Require-Bundle>
-                <Bundle-RequiredExecutionEnvironment>J2SE-1.5, JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
-                <Export-Package>org.sonar.ide.test,org.sonar.ide.eclipse.tests.common,org.apache.commons.io</Export-Package>
-                <Eclipse-BuddyPolicy>registered</Eclipse-BuddyPolicy>
-              </manifestAttributes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

@@ -49,13 +49,16 @@
 
   <modules>
     <module>../org.sonar.ide.eclipse.core</module>
+    <module>../org.sonar.ide.eclipse.deprecated</module>
     <module>../org.sonar.ide.eclipse.sonar_embedder</module>
     <module>../org.sonar.ide.eclipse.ui</module>
     <module>../org.sonar.ide.eclipse.jdt</module>
     <module>../org.sonar.ide.eclipse.site</module>
 
-    <module>../org.sonar.ide.eclipse.tests.common</module>
+    <module>../org.sonar.ide.eclipse.logback</module>
+    <module>../org.sonar.ide.eclipse.logback.appenders</module>
 
+    <module>../org.sonar.ide.eclipse.tests.common</module>
     <module>../org.sonar.ide.eclipse.tests</module>
 
     <!-- features -->
@@ -99,8 +102,6 @@
 
     <target.platform>e36</target.platform>
 
-    <sonar-ide-commons.version>0.3-SNAPSHOT</sonar-ide-commons.version>
-
     <!-- Version of Sonar for integration tests -->
     <sonar.runtimeVersion>2.4</sonar.runtimeVersion>
 
@@ -111,21 +112,6 @@
 
     <jacoco.argLine></jacoco.argLine>
   </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.codehaus.sonar-ide</groupId>
-        <artifactId>sonar-ide-commons</artifactId>
-        <version>${sonar-ide-commons.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.sonar-ide</groupId>
-        <artifactId>sonar-ide-testing-harness</artifactId>
-        <version>${sonar-ide-commons.version}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <pluginRepositories>
     <pluginRepository>
@@ -298,6 +284,12 @@
           <artifactId>wagon-maven-plugin</artifactId>
           <version>1.0-beta-3</version>
         </plugin>
+
+        <plugin>
+          <groupId>com.mycila.maven-license-plugin</groupId>
+          <artifactId>maven-license-plugin</artifactId>
+          <version>1.9.0</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -392,6 +384,20 @@
           </environments>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>com.mycila.maven-license-plugin</groupId>
+        <artifactId>maven-license-plugin</artifactId>
+        <configuration>
+          <header>${project.basedir}/../LICENSE.txt</header>
+          <strictCheck>true</strictCheck>
+          <includes>
+            <include>src/**/*.java</include>
+          </includes>
+          <mapping>
+            <java>SLASHSTAR_STYLE</java>
+          </mapping>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -411,6 +417,27 @@
         <sonar.jacoco.itReportPath>../org.sonar.ide.eclipse.parent/target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <jacoco.argLine>-javaagent:../jacoco-agent-all.jar=destfile=${sonar.jacoco.itReportPath}</jacoco.argLine>
       </properties>
+    </profile>
+    <!-- This profile is used to check copyright/license headers -->
+    <profile>
+      <id>license</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.mycila.maven-license-plugin</groupId>
+            <artifactId>maven-license-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>enforce-license-headers</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <!-- TODO This profile is used to sign artifacts -->
     <profile>
