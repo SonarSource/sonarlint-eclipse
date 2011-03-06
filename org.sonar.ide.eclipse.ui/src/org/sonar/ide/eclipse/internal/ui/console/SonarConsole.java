@@ -22,7 +22,14 @@ package org.sonar.ide.eclipse.internal.ui.console;
 import java.io.IOException;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.console.*;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.IOConsole;
+import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.ui.ISonarConsole;
 
@@ -30,32 +37,72 @@ public class SonarConsole extends IOConsole implements ISonarConsole {
 
   private static final String TITLE = Messages.SonarConsole_title;
 
+  private IOConsoleOutputStream infoStream;
+  private IOConsoleOutputStream warnStream;
+
+  // Colors must be disposed
+  private Color warnColor;
+
   public SonarConsole(ImageDescriptor imageDescriptor) {
     super(TITLE, imageDescriptor);
   }
 
+  @Override
+  protected void init() {
+    super.init();
+    initStreams(Display.getDefault());
+  }
+
+  private void initStreams(Display display) {
+    this.infoStream = newOutputStream();
+    this.warnStream = newOutputStream();
+
+    // TODO make colors configurable
+    warnColor = new Color(display, new RGB(255, 0, 0));
+
+    getWarnStream().setColor(warnColor);
+    getErrorStream().setColor(warnColor);
+  }
+
+  @Override
+  protected void dispose() {
+    super.dispose();
+
+    warnColor.dispose();
+  }
+
   public void debug(String msg) {
-    write(msg);
+    bringConsoleToFront();
+    write(getDebugStream(), msg);
   }
 
   public void info(String msg) {
-    write(msg);
+    bringConsoleToFront();
+    write(getInfoStream(), msg);
+  }
+
+  public void warn(String msg) {
+    bringConsoleToFront();
+    write(getWarnStream(), msg);
   }
 
   public void error(String msg) {
-    write(msg);
+    bringConsoleToFront();
+    write(getErrorStream(), msg);
   }
 
-  private void write(String msg) {
+  private void write(IOConsoleOutputStream stream, String msg) {
     try {
-      IOConsoleOutputStream stream = newOutputStream();
       stream.write(msg);
       stream.write("\n"); //$NON-NLS-1$
-      stream.close();
     } catch (IOException e) {
       // Don't log using slf4j - it will cause a cycle
       e.printStackTrace();
     }
+  }
+
+  public void bringConsoleToFront() {
+    showConsole();
   }
 
   public void showConsole() {
@@ -68,6 +115,27 @@ public class SonarConsole extends IOConsole implements ISonarConsole {
     }
     // not found - create a new one
     manager.addConsoles(new IConsole[] { this });
+  }
+
+  public void closeConsole() {
+    IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+    manager.removeConsoles(new IConsole[] { this });
+  }
+
+  private IOConsoleOutputStream getDebugStream() {
+    return infoStream;
+  }
+
+  private IOConsoleOutputStream getInfoStream() {
+    return infoStream;
+  }
+
+  private IOConsoleOutputStream getWarnStream() {
+    return warnStream;
+  }
+
+  private IOConsoleOutputStream getErrorStream() {
+    return warnStream;
   }
 
 }

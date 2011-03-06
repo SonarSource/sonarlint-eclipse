@@ -19,13 +19,12 @@
  */
 package org.sonar.ide.eclipse.logback.appenders;
 
-import org.sonar.ide.eclipse.ui.ISonarConsole;
-
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
+import org.sonar.ide.eclipse.ui.ISonarConsole;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 public class SonarConsoleAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
@@ -48,6 +47,8 @@ public class SonarConsoleAppender extends UnsynchronizedAppenderBase<ILoggingEve
         sonarConsole.error(msg);
         break;
       case Level.WARN_INT:
+        sonarConsole.warn(msg);
+        break;
       case Level.INFO_INT:
       default:
         sonarConsole.info(msg);
