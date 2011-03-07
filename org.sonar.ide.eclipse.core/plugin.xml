@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
 <plugin>
+   <extension-point id="projectConfigurators" name="Project Configurators" schema="schema/projectConfigurators.exsd"/>
+
+   <extension
+         point="org.sonar.ide.eclipse.core.projectConfigurators">
+      <configurator
+            class="org.sonar.ide.eclipse.internal.core.configurator.DefaultProjectConfigurator">
+      </configurator>
+   </extension>
+
    <extension
          id="sonarNature"
          name="Sonar Nature"

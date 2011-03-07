@@ -64,5 +64,12 @@
             description="Hides all projects without Sonar nature"
             activeByDefault="false">
       </commonFilter>
+   </extension>
+
+   <extension
+         point="org.sonar.ide.eclipse.core.projectConfigurators">
+      <configurator
+            class="org.sonar.ide.eclipse.internal.jdt.JavaProjectConfigurator">
+      </configurator>
    </extension>   
 </plugin>
