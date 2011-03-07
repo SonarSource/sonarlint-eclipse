@@ -36,12 +36,12 @@ import org.slf4j.LoggerFactory;
 
 public class LogbackPlugin extends Plugin {
 
-  private static final String PLUGIN_ID = "org.sonar.ide.eclipse.logback";
+  private static final String PLUGIN_ID = "org.sonar.ide.eclipse.logback"; //$NON-NLS-1$
 
   /**
    * Should match name in "conf/logback.xml"
    */
-  private static final String LOG_DIR_PROPERTY = "log.dir";
+  private static final String LOG_DIR_PROPERTY = "log.dir"; //$NON-NLS-1$
 
   @Override
   public void start(BundleContext context) throws Exception {
@@ -50,10 +50,10 @@ public class LogbackPlugin extends Plugin {
     String configFileProperty = System.getProperty(ContextInitializer.CONFIG_FILE_PROPERTY);
     if (configFileProperty != null) {
       // The standard logback config file property is set - don't force our configuration
-      System.out.println(ContextInitializer.CONFIG_FILE_PROPERTY + "=" + configFileProperty);
+      System.out.println(ContextInitializer.CONFIG_FILE_PROPERTY + "=" + configFileProperty); //$NON-NLS-1$
     } else {
       configureLogback();
-      LoggerFactory.getLogger(getClass()).info("Yippee - Logback configured!");
+      LogHelper.log(context, LoggerFactory.getLogger(getClass()));
     }
   }
 
@@ -64,16 +64,16 @@ public class LogbackPlugin extends Plugin {
     }
 
     try {
-      final URL url = getBundle().getEntry("/conf/logback.xml");
+      final URL url = getBundle().getEntry("/conf/logback.xml"); //$NON-NLS-1$
       loadConfig(url);
     } catch (Exception e) {
       e.printStackTrace();
-      getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, "Exception while configuring logging: " + e.getMessage(), e));
+      getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, "Exception while configuring logging: " + e.getMessage(), e)); //$NON-NLS-1$
     }
   }
 
   private void loadConfig(URL url) throws JoranException {
-    System.out.println("Initializing logback");
+    System.out.println("Initializing logback"); //$NON-NLS-1$
     final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
     final JoranConfiguratorBase configurator = new JoranConfigurator();
     configurator.setContext(lc);
