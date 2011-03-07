@@ -72,22 +72,30 @@ public class SonarConsole extends IOConsole implements ISonarConsole {
   }
 
   public void debug(String msg) {
-    bringConsoleToFront();
+    if (showConsoleOnOutput()) {
+      bringConsoleToFront();
+    }
     write(getDebugStream(), msg);
   }
 
   public void info(String msg) {
-    bringConsoleToFront();
+    if (showConsoleOnOutput()) {
+      bringConsoleToFront();
+    }
     write(getInfoStream(), msg);
   }
 
   public void warn(String msg) {
-    bringConsoleToFront();
+    if (showConsoleOnOutput()) {
+      bringConsoleToFront();
+    }
     write(getWarnStream(), msg);
   }
 
   public void error(String msg) {
-    bringConsoleToFront();
+    if (showConsoleOnOutput()) {
+      bringConsoleToFront();
+    }
     write(getErrorStream(), msg);
   }
 
@@ -136,6 +144,10 @@ public class SonarConsole extends IOConsole implements ISonarConsole {
 
   private IOConsoleOutputStream getErrorStream() {
     return warnStream;
+  }
+
+  private boolean showConsoleOnOutput() {
+    return false;
   }
 
 }
