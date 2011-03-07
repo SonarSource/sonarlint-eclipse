@@ -61,5 +61,11 @@
       <configurator
             class="org.sonar.ide.eclipse.internal.jdt.JavaProjectConfigurator">
       </configurator>
+   </extension>
+   <extension
+         point="org.sonar.ide.eclipse.core.resourceResolvers">
+      <resolver
+            class="org.sonar.ide.eclipse.internal.jdt.JavaResourceResolver">
+      </resolver>
    </extension>   
 </plugin>

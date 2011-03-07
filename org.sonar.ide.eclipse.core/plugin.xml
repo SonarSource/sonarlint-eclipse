@@ -2,6 +2,7 @@
 <?eclipse version="3.0"?>
 <plugin>
    <extension-point id="projectConfigurators" name="Project Configurators" schema="schema/projectConfigurators.exsd"/>
+   <extension-point id="resourceResolvers" name="Resource Resolvers" schema="schema/resourceResolvers.exsd"/>
 
    <extension
          point="org.sonar.ide.eclipse.core.projectConfigurators">

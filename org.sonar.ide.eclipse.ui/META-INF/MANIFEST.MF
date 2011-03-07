@@ -18,7 +18,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface.databinding,
  org.eclipse.jface.text,
  org.eclipse.compare,
- org.eclipse.jdt.core,
  org.sonar.ide.eclipse.core,
  org.eclipse.core.resources
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
