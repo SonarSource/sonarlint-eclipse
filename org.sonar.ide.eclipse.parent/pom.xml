@@ -51,6 +51,7 @@
     <module>../org.sonar.ide.eclipse.core</module>
     <module>../org.sonar.ide.eclipse.deprecated</module>
     <module>../org.sonar.ide.eclipse.wsclient</module>
+    <module>../org.sonar.ide.eclipse.runtime</module>
     <module>../org.sonar.ide.eclipse.ui</module>
     <module>../org.sonar.ide.eclipse.jdt</module>
     <module>../org.sonar.ide.eclipse.site</module>
