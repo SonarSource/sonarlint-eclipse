@@ -7,8 +7,8 @@ Export-Package: org.sonar.wsclient,org.sonar.wsclient.connectors,org.s
  onar.wsclient.services
 Bundle-Vendor: SonarSource
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: .,jars/sonar-ws-client-2.5.jar,jars/json-simple-1.1.
- jar
+Bundle-ClassPath: .,jars/sonar-ws-client-2.7-SNAPSHOT.jar,jars/json-si
+ mple-1.1.jar
 Bundle-Version: 1.1.0.qualifier
 Bundle-Name: Sonar Web Service Client
 Bundle-Activator: org.sonar.wsclient.internal.WSClientPlugin
