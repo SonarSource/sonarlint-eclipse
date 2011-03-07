@@ -44,7 +44,7 @@
          unpack="false"/>
 
    <plugin
-         id="org.sonar.ide.eclipse.sonar_embedder"
+         id="org.sonar.ide.eclipse.wsclient"
          download-size="0"
          install-size="0"
          version="0.0.0"/>

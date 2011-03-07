@@ -10,7 +10,7 @@
   </target>
 
   <target name="update-dependencies" description="Update dependencies">
-    <update dir="org.sonar.ide.eclipse.sonar_embedder" />
+    <update dir="org.sonar.ide.eclipse.wsclient" />
   </target>
 
   <macrodef name="update">
