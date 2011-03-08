@@ -17,23 +17,29 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.batch;
+package org.sonar.batch.components;
 
-import org.sonar.batch.components.EmbedderMemoryOptimizer;
-import org.sonar.batch.components.EmbedderPhases;
-import org.sonar.batch.phases.DecoratorsExecutor;
-import org.sonar.batch.phases.InitializersExecutor;
-import org.sonar.batch.phases.SensorsExecutor;
+import org.sonar.api.database.model.MeasureModel;
+import org.sonar.api.measures.Measure;
+import org.sonar.batch.index.MemoryOptimizer;
 
-public class ProjectPhasesModule extends Module {
+public class EmbedderMemoryOptimizer extends MemoryOptimizer {
+
+  public EmbedderMemoryOptimizer() {
+    super(null);
+  }
 
   @Override
-  protected void configure() {
-    addComponent(EmbedderMemoryOptimizer.class);
-    addComponent(InitializersExecutor.class);
-    addComponent(SensorsExecutor.class);
-    addComponent(DecoratorsExecutor.class);
-    addComponent(EmbedderPhases.class);
+  public void evictDataMeasure(Measure measure, MeasureModel model) {
+  }
+
+  @Override
+  public Measure reloadMeasure(Measure measure) {
+    return null;
+  }
+
+  @Override
+  public void flushMemory() {
   }
 
 }

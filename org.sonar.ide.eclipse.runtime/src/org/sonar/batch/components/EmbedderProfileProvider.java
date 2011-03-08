@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.picocontainer.injectors.ProviderAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.resources.Project;
 import org.sonar.api.rules.Rule;
@@ -35,6 +37,8 @@ import org.sonar.wsclient.services.RuleQuery;
  */
 public class EmbedderProfileProvider extends ProviderAdapter {
 
+  private static final Logger LOG = LoggerFactory.getLogger(EmbedderProfileProvider.class);
+
   private RulesProfile profile;
 
   public RulesProfile provide(Project project) {
@@ -43,14 +47,14 @@ public class EmbedderProfileProvider extends ProviderAdapter {
       try {
         // TODO hard-coded values
         Sonar sonar = Sonar.create("http://localhost:9000");
-        RuleQuery ruleQuery = new RuleQuery("java").setActive(true).setProfile("Sonar way with Findbugs");
+        RuleQuery ruleQuery = new RuleQuery("java").setActive(true).setProfile("Sonar for Sonar");
         List<org.sonar.wsclient.services.Rule> wsRules = sonar.findAll(ruleQuery);
         for (org.sonar.wsclient.services.Rule wsRule : wsRules) {
           Rule rule = materialize(wsRule);
           profile.activateRule(rule, null);
         }
       } catch (Exception e) {
-        // TODO: handle exception
+        LOG.error(e.getMessage(), e);
       }
     }
     return profile;

@@ -17,23 +17,27 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.batch;
+package org.sonar.batch.components;
 
-import org.sonar.batch.components.EmbedderMemoryOptimizer;
-import org.sonar.batch.components.EmbedderPhases;
-import org.sonar.batch.phases.DecoratorsExecutor;
-import org.sonar.batch.phases.InitializersExecutor;
-import org.sonar.batch.phases.SensorsExecutor;
+import java.io.IOException;
+import java.util.Collections;
 
-public class ProjectPhasesModule extends Module {
+import org.sonar.api.resources.Project;
+import org.sonar.batch.ProjectTree;
+
+public class EmbedderProjectTree extends ProjectTree {
+
+  public EmbedderProjectTree(Project project) {
+    super(Collections.singletonList(project));
+  }
 
   @Override
-  protected void configure() {
-    addComponent(EmbedderMemoryOptimizer.class);
-    addComponent(InitializersExecutor.class);
-    addComponent(SensorsExecutor.class);
-    addComponent(DecoratorsExecutor.class);
-    addComponent(EmbedderPhases.class);
+  public void start() throws IOException {
+  }
+
+  @Override
+  public Project getProjectByArtifactId(String artifactId) {
+    throw new UnsupportedOperationException();
   }
 
 }

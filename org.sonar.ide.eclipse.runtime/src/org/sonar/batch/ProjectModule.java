@@ -19,9 +19,6 @@
  */
 package org.sonar.batch;
 
-import org.sonar.batch.components.EmbedderProfileProvider;
-import org.sonar.batch.components.Mocks;
-
 import org.sonar.api.batch.BatchExtensionDictionnary;
 import org.sonar.api.batch.ProjectClasspath;
 import org.sonar.api.measures.CoreMetrics;
@@ -29,9 +26,9 @@ import org.sonar.api.measures.Metric;
 import org.sonar.api.resources.DefaultProjectFileSystem;
 import org.sonar.api.resources.Languages;
 import org.sonar.api.resources.Project;
-import org.sonar.batch.DefaultDecoratorContext;
-import org.sonar.batch.DefaultSensorContext;
-import org.sonar.batch.Module;
+import org.sonar.batch.components.EmbedderProfileProvider;
+import org.sonar.batch.components.EmbedderProjectTree;
+import org.sonar.batch.components.EmbedderRuleFinder;
 import org.sonar.batch.index.DefaultIndex;
 
 public class ProjectModule extends Module {
@@ -57,10 +54,11 @@ public class ProjectModule extends Module {
     addComponent(DefaultProjectFileSystem.class);
     addComponent(ProjectClasspath.class);
 
-    addComponent(Mocks.createProjectTree(project)); // required for DefaultIndex
+    addComponent(new EmbedderProjectTree(project)); // required for DefaultIndex
     addComponent(DefaultIndex.class);
 
     addAdapter(new EmbedderProfileProvider());
+    addComponent(EmbedderRuleFinder.class);
 
     // Required for BatchExtensionDictionnary, otherwise it can't pick up formulas
     for (Metric metric : CoreMetrics.getMetrics()) {

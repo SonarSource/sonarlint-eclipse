@@ -19,12 +19,9 @@
  */
 package org.sonar.batch;
 
+import org.sonar.batch.components.EmbedderDatabaseSession;
+import org.sonar.batch.components.EmbedderMetricFinder;
 import org.sonar.batch.components.EmbedderPersistenceManager;
-import org.sonar.batch.components.Mocks;
-
-import org.sonar.batch.DefaultResourceCreationLock;
-import org.sonar.batch.FakeMavenPluginExecutor;
-import org.sonar.batch.Module;
 
 public class GlobalModule extends Module {
 
@@ -33,9 +30,9 @@ public class GlobalModule extends Module {
     addComponent(DefaultResourceCreationLock.class);
 
     addComponent(FakeMavenPluginExecutor.class);
-    addComponent(Mocks.createDatabaseSession());
-    addComponent(Mocks.createRuleFinder());
-    addComponent(Mocks.createMetricFinder());
+    addComponent(EmbedderDatabaseSession.class);
+    // addComponent(Mocks.createRuleFinder());
+    addComponent(EmbedderMetricFinder.class);
     addComponent(EmbedderPersistenceManager.class);
   }
 
