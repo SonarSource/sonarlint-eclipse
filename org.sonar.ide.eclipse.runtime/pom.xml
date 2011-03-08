@@ -20,22 +20,6 @@
   </properties>
 
   <dependencies>
-    <!-- TODO we can't exclude sonar-core-plugin at the moment -->
-    <dependency>
-      <groupId>org.codehaus.sonar.plugins</groupId>
-      <artifactId>sonar-core-plugin</artifactId>
-      <version>${sonar.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.codehaus.sonar</groupId>
-          <artifactId>sonar-plugin-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.codehaus.sonar</groupId>
-          <artifactId>sonar-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
     <dependency>
       <groupId>org.codehaus.sonar</groupId>
       <artifactId>sonar-batch-maven-compat</artifactId>

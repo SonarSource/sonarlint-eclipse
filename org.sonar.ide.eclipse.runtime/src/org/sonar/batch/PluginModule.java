@@ -24,7 +24,6 @@ import org.sonar.api.Extension;
 import org.sonar.api.Plugin;
 import org.sonar.api.batch.SupportedEnvironment;
 import org.sonar.api.utils.AnnotationUtils;
-import org.sonar.batch.Module;
 import org.sonar.batch.bootstrap.BatchPluginRepository;
 import org.sonar.core.plugin.AbstractPluginRepository;
 
@@ -46,7 +45,20 @@ public class PluginModule extends Module {
   }
 
   private boolean shouldRegisterExtension(Object extension) {
-    return isType(extension, BatchExtension.class) && isSupportsEnvironment(extension);
+    boolean ok = isType(extension, BatchExtension.class) && isSupportsEnvironment(extension);
+    if (ok) {
+      if (extension instanceof Class) {
+        String extensionClassName = ((Class) extension).getCanonicalName();
+        if (extensionClassName.startsWith("org.sonar.plugins.core.timemachine")) {
+          ok = false;
+        } else if (extensionClassName.startsWith("org.sonar.plugins.core.sensors.AsynchronousMeasuresSensor")) {
+          ok = false;
+        } else if (extensionClassName.startsWith("org.sonar.plugins.core.sensors.GenerateAlertEvents")) {
+          ok = false;
+        }
+      }
+    }
+    return ok;
   }
 
   private boolean isSupportsEnvironment(Object extension) {

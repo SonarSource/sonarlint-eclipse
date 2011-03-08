@@ -21,24 +21,19 @@ package org.sonar.batch;
 
 import org.sonar.batch.components.EmbedderViolationsDecorator;
 
-import org.sonar.api.checks.NoSonarFilter;
-import org.sonar.api.resources.Java;
-import org.sonar.batch.Module;
-import org.sonar.plugins.core.sensors.*;
-
 public class CorePluginModule extends Module {
 
   @Override
   protected void configure() {
-    addComponent(Java.class);
-    addComponent(NoSonarFilter.class);
-    addComponent(UnitTestDecorator.class);
-    addComponent(ViolationsDecorator.class);
-    addComponent(WeightedViolationsDecorator.class);
-    addComponent(ViolationsDensityDecorator.class);
-    addComponent(CommentDensityDecorator.class);
-    addComponent(DirectoriesDecorator.class);
-    addComponent(FilesDecorator.class);
+    // addComponent(Java.class);
+    // addComponent(NoSonarFilter.class);
+    // addComponent(UnitTestDecorator.class);
+    // addComponent(ViolationsDecorator.class);
+    // addComponent(WeightedViolationsDecorator.class);
+    // addComponent(ViolationsDensityDecorator.class);
+    // addComponent(CommentDensityDecorator.class);
+    // addComponent(DirectoriesDecorator.class);
+    // addComponent(FilesDecorator.class);
 
     addComponent(EmbedderViolationsDecorator.class);
   }

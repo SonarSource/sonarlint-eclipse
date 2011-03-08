@@ -48,6 +48,7 @@ public class Activator extends Plugin {
     pluginsManager.install(getCorePluginFromMavenRepo("sonar-checkstyle-plugin"));
     pluginsManager.install(getCorePluginFromMavenRepo("sonar-design-plugin"));
     pluginsManager.install(getCorePluginFromMavenRepo("sonar-cpd-plugin"));
+    pluginsManager.install(getCorePluginFromMavenRepo("sonar-core-plugin"));
 
     pluginsManager.start();
   }

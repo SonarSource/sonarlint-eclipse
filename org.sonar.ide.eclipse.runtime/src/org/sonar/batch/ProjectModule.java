@@ -26,6 +26,7 @@ import org.sonar.api.measures.Metric;
 import org.sonar.api.resources.DefaultProjectFileSystem;
 import org.sonar.api.resources.Languages;
 import org.sonar.api.resources.Project;
+import org.sonar.api.resources.Project.AnalysisType;
 import org.sonar.batch.components.EmbedderProfileProvider;
 import org.sonar.batch.components.EmbedderProjectTree;
 import org.sonar.batch.components.EmbedderRuleFinder;
@@ -70,6 +71,7 @@ public class ProjectModule extends Module {
   public Module start() {
     // Prepare project
     project.setFileSystem(getComponent(DefaultProjectFileSystem.class));
+    project.setAnalysisType(AnalysisType.STATIC);
     return super.start();
   }
 
