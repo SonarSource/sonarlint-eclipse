@@ -23,10 +23,10 @@ import java.util.Properties;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.api.CoreProperties;
-import org.sonar.ide.eclipse.core.configurator.AbstractProjectConfigurator;
+import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 
-public class DefaultProjectConfigurator extends AbstractProjectConfigurator {
+public class DefaultProjectConfigurator extends ProjectConfigurator {
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
     // TODO remove hard-coded values

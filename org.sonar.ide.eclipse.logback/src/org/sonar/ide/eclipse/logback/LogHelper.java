@@ -24,7 +24,10 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
 import org.slf4j.Logger;
 
-public class LogHelper {
+public final class LogHelper {
+
+  private LogHelper() {
+  }
 
   public static void log(BundleContext context, Logger log) {
     log.info("Eclipse version : " + getEclipseVersion(context)); //$NON-NLS-1$

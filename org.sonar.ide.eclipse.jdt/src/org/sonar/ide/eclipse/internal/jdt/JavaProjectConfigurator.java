@@ -34,11 +34,11 @@ import org.slf4j.LoggerFactory;
 import org.sonar.api.CoreProperties;
 import org.sonar.api.resources.Java;
 import org.sonar.batch.bootstrapper.ProjectDefinition;
-import org.sonar.ide.eclipse.core.configurator.AbstractProjectConfigurator;
+import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
-public class JavaProjectConfigurator extends AbstractProjectConfigurator {
+public class JavaProjectConfigurator extends ProjectConfigurator {
 
   private static final Logger LOG = LoggerFactory.getLogger(JavaProjectConfigurator.class);
 
@@ -58,7 +58,9 @@ public class JavaProjectConfigurator extends AbstractProjectConfigurator {
 
     properties.setProperty(CoreProperties.PROJECT_LANGUAGE_PROPERTY, Java.KEY);
     properties.setProperty("sonar.java.source", javaSource);
+    LOG.info("Source Java version: {}", javaSource);
     properties.setProperty("sonar.java.target", javaTarget);
+    LOG.info("Target Java version: {}", javaTarget);
 
     try {
       IClasspathEntry[] classPath = javaProject.getRawClasspath();

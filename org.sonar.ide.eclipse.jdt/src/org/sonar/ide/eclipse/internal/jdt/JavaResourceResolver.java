@@ -27,9 +27,9 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
-import org.sonar.ide.eclipse.core.AbstractResourceResolver;
+import org.sonar.ide.eclipse.core.ResourceResolver;
 
-public class JavaResourceResolver extends AbstractResourceResolver {
+public class JavaResourceResolver extends ResourceResolver {
 
   @Override
   public String resolve(IResource resource, IProgressMonitor monitor) {

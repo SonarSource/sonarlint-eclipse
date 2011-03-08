@@ -60,7 +60,7 @@
                   Resolver implementation
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn="org.sonar.ide.eclipse.core.AbstractResourceResolver:"/>
+                  <meta.attribute kind="java" basedOn="org.sonar.ide.eclipse.core.ResourceResolver:"/>
                </appInfo>
             </annotation>
          </attribute>

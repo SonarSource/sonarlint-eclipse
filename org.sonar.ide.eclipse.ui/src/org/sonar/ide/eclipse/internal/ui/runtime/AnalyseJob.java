@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.sonar.batch.Activator;
 import org.sonar.batch.SonarEclipseRuntime;
 import org.sonar.batch.bootstrapper.ProjectDefinition;
-import org.sonar.ide.eclipse.core.configurator.AbstractProjectConfigurator;
+import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 
 public class AnalyseJob extends Job {
@@ -53,14 +53,14 @@ public class AnalyseJob extends Job {
     this.project = project;
   }
 
-  private Collection<AbstractProjectConfigurator> getConfigurators() {
-    List<AbstractProjectConfigurator> result = new ArrayList<AbstractProjectConfigurator>();
+  private Collection<ProjectConfigurator> getConfigurators() {
+    List<ProjectConfigurator> result = new ArrayList<ProjectConfigurator>();
     IExtensionRegistry registry = Platform.getExtensionRegistry();
     IConfigurationElement[] config = registry.getConfigurationElementsFor("org.sonar.ide.eclipse.core.projectConfigurators");
     for (final IConfigurationElement element : config) {
       try {
-        Object obj = element.createExecutableExtension(AbstractProjectConfigurator.ATTR_CLASS);
-        AbstractProjectConfigurator configurator = (AbstractProjectConfigurator) obj;
+        Object obj = element.createExecutableExtension(ProjectConfigurator.ATTR_CLASS);
+        ProjectConfigurator configurator = (ProjectConfigurator) obj;
         result.add(configurator);
       } catch (CoreException e) {
         LOG.error(e.getMessage(), e);
@@ -76,7 +76,7 @@ public class AnalyseJob extends Job {
     Properties properties = new Properties();
     ProjectDefinition sonarProject = new ProjectDefinition(baseDir, workDir, properties);
     ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, sonarProject);
-    for (AbstractProjectConfigurator configurator : getConfigurators()) {
+    for (ProjectConfigurator configurator : getConfigurators()) {
       LOG.debug("Project configurator: {}", configurator);
       configurator.configure(request, monitor);
     }

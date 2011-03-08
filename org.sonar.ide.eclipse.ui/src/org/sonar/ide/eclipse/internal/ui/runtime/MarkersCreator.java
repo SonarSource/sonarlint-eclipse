@@ -39,14 +39,14 @@ import org.slf4j.LoggerFactory;
 import org.sonar.api.rules.Rule;
 import org.sonar.api.rules.Violation;
 import org.sonar.batch.components.EmbedderIndex;
-import org.sonar.ide.eclipse.core.AbstractResourceResolver;
+import org.sonar.ide.eclipse.core.ResourceResolver;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 
 public class MarkersCreator implements IResourceVisitor {
 
   private static final Logger LOG = LoggerFactory.getLogger(MarkersCreator.class);
 
-  private List<AbstractResourceResolver> resolvers;
+  private List<ResourceResolver> resolvers;
 
   private IProgressMonitor monitor;
 
@@ -59,20 +59,20 @@ public class MarkersCreator implements IResourceVisitor {
 
   private String resolve(IResource resource) {
     if (resolvers == null) {
-      resolvers = new ArrayList<AbstractResourceResolver>();
+      resolvers = new ArrayList<ResourceResolver>();
       IExtensionRegistry registry = Platform.getExtensionRegistry();
       IConfigurationElement[] config = registry.getConfigurationElementsFor("org.sonar.ide.eclipse.core.resourceResolvers"); //$NON-NLS-1$
       for (final IConfigurationElement element : config) {
         try {
-          Object obj = element.createExecutableExtension(AbstractResourceResolver.ATTR_CLASS);
-          resolvers.add((AbstractResourceResolver) obj);
+          Object obj = element.createExecutableExtension(ResourceResolver.ATTR_CLASS);
+          resolvers.add((ResourceResolver) obj);
         } catch (CoreException e) {
           LOG.error(e.getMessage(), e);
         }
       }
     }
 
-    for (AbstractResourceResolver resolver : resolvers) {
+    for (ResourceResolver resolver : resolvers) {
       String sonarKey = resolver.resolve(resource, monitor);
       if (sonarKey != null) {
         return sonarKey;

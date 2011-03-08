@@ -60,7 +60,7 @@
                   Configurator implementation
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn="org.sonar.ide.eclipse.runtime.ui.configurator.AbstractProjectConfigurator:"/>
+                  <meta.attribute kind="java" basedOn="org.sonar.ide.eclipse.core.configurator.ProjectConfigurator:"/>
                </appInfo>
             </annotation>
          </attribute>

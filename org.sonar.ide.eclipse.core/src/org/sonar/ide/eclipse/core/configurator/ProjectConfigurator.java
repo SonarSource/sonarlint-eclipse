@@ -17,18 +17,22 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.core;
+package org.sonar.ide.eclipse.core.configurator;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-public abstract class AbstractResourceResolver {
+public abstract class ProjectConfigurator {
 
   public static final String ATTR_CLASS = "class"; //$NON-NLS-1$
 
   /**
-   * @return Sonar resource key or null, if this resolver can't determine key
+   * Configures Sonar project, using information from Eclipse project.
    */
-  public abstract String resolve(IResource resource, IProgressMonitor monitor);
+  public abstract void configure(ProjectConfigurationRequest request, IProgressMonitor monitor);
+
+  @Override
+  public String toString() {
+    return getClass().getName();
+  }
 
 }
