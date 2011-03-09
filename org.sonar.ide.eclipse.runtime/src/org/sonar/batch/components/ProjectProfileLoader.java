@@ -17,25 +17,16 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.batch;
+package org.sonar.batch.components;
 
-import org.sonar.batch.components.EmbedderViolationsDecorator;
+import org.sonar.api.profiles.RulesProfile;
+import org.sonar.api.resources.Project;
 
-public class CorePluginModule extends Module {
+public interface ProjectProfileLoader {
 
-  @Override
-  protected void configure() {
-    // addComponent(Java.class);
-    // addComponent(NoSonarFilter.class);
-    // addComponent(UnitTestDecorator.class);
-    // addComponent(ViolationsDecorator.class);
-    // addComponent(WeightedViolationsDecorator.class);
-    // addComponent(ViolationsDensityDecorator.class);
-    // addComponent(CommentDensityDecorator.class);
-    // addComponent(DirectoriesDecorator.class);
-    // addComponent(FilesDecorator.class);
-
-    addComponent(EmbedderViolationsDecorator.class);
-  }
+  /**
+   * Loads quality profile for specified project.
+   */
+  RulesProfile load(Project project);
 
 }

@@ -30,6 +30,8 @@ import org.sonar.api.resources.Project.AnalysisType;
 import org.sonar.batch.components.EmbedderProfileProvider;
 import org.sonar.batch.components.EmbedderProjectTree;
 import org.sonar.batch.components.EmbedderRuleFinder;
+import org.sonar.batch.components.EmbedderViolationsDecorator;
+import org.sonar.batch.components.RemoteProfileLoader;
 import org.sonar.batch.index.DefaultIndex;
 
 public class ProjectModule extends Module {
@@ -59,7 +61,10 @@ public class ProjectModule extends Module {
     addComponent(DefaultIndex.class);
 
     addAdapter(new EmbedderProfileProvider());
+    addComponent(RemoteProfileLoader.class);
     addComponent(EmbedderRuleFinder.class);
+
+    addComponent(EmbedderViolationsDecorator.class);
 
     // Required for BatchExtensionDictionnary, otherwise it can't pick up formulas
     for (Metric metric : CoreMetrics.getMetrics()) {

@@ -19,62 +19,22 @@
  */
 package org.sonar.batch.components;
 
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
 import org.picocontainer.injectors.ProviderAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.resources.Project;
-import org.sonar.api.rules.Rule;
-import org.sonar.api.rules.RulePriority;
-import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.services.RuleQuery;
 
 /**
  * Provides {@link RulesProfile} from remote Sonar server.
  */
 public class EmbedderProfileProvider extends ProviderAdapter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(EmbedderProfileProvider.class);
-
   private RulesProfile profile;
 
-  public RulesProfile provide(Project project) {
+  public RulesProfile provide(ProjectProfileLoader provider, Project project) {
     if (profile == null) {
-      profile = RulesProfile.create();
-      try {
-        // TODO hard-coded values
-        Sonar sonar = Sonar.create("http://localhost:9000");
-        RuleQuery ruleQuery = new RuleQuery("java").setActive(true).setProfile("Sonar for Sonar");
-        List<org.sonar.wsclient.services.Rule> wsRules = sonar.findAll(ruleQuery);
-        for (org.sonar.wsclient.services.Rule wsRule : wsRules) {
-          Rule rule = materialize(wsRule);
-          profile.activateRule(rule, null);
-        }
-      } catch (Exception e) {
-        LOG.error(e.getMessage(), e);
-      }
+      profile = provider.load(project);
     }
     return profile;
-  }
-
-  private Rule materialize(org.sonar.wsclient.services.Rule wsRule) {
-    String repositoryKey = StringUtils.substringBefore(wsRule.getKey(), ":");
-    String key = StringUtils.substringAfter(wsRule.getKey(), ":");
-    RulePriority severity = RulePriority.valueOf(wsRule.getSeverity());
-    Rule rule = Rule.create()
-        .setRepositoryKey(repositoryKey)
-        .setKey(key)
-        .setConfigKey(wsRule.getConfigKey())
-        .setSeverity(severity);
-    if (wsRule.getParams() != null) {
-      for (org.sonar.wsclient.services.RuleParam wsParam : wsRule.getParams()) {
-        rule.createParameter(wsParam.getName()).setDefaultValue(wsParam.getValue());
-      }
-    }
-    return rule;
   }
 
 }

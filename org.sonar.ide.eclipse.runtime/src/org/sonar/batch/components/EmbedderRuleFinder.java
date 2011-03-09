@@ -48,7 +48,7 @@ public class EmbedderRuleFinder implements RuleFinder {
   }
 
   public Rule findByKey(String repositoryKey, String key) {
-    ActiveRule activeRule = profile.getActiveRuleByConfigKey(repositoryKey, key);
+    ActiveRule activeRule = profile.getActiveRule(repositoryKey, key);
     if (activeRule != null) {
       return activeRule.getRule();
     }

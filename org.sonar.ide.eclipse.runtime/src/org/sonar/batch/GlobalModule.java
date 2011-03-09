@@ -31,7 +31,6 @@ public class GlobalModule extends Module {
 
     addComponent(FakeMavenPluginExecutor.class);
     addComponent(EmbedderDatabaseSession.class);
-    // addComponent(Mocks.createRuleFinder());
     addComponent(EmbedderMetricFinder.class);
     addComponent(EmbedderPersistenceManager.class);
   }

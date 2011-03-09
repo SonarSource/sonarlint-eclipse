@@ -19,16 +19,13 @@
  */
 package org.sonar.batch;
 
-import org.sonar.batch.components.EmbedderIndex;
-
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.MapConfiguration;
 import org.sonar.api.CoreProperties;
 import org.sonar.api.resources.Java;
 import org.sonar.api.resources.Project;
-import org.sonar.batch.InMemoryPomCreator;
-import org.sonar.batch.Module;
 import org.sonar.batch.bootstrapper.ProjectDefinition;
+import org.sonar.batch.components.EmbedderIndex;
 
 /**
  * @TODO copied from module sonar-embedder
@@ -47,7 +44,7 @@ public class SonarEclipseRuntime {
     Project project = createProject(projectDefinition);
 
     Module projectModule = globalModule.installChild(new ProjectModule(project))
-        .install(new CorePluginModule());
+        .install(EmbeddedSonarPlugin.getDefault().getSonarCustomizer());
     for (org.sonar.api.Plugin plugin : plugins) {
       projectModule.install(new PluginModule(plugin));
     }

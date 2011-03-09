@@ -24,14 +24,14 @@ import java.io.File;
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 
-public class Activator extends Plugin {
+public class EmbeddedSonarPlugin extends Plugin {
 
   private IPluginsManager pluginsManager;
 
-  private static Activator activator;
+  private static EmbeddedSonarPlugin plugin;
 
-  public Activator() {
-    this.activator = this;
+  public EmbeddedSonarPlugin() {
+    this.plugin = this;
   }
 
   @Override
@@ -71,11 +71,17 @@ public class Activator extends Plugin {
     super.stop(context);
   }
 
-  public static Activator getDefault() {
-    return activator;
+  public static EmbeddedSonarPlugin getDefault() {
+    return plugin;
   }
 
   public org.sonar.api.Plugin[] getPlugins() {
     return pluginsManager.getPlugins();
+  }
+
+  private CustomProjectComponentsModule customizer = new CustomProjectComponentsModule();
+
+  public CustomProjectComponentsModule getSonarCustomizer() {
+    return customizer;
   }
 }

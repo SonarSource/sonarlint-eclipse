@@ -38,7 +38,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.batch.Activator;
+import org.sonar.batch.EmbeddedSonarPlugin;
 import org.sonar.batch.SonarEclipseRuntime;
 import org.sonar.batch.bootstrapper.ProjectDefinition;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
@@ -87,7 +87,7 @@ public class AnalyseProjectJob extends Job {
       configurator.configure(request, monitor);
     }
 
-    SonarEclipseRuntime runtime = new SonarEclipseRuntime(Activator.getDefault().getPlugins());
+    SonarEclipseRuntime runtime = new SonarEclipseRuntime(EmbeddedSonarPlugin.getDefault().getPlugins());
     runtime.start();
     runtime.analyse(sonarProject);
 

@@ -42,7 +42,7 @@ Bundle-ClassPath: .,jars/sonar-batch-maven-compat-2.7-SNAPSHOT.jar,jar
  r,jars/javax.inject-1.jar,jars/antlr-2.7.6.jar
 Bundle-Version: 1.1.0.qualifier
 Bundle-Name: Embedded Sonar
-Bundle-Activator: org.sonar.batch.Activator
+Bundle-Activator: org.sonar.batch.EmbeddedSonarPlugin
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.sonar.ide.eclipse.runtime;singleton:=true
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,JavaSE-1.6
