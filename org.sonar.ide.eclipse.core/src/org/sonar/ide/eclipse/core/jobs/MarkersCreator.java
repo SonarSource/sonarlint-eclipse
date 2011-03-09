@@ -17,7 +17,7 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.ui.runtime;
+package org.sonar.ide.eclipse.core.jobs;
 
 import java.util.ArrayList;
 import java.util.Collection;

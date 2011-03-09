@@ -15,7 +15,7 @@
             id="org.sonar.ide.eclipse.objectContribution2"
             objectClass="org.eclipse.core.resources.IProject">
          <action
-               class="org.sonar.ide.eclipse.internal.ui.runtime.AnalyseAction"
+               class="org.sonar.ide.eclipse.internal.ui.actions.AnalyseProjectAction"
                enablesFor="1"
                id="org.sonar.ide.eclipse.runtime.ui.analyseAction"
                label="Analyse by Sonar"

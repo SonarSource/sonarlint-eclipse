@@ -17,7 +17,7 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.ui.runtime;
+package org.sonar.ide.eclipse.internal.ui.actions;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.IAction;
@@ -26,10 +26,11 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
+import org.sonar.ide.eclipse.core.jobs.AnalyseProjectJob;
 
-public class AnalyseAction implements IObjectActionDelegate {
+public class AnalyseProjectAction implements IObjectActionDelegate {
 
-  public AnalyseAction() {
+  public AnalyseProjectAction() {
     super();
   }
 
@@ -43,7 +44,7 @@ public class AnalyseAction implements IObjectActionDelegate {
    * @see IActionDelegate#run(IAction)
    */
   public void run(IAction action) {
-    new AnalyseJob(project).schedule();
+    new AnalyseProjectJob(project).schedule();
   }
 
   private IProject project;

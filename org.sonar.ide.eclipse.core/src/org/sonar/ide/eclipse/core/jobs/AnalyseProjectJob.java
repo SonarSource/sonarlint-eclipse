@@ -17,7 +17,7 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.ui.runtime;
+package org.sonar.ide.eclipse.core.jobs;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -34,23 +35,26 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.osgi.util.NLS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.batch.Activator;
 import org.sonar.batch.SonarEclipseRuntime;
 import org.sonar.batch.bootstrapper.ProjectDefinition;
-import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
+import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
+import org.sonar.ide.eclipse.internal.core.Messages;
 
-public class AnalyseJob extends Job {
+public class AnalyseProjectJob extends Job {
 
-  private static final Logger LOG = LoggerFactory.getLogger(AnalyseJob.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AnalyseProjectJob.class);
 
   private IProject project;
 
-  public AnalyseJob(IProject project) {
-    super("Sonar local");
+  public AnalyseProjectJob(IProject project) {
+    super(Messages.AnalyseProjectJob_title);
     this.project = project;
+    setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule()); // Prevent modifications of project during analysis
   }
 
   private Collection<ProjectConfigurator> getConfigurators() {
@@ -71,6 +75,8 @@ public class AnalyseJob extends Job {
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
+    monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analysing, project.getName()), IProgressMonitor.UNKNOWN);
+
     File baseDir = project.getLocation().toFile();
     File workDir = new File(baseDir, "target/sonar-embedder-work"); // TODO hard-coded value
     Properties properties = new Properties();
@@ -93,6 +99,9 @@ public class AnalyseJob extends Job {
 
     runtime.stop();
 
+    monitor.done();
+
     return Status.OK_STATUS;
   }
+
 }
