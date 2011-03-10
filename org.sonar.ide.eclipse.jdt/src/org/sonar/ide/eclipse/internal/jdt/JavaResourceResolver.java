@@ -33,6 +33,7 @@ public class JavaResourceResolver extends ResourceResolver {
 
   @Override
   public String resolve(IResource resource, IProgressMonitor monitor) {
+    // TODO handle not only files
     IJavaElement javaElement = JavaCore.create(resource);
     if (javaElement instanceof ICompilationUnit) {
       String packageName = getPackageName(javaElement.getParent());

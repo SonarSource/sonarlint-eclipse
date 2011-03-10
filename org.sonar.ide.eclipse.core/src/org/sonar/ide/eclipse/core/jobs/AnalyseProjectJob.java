@@ -25,7 +25,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -41,9 +44,12 @@ import org.slf4j.LoggerFactory;
 import org.sonar.batch.EmbeddedSonarPlugin;
 import org.sonar.batch.SonarEclipseRuntime;
 import org.sonar.batch.bootstrapper.ProjectDefinition;
+import org.sonar.batch.components.EmbedderIndex;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.internal.core.Messages;
+import org.sonar.ide.eclipse.internal.core.markers.MarkerUtils;
+import org.sonar.ide.eclipse.internal.core.resources.ResourceUtils;
 
 public class AnalyseProjectJob extends Job {
 
@@ -74,9 +80,10 @@ public class AnalyseProjectJob extends Job {
   }
 
   @Override
-  protected IStatus run(IProgressMonitor monitor) {
+  protected IStatus run(final IProgressMonitor monitor) {
     monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analysing, project.getName()), IProgressMonitor.UNKNOWN);
 
+    // Configure
     File baseDir = project.getLocation().toFile();
     File workDir = new File(baseDir, "target/sonar-embedder-work"); // TODO hard-coded value
     Properties properties = new Properties();
@@ -87,12 +94,25 @@ public class AnalyseProjectJob extends Job {
       configurator.configure(request, monitor);
     }
 
+    // Analyse
     SonarEclipseRuntime runtime = new SonarEclipseRuntime(EmbeddedSonarPlugin.getDefault().getPlugins());
     runtime.start();
     runtime.analyse(sonarProject);
+    final EmbedderIndex index = runtime.getIndex();
 
+    // Create markers
     try {
-      project.accept(new MarkersCreator(monitor, runtime.getIndex()));
+      project.accept(new IResourceVisitor() {
+        public boolean visit(IResource resource) throws CoreException {
+          MarkerUtils.deleteViolationsMarkers(resource);
+          String sonarKey = ResourceUtils.getSonarKey(resource, monitor);
+          if (sonarKey != null) {
+            MarkerUtils.createMarkersForViolations(resource, index.getViolations(sonarKey));
+          }
+          // don't go deeper than file
+          return resource instanceof IFile ? false : true;
+        }
+      });
     } catch (CoreException e) {
       LOG.error(e.getMessage(), e);
     }
@@ -100,7 +120,6 @@ public class AnalyseProjectJob extends Job {
     runtime.stop();
 
     monitor.done();
-
     return Status.OK_STATUS;
   }
 

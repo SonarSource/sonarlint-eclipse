@@ -26,10 +26,14 @@ import org.sonar.api.rules.Violation;
 
 public interface EmbedderIndex {
 
-  Measure getMeasure(String resourceKey, String metricKey);
-
+  /**
+   * @return measures for specified resource (never null)
+   */
   Collection<Measure> getMeasures(String resourceKey);
 
+  /**
+   * @return violations for specified resource (never null)
+   */
   Collection<Violation> getViolations(String resourceKey);
 
 }

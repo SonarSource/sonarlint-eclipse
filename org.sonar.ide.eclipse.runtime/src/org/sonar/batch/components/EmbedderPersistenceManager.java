@@ -20,6 +20,7 @@
 package org.sonar.batch.components;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -40,17 +41,18 @@ public class EmbedderPersistenceManager implements PersistenceManager, EmbedderI
   private Map<String, Map<String, Measure>> measuresByResource = Maps.newHashMap();
   private Map<String, List<Violation>> violationsByResource = Maps.newHashMap();
 
-  public Measure getMeasure(String resourceKey, String metricKey) {
-    Map<String, Measure> measuresByMetric = measuresByResource.get(resourceKey);
-    return measuresByMetric.get(metricKey);
-  }
-
   public Collection<Measure> getMeasures(String resourceKey) {
+    if (!measuresByResource.containsKey(resourceKey)) {
+      return Collections.emptyList();
+    }
     Map<String, Measure> measuresByMetric = measuresByResource.get(resourceKey);
     return measuresByMetric.values();
   }
 
   public Collection<Violation> getViolations(String resourceKey) {
+    if (!violationsByResource.containsKey(resourceKey)) {
+      return Collections.emptyList();
+    }
     return violationsByResource.get(resourceKey);
   }
 
