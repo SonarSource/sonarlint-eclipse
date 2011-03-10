@@ -19,17 +19,18 @@
  */
 package org.sonar.batch.components;
 
-import org.sonar.api.profiles.RulesProfile;
-import org.sonar.api.resources.Project;
-
 /**
- * @TODO Godin: I suppose that this interface should be in Sonar Core
+ * Indicates that the requested operation is not supported by embedded Sonar.
  */
-public interface ProjectProfileLoader {
+public class EmbedderUnsupportedOperationException extends UnsupportedOperationException {
 
-  /**
-   * Loads quality profile for specified project.
-   */
-  RulesProfile load(Project project);
+  private static final String DEFAULT_MESSAGE = "Not supported by embedded Sonar";
 
+  public EmbedderUnsupportedOperationException() {
+    this(null);
+  }
+
+  public EmbedderUnsupportedOperationException(String message) {
+    super(message == null ? DEFAULT_MESSAGE : DEFAULT_MESSAGE + "(" + message + ")");
+  }
 }

@@ -22,25 +22,46 @@ package org.sonar.batch.components;
 import java.util.Collection;
 import java.util.List;
 
+import com.google.common.collect.Lists;
+import org.codehaus.plexus.util.StringUtils;
 import org.sonar.api.measures.Metric;
 import org.sonar.api.measures.MetricFinder;
 
 public class EmbedderMetricFinder implements MetricFinder {
 
+  private Metric[] metrics;
+
+  public EmbedderMetricFinder(Metric[] metrics) {
+    this.metrics = metrics;
+  }
+
   public Collection<Metric> findAll() {
-    throw new UnsupportedOperationException();
+    return Lists.newArrayList(metrics);
   }
 
   public Collection<Metric> findAll(List<String> metricKeys) {
-    throw new UnsupportedOperationException();
+    List<Metric> result = Lists.newArrayList();
+    for (Metric metric : metrics) {
+      for (String key : metricKeys) {
+        if (StringUtils.equals(key, metric.getKey())) {
+          result.add(metric);
+        }
+      }
+    }
+    return result;
   }
 
   public Metric findById(int id) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException("Searching metric by id doesn't make sense without database");
   }
 
   public Metric findByKey(String key) {
-    return new Metric(key);
+    for (Metric metric : metrics) {
+      if (StringUtils.equals(key, metric.getKey())) {
+        return metric;
+      }
+    }
+    return null;
   }
 
 }

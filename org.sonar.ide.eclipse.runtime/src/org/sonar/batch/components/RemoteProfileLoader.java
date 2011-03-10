@@ -31,27 +31,26 @@ import org.sonar.api.rules.RulePriority;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.RuleQuery;
 
+/**
+ * Loads {@link RulesProfile} from remote Sonar server.
+ */
 public class RemoteProfileLoader implements ProjectProfileLoader {
 
   private static final Logger LOG = LoggerFactory.getLogger(EmbedderProfileProvider.class);
 
-  private RulesProfile profile;
-
   public RulesProfile load(Project project) {
-    if (profile == null) {
-      profile = RulesProfile.create();
-      try {
-        // TODO hard-coded values
-        Sonar sonar = Sonar.create("http://localhost:9000");
-        RuleQuery ruleQuery = new RuleQuery("java").setActive(true).setProfile("Sonar for Sonar");
-        List<org.sonar.wsclient.services.Rule> wsRules = sonar.findAll(ruleQuery);
-        for (org.sonar.wsclient.services.Rule wsRule : wsRules) {
-          Rule rule = materialize(wsRule);
-          profile.activateRule(rule, null);
-        }
-      } catch (Exception e) {
-        LOG.error(e.getMessage(), e);
+    RulesProfile profile = RulesProfile.create();
+    try {
+      // TODO hard-coded values
+      Sonar sonar = Sonar.create("http://localhost:9000");
+      RuleQuery ruleQuery = new RuleQuery("java").setActive(true).setProfile("Sonar for Sonar");
+      List<org.sonar.wsclient.services.Rule> wsRules = sonar.findAll(ruleQuery);
+      for (org.sonar.wsclient.services.Rule wsRule : wsRules) {
+        Rule rule = materialize(wsRule);
+        profile.activateRule(rule, null);
       }
+    } catch (Exception e) {
+      LOG.error(e.getMessage(), e);
     }
     return profile;
   }

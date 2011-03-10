@@ -24,7 +24,9 @@ import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.resources.Project;
 
 /**
- * Provides {@link RulesProfile} from remote Sonar server.
+ * @TODO Godin: I suppose that this class should be in Sonar Core
+ * @see RemoteProfileLoader
+ * @see ProjectProfileLoader
  */
 public class EmbedderProfileProvider extends ProviderAdapter {
 

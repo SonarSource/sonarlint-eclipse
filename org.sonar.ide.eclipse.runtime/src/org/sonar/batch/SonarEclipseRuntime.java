@@ -27,9 +27,6 @@ import org.sonar.api.resources.Project;
 import org.sonar.batch.bootstrapper.ProjectDefinition;
 import org.sonar.batch.components.EmbedderIndex;
 
-/**
- * @TODO copied from module sonar-embedder
- */
 public class SonarEclipseRuntime {
 
   private org.sonar.api.Plugin[] plugins;

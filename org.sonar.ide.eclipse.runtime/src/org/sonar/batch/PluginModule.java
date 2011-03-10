@@ -29,6 +29,12 @@ import org.sonar.core.plugin.AbstractPluginRepository;
 
 public class PluginModule extends Module {
 
+  private static final String[] BLACK_LIST = {
+      "org.sonar.plugins.core.timemachine.",
+      "org.sonar.plugins.core.sensors.AsynchronousMeasuresSensor",
+      "org.sonar.plugins.core.sensors.GenerateAlertEvents"
+  };
+
   private Plugin plugin;
 
   public PluginModule(Plugin plugin) {
@@ -45,20 +51,18 @@ public class PluginModule extends Module {
   }
 
   private boolean shouldRegisterExtension(Object extension) {
-    boolean ok = isType(extension, BatchExtension.class) && isSupportsEnvironment(extension);
-    if (ok) {
-      if (extension instanceof Class) {
-        String extensionClassName = ((Class) extension).getCanonicalName();
-        if (extensionClassName.startsWith("org.sonar.plugins.core.timemachine")) {
-          ok = false;
-        } else if (extensionClassName.startsWith("org.sonar.plugins.core.sensors.AsynchronousMeasuresSensor")) {
-          ok = false;
-        } else if (extensionClassName.startsWith("org.sonar.plugins.core.sensors.GenerateAlertEvents")) {
-          ok = false;
-        }
+    return isType(extension, BatchExtension.class) && isSupportsEnvironment(extension) && isNotBlackListed(extension);
+  }
+
+  private boolean isNotBlackListed(Object extension) {
+    Class clazz = (extension instanceof Class ? (Class) extension : extension.getClass());
+    String extensionClassName = clazz.getCanonicalName();
+    for (String black : BLACK_LIST) {
+      if (extensionClassName.startsWith(black)) {
+        return false;
       }
     }
-    return ok;
+    return true;
   }
 
   private boolean isSupportsEnvironment(Object extension) {

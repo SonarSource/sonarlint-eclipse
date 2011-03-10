@@ -37,7 +37,7 @@ public class EmbedderProjectTree extends ProjectTree {
 
   @Override
   public Project getProjectByArtifactId(String artifactId) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException("part of coupling with Maven - should be removed");
   }
 
 }

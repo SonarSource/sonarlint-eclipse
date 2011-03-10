@@ -36,15 +36,15 @@ public class EmbedderRuleFinder implements RuleFinder {
   }
 
   public Rule find(RuleQuery query) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException();
   }
 
   public Collection<Rule> findAll(RuleQuery query) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException();
   }
 
   public Rule findById(int id) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException("Searching rule by id doesn't make sense without database");
   }
 
   public Rule findByKey(String repositoryKey, String key) {

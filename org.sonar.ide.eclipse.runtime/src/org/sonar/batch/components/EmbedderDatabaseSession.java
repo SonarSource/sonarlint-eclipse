@@ -28,88 +28,90 @@ import org.sonar.api.database.DatabaseSession;
 
 public class EmbedderDatabaseSession extends DatabaseSession {
 
+  private static final String ERROR_MESSAGE = "part of coupling with database";
+
   @Override
   public void commit() {
   }
 
   @Override
   public boolean contains(Object entity) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public Query createQuery(String hql) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public <T> T getEntity(Class<T> entityClass, Object id) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public EntityManager getEntityManager() {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public <T> List<T> getResults(Class<T> entityClass) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public <T> List<T> getResults(Class<T> entityClass, Object... criterias) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public <T> T getSingleResult(Query query, T defaultValue) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public <T> T getSingleResult(Class<T> entityClass, Object... criterias) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public Object merge(Object entity) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public <T> T reattach(Class<T> entityClass, Object entity) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public void remove(Object entity) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public void removeWithoutFlush(Object entity) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public void rollback() {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public <T> T save(T entity) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public void save(Object... entities) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override
   public Object saveWithoutFlush(Object arg0) {
-    throw new UnsupportedOperationException();
+    throw new EmbedderUnsupportedOperationException(ERROR_MESSAGE);
   }
 
   @Override

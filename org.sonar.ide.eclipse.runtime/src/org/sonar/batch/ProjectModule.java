@@ -20,17 +20,25 @@
 package org.sonar.batch;
 
 import org.sonar.api.batch.BatchExtensionDictionnary;
+import org.sonar.api.batch.DecoratorContext;
 import org.sonar.api.batch.ProjectClasspath;
+import org.sonar.api.batch.SensorContext;
+import org.sonar.api.batch.SonarIndex;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.measures.Metric;
+import org.sonar.api.measures.MetricFinder;
 import org.sonar.api.resources.DefaultProjectFileSystem;
 import org.sonar.api.resources.Languages;
 import org.sonar.api.resources.Project;
 import org.sonar.api.resources.Project.AnalysisType;
+import org.sonar.api.resources.ProjectFileSystem;
+import org.sonar.api.rules.RuleFinder;
+import org.sonar.batch.components.EmbedderMetricFinder;
 import org.sonar.batch.components.EmbedderProfileProvider;
 import org.sonar.batch.components.EmbedderProjectTree;
 import org.sonar.batch.components.EmbedderRuleFinder;
 import org.sonar.batch.components.EmbedderViolationsDecorator;
+import org.sonar.batch.components.ProjectProfileLoader;
 import org.sonar.batch.components.RemoteProfileLoader;
 import org.sonar.batch.index.DefaultIndex;
 
@@ -52,24 +60,30 @@ public class ProjectModule extends Module {
 
     addComponent(Languages.class);
 
-    addComponent(DefaultSensorContext.class);
-    addComponent(DefaultDecoratorContext.class);
-    addComponent(DefaultProjectFileSystem.class);
+    bind(SensorContext.class, DefaultSensorContext.class);
+    bind(DecoratorContext.class, DefaultDecoratorContext.class);
+    bind(ProjectFileSystem.class, DefaultProjectFileSystem.class);
     addComponent(ProjectClasspath.class);
 
-    addComponent(new EmbedderProjectTree(project)); // required for DefaultIndex
-    addComponent(DefaultIndex.class);
+    addComponent(new EmbedderProjectTree(project)); // for DefaultIndex
+    bind(SonarIndex.class, DefaultIndex.class);
 
-    addAdapter(new EmbedderProfileProvider());
-    addComponent(RemoteProfileLoader.class);
-    addComponent(EmbedderRuleFinder.class);
+    bind(ProjectProfileLoader.class, RemoteProfileLoader.class); // for EmbedderProfileProvider
+    addAdapter(new EmbedderProfileProvider()); // for RuleFinder
+    bind(RuleFinder.class, EmbedderRuleFinder.class);
 
-    addComponent(EmbedderViolationsDecorator.class);
+    bind(MetricFinder.class, EmbedderMetricFinder.class);
+
+    addComponent(EmbedderViolationsDecorator.class); // able to save violations
 
     // Required for BatchExtensionDictionnary, otherwise it can't pick up formulas
     for (Metric metric : CoreMetrics.getMetrics()) {
       addComponent(metric.getKey(), metric);
     }
+  }
+
+  private <T> void bind(Class<T> role, Class<? extends T> impl) {
+    addComponent(role, impl);
   }
 
   @Override
