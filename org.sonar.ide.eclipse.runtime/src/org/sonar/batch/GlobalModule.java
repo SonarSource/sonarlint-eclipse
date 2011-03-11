@@ -19,7 +19,6 @@
  */
 package org.sonar.batch;
 
-import org.sonar.batch.components.EmbedderDatabaseSession;
 import org.sonar.batch.components.EmbedderPersistenceManager;
 
 public class GlobalModule extends Module {
@@ -29,7 +28,6 @@ public class GlobalModule extends Module {
     addComponent(DefaultResourceCreationLock.class);
 
     addComponent(FakeMavenPluginExecutor.class);
-    addComponent(EmbedderDatabaseSession.class);
     addComponent(EmbedderPersistenceManager.class);
   }
 

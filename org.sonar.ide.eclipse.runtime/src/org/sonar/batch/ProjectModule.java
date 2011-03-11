@@ -34,11 +34,9 @@ import org.sonar.api.resources.Project.AnalysisType;
 import org.sonar.api.resources.ProjectFileSystem;
 import org.sonar.api.rules.RuleFinder;
 import org.sonar.batch.components.EmbedderMetricFinder;
-import org.sonar.batch.components.EmbedderProfileProvider;
 import org.sonar.batch.components.EmbedderProjectTree;
 import org.sonar.batch.components.EmbedderRuleFinder;
 import org.sonar.batch.components.EmbedderViolationsDecorator;
-import org.sonar.batch.components.ProjectProfileLoader;
 import org.sonar.batch.components.RemoteProfileLoader;
 import org.sonar.batch.index.DefaultIndex;
 
@@ -68,8 +66,8 @@ public class ProjectModule extends Module {
     addComponent(new EmbedderProjectTree(project)); // for DefaultIndex
     bind(SonarIndex.class, DefaultIndex.class);
 
-    bind(ProjectProfileLoader.class, RemoteProfileLoader.class); // for EmbedderProfileProvider
-    addAdapter(new EmbedderProfileProvider()); // for RuleFinder
+    bind(ProfileLoader.class, RemoteProfileLoader.class); // for EmbedderProfileProvider
+    addAdapter(new ProfileProvider()); // for RuleFinder
     bind(RuleFinder.class, EmbedderRuleFinder.class);
 
     bind(MetricFinder.class, EmbedderMetricFinder.class);

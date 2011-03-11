@@ -28,15 +28,16 @@ import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.resources.Project;
 import org.sonar.api.rules.Rule;
 import org.sonar.api.rules.RulePriority;
+import org.sonar.batch.ProfileLoader;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.RuleQuery;
 
 /**
  * Loads {@link RulesProfile} from remote Sonar server.
  */
-public class RemoteProfileLoader implements ProjectProfileLoader {
+public class RemoteProfileLoader implements ProfileLoader {
 
-  private static final Logger LOG = LoggerFactory.getLogger(EmbedderProfileProvider.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RemoteProfileLoader.class);
 
   public RulesProfile load(Project project) {
     RulesProfile profile = RulesProfile.create();

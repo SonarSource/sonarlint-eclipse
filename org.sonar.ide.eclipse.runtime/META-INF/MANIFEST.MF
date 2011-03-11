@@ -20,10 +20,10 @@ Export-Package: org.sonar.api.security,org.sonar.api.web.gwt,org.sonar
  picocontainer.security,org.sonar.api.utils.dag,org.sonar.batch.compon
  ents,org.picocontainer.converters,org.sonar.api.web.gwt.client.widget
  s,org.sonar.api.charts,org.sonar.api.web.gwt.client.webservices,org.s
- onar.api.utils,org.sonar.api.database,org.sonar.api.batch.maven,org.p
- icocontainer.containers,org.sonar.api.checks,org.picocontainer.refere
- nces,org.picocontainer.monitors,org.picocontainer.behaviors,org.apach
- e.commons.configuration
+ onar.api.utils,org.sonar.api.database,org.sonar.api.batch.maven,org.s
+ onar.batch.events,org.picocontainer.containers,org.sonar.api.checks,o
+ rg.picocontainer.references,org.picocontainer.monitors,org.picocontai
+ ner.behaviors,org.apache.commons.configuration
 Bundle-Vendor: SonarSource
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,jars/sonar-batch-maven-compat-2.7-SNAPSHOT.jar,jar

@@ -19,21 +19,23 @@
  */
 package org.sonar.batch;
 
-import org.sonar.batch.components.EmbedderMemoryOptimizer;
 import org.sonar.batch.components.EmbedderPhases;
+import org.sonar.batch.events.EventBus;
 import org.sonar.batch.phases.DecoratorsExecutor;
 import org.sonar.batch.phases.InitializersExecutor;
+import org.sonar.batch.phases.PhasesTimeProfiler;
 import org.sonar.batch.phases.SensorsExecutor;
 
 public class ProjectPhasesModule extends Module {
 
   @Override
   protected void configure() {
-    addComponent(EmbedderMemoryOptimizer.class);
     addComponent(InitializersExecutor.class);
     addComponent(SensorsExecutor.class);
     addComponent(DecoratorsExecutor.class);
     addComponent(EmbedderPhases.class);
+    addComponent(EventBus.class);
+    addComponent(PhasesTimeProfiler.class);
   }
 
 }

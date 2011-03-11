@@ -19,15 +19,14 @@
  */
 package org.sonar.ide.eclipse.core.jobs;
 
-import org.sonar.batch.components.ProjectProfileLoader;
-
 import org.sonar.api.CoreProperties;
 import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.resources.Project;
 import org.sonar.api.rules.Rule;
 import org.sonar.api.rules.RulePriority;
+import org.sonar.batch.ProfileLoader;
 
-public class FakeProfileLoader implements ProjectProfileLoader {
+public class FakeProfileLoader implements ProfileLoader {
 
   public RulesProfile load(Project project) {
     RulesProfile profile = RulesProfile.create();

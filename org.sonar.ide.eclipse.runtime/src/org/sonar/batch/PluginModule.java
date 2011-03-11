@@ -30,6 +30,7 @@ import org.sonar.core.plugin.AbstractPluginRepository;
 public class PluginModule extends Module {
 
   private static final String[] BLACK_LIST = {
+      "org.sonar.plugins.core.security.",
       "org.sonar.plugins.core.timemachine.",
       "org.sonar.plugins.core.sensors.AsynchronousMeasuresSensor",
       "org.sonar.plugins.core.sensors.GenerateAlertEvents"

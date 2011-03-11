@@ -35,7 +35,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonar.batch.EmbeddedSonarPlugin;
-import org.sonar.batch.components.ProjectProfileLoader;
+import org.sonar.batch.ProfileLoader;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.tests.common.JobHelpers;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
@@ -44,12 +44,12 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Before
   public void setUp() {
-    EmbeddedSonarPlugin.getDefault().getSonarCustomizer().replace(ProjectProfileLoader.class, FakeProfileLoader.class);
+    EmbeddedSonarPlugin.getDefault().getSonarCustomizer().replace(ProfileLoader.class, FakeProfileLoader.class);
   }
 
   @After
   public void tearDown() {
-    EmbeddedSonarPlugin.getDefault().getSonarCustomizer().restore(ProjectProfileLoader.class);
+    EmbeddedSonarPlugin.getDefault().getSonarCustomizer().restore(ProfileLoader.class);
   }
 
   @Test
