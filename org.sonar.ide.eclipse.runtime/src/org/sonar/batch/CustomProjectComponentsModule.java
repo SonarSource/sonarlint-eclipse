@@ -19,33 +19,37 @@
  */
 package org.sonar.batch;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 public class CustomProjectComponentsModule extends Module {
   private static final Logger LOG = LoggerFactory.getLogger(CustomProjectComponentsModule.class);
 
-  private Map<Class, Class> replacements = Maps.newHashMap();
+  private Map<Class, Object> components = Maps.newHashMap();
 
   public void configure() {
-    for (Map.Entry<Class, Class> entry : replacements.entrySet()) {
+    for (Map.Entry<Class, Object> entry : components.entrySet()) {
       Class<?> role = entry.getKey();
-      Class<?> impl = entry.getValue();
+      Object impl = entry.getValue();
       getContainer().removeComponent(role);
       getContainer().addComponent(role, impl);
     }
   }
 
+  public <T, I extends T> void bind(Class<T> role, I impl) {
+    components.put(role, impl);
+  }
+
   public <T> void replace(Class<T> role, Class<? extends T> impl) {
     LOG.info("Replacing {} by {}", role, impl);
-    replacements.put(role, impl);
+    components.put(role, impl);
   }
 
   public void restore(Class role) {
-    Class impl = replacements.remove(role);
+    Object impl = components.remove(role);
     LOG.info("Removed replacement {} by {}", role, impl);
   }
 

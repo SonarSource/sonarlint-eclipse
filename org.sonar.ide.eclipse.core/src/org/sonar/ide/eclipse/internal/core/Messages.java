@@ -34,4 +34,6 @@ public class Messages extends NLS {
 
   public static String AnalyseProjectJob_title;
   public static String AnalyseProjectJob_task_analysing;
+  public static String AnalyseProjectJob_sutask_sensor;
+  public static String AnalyseProjectJob_sutask_decorator;
 }

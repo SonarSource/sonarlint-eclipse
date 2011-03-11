@@ -19,12 +19,6 @@
  */
 package org.sonar.ide.eclipse.core.jobs;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -41,15 +35,27 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.batch.CustomProjectComponentsModule;
 import org.sonar.batch.EmbeddedSonarPlugin;
 import org.sonar.batch.SonarEclipseRuntime;
 import org.sonar.batch.bootstrapper.ProjectDefinition;
 import org.sonar.batch.components.EmbedderIndex;
+import org.sonar.batch.events.DecoratorExecutionEvent;
+import org.sonar.batch.events.DecoratorExecutionHandler;
+import org.sonar.batch.events.SensorExecutionEvent;
+import org.sonar.batch.events.SensorExecutionHandler;
+import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.internal.core.Messages;
 import org.sonar.ide.eclipse.internal.core.markers.MarkerUtils;
 import org.sonar.ide.eclipse.internal.core.resources.ResourceUtils;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 public class AnalyseProjectJob extends Job {
 
@@ -95,6 +101,8 @@ public class AnalyseProjectJob extends Job {
     }
 
     // Analyse
+    CustomProjectComponentsModule customizer = EmbeddedSonarPlugin.getDefault().getSonarCustomizer();
+    customizer.bind(SonarProgressMonitor.class, new SonarProgressMonitor(monitor));
     SonarEclipseRuntime runtime = new SonarEclipseRuntime(EmbeddedSonarPlugin.getDefault().getPlugins());
     runtime.start();
     runtime.analyse(sonarProject);
@@ -121,6 +129,34 @@ public class AnalyseProjectJob extends Job {
 
     monitor.done();
     return Status.OK_STATUS;
+  }
+
+  private static class SonarProgressMonitor implements SensorExecutionHandler, DecoratorExecutionHandler {
+    private IProgressMonitor monitor;
+
+    public SonarProgressMonitor(IProgressMonitor monitor) {
+      this.monitor = monitor;
+    }
+
+    public void onSensorExecution(SensorExecutionEvent event) {
+      checkCanceled();
+      if (event.isStartExecution()) {
+        monitor.subTask(NLS.bind(Messages.AnalyseProjectJob_sutask_sensor, event.getSensor()));
+      }
+    }
+
+    public void onDecoratorExecution(DecoratorExecutionEvent event) {
+      checkCanceled();
+      if (event.isStartExecution()) {
+        monitor.subTask(NLS.bind(Messages.AnalyseProjectJob_sutask_decorator, event.getDecorator()));
+      }
+    }
+
+    public void checkCanceled() {
+      if (monitor.isCanceled()) {
+        throw new SonarEclipseException("Interrupted");
+      }
+    }
   }
 
 }
