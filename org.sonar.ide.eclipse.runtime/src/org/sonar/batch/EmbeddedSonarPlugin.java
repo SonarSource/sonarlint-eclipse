@@ -19,12 +19,21 @@
  */
 package org.sonar.batch;
 
-import java.io.File;
-
+import org.apache.commons.io.FileUtils;
+import org.codehaus.plexus.util.IOUtil;
 import org.eclipse.core.runtime.Plugin;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.util.Enumeration;
+
 public class EmbeddedSonarPlugin extends Plugin {
+
+  public static final String PLUGIN_ID = "org.sonar.ide.eclipse.runtime";
 
   private IPluginsManager pluginsManager;
 
@@ -42,26 +51,20 @@ public class EmbeddedSonarPlugin extends Plugin {
     File workDir = new File(stateDir, "sonar-plugins");
     pluginsManager = PluginsManagerFactory.newPluginsManager(workDir);
 
-    pluginsManager.install(getCorePluginFromMavenRepo("sonar-pmd-plugin"));
-    pluginsManager.install(getCorePluginFromMavenRepo("sonar-squid-java-plugin"));
-    pluginsManager.install(getCorePluginFromMavenRepo("sonar-findbugs-plugin"));
-    pluginsManager.install(getCorePluginFromMavenRepo("sonar-checkstyle-plugin"));
-    pluginsManager.install(getCorePluginFromMavenRepo("sonar-design-plugin"));
-    pluginsManager.install(getCorePluginFromMavenRepo("sonar-cpd-plugin"));
-    pluginsManager.install(getCorePluginFromMavenRepo("sonar-core-plugin"));
+    Bundle bundle = context.getBundle();
+    Enumeration<String> e = bundle.getEntryPaths("/plugins/");
+    while (e.hasMoreElements()) {
+      String entry = e.nextElement();
+      URL url = bundle.getEntry(entry);
+      InputStream input = url.openStream();
+      File file = new File(workDir, entry);
+      OutputStream output = FileUtils.openOutputStream(file);
+      IOUtil.copy(input, output);
+      IOUtil.close(input);
+      pluginsManager.install(file);
+    }
 
     pluginsManager.start();
-  }
-
-  private static File getCorePluginFromMavenRepo(String artifactId) {
-    return getPluginFromMavenRepo("org.codehaus.sonar.plugins", artifactId, "2.7-SNAPSHOT");
-  }
-
-  private static File getPluginFromMavenRepo(String groupId, String artifactId, String version) {
-    String userHomePath = System.getProperty("user.home");
-    String repositoryPath = userHomePath + "/.m2/repository/";
-    String artifactPath = groupId.replace('.', '/') + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version + ".jar";
-    return new File(repositoryPath + artifactPath);
   }
 
   @Override

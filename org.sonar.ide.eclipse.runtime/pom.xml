@@ -147,7 +147,67 @@
                     <include>**/MANIFEST.MF</include>
                   </includes>
                 </fileset>
+                <fileset>
+                  <directory>plugins</directory>
+                  <followSymlinks>false</followSymlinks>
+                  <includes>
+                    <include>**/*.jar</include>
+                  </includes>
+                </fileset>
               </filesets>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>clean</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <outputDirectory>plugins</outputDirectory>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.codehaus.sonar.plugins</groupId>
+                  <artifactId>sonar-core-plugin</artifactId>
+                  <version>${sonar.version}</version>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.codehaus.sonar.plugins</groupId>
+                  <artifactId>sonar-checkstyle-plugin</artifactId>
+                  <version>${sonar.version}</version>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.codehaus.sonar.plugins</groupId>
+                  <artifactId>sonar-cpd-plugin</artifactId>
+                  <version>${sonar.version}</version>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.codehaus.sonar.plugins</groupId>
+                  <artifactId>sonar-design-plugin</artifactId>
+                  <version>${sonar.version}</version>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.codehaus.sonar.plugins</groupId>
+                  <artifactId>sonar-findbugs-plugin</artifactId>
+                  <version>${sonar.version}</version>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.codehaus.sonar.plugins</groupId>
+                  <artifactId>sonar-pmd-plugin</artifactId>
+                  <version>${sonar.version}</version>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.codehaus.sonar.plugins</groupId>
+                  <artifactId>sonar-squid-java-plugin</artifactId>
+                  <version>${sonar.version}</version>
+                </artifactItem>
+              </artifactItems>
             </configuration>
           </plugin>
 
