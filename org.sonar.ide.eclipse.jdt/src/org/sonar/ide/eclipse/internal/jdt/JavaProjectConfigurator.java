@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.jdt;
 
-import java.io.File;
-import java.util.Properties;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -34,9 +31,12 @@ import org.slf4j.LoggerFactory;
 import org.sonar.api.CoreProperties;
 import org.sonar.api.resources.Java;
 import org.sonar.batch.bootstrapper.ProjectDefinition;
-import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
+import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
+
+import java.io.File;
+import java.util.Properties;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
@@ -63,29 +63,34 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     LOG.info("Target Java version: {}", javaTarget);
 
     try {
-      IClasspathEntry[] classPath = javaProject.getRawClasspath();
+      IClasspathEntry[] classPath = javaProject.getResolvedClasspath(true);
       for (IClasspathEntry entry : classPath) {
         switch (entry.getEntryKind()) {
           case IClasspathEntry.CPE_SOURCE:
             String srcDir = getAbsolutePath(javaProject, entry.getPath());
-            LOG.info("Source directory: {}", srcDir);
+            LOG.debug("Source directory: {}", srcDir);
             sonarProject.addSourceDir(srcDir);
+            if (entry.getOutputLocation() != null) {
+              String binDir = getAbsolutePath(javaProject, entry.getOutputLocation());
+              LOG.debug("Binary directory: {}", binDir);
+              sonarProject.addBinaryDir(binDir);
+            }
             break;
 
           case IClasspathEntry.CPE_LIBRARY:
-            String libDir = getAbsolutePath(javaProject, entry.getPath());
-            LOG.info("Library: {}", libDir);
+            String libDir = entry.getPath().toOSString();
+            LOG.debug("Library: {}", libDir);
             sonarProject.addLibrary(libDir);
             break;
 
           default:
-            LOG.debug("Unhandled ClassPathEntry : {}", entry);
+            LOG.warn("Unhandled ClassPathEntry : {}", entry);
             break;
         }
       }
 
       String binDir = getAbsolutePath(javaProject, javaProject.getOutputLocation());
-      LOG.info("Binary directory: {}", binDir);
+      LOG.debug("Default binary directory: {}", binDir);
       sonarProject.addBinaryDir(binDir);
     } catch (JavaModelException e) {
       LOG.error(e.getMessage(), e);
