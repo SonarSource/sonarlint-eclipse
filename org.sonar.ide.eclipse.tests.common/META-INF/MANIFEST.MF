@@ -1,6 +1,7 @@
 Manifest-Version: 1.0
-Require-Bundle: org.junit4;bundle-version="4.0.0";visibility:=reexport,
+Require-Bundle: org.junit;bundle-version="4.0.0";visibility:=reexport,
  org.hamcrest;visibility:=reexport,
+ org.mockito;visibility:=reexport,
  org.eclipse.core.resources,
  org.eclipse.core.runtime,
  org.sonar.ide.eclipse.core,
