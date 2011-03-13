@@ -23,6 +23,7 @@ import org.sonar.api.BatchExtension;
 import org.sonar.api.Extension;
 import org.sonar.api.Plugin;
 import org.sonar.api.batch.SupportedEnvironment;
+import org.sonar.api.rules.RuleRepository;
 import org.sonar.api.utils.AnnotationUtils;
 import org.sonar.batch.bootstrap.BatchPluginRepository;
 import org.sonar.core.plugin.AbstractPluginRepository;
@@ -52,7 +53,8 @@ public class PluginModule extends Module {
   }
 
   private boolean shouldRegisterExtension(Object extension) {
-    return isType(extension, BatchExtension.class) && isSupportsEnvironment(extension) && isNotBlackListed(extension);
+    return (isType(extension, BatchExtension.class) && isSupportsEnvironment(extension) && isNotBlackListed(extension))
+        || isType(extension, RuleRepository.class);
   }
 
   private boolean isNotBlackListed(Object extension) {

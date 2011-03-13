@@ -19,20 +19,41 @@
  */
 package org.sonar.batch.components;
 
-import java.util.Collection;
-
-import org.sonar.api.profiles.RulesProfile;
-import org.sonar.api.rules.ActiveRule;
+import com.google.common.collect.Maps;
 import org.sonar.api.rules.Rule;
 import org.sonar.api.rules.RuleFinder;
 import org.sonar.api.rules.RuleQuery;
+import org.sonar.api.rules.RuleRepository;
+import org.sonar.api.utils.Logs;
+
+import java.util.Collection;
+import java.util.Map;
 
 public class EmbedderRuleFinder implements RuleFinder {
 
-  private RulesProfile profile;
+  private final RuleRepository[] repositories;
 
-  public EmbedderRuleFinder(RulesProfile profile) {
-    this.profile = profile;
+  private final Map<String, Map<String, Rule>> rules = Maps.newHashMap();
+
+  public EmbedderRuleFinder(RuleRepository[] repositories) {
+    this.repositories = repositories;
+  }
+
+  public void start() {
+    for (RuleRepository repository : repositories) {
+      registerRepository(repository);
+    }
+  }
+
+  private void registerRepository(RuleRepository repository) {
+    Map<String, Rule> rulesByKey = Maps.newHashMap();
+    for (Rule rule : repository.createRules()) {
+      rule.setRepositoryKey(repository.getKey());
+      rulesByKey.put(rule.getKey(), rule);
+    }
+    Logs.INFO.info("Registered repository " + repository.getKey() + "/" + repository.getLanguage()
+        + " with " + rulesByKey.size() + " rules");
+    rules.put(repository.getKey(), rulesByKey);
   }
 
   public Rule find(RuleQuery query) {
@@ -48,9 +69,9 @@ public class EmbedderRuleFinder implements RuleFinder {
   }
 
   public Rule findByKey(String repositoryKey, String key) {
-    ActiveRule activeRule = profile.getActiveRule(repositoryKey, key);
-    if (activeRule != null) {
-      return activeRule.getRule();
+    Map<String, Rule> rulesByKey = rules.get(repositoryKey);
+    if (rulesByKey != null) {
+      return rulesByKey.get(key);
     }
     return null;
   }

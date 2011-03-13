@@ -19,18 +19,22 @@
  */
 package org.sonar.batch.components;
 
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.resources.Project;
+import org.sonar.api.rules.ActiveRule;
 import org.sonar.api.rules.Rule;
+import org.sonar.api.rules.RuleFinder;
 import org.sonar.api.rules.RulePriority;
 import org.sonar.batch.ProfileLoader;
+import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.WSClientFactory;
 import org.sonar.wsclient.services.RuleQuery;
+
+import java.util.List;
 
 /**
  * Loads {@link RulesProfile} from remote Sonar server.
@@ -39,16 +43,22 @@ public class RemoteProfileLoader implements ProfileLoader {
 
   private static final Logger LOG = LoggerFactory.getLogger(RemoteProfileLoader.class);
 
+  private final RuleFinder ruleFinder;
+
+  public RemoteProfileLoader(RuleFinder ruleFinder) {
+    this.ruleFinder = ruleFinder;
+  }
+
   public RulesProfile load(Project project) {
-    RulesProfile profile = RulesProfile.create();
+    RulesProfile profile = RulesProfile.create("Sonar for Sonar", "java");
     try {
       // TODO hard-coded values
-      Sonar sonar = Sonar.create("http://localhost:9000");
-      RuleQuery ruleQuery = new RuleQuery("java").setActive(true).setProfile("Sonar for Sonar");
+      // Sonar sonar = WSClientFactory.create(new Host("http://localhost:9000"));
+      Sonar sonar = WSClientFactory.create(new Host("http://nemo.sonarsource.org"));
+      RuleQuery ruleQuery = new RuleQuery(profile.getLanguage()).setProfile(profile.getName()).setActive(true);
       List<org.sonar.wsclient.services.Rule> wsRules = sonar.findAll(ruleQuery);
       for (org.sonar.wsclient.services.Rule wsRule : wsRules) {
-        Rule rule = materialize(wsRule);
-        profile.activateRule(rule, null);
+        activate(profile, wsRule);
       }
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
@@ -56,21 +66,23 @@ public class RemoteProfileLoader implements ProfileLoader {
     return profile;
   }
 
-  private Rule materialize(org.sonar.wsclient.services.Rule wsRule) {
+  public void activate(RulesProfile profile, org.sonar.wsclient.services.Rule wsRule) {
     String repositoryKey = StringUtils.substringBefore(wsRule.getKey(), ":");
     String key = StringUtils.substringAfter(wsRule.getKey(), ":");
-    RulePriority severity = RulePriority.valueOf(wsRule.getSeverity());
-    Rule rule = Rule.create()
-        .setRepositoryKey(repositoryKey)
-        .setKey(key)
-        .setConfigKey(wsRule.getConfigKey())
-        .setSeverity(severity);
-    if (wsRule.getParams() != null) {
-      for (org.sonar.wsclient.services.RuleParam wsParam : wsRule.getParams()) {
-        rule.createParameter(wsParam.getName()).setDefaultValue(wsParam.getValue());
+    Rule rule = ruleFinder.findByKey(repositoryKey, key);
+    // Don't activate rules, which we can't find locally
+    // SONAR-2205 seems useless and we can work with Sonar 2.6
+    if (rule != null) {
+      RulePriority severity = RulePriority.valueOf(wsRule.getSeverity());
+      ActiveRule activeRule = profile.activateRule(rule, severity);
+      if (wsRule.getParams() != null) {
+        for (org.sonar.wsclient.services.RuleParam wsParam : wsRule.getParams()) {
+          if (wsParam.getValue() != null) {
+            activeRule.setParameter(wsParam.getName(), wsParam.getValue());
+          }
+        }
       }
     }
-    return rule;
   }
 
 }

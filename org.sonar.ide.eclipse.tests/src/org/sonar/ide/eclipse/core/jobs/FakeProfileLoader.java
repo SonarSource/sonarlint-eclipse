@@ -29,7 +29,7 @@ import org.sonar.batch.ProfileLoader;
 public class FakeProfileLoader implements ProfileLoader {
 
   public RulesProfile load(Project project) {
-    RulesProfile profile = RulesProfile.create();
+    RulesProfile profile = RulesProfile.create("Test", "java");
     Rule rule;
 
     rule = Rule.create()

@@ -19,33 +19,37 @@
  */
 package org.sonar.batch.components;
 
-import java.util.Collection;
-import java.util.List;
-
 import com.google.common.collect.Lists;
-import org.codehaus.plexus.util.StringUtils;
+import com.google.common.collect.Maps;
 import org.sonar.api.measures.Metric;
 import org.sonar.api.measures.MetricFinder;
+import org.sonar.api.utils.Logs;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class EmbedderMetricFinder implements MetricFinder {
 
-  private Metric[] metrics;
+  private final Map<String, Metric> metrics = Maps.newHashMap();
 
   public EmbedderMetricFinder(Metric[] metrics) {
-    this.metrics = metrics;
+    for (Metric metric : metrics) {
+      this.metrics.put(metric.getKey(), metric);
+    }
+    Logs.INFO.info("Registered " + metrics.length + " metrics");
   }
 
   public Collection<Metric> findAll() {
-    return Lists.newArrayList(metrics);
+    return Lists.newArrayList(metrics.values());
   }
 
   public Collection<Metric> findAll(List<String> metricKeys) {
     List<Metric> result = Lists.newArrayList();
-    for (Metric metric : metrics) {
-      for (String key : metricKeys) {
-        if (StringUtils.equals(key, metric.getKey())) {
-          result.add(metric);
-        }
+    for (String key : metricKeys) {
+      Metric metric = findByKey(key);
+      if (metric != null) {
+        result.add(metric);
       }
     }
     return result;
@@ -56,12 +60,7 @@ public class EmbedderMetricFinder implements MetricFinder {
   }
 
   public Metric findByKey(String key) {
-    for (Metric metric : metrics) {
-      if (StringUtils.equals(key, metric.getKey())) {
-        return metric;
-      }
-    }
-    return null;
+    return metrics.get(key);
   }
 
 }
