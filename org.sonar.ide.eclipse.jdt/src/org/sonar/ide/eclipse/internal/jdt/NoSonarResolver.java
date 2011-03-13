@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.jdt;
 
-import java.text.MessageFormat;
-
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
@@ -29,7 +27,6 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -40,9 +37,11 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.text.edits.InsertEdit;
 import org.eclipse.text.edits.MultiTextEdit;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.ISonarResolver;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
+
+import java.text.MessageFormat;
 
 /**
  * @author Jérémie Lagarde
@@ -101,7 +100,7 @@ public class NoSonarResolver implements ISonarResolver {
       addNoSonarComments(cu, endOfLine, new NullProgressMonitor());
       return true;
     } catch (final Exception e) {
-      SonarUiPlugin.getDefault().displayError(IStatus.WARNING, "Error in NOSONAR tag resolver.", e, true); //$NON-NLS-1$
+      LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
     }
     return true;
   }

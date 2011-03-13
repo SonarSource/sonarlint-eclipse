@@ -19,22 +19,21 @@
  */
 package org.sonar.ide.eclipse.internal;
 
-import java.io.IOException;
-
 import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.ide.wsclient.RemoteSonar;
 import org.sonar.wsclient.Host;
+
+import java.io.IOException;
 
 /**
  * This is experimental class, which maybe removed in future. Used for migration to new API.
@@ -73,7 +72,7 @@ public final class EclipseSonar extends RemoteSonar {
   }
 
   private static void displayError(Throwable e) {
-    SonarUiPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
+    LoggerFactory.getLogger(EclipseSonar.class).error(e.getMessage(), e);
   }
 
   /**

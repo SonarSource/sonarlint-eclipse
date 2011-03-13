@@ -37,10 +37,11 @@
     <appender-ref ref="STDOUT"/>
     <appender-ref ref="FILE" />
     <appender-ref ref="EclipseLog" />
-    <appender-ref ref="SonarConsole" />
   </root>
 
-  <logger name="org.sonar" level="DEBUG" />
+  <logger name="org.sonar" level="DEBUG">
+    <appender-ref ref="SonarConsole" />
+  </logger>
 
   <logger name="org.mortbay.log" level="WARN" />
 

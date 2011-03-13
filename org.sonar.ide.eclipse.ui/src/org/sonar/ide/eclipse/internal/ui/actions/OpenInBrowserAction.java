@@ -19,13 +19,13 @@
  */
 package org.sonar.ide.eclipse.internal.ui.actions;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
@@ -56,7 +56,7 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
         openBrowser((ISonarResource) element);
       }
     } catch (Exception e) {
-      SonarUiPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
+      LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
     }
   }
 
@@ -78,7 +78,7 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
         browserSupport.getExternalBrowser().openURL(consoleURL);
       }
     } catch (Exception e) {
-      SonarUiPlugin.getDefault().displayError(IStatus.ERROR, e.getMessage(), e, true);
+      LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
     }
   }
 

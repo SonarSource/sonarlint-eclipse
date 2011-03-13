@@ -64,6 +64,13 @@ public class Messages extends NLS {
   public static String SonarPreferencePage_action_delete;
   public static String SonarPreferencePage_action_delete_tooltip;
 
+  public static String SonarDebugOutputAction_tooltip;
+
+  public static String SonarShowConsoleAction_tooltip;
+  public static String SonarShowConsoleAction_never_text;
+  public static String SonarShowConsoleAction_onOutput_text;
+  public static String SonarShowConsoleAction_onError_text;
+
   public static String IgnoreMarkerResolver_label;
   public static String IgnoreMarkerResolver_description;
 

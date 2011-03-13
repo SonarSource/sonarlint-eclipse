@@ -19,19 +19,18 @@
  */
 package org.sonar.ide.eclipse.internal.ui.markers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.ISonarResolver;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Jérémie Lagarde
@@ -62,7 +61,7 @@ public class SonarMarkerResolutionGenerator implements IMarkerResolutionGenerato
         }
       }
     } catch (final CoreException ex) {
-      SonarUiPlugin.getDefault().displayError(IStatus.WARNING, "Error in SonarMarkerResolutionGenerator.", ex, true);
+      LoggerFactory.getLogger(getClass()).error(ex.getMessage(), ex);
     }
     return resolutions.toArray(new IMarkerResolution[resolutions.size()]);
   }

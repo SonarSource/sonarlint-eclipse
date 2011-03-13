@@ -21,17 +21,11 @@ package org.sonar.ide.eclipse.ui;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
 import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
@@ -87,16 +81,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
    */
   public static SonarUiPlugin getDefault() {
     return plugin;
-  }
-
-  public void displayError(final int severity, final String msg, final Throwable t, final boolean shouldLog) {
-    final IStatus status = new Status(severity, ISonarConstants.PLUGIN_ID, msg, t);
-    final Display display = PlatformUI.getWorkbench().getDisplay();
-    display.syncExec(new Runnable() {
-      public void run() {
-        ErrorDialog.openError(display.getActiveShell(), null, "Error", status);
-      }
-    });
   }
 
   public static boolean hasSonarNature(IProject project) {

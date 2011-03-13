@@ -19,8 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.ui.console;
 
-import java.io.IOException;
-
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
@@ -30,10 +30,19 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
+import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.ui.ISonarConsole;
 
+import java.io.IOException;
+
 public class SonarConsole extends IOConsole implements ISonarConsole {
+
+  static final String P_DEBUG_OUTPUT = "debugOutput"; //$NON-NLS-1$
+  static final String P_SHOW_CONSOLE = "showConsole"; //$NON-NLS-1$
+  static final String P_SHOW_CONSOLE_NEVER = "never"; //$NON-NLS-1$
+  static final String P_SHOW_CONSOLE_ON_OUTPUT = "onOutput"; //$NON-NLS-1$
+  static final String P_SHOW_CONSOLE_ON_ERROR = "onError"; //$NON-NLS-1$
 
   private static final String TITLE = Messages.SonarConsole_title;
 
@@ -72,28 +81,31 @@ public class SonarConsole extends IOConsole implements ISonarConsole {
   }
 
   public void debug(String msg) {
-    if (showConsoleOnOutput()) {
+    if (!isDebugEnabled()) {
+      return;
+    }
+    if (isShowConsoleOnOutput()) {
       bringConsoleToFront();
     }
     write(getDebugStream(), msg);
   }
 
   public void info(String msg) {
-    if (showConsoleOnOutput()) {
+    if (isShowConsoleOnOutput()) {
       bringConsoleToFront();
     }
     write(getInfoStream(), msg);
   }
 
   public void warn(String msg) {
-    if (showConsoleOnOutput()) {
+    if (isShowConsoleOnOutput()) {
       bringConsoleToFront();
     }
     write(getWarnStream(), msg);
   }
 
   public void error(String msg) {
-    if (showConsoleOnOutput()) {
+    if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
       bringConsoleToFront();
     }
     write(getErrorStream(), msg);
@@ -146,8 +158,19 @@ public class SonarConsole extends IOConsole implements ISonarConsole {
     return warnStream;
   }
 
-  private boolean showConsoleOnOutput() {
-    return false;
+  private boolean isDebugEnabled() {
+    return Platform.getPreferencesService().getBoolean(ISonarConstants.PLUGIN_ID, P_DEBUG_OUTPUT, false, null);
   }
 
+  private String getShowConsolePreference() {
+    return Platform.getPreferencesService().getString(ISonarConstants.PLUGIN_ID, P_SHOW_CONSOLE, P_SHOW_CONSOLE_ON_OUTPUT, null);
+  }
+
+  private boolean isShowConsoleOnOutput() {
+    return StringUtils.equals(getShowConsolePreference(), P_SHOW_CONSOLE_ON_OUTPUT);
+  }
+
+  private boolean isShowConsoleOnError() {
+    return StringUtils.equals(getShowConsolePreference(), P_SHOW_CONSOLE_ON_ERROR);
+  }
 }

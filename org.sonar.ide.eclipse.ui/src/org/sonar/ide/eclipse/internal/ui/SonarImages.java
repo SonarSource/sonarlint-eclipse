@@ -50,6 +50,9 @@ public class SonarImages {
   public static Image IMG_SEVERITY_MINOR = createImage("severity/minor.gif"); //$NON-NLS-1$
   public static Image IMG_SEVERITY_INFO = createImage("severity/info.gif"); //$NON-NLS-1$
 
+  public static ImageDescriptor DEBUG = createImageDescriptor("debug.gif"); //$NON-NLS-1$
+  public static ImageDescriptor SHOW_CONSOLE = createImageDescriptor("showConsole.gif"); //$NON-NLS-1$
+
   private static ImageDescriptor[][] TENDENCY = {
       { createTendency("-2-red"), createTendency("-1-red"), null, createTendency("1-red"), createTendency("2-red") },
       { createTendency("-2-black"), createTendency("-1-black"), null, createTendency("1-black"), createTendency("2-black") },
