@@ -19,12 +19,14 @@
  */
 package org.sonar.ide.eclipse.internal.ui;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.swt.graphics.Image;
 import org.sonar.ide.eclipse.core.ISonarMeasure;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class SonarImages {
 
@@ -39,6 +41,13 @@ public class SonarImages {
   public static ImageDescriptor SONARSYNCHRO_IMG = create("synced.gif"); //$NON-NLS-1$
   public static ImageDescriptor SONARREFRESH_IMG = create("refresh.gif"); //$NON-NLS-1$
   public static ImageDescriptor SONARCLOSE_IMG = create("close.gif"); //$NON-NLS-1$
+
+  public static Image IMG_VIOLATION = createImage("violation.png"); //$NON-NLS-1$
+  public static Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.gif"); //$NON-NLS-1$
+  public static Image IMG_SEVERITY_CRITICAL = createImage("severity/critical.gif"); //$NON-NLS-1$
+  public static Image IMG_SEVERITY_MAJOR = createImage("severity/major.gif"); //$NON-NLS-1$
+  public static Image IMG_SEVERITY_MINOR = createImage("severity/minor.gif"); //$NON-NLS-1$
+  public static Image IMG_SEVERITY_INFO = createImage("severity/info.gif"); //$NON-NLS-1$
 
   private static ImageDescriptor[][] TENDENCY = {
       { createTendency("-2-red"), createTendency("-1-red"), null, createTendency("1-red"), createTendency("2-red") },
@@ -73,4 +82,22 @@ public class SonarImages {
     return new URL(baseUrl, name);
   }
 
+  private static Image createImage(String key) {
+    createImageDescriptor(key);
+    return getImageRegistry().get(key);
+  }
+
+  private static ImageDescriptor createImageDescriptor(String key) {
+    ImageRegistry imageRegistry = getImageRegistry();
+    ImageDescriptor imageDescriptor = imageRegistry.getDescriptor(key);
+    if (imageDescriptor == null) {
+      imageDescriptor = create(key);
+      imageRegistry.put(key, imageDescriptor);
+    }
+    return imageDescriptor;
+  }
+
+  private static ImageRegistry getImageRegistry() {
+    return SonarUiPlugin.getDefault().getImageRegistry();
+  }
 }

@@ -19,19 +19,16 @@
  */
 package org.sonar.ide.eclipse.internal.ui.views;
 
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
+import org.sonar.ide.eclipse.internal.ui.SonarImages;
 
 /**
  * Each rule in Sonar has severity, so it seems logical to combine rule name and severity in one field.
  */
 public class ViolationSeverityAndRuleNameField extends MarkerField {
-
-  private static Image[] images = null;
 
   @Override
   public int compare(MarkerItem item1, MarkerItem item2) {
@@ -44,19 +41,23 @@ public class ViolationSeverityAndRuleNameField extends MarkerField {
   }
 
   private int getSeverity(MarkerItem item) {
-    return convertPriority(item.getMarker().getAttribute("rulepriority", ""));
+    return convertSeverity(item.getMarker().getAttribute("rulepriority", ""));
   }
 
-  public static int convertPriority(String priority) {
-    if ("blocker".equalsIgnoreCase(priority))
+  public static int convertSeverity(String severity) {
+    if ("blocker".equalsIgnoreCase(severity)) {
       return 0;
-    if ("critical".equalsIgnoreCase(priority))
+    }
+    if ("critical".equalsIgnoreCase(severity)) {
       return 1;
-    if ("major".equalsIgnoreCase(priority))
+    }
+    if ("major".equalsIgnoreCase(severity)) {
       return 2;
-    if ("minor".equalsIgnoreCase(priority))
+    }
+    if ("minor".equalsIgnoreCase(severity)) {
       return 3;
-    if ("info".equalsIgnoreCase(priority)) {
+    }
+    if ("info".equalsIgnoreCase(severity)) {
       return 4;
     }
     return 4;
@@ -75,15 +76,20 @@ public class ViolationSeverityAndRuleNameField extends MarkerField {
   }
 
   private Image getSeverityImage(int severity) {
-    if (images == null) {
-      images = new Image[5];
-      images[0] = ImageDescriptor.createFromFile(SonarUiPlugin.class, "/org/sonar/ide/images/priority/blocker.gif").createImage(); //$NON-NLS-1$
-      images[1] = ImageDescriptor.createFromFile(SonarUiPlugin.class, "/org/sonar/ide/images/priority/critical.gif").createImage(); //$NON-NLS-1$
-      images[2] = ImageDescriptor.createFromFile(SonarUiPlugin.class, "/org/sonar/ide/images/priority/major.gif").createImage(); //$NON-NLS-1$
-      images[3] = ImageDescriptor.createFromFile(SonarUiPlugin.class, "/org/sonar/ide/images/priority/minor.gif").createImage(); //$NON-NLS-1$
-      images[4] = ImageDescriptor.createFromFile(SonarUiPlugin.class, "/org/sonar/ide/images/priority/info.gif").createImage(); //$NON-NLS-1$
+    switch (severity) {
+      case 0:
+        return SonarImages.IMG_SEVERITY_BLOCKER;
+      case 1:
+        return SonarImages.IMG_SEVERITY_CRITICAL;
+      case 2:
+        return SonarImages.IMG_SEVERITY_MAJOR;
+      case 3:
+        return SonarImages.IMG_SEVERITY_MINOR;
+      case 4:
+        return SonarImages.IMG_SEVERITY_INFO;
+      default:
+        throw new IllegalArgumentException();
     }
-    return images[severity];
   }
 
   /**
