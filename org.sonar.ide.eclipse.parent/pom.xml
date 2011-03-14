@@ -54,6 +54,7 @@
     <module>../org.sonar.ide.eclipse.runtime</module>
     <module>../org.sonar.ide.eclipse.ui</module>
     <module>../org.sonar.ide.eclipse.jdt</module>
+    <module>../org.sonar.ide.eclipse.mylyn</module>
     <module>../org.sonar.ide.eclipse.site</module>
 
     <module>../org.sonar.ide.eclipse.logback</module>

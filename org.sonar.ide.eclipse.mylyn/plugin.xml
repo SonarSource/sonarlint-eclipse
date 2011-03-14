@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point="org.eclipse.mylyn.tasks.core.templates">
+		<repository
+              addAutomatically="true"
+              anonymous="false"
+              characterEncoding="UTF-8"
+              label="Codehaus"
+              repositoryKind="jira"
+              urlRepository="https://jira.codehaus.org/"/>
+   </extension>
+
+   <extension
+         point="org.eclipse.mylyn.tasks.bugs.support">
+      <provider categoryId="org.eclipse.mylyn.tasks.bugs.openSource"
+			description="Sonar open source community" icon="icons/sonar32.png"
+			id="org.sonarsource" name="SonarSource.org" url="http://sonarsource.org/" />
+      <product
+            description="Open source software quality platform."
+            icon="icons/sonar32.png"
+            id="org.sonar"
+            name="Sonar"
+            pluginId="org.sonar.ide.eclipse.ui"
+            providerId="org.sonarsource"
+            url="http://sonar.codehaus.org">
+      </product>
+      <product
+            description="Sonar Integration for Eclipse."
+            icon="icons/sonar32.png"
+            id="org.sonar.ide.eclipse"
+            name="Sonar Eclipse"
+            pluginId="org.sonar.ide.eclipse.ui"
+            providerId="org.sonarsource"
+            url="http://sonar-ide.codehaus.org">
+      </product>
+      <product
+            description="Open source Sonar Plugins."
+            icon="icons/sonar32.png"
+            id="org.sonar.plugins"
+            name="Sonar Plugins"
+            pluginId="org.sonar.ide.eclipse.ui"
+            providerId="org.sonarsource"
+            url="http://sonar-plugins.codehaus.org">
+      </product>
+      <mapping
+            namespace="org.sonar">
+         <repository kind="jira" url="https://jira.codehaus.org/" />
+      </mapping>
+      <mapping
+            namespace="org.sonar"
+            productId="org.sonar">
+         <property
+               name="product"
+               value="SONAR">
+         </property>
+      </mapping>
+      <mapping
+            namespace="org.sonar.ide.eclipse"
+            productId="org.sonar.ide.eclipse">
+         <property
+               name="product"
+               value="SONARIDE">
+         </property>
+      </mapping>
+      <mapping
+            namespace="org.sonar.plugins"
+            productId="org.sonar.plugins">
+         <property
+               name="product"
+               value="SONARPLUGINS">
+         </property>
+      </mapping>
+   </extension>
+
+</plugin>
