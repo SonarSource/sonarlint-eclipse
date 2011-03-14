@@ -174,7 +174,6 @@
         canFinishEarly="true"
         category="org.sonar.ide.eclipse.wizcat"
         class="org.sonar.ide.eclipse.internal.ui.wizards.NewServerLocationWizard"
-        descriptionImage="icons/sonar-large.gif"
         icon="icons/sonar.png"
         id="org.sonar.ide.eclipse.ui.wizards.newserverlocationwizard"
         name="%sonar.wizard.newserverlocation.name ">

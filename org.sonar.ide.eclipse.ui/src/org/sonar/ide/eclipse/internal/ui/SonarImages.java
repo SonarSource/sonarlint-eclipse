@@ -36,7 +36,7 @@ public final class SonarImages {
   public static final ImageDescriptor STAR = createImageDescriptor("star.png"); //$NON-NLS-1$
   public static final ImageDescriptor STAR_OFF = createImageDescriptor("star_off.png"); //$NON-NLS-1$
 
-  public static final ImageDescriptor SONARWIZBAN_IMG = createImageDescriptor("sonar_wizban.gif"); //$NON-NLS-1$
+  public static final ImageDescriptor SONARWIZBAN_IMG = createImageDescriptor("sonar_wizban.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONAR16_IMG = createImageDescriptor("sonar.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONAR32_IMG = createImageDescriptor("sonar32.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONARSYNCHRO_IMG = createImageDescriptor("synced.gif"); //$NON-NLS-1$
