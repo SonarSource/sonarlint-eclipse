@@ -22,6 +22,7 @@ package org.sonar.ide.eclipse.internal.ui;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.PlatformUI;
 import org.sonar.ide.eclipse.core.ISonarMeasure;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
@@ -32,15 +33,15 @@ public class SonarImages {
 
   private static final URL baseUrl = SonarUiPlugin.getDefault().getBundle().getEntry("/icons/"); //$NON-NLS-1$
 
-  public static ImageDescriptor STAR = create("star.png"); //$NON-NLS-1$
-  public static ImageDescriptor STAR_OFF = create("star_off.png"); //$NON-NLS-1$
+  public static ImageDescriptor STAR = createImageDescriptor("star.png"); //$NON-NLS-1$
+  public static ImageDescriptor STAR_OFF = createImageDescriptor("star_off.png"); //$NON-NLS-1$
 
-  public static ImageDescriptor SONARWIZBAN_IMG = create("sonar_wizban.gif"); //$NON-NLS-1$
-  public static ImageDescriptor SONAR16_IMG = create("sonar.png"); //$NON-NLS-1$
-  public static ImageDescriptor SONAR32_IMG = create("sonar32.png"); //$NON-NLS-1$
-  public static ImageDescriptor SONARSYNCHRO_IMG = create("synced.gif"); //$NON-NLS-1$
-  public static ImageDescriptor SONARREFRESH_IMG = create("refresh.gif"); //$NON-NLS-1$
-  public static ImageDescriptor SONARCLOSE_IMG = create("close.gif"); //$NON-NLS-1$
+  public static ImageDescriptor SONARWIZBAN_IMG = createImageDescriptor("sonar_wizban.gif"); //$NON-NLS-1$
+  public static ImageDescriptor SONAR16_IMG = createImageDescriptor("sonar.png"); //$NON-NLS-1$
+  public static ImageDescriptor SONAR32_IMG = createImageDescriptor("sonar32.png"); //$NON-NLS-1$
+  public static ImageDescriptor SONARSYNCHRO_IMG = createImageDescriptor("synced.gif"); //$NON-NLS-1$
+  public static ImageDescriptor SONARREFRESH_IMG = createImageDescriptor("refresh.gif"); //$NON-NLS-1$
+  public static ImageDescriptor SONARCLOSE_IMG = createImageDescriptor("close.gif"); //$NON-NLS-1$
 
   public static Image IMG_VIOLATION = createImage("violation.png"); //$NON-NLS-1$
   public static Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.gif"); //$NON-NLS-1$
@@ -67,37 +68,41 @@ public class SonarImages {
   }
 
   private static ImageDescriptor createTendency(String name) {
-    return create("tendency/" + name + "-small.png");
+    return createImageDescriptor("tendency/" + name + "-small.png");
   }
 
-  public static ImageDescriptor create(String name) {
-    try {
-      return ImageDescriptor.createFromURL(getUrl(name));
-    } catch (MalformedURLException e) {
-      return ImageDescriptor.getMissingImageDescriptor();
-    }
-  }
-
-  private static URL getUrl(String name) throws MalformedURLException {
-    return new URL(baseUrl, name);
+  private static URL getUrl(String key) throws MalformedURLException {
+    return new URL(baseUrl, key);
   }
 
   private static Image createImage(String key) {
     createImageDescriptor(key);
-    return getImageRegistry().get(key);
+    ImageRegistry imageRegistry = getImageRegistry();
+    return imageRegistry != null ? imageRegistry.get(key) : null;
   }
 
   private static ImageDescriptor createImageDescriptor(String key) {
     ImageRegistry imageRegistry = getImageRegistry();
-    ImageDescriptor imageDescriptor = imageRegistry.getDescriptor(key);
-    if (imageDescriptor == null) {
-      imageDescriptor = create(key);
-      imageRegistry.put(key, imageDescriptor);
+    if (imageRegistry != null) {
+      ImageDescriptor imageDescriptor = imageRegistry.getDescriptor(key);
+      if (imageDescriptor == null) {
+        try {
+          imageDescriptor = ImageDescriptor.createFromURL(getUrl(key));
+        } catch (MalformedURLException e) {
+          imageDescriptor = ImageDescriptor.getMissingImageDescriptor();
+        }
+        imageRegistry.put(key, imageDescriptor);
+      }
+      return imageDescriptor;
     }
-    return imageDescriptor;
+    return null;
   }
 
   private static ImageRegistry getImageRegistry() {
-    return SonarUiPlugin.getDefault().getImageRegistry();
+    // "org.eclipse.swt.SWTError: Invalid thread access" might be thrown during unit tests
+    if (PlatformUI.isWorkbenchRunning()) {
+      return SonarUiPlugin.getDefault().getImageRegistry();
+    }
+    return null;
   }
 }
