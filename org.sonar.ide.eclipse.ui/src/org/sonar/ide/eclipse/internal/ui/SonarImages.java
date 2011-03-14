@@ -29,31 +29,31 @@ import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class SonarImages {
+public final class SonarImages {
 
   private static final URL baseUrl = SonarUiPlugin.getDefault().getBundle().getEntry("/icons/"); //$NON-NLS-1$
 
-  public static ImageDescriptor STAR = createImageDescriptor("star.png"); //$NON-NLS-1$
-  public static ImageDescriptor STAR_OFF = createImageDescriptor("star_off.png"); //$NON-NLS-1$
+  public static final ImageDescriptor STAR = createImageDescriptor("star.png"); //$NON-NLS-1$
+  public static final ImageDescriptor STAR_OFF = createImageDescriptor("star_off.png"); //$NON-NLS-1$
 
-  public static ImageDescriptor SONARWIZBAN_IMG = createImageDescriptor("sonar_wizban.gif"); //$NON-NLS-1$
-  public static ImageDescriptor SONAR16_IMG = createImageDescriptor("sonar.png"); //$NON-NLS-1$
-  public static ImageDescriptor SONAR32_IMG = createImageDescriptor("sonar32.png"); //$NON-NLS-1$
-  public static ImageDescriptor SONARSYNCHRO_IMG = createImageDescriptor("synced.gif"); //$NON-NLS-1$
-  public static ImageDescriptor SONARREFRESH_IMG = createImageDescriptor("refresh.gif"); //$NON-NLS-1$
-  public static ImageDescriptor SONARCLOSE_IMG = createImageDescriptor("close.gif"); //$NON-NLS-1$
+  public static final ImageDescriptor SONARWIZBAN_IMG = createImageDescriptor("sonar_wizban.gif"); //$NON-NLS-1$
+  public static final ImageDescriptor SONAR16_IMG = createImageDescriptor("sonar.png"); //$NON-NLS-1$
+  public static final ImageDescriptor SONAR32_IMG = createImageDescriptor("sonar32.png"); //$NON-NLS-1$
+  public static final ImageDescriptor SONARSYNCHRO_IMG = createImageDescriptor("synced.gif"); //$NON-NLS-1$
+  public static final ImageDescriptor SONARREFRESH_IMG = createImageDescriptor("refresh.gif"); //$NON-NLS-1$
+  public static final ImageDescriptor SONARCLOSE_IMG = createImageDescriptor("close.gif"); //$NON-NLS-1$
 
-  public static Image IMG_VIOLATION = createImage("violation.png"); //$NON-NLS-1$
-  public static Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.gif"); //$NON-NLS-1$
-  public static Image IMG_SEVERITY_CRITICAL = createImage("severity/critical.gif"); //$NON-NLS-1$
-  public static Image IMG_SEVERITY_MAJOR = createImage("severity/major.gif"); //$NON-NLS-1$
-  public static Image IMG_SEVERITY_MINOR = createImage("severity/minor.gif"); //$NON-NLS-1$
-  public static Image IMG_SEVERITY_INFO = createImage("severity/info.gif"); //$NON-NLS-1$
+  public static final Image IMG_VIOLATION = createImage("violation.png"); //$NON-NLS-1$
+  public static final Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.gif"); //$NON-NLS-1$
+  public static final Image IMG_SEVERITY_CRITICAL = createImage("severity/critical.gif"); //$NON-NLS-1$
+  public static final Image IMG_SEVERITY_MAJOR = createImage("severity/major.gif"); //$NON-NLS-1$
+  public static final Image IMG_SEVERITY_MINOR = createImage("severity/minor.gif"); //$NON-NLS-1$
+  public static final Image IMG_SEVERITY_INFO = createImage("severity/info.gif"); //$NON-NLS-1$
 
-  public static ImageDescriptor DEBUG = createImageDescriptor("debug.gif"); //$NON-NLS-1$
-  public static ImageDescriptor SHOW_CONSOLE = createImageDescriptor("showConsole.gif"); //$NON-NLS-1$
+  public static final ImageDescriptor DEBUG = createImageDescriptor("debug.gif"); //$NON-NLS-1$
+  public static final ImageDescriptor SHOW_CONSOLE = createImageDescriptor("showConsole.gif"); //$NON-NLS-1$
 
-  private static ImageDescriptor[][] TENDENCY = {
+  private static final ImageDescriptor[][] TENDENCY = {
       { createTendency("-2-red"), createTendency("-1-red"), null, createTendency("1-red"), createTendency("2-red") },
       { createTendency("-2-black"), createTendency("-1-black"), null, createTendency("1-black"), createTendency("2-black") },
       { createTendency("-2-green"), createTendency("-1-green"), null, createTendency("1-green"), createTendency("2-green") } };
@@ -107,5 +107,8 @@ public class SonarImages {
       return SonarUiPlugin.getDefault().getImageRegistry();
     }
     return null;
+  }
+
+  private SonarImages() {
   }
 }

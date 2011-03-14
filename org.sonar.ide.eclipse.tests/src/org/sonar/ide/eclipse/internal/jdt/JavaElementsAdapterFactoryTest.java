@@ -43,15 +43,9 @@ public class JavaElementsAdapterFactoryTest extends SonarTestCase {
   private static final String artifactId = "SimpleProject";
   private static IProject project;
 
-  /**
-   * Workaround for accessing non static method {@link #importEclipseProject(String)} from static method {@link #importProject()}
-   */
-  static class TTT extends SonarTestCase {
-  }
-
   @BeforeClass
   public static void importProject() throws Exception {
-    project = new TTT().importEclipseProject("SimpleProject");
+    project = importEclipseProject("SimpleProject");
     // Configure the project
     ProjectProperties properties = ProjectProperties.getInstance(project);
     properties.setUrl("http://localhost:9000");
