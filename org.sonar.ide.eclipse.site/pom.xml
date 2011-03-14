@@ -26,7 +26,8 @@
             <executions>
               <execution>
                 <id>publish-site</id>
-                <phase>deploy</phase>
+                <!-- We don't want deployment to Maven repository, so phase is install -->
+                <phase>install</phase>
                 <goals>
                   <goal>upload</goal>
                 </goals>
