@@ -6,24 +6,6 @@
 
    <extension-point id="resolver" name="sonar resolver" schema="schema/org.sonar.ide.eclipse.markers.resolver.exsd"/>
    
-<!-- Extensions for embedded Sonar -->
-
-   <extension
-         point="org.eclipse.ui.popupMenus">
-      <objectContribution
-            adaptable="true"
-            id="org.sonar.ide.eclipse.objectContribution2"
-            objectClass="org.eclipse.core.resources.IProject">
-         <action
-               class="org.sonar.ide.eclipse.internal.ui.actions.AnalyseProjectAction"
-               enablesFor="1"
-               id="org.sonar.ide.eclipse.runtime.ui.analyseAction"
-               label="Analyse by Sonar"
-               menubarPath="additions">
-         </action>
-      </objectContribution>
-   </extension>
-
 <!-- Extensions -->
 
   <extension point="org.eclipse.ui.preferencePages">
@@ -253,6 +235,13 @@
                 enablesFor="+"
                 label="Remove Sonar Nature"
                 menubarPath="org.sonar.ide.eclipse.sonar/group1">
+        </action>
+        <action
+               class="org.sonar.ide.eclipse.internal.ui.actions.AnalyseProjectAction"
+               enablesFor="1"
+               id="org.sonar.ide.eclipse.runtime.ui.analyseAction"
+               label="Analyse locally"
+               menubarPath="org.sonar.ide.eclipse.sonar/group1">
         </action>
     </objectContribution>
     

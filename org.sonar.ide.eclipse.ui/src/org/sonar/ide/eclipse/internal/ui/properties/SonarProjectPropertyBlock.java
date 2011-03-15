@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.ui.properties;
 
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;

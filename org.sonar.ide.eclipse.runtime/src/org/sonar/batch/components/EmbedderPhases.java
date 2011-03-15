@@ -22,6 +22,7 @@ package org.sonar.batch.components;
 import org.sonar.api.batch.SensorContext;
 import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.resources.Project;
+import org.sonar.api.utils.Logs;
 import org.sonar.batch.index.DefaultIndex;
 import org.sonar.batch.phases.DecoratorsExecutor;
 import org.sonar.batch.phases.InitializersExecutor;
@@ -59,6 +60,7 @@ public class EmbedderPhases {
     initializersExecutor.execute(project);
     sensorsExecutor.execute(project, sensorContext);
     decoratorsExecutor.execute(project);
+    Logs.INFO.info("ANALYSIS SUCCESSFUL");
   }
 
 }

@@ -22,6 +22,7 @@ package org.sonar.batch.components;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.resources.Project;
 import org.sonar.api.rules.ActiveRule;
@@ -32,6 +33,7 @@ import org.sonar.batch.ProfileLoader;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.WSClientFactory;
+import org.sonar.wsclient.services.ResourceQuery;
 import org.sonar.wsclient.services.RuleQuery;
 
 import java.util.List;
@@ -43,6 +45,8 @@ public class RemoteProfileLoader implements ProfileLoader {
 
   private static final Logger LOG = LoggerFactory.getLogger(RemoteProfileLoader.class);
 
+  public static final String PARAM_SERVER = "sonar.host.url";
+
   private final RuleFinder ruleFinder;
 
   public RemoteProfileLoader(RuleFinder ruleFinder) {
@@ -50,20 +54,25 @@ public class RemoteProfileLoader implements ProfileLoader {
   }
 
   public RulesProfile load(Project project) {
-    RulesProfile profile = RulesProfile.create("Sonar for Sonar", "java");
     try {
-      // TODO hard-coded values
-      // Sonar sonar = WSClientFactory.create(new Host("http://localhost:9000"));
-      Sonar sonar = WSClientFactory.create(new Host("http://nemo.sonarsource.org"));
+      String server = (String) project.getProperty(PARAM_SERVER);
+      LOG.info("Loading profile from {}", server);
+
+      Sonar sonar = WSClientFactory.create(new Host(server));
+      String profileName = sonar.find(ResourceQuery.createForMetrics(project.getKey(), CoreMetrics.PROFILE_KEY))
+          .getMeasure(CoreMetrics.PROFILE_KEY).getData();
+
+      RulesProfile profile = RulesProfile.create(profileName, project.getLanguageKey());
+
       RuleQuery ruleQuery = new RuleQuery(profile.getLanguage()).setProfile(profile.getName()).setActive(true);
       List<org.sonar.wsclient.services.Rule> wsRules = sonar.findAll(ruleQuery);
       for (org.sonar.wsclient.services.Rule wsRule : wsRules) {
         activate(profile, wsRule);
       }
+      return profile;
     } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
+      throw new RuntimeException(e);
     }
-    return profile;
   }
 
   public void activate(RulesProfile profile, org.sonar.wsclient.services.Rule wsRule) {

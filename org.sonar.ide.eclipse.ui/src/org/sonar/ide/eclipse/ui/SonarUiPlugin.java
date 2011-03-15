@@ -26,32 +26,22 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.project.SonarProjectManager;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.console.SonarConsole;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshViolationsJob;
 import org.sonar.ide.eclipse.internal.ui.preferences.SonarUiPreferenceInitializer;
-import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 
 public class SonarUiPlugin extends AbstractUIPlugin {
 
   // The shared instance
   private static SonarUiPlugin plugin;
 
-  private static SonarProjectManager projectManager;
-
   private FavouriteMetricsManager favouriteMetricsManager = new FavouriteMetricsManager();
 
   public SonarUiPlugin() {
     plugin = this; // NOSONAR
-  }
-
-  public SonarProjectManager getProjectManager() {
-    if (projectManager == null) {
-      projectManager = new SonarProjectManager();
-    }
-    return projectManager;
   }
 
   public static FavouriteMetricsManager getFavouriteMetricsManager() {

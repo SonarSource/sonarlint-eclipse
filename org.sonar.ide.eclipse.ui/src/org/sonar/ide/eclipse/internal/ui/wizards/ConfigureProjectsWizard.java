@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -57,7 +59,6 @@ import org.sonar.ide.eclipse.internal.ui.InlineEditingSupport;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
-import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;

@@ -17,7 +17,7 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.project;
+package org.sonar.ide.eclipse.internal.core.resources;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
@@ -28,7 +28,6 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 
 /**
  * @author Evgeny Mandrikov

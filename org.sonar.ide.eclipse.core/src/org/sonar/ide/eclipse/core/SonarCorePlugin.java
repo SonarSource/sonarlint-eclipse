@@ -24,7 +24,13 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
-import org.sonar.ide.eclipse.internal.core.*;
+import org.sonar.ide.eclipse.internal.core.LogListener;
+import org.sonar.ide.eclipse.internal.core.ServersManager;
+import org.sonar.ide.eclipse.internal.core.SonarFile;
+import org.sonar.ide.eclipse.internal.core.SonarMeasure;
+import org.sonar.ide.eclipse.internal.core.SonarMetric;
+import org.sonar.ide.eclipse.internal.core.SonarResource;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProjectManager;
 import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Metric;
 
@@ -68,6 +74,15 @@ public class SonarCorePlugin extends Plugin {
 
     super.stop(context);
     plugin = null; // NOSONAR
+  }
+
+  private static SonarProjectManager projectManager;
+
+  public SonarProjectManager getProjectManager() {
+    if (projectManager == null) {
+      projectManager = new SonarProjectManager();
+    }
+    return projectManager;
   }
 
   public static ISonarServersManager getServersManager() {

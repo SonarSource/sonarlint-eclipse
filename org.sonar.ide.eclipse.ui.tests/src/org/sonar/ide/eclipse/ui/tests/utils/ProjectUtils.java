@@ -19,10 +19,11 @@
  */
 package org.sonar.ide.eclipse.ui.tests.utils;
 
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
-import org.sonar.ide.eclipse.internal.ui.properties.ProjectProperties;
 
 @SuppressWarnings("restriction")
 public class ProjectUtils {

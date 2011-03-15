@@ -17,13 +17,13 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.ui.properties;
+package org.sonar.ide.eclipse.internal.core.resources;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.sonar.ide.eclipse.core.ISonarProject;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.SonarKeyUtils;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 /**
  * @author Evgeny Mandrikov
@@ -48,11 +48,11 @@ public class ProjectProperties implements ISonarProject {
     if (project == null || !project.isAccessible()) {
       return null;
     }
-    return SonarUiPlugin.getDefault().getProjectManager().readSonarConfiguration(project);
+    return SonarCorePlugin.getDefault().getProjectManager().readSonarConfiguration(project);
   }
 
   public void save() {
-    SonarUiPlugin.getDefault().getProjectManager().saveSonarConfiguration(project, this);
+    SonarCorePlugin.getDefault().getProjectManager().saveSonarConfiguration(project, this);
   }
 
   public String getUrl() {

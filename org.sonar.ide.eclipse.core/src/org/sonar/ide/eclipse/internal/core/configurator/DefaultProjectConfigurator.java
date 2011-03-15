@@ -19,20 +19,26 @@
  */
 package org.sonar.ide.eclipse.internal.core.configurator;
 
-import java.util.Properties;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.api.CoreProperties;
-import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
+import org.sonar.batch.components.RemoteProfileLoader;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
+import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+
+import java.util.Properties;
 
 public class DefaultProjectConfigurator extends ProjectConfigurator {
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
-    // TODO remove hard-coded values
+    ProjectProperties remoteProject = ProjectProperties.getInstance(request.getProject());
+
     Properties properties = request.getSonarProject().getProperties();
     String projectName = request.getProject().getName();
-    String projectKey = "org.example:" + request.getProject().getName();
+    String projectKey = remoteProject.getKey();
+
+    properties.setProperty(RemoteProfileLoader.PARAM_SERVER, remoteProject.getUrl());
+
     properties.setProperty(CoreProperties.PROJECT_KEY_PROPERTY, projectKey);
     properties.setProperty(CoreProperties.PROJECT_NAME_PROPERTY, projectName);
     properties.setProperty(CoreProperties.PROJECT_VERSION_PROPERTY, "0.1-SNAPSHOT");
