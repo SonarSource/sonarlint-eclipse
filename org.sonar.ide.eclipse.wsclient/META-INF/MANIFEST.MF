@@ -1,8 +1,7 @@
 Manifest-Version: 1.0
 Require-Bundle: org.eclipse.core.runtime,org.eclipse.core.net,org.slf4
- j.api;bundle-version="1.6.1",org.slf4j.jcl;bundle-version="1.6.1",org
- .slf4j.log4j;bundle-version="1.6.1",org.apache.commons.httpclient;bun
- dle-version="3.1.0"
+ j.api;bundle-version="1.6.1",org.apache.commons.httpclient;bundle-ver
+ sion="3.1.0"
 Export-Package: org.sonar.wsclient,org.sonar.wsclient.connectors,org.s
  onar.wsclient.services
 Bundle-Vendor: SonarSource

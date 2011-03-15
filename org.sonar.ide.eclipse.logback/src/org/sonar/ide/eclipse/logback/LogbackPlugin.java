@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.logback;
 
-import java.io.File;
-import java.net.URL;
-
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.util.ContextInitializer;
@@ -29,19 +26,43 @@ import ch.qos.logback.core.joran.JoranConfiguratorBase;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleContext;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class LogbackPlugin extends Plugin {
 
   private static final String PLUGIN_ID = "org.sonar.ide.eclipse.logback"; //$NON-NLS-1$
 
   /**
-   * Should match name in "conf/logback.xml"
+   * Should match name in "conf/logback.xml".
    */
   private static final String LOG_DIR_PROPERTY = "log.dir"; //$NON-NLS-1$
+
+  /**
+   * Indicates that our configuration was applied.
+   */
+  private boolean configured = false;
+
+  private Timer timer = new Timer(PLUGIN_ID);
+
+  private TimerTask timerTask = new TimerTask() {
+    @Override
+    public void run() {
+      if (isPlatformInstanceLocationSet()) {
+        timer.cancel();
+        configureLogback();
+      }
+    }
+  };
 
   @Override
   public void start(BundleContext context) throws Exception {
@@ -50,14 +71,33 @@ public class LogbackPlugin extends Plugin {
     String configFileProperty = System.getProperty(ContextInitializer.CONFIG_FILE_PROPERTY);
     if (configFileProperty != null) {
       // The standard logback config file property is set - don't force our configuration
-      System.out.println(ContextInitializer.CONFIG_FILE_PROPERTY + "=" + configFileProperty); //$NON-NLS-1$
+      systemOut(ContextInitializer.CONFIG_FILE_PROPERTY + "=" + configFileProperty); //$NON-NLS-1$
     } else {
-      configureLogback();
-      LogHelper.log(context, LoggerFactory.getLogger(getClass()));
+      // log file would be created in state area of this plug-in, so we must ensure that it exists,
+      // otherwise we will break process of Eclipse start-up and as a result - selection of workspace will not work
+      if (isPlatformInstanceLocationSet()) {
+        configureLogback();
+      } else {
+        systemOut("Platform instance location is not set yet - will retry."); //$NON-NLS-1$
+        timer.schedule(timerTask, 0, 50);
+      }
+    }
+  }
+
+  private boolean isPlatformInstanceLocationSet() {
+    try {
+      return Platform.isRunning() && Platform.getInstanceLocation().isSet();
+    } catch (Exception e) {
+      return false;
     }
   }
 
   private synchronized void configureLogback() {
+    if (configured) {
+      systemOut("Logback was configured already"); //$NON-NLS-1$
+      return;
+    }
+
     File stateDir = getStateLocation().toFile();
     if (System.getProperty(LOG_DIR_PROPERTY) == null) {
       System.setProperty(LOG_DIR_PROPERTY, stateDir.getAbsolutePath());
@@ -66,20 +106,41 @@ public class LogbackPlugin extends Plugin {
     try {
       final URL url = getBundle().getEntry("/conf/logback.xml"); //$NON-NLS-1$
       loadConfig(url);
+      LogHelper.log(getBundle().getBundleContext(), LoggerFactory.getLogger(getClass()));
+      configured = true;
     } catch (Exception e) {
-      e.printStackTrace();
-      getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, "Exception while configuring logging: " + e.getMessage(), e)); //$NON-NLS-1$
+      logException(e);
     }
   }
 
   private void loadConfig(URL url) throws JoranException {
-    System.out.println("Initializing logback"); //$NON-NLS-1$
+    ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
+    if (!(loggerFactory instanceof LoggerContext)) {
+      systemErr("SLF4J logger factory is not an instance of LoggerContext: " + loggerFactory.getClass().getName()); //$NON-NLS-1$
+      return;
+    }
+
+    systemOut("Initializing logback"); //$NON-NLS-1$
     final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+    lc.reset();
+
     final JoranConfiguratorBase configurator = new JoranConfigurator();
     configurator.setContext(lc);
-    lc.reset();
     configurator.doConfigure(url);
+
     StatusPrinter.printIfErrorsOccured(lc);
   }
 
+  private static void systemOut(String message) {
+    System.out.println(PLUGIN_ID + ": " + message); //$NON-NLS-1$
+  }
+
+  private static void systemErr(String message) {
+    System.err.println(PLUGIN_ID + ": " + message); //$NON-NLS-1$
+  }
+
+  private void logException(Exception e) {
+    e.printStackTrace();
+    getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, "Exception while configuring logging: " + e.getMessage(), e)); //$NON-NLS-1$
+  }
 }

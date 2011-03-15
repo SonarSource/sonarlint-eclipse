@@ -1,6 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: org.sonar.ide.eclipse.logback.appenders
+Bundle-Name: %Bundle-Name
+Bundle-Vendor: %Bundle-Vendor
 Bundle-SymbolicName: org.sonar.ide.eclipse.logback.appenders;singleton:=true
 Bundle-Version: 1.1.0.qualifier
 Fragment-Host: ch.qos.logback.classic

@@ -6,6 +6,9 @@
    <feature url="features/org.sonar.ide.eclipse.feature_0.0.0.jar" id="org.sonar.ide.eclipse.feature" version="0.0.0">
       <category name="Sonar"/>
    </feature>
+   <feature url="features/org.sonar.ide.eclipse.logback.feature_0.0.0.jar" id="org.sonar.ide.eclipse.logback.feature" version="0.0.0">
+      <category name="Sonar"/>
+   </feature>
    <category-def name="Sonar" label="Sonar">
       <description>
          Sonar Integration for Eclipse

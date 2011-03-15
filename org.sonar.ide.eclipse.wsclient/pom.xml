@@ -76,7 +76,7 @@
               </exportPackages>
               <manifestAttributes>
                 <Bundle-RequiredExecutionEnvironment>J2SE-1.5, JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
-                <Require-Bundle>org.eclipse.core.runtime,org.eclipse.core.net,org.slf4j.api;bundle-version="1.6.1",org.slf4j.jcl;bundle-version="1.6.1",org.slf4j.log4j;bundle-version="1.6.1",org.apache.commons.httpclient;bundle-version="3.1.0"</Require-Bundle>
+                <Require-Bundle>org.eclipse.core.runtime,org.eclipse.core.net,org.slf4j.api;bundle-version="1.6.1",org.apache.commons.httpclient;bundle-version="3.1.0"</Require-Bundle>
                 <Bundle-Activator>org.sonar.wsclient.internal.WSClientPlugin</Bundle-Activator>
                 <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
                 <Bundle-Name>Sonar Web Service Client</Bundle-Name>

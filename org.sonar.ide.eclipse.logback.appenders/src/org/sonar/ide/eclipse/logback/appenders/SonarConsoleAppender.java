@@ -38,6 +38,9 @@ public class SonarConsoleAppender extends UnsynchronizedAppenderBase<ILoggingEve
       return;
     }
     ISonarConsole sonarConsole = SonarUiPlugin.getDefault().getSonarConsole();
+    if (sonarConsole == null) {
+      return;
+    }
     String msg = logEvent.toString();
     switch (logEvent.getLevel().levelInt) {
       case Level.DEBUG_INT:

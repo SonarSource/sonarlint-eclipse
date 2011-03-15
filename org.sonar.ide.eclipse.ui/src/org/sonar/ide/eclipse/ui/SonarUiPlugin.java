@@ -21,6 +21,7 @@ package org.sonar.ide.eclipse.ui;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
@@ -98,7 +99,8 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   private SonarConsole console;
 
   public synchronized ISonarConsole getSonarConsole() {
-    if (console == null) {
+    // Don't try to initialize console without actual UI - it will cause headless tests failure
+    if (console == null && PlatformUI.isWorkbenchRunning()) {
       console = new SonarConsole(SonarImages.SONAR16_IMG);
     }
     return console;

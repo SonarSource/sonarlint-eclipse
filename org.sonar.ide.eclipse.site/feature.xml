@@ -9,91 +9,100 @@
          id="org.sonar.ide.eclipse.feature"
          version="0.0.0"/>
 
-   <plugin id="org.slf4j.api"
+   <includes
+         id="org.sonar.ide.eclipse.logback.feature"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.slf4j.api"
          download-size="0"
          install-size="0"
          version="1.6.1"
          fragment="true"
          unpack="false"/>
 
-   <plugin id="org.slf4j.jul"
+   <plugin
+         id="org.slf4j.jul"
          download-size="0"
          install-size="0"
          version="1.6.1"
          fragment="true"
          unpack="false"/>
 
-   <plugin id="org.slf4j.jcl"
+   <plugin
+         id="org.slf4j.jcl"
          download-size="0"
          install-size="0"
          version="1.6.1"
          fragment="true"
          unpack="false"/>
 
-   <plugin id="org.slf4j.log4j"
+   <plugin
+         id="org.slf4j.log4j"
          download-size="0"
          install-size="0"
          version="1.6.1"
          fragment="true"
          unpack="false"/>
 
-   <plugin id="ch.qos.logback.core"
+   <plugin
+         id="ch.qos.logback.core"
          download-size="0"
          install-size="0"
          version="0.9.27"
          fragment="true"
          unpack="false"/>
 
-   <plugin id="ch.qos.logback.classic"
+   <plugin
+         id="ch.qos.logback.classic"
          download-size="0"
          install-size="0"
          version="0.9.27"
          fragment="true"
          unpack="false"/>
 
-   <plugin id="ch.qos.logback.slf4j"
+   <plugin
+         id="ch.qos.logback.slf4j"
          download-size="0"
          install-size="0"
          version="0.9.27"
          fragment="true"
          unpack="false"/>
 
-   <plugin id="com.google.collect"
+   <plugin
+         id="com.google.collect"
          download-size="0"
          install-size="0"
          version="1.0.0"
          fragment="true"
          unpack="false"/>
 
-   <plugin id="org.apache.commons.io"
+   <plugin
+         id="org.apache.commons.io"
          download-size="0"
          install-size="0"
          version="2.0.1"
          fragment="true"
          unpack="false"/>
 
-   <plugin id="org.apache.commons.lang"
+   <plugin
+         id="org.apache.commons.lang"
          download-size="0"
          install-size="0"
          version="2.4.0"
          fragment="true"
          unpack="false"/>
 
-   <plugin id="org.apache.commons.collections"
+   <plugin
+         id="org.apache.commons.collections"
          download-size="0"
          install-size="0"
          version="3.2.0"
          fragment="true"
          unpack="false"/>
 
-   <plugin id="org.apache.commons.beanutils"
-         download-size="0"
-         install-size="0"
-         version="1.7.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin id="org.apache.commons.httpclient"
+   <plugin
+         id="org.apache.commons.httpclient"
          download-size="0"
          install-size="0"
          version="3.1.0"

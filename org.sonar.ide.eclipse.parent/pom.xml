@@ -59,6 +59,7 @@
 
     <module>../org.sonar.ide.eclipse.logback</module>
     <module>../org.sonar.ide.eclipse.logback.appenders</module>
+    <module>../org.sonar.ide.eclipse.logback.feature</module>
 
     <module>../org.sonar.ide.eclipse.tests.common</module>
     <module>../org.sonar.ide.eclipse.tests</module>
