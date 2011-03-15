@@ -29,9 +29,6 @@ import org.eclipse.ui.texteditor.quickdiff.IQuickDiffReferenceProvider;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 
-/**
- * @author Jérémie Lagarde
- */
 public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
 
   private String id;
@@ -57,7 +54,9 @@ public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
     }
     if (resource != null) {
       SourceCode sourceCode = EclipseSonar.getInstance(resource.getProject()).search(resource);
-      sonarSource = new Document(sourceCode.getRemoteContent());
+      if (sourceCode != null) {
+        sonarSource = new Document(sourceCode.getRemoteContent());
+      }
     }
     return sonarSource;
   }

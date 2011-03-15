@@ -19,6 +19,12 @@
  */
 package org.sonar.ide.eclipse.ui.tests;
 
+import static org.junit.Assert.fail;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,7 +32,8 @@ import org.sonar.ide.eclipse.ui.tests.bots.ImportProjectBot;
 import org.sonar.ide.eclipse.ui.tests.bots.PackageExplorerBot;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 
-import static org.junit.Assert.fail;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 public class CompareWithSonarActionTest extends UITestCase {
   private static final String PROJECT_NAME = "reference";
@@ -39,6 +46,28 @@ public class CompareWithSonarActionTest extends UITestCase {
 
     // Enable Sonar nature
     ProjectUtils.configureProject(PROJECT_NAME);
+  }
+
+  /**
+   * SONARIDE-208
+   */
+  @Test
+  public void shouldNotCompareNewFile() throws Exception {
+    // Create new file, which wasn't analysed by Sonar
+    IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(PROJECT_NAME);
+    IFile file = project.getFile("src/main/java/NewFile.java");
+    byte[] bytes = "File contents".getBytes();
+    InputStream source = new ByteArrayInputStream(bytes);
+    file.create(source, IResource.NONE, null);
+    // Assert that dialog was shown
+    new PackageExplorerBot()
+        .expandAndSelect(PROJECT_NAME, "src/main/java", "(default package)", "NewFile.java")
+        .clickContextMenu(MENUBAR_PATH);
+    bot.shell("Not found").activate();
+    bot.sleep(5000);
+    bot.button("OK").click();
+    // Remove file
+    file.delete(true, null);
   }
 
   @Test

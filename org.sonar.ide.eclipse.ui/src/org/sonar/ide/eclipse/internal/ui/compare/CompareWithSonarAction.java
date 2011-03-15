@@ -21,17 +21,16 @@ package org.sonar.ide.eclipse.internal.ui.compare;
 
 import org.eclipse.compare.CompareUI;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.PlatformUI;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 
-/**
- * @author Jérémie Lagarde
- */
 public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
 
   private ISonarResource resource;
@@ -54,8 +53,14 @@ public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
   public void run(final IAction action) {
     if (resource != null) {
       final SourceCode sourceCode = EclipseSonar.getInstance(resource.getProject()).search(resource);
-      CompareUI.openCompareEditor(new SonarCompareInput(resource.getResource(), sourceCode.getRemoteContent()));
+      if (sourceCode != null) {
+        CompareUI.openCompareEditor(new SonarCompareInput(resource.getResource(), sourceCode.getRemoteContent()));
+      } else {
+        MessageDialog.openInformation(
+            PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+            "Not found",
+            resource.getKey() + " not found on server");
+      }
     }
   }
-
 }

@@ -76,6 +76,7 @@ public final class EclipseSonar extends RemoteSonar {
   }
 
   /**
+   * @TODO Godin: maybe it would be better to return special object, which will represent non-existing resource
    * @return null, if not found
    */
   public SourceCode search(IResource resource) {
