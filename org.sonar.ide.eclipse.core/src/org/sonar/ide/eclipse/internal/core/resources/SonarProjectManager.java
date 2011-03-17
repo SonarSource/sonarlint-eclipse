@@ -41,6 +41,7 @@ public class SonarProjectManager {
   private static final String P_PROJECT_GROUPID = "projectGroupId";
   private static final String P_PROJECT_ARTIFACTID = "projectArtifactId";
   private static final String P_PROJECT_BRANCH = "projectBranch";
+  private static final String P_ANALYSE_LOCALLY = "analyseLocally";
 
   private static final String VERSION = "1";
 
@@ -66,6 +67,7 @@ public class SonarProjectManager {
     configuration.setGroupId(projectNode.get(P_PROJECT_GROUPID, ""));
     configuration.setArtifactId(artifactId);
     configuration.setBranch(projectNode.get(P_PROJECT_BRANCH, ""));
+    configuration.setAnalysedLocally(projectNode.getBoolean(P_ANALYSE_LOCALLY, false));
     return configuration;
   }
 
@@ -83,6 +85,7 @@ public class SonarProjectManager {
       projectNode.put(P_PROJECT_GROUPID, configuration.getGroupId());
       projectNode.put(P_PROJECT_ARTIFACTID, configuration.getArtifactId());
       projectNode.put(P_PROJECT_BRANCH, configuration.getBranch());
+      projectNode.putBoolean(P_ANALYSE_LOCALLY, configuration.isAnalysedLocally());
 
       try {
         projectNode.flush();
@@ -93,5 +96,4 @@ public class SonarProjectManager {
     }
     return false;
   }
-
 }

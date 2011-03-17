@@ -35,6 +35,7 @@ public class ProjectProperties implements ISonarProject {
   private String groupId;
   private String artifactId;
   private String branch;
+  private boolean analysedLocally;
 
   public ProjectProperties(IProject project) {
     this.project = project;
@@ -101,6 +102,14 @@ public class ProjectProperties implements ISonarProject {
 
   public String getName() {
     return project.getName();
+  }
+
+  public boolean isAnalysedLocally() {
+    return analysedLocally;
+  }
+
+  public void setAnalysedLocally(boolean value) {
+    this.analysedLocally = value;
   }
 
 }

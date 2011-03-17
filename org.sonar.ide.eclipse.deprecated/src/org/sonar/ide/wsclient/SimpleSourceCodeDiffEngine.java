@@ -28,7 +28,7 @@ import org.sonar.wsclient.services.Source;
 
 /**
  * Actually this is an implementation of heuristic algorithm - magic happens here.
- *
+ * 
  * @author Evgeny Mandrikov
  */
 public class SimpleSourceCodeDiffEngine implements SourceCodeDiffEngine {
@@ -63,7 +63,7 @@ public class SimpleSourceCodeDiffEngine implements SourceCodeDiffEngine {
 
   /**
    * Currently this method just compares hash codes (see {@link #getHashCode(String)}).
-   *
+   * 
    * @return -1 if not found
    */
   private int internalMatch(String originalSourceLine, int[] hashCodes, int originalLine) {
@@ -79,7 +79,7 @@ public class SimpleSourceCodeDiffEngine implements SourceCodeDiffEngine {
       if (hashCodes[i] == originalHashCode) {
         if (newLine != -1 && newLine != originalLine) {
           // may be more than one match, but we take into account only first
-          LOG.warn("Found more than one match for line '{}'", originalSourceLine);
+          LOG.debug("Found more than one match for line '{}'", originalSourceLine);
           break;
         }
         newLine = i + 1;
@@ -94,7 +94,7 @@ public class SimpleSourceCodeDiffEngine implements SourceCodeDiffEngine {
 
   /**
    * Returns hash code for specified string after removing whitespaces.
-   *
+   * 
    * @param str string
    * @return hash code for specified string after removing whitespaces
    */
@@ -107,7 +107,7 @@ public class SimpleSourceCodeDiffEngine implements SourceCodeDiffEngine {
 
   /**
    * Returns hash codes for specified strings after removing whitespaces.
-   *
+   * 
    * @param str strings
    * @return hash codes for specified strings after removing whitespaces
    */

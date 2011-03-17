@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.internal.ui.jobs;
 
+import com.google.common.collect.ArrayListMultimap;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -26,11 +27,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.Violation;
-
-import com.google.common.collect.ArrayListMultimap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,9 +57,15 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
     if (resource instanceof IProject) {
       IProject project = (IProject) resource;
       // TODO We will work only with Java projects
-      if ( !project.hasNature("org.eclipse.jdt.core.javanature")) {
+      if (!project.hasNature("org.eclipse.jdt.core.javanature")) {
         return false;
       }
+
+      ProjectProperties projectProperties = ProjectProperties.getInstance(project);
+      if (projectProperties.isAnalysedLocally()) {
+        return false;
+      }
+
       cleanMarkers(project);
       EclipseSonar sonar = EclipseSonar.getInstance(project);
       SourceCode sourceCode = sonar.search(project);

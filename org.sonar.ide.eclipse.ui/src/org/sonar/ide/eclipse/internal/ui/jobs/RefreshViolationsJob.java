@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.jobs;
 
-import java.util.*;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -31,9 +29,12 @@ import org.eclipse.ui.progress.UIJob;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.wsclient.services.Violation;
+
+import java.util.*;
 
 /**
  * This class load violations in background.
@@ -118,7 +119,10 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
           IResource resource = ((IFileEditorInput) input).getFile();
           ISonarResource sonarResource = PlatformUtils.adapt(resource, ISonarResource.class);
           if (sonarResource != null) {
-            new RefreshViolationsJob(Collections.singletonList(resource)).schedule();
+            ProjectProperties projectProperties = ProjectProperties.getInstance(resource);
+            if (!projectProperties.isAnalysedLocally()) {
+              new RefreshViolationsJob(Collections.singletonList(resource)).schedule();
+            }
           }
         }
       }
