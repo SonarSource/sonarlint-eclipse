@@ -19,29 +19,17 @@
  */
 package org.sonar.batch;
 
-import org.sonar.api.batch.BatchExtensionDictionnary;
-import org.sonar.api.batch.DecoratorContext;
-import org.sonar.api.batch.ProjectClasspath;
-import org.sonar.api.batch.SensorContext;
-import org.sonar.api.batch.SonarIndex;
+import org.sonar.api.batch.*;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.measures.Metric;
 import org.sonar.api.measures.MetricFinder;
 import org.sonar.api.platform.ServerFileSystem;
-import org.sonar.api.resources.DefaultProjectFileSystem;
-import org.sonar.api.resources.Languages;
-import org.sonar.api.resources.Project;
+import org.sonar.api.resources.*;
 import org.sonar.api.resources.Project.AnalysisType;
-import org.sonar.api.resources.ProjectFileSystem;
 import org.sonar.api.rules.AnnotationRuleParser;
 import org.sonar.api.rules.RuleFinder;
 import org.sonar.api.rules.XMLRuleParser;
-import org.sonar.batch.components.EmbedderFileSystem;
-import org.sonar.batch.components.EmbedderMetricFinder;
-import org.sonar.batch.components.EmbedderProjectTree;
-import org.sonar.batch.components.EmbedderRuleFinder;
-import org.sonar.batch.components.EmbedderViolationsDecorator;
-import org.sonar.batch.components.RemoteProfileLoader;
+import org.sonar.batch.components.*;
 import org.sonar.batch.index.DefaultIndex;
 
 public class ProjectModule extends Module {
@@ -61,6 +49,7 @@ public class ProjectModule extends Module {
     addComponent(BatchExtensionDictionnary.class);
 
     addComponent(Languages.class);
+    addComponent(ViolationFilters.class);
 
     bind(SensorContext.class, DefaultSensorContext.class);
     bind(DecoratorContext.class, DefaultDecoratorContext.class);

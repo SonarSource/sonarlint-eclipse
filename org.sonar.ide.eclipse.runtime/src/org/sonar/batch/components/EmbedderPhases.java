@@ -23,6 +23,7 @@ import org.sonar.api.batch.SensorContext;
 import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.resources.Project;
 import org.sonar.api.utils.Logs;
+import org.sonar.batch.ViolationFilters;
 import org.sonar.batch.index.DefaultIndex;
 import org.sonar.batch.phases.DecoratorsExecutor;
 import org.sonar.batch.phases.InitializersExecutor;
@@ -36,17 +37,19 @@ public class EmbedderPhases {
   private Project project;
   private DefaultIndex index;
   private RulesProfile rulesProfile;
+  private ViolationFilters violationFilters;
   private InitializersExecutor initializersExecutor;
   private SensorsExecutor sensorsExecutor;
   private DecoratorsExecutor decoratorsExecutor;
   private SensorContext sensorContext;
 
-  public EmbedderPhases(Project project, DefaultIndex index, RulesProfile rulesProfile,
+  public EmbedderPhases(Project project, DefaultIndex index, RulesProfile rulesProfile, ViolationFilters violationFilters,
       InitializersExecutor initializersExecutor, SensorsExecutor sensorsExecutor, DecoratorsExecutor decoratorsExecutor,
       SensorContext sensorContext) {
     this.project = project;
     this.index = index;
     this.rulesProfile = rulesProfile;
+    this.violationFilters = violationFilters;
     this.initializersExecutor = initializersExecutor;
     this.sensorsExecutor = sensorsExecutor;
     this.decoratorsExecutor = decoratorsExecutor;
@@ -55,7 +58,7 @@ public class EmbedderPhases {
 
   public void start() {
     // Prepare index
-    index.setCurrentProject(project, null, null, rulesProfile);
+    index.setCurrentProject(project, null, violationFilters, rulesProfile);
     // Execute
     initializersExecutor.execute(project);
     sensorsExecutor.execute(project, sensorContext);
