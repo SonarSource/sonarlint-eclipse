@@ -22,18 +22,10 @@ package org.sonar.ide.eclipse.tests.common;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceDescription;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
@@ -168,14 +160,9 @@ public abstract class SonarTestCase {
         addedProjectList.add(project);
       }
     }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
+    JobHelpers.waitForJobsToComplete();
     LOG.info("Eclipse project imported");
     return addedProjectList.get(0);
-  }
-
-  public static void waitForJobs() throws Exception {
-    while (!Job.getJobManager().isIdle()) {
-      Thread.sleep(1000);
-    }
   }
 
 }

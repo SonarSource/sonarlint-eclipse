@@ -19,11 +19,7 @@
  */
 package org.sonar.ide.eclipse.tests.common;
 
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 
 /**
  * @author Evgeny Mandrikov
@@ -31,22 +27,39 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 public class JobHelpers {
 
   /**
-   * Inspired by http://eclipse.dzone.com/articles/eclipse-gui-testing-is-viable-
-   * Also see http://fisheye.jboss.org/browse/JBossTools/trunk/vpe/tests/org.jboss.tools.vpe.ui.test/src/org/jboss/tools/vpe/ui/test/TestUtil.java?r=HEAD
+   * Inspired by http://fisheye.jboss.org/browse/JBossTools/trunk/vpe/tests/org.jboss.tools.vpe.ui.test/src/org/jboss/tools/vpe/ui/test/TestUtil.java?r=HEAD
    */
   public static void waitForJobsToComplete() {
-    // ensure that all queued workspace operations and locks are released
-    try {
-      ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
+    waitForIdle();
+  }
 
-        public void run(IProgressMonitor monitor) throws CoreException {
-          // nothing to do!
+  private static final long MAX_IDLE = 60 * 1000L;
+
+  private static void waitForIdle() {
+    waitForIdle(MAX_IDLE);
+  }
+
+  private static void waitForIdle(long maxIdle) {
+    final long start = System.currentTimeMillis();
+    while (!Job.getJobManager().isIdle()) {
+      delay(500);
+      if ((System.currentTimeMillis() - start) > maxIdle) {
+        Job[] jobs = Job.getJobManager().find(null);
+        StringBuffer jobsList = new StringBuffer("A long running job detected\n");
+        for (Job job : jobs) {
+          jobsList.append("\t").append(job.getName()).append("\n");
         }
-      }, new NullProgressMonitor());
-    } catch (CoreException e) {
-      throw new IllegalStateException(e);
+        throw new RuntimeException(jobsList.toString());
+      }
     }
+  }
 
+  private static void delay(long waitTimeMillis) {
+    try {
+      Thread.sleep(waitTimeMillis);
+    } catch (InterruptedException e) {
+      // ignore
+    }
   }
 
   private JobHelpers() {
