@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,8 @@ import java.util.TimerTask;
 public class LogbackPlugin extends Plugin {
 
   private static final String PLUGIN_ID = "org.sonar.ide.eclipse.logback"; //$NON-NLS-1$
+
+  private static final String RESOURCES_PLUGIN_ID = "org.eclipse.core.resources"; //$NON-NLS-1$
 
   /**
    * Should match name in "conf/logback.xml".
@@ -85,11 +88,14 @@ public class LogbackPlugin extends Plugin {
   }
 
   private boolean isPlatformInstanceLocationSet() {
-    try {
-      return Platform.isRunning() && Platform.getInstanceLocation().isSet();
-    } catch (Exception e) {
+    if (!Platform.isRunning()) {
       return false;
     }
+    Bundle resourcesBundle = Platform.getBundle(RESOURCES_PLUGIN_ID);
+    if (resourcesBundle == null || resourcesBundle.getState() != Bundle.ACTIVE) {
+      return false;
+    }
+    return Platform.getInstanceLocation().isSet();
   }
 
   private synchronized void configureLogback() {
@@ -97,6 +103,7 @@ public class LogbackPlugin extends Plugin {
       systemOut("Logback was configured already"); //$NON-NLS-1$
       return;
     }
+    systemOut("Configuring logback"); //$NON-NLS-1$
 
     File stateDir = getStateLocation().toFile();
     if (System.getProperty(LOG_DIR_PROPERTY) == null) {
