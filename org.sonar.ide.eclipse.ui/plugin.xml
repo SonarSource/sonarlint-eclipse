@@ -176,41 +176,57 @@
   </extension>
 
   <extension point="org.eclipse.ui.popupMenus">
+    <objectContribution id="org.sonar.ide.eclipse.ui.projectContributions"
+                        adaptable="true"
+                        objectClass="org.eclipse.core.resources.IProject">
+        <visibility>
+           <objectState name="nature" value="org.sonar.ide.eclipse.core.sonarNature"/>
+        </visibility>
+        <action
+              class="org.sonar.ide.eclipse.internal.ui.actions.AnalyseProjectAction"
+              icon="icons/inspect.png"
+              id="org.sonar.ide.eclipse.runtime.ui.analyseAction"
+              label="Launch analysis"
+              menubarPath="sonar.menu/group1">
+        </action>
+        <action
+              class="org.sonar.ide.eclipse.internal.ui.actions.ChangeAnalysisModeAction"
+              enablesFor="1"
+              id="org.sonar.ide.eclipse.runtime.ui.enableLocalAnalysisAction"
+              label="Locally"
+              menubarPath="sonar.menu/mode/group1"
+              style="radio">
+        </action>
+        <action
+              class="org.sonar.ide.eclipse.internal.ui.actions.ChangeAnalysisModeAction"
+              enablesFor="1"
+              id="org.sonar.ide.eclipse.runtime.ui.enableRemoteAnalysisAction"
+              label="Remotely"
+              menubarPath="sonar.menu/mode/group1"
+              style="radio">
+        </action>
+        <action id="org.sonar.ide.eclipse.addRemoveNatureAction"
+              class="org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction"
+              enablesFor="+"
+              label="Remove Sonar Nature"
+              menubarPath="sonar.menu/group2">
+        </action>
+    </objectContribution>
     <objectContribution
-           id="org.sonar.ide.eclipse.ui.contribution1"
+           id="org.sonar.ide.eclipse.ui.resourceContributions"
            objectClass="org.sonar.ide.eclipse.core.ISonarResource"
            adaptable="true">
-        <menu
-              icon="icons/sonar.png"
-              id="org.sonar.ide.eclipse.sonar"
-              label="%sonar.menu.label"
-              path="additions">
-           <separator
-                 name="group1">
-           </separator>
-        </menu>
         <action
               class="org.sonar.ide.eclipse.internal.ui.actions.OpenInBrowserAction"
               enablesFor="1"
               id="org.sonar.ide.eclipse.openInBrowserAction"
               label="%sonar.action.openinbrowser.label"
-              menubarPath="org.sonar.ide.eclipse.sonar/group1"
-              state="true"
-              style="push"
+              menubarPath="sonar.menu/group1"
               icon="icons/web.gif">
         </action>
-        <!--action
-              label="Sonar server"
-              enablesFor="1"
-              class="org.sonar.ide.eclipse.compare.CompareWithSonarAction"
-              menubarPath="compareWithMenu/compareWithGroup"
-              id="org.sonar.ide.eclipse.compareWithSonar"
-              icon="icons/sonar.png">
-        </action-->
     </objectContribution>
-
     <objectContribution
-           id="org.sonar.ide.eclipse.contribution2"
+           id="org.sonar.ide.eclipse.ui.fileContributions"
            objectClass="org.sonar.ide.eclipse.core.ISonarFile"
            adaptable="true">
         <action
@@ -222,37 +238,7 @@
               icon="icons/sonar.png">
         </action>
     </objectContribution>
-        
-	<!-- TODO just for testing purposes -->
-    <objectContribution id="org.sonar.ide.eclipse.projectMenu"
-        				adaptable="true"
-        				objectClass="org.eclipse.core.resources.IProject">
-		<visibility>
-          <objectState name="nature" value="org.sonar.ide.eclipse.core.sonarNature"/>
-        </visibility>
-		<action id="org.sonar.ide.eclipse.addRemoveNatureAction"
-                class="org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction"
-                enablesFor="+"
-                label="Remove Sonar Nature"
-                menubarPath="org.sonar.ide.eclipse.sonar/group1">
-        </action>
-        <action
-               class="org.sonar.ide.eclipse.internal.ui.actions.AnalyseProjectAction"
-               enablesFor="1"
-               id="org.sonar.ide.eclipse.runtime.ui.analyseAction"
-               label="Analyse locally"
-               menubarPath="org.sonar.ide.eclipse.sonar/group1">
-        </action>
-        <action
-               class="org.sonar.ide.eclipse.internal.ui.actions.AnalyseProjectRemotelyAction"
-               enablesFor="1"
-               id="org.sonar.ide.eclipse.runtime.ui.analyseRemotelyAction"
-               label="Analyse remotely"
-               menubarPath="org.sonar.ide.eclipse.sonar/group1">
-        </action>
-    </objectContribution>
-    
-    <objectContribution id="org.sonar.ide.eclipse.objectContribution1"
+    <objectContribution id="org.sonar.ide.eclipse.ui.objectContribution1"
                         adaptable="true"
                         objectClass="org.eclipse.core.resources.IProject">
       	<visibility>
@@ -373,5 +359,29 @@
            <instanceof value="org.sonar.ide.eclipse.internal.ui.console.SonarConsole" />
         </enablement>
      </consolePageParticipant>
+  </extension>
+  <extension
+        point="org.eclipse.ui.menus">
+     <menuContribution
+           locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+        <menu
+              icon="icons/sonar.png"
+              id="sonar.menu"
+              label="%sonar.menu.label">
+           <separator
+                 name="group1">
+           </separator>
+           <menu
+                 id="mode"
+                 label="Analyse...">
+              <separator
+                    name="group1">
+              </separator>
+           </menu>
+           <separator
+                 name="group2">
+           </separator>
+        </menu>
+     </menuContribution>
   </extension>
 </plugin>

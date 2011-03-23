@@ -22,12 +22,12 @@ package org.sonar.ide.eclipse.internal.ui.actions;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.sonar.ide.eclipse.core.jobs.AnalyseProjectJob;
 import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 
 public class AnalyseProjectAction implements IObjectActionDelegate {
 
@@ -45,9 +45,6 @@ public class AnalyseProjectAction implements IObjectActionDelegate {
    * @see IActionDelegate#run(IAction)
    */
   public void run(IAction action) {
-    ProjectProperties projectProperties = ProjectProperties.getInstance(project);
-    projectProperties.setAnalysedLocally(true);
-    projectProperties.save();
     new AnalyseProjectJob(project).schedule();
   }
 
@@ -57,12 +54,10 @@ public class AnalyseProjectAction implements IObjectActionDelegate {
    * @see IActionDelegate#selectionChanged(IAction, ISelection)
    */
   public void selectionChanged(IAction action, ISelection selection) {
-    if (selection instanceof IStructuredSelection) {
-      this.project = (IProject) ((IStructuredSelection) selection).getFirstElement();
-      if (project != null) {
-        ProjectProperties projectProperties = ProjectProperties.getInstance(project);
-        action.setChecked(projectProperties.isAnalysedLocally());
-      }
+    project = (IProject) SelectionUtils.getSingleElement(selection);
+    if (project != null) {
+      ProjectProperties projectProperties = ProjectProperties.getInstance(project);
+      action.setEnabled(projectProperties.isAnalysedLocally());
     }
   }
 

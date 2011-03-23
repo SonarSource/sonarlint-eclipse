@@ -25,11 +25,15 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
+import org.sonar.ide.eclipse.core.jobs.AnalyseProjectJob;
 import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshAllViolationsJob;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 
-public class AnalyseProjectRemotelyAction implements IObjectActionDelegate {
+public class ChangeAnalysisModeAction implements IObjectActionDelegate {
+
+  public static final String LOCAL_MODE = "org.sonar.ide.eclipse.runtime.ui.enableLocalAnalysisAction";
+  public static final String REMOTE_MODE = "org.sonar.ide.eclipse.runtime.ui.enableRemoteAnalysisAction";
 
   /**
    * @see IObjectActionDelegate#setActivePart(IAction, IWorkbenchPart)
@@ -37,11 +41,19 @@ public class AnalyseProjectRemotelyAction implements IObjectActionDelegate {
   public void setActivePart(IAction action, IWorkbenchPart targetPart) {
   }
 
+  /**
+   * @see IActionDelegate#run(IAction)
+   */
   public void run(IAction action) {
     ProjectProperties projectProperties = ProjectProperties.getInstance(project);
-    projectProperties.setAnalysedLocally(false);
+    projectProperties.setAnalysedLocally(isLocalAnalysis(action));
     projectProperties.save();
-    RefreshAllViolationsJob.createAndSchedule(project);
+
+    if (isLocalAnalysis(action)) {
+      new AnalyseProjectJob(project).schedule();
+    } else {
+      RefreshAllViolationsJob.createAndSchedule(project);
+    }
   }
 
   private IProject project;
@@ -53,7 +65,20 @@ public class AnalyseProjectRemotelyAction implements IObjectActionDelegate {
     project = (IProject) SelectionUtils.getSingleElement(selection);
     if (project != null) {
       ProjectProperties projectProperties = ProjectProperties.getInstance(project);
-      action.setChecked(!projectProperties.isAnalysedLocally());
+      action.setChecked(isChecked(action, projectProperties));
+      action.setEnabled(!action.isChecked());
     }
+  }
+
+  private boolean isChecked(IAction action, ProjectProperties projectProperties) {
+    if (isLocalAnalysis(action)) {
+      return projectProperties.isAnalysedLocally();
+    } else {
+      return !projectProperties.isAnalysedLocally();
+    }
+  }
+
+  private boolean isLocalAnalysis(IAction action) {
+    return LOCAL_MODE.equals(action.getId());
   }
 }
