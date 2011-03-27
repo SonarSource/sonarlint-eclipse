@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.tests.common;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
@@ -31,10 +28,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
  * @author Evgeny Mandrikov
  */
-public class WorkspaceHelpers {
+public final class WorkspaceHelpers {
 
   public static void cleanWorkspace() throws InterruptedException, CoreException, IOException {
     // TODO Godin: implement me
@@ -58,11 +58,11 @@ public class WorkspaceHelpers {
     File[] files = workspace.getRoot().getLocation().toFile().listFiles();
     if (files != null) {
       for (File file : files) {
-        if ( !".metadata".equals(file.getName())) {
+        if (!".metadata".equals(file.getName())) {
           if (file.isDirectory()) {
             FileUtils.deleteDirectory(file);
           } else {
-            if ( !file.delete()) {
+            if (!file.delete()) {
               throw new IOException("Could not delete file " + file.getCanonicalPath());
             }
           }

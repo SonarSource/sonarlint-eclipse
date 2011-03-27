@@ -24,7 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 /**
  * @author Evgeny Mandrikov
  */
-public class JobHelpers {
+public final class JobHelpers {
 
   /**
    * Inspired by http://fisheye.jboss.org/browse/JBossTools/trunk/vpe/tests/org.jboss.tools.vpe.ui.test/src/org/jboss/tools/vpe/ui/test/TestUtil.java?r=HEAD

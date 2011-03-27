@@ -383,5 +383,23 @@
            </separator>
         </menu>
      </menuContribution>
+     <menuContribution
+           locationURI="toolbar:org.sonar.ide.eclipse.ui.views.ViolationsView">
+        <command
+              commandId="org.sonar.ide.eclipse.ui.RefreshViolationsCommand"
+              icon="icons/refresh.gif"
+              label="Refresh"
+              style="push"
+              tooltip="Refresh violations for all configured projects.">
+        </command>
+     </menuContribution>
+  </extension>
+  <extension
+        point="org.eclipse.ui.commands">
+     <command
+           defaultHandler="org.sonar.ide.eclipse.internal.ui.command.RefreshViolationsCommand"
+           id="org.sonar.ide.eclipse.ui.RefreshViolationsCommand"
+           name="Refresh violations">
+     </command>
   </extension>
 </plugin>

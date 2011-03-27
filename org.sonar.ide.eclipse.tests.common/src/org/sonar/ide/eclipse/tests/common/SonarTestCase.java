@@ -114,7 +114,7 @@ public abstract class SonarTestCase {
     workspace.setDescription(description);
   }
 
-  final static private void cleanWorkspace() throws Exception {
+  private static void cleanWorkspace() throws Exception {
     // Job.getJobManager().suspend();
     // waitForJobs();
 

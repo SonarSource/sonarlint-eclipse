@@ -17,27 +17,18 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.ui.views;
+package org.sonar.ide.eclipse.internal.ui.command;
 
-import org.eclipse.ui.part.WorkbenchPart;
-import org.eclipse.ui.views.markers.MarkerSupportView;
-import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.sonar.ide.eclipse.internal.ui.jobs.RefreshAllViolationsJob;
 
-public class ViolationsView extends MarkerSupportView {
+public class RefreshViolationsCommand extends AbstractHandler {
 
-  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.ViolationsView";
-
-  public ViolationsView() {
-    super(ISonarConstants.PLUGIN_ID + ".markers.violationMarkerGenerator");
-  }
-
-  /**
-   * TODO quote from {@link WorkbenchPart#getContentDescription()} : "It is considered bad practice to overload or extend this method."
-   */
-  @Override
-  public String getContentDescription() {
-    // TODO : add some metrics about violation makers.
-    return "";
+  public Object execute(ExecutionEvent event) throws ExecutionException {
+    RefreshAllViolationsJob.createAndSchedule();
+    return null;
   }
 
 }

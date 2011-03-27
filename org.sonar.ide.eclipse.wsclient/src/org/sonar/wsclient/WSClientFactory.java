@@ -19,15 +19,6 @@
  */
 package org.sonar.wsclient;
 
-import java.net.Authenticator;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.PasswordAuthentication;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.URI;
-import java.util.List;
-
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -38,7 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.wsclient.connectors.HttpClient3Connector;
 
-public class WSClientFactory {
+import java.net.*;
+import java.util.List;
+
+public final class WSClientFactory {
 
   private static final Logger LOG = LoggerFactory.getLogger(WSClientFactory.class);
 
@@ -100,8 +94,7 @@ public class WSClientFactory {
   }
 
   /**
-   * TODO Godin: I suppose that call of method {@link HttpClient3Connector#configureCredentials()} can be added to constructor
-   * {@link HttpClient3Connector#HttpClient3Connector(Host, HttpClient)}
+   * TODO Godin: I suppose that call of method {@link HttpClient3Connector#configureCredentials()} can be added to constructor {@link HttpClient3Connector#HttpClient3Connector(Host, HttpClient)}
    */
   private static void configureCredentials(HttpClient httpClient, Host server) {
     String username = server.getUsername();
