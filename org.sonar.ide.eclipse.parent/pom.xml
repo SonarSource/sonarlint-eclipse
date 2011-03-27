@@ -114,6 +114,10 @@
     <sonar-ide.releases>http://localhost</sonar-ide.releases>
 
     <jacoco.argLine></jacoco.argLine>
+
+    <!-- For Sonar analysis -->
+    <sonar.java.source>1.5</sonar.java.source>
+    <sonar.java.target>1.5</sonar.java.target>
   </properties>
 
   <pluginRepositories>
