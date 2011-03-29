@@ -186,8 +186,8 @@
               class="org.sonar.ide.eclipse.internal.ui.actions.AnalyseProjectAction"
               icon="icons/inspect.png"
               id="org.sonar.ide.eclipse.runtime.ui.analyseAction"
-              label="Launch analysis"
-              menubarPath="sonar.menu/group1">
+              label="Run Local Analysis"
+              menubarPath="sonar.menu/group2">
         </action>
         <action
               class="org.sonar.ide.eclipse.internal.ui.actions.ChangeAnalysisModeAction"
@@ -209,7 +209,7 @@
               class="org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction"
               enablesFor="+"
               label="Remove Sonar Nature"
-              menubarPath="sonar.menu/group2">
+              menubarPath="sonar.menu/group3">
         </action>
     </objectContribution>
     <objectContribution
@@ -380,6 +380,10 @@
            </menu>
            <separator
                  name="group2">
+           </separator>
+           <separator
+                 name="group3"
+                 visible="true">
            </separator>
         </menu>
      </menuContribution>
