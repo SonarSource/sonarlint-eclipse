@@ -71,8 +71,9 @@
   </modules>
 
   <scm>
-    <connection>scm:svn:http://svn.codehaus.org/sonar-ide/trunk/eclipse/org.sonar.ide.eclipse.parent</connection>
-    <developerConnection>scm:svn:https://svn.codehaus.org/sonar-ide/trunk/eclipse/org.sonar.ide.eclipse.parent</developerConnection>
+    <connection>scm:git:git@github.com:SonarSource/sonar-eclipse.git/org.sonar.ide.eclipse.parent</connection>
+    <developerConnection>scm:git:git@github.com:SonarSource/sonar-eclipse.git/org.sonar.ide.eclipse.parent</developerConnection>
+    <url>https://github.com/Godin/sonar-eclipse/tree/master/org.sonar.ide.eclipse.parent</url>
   </scm>
   <issueManagement>
     <system>JIRA</system>
