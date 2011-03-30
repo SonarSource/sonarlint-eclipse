@@ -25,12 +25,13 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.eclipse.core.net.proxy.IProxyData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.wsclient.connectors.HttpClient3Connector;
+import org.sonar.wsclient.internal.WSClientPlugin;
 
-import java.net.*;
-import java.util.List;
+import java.net.URI;
 
 public final class WSClientFactory {
 
@@ -71,22 +72,17 @@ public final class WSClientFactory {
    * Workaround for http://jira.codehaus.org/browse/SONAR-1586
    */
   private static void configureProxy(HttpClient httpClient, Host server) {
-    // TODO Godin: ugly hack to use ProxySelector with commons-httpclient 3.1
     try {
-      List<Proxy> list = ProxySelector.getDefault().select(new URI(server.getHost()));
-      for (Proxy proxy : list) {
-        if (proxy.type() == Proxy.Type.HTTP) {
-          // Proxy
-          InetSocketAddress addr = (InetSocketAddress) proxy.address();
-          httpClient.getHostConfiguration().setProxy(addr.getHostName(), addr.getPort());
-          // Proxy auth
-          InetAddress proxyInetAddress = InetAddress.getByName(addr.getHostName());
-          PasswordAuthentication auth = Authenticator.requestPasswordAuthentication(proxyInetAddress, addr.getPort(), null, null, null);
-          if (auth != null) {
-            Credentials defaultcreds = new UsernamePasswordCredentials(auth.getUserName(), new String(auth.getPassword()));
-            httpClient.getState().setProxyCredentials(AuthScope.ANY, defaultcreds);
-          }
+      IProxyData proxyData = WSClientPlugin.selectProxy(new URI(server.getHost()));
+      if (proxyData != null) {
+        LOG.debug("Proxy for {} - {}", server.getHost(), proxyData);
+        httpClient.getHostConfiguration().setProxy(proxyData.getHost(), proxyData.getPort());
+        if (proxyData.isRequiresAuthentication()) {
+          Credentials proxyCredentials = new UsernamePasswordCredentials(proxyData.getUserId(), proxyData.getPassword());
+          httpClient.getState().setProxyCredentials(AuthScope.ANY, proxyCredentials);
         }
+      } else {
+        LOG.debug("No proxy for {}", server.getHost());
       }
     } catch (Exception e) {
       LOG.error("Unable to configure proxy for sonar-ws-client", e);
@@ -100,8 +96,8 @@ public final class WSClientFactory {
     String username = server.getUsername();
     if (username != null && !"".equals(username)) {
       httpClient.getParams().setAuthenticationPreemptive(true);
-      Credentials defaultcreds = new UsernamePasswordCredentials(server.getUsername(), server.getPassword());
-      httpClient.getState().setCredentials(AuthScope.ANY, defaultcreds);
+      Credentials credentials = new UsernamePasswordCredentials(server.getUsername(), server.getPassword());
+      httpClient.getState().setCredentials(AuthScope.ANY, credentials);
     }
   }
 

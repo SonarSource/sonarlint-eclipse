@@ -19,32 +19,45 @@
  */
 package org.sonar.wsclient.internal;
 
-import java.net.Authenticator;
-import java.net.ProxySelector;
-
-
-
+import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
+import java.net.URI;
+
 public class WSClientPlugin extends Plugin {
 
-  @Override
-  public void start(BundleContext context) throws Exception {
-    super.start(context);
+  private static WSClientPlugin plugin;
 
-    setupProxy(context);
+  public WSClientPlugin() {
+    super();
+    plugin = this;
   }
 
-  private void setupProxy(final BundleContext context) {
+  @SuppressWarnings("deprecation")
+  public static IProxyData selectProxy(URI uri) {
+    BundleContext context = plugin.getBundle().getBundleContext();
     ServiceReference proxyServiceReference = context.getServiceReference(IProxyService.class.getName());
-    if (proxyServiceReference != null) {
-      IProxyService proxyService = (IProxyService) context.getService(proxyServiceReference);
-      ProxySelector.setDefault(new EclipseProxySelector(proxyService));
-      Authenticator.setDefault(new EclipseProxyAuthenticator(proxyService));
+    if (proxyServiceReference == null) {
+      return null;
     }
+    IProxyService service = (IProxyService) context.getService(proxyServiceReference);
+
+    final String host = uri.getHost();
+
+    String type = IProxyData.SOCKS_PROXY_TYPE;
+    if ("http".equals(uri.getScheme())) {
+      type = IProxyData.HTTP_PROXY_TYPE;
+    } else if ("ftp".equals(uri.getScheme())) {
+      type = IProxyData.HTTP_PROXY_TYPE;
+    } else if ("https".equals(uri.getScheme())) {
+      type = IProxyData.HTTPS_PROXY_TYPE;
+    }
+
+    // TODO Godin: by some reasons service.select(uri) doesn't work here
+    return service.getProxyDataForHost(host, type);
   }
 
 }
