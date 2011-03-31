@@ -1,2 +1,2 @@
-org.sonar.ide.eclipse.runtime  eol=crlf
-org.sonar.ide.eclipse.wsclient eol=crlf
+org.sonar.ide.eclipse.runtime/META-INF/MANIFEST.MF  eol=crlf
+org.sonar.ide.eclipse.wsclient/META-INF/MANIFEST.MF eol=crlf
