@@ -16,7 +16,7 @@
   <name>Embedded Sonar</name>
 
   <properties>
-    <sonar.version>2.7-SNAPSHOT</sonar.version>
+    <sonar.version>2.7</sonar.version>
   </properties>
 
   <dependencies>
