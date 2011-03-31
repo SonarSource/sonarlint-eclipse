@@ -116,9 +116,12 @@
 
     <jacoco.argLine></jacoco.argLine>
 
+    <!-- ================== -->
     <!-- For Sonar analysis -->
+    <!-- ================== -->
     <sonar.java.source>1.5</sonar.java.source>
     <sonar.java.target>1.5</sonar.java.target>
+    <sonar.scm.ignoreLocalModifications>true</sonar.scm.ignoreLocalModifications>
   </properties>
 
   <pluginRepositories>
