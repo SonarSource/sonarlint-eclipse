@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.Violation;
@@ -56,8 +57,7 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
   public boolean visit(final IResource resource) throws CoreException {
     if (resource instanceof IProject) {
       IProject project = (IProject) resource;
-      // TODO We will work only with Java projects
-      if (!project.hasNature("org.eclipse.jdt.core.javanature")) {
+      if (!SonarUiPlugin.hasSonarNature(project)) {
         return false;
       }
 
