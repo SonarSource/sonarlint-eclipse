@@ -19,11 +19,11 @@
  */
 package org.sonar.ide.eclipse.internal.jdt;
 
-import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.AbstractPlugin;
 
-public class SonarJdtPlugin extends Plugin {
+public class SonarJdtPlugin extends AbstractPlugin {
 
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.jdt"; //$NON-NLS-1$
 
@@ -41,13 +41,13 @@ public class SonarJdtPlugin extends Plugin {
   }
 
   @Override
-  public void start(BundleContext context) throws Exception {
+  public void start(BundleContext context) {
     super.start(context);
     LoggerFactory.getLogger(getClass()).debug("SonarJdtPlugin started");
   }
 
   @Override
-  public void stop(BundleContext context) throws Exception {
+  public void stop(BundleContext context) {
     super.stop(context);
     LoggerFactory.getLogger(getClass()).debug("SonarJdtPlugin stopped");
   }

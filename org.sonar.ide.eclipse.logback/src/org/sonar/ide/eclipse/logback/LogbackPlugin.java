@@ -68,7 +68,7 @@ public class LogbackPlugin extends Plugin {
   };
 
   @Override
-  public void start(BundleContext context) throws Exception {
+  public void start(BundleContext context) throws Exception { // NOSONAR
     super.start(context);
 
     String configFileProperty = System.getProperty(ContextInitializer.CONFIG_FILE_PROPERTY);
@@ -139,15 +139,15 @@ public class LogbackPlugin extends Plugin {
   }
 
   private static void systemOut(String message) {
-    System.out.println(PLUGIN_ID + ": " + message); //$NON-NLS-1$
+    System.out.println(PLUGIN_ID + ": " + message); //$NON-NLS-1$ // NOSONAR
   }
 
   private static void systemErr(String message) {
-    System.err.println(PLUGIN_ID + ": " + message); //$NON-NLS-1$
+    System.err.println(PLUGIN_ID + ": " + message); //$NON-NLS-1$ // NOSONAR
   }
 
   private void logException(Exception e) {
-    e.printStackTrace();
+    e.printStackTrace(); // NOSONAR
     getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, "Exception while configuring logging: " + e.getMessage(), e)); //$NON-NLS-1$
   }
 }

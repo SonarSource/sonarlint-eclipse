@@ -22,19 +22,13 @@ package org.sonar.ide.eclipse.core;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
-import org.sonar.ide.eclipse.internal.core.LogListener;
-import org.sonar.ide.eclipse.internal.core.ServersManager;
-import org.sonar.ide.eclipse.internal.core.SonarFile;
-import org.sonar.ide.eclipse.internal.core.SonarMeasure;
-import org.sonar.ide.eclipse.internal.core.SonarMetric;
-import org.sonar.ide.eclipse.internal.core.SonarResource;
+import org.sonar.ide.eclipse.internal.core.*;
 import org.sonar.ide.eclipse.internal.core.resources.SonarProjectManager;
 import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Metric;
 
-public class SonarCorePlugin extends Plugin {
+public class SonarCorePlugin extends AbstractPlugin {
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.core";
 
   public static final String NATURE_ID = PLUGIN_ID + ".sonarNature";
@@ -46,6 +40,10 @@ public class SonarCorePlugin extends Plugin {
 
   private static SonarCorePlugin plugin;
 
+  public SonarCorePlugin() {
+    plugin = this; // NOSONAR
+  }
+
   public static SonarCorePlugin getDefault() {
     return plugin;
   }
@@ -55,9 +53,8 @@ public class SonarCorePlugin extends Plugin {
   private ServersManager serversManager;
 
   @Override
-  public void start(BundleContext context) throws Exception {
+  public void start(BundleContext context) {
     super.start(context);
-    plugin = this; // NOSONAR
 
     logListener = new LogListener();
     Platform.addLogListener(logListener);
@@ -67,18 +64,17 @@ public class SonarCorePlugin extends Plugin {
   }
 
   @Override
-  public void stop(BundleContext context) throws Exception {
+  public void stop(BundleContext context) {
     serversManager.save();
 
     Platform.removeLogListener(logListener);
 
     super.stop(context);
-    plugin = null; // NOSONAR
   }
 
   private static SonarProjectManager projectManager;
 
-  public SonarProjectManager getProjectManager() {
+  public synchronized SonarProjectManager getProjectManager() {
     if (projectManager == null) {
       projectManager = new SonarProjectManager();
     }

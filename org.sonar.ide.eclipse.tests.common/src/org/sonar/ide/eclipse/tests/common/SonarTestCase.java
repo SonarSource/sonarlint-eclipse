@@ -140,7 +140,7 @@ public abstract class SonarTestCase {
 
     final String projectName = projectdir;
     File dst = new File(root.getLocation().toFile(), projectName);
-    dst = getProject(projectName, dst);
+    getProject(projectName, dst);
 
     final IProject project = workspace.getRoot().getProject(projectName);
     final List<IProject> addedProjectList = new ArrayList<IProject>();

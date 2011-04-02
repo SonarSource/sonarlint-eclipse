@@ -48,16 +48,16 @@ public final class WSClientFactory {
    * Creates Sonar web service client, which uses proxy settings from Eclipse.
    */
   public static Sonar create(Host host) {
-    HttpClient httpClient = createHttpClient(host);
+    HttpClient httpClient = createHttpClient();
     configureCredentials(httpClient, host);
     configureProxy(httpClient, host);
-    return new Sonar(new HttpClient3Connector(host, createHttpClient(host)));
+    return new Sonar(new HttpClient3Connector(host, httpClient));
   }
 
   /**
    * @see org.sonar.wsclient.connectors.HttpClient3Connector#createClient()
    */
-  private static HttpClient createHttpClient(Host server) {
+  private static HttpClient createHttpClient() {
     final HttpConnectionManagerParams params = new HttpConnectionManagerParams();
     params.setConnectionTimeout(TIMEOUT_MS);
     params.setSoTimeout(TIMEOUT_MS);
@@ -73,24 +73,25 @@ public final class WSClientFactory {
    */
   private static void configureProxy(HttpClient httpClient, Host server) {
     try {
-      IProxyData proxyData = WSClientPlugin.selectProxy(new URI(server.getHost()));
-      if (proxyData != null) {
+      IProxyData[] proxyDatas = WSClientPlugin.selectProxy(new URI(server.getHost()));
+      for (IProxyData proxyData : proxyDatas) {
         LOG.debug("Proxy for {} - {}", server.getHost(), proxyData);
         httpClient.getHostConfiguration().setProxy(proxyData.getHost(), proxyData.getPort());
         if (proxyData.isRequiresAuthentication()) {
           Credentials proxyCredentials = new UsernamePasswordCredentials(proxyData.getUserId(), proxyData.getPassword());
           httpClient.getState().setProxyCredentials(AuthScope.ANY, proxyCredentials);
         }
-      } else {
-        LOG.debug("No proxy for {}", server.getHost());
+        return;
       }
+      LOG.debug("No proxy for {}", server.getHost());
     } catch (Exception e) {
       LOG.error("Unable to configure proxy for sonar-ws-client", e);
     }
   }
 
   /**
-   * TODO Godin: I suppose that call of method {@link HttpClient3Connector#configureCredentials()} can be added to constructor {@link HttpClient3Connector#HttpClient3Connector(Host, HttpClient)}
+   * TODO Godin: I suppose that call of method {@link HttpClient3Connector#configureCredentials()} can be added to constructor
+   * {@link HttpClient3Connector#HttpClient3Connector(Host, HttpClient)}
    */
   private static void configureCredentials(HttpClient httpClient, Host server) {
     String username = server.getUsername();

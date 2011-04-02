@@ -25,11 +25,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.IOConsole;
-import org.eclipse.ui.console.IOConsoleOutputStream;
+import org.eclipse.ui.console.*;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.ui.ISonarConsole;
@@ -116,8 +112,7 @@ public class SonarConsole extends IOConsole implements ISonarConsole {
       stream.write(msg);
       stream.write("\n"); //$NON-NLS-1$
     } catch (IOException e) {
-      // Don't log using slf4j - it will cause a cycle
-      e.printStackTrace();
+      e.printStackTrace(); // NOSONAR Don't log using slf4j - it will cause a cycle
     }
   }
 

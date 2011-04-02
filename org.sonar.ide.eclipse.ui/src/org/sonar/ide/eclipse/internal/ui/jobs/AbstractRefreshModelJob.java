@@ -19,13 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.jobs;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
@@ -41,6 +34,13 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jérémie Lagarde
@@ -136,8 +136,8 @@ public abstract class AbstractRefreshModelJob<M> extends AbstractRemoteSonarJob 
     addLine(markerAttributes, getLine(data), source);
     final Map<String, Object> extraInfos = getExtraInfos(data);
     if (extraInfos != null) {
-      for (final String key : extraInfos.keySet()) {
-        markerAttributes.put(key, extraInfos.get(key));
+      for (Map.Entry<String, Object> entry : extraInfos.entrySet()) {
+        markerAttributes.put(entry.getKey(), entry.getValue());
       }
     }
     final IMarker marker = file.createMarker(markerId);

@@ -17,26 +17,35 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.ui.views;
+package org.sonar.ide.eclipse.core;
 
-import org.eclipse.ui.views.markers.MarkerSupportView;
-import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+import org.eclipse.core.runtime.Plugin;
+import org.osgi.framework.BundleContext;
 
-public class ViolationsView extends MarkerSupportView {
+public class AbstractPlugin extends Plugin {
 
-  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.ViolationsView";
-
-  public ViolationsView() {
-    super(ISonarConstants.PLUGIN_ID + ".markers.violationMarkerGenerator");
+  /**
+   * @throws SonarEclipseException if this plug-in did not start up properly
+   */
+  @Override
+  public void start(BundleContext context) {
+    try {
+      super.start(context);
+    } catch (Exception e) {
+      throw new SonarEclipseException("Unable to start " + context.getBundle().getSymbolicName(), e);
+    }
   }
 
   /**
-   * TODO quote from {@link org.eclipse.ui.part.WorkbenchPart#getContentDescription()} : "It is considered bad practice to overload or extend this method."
+   * @throws SonarEclipseException if this plug-in did not start up properly
    */
   @Override
-  public String getContentDescription() {
-    // TODO : add some metrics about violation makers.
-    return "";
+  public void stop(BundleContext context) {
+    try {
+      super.stop(context);
+    } catch (Exception e) {
+      throw new SonarEclipseException("Unable to stop " + context.getBundle().getSymbolicName(), e);
+    }
   }
 
 }

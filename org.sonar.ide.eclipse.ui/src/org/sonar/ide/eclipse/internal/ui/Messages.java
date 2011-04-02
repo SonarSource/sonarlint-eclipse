@@ -21,7 +21,7 @@ package org.sonar.ide.eclipse.internal.ui;
 
 import org.eclipse.osgi.util.NLS;
 
-public class Messages extends NLS {
+public final class Messages extends NLS {
   private static final String BUNDLE_NAME = "org.sonar.ide.eclipse.internal.ui.messages"; //$NON-NLS-1$
 
   static {

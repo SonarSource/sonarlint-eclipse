@@ -19,7 +19,7 @@
    </license>
 
    <requires>
-      <import feature="org.eclipse.platform" version="3.4.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.platform" version="3.5.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin

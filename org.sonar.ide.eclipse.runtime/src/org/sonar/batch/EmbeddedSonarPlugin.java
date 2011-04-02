@@ -40,7 +40,7 @@ public class EmbeddedSonarPlugin extends Plugin {
   private static EmbeddedSonarPlugin plugin;
 
   public EmbeddedSonarPlugin() {
-    this.plugin = this;
+    plugin = this; // NOSONAR
   }
 
   @Override

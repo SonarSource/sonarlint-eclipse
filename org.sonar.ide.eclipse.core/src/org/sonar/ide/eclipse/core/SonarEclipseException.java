@@ -19,6 +19,9 @@
  */
 package org.sonar.ide.eclipse.core;
 
+/**
+ * Because we don't like checked exceptions!
+ */
 public class SonarEclipseException extends RuntimeException {
 
   public SonarEclipseException(String message) {

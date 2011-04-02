@@ -24,11 +24,7 @@ import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.*;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
@@ -48,7 +44,7 @@ import java.text.MessageFormat;
  */
 public class NoSonarResolver implements ISonarResolver {
 
-  private final String NOSONAR_TAG = "//NOSONAR"; //$NON-NLS-1$
+  private static final String NOSONAR_TAG = "//NOSONAR"; //$NON-NLS-1$
 
   private String label;
   private String description;

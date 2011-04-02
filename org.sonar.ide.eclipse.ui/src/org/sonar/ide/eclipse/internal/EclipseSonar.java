@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal;
 
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
-
 import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -30,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.ide.wsclient.RemoteSonar;
 import org.sonar.wsclient.Host;
@@ -57,7 +56,7 @@ public final class EclipseSonar extends RemoteSonar {
   }
 
   /**
-   * For Eclipse use {@link #search(ISonarResource)} instead of it. {@inheritDoc}
+   * @deprecated use {@link #search(ISonarResource)} instead
    */
   @Override
   @Deprecated

@@ -19,12 +19,11 @@
  */
 package org.sonar.ide.eclipse.internal.ui.views;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.base.Function;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -41,12 +40,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.actions.BaseSelectionListenerAction;
 import org.eclipse.ui.dialogs.FilteredTree;
@@ -61,23 +55,17 @@ import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.AbstractTableLabelProvider;
-import org.sonar.ide.eclipse.internal.ui.EnhancedFilteredTree;
 import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleFavouriteMetricAction;
 import org.sonar.ide.eclipse.internal.ui.jobs.AbstractRemoteSonarJob;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-import org.sonar.wsclient.services.Measure;
-import org.sonar.wsclient.services.Metric;
-import org.sonar.wsclient.services.MetricQuery;
-import org.sonar.wsclient.services.Resource;
-import org.sonar.wsclient.services.ResourceQuery;
+import org.sonar.wsclient.services.*;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Evgeny Mandrikov
@@ -90,7 +78,7 @@ public class MeasuresView extends AbstractSonarInfoView {
 
   private TreeViewer viewer;
   private Map<String, ISonarMeasure> measuresByKey;
-  private HashMap<String, Collection<ISonarMeasure>> measuresByDomain;
+  private Map<String, Collection<ISonarMeasure>> measuresByDomain;
 
   private BaseSelectionListenerAction toggleFavoriteAction = new ToggleFavouriteMetricAction();
 
@@ -139,7 +127,7 @@ public class MeasuresView extends AbstractSonarInfoView {
         return super.isParentMatch(viewer, element);
       }
     };
-    FilteredTree filteredTree = new EnhancedFilteredTree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, filter);
+    FilteredTree filteredTree = new FilteredTree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
     viewer = filteredTree.getViewer();
     viewer.setContentProvider(new MapContentProvider());
     viewer.setLabelProvider(new MeasuresLabelProvider());
@@ -284,7 +272,7 @@ public class MeasuresView extends AbstractSonarInfoView {
 
           MeasuresView.this.measuresByDomain = Maps.newHashMap(measuresByDomain.asMap());
           MeasuresView.this.measuresByKey = measuresByKey;
-          if ( !favorites.isEmpty()) {
+          if (!favorites.isEmpty()) {
             MeasuresView.this.measuresByDomain.put(FAVORITES_CATEGORY, favorites);
           }
           update(MeasuresView.this.measuresByDomain);
@@ -307,7 +295,7 @@ public class MeasuresView extends AbstractSonarInfoView {
     for (Measure measure : resource.getMeasures()) {
       final Metric metric = metricsByKey.get(measure.getMetricKey());
       // Hacks around SONAR-1620
-      if ( !metric.getHidden() && !"DATA".equals(metric.getType()) && StringUtils.isNotBlank(measure.getFormattedValue())) {
+      if (!metric.getHidden() && !"DATA".equals(metric.getType()) && StringUtils.isNotBlank(measure.getFormattedValue())) {
         result.add(SonarCorePlugin.createSonarMeasure(sonarResource, metric, measure));
       }
     }

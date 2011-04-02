@@ -19,15 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.core.runtime.*;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.WizardPage;
@@ -49,6 +42,8 @@ import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.wsclient.Host;
 
+import java.lang.reflect.InvocationTargetException;
+
 public class ServerLocationWizardPage extends WizardPage {
 
   private Text serverUrlText;
@@ -68,7 +63,7 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   /**
-   * @see IDialogPage#createControl(Composite)
+   * @see org.eclipse.jface.dialogs.IDialogPage#createControl(Composite)
    */
   public void createControl(Composite parent) {
     Composite container = new Composite(parent, SWT.NULL);
@@ -138,8 +133,7 @@ public class ServerLocationWizardPage extends WizardPage {
           });
         } catch (InvocationTargetException e1) {
           LoggerFactory.getLogger(getClass()).error(e1.getMessage(), e1);
-        } catch (InterruptedException e1) {
-          // NOSONAR - canceled
+        } catch (InterruptedException e1) { // NOSONAR - canceled
         }
         getWizard().getContainer().updateButtons();
 

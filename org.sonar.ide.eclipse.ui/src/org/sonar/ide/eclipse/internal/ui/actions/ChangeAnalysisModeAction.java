@@ -22,7 +22,6 @@ package org.sonar.ide.eclipse.internal.ui.actions;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.sonar.ide.eclipse.core.jobs.AnalyseProjectJob;
@@ -42,7 +41,7 @@ public class ChangeAnalysisModeAction implements IObjectActionDelegate {
   }
 
   /**
-   * @see IActionDelegate#run(IAction)
+   * @see org.eclipse.ui.IActionDelegate#run(IAction)
    */
   public void run(IAction action) {
     ProjectProperties projectProperties = ProjectProperties.getInstance(project);
@@ -59,7 +58,7 @@ public class ChangeAnalysisModeAction implements IObjectActionDelegate {
   private IProject project;
 
   /**
-   * @see IActionDelegate#selectionChanged(IAction, ISelection)
+   * @see org.eclipse.ui.IActionDelegate#selectionChanged(IAction, ISelection)
    */
   public void selectionChanged(IAction action, ISelection selection) {
     project = (IProject) SelectionUtils.getSingleElement(selection);

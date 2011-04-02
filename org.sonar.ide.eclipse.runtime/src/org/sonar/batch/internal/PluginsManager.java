@@ -19,6 +19,16 @@
  */
 package org.sonar.batch.internal;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.codehaus.plexus.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.sonar.api.Plugin;
+import org.sonar.api.utils.ZipUtils;
+import org.sonar.batch.IPluginsManager;
+import org.sonar.core.classloaders.ClassLoadersCollection;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
@@ -29,20 +39,9 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import org.sonar.batch.IPluginsManager;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.codehaus.plexus.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.sonar.api.Plugin;
-import org.sonar.api.utils.ZipUtils;
-import org.sonar.core.classloaders.ClassLoadersCollection;
-
 public class PluginsManager implements IPluginsManager {
 
-  private Logger LOG = LoggerFactory.getLogger(PluginsManager.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PluginsManager.class);
 
   private File workDir;
 

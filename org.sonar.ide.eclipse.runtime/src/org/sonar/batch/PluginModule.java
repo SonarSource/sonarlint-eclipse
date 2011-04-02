@@ -25,8 +25,6 @@ import org.sonar.api.Plugin;
 import org.sonar.api.batch.SupportedEnvironment;
 import org.sonar.api.rules.RuleRepository;
 import org.sonar.api.utils.AnnotationUtils;
-import org.sonar.batch.bootstrap.BatchPluginRepository;
-import org.sonar.core.plugin.AbstractPluginRepository;
 
 public class PluginModule extends Module {
 
@@ -78,7 +76,7 @@ public class PluginModule extends Module {
   }
 
   /**
-   * @TODO copied from {@link BatchPluginRepository}
+   * @TODO copied from {@link org.sonar.batch.bootstrap.BatchPluginRepository}
    */
   protected static boolean isType(Object extension, Class<? extends Extension> extensionClass) {
     Class clazz = (extension instanceof Class ? (Class) extension : extension.getClass());
@@ -86,7 +84,7 @@ public class PluginModule extends Module {
   }
 
   /**
-   * @TODO copied from {@link AbstractPluginRepository}
+   * @TODO copied from {@link org.sonar.core.plugin.AbstractPluginRepository}
    */
   protected static Object getExtensionKey(Object component) {
     if (component instanceof Class) {

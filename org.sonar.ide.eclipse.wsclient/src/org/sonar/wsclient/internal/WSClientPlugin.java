@@ -32,32 +32,17 @@ public class WSClientPlugin extends Plugin {
   private static WSClientPlugin plugin;
 
   public WSClientPlugin() {
-    super();
-    plugin = this;
+    plugin = this; // NOSONAR
   }
 
-  @SuppressWarnings("deprecation")
-  public static IProxyData selectProxy(URI uri) {
+  public static IProxyData[] selectProxy(URI uri) {
     BundleContext context = plugin.getBundle().getBundleContext();
     ServiceReference proxyServiceReference = context.getServiceReference(IProxyService.class.getName());
     if (proxyServiceReference == null) {
-      return null;
+      return new IProxyData[0];
     }
     IProxyService service = (IProxyService) context.getService(proxyServiceReference);
-
-    final String host = uri.getHost();
-
-    String type = IProxyData.SOCKS_PROXY_TYPE;
-    if ("http".equals(uri.getScheme())) {
-      type = IProxyData.HTTP_PROXY_TYPE;
-    } else if ("ftp".equals(uri.getScheme())) {
-      type = IProxyData.HTTP_PROXY_TYPE;
-    } else if ("https".equals(uri.getScheme())) {
-      type = IProxyData.HTTPS_PROXY_TYPE;
-    }
-
-    // TODO Godin: by some reasons service.select(uri) doesn't work here
-    return service.getProxyDataForHost(host, type);
+    return service.select(uri);
   }
 
 }

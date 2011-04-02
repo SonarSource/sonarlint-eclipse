@@ -27,6 +27,7 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
@@ -50,8 +51,12 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   }
 
   @Override
-  public void start(final BundleContext context) throws Exception {
-    super.start(context);
+  public void start(final BundleContext context) {
+    try {
+      super.start(context);
+    } catch (Exception e) {
+      throw new SonarEclipseException("Unable to start " + context.getBundle().getSymbolicName(), e);
+    }
 
     RefreshViolationsJob.setupViolationsUpdater();
 
@@ -59,11 +64,15 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   }
 
   @Override
-  public void stop(final BundleContext context) throws Exception {
+  public void stop(final BundleContext context) {
     try {
       SonarUiPreferenceInitializer.setFavouriteMetrics(getFavouriteMetricsManager().get());
     } finally {
-      super.stop(context);
+      try {
+        super.start(context);
+      } catch (Exception e) {
+        throw new SonarEclipseException("Unable to stop " + context.getBundle().getSymbolicName(), e);
+      }
     }
   }
 

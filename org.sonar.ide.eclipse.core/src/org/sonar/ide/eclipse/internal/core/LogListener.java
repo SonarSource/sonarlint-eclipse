@@ -74,7 +74,7 @@ public class LogListener implements ILogListener {
     }
   }
 
-  private static interface LogLevel {
+  private interface LogLevel {
     boolean isEnabled(Logger logger);
 
     void log(Logger logger, String message, Throwable throwable);
