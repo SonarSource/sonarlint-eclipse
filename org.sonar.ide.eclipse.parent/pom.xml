@@ -101,7 +101,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.min.version>1.5</jdk.min.version>
 
-    <tycho.version>0.11.0</tycho.version>
+    <tycho.version>0.11.1</tycho.version>
 
     <target.platform>e36</target.platform>
 
