@@ -19,11 +19,6 @@
  */
 package org.sonar.batch;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.MapConfiguration;
-import org.sonar.api.CoreProperties;
-import org.sonar.api.resources.Java;
-import org.sonar.api.resources.Project;
 import org.sonar.batch.bootstrapper.ProjectDefinition;
 import org.sonar.batch.components.EmbedderIndex;
 
@@ -38,9 +33,7 @@ public class SonarEclipseRuntime {
   }
 
   public void analyse(ProjectDefinition projectDefinition) {
-    Project project = createProject(projectDefinition);
-
-    Module projectModule = globalModule.installChild(new ProjectModule(project))
+    Module projectModule = globalModule.installChild(new ProjectModule(projectDefinition))
         .install(EmbeddedSonarPlugin.getDefault().getSonarCustomizer());
     for (org.sonar.api.Plugin plugin : plugins) {
       projectModule.install(new PluginModule(plugin));
@@ -62,16 +55,6 @@ public class SonarEclipseRuntime {
 
   public void stop() {
     globalModule.stop();
-  }
-
-  private Project createProject(ProjectDefinition projectDefinition) {
-    Configuration conf = new MapConfiguration(projectDefinition.getProperties());
-    Project project = new Project(conf.getString(CoreProperties.PROJECT_KEY_PROPERTY));
-    project.setLanguageKey(Java.KEY);
-    project.setLanguage(Java.INSTANCE);
-    project.setConfiguration(conf);
-    project.setPom(new InMemoryPomCreator(projectDefinition).create());
-    return project;
   }
 
   public EmbedderIndex getIndex() {

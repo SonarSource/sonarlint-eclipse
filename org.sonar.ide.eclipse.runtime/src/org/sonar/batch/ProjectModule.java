@@ -19,7 +19,13 @@
  */
 package org.sonar.batch;
 
-import org.sonar.api.batch.*;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.MapConfiguration;
+import org.sonar.api.CoreProperties;
+import org.sonar.api.batch.BatchExtensionDictionnary;
+import org.sonar.api.batch.DecoratorContext;
+import org.sonar.api.batch.SensorContext;
+import org.sonar.api.batch.SonarIndex;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.measures.Metric;
 import org.sonar.api.measures.MetricFinder;
@@ -29,21 +35,33 @@ import org.sonar.api.resources.Project.AnalysisType;
 import org.sonar.api.rules.AnnotationRuleParser;
 import org.sonar.api.rules.RuleFinder;
 import org.sonar.api.rules.XMLRuleParser;
+import org.sonar.batch.bootstrapper.ProjectDefinition;
 import org.sonar.batch.components.*;
 import org.sonar.batch.index.DefaultIndex;
 
 public class ProjectModule extends Module {
 
+  private ProjectDefinition projectDefinition;
   private Project project;
 
-  public ProjectModule(Project project) {
-    this.project = project;
+  public ProjectModule(ProjectDefinition projectDefinition) {
+    this.projectDefinition = projectDefinition;
+    this.project = createProject(projectDefinition);
+  }
+
+  private Project createProject(ProjectDefinition projectDefinition) {
+    Configuration conf = new MapConfiguration(projectDefinition.getProperties());
+    Project project = new Project(conf.getString(CoreProperties.PROJECT_KEY_PROPERTY));
+    project.setLanguageKey(Java.KEY);
+    project.setLanguage(Java.INSTANCE);
+    project.setConfiguration(conf);
+    return project;
   }
 
   @Override
   protected void configure() {
+    addComponent(projectDefinition);
     addComponent(project);
-    addComponent(project.getPom());
     addComponent(project.getConfiguration());
 
     addComponent(BatchExtensionDictionnary.class);
@@ -53,8 +71,8 @@ public class ProjectModule extends Module {
 
     bind(SensorContext.class, DefaultSensorContext.class);
     bind(DecoratorContext.class, DefaultDecoratorContext.class);
-    bind(ProjectFileSystem.class, DefaultProjectFileSystem.class);
-    addComponent(ProjectClasspath.class);
+    bind(ProjectFileSystem.class, DefaultProjectFileSystem2.class);
+    addComponent(DefaultProjectClasspath.class);
 
     addComponent(new EmbedderProjectTree(project)); // for DefaultIndex
     bind(SonarIndex.class, DefaultIndex.class);
