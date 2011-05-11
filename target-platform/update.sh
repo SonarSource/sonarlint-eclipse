@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ "$1" = "" ]; then
-  TARGET=e35.target
+  TARGET=e36.target
 else
   TARGET=$1
 fi
