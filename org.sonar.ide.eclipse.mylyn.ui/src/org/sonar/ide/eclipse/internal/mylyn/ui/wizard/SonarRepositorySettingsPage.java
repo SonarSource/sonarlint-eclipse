@@ -79,7 +79,7 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
       try {
         new URL(url);
         return true;
-      } catch (MalformedURLException e) {
+      } catch (MalformedURLException e) { // NOSONAR: ignore
       }
     }
     return false;

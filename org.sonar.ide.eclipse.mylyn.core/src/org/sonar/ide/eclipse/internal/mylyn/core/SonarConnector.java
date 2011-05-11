@@ -29,6 +29,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.eclipse.mylyn.tasks.core.data.TaskMapper;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
+import org.sonar.wsclient.services.Review;
 
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class SonarConnector extends AbstractRepositoryConnector {
 
   public static final String CONNECTOR_KIND = "sonar"; //$NON-NLS-1$
 
-  public static final String REVIEW_PREFIX = "/reviews/view/"; //$NON-NLS-1$
+  private static final String REVIEW_PREFIX = "/reviews/view/"; //$NON-NLS-1$
 
   private final SonarTaskDataHandler taskDataHandler = new SonarTaskDataHandler(this);
 
@@ -68,12 +69,6 @@ public class SonarConnector extends AbstractRepositoryConnector {
   }
 
   @Override
-  public String getRepositoryUrlFromTaskUrl(String taskFullUrl) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public TaskData getTaskData(TaskRepository repository, String taskId, IProgressMonitor monitor) throws CoreException {
     return taskDataHandler.getTaskData(repository, taskId, monitor);
   }
@@ -84,9 +79,21 @@ public class SonarConnector extends AbstractRepositoryConnector {
   }
 
   @Override
+  public String getRepositoryUrlFromTaskUrl(String taskFullUrl) {
+    if (taskFullUrl == null) {
+      return null;
+    }
+    int index = taskFullUrl.lastIndexOf(REVIEW_PREFIX);
+    return index == -1 ? null : taskFullUrl.substring(0, index);
+  }
+
+  @Override
   public String getTaskIdFromTaskUrl(String taskFullUrl) {
-    // TODO Auto-generated method stub
-    return null;
+    if (taskFullUrl == null) {
+      return null;
+    }
+    int index = taskFullUrl.lastIndexOf(REVIEW_PREFIX);
+    return index == -1 ? null : taskFullUrl.substring(index + REVIEW_PREFIX.length());
   }
 
   @Override
@@ -106,10 +113,10 @@ public class SonarConnector extends AbstractRepositoryConnector {
     try {
       monitor.beginTask(Messages.SonarConnector_Executing_query, IProgressMonitor.UNKNOWN);
 
-      SonarClient client = new SonarClient();
+      SonarClient client = new SonarClient(repository);
       List<Review> reviews = client.getReviews(monitor);
       for (Review review : reviews) {
-        TaskData taskData = taskDataHandler.createTaskData(repository, review.id + "", monitor); //$NON-NLS-1$
+        TaskData taskData = taskDataHandler.createTaskData(repository, review.getId() + "", monitor); //$NON-NLS-1$
         taskData.setPartial(true);
         taskDataHandler.updateTaskData(repository, taskData, review);
         resultCollector.accept(taskData);
@@ -145,15 +152,15 @@ public class SonarConnector extends AbstractRepositoryConnector {
     @Override
     public PriorityLevel getPriorityLevel() {
       String value = getPriority();
-      if ("blocker".equals(value)) { //$NON-NLS-1$
+      if ("BLOCKER".equals(value)) { //$NON-NLS-1$
         return PriorityLevel.P1;
-      } else if ("critical".equals(value)) { //$NON-NLS-1$
+      } else if ("CRITICAL".equals(value)) { //$NON-NLS-1$
         return PriorityLevel.P2;
-      } else if ("major".equals(value)) { //$NON-NLS-1$
+      } else if ("MAJOR".equals(value)) { //$NON-NLS-1$
         return PriorityLevel.P3;
-      } else if ("minor".equals(value)) { //$NON-NLS-1$
+      } else if ("MINOR".equals(value)) { //$NON-NLS-1$
         return PriorityLevel.P4;
-      } else if ("info".equals(value)) { //$NON-NLS-1$
+      } else if ("INFO".equals(value)) { //$NON-NLS-1$
         return PriorityLevel.P5;
       } else {
         return null;

@@ -20,40 +20,54 @@
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
+import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.sonar.wsclient.Host;
+import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.WSClientFactory;
+import org.sonar.wsclient.services.Review;
+import org.sonar.wsclient.services.ReviewQuery;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 public class SonarClient {
 
+  private static final String TYPE_FALSE_POSITIVE = "FALSE_POSITIVE"; //$NON-NLS-1$
+
+  private TaskRepository repository;
+
+  public SonarClient(TaskRepository repository) {
+    this.repository = repository;
+  }
+
   public Review getReview(long id, IProgressMonitor monitor) {
-    Review review = new Review();
-    review.id = id;
-    review.createdAt = new Date(id);
-    review.updatedAt = new Date(id);
-    review.authorLogin = "admin";
-    review.assigneeLogin = "admin";
-    review.title = "Title";
-    if (id == 1) {
-      review.status = "closed";
-      review.severity = "blocker";
-    } else {
-      review.status = "open";
-      review.severity = "major";
+    Sonar sonar = create();
+    Review review = sonar.find(new ReviewQuery().setId(id));
+    if (review == null) {
+      // Workaround for http://jira.codehaus.org/browse/SONAR-2421
+      review = sonar.find(new ReviewQuery().setId(id).setReviewType(TYPE_FALSE_POSITIVE));
     }
-    review.comments = new ArrayList<Review.Comment>();
-    Review.Comment comment = new Review.Comment();
-    comment.authorLogin = "admin";
-    comment.updatedAt = new Date(id);
-    comment.text = "Text";
-    review.comments.add(comment);
     return review;
   }
 
   public List<Review> getReviews(IProgressMonitor monitor) {
-    return Arrays.asList(getReview(1, monitor), getReview(2, monitor));
+    List<Review> result = new ArrayList<Review>();
+    Sonar sonar = create();
+    result.addAll(sonar.findAll(new ReviewQuery()));
+    // Workaround for http://jira.codehaus.org/browse/SONAR-2421
+    result.addAll(sonar.findAll(new ReviewQuery().setReviewType(TYPE_FALSE_POSITIVE)));
+    return result;
   }
 
+  private Sonar create() {
+    Host host = new Host(repository.getRepositoryUrl());
+    AuthenticationCredentials credentials = repository.getCredentials(AuthenticationType.REPOSITORY);
+    if (credentials != null) {
+      host.setUsername(credentials.getUserName());
+      host.setPassword(credentials.getPassword());
+    }
+    return WSClientFactory.create(host);
+  }
 }

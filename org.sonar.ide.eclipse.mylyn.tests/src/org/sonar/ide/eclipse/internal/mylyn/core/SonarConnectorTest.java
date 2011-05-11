@@ -20,6 +20,7 @@
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 import org.eclipse.mylyn.tasks.ui.TasksUi;
@@ -38,6 +39,20 @@ public class SonarConnectorTest {
   @Test
   public void shouldNotAllowToCreateNewTask() {
     assertThat(connector.canCreateNewTask(null), is(false));
+  }
+
+  @Test
+  public void testGetRepositoryUrlFromTaskUrl() {
+    assertThat(connector.getRepositoryUrlFromTaskUrl(null), nullValue());
+    assertThat(connector.getRepositoryUrlFromTaskUrl("http://localhost:9000/1"), nullValue());
+    assertThat(connector.getRepositoryUrlFromTaskUrl("http://localhost:9000/reviews/view/1"), is("http://localhost:9000"));
+  }
+
+  @Test
+  public void testGetTaskIdFromTaskUrl() {
+    assertThat(connector.getTaskIdFromTaskUrl(null), nullValue());
+    assertThat(connector.getTaskIdFromTaskUrl("http://localhost:9000/1"), nullValue());
+    assertThat(connector.getTaskIdFromTaskUrl("http://localhost:9000/reviews/view/1"), is("1"));
   }
 
   @Test

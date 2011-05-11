@@ -27,6 +27,7 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.*;
 import org.eclipse.mylyn.tasks.core.data.AbstractTaskSchema.Field;
+import org.sonar.wsclient.services.Review;
 
 import java.util.Date;
 import java.util.Set;
@@ -47,7 +48,7 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
     try {
       monitor.beginTask(Messages.SonarTaskDataHandler_Downloading_task, IProgressMonitor.UNKNOWN);
 
-      SonarClient client = new SonarClient();
+      SonarClient client = new SonarClient(repository);
       Review review = client.getReview(Long.parseLong(taskId), monitor);
 
       TaskData taskData = createTaskData(repository, taskId, monitor);
@@ -61,18 +62,22 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
   public void updateTaskData(TaskRepository repository, TaskData data, Review review) {
     SonarTaskSchema schema = SonarTaskSchema.getDefault();
 
-    setAttributeValue(data, schema.KEY, review.id + ""); //$NON-NLS-1$
-    setAttributeValue(data, schema.TASK_URL, connector.getTaskUrl(repository.getUrl(), data.getTaskId()));
-    setAttributeValue(data, schema.SUMMARY, review.title);
-    setAttributeValue(data, schema.CREATOR, review.authorLogin);
-    setAttributeValue(data, schema.OWNER, review.assigneeLogin);
+    setAttributeValue(data, schema.ID, review.getId() + ""); //$NON-NLS-1$
+    setAttributeValue(data, schema.URL, connector.getTaskUrl(repository.getUrl(), data.getTaskId()));
+    setAttributeValue(data, schema.SUMMARY, review.getTitle());
+    setAttributeValue(data, schema.PRIORITY, review.getSeverity());
+    setAttributeValue(data, schema.DESCRIPTION, "Resource: " + review.getResourceKee() + " Line: " + review.getLine()); //$NON-NLS-1$ //$NON-NLS-2$
 
-    setAttributeValue(data, schema.PRIORITY, review.severity);
+    setAttributeValue(data, schema.USER_REPORTER, review.getAuthorLogin());
+    setAttributeValue(data, schema.USER_ASSIGNED, review.getAssigneeLogin());
 
-    setAttributeValue(data, schema.STATUS, review.status);
-    if ("closed".equals(review.status)) {
+    setAttributeValue(data, schema.DATE_CREATION, dateToString(review.getCreatedAt()));
+    setAttributeValue(data, schema.DATE_MODIFICATION, dateToString(review.getUpdatedAt()));
+
+    setAttributeValue(data, schema.STATUS, review.getStatus());
+    if ("CLOSED".equals(review.getStatus())) { //$NON-NLS-1$
       // Set the completion date, this allows Mylyn mark the review as completed
-      setAttributeValue(data, schema.DATE_COMPLETION, dateToString(new Date()));
+      setAttributeValue(data, schema.DATE_COMPLETION, dateToString(review.getUpdatedAt()));
     }
 
     addComments(repository, data, review);
@@ -80,11 +85,11 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
 
   private void addComments(TaskRepository repository, TaskData data, Review review) {
     int count = 1;
-    for (Review.Comment comment : review.comments) {
+    for (Review.Comment comment : review.getComments()) {
       TaskCommentMapper mapper = new TaskCommentMapper();
-      mapper.setAuthor(repository.createPerson(comment.authorLogin));
-      mapper.setCreationDate(comment.updatedAt);
-      mapper.setText(comment.text);
+      mapper.setAuthor(repository.createPerson(comment.getAuthorLogin()));
+      mapper.setCreationDate(comment.getUpdatedAt());
+      mapper.setText(comment.getText());
       mapper.setNumber(count);
       TaskAttribute attribute = data.getRoot().createAttribute(TaskAttribute.PREFIX_COMMENT + count);
       mapper.applyTo(attribute);

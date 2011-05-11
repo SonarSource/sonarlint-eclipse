@@ -21,7 +21,6 @@ package org.sonar.ide.eclipse.internal.mylyn.core;
 
 import org.eclipse.mylyn.tasks.core.data.AbstractTaskSchema;
 import org.eclipse.mylyn.tasks.core.data.DefaultTaskSchema;
-import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 
 public class SonarTaskSchema extends AbstractTaskSchema {
   private static final SonarTaskSchema instance = new SonarTaskSchema();
@@ -32,25 +31,31 @@ public class SonarTaskSchema extends AbstractTaskSchema {
 
   private final DefaultTaskSchema parent = DefaultTaskSchema.getInstance();
 
-  public final Field KEY = inheritFrom(parent.TASK_KEY).create();
+  public final Field ID = inheritFrom(parent.TASK_KEY).create();
+
+  /**
+   * Permalink, for example: http://nemo.sonarsource.org/reviews/view/1
+   */
+  public final Field URL = inheritFrom(parent.TASK_URL).create();
 
   public final Field SUMMARY = inheritFrom(parent.SUMMARY).flags(Flag.READ_ONLY).create();
 
   public final Field DESCRIPTION = inheritFrom(parent.DESCRIPTION).flags(Flag.READ_ONLY).create();
 
-  public final Field OWNER = inheritFrom(parent.USER_ASSIGNED).flags(Flag.READ_ONLY, Flag.ATTRIBUTE).create();
-
-  public final Field CREATOR = inheritFrom(parent.USER_REPORTER).create();
-
-  public final Field CREATED = inheritFrom(parent.DATE_CREATION).create();
-
-  public final Field RULE = createField("org.sonar.custom", "Rule", TaskAttribute.TYPE_SHORT_TEXT, Flag.READ_ONLY, Flag.ATTRIBUTE);
-
   public final Field STATUS = inheritFrom(parent.STATUS).create();
 
-  public final Field TASK_URL = inheritFrom(parent.TASK_URL).create();
-
+  /**
+   * Possible values: BLOCKER, CRITICAL, MAJOR, MINOR, INFO.
+   */
   public final Field PRIORITY = inheritFrom(parent.PRIORITY).flags(Flag.READ_ONLY).create();
+
+  public final Field USER_REPORTER = inheritFrom(parent.USER_REPORTER).flags(Flag.READ_ONLY, Flag.ATTRIBUTE).create();
+
+  public final Field USER_ASSIGNED = inheritFrom(parent.USER_ASSIGNED).flags(Flag.READ_ONLY, Flag.ATTRIBUTE).create();
+
+  public final Field DATE_CREATION = inheritFrom(parent.DATE_CREATION).create();
+
+  public final Field DATE_MODIFICATION = inheritFrom(parent.DATE_MODIFICATION).create();
 
   public final Field DATE_COMPLETION = inheritFrom(parent.DATE_COMPLETION).create();
 
