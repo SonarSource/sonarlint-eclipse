@@ -36,6 +36,10 @@
 </location>
 
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<repository location="http://download.eclipse.org/mylyn/releases/latest/"/>
+</location>
+
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
 <unit id="com.google.collect" version="1.0.0.v201003051000"/>
 <unit id="org.apache.commons.httpclient" version="3.1.0.v201005080502"/>
 <unit id="org.apache.commons.io" version="2.0.1.v201101200200"/>

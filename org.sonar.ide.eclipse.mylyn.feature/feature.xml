@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.sonar.ide.eclipse.mylyn.feature"
+      label="%feature_name"
+      version="2.1.0.qualifier"
+      provider-name="%provider_name"
+      plugin="org.sonar.ide.eclipse.ui">
+
+   <description url="http://sonar-ide.codehaus.org/">
+      %description
+   </description>
+
+   <copyright url="http://www.sonarsource.com">
+      %copyright
+   </copyright>
+
+   <license url="http://www.gnu.org/licenses/lgpl.txt">
+      %license
+   </license>
+
+   <requires>
+      <import feature="org.sonar.ide.eclipse.feature" version="2.1.0" match="equivalent"/>
+      <import feature="org.eclipse.mylyn_feature" version="3.5.0" match="compatible"/>
+   </requires>
+
+   <plugin
+         id="org.sonar.ide.eclipse.mylyn.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.sonar.ide.eclipse.mylyn.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

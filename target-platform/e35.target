@@ -26,6 +26,10 @@
 </location>
 
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
+<repository location="http://download.eclipse.org/mylyn/releases/latest/"/>
+</location>
+
+<location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
 <unit id="org.slf4j.api" version="1.6.1.v20100831-0715"/>
 <unit id="org.slf4j.jcl" version="1.6.1.v20100831-0715"/>
 <unit id="org.slf4j.log4j" version="1.6.1.v20100831-0715"/>

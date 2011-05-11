@@ -54,8 +54,13 @@
     <module>../org.sonar.ide.eclipse.runtime</module>
     <module>../org.sonar.ide.eclipse.ui</module>
     <module>../org.sonar.ide.eclipse.jdt</module>
-    <module>../org.sonar.ide.eclipse.mylyn</module>
+
     <module>../org.sonar.ide.eclipse.site</module>
+
+    <module>../org.sonar.ide.eclipse.mylyn.core</module>
+    <module>../org.sonar.ide.eclipse.mylyn.ui</module>
+    <module>../org.sonar.ide.eclipse.mylyn.tests</module>
+    <module>../org.sonar.ide.eclipse.mylyn.feature</module>
 
     <module>../org.sonar.ide.eclipse.logback</module>
     <module>../org.sonar.ide.eclipse.logback.appenders</module>
@@ -64,7 +69,6 @@
     <module>../org.sonar.ide.eclipse.tests.common</module>
     <module>../org.sonar.ide.eclipse.tests</module>
 
-    <!-- features -->
     <module>../org.sonar.ide.eclipse.feature</module>
 
     <module>../target-platform</module>
