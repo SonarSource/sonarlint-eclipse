@@ -59,4 +59,11 @@ public class SonarConnectorTest {
   public void testGetTaskUrl() {
     assertThat(connector.getTaskUrl("http://localhost:9000", "1"), is("http://localhost:9000/reviews/view/1"));
   }
+
+  @Test
+  public void shouldCompareServerVersion() {
+    assertThat(SonarConnector.isServerVersionSupported("1.1"), is(false));
+    assertThat(SonarConnector.isServerVersionSupported("2.7-SNAPSHOT"), is(false));
+    assertThat(SonarConnector.isServerVersionSupported("2.8-RC2"), is(true));
+  }
 }

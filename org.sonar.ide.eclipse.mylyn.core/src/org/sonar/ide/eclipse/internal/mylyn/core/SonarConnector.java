@@ -29,6 +29,8 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.eclipse.mylyn.tasks.core.data.TaskMapper;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
+import org.eclipse.osgi.util.NLS;
+import org.osgi.framework.Version;
 import org.sonar.wsclient.services.Review;
 
 import java.util.List;
@@ -36,6 +38,11 @@ import java.util.List;
 public class SonarConnector extends AbstractRepositoryConnector {
 
   public static final String CONNECTOR_KIND = "sonar"; //$NON-NLS-1$
+
+  /**
+   * Minimal supported version of Sonar server.
+   */
+  public static final String MINIMAL_VERSION = "2.8"; //$NON-NLS-1$
 
   private static final String REVIEW_PREFIX = "/reviews/view/"; //$NON-NLS-1$
 
@@ -54,7 +61,7 @@ public class SonarConnector extends AbstractRepositoryConnector {
 
   @Override
   public String getLabel() {
-    return Messages.SonarConnector_Label;
+    return NLS.bind(Messages.SonarConnector_Label, MINIMAL_VERSION);
   }
 
   @Override
@@ -130,7 +137,7 @@ public class SonarConnector extends AbstractRepositoryConnector {
 
   @Override
   public void updateRepositoryConfiguration(TaskRepository repository, IProgressMonitor monitor) throws CoreException {
-    // TODO Auto-generated method stub
+    // ignore, nothing to do
   }
 
   @Override
@@ -168,4 +175,19 @@ public class SonarConnector extends AbstractRepositoryConnector {
     }
   }
 
+  /**
+   * Visibility has been relaxed for test.
+   */
+  public static boolean isServerVersionSupported(String version) {
+    return parseServerVersion(MINIMAL_VERSION).compareTo(parseServerVersion(version)) <= 0;
+  }
+
+  private static Version parseServerVersion(String version) {
+    int i = version.indexOf('-');
+    if (i != -1) {
+      version = version.substring(0, i);
+    }
+    version += ".0"; //$NON-NLS-1$
+    return Version.parseVersion(version);
+  }
 }

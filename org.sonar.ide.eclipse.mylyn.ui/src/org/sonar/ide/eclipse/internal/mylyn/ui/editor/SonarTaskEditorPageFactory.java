@@ -20,6 +20,7 @@
 package org.sonar.ide.eclipse.internal.mylyn.ui.editor;
 
 import org.eclipse.mylyn.internal.provisional.commons.ui.CommonImages;
+import org.eclipse.mylyn.tasks.ui.ITasksUiConstants;
 import org.eclipse.mylyn.tasks.ui.TasksUiImages;
 import org.eclipse.mylyn.tasks.ui.editors.AbstractTaskEditorPageFactory;
 import org.eclipse.mylyn.tasks.ui.editors.TaskEditor;
@@ -40,6 +41,12 @@ public class SonarTaskEditorPageFactory extends AbstractTaskEditorPageFactory {
     return new SonarTaskEditorPage(parentEditor);
   }
 
+  @Override
+  public String[] getConflictingIds(TaskEditorInput input) {
+    // Hide "planning" page, because we use "private" section
+    return new String[] { ITasksUiConstants.ID_PAGE_PLANNING };
+  }
+
   @SuppressWarnings("restriction")
   @Override
   public Image getPageImage() {
@@ -48,7 +55,7 @@ public class SonarTaskEditorPageFactory extends AbstractTaskEditorPageFactory {
 
   @Override
   public String getPageText() {
-    return "Sonar";
+    return "Sonar"; //$NON-NLS-1$
   }
 
   @Override

@@ -36,6 +36,10 @@ public class Messages extends NLS {
 
   public static String SonarRepositorySettingsPage_Description;
 
+  public static String SonarRepositorySettingsPage_Connection_failed;
+
+  public static String SonarRepositorySettingsPage_Unsupported_version;
+
   public static String SonarQueryPage_Title;
 
   public static String SonarQueryPage_Description;

@@ -21,13 +21,18 @@ package org.sonar.ide.eclipse.internal.mylyn.ui.wizard;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.internal.tasks.core.IRepositoryConstants;
+import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryTemplate;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.ui.wizards.AbstractRepositorySettingsPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
+import org.sonar.ide.eclipse.internal.mylyn.core.SonarClient;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarConnector;
 import org.sonar.ide.eclipse.internal.mylyn.ui.Messages;
+import org.sonar.ide.eclipse.internal.mylyn.ui.SonarMylynUiPlugin;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -87,13 +92,28 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
 
   @Override
   protected Validator getValidator(TaskRepository repository) {
-    return new SonarValidator();
+    return new SonarValidator(repository);
   }
 
   public class SonarValidator extends Validator {
+    private TaskRepository repository;
+
+    public SonarValidator(TaskRepository repository) {
+      this.repository = repository;
+    }
+
     @Override
     public void run(IProgressMonitor monitor) throws CoreException {
-      // TODO validate server version
+      try {
+        String version = new SonarClient(repository).getServerVersion();
+        if (!SonarConnector.isServerVersionSupported(version)) {
+          setStatus(RepositoryStatus.createStatus(repository, IStatus.ERROR, SonarMylynUiPlugin.PLUGIN_ID,
+              NLS.bind(Messages.SonarRepositorySettingsPage_Unsupported_version, version, SonarConnector.MINIMAL_VERSION)));
+        }
+      } catch (Exception e) {
+        setStatus(RepositoryStatus.createStatus(repository, IStatus.ERROR, SonarMylynUiPlugin.PLUGIN_ID,
+            Messages.SonarRepositorySettingsPage_Connection_failed));
+      }
     }
   }
 

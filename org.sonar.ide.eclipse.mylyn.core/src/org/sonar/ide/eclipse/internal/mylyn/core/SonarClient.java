@@ -28,6 +28,7 @@ import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.WSClientFactory;
 import org.sonar.wsclient.services.Review;
 import org.sonar.wsclient.services.ReviewQuery;
+import org.sonar.wsclient.services.ServerQuery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,10 @@ public class SonarClient {
     // Workaround for http://jira.codehaus.org/browse/SONAR-2421
     result.addAll(sonar.findAll(new ReviewQuery().setReviewType(TYPE_FALSE_POSITIVE)));
     return result;
+  }
+
+  public String getServerVersion() {
+    return create().find(new ServerQuery()).getVersion();
   }
 
   private Sonar create() {
