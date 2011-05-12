@@ -56,9 +56,10 @@ public class SonarClient {
   public List<Review> getReviews(IProgressMonitor monitor) {
     List<Review> result = new ArrayList<Review>();
     Sonar sonar = create();
-    result.addAll(sonar.findAll(new ReviewQuery()));
+    String assignee = repository.getCredentials(AuthenticationType.REPOSITORY).getUserName();
+    result.addAll(sonar.findAll(new ReviewQuery().setAssigneeLoginsOrIds(assignee)));
     // Workaround for http://jira.codehaus.org/browse/SONAR-2421
-    result.addAll(sonar.findAll(new ReviewQuery().setReviewType(TYPE_FALSE_POSITIVE)));
+    result.addAll(sonar.findAll(new ReviewQuery().setAssigneeLoginsOrIds(assignee).setReviewType(TYPE_FALSE_POSITIVE)));
     return result;
   }
 

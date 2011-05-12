@@ -17,33 +17,29 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.mylyn.ui;
+package org.sonar.ide.eclipse.internal.mylyn.core;
 
-import org.eclipse.osgi.util.NLS;
+import org.eclipse.mylyn.tasks.core.ITask.PriorityLevel;
 
-public class Messages extends NLS {
+public final class Utils {
 
-  private static final String BUNDLE_NAME = "org.sonar.ide.eclipse.internal.mylyn.ui.messages"; //$NON-NLS-1$
-
-  static {
-    // initialize resource bundle
-    NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+  public static PriorityLevel toMylynPriority(String value) {
+    if ("BLOCKER".equals(value)) { //$NON-NLS-1$
+      return PriorityLevel.P1;
+    } else if ("CRITICAL".equals(value)) { //$NON-NLS-1$
+      return PriorityLevel.P2;
+    } else if ("MAJOR".equals(value)) { //$NON-NLS-1$
+      return PriorityLevel.P3;
+    } else if ("MINOR".equals(value)) { //$NON-NLS-1$
+      return PriorityLevel.P4;
+    } else if ("INFO".equals(value)) { //$NON-NLS-1$
+      return PriorityLevel.P5;
+    } else {
+      return null;
+    }
   }
 
-  public static String SonarConnectorUi_Review;
-
-  public static String SonarRepositorySettingsPage_Title;
-
-  public static String SonarRepositorySettingsPage_Description;
-
-  public static String SonarRepositorySettingsPage_Connection_failed;
-
-  public static String SonarRepositorySettingsPage_Unsupported_version;
-
-  public static String SonarQueryPage_Title;
-
-  public static String SonarQueryPage_Description;
-
-  public static String SonarQueryPage_Query_Title;
+  private Utils() {
+  }
 
 }

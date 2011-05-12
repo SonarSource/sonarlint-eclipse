@@ -34,14 +34,14 @@ public class SonarMylynCorePlugin extends Plugin {
   }
 
   @Override
-  public void start(BundleContext context) throws Exception {
+  public void start(BundleContext context) throws Exception { // NOSONAR false-positive: Signature Declare Throws Exception
     super.start(context);
-    plugin = this;
+    plugin = this; // NOSONAR false-positive: Write to static field from instance method
   }
 
   @Override
-  public void stop(BundleContext context) throws Exception {
-    plugin = null;
+  public void stop(BundleContext context) throws Exception { // NOSONAR false-positive: Signature Declare Throws Exception
+    plugin = null; // NOSONAR false-positive: Write to static field from instance method
     super.stop(context);
   }
 

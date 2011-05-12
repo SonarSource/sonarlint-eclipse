@@ -17,33 +17,26 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.mylyn.ui;
+package org.sonar.ide.eclipse.internal.mylyn.core;
 
-import org.eclipse.osgi.util.NLS;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertThat;
 
-public class Messages extends NLS {
+import org.eclipse.mylyn.tasks.core.ITask.PriorityLevel;
+import org.junit.Test;
 
-  private static final String BUNDLE_NAME = "org.sonar.ide.eclipse.internal.mylyn.ui.messages"; //$NON-NLS-1$
+public class UtilsTest {
 
-  static {
-    // initialize resource bundle
-    NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+  @Test
+  public void testToMylynPriority() {
+    assertThat(Utils.toMylynPriority("BLOCKER"), is(PriorityLevel.P1));
+    assertThat(Utils.toMylynPriority("CRITICAL"), is(PriorityLevel.P2));
+    assertThat(Utils.toMylynPriority("MAJOR"), is(PriorityLevel.P3));
+    assertThat(Utils.toMylynPriority("MINOR"), is(PriorityLevel.P4));
+    assertThat(Utils.toMylynPriority("INFO"), is(PriorityLevel.P5));
+    assertThat(Utils.toMylynPriority("unknown"), nullValue());
+    assertThat(Utils.toMylynPriority(null), nullValue());
   }
-
-  public static String SonarConnectorUi_Review;
-
-  public static String SonarRepositorySettingsPage_Title;
-
-  public static String SonarRepositorySettingsPage_Description;
-
-  public static String SonarRepositorySettingsPage_Connection_failed;
-
-  public static String SonarRepositorySettingsPage_Unsupported_version;
-
-  public static String SonarQueryPage_Title;
-
-  public static String SonarQueryPage_Description;
-
-  public static String SonarQueryPage_Query_Title;
 
 }

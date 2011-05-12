@@ -22,6 +22,9 @@ package org.sonar.ide.eclipse.internal.mylyn.core;
 import org.eclipse.mylyn.tasks.core.data.AbstractTaskSchema;
 import org.eclipse.mylyn.tasks.core.data.DefaultTaskSchema;
 
+/**
+ * Everything should be read-only for the moment - see http://jira.codehaus.org/browse/SONARIDE-228
+ */
 public class SonarTaskSchema extends AbstractTaskSchema {
   private static final SonarTaskSchema instance = new SonarTaskSchema();
 
@@ -58,5 +61,7 @@ public class SonarTaskSchema extends AbstractTaskSchema {
   public final Field DATE_MODIFICATION = inheritFrom(parent.DATE_MODIFICATION).create();
 
   public final Field DATE_COMPLETION = inheritFrom(parent.DATE_COMPLETION).create();
+
+  public final Field TASK_KIND = inheritFrom(parent.TASK_KIND).flags(Flag.READ_ONLY, Flag.ATTRIBUTE).create();
 
 }

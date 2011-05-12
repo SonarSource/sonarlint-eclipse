@@ -158,20 +158,7 @@ public class SonarConnector extends AbstractRepositoryConnector {
 
     @Override
     public PriorityLevel getPriorityLevel() {
-      String value = getPriority();
-      if ("BLOCKER".equals(value)) { //$NON-NLS-1$
-        return PriorityLevel.P1;
-      } else if ("CRITICAL".equals(value)) { //$NON-NLS-1$
-        return PriorityLevel.P2;
-      } else if ("MAJOR".equals(value)) { //$NON-NLS-1$
-        return PriorityLevel.P3;
-      } else if ("MINOR".equals(value)) { //$NON-NLS-1$
-        return PriorityLevel.P4;
-      } else if ("INFO".equals(value)) { //$NON-NLS-1$
-        return PriorityLevel.P5;
-      } else {
-        return null;
-      }
+      return Utils.toMylynPriority(getPriority());
     }
   }
 

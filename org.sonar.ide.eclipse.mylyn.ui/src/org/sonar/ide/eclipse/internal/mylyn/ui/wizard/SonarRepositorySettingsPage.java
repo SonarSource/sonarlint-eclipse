@@ -41,7 +41,7 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
 
   public SonarRepositorySettingsPage(TaskRepository taskRepository) {
     super(Messages.SonarRepositorySettingsPage_Title, Messages.SonarRepositorySettingsPage_Description, taskRepository);
-    setNeedsAnonymousLogin(true);
+    setNeedsAnonymousLogin(false);
     setNeedsValidation(true);
     setNeedsAdvanced(false);
     setNeedsEncoding(false);

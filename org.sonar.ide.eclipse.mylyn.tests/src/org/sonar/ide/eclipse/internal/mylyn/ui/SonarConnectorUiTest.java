@@ -19,31 +19,37 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.ui;
 
-import org.eclipse.osgi.util.NLS;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
-public class Messages extends NLS {
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.sonar.ide.eclipse.internal.mylyn.core.SonarConnector;
 
-  private static final String BUNDLE_NAME = "org.sonar.ide.eclipse.internal.mylyn.ui.messages"; //$NON-NLS-1$
+@Ignore("Requires UI")
+public class SonarConnectorUiTest {
 
-  static {
-    // initialize resource bundle
-    NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+  private SonarConnectorUi connectorUi;
+
+  @Before
+  public void setUp() {
+    connectorUi = new SonarConnectorUi();
   }
 
-  public static String SonarConnectorUi_Review;
+  @Test
+  public void testGetConnectorKind() {
+    assertThat(connectorUi.getConnectorKind(), is(SonarConnector.CONNECTOR_KIND));
+  }
 
-  public static String SonarRepositorySettingsPage_Title;
+  @Test
+  public void testHasSearchPage() {
+    assertThat(connectorUi.hasSearchPage(), is(false));
+  }
 
-  public static String SonarRepositorySettingsPage_Description;
-
-  public static String SonarRepositorySettingsPage_Connection_failed;
-
-  public static String SonarRepositorySettingsPage_Unsupported_version;
-
-  public static String SonarQueryPage_Title;
-
-  public static String SonarQueryPage_Description;
-
-  public static String SonarQueryPage_Query_Title;
+  @Test(expected = UnsupportedOperationException.class)
+  public void testGetNewTaskWizard() {
+    connectorUi.getNewTaskWizard(null, null);
+  }
 
 }
