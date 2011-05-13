@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>org.sonar.ide.eclipse.mylyn.tests</artifactId>
-  <packaging>eclipse-plugin</packaging>
+  <packaging>eclipse-test-plugin</packaging>
 
   <build>
     <sourceDirectory>src</sourceDirectory>

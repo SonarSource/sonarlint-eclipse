@@ -23,8 +23,10 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Requires UI")
 public class SonarRepositorySettingsPageTest {
 
   private SonarRepositorySettingsPage page;

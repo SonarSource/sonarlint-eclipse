@@ -23,7 +23,6 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
-import org.eclipse.mylyn.tasks.ui.TasksUi;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +32,12 @@ public class SonarConnectorTest {
 
   @Before
   public void setUp() {
-    connector = (SonarConnector) TasksUi.getRepositoryConnector(SonarConnector.CONNECTOR_KIND);
+    connector = new SonarConnector();
+  }
+
+  @Test
+  public void testGetConnectorKind() {
+    assertThat(connector.getConnectorKind(), is(SonarConnector.CONNECTOR_KIND));
   }
 
   @Test
