@@ -466,9 +466,20 @@
       <id>jacoco</id>
       <properties>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
-        <sonar.jacoco.itReportPath>../org.sonar.ide.eclipse.parent/target/jacoco-it.exec</sonar.jacoco.itReportPath>
-        <jacoco.argLine>-javaagent:../jacoco-agent-all.jar=destfile=${sonar.jacoco.itReportPath}</jacoco.argLine>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.jacoco.reportPath>../org.sonar.ide.eclipse.parent/target/jacoco.exec</sonar.jacoco.reportPath>
+        <jacoco.version>0.5.1.20110321224001</jacoco.version>
+        <jacoco.argLine>-javaagent:${settings.localRepository}/org/jacoco/org.jacoco.agent.rt/${jacoco.version}/org.jacoco.agent.rt-${jacoco.version}.jar=destfile=${sonar.jacoco.reportPath}</jacoco.argLine>
       </properties>
+
+      <dependencies>
+        <dependency>
+          <groupId>org.jacoco</groupId>
+          <artifactId>org.jacoco.agent.rt</artifactId>
+          <version>${jacoco.version}</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
     </profile>
     <!-- This profile is used to check copyright/license headers -->
     <profile>
