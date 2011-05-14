@@ -18,7 +18,7 @@
     <attribute name="dir" />
 
     <sequential>
-      <mvn dir="@{dir}" args="-Dtycho.mode=maven -Pupdate-dependencies clean org.sonatype.tycho:maven-osgi-packaging-plugin:generate-bundle" />
+      <mvn dir="@{dir}" args="-Dtycho.mode=maven -Pupdate-dependencies clean org.eclipse.tycho:tycho-packaging-plugin:generate-bundle" />
     </sequential>
   </macrodef>
 

@@ -213,8 +213,8 @@
           </plugin>
 
           <plugin>
-            <groupId>org.sonatype.tycho</groupId>
-            <artifactId>maven-osgi-packaging-plugin</artifactId>
+            <groupId>org.eclipse.tycho</groupId>
+            <artifactId>tycho-packaging-plugin</artifactId>
             <executions>
               <execution>
                 <phase>generate-resources</phase>

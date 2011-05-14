@@ -2,4 +2,4 @@
 
 mvn -o \
     -Dtycho.mode=maven -Pupdate-dependencies \
-    clean org.sonatype.tycho:maven-osgi-packaging-plugin:generate-bundle
+    clean org.eclipse.tycho:tycho-packaging-plugin:generate-bundle

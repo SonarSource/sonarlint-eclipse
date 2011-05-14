@@ -20,8 +20,8 @@
 
     <plugins>
       <plugin>
-        <groupId>org.sonatype.tycho</groupId>
-        <artifactId>maven-osgi-test-plugin</artifactId>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-surefire-plugin</artifactId>
         <configuration>
           <useUIHarness>true</useUIHarness>
           <useUIThread>false</useUIThread>
