@@ -22,6 +22,7 @@ package org.sonar.ide.eclipse.core;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.QualifiedName;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.internal.core.*;
 import org.sonar.ide.eclipse.internal.core.resources.SonarProjectManager;
@@ -37,6 +38,8 @@ public class SonarCorePlugin extends AbstractPlugin {
    * Godin: It would be better to use only one MARKER_ID at least at first time.
    */
   public static final String MARKER_ID = PLUGIN_ID + ".sonarProblem";
+
+  public static final QualifiedName SESSION_PROPERY_MEASURES = new QualifiedName(PLUGIN_ID, "measures");
 
   private static SonarCorePlugin plugin;
 

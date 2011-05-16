@@ -22,27 +22,20 @@ package org.sonar.ide.eclipse.internal.jdt;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.*;
 import org.sonar.ide.eclipse.core.ResourceResolver;
 
 public class JavaResourceResolver extends ResourceResolver {
 
   @Override
   public String resolve(IResource resource, IProgressMonitor monitor) {
-    // TODO handle not only files
     IJavaElement javaElement = JavaCore.create(resource);
     if (javaElement instanceof ICompilationUnit) {
       String packageName = getPackageName(javaElement.getParent());
       String className = StringUtils.substringBeforeLast(javaElement.getElementName(), "."); //$NON-NLS-1$
-
-      if (StringUtils.isEmpty(packageName)) {
-        packageName = "[default]"; //$NON-NLS-1$
-      }
       return packageName + "." + className; //$NON-NLS-1$
+    } else if (javaElement instanceof IPackageFragment) {
+      return getPackageName(javaElement);
     }
     return null;
   }
@@ -54,6 +47,9 @@ public class JavaResourceResolver extends ResourceResolver {
     } else if (javaElement instanceof IPackageFragment) {
       IPackageFragment packageFragment = (IPackageFragment) javaElement;
       packageName = packageFragment.getElementName();
+    }
+    if (StringUtils.isEmpty(packageName)) {
+      packageName = "[default]"; //$NON-NLS-1$
     }
     return packageName;
   }

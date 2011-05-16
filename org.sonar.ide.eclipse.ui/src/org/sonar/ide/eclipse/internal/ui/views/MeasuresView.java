@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -54,6 +55,7 @@ import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.ui.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
@@ -63,6 +65,7 @@ import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.services.*;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -251,31 +254,50 @@ public class MeasuresView extends AbstractSonarInfoView {
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Loading measures for " + element.getKey(), IProgressMonitor.UNKNOWN);
         update(null);
-        EclipseSonar index = EclipseSonar.getInstance(element.getProject());
-        final SourceCode sourceCode = index.search(element);
-        if (sourceCode != null) {
-          Collection<ISonarMeasure> measures = getMeasures(index, element);
-          final List<ISonarMeasure> favorites = Lists.newArrayList();
 
-          // Group by key and domain
-          final Map<String, ISonarMeasure> measuresByKey = Maps.newHashMap();
-          final Multimap<String, ISonarMeasure> measuresByDomain = ArrayListMultimap.create();
-          for (ISonarMeasure measure : measures) {
-            if (SonarUiPlugin.getFavouriteMetricsManager().isFavorite(measure.getMetricDef())) {
-              favorites.add(measure);
-            }
-            String domain = measure.getMetricDef().getDomain();
-            measuresByDomain.put(domain, measure);
-            measuresByKey.put(measure.getMetricDef().getKey(), measure);
-          }
+        Collection<ISonarMeasure> measures = null;
 
-          MeasuresView.this.measuresByDomain = Maps.newHashMap(measuresByDomain.asMap());
-          MeasuresView.this.measuresByKey = measuresByKey;
-          if (!favorites.isEmpty()) {
-            MeasuresView.this.measuresByDomain.put(FAVORITES_CATEGORY, favorites);
+        if (ProjectProperties.getInstance(element.getProject()).isAnalysedLocally()) {
+          // Local mode
+          try {
+            measures = (Collection<ISonarMeasure>) element.getResource().getSessionProperty(SonarCorePlugin.SESSION_PROPERY_MEASURES);
+          } catch (CoreException e) {
+            // ignore
           }
-          update(MeasuresView.this.measuresByDomain);
+        } else {
+          // Remote mode
+          EclipseSonar index = EclipseSonar.getInstance(element.getProject());
+          final SourceCode sourceCode = index.search(element);
+          if (sourceCode != null) {
+            measures = getMeasures(index, element);
+          }
         }
+
+        if (measures == null) {
+          measures = Collections.emptyList();
+        }
+
+        final List<ISonarMeasure> favorites = Lists.newArrayList();
+
+        // Group by key and domain
+        final Map<String, ISonarMeasure> measuresByKey = Maps.newHashMap();
+        final Multimap<String, ISonarMeasure> measuresByDomain = ArrayListMultimap.create();
+        for (ISonarMeasure measure : measures) {
+          if (SonarUiPlugin.getFavouriteMetricsManager().isFavorite(measure.getMetricDef())) {
+            favorites.add(measure);
+          }
+          String domain = measure.getMetricDef().getDomain();
+          measuresByDomain.put(domain, measure);
+          measuresByKey.put(measure.getMetricDef().getKey(), measure);
+        }
+
+        MeasuresView.this.measuresByDomain = Maps.newHashMap(measuresByDomain.asMap());
+        MeasuresView.this.measuresByKey = measuresByKey;
+        if (!favorites.isEmpty()) {
+          MeasuresView.this.measuresByDomain.put(FAVORITES_CATEGORY, favorites);
+        }
+        update(MeasuresView.this.measuresByDomain);
+
         monitor.done();
         return Status.OK_STATUS;
       }
