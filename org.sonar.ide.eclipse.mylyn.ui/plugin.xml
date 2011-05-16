@@ -110,4 +110,10 @@
             id="org.sonar.ide.eclipse.mylyn.pageFactory">
       </pageFactory>
    </extension>
+   <extension
+         point="org.sonar.ide.eclipse.ui.resolver">
+      <resolver
+            class="org.sonar.ide.eclipse.internal.mylyn.ui.OpenReviewResolver">
+      </resolver>
+   </extension>
 </plugin>
