@@ -31,15 +31,9 @@ import java.util.Map;
 
 public class EmbedderRuleFinder implements RuleFinder {
 
-  private final RuleRepository[] repositories;
-
   private final Map<String, Map<String, Rule>> rules = Maps.newHashMap();
 
   public EmbedderRuleFinder(RuleRepository[] repositories) {
-    this.repositories = repositories;
-  }
-
-  public void start() {
     for (RuleRepository repository : repositories) {
       registerRepository(repository);
     }
