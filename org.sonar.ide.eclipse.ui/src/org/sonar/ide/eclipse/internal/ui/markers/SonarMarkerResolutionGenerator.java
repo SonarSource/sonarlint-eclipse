@@ -38,7 +38,7 @@ import java.util.List;
 public class SonarMarkerResolutionGenerator implements IMarkerResolutionGenerator2 {
 
   // ID from resolver extension point
-  private static final String RESOLVER_ID = "org.sonar.ide.eclipse.resolver";
+  private static final String RESOLVER_ID = "org.sonar.ide.eclipse.ui.resolver";
 
   public boolean hasResolutions(final IMarker marker) {
     try {
