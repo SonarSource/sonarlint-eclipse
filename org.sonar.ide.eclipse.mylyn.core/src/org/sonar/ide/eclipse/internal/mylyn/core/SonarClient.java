@@ -37,6 +37,8 @@ public class SonarClient {
 
   private static final String TYPE_FALSE_POSITIVE = "FALSE_POSITIVE"; //$NON-NLS-1$
 
+  private static final String STATUS_OPEN = "OPEN"; //$NON-NLS-1$
+
   private TaskRepository repository;
 
   public SonarClient(TaskRepository repository) {
@@ -57,9 +59,16 @@ public class SonarClient {
     List<Review> result = new ArrayList<Review>();
     Sonar sonar = create();
     String assignee = repository.getCredentials(AuthenticationType.REPOSITORY).getUserName();
-    result.addAll(sonar.findAll(new ReviewQuery().setAssigneeLoginsOrIds(assignee)));
+
+    ReviewQuery query = new ReviewQuery()
+        .setStatuses(STATUS_OPEN)
+        .setAssigneeLoginsOrIds(assignee);
+    result.addAll(sonar.findAll(query));
+
     // Workaround for http://jira.codehaus.org/browse/SONAR-2421
-    result.addAll(sonar.findAll(new ReviewQuery().setAssigneeLoginsOrIds(assignee).setReviewType(TYPE_FALSE_POSITIVE)));
+    query.setReviewType(TYPE_FALSE_POSITIVE);
+    result.addAll(sonar.findAll(query));
+
     return result;
   }
 
