@@ -120,7 +120,8 @@ public class AnalyseProjectJob extends Job {
 
                 Metric metric = measure.getMetric();
                 metricModel.setKey(metric.getKey());
-                metricModel.setName(metric.getKey());
+                metricModel.setName(metric.getName());
+                metricModel.setDescription(metric.getDescription());
                 metricModel.setDomain(metric.getDomain());
 
                 org.sonar.wsclient.services.Measure measureModel = new org.sonar.wsclient.services.Measure();
