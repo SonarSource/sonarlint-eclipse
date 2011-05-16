@@ -65,7 +65,6 @@ import org.sonar.wsclient.services.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Evgeny Mandrikov
@@ -286,17 +285,24 @@ public class MeasuresView extends AbstractSonarInfoView {
   }
 
   public List<ISonarMeasure> getMeasures(EclipseSonar index, ISonarResource sonarResource) {
-    Map<String, Metric> metricsByKey = getMetrics(index);
-    Set<String> keys = metricsByKey.keySet();
-    String[] metricKeys = keys.toArray(new String[keys.size()]);
-    ResourceQuery query = ResourceQuery.createForMetrics(sonarResource.getKey(), metricKeys).setIncludeTrends(true);
-    Resource resource = index.getSonar().find(query);
     List<ISonarMeasure> result = Lists.newArrayList();
-    for (Measure measure : resource.getMeasures()) {
-      final Metric metric = metricsByKey.get(measure.getMetricKey());
-      // Hacks around SONAR-1620
-      if (!metric.getHidden() && !"DATA".equals(metric.getType()) && StringUtils.isNotBlank(measure.getFormattedValue())) {
-        result.add(SonarCorePlugin.createSonarMeasure(sonarResource, metric, measure));
+    Map<String, Metric> metricsByKey = getMetrics(index);
+    List<String> keys = Lists.newArrayList(metricsByKey.keySet());
+    /*
+     * Workaround for http://jira.codehaus.org/browse/SONAR-2430
+     * Split list of metrics into small chunks and load measures by performing several queries.
+     */
+    for (List<String> keysForRequest : Lists.partition(keys, 5)) {
+      String[] metricKeys = keysForRequest.toArray(new String[keysForRequest.size()]);
+      ResourceQuery query = ResourceQuery.createForMetrics(sonarResource.getKey(), metricKeys).setIncludeTrends(true);
+      Resource resource = index.getSonar().find(query);
+
+      for (Measure measure : resource.getMeasures()) {
+        final Metric metric = metricsByKey.get(measure.getMetricKey());
+        // Hacks around SONAR-1620
+        if (!metric.getHidden() && !"DATA".equals(metric.getType()) && StringUtils.isNotBlank(measure.getFormattedValue())) {
+          result.add(SonarCorePlugin.createSonarMeasure(sonarResource, metric, measure));
+        }
       }
     }
     return result;
