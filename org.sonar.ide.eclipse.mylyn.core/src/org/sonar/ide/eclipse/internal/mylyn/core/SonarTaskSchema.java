@@ -19,8 +19,7 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
-import org.eclipse.mylyn.tasks.core.data.AbstractTaskSchema;
-import org.eclipse.mylyn.tasks.core.data.DefaultTaskSchema;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 
 /**
  * Everything should be read-only for the moment - see http://jira.codehaus.org/browse/SONARIDE-228
@@ -32,36 +31,46 @@ public class SonarTaskSchema extends AbstractTaskSchema {
     return instance;
   }
 
-  private final DefaultTaskSchema parent = DefaultTaskSchema.getInstance();
-
-  public final Field ID = inheritFrom(parent.TASK_KEY).create();
+  public final Field ID = createField(TaskAttribute.TASK_KEY, Messages.SonarTaskSchema_ID_Label,
+      TaskAttribute.TYPE_SHORT_TEXT);
 
   /**
    * Permalink, for example: http://nemo.sonarsource.org/reviews/view/1
    */
-  public final Field URL = inheritFrom(parent.TASK_URL).create();
+  public final Field URL = createField(TaskAttribute.TASK_URL, Messages.SonarTaskSchema_URL_Label,
+      TaskAttribute.TYPE_URL);
 
-  public final Field SUMMARY = inheritFrom(parent.SUMMARY).flags(Flag.READ_ONLY).create();
+  public final Field SUMMARY = createField(TaskAttribute.SUMMARY, Messages.SonarTaskSchema_Summary_Label,
+      TaskAttribute.TYPE_SHORT_RICH_TEXT);
 
-  public final Field DESCRIPTION = inheritFrom(parent.DESCRIPTION).flags(Flag.READ_ONLY).create();
+  public final Field DESCRIPTION = createField(TaskAttribute.DESCRIPTION, Messages.SonarTaskSchema_Description_Label,
+      TaskAttribute.TYPE_LONG_RICH_TEXT);
 
-  public final Field STATUS = inheritFrom(parent.STATUS).create();
+  public final Field STATUS = createField(TaskAttribute.STATUS, Messages.SonarTaskSchema_Status_Label,
+      TaskAttribute.TYPE_SHORT_TEXT);
 
   /**
    * Possible values: BLOCKER, CRITICAL, MAJOR, MINOR, INFO.
    */
-  public final Field PRIORITY = inheritFrom(parent.PRIORITY).flags(Flag.READ_ONLY).create();
+  public final Field PRIORITY = createField(TaskAttribute.PRIORITY, Messages.SonarTaskSchema_Priority_Label,
+      TaskAttribute.TYPE_SINGLE_SELECT);
 
-  public final Field USER_REPORTER = inheritFrom(parent.USER_REPORTER).flags(Flag.READ_ONLY, Flag.ATTRIBUTE).create();
+  public final Field USER_REPORTER = createField(TaskAttribute.USER_REPORTER, Messages.SonarTaskSchema_Reporter_Label,
+      TaskAttribute.TYPE_PERSON, TaskAttribute.KIND_DEFAULT);
 
-  public final Field USER_ASSIGNED = inheritFrom(parent.USER_ASSIGNED).flags(Flag.READ_ONLY, Flag.ATTRIBUTE).create();
+  public final Field USER_ASSIGNED = createField(TaskAttribute.USER_ASSIGNED, Messages.SonarTaskSchema_Owner_Label,
+      TaskAttribute.TYPE_PERSON, TaskAttribute.KIND_DEFAULT);
 
-  public final Field DATE_CREATION = inheritFrom(parent.DATE_CREATION).create();
+  public final Field DATE_CREATION = createField(TaskAttribute.DATE_CREATION, Messages.SonarTaskSchema_Created_Label,
+      TaskAttribute.TYPE_DATE);
 
-  public final Field DATE_MODIFICATION = inheritFrom(parent.DATE_MODIFICATION).create();
+  public final Field DATE_MODIFICATION = createField(TaskAttribute.DATE_MODIFICATION, Messages.SonarTaskSchema_Modified_Label,
+      TaskAttribute.TYPE_DATE);
 
-  public final Field DATE_COMPLETION = inheritFrom(parent.DATE_COMPLETION).create();
+  public final Field DATE_COMPLETION = createField(TaskAttribute.DATE_COMPLETION, Messages.SonarTaskSchema_Completion_Label,
+      TaskAttribute.TYPE_DATE);
 
-  public final Field TASK_KIND = inheritFrom(parent.TASK_KIND).flags(Flag.READ_ONLY, Flag.ATTRIBUTE).create();
+  public final Field TASK_KIND = createField(TaskAttribute.TASK_KIND, Messages.SonarTaskSchema_Kind_Label,
+      TaskAttribute.TYPE_SINGLE_SELECT, TaskAttribute.KIND_DEFAULT);
 
 }

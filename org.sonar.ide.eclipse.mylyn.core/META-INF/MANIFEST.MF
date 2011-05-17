@@ -7,8 +7,8 @@ Bundle-Vendor: %bundle_vendor
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.sonar.ide.eclipse.wsclient,
- org.eclipse.mylyn.tasks.core;bundle-version="[3.5.0,4.0.0)",
- org.eclipse.mylyn.commons.net;bundle-version="[3.5.0,4.0.0)"
+ org.eclipse.mylyn.tasks.core;bundle-version="[3.2.0,4.0.0)",
+ org.eclipse.mylyn.commons.net;bundle-version="[3.2.0,4.0.0)"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
 Bundle-ActivationPolicy: lazy

@@ -26,7 +26,7 @@ import org.eclipse.mylyn.tasks.core.ITaskMapping;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.*;
-import org.eclipse.mylyn.tasks.core.data.AbstractTaskSchema.Field;
+import org.sonar.ide.eclipse.internal.mylyn.core.AbstractTaskSchema.Field;
 import org.sonar.wsclient.services.Review;
 
 import java.util.Date;

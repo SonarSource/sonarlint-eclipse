@@ -36,4 +36,28 @@ public class Messages extends NLS {
 
   public static String SonarTaskDataHandler_Downloading_task;
 
+  public static String SonarTaskSchema_Completion_Label;
+
+  public static String SonarTaskSchema_Created_Label;
+
+  public static String SonarTaskSchema_Description_Label;
+
+  public static String SonarTaskSchema_ID_Label;
+
+  public static String SonarTaskSchema_Kind_Label;
+
+  public static String SonarTaskSchema_Modified_Label;
+
+  public static String SonarTaskSchema_Owner_Label;
+
+  public static String SonarTaskSchema_Priority_Label;
+
+  public static String SonarTaskSchema_Reporter_Label;
+
+  public static String SonarTaskSchema_Status_Label;
+
+  public static String SonarTaskSchema_Summary_Label;
+
+  public static String SonarTaskSchema_URL_Label;
+
 }
