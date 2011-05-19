@@ -39,7 +39,7 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
   private Text titleText;
 
   public SonarQueryPage(TaskRepository repository, IRepositoryQuery query) {
-    super(Messages.SonarQueryPage_Title /* page name */, repository, query);
+    super(Messages.SonarQueryPage_Title, repository, query);
     setTitle(Messages.SonarQueryPage_Title);
     setDescription(Messages.SonarQueryPage_Description);
     this.query = query;

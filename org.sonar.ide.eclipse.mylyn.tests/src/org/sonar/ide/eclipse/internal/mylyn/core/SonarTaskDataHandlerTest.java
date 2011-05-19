@@ -80,7 +80,7 @@ public class SonarTaskDataHandlerTest {
     handler.updateTaskData(repository, data, review);
 
     assertThat(data.getRoot().getAttributes().size(), is(13));
-    assertThat(getAttributeValue(data, TaskAttribute.DATE_MODIFICATION), is("2")); // TODO maybe 3?
+    assertThat(getAttributeValue(data, TaskAttribute.DATE_MODIFICATION), is("3"));
     TaskAttribute comment = data.getRoot().getAttribute(TaskAttribute.PREFIX_COMMENT + "1");
     assertThat(comment.getAttributes().size(), is(4));
     assertThat(getAttributeValue(comment, TaskAttribute.COMMENT_NUMBER), is("1"));
@@ -94,7 +94,7 @@ public class SonarTaskDataHandlerTest {
     handler.updateTaskData(repository, data, review);
     assertThat(data.getRoot().getAttributes().size(), is(13));
     assertThat(getAttributeValue(data, TaskAttribute.STATUS), is("CLOSED"));
-    assertThat(getAttributeValue(data, TaskAttribute.DATE_COMPLETION), is("2")); // TODO maybe 3?
+    assertThat(getAttributeValue(data, TaskAttribute.DATE_COMPLETION), is("3"));
   }
 
   private String getAttributeValue(TaskAttribute attribute, String key) {

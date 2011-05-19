@@ -62,6 +62,14 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
   public void updateTaskData(TaskRepository repository, TaskData data, Review review) {
     SonarTaskSchema schema = SonarTaskSchema.getDefault();
 
+    // Workaround for SONAR-2449
+    Date modification = review.getUpdatedAt();
+    for (Review.Comment comment : review.getComments()) {
+      if (modification.compareTo(comment.getUpdatedAt()) < 0) {
+        modification = comment.getUpdatedAt();
+      }
+    }
+
     setAttributeValue(data, schema.ID, Long.toString(review.getId()));
     setAttributeValue(data, schema.URL, connector.getTaskUrl(repository.getUrl(), data.getTaskId()));
     setAttributeValue(data, schema.SUMMARY, review.getTitle());
@@ -73,12 +81,12 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
     setAttributeValue(data, schema.USER_ASSIGNED, review.getAssigneeLogin());
 
     setAttributeValue(data, schema.DATE_CREATION, dateToString(review.getCreatedAt()));
-    setAttributeValue(data, schema.DATE_MODIFICATION, dateToString(review.getUpdatedAt()));
+    setAttributeValue(data, schema.DATE_MODIFICATION, dateToString(modification));
 
     setAttributeValue(data, schema.STATUS, review.getStatus());
     if (SonarClient.STATUS_CLOSED.equals(review.getStatus())) {
       // Set the completion date, this allows Mylyn mark the review as completed
-      setAttributeValue(data, schema.DATE_COMPLETION, dateToString(review.getUpdatedAt()));
+      setAttributeValue(data, schema.DATE_COMPLETION, dateToString(modification));
     }
 
     addComments(repository, data, review);
