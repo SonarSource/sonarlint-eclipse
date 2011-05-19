@@ -33,7 +33,7 @@ import org.eclipse.osgi.util.NLS;
 import org.osgi.framework.Version;
 import org.sonar.wsclient.services.Review;
 
-import java.util.List;
+import java.util.Collection;
 
 public class SonarConnector extends AbstractRepositoryConnector {
 
@@ -121,12 +121,20 @@ public class SonarConnector extends AbstractRepositoryConnector {
       monitor.beginTask(Messages.SonarConnector_Executing_query, IProgressMonitor.UNKNOWN);
 
       SonarClient client = new SonarClient(repository);
-      List<Review> reviews = client.getReviews(monitor);
+      Collection<Review> reviews = client.getReviews(monitor);
       for (Review review : reviews) {
         TaskData taskData = taskDataHandler.createTaskData(repository, review.getId() + "", monitor); //$NON-NLS-1$
         taskData.setPartial(true);
         taskDataHandler.updateTaskData(repository, taskData, review);
         resultCollector.accept(taskData);
+      }
+
+      /*
+       * Godin: I'm not sure that all tasks from session should be marked as stale,
+       * however this allows to update attributes in case when SonarTaskSchema was updated.
+       */
+      for (ITask task : session.getTasks()) {
+        session.markStale(task);
       }
 
       return Status.OK_STATUS;

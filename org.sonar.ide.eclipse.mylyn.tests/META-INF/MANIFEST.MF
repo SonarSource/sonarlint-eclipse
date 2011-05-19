@@ -7,8 +7,10 @@ Bundle-Vendor: SonarSource
 Require-Bundle: org.junit,
  org.sonar.ide.eclipse.mylyn.core,
  org.sonar.ide.eclipse.mylyn.ui,
+ org.sonar.ide.eclipse.wsclient,
  org.eclipse.core.runtime,
  org.eclipse.ui,
+ org.eclipse.mylyn.commons.net;bundle-version="[3.2.0,4.0.0)",
  org.eclipse.mylyn.tasks.core;bundle-version="[3.2.0,4.0.0)",
  org.eclipse.mylyn.tasks.ui;bundle-version="[3.2.0,4.0.0)"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,

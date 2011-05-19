@@ -30,14 +30,21 @@ import org.sonar.wsclient.services.Review;
 import org.sonar.wsclient.services.ReviewQuery;
 import org.sonar.wsclient.services.ServerQuery;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 public class SonarClient {
 
-  private static final String TYPE_FALSE_POSITIVE = "FALSE_POSITIVE"; //$NON-NLS-1$
+  public static final String TYPE_VIOLATION = "FALSE_POSITIVE"; //$NON-NLS-1$
+  public static final String TYPE_FALSE_POSITIVE = "FALSE_POSITIVE"; //$NON-NLS-1$
 
-  private static final String STATUS_OPEN = "OPEN"; //$NON-NLS-1$
+  public static final String STATUS_OPEN = "OPEN"; //$NON-NLS-1$
+  public static final String STATUS_CLOSED = "CLOSED"; //$NON-NLS-1$
+
+  public static final String PRIORITY_BLOCKER = "BLOCKER"; //$NON-NLS-1$
+  public static final String PRIORITY_CRITICAL = "CRITICAL"; //$NON-NLS-1$
+  public static final String PRIORITY_MAJOR = "MAJOR"; //$NON-NLS-1$
+  public static final String PRIORITY_MINOR = "MINOR"; //$NON-NLS-1$
+  public static final String PRIORITY_INFO = "INFO"; //$NON-NLS-1$
 
   private TaskRepository repository;
 
@@ -49,27 +56,19 @@ public class SonarClient {
     Sonar sonar = create();
     Review review = sonar.find(new ReviewQuery().setId(id));
     if (review == null) {
-      // Workaround for http://jira.codehaus.org/browse/SONAR-2421
+      // Workaround for SONAR-2421, can be removed after upgrade of minimal Sonar version to 2.9
       review = sonar.find(new ReviewQuery().setId(id).setReviewType(TYPE_FALSE_POSITIVE));
     }
     return review;
   }
 
-  public List<Review> getReviews(IProgressMonitor monitor) {
-    List<Review> result = new ArrayList<Review>();
+  public Collection<Review> getReviews(IProgressMonitor monitor) {
     Sonar sonar = create();
     String assignee = repository.getCredentials(AuthenticationType.REPOSITORY).getUserName();
-
     ReviewQuery query = new ReviewQuery()
         .setStatuses(STATUS_OPEN)
         .setAssigneeLoginsOrIds(assignee);
-    result.addAll(sonar.findAll(query));
-
-    // Workaround for http://jira.codehaus.org/browse/SONAR-2421
-    query.setReviewType(TYPE_FALSE_POSITIVE);
-    result.addAll(sonar.findAll(query));
-
-    return result;
+    return sonar.findAll(query);
   }
 
   public String getServerVersion() {
@@ -77,12 +76,19 @@ public class SonarClient {
   }
 
   private Sonar create() {
+    return WSClientFactory.create(getSonarHost());
+  }
+
+  /**
+   * Visibility has been relaxed for test.
+   */
+  public Host getSonarHost() {
     Host host = new Host(repository.getRepositoryUrl());
     AuthenticationCredentials credentials = repository.getCredentials(AuthenticationType.REPOSITORY);
     if (credentials != null) {
       host.setUsername(credentials.getUserName());
       host.setPassword(credentials.getPassword());
     }
-    return WSClientFactory.create(host);
+    return host;
   }
 }

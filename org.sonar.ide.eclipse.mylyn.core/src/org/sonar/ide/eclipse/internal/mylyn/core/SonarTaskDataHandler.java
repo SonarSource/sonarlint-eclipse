@@ -62,7 +62,7 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
   public void updateTaskData(TaskRepository repository, TaskData data, Review review) {
     SonarTaskSchema schema = SonarTaskSchema.getDefault();
 
-    setAttributeValue(data, schema.ID, review.getId() + ""); //$NON-NLS-1$
+    setAttributeValue(data, schema.ID, Long.toString(review.getId()));
     setAttributeValue(data, schema.URL, connector.getTaskUrl(repository.getUrl(), data.getTaskId()));
     setAttributeValue(data, schema.SUMMARY, review.getTitle());
     setAttributeValue(data, schema.PRIORITY, review.getSeverity());
@@ -76,7 +76,7 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
     setAttributeValue(data, schema.DATE_MODIFICATION, dateToString(review.getUpdatedAt()));
 
     setAttributeValue(data, schema.STATUS, review.getStatus());
-    if ("CLOSED".equals(review.getStatus())) { //$NON-NLS-1$
+    if (SonarClient.STATUS_CLOSED.equals(review.getStatus())) {
       // Set the completion date, this allows Mylyn mark the review as completed
       setAttributeValue(data, schema.DATE_COMPLETION, dateToString(review.getUpdatedAt()));
     }
@@ -99,7 +99,7 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
   }
 
   private static String dateToString(Date date) {
-    return date.getTime() + ""; //$NON-NLS-1$
+    return Long.toString(date.getTime());
   }
 
   /**
