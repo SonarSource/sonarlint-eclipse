@@ -66,7 +66,6 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
     setAttributeValue(data, schema.URL, connector.getTaskUrl(repository.getUrl(), data.getTaskId()));
     setAttributeValue(data, schema.SUMMARY, review.getTitle());
     setAttributeValue(data, schema.PRIORITY, review.getSeverity());
-    setAttributeValue(data, schema.DESCRIPTION, "Resource: " + review.getResourceKee() + " Line: " + review.getLine()); //$NON-NLS-1$ //$NON-NLS-2$
     setAttributeValue(data, schema.RESOURCE, review.getResourceKee());
     setAttributeValue(data, schema.TASK_KIND, review.getType());
 

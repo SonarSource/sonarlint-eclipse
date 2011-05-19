@@ -43,9 +43,6 @@ public class SonarTaskSchema extends AbstractTaskSchema {
   public final Field SUMMARY = createField(TaskAttribute.SUMMARY, Messages.SonarTaskSchema_Summary_Label,
       TaskAttribute.TYPE_SHORT_RICH_TEXT);
 
-  public final Field DESCRIPTION = createField(TaskAttribute.DESCRIPTION, Messages.SonarTaskSchema_Description_Label,
-      TaskAttribute.TYPE_LONG_RICH_TEXT);
-
   public final Field STATUS = createField(TaskAttribute.STATUS, Messages.SonarTaskSchema_Status_Label,
       TaskAttribute.TYPE_SHORT_TEXT);
 

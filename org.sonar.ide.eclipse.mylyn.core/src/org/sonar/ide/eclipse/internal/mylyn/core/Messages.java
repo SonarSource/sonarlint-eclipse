@@ -40,8 +40,6 @@ public class Messages extends NLS {
 
   public static String SonarTaskSchema_Created_Label;
 
-  public static String SonarTaskSchema_Description_Label;
-
   public static String SonarTaskSchema_ID_Label;
 
   public static String SonarTaskSchema_Kind_Label;
