@@ -73,4 +73,7 @@ public class SonarTaskSchema extends AbstractTaskSchema {
   public final Field TASK_KIND = createField(TaskAttribute.TASK_KIND, Messages.SonarTaskSchema_Kind_Label,
       TaskAttribute.TYPE_SINGLE_SELECT, TaskAttribute.KIND_DEFAULT);
 
+  public final Field RESOURCE = createField("sonarResource", Messages.SonarTaskSchema_Resource_Label, //$NON-NLS-1$
+      TaskAttribute.TYPE_LONG_TEXT, TaskAttribute.KIND_DEFAULT);
+
 }

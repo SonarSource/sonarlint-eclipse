@@ -19,10 +19,10 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.ui.editor;
 
-import org.eclipse.mylyn.tasks.ui.editors.AbstractTaskEditorPage;
-import org.eclipse.mylyn.tasks.ui.editors.TaskEditor;
-import org.eclipse.mylyn.tasks.ui.editors.TaskEditorPartDescriptor;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.ui.editors.*;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarConnector;
+import org.sonar.ide.eclipse.internal.mylyn.core.SonarTaskSchema;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -50,4 +50,17 @@ public class SonarTaskEditorPage extends AbstractTaskEditorPage {
     return descriptors;
   }
 
+  @Override
+  protected AttributeEditorFactory createAttributeEditorFactory() {
+    AttributeEditorFactory factory = new AttributeEditorFactory(getModel(), getTaskRepository(), getEditorSite()) {
+      @Override
+      public AbstractAttributeEditor createEditor(String type, TaskAttribute taskAttribute) {
+        if (SonarTaskSchema.getDefault().RESOURCE.getKey().equals(taskAttribute.getId())) {
+          return new ResourceAttributeEditor(getModel(), taskAttribute);
+        }
+        return super.createEditor(type, taskAttribute);
+      }
+    };
+    return factory;
+  }
 }
