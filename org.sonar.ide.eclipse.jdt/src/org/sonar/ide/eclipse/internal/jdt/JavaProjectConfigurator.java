@@ -67,6 +67,9 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       for (IClasspathEntry entry : classPath) {
         switch (entry.getEntryKind()) {
           case IClasspathEntry.CPE_SOURCE:
+            if (isSourceExcluded(entry)) {
+              break;
+            }
             String srcDir = getAbsolutePath(javaProject, entry.getPath());
             LOG.debug("Source directory: {}", srcDir);
             sonarProject.addSourceDir(srcDir);
@@ -95,6 +98,22 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     } catch (JavaModelException e) {
       LOG.error(e.getMessage(), e);
     }
+  }
+
+  /**
+   * Allows to determine directories with resources to exclude them from analysis, otherwise analysis might fail due to SONAR-791.
+   * This is a kind of workaround, which is based on the fact that M2Eclipse configures exclusion pattern "**" for directories with resources.
+   */
+  private boolean isSourceExcluded(IClasspathEntry entry) {
+    IPath[] exclusionPatterns = entry.getExclusionPatterns();
+    if (exclusionPatterns != null) {
+      for (IPath exclusionPattern : exclusionPatterns) {
+        if ("**".equals(exclusionPattern.toString())) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private String getAbsolutePath(IJavaProject javaProject, IPath path) {
