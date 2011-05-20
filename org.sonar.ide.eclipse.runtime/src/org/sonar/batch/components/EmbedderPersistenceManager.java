@@ -19,11 +19,6 @@
  */
 package org.sonar.batch.components;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.sonar.api.batch.Event;
@@ -33,8 +28,14 @@ import org.sonar.api.measures.Measure;
 import org.sonar.api.resources.Project;
 import org.sonar.api.resources.ProjectLink;
 import org.sonar.api.resources.Resource;
+import org.sonar.api.resources.ResourceUtils;
 import org.sonar.api.rules.Violation;
 import org.sonar.batch.index.PersistenceManager;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class EmbedderPersistenceManager implements PersistenceManager, EmbedderIndex {
 
@@ -47,6 +48,13 @@ public class EmbedderPersistenceManager implements PersistenceManager, EmbedderI
     }
     Map<String, Measure> measuresByMetric = measuresByResource.get(resourceKey);
     return measuresByMetric.values();
+  }
+
+  /**
+   * For test.
+   */
+  public Map<String, Map<String, Measure>> getAllMeasures() {
+    return measuresByResource;
   }
 
   public Collection<Violation> getViolations(String resourceKey) {
@@ -92,6 +100,9 @@ public class EmbedderPersistenceManager implements PersistenceManager, EmbedderI
   }
 
   public void saveMeasure(Resource resource, Measure measure) {
+    if (!ResourceUtils.isPersistable(resource)) {
+      return;
+    }
     String resourceKey = resource.getKey();
     final Map<String, Measure> measuresByMetric;
     if (measuresByResource.containsKey(resourceKey)) {
