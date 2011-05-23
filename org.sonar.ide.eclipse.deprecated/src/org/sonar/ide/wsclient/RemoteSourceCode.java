@@ -158,9 +158,9 @@ class RemoteSourceCode implements SourceCode {
    * {@inheritDoc}
    */
   public List<Violation> getViolations() {
-    LOG.info("Loading violations for {}", getKey());
+    LOG.debug("Loading violations for {}", getKey());
     final Collection<Violation> violations = index.getSonar().findAll(ViolationQuery.createForResource(getKey()).setIncludeReview(true));
-    LOG.info("Loaded {} violations: {}", violations.size(), ViolationUtils.toString(violations));
+    LOG.debug("Loaded {} violations: {}", violations.size(), ViolationUtils.toString(violations));
     return ViolationUtils.convertLines(violations, getDiff());
   }
 
@@ -175,14 +175,14 @@ class RemoteSourceCode implements SourceCode {
    * {@inheritDoc}
    */
   public List<Rule> getRules() {
-    LOG.info("Loading rules for {}", getKey());
+    LOG.debug("Loading rules for {}", getKey());
     final Resource resource = index.getSonar().find(ResourceQuery.createForMetrics(getKey(), "profile"));
     final Measure measure = resource.getMeasure("profile");
     if (measure == null) {
       return Collections.emptyList();
     }
     final List<Rule> rules = getRemoteSonarIndex().getSonar().findAll(new RuleQuery(/* TODO */"java").setProfile(measure.getData()));
-    LOG.info("Loaded {} rules for profile {}", rules.size(), measure.getData());
+    LOG.debug("Loaded {} rules for profile {}", rules.size(), measure.getData());
     return rules;
   }
 
