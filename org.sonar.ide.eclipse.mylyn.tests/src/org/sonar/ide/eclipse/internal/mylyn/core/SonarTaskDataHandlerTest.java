@@ -60,7 +60,7 @@ public class SonarTaskDataHandlerTest {
     TaskData data = handler.createTaskData(repository, "1", null);
     handler.updateTaskData(repository, data, review);
 
-    assertThat(data.getRoot().getAttributes().size(), is(12));
+    assertThat(data.getRoot().getAttributes().size(), is(13));
     assertThat(getAttributeValue(data, TaskAttribute.TASK_KEY), is("1"));
     assertThat(getAttributeValue(data, TaskAttribute.TASK_URL), is("http://localhost:9000/reviews/view/1"));
     assertThat(getAttributeValue(data, TaskAttribute.SUMMARY), is("Title"));
@@ -79,7 +79,7 @@ public class SonarTaskDataHandlerTest {
     data = handler.createTaskData(repository, "1", null);
     handler.updateTaskData(repository, data, review);
 
-    assertThat(data.getRoot().getAttributes().size(), is(13));
+    assertThat(data.getRoot().getAttributes().size(), is(14));
     assertThat(getAttributeValue(data, TaskAttribute.DATE_MODIFICATION), is("3"));
     TaskAttribute comment = data.getRoot().getAttribute(TaskAttribute.PREFIX_COMMENT + "1");
     assertThat(comment.getAttributes().size(), is(4));
@@ -92,7 +92,7 @@ public class SonarTaskDataHandlerTest {
     review.setStatus("CLOSED");
     data = handler.createTaskData(repository, "1", null);
     handler.updateTaskData(repository, data, review);
-    assertThat(data.getRoot().getAttributes().size(), is(13));
+    assertThat(data.getRoot().getAttributes().size(), is(14));
     assertThat(getAttributeValue(data, TaskAttribute.STATUS), is("CLOSED"));
     assertThat(getAttributeValue(data, TaskAttribute.DATE_COMPLETION), is("3"));
   }

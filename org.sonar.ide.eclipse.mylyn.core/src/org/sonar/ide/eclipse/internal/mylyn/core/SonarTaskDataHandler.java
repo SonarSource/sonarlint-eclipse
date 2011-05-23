@@ -70,11 +70,13 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
       }
     }
 
-    setAttributeValue(data, schema.ID, Long.toString(review.getId()));
+    setAttributeValue(data, schema.ID, review.getId());
     setAttributeValue(data, schema.URL, connector.getTaskUrl(repository.getUrl(), data.getTaskId()));
     setAttributeValue(data, schema.SUMMARY, review.getTitle());
     setAttributeValue(data, schema.PRIORITY, review.getSeverity());
     setAttributeValue(data, schema.RESOURCE, review.getResourceKee());
+    setAttributeValue(data, schema.LINE, review.getLine());
+
     setAttributeValue(data, schema.TASK_KIND, review.getType());
 
     setAttributeValue(data, schema.USER_REPORTER, review.getAuthorLogin());
@@ -113,10 +115,10 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
   /**
    * Convenience method to set the value of a given Attribute in the given {@link TaskData}.
    */
-  private static TaskAttribute setAttributeValue(TaskData data, Field sonarAttribute, String value) {
+  private static TaskAttribute setAttributeValue(TaskData data, Field sonarAttribute, Object value) {
     TaskAttribute attribute = data.getRoot().getAttribute(sonarAttribute.getKey());
     if (value != null) {
-      attribute.setValue(value);
+      attribute.setValue(value.toString());
     }
     return attribute;
   }

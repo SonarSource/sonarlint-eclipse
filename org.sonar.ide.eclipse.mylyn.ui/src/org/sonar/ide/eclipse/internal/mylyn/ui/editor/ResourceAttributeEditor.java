@@ -33,6 +33,7 @@ import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
+import org.sonar.ide.eclipse.internal.mylyn.core.SonarTaskSchema;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.wsclient.services.Resource;
 
@@ -50,12 +51,14 @@ public class ResourceAttributeEditor extends AbstractAttributeEditor {
       @Override
       public void linkActivated(HyperlinkEvent e) {
         String sonarResourceKey = getResource();
+        Integer line = getLine();
+
         // Godin: in fact this is not a good way to locate IFile by Sonar resourceKey and should be improved
         IFile file = PlatformUtils.adapt(new Resource().setKey(sonarResourceKey), IFile.class);
         if (file == null) {
           MessageDialog.openWarning(null, "Resource not found", "Failed to locate resource '" + sonarResourceKey + "' in workspace.");
         } else {
-          PlatformUtils.openEditor(file);
+          PlatformUtils.openEditor(file, line);
         }
       }
     });
@@ -64,6 +67,11 @@ public class ResourceAttributeEditor extends AbstractAttributeEditor {
 
   private String getResource() {
     return getTaskAttribute().getValue();
+  }
+
+  private Integer getLine() {
+    TaskAttribute attribute = getTaskAttribute().getParentAttribute().getAttribute(SonarTaskSchema.getDefault().LINE.getKey());
+    return getAttributeMapper().getIntegerValue(attribute);
   }
 
 }

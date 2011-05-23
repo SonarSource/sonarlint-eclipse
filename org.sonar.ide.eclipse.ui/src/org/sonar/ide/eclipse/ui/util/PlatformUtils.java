@@ -19,10 +19,9 @@
  */
 package org.sonar.ide.eclipse.ui.util;
 
-import java.io.IOException;
-import java.io.StringWriter;
-
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbenchPage;
@@ -31,6 +30,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.XMLMemento;
 import org.eclipse.ui.ide.IDE;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.HashMap;
 
 @SuppressWarnings("unchecked")
 public final class PlatformUtils {
@@ -66,6 +69,30 @@ public final class PlatformUtils {
     try {
       IDE.openEditor(page, file);
     } catch (PartInitException e) {
+      LoggerFactory.getLogger(PlatformUtils.class).error(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * See http://wiki.eclipse.org/FAQ_How_do_I_open_an_editor_on_a_file_in_the_workspace%3F
+   */
+  public static void openEditor(IFile file, Integer line) {
+    if (line == null) {
+      openEditor(file);
+      return;
+    }
+
+    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    try {
+      HashMap map = new HashMap(2);
+      map.put(IMarker.LINE_NUMBER, new Integer(line));
+      IMarker marker = file.createMarker(IMarker.TEXT);
+      marker.setAttributes(map);
+      IDE.openEditor(page, marker);
+      marker.delete();
+    } catch (PartInitException e) {
+      LoggerFactory.getLogger(PlatformUtils.class).error(e.getMessage(), e);
+    } catch (CoreException e) {
       LoggerFactory.getLogger(PlatformUtils.class).error(e.getMessage(), e);
     }
   }
