@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Mylyn Sonar Connector Tests
 Bundle-SymbolicName: org.sonar.ide.eclipse.mylyn.tests;singleton:=true
-Bundle-Version: 2.1.0.qualifier
+Bundle-Version: 2.2.0.qualifier
 Bundle-Vendor: SonarSource
 Require-Bundle: org.junit,
  org.sonar.ide.eclipse.mylyn.core,
