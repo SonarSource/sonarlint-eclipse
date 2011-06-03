@@ -30,11 +30,6 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>e34.target</file>
-                  <type>target</type>
-                  <classifier>e34</classifier>
-                </artifact>
-                <artifact>
                   <file>e35.target</file>
                   <type>target</type>
                   <classifier>e35</classifier>

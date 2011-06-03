@@ -33,14 +33,14 @@
 <unit id="org.slf4j.api" version="1.6.1.v20100831-0715"/>
 <unit id="org.slf4j.jcl" version="1.6.1.v20100831-0715"/>
 <unit id="org.slf4j.log4j" version="1.6.1.v20100831-0715"/>
-<unit id="com.google.collect" version="1.0.0.v201003051000"/>
+<unit id="com.google.collect" version="1.0.0.v201105210816"/>
 <unit id="org.apache.commons.httpclient" version="3.1.0.v20080605-1935"/>
-<unit id="org.apache.commons.io" version="2.0.1.v201101200200"/>
+<unit id="org.apache.commons.io" version="2.0.1.v201105210651"/>
 <unit id="org.apache.commons.lang" version="2.4.0.v201005080502"/>
 <unit id="org.apache.commons.collections" version="3.2.0.v201005080500"/>
 <unit id="org.apache.commons.beanutils" version="1.7.0.v200902170505"/>
 <unit id="org.mockito" version="1.8.4.v201102171835"/>
-<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/S20110304120314/repository"/>
+<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20110523182458/repository"/>
 </location>
 
 </locations>

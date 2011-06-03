@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.6"?>
 
-<target name="m2e-e37">
+<target name="sonar-ide-e37">
 <locations>
 
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
-<unit id="org.eclipse.emf.common.feature.group" version="2.7.0.v20110128-1409"/>
+<unit id="org.eclipse.emf.common.feature.group" version="2.7.0.v20110523-0837"/>
 <unit id="org.eclipse.wst.common.emf" version="1.2.100.v201101101900"/>
-<unit id="org.eclipse.wst.sse.core" version="1.1.600.v201101130456"/>
-<unit id="org.eclipse.wst.xml.core" version="1.1.600.v201101262302"/>
-<unit id="org.eclipse.wst.sse.ui" version="1.3.0.v201101212141"/>
-<unit id="org.eclipse.emf.ecore.edit.feature.group" version="2.7.0.v20110128-1446"/>
-<unit id="org.eclipse.emf.edit.ui.feature.group" version="2.6.0.v20110128-1446"/>
-<unit id="org.eclipse.wst.xsd.core" version="1.1.600.v201011122042"/>
-<unit id="org.eclipse.wst.web_ui.feature.feature.group" version="3.3.0.v201010270400-7O7IFhJEMi9DuyLKBtQnDL7h6CJz"/>
+<unit id="org.eclipse.wst.sse.core" version="1.1.600.v201105162116"/>
+<unit id="org.eclipse.wst.xml.core" version="1.1.600.v201104251227"/>
+<unit id="org.eclipse.wst.sse.ui" version="1.3.0.v201105101529"/>
+<unit id="org.eclipse.emf.ecore.edit.feature.group" version="2.7.0.v20110523-0846"/>
+<unit id="org.eclipse.emf.edit.ui.feature.group" version="2.7.0.v20110523-0846"/>
+<unit id="org.eclipse.wst.xsd.core" version="1.1.600.v201104070312"/>
+<unit id="org.eclipse.wst.web_ui.feature.feature.group" version="3.3.0.v201102200555-7O7IFhJEMiB5vNMYta56_GonLeahqrwnYjv2mBz-"/>
 <unit id="org.slf4j.api" version="1.6.1.v20100831-0715"/>
-<unit id="org.eclipse.epp.usagedata.feature.feature.group" version="1.3.0.R201005261100"/>
+<unit id="org.eclipse.epp.usagedata.feature.feature.group" version="1.3.1.R201102081640"/>
 <repository location="http://download.eclipse.org/releases/indigo"/>
 </location>
 
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
-<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.0.3.20110219_0655-4d933cf-dev-e36"/>
-<unit id="org.eclipse.swtbot.eclipse.gef.feature.group" version="2.0.3.20110219_0655-4d933cf-dev-e36"/>
-<unit id="org.eclipse.swtbot.feature.group" version="2.0.3.20110219_0655-4d933cf-dev-e36"/>
-<unit id="org.eclipse.swtbot.ide.feature.group" version="2.0.3.20110219_0655-4d933cf-dev-e36"/>
-<unit id="org.eclipse.swtbot.eclipse.test.junit3.feature.group" version="2.0.3.20110219_0655-4d933cf-dev-e36"/>
-<unit id="org.eclipse.swtbot.eclipse.test.junit4.feature.group" version="2.0.3.20110219_0655-4d933cf-dev-e36"/>
+<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.0.4.20110304_0338-e5aff47-dev-e36"/>
+<unit id="org.eclipse.swtbot.eclipse.gef.feature.group" version="2.0.4.20110304_0338-e5aff47-dev-e36"/>
+<unit id="org.eclipse.swtbot.feature.group" version="2.0.4.20110304_0338-e5aff47-dev-e36"/>
+<unit id="org.eclipse.swtbot.ide.feature.group" version="2.0.4.20110304_0338-e5aff47-dev-e36"/>
+<unit id="org.eclipse.swtbot.eclipse.test.junit3.feature.group" version="2.0.4.20110304_0338-e5aff47-dev-e36"/>
+<unit id="org.eclipse.swtbot.eclipse.test.junit4.feature.group" version="2.0.4.20110304_0338-e5aff47-dev-e36"/>
 <repository location="http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/"/>
 </location>
 
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
-<unit id="org.eclipse.sdk.ide" version="3.7.0.I20110127-2034"/>
-<unit id="org.eclipse.equinox.p2.sdk.feature.group" version="3.7.0.v20110124-9J7kHABGKUf0qkz-nObV98021383"/>
+<unit id="org.eclipse.sdk.ide" version="3.7.0.I20110526-1708"/>
+<unit id="org.eclipse.equinox.p2.sdk.feature.group" version="3.7.0.v20110519-9N7sHDJGMMn4xUrt4cFAa6939XLL"/>
 <repository location="http://download.eclipse.org/eclipse/updates/3.7milestones"/>
 </location>
 
@@ -40,14 +40,14 @@
 </location>
 
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
-<unit id="com.google.collect" version="1.0.0.v201003051000"/>
-<unit id="org.apache.commons.httpclient" version="3.1.0.v201005080502"/>
-<unit id="org.apache.commons.io" version="2.0.1.v201101200200"/>
+<unit id="com.google.collect" version="1.0.0.v201105210816"/>
+<unit id="org.apache.commons.httpclient" version="3.1.0.v201012070820"/>
+<unit id="org.apache.commons.io" version="2.0.1.v201105210651"/>
 <unit id="org.apache.commons.lang" version="2.4.0.v201005080502"/>
 <unit id="org.apache.commons.collections" version="3.2.0.v201005080500"/>
 <unit id="org.apache.commons.beanutils" version="1.7.0.v200902170505"/>
 <unit id="org.mockito" version="1.8.4.v201102171835"/>
-<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/S20110304120314/repository"/>
+<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20110523182458/repository"/>
 </location>
 
 </locations>
