@@ -28,6 +28,7 @@ import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.WSClientFactory;
 import org.sonar.wsclient.services.Review;
 import org.sonar.wsclient.services.ReviewQuery;
+import org.sonar.wsclient.services.ReviewUpdateQuery;
 import org.sonar.wsclient.services.ServerQuery;
 
 import java.util.Collection;
@@ -39,6 +40,16 @@ public class SonarClient {
 
   public static final String STATUS_OPEN = "OPEN"; //$NON-NLS-1$
   public static final String STATUS_CLOSED = "CLOSED"; //$NON-NLS-1$
+
+  /**
+   * Since Sonar 2.9
+   */
+  public static final String STATUS_RESOLVED = "RESOLVED"; //$NON-NLS-1$
+
+  /**
+   * Since Sonar 2.9
+   */
+  public static final String STATUS_REOPENED = "REOPENED"; //$NON-NLS-1$
 
   public static final String PRIORITY_BLOCKER = "BLOCKER"; //$NON-NLS-1$
   public static final String PRIORITY_CRITICAL = "CRITICAL"; //$NON-NLS-1$
@@ -66,9 +77,43 @@ public class SonarClient {
     Sonar sonar = create();
     String assignee = repository.getCredentials(AuthenticationType.REPOSITORY).getUserName();
     ReviewQuery query = new ReviewQuery()
-        .setStatuses(STATUS_OPEN)
+        .setStatuses(STATUS_OPEN, STATUS_REOPENED)
         .setAssigneeLoginsOrIds(assignee);
     return sonar.findAll(query);
+  }
+
+  /**
+   * Since Sonar 2.9
+   */
+  public void addComment(long id, String comment, IProgressMonitor monitor) {
+    if (comment != null && comment.length() > 0) {
+      Sonar sonar = create();
+      sonar.update(ReviewUpdateQuery.addComment(id, comment));
+    }
+  }
+
+  /**
+   * Since Sonar 2.9
+   */
+  public void resolve(long id, String resolution, String comment, IProgressMonitor monitor) {
+    Sonar sonar = create();
+    sonar.update(ReviewUpdateQuery.resolve(id, resolution).setComment(comment));
+  }
+
+  /**
+   * Since Sonar 2.9
+   */
+  public void reassign(long id, String user, IProgressMonitor monitor) {
+    Sonar sonar = create();
+    sonar.update(ReviewUpdateQuery.reassign(id, user));
+  }
+
+  /**
+   * Since Sonar 2.9
+   */
+  public void reopen(long id, String comment, IProgressMonitor monitor) {
+    Sonar sonar = create();
+    sonar.update(ReviewUpdateQuery.reopen(id).setComment(comment));
   }
 
   public String getServerVersion() {

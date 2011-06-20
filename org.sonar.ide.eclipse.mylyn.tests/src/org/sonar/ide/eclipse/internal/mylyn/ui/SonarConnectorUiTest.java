@@ -47,6 +47,11 @@ public class SonarConnectorUiTest {
     assertThat(connectorUi.hasSearchPage(), is(false));
   }
 
+  @Test
+  public void testGetReplyText() {
+    assertThat(connectorUi.getReplyText(null, null, null, false), is(""));
+  }
+
   @Test(expected = UnsupportedOperationException.class)
   public void testGetNewTaskWizard() {
     connectorUi.getNewTaskWizard(null, null);

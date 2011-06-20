@@ -24,9 +24,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.mylyn.commons.net.Policy;
 import org.eclipse.mylyn.tasks.core.ITaskMapping;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
+import org.eclipse.mylyn.tasks.core.RepositoryResponse.ResponseKind;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.*;
 import org.sonar.ide.eclipse.internal.mylyn.core.AbstractTaskSchema.Field;
+import org.sonar.ide.eclipse.internal.mylyn.core.Workflow.Operation;
 import org.sonar.wsclient.services.Review;
 
 import java.util.Date;
@@ -70,6 +72,8 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
       }
     }
 
+    boolean readOnly = SonarClient.STATUS_CLOSED.equals(review.getStatus());
+
     setAttributeValue(data, schema.ID, review.getId());
     setAttributeValue(data, schema.URL, connector.getTaskUrl(repository.getUrl(), data.getTaskId()));
     setAttributeValue(data, schema.SUMMARY, review.getTitle());
@@ -81,17 +85,52 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
 
     setAttributeValue(data, schema.USER_REPORTER, review.getAuthorLogin());
     setAttributeValue(data, schema.USER_ASSIGNED, review.getAssigneeLogin());
+    data.getRoot().getAttribute(TaskAttribute.USER_ASSIGNED).getMetaData().setReadOnly(readOnly);
 
     setAttributeValue(data, schema.DATE_CREATION, dateToString(review.getCreatedAt()));
     setAttributeValue(data, schema.DATE_MODIFICATION, dateToString(modification));
 
     setAttributeValue(data, schema.STATUS, review.getStatus());
-    if (SonarClient.STATUS_CLOSED.equals(review.getStatus())) {
+    if (SonarClient.STATUS_CLOSED.equals(review.getStatus()) || SonarClient.STATUS_RESOLVED.equals(review.getStatus())) {
       // Set the completion date, this allows Mylyn mark the review as completed
       setAttributeValue(data, schema.DATE_COMPLETION, dateToString(modification));
     }
 
     addComments(repository, data, review);
+
+    // New comment can not be added to closed review
+    if (!readOnly) {
+      data.getRoot()
+          .createAttribute(TaskAttribute.COMMENT_NEW)
+          .getMetaData()
+          .setType(TaskAttribute.TYPE_LONG_RICH_TEXT)
+          .setReadOnly(false);
+    }
+
+    createOperations(data, review);
+  }
+
+  private void createOperations(TaskData data, Review review) {
+    TaskAttribute operationAttribute = data.getRoot().createAttribute(TaskAttribute.OPERATION);
+    operationAttribute.getMetaData().setType(TaskAttribute.TYPE_OPERATION);
+
+    for (Workflow.Operation operation : Workflow.OPERATIONS) {
+      if (operation.canPerform(review)) {
+        addOperation(data, review, operation);
+      }
+    }
+  }
+
+  private void addOperation(TaskData data, Review review, Operation operation) {
+    String id = operation.getId();
+    String label = operation.getLabel(review);
+    TaskAttribute attribute = data.getRoot().createAttribute(TaskAttribute.PREFIX_OPERATION + id);
+    TaskOperation.applyTo(attribute, id, label);
+
+    if (operation.isDefault()) {
+      TaskAttribute operationAttribute = data.getRoot().getAttribute(TaskAttribute.OPERATION);
+      TaskOperation.applyTo(operationAttribute, id, label);
+    }
   }
 
   private void addComments(TaskRepository repository, TaskData data, Review review) {
@@ -131,9 +170,16 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
   }
 
   @Override
-  public RepositoryResponse postTaskData(TaskRepository repository, TaskData taskData, Set<TaskAttribute> oldAttributes,
-      IProgressMonitor monitor) throws CoreException {
-    throw new UnsupportedOperationException();
+  public RepositoryResponse postTaskData(TaskRepository repository, TaskData taskData, Set<TaskAttribute> oldAttributes, IProgressMonitor monitor) throws CoreException {
+    SonarClient client = new SonarClient(repository);
+    TaskAttribute operationAttribute = taskData.getRoot().getAttribute(TaskAttribute.OPERATION);
+    if (operationAttribute != null) {
+      Workflow.Operation operation = Workflow.operationById(operationAttribute.getValue());
+      if (operation != null) {
+        operation.perform(client, taskData, monitor);
+      }
+    }
+    return new RepositoryResponse(ResponseKind.TASK_UPDATED, taskData.getTaskId());
   }
 
   @Override

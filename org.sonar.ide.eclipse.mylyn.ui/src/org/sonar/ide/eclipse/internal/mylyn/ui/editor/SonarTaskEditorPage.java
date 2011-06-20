@@ -32,7 +32,7 @@ public class SonarTaskEditorPage extends AbstractTaskEditorPage {
   public SonarTaskEditorPage(TaskEditor editor) {
     super(editor, SonarConnector.CONNECTOR_KIND);
     setNeedsPrivateSection(true);
-    setNeedsSubmitButton(false);
+    setNeedsSubmitButton(true);
   }
 
   @Override
@@ -41,9 +41,7 @@ public class SonarTaskEditorPage extends AbstractTaskEditorPage {
     // remove unnecessary default editor parts
     for (Iterator<TaskEditorPartDescriptor> it = descriptors.iterator(); it.hasNext();) {
       TaskEditorPartDescriptor descriptor = it.next();
-      if (PATH_ACTIONS.equals(descriptor.getPath())) {
-        it.remove();
-      } else if (PATH_PEOPLE.equals(descriptor.getPath())) {
+      if (PATH_PEOPLE.equals(descriptor.getPath())) {
         it.remove();
       }
     }
