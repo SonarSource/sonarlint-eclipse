@@ -75,7 +75,7 @@ public class SonarTaskDataHandlerTest {
     assertThat(getAttributeValue(data, TaskAttribute.USER_ASSIGNED), is("godin"));
 
     // Add comment
-    review.addComments(new Date(3), "godin", "Comment");
+    review.addComments(1L, new Date(3), "godin", "Comment");
     data = handler.createTaskData(repository, "1", null);
     handler.updateTaskData(repository, data, review);
 
