@@ -53,10 +53,10 @@ public class SonarTaskSchema extends AbstractTaskSchema {
       TaskAttribute.TYPE_SINGLE_SELECT);
 
   public final Field USER_REPORTER = createField(TaskAttribute.USER_REPORTER, Messages.SonarTaskSchema_Reporter_Label,
-      TaskAttribute.TYPE_PERSON, TaskAttribute.KIND_DEFAULT);
+      TaskAttribute.TYPE_PERSON);
 
   public final Field USER_ASSIGNED = createField(TaskAttribute.USER_ASSIGNED, Messages.SonarTaskSchema_Owner_Label,
-      TaskAttribute.TYPE_PERSON, TaskAttribute.KIND_DEFAULT);
+      TaskAttribute.TYPE_PERSON);
 
   public final Field DATE_CREATION = createField(TaskAttribute.DATE_CREATION, Messages.SonarTaskSchema_Created_Label,
       TaskAttribute.TYPE_DATE);

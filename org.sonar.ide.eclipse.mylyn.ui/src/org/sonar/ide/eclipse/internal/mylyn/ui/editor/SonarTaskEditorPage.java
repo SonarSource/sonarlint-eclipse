@@ -20,12 +20,12 @@
 package org.sonar.ide.eclipse.internal.mylyn.ui.editor;
 
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
-import org.eclipse.mylyn.tasks.ui.editors.*;
+import org.eclipse.mylyn.tasks.ui.editors.AbstractAttributeEditor;
+import org.eclipse.mylyn.tasks.ui.editors.AbstractTaskEditorPage;
+import org.eclipse.mylyn.tasks.ui.editors.AttributeEditorFactory;
+import org.eclipse.mylyn.tasks.ui.editors.TaskEditor;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarConnector;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarTaskSchema;
-
-import java.util.Iterator;
-import java.util.Set;
 
 public class SonarTaskEditorPage extends AbstractTaskEditorPage {
 
@@ -33,19 +33,6 @@ public class SonarTaskEditorPage extends AbstractTaskEditorPage {
     super(editor, SonarConnector.CONNECTOR_KIND);
     setNeedsPrivateSection(true);
     setNeedsSubmitButton(true);
-  }
-
-  @Override
-  protected Set<TaskEditorPartDescriptor> createPartDescriptors() {
-    Set<TaskEditorPartDescriptor> descriptors = super.createPartDescriptors();
-    // remove unnecessary default editor parts
-    for (Iterator<TaskEditorPartDescriptor> it = descriptors.iterator(); it.hasNext();) {
-      TaskEditorPartDescriptor descriptor = it.next();
-      if (PATH_PEOPLE.equals(descriptor.getPath())) {
-        it.remove();
-      }
-    }
-    return descriptors;
   }
 
   @Override
