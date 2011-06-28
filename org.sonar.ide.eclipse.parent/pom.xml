@@ -119,8 +119,6 @@
     <sonar-ide.snapshots>http://localhost</sonar-ide.snapshots>
     <sonar-ide.releases>http://localhost</sonar-ide.releases>
 
-    <jacoco.argLine></jacoco.argLine>
-
     <!-- ================== -->
     <!-- For Sonar analysis -->
     <!-- ================== -->
@@ -183,7 +181,6 @@
             </includes>
             <!-- Kill test JVM if tests take more than 10 minutes (600 seconds) to finish -->
             <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
-            <argLine>${jacoco.argLine}</argLine>
             <!-- Activate org.sonar.ide.eclipse.logback during execution of tests -->
             <!-- TODO remove - see SONARIDE-259
             <bundleStartLevel>
@@ -474,18 +471,27 @@
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.jacoco.reportPath>../org.sonar.ide.eclipse.parent/target/jacoco.exec</sonar.jacoco.reportPath>
-        <jacoco.version>0.5.1.20110321224001</jacoco.version>
-        <jacoco.argLine>-javaagent:${settings.localRepository}/org/jacoco/org.jacoco.agent.rt/${jacoco.version}/org.jacoco.agent.rt-${jacoco.version}.jar=destfile=${sonar.jacoco.reportPath}</jacoco.argLine>
       </properties>
 
-      <dependencies>
-        <dependency>
-          <groupId>org.jacoco</groupId>
-          <artifactId>org.jacoco.agent.rt</artifactId>
-          <version>${jacoco.version}</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.5.3.201107060350</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <configuration>
+                  <destFile>${sonar.jacoco.reportPath}</destFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <!-- This profile is used to check copyright/license headers -->
     <profile>
