@@ -165,7 +165,7 @@ public final class Workflow {
     }
   }
 
-  public static final Operation[] OPERATIONS = new Operation[] { new AddComment(), new Resolve(), new Reopen(), new FlagAsFalsePositive() };
+  public static final Operation[] OPERATIONS = new Operation[] { new AddComment(), new Reassign(), new Resolve(), new Reopen(), new FlagAsFalsePositive() };
 
   public static Operation operationById(String id) {
     for (Operation op : OPERATIONS) {
