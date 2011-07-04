@@ -5,17 +5,17 @@
 <locations>
 
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
-<unit id="org.eclipse.emf.common.feature.group" version="2.7.0.v20110523-0837"/>
+<unit id="org.eclipse.emf.common.feature.group" version="2.7.0.v20110605-0747"/>
 <unit id="org.eclipse.wst.common.emf" version="1.2.100.v201101101900"/>
 <unit id="org.eclipse.wst.sse.core" version="1.1.600.v201105162116"/>
 <unit id="org.eclipse.wst.xml.core" version="1.1.600.v201104251227"/>
 <unit id="org.eclipse.wst.sse.ui" version="1.3.0.v201105101529"/>
-<unit id="org.eclipse.emf.ecore.edit.feature.group" version="2.7.0.v20110523-0846"/>
-<unit id="org.eclipse.emf.edit.ui.feature.group" version="2.7.0.v20110523-0846"/>
+<unit id="org.eclipse.emf.ecore.edit.feature.group" version="2.7.0.v20110606-0949"/>
+<unit id="org.eclipse.emf.edit.ui.feature.group" version="2.7.0.v20110606-0949"/>
 <unit id="org.eclipse.wst.xsd.core" version="1.1.600.v201104070312"/>
 <unit id="org.eclipse.wst.web_ui.feature.feature.group" version="3.3.0.v201102200555-7O7IFhJEMiB5vNMYta56_GonLeahqrwnYjv2mBz-"/>
 <unit id="org.slf4j.api" version="1.6.1.v20100831-0715"/>
-<unit id="org.eclipse.epp.usagedata.feature.feature.group" version="1.3.1.R201102081640"/>
+<unit id="org.eclipse.epp.usagedata.feature.feature.group" version="1.4.0.R201106061540"/>
 <repository location="http://download.eclipse.org/releases/indigo"/>
 </location>
 
@@ -30,8 +30,8 @@
 </location>
 
 <location includeAllPlatforms="false" includeMode="planner" type="InstallableUnit">
-<unit id="org.eclipse.sdk.ide" version="3.7.0.I20110526-1708"/>
-<unit id="org.eclipse.equinox.p2.sdk.feature.group" version="3.7.0.v20110519-9N7sHDJGMMn4xUrt4cFAa6939XLL"/>
+<unit id="org.eclipse.sdk.ide" version="3.7.0.I20110613-1736"/>
+<unit id="org.eclipse.equinox.p2.sdk.feature.group" version="3.7.0.v20110519-9N7sHDJGMMn4xUrxSmFfL7O39XLL"/>
 <repository location="http://download.eclipse.org/eclipse/updates/3.7milestones"/>
 </location>
 
