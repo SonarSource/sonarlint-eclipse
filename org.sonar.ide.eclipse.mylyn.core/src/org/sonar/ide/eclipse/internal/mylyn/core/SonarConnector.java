@@ -129,12 +129,14 @@ public class SonarConnector extends AbstractRepositoryConnector {
         resultCollector.accept(taskData);
       }
 
-      /*
-       * Godin: I'm not sure that all tasks from session should be marked as stale,
-       * however this allows to update attributes in case when SonarTaskSchema was updated.
-       */
-      for (ITask task : session.getTasks()) {
-        session.markStale(task);
+      if (session != null) { // See SONARIDE-246
+        /*
+         * Godin: I'm not sure that all tasks from session should be marked as stale,
+         * however this allows to update attributes in case when SonarTaskSchema was updated.
+         */
+        for (ITask task : session.getTasks()) {
+          session.markStale(task);
+        }
       }
 
       return Status.OK_STATUS;
