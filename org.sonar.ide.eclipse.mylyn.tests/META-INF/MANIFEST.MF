@@ -4,7 +4,7 @@ Bundle-Name: Mylyn Sonar Connector Tests
 Bundle-SymbolicName: org.sonar.ide.eclipse.mylyn.tests;singleton:=true
 Bundle-Version: 2.2.0.qualifier
 Bundle-Vendor: SonarSource
-Require-Bundle: org.junit,
+Require-Bundle: org.junit;bundle-version="4.0.0",
  org.sonar.ide.eclipse.mylyn.core,
  org.sonar.ide.eclipse.mylyn.ui,
  org.sonar.ide.eclipse.wsclient,

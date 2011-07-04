@@ -22,7 +22,6 @@ package org.sonar.ide.eclipse.internal.mylyn.ui.wizard;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.mylyn.internal.tasks.core.IRepositoryConstants;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryTemplate;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -117,10 +116,10 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
     }
   }
 
-  @SuppressWarnings("restriction")
   @Override
   public void applyTo(TaskRepository repository) {
     super.applyTo(repository);
-    repository.setProperty(IRepositoryConstants.PROPERTY_CATEGORY, IRepositoryConstants.CATEGORY_REVIEW);
+    // Explicit values for constants due to compatibility with Mylyn 3.2.0
+    repository.setProperty("category" /* IRepositoryConstants.PROPERTY_CATEGORY */, "org.eclipse.mylyn.category.review" /* IRepositoryConstants.CATEGORY_REVIEW */);
   }
 }
