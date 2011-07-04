@@ -42,7 +42,9 @@ import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.internal.core.Messages;
 import org.sonar.ide.eclipse.internal.core.markers.MarkerUtils;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.core.resources.ResourceUtils;
+import org.sonar.wsclient.Sonar;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -96,6 +98,10 @@ public class AnalyseProjectJob extends Job {
     // Analyse
     CustomProjectComponentsModule customizer = EmbeddedSonarPlugin.getDefault().getSonarCustomizer();
     customizer.bind(SonarProgressMonitor.class, new SonarProgressMonitor(monitor));
+
+    Sonar sonar = SonarCorePlugin.getServersManager().getSonar(ProjectProperties.getInstance(project).getUrl());
+    customizer.bind(Sonar.class, sonar);
+
     SonarEclipseRuntime runtime = new SonarEclipseRuntime(EmbeddedSonarPlugin.getDefault().getPlugins());
     runtime.start();
     runtime.analyse(sonarProject);

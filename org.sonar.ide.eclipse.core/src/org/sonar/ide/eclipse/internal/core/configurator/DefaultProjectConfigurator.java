@@ -21,7 +21,6 @@ package org.sonar.ide.eclipse.internal.core.configurator;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.api.CoreProperties;
-import org.sonar.batch.components.RemoteProfileLoader;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
@@ -36,8 +35,6 @@ public class DefaultProjectConfigurator extends ProjectConfigurator {
     Properties properties = request.getSonarProject().getProperties();
     String projectName = request.getProject().getName();
     String projectKey = remoteProject.getKey();
-
-    properties.setProperty(RemoteProfileLoader.PARAM_SERVER, remoteProject.getUrl());
 
     properties.setProperty(CoreProperties.PROJECT_KEY_PROPERTY, projectKey);
     properties.setProperty(CoreProperties.PROJECT_NAME_PROPERTY, projectName);

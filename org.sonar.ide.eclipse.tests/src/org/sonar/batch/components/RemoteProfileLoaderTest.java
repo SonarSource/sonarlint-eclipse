@@ -39,7 +39,7 @@ public class RemoteProfileLoaderTest {
   @Before
   public void setUp() {
     ruleFinder = mock(RuleFinder.class);
-    loader = new RemoteProfileLoader(ruleFinder);
+    loader = new RemoteProfileLoader(null, ruleFinder);
     profile = mock(RulesProfile.class);
   }
 

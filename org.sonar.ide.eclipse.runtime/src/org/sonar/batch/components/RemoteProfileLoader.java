@@ -20,8 +20,6 @@
 package org.sonar.batch.components;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.profiles.RulesProfile;
 import org.sonar.api.resources.Project;
@@ -30,9 +28,7 @@ import org.sonar.api.rules.Rule;
 import org.sonar.api.rules.RuleFinder;
 import org.sonar.api.rules.RulePriority;
 import org.sonar.batch.ProfileLoader;
-import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.WSClientFactory;
 import org.sonar.wsclient.services.ResourceQuery;
 import org.sonar.wsclient.services.RuleQuery;
 
@@ -43,22 +39,16 @@ import java.util.List;
  */
 public class RemoteProfileLoader implements ProfileLoader {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RemoteProfileLoader.class);
-
-  public static final String PARAM_SERVER = "sonar.host.url";
-
+  private final Sonar sonar;
   private final RuleFinder ruleFinder;
 
-  public RemoteProfileLoader(RuleFinder ruleFinder) {
+  public RemoteProfileLoader(Sonar sonar, RuleFinder ruleFinder) {
+    this.sonar = sonar;
     this.ruleFinder = ruleFinder;
   }
 
   public RulesProfile load(Project project) {
     try {
-      String server = (String) project.getProperty(PARAM_SERVER);
-      LOG.info("Loading profile from {}", server);
-
-      Sonar sonar = WSClientFactory.create(new Host(server));
       String profileName = sonar.find(ResourceQuery.createForMetrics(project.getKey(), CoreMetrics.PROFILE_KEY))
           .getMeasure(CoreMetrics.PROFILE_KEY).getData();
 
