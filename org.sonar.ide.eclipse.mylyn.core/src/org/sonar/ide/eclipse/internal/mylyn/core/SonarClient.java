@@ -42,14 +42,24 @@ public class SonarClient {
   public static final String STATUS_CLOSED = "CLOSED"; //$NON-NLS-1$
 
   /**
-   * Since Sonar 2.9
+   * @since Sonar 2.9
    */
   public static final String STATUS_RESOLVED = "RESOLVED"; //$NON-NLS-1$
 
   /**
-   * Since Sonar 2.9
+   * @since Sonar 2.9
    */
   public static final String STATUS_REOPENED = "REOPENED"; //$NON-NLS-1$
+
+  /**
+   * @since Sonar 2.9
+   */
+  public static final String RESOLUTION_FIXED = "FIXED"; //$NON-NLS-1$
+
+  /**
+   * @since Sonar 2.9
+   */
+  public static final String RESOLUTION_FALSE_POSITIVE = "FALSE-POSITIVE"; //$NON-NLS-1$
 
   public static final String PRIORITY_BLOCKER = "BLOCKER"; //$NON-NLS-1$
   public static final String PRIORITY_CRITICAL = "CRITICAL"; //$NON-NLS-1$

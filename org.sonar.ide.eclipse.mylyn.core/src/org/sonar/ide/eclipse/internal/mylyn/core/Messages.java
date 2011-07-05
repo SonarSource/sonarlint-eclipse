@@ -56,6 +56,8 @@ public class Messages extends NLS {
 
   public static String SonarTaskSchema_Status_Label;
 
+  public static String SonarTaskSchema_Resolution_Label;
+
   public static String SonarTaskSchema_Summary_Label;
 
   public static String SonarTaskSchema_URL_Label;

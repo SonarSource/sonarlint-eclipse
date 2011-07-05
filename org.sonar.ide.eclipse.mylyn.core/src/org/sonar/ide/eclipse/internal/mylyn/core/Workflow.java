@@ -19,12 +19,16 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.sonar.wsclient.services.Review;
 
 /**
+ * Workflow for review can be described as following:
  * <ul>
  * <li>For review with status "OPEN" or "REOPENED" possible to set status to "RESOLVED", reassign.</li>
  * <li>For review with status "RESOLVED" possible to set status to "REOPENED".</li>
@@ -52,6 +56,10 @@ public final class Workflow {
     return comment == null ? "" : comment;
   }
 
+  private static CoreException createException(String message) {
+    return new CoreException(new Status(IStatus.WARNING, SonarMylynCorePlugin.PLUGIN_ID, message));
+  }
+
   public abstract static class Operation {
     final String getId() {
       return getClass().getSimpleName();
@@ -65,56 +73,48 @@ public final class Workflow {
 
     abstract boolean canPerform(Review review);
 
-    abstract void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor);
+    abstract void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException;
   }
 
   /**
-   * Add comment.
+   * Leave status as is, but maybe add comment or reassign.
    */
-  public static class AddComment extends Operation {
+  public static class Default extends Operation {
+    @Override
     String getLabel(Review review) {
-      return "Add comment";
+      return "Leave as " + review.getStatus();
     }
 
+    @Override
     boolean isDefault() {
       return true;
     }
 
+    @Override
     boolean canPerform(Review review) {
       return !SonarClient.STATUS_CLOSED.equals(review.getStatus());
     }
 
-    void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) {
-      client.addComment(getReviewId(taskData), getComment(taskData), monitor);
-    }
-  }
-
-  /**
-   * Reassign.
-   */
-  public static class Reassign extends Operation {
-    String getLabel(Review review) {
-      return "Reassign";
-    }
-
-    @Override
-    boolean canPerform(Review review) {
-      return SonarClient.STATUS_OPEN.equals(review.getStatus())
-          || SonarClient.STATUS_REOPENED.equals(review.getStatus());
-    }
-
     @Override
     void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) {
-      client.reassign(getReviewId(taskData), getAssignee(taskData), monitor);
+      final String status = getAttribute(taskData, TaskAttribute.STATUS);
+      final String comment = getComment(taskData);
+      if (!SonarClient.STATUS_CLOSED.equals(status) && !"".equals(comment)) {
+        client.addComment(getReviewId(taskData), comment, monitor);
+      }
+      if (SonarClient.STATUS_OPEN.equals(status) || SonarClient.STATUS_REOPENED.equals(status)) {
+        client.reassign(getReviewId(taskData), getAssignee(taskData), monitor);
+      }
     }
   }
 
   /**
    * Change status from "OPEN" or "REOPENED" to "RESOLVED" with resolution "FIXED".
    */
-  public static class Resolve extends Operation {
+  public static class ResolveAsFixed extends Operation {
+    @Override
     String getLabel(Review review) {
-      return "Resolve";
+      return "Resolve as fixed";
     }
 
     @Override
@@ -125,26 +125,32 @@ public final class Workflow {
 
     @Override
     void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) {
-      long id = getReviewId(taskData);
-      client.resolve(id, "FIXED", getComment(taskData), monitor);
+      client.resolve(getReviewId(taskData), SonarClient.RESOLUTION_FIXED, getComment(taskData), monitor);
     }
   }
 
   /**
    * Change status from "OPEN" or "REOPENED" to "RESOLVED" with resolution "FALSE-POSITIVE".
    */
-  public static class FlagAsFalsePositive extends Operation {
+  public static class ResolveAsFalsePositive extends Operation {
+    @Override
     String getLabel(Review review) {
-      return "Flag as false-positive";
+      return "Resolve as false-positive";
     }
 
+    @Override
     boolean canPerform(Review review) {
       return SonarClient.STATUS_OPEN.equals(review.getStatus())
           || SonarClient.STATUS_REOPENED.equals(review.getStatus());
     }
 
-    void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) {
-      client.resolve(getReviewId(taskData), "FALSE-POSITIVE", getComment(taskData), monitor);
+    @Override
+    void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException {
+      final String comment = getComment(taskData);
+      if ("".equals(comment)) {
+        throw createException("You must provide comment.");
+      }
+      client.resolve(getReviewId(taskData), SonarClient.RESOLUTION_FALSE_POSITIVE, getComment(taskData), monitor);
     }
   }
 
@@ -152,20 +158,31 @@ public final class Workflow {
    * Change status from "RESOLVED" to "REOPENED".
    */
   public static class Reopen extends Operation {
+    @Override
     String getLabel(Review review) {
       return "Reopen";
     }
 
+    @Override
     boolean canPerform(Review review) {
       return SonarClient.STATUS_RESOLVED.equals(review.getStatus());
     }
 
-    void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) {
+    @Override
+    void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException {
+      final String comment = getComment(taskData);
+      final String resolution = getAttribute(taskData, TaskAttribute.RESOLUTION);
+      if (SonarClient.RESOLUTION_FALSE_POSITIVE.equals(resolution) && "".equals(comment)) {
+        throw createException("You must provide comment.");
+      }
       client.reopen(getReviewId(taskData), getComment(taskData), monitor);
     }
   }
 
-  public static final Operation[] OPERATIONS = new Operation[] { new AddComment(), new Reassign(), new Resolve(), new Reopen(), new FlagAsFalsePositive() };
+  /**
+   * All possible workflow operations.
+   */
+  public static final Operation[] OPERATIONS = new Operation[] { new Default(), new ResolveAsFixed(), new ResolveAsFalsePositive(), new Reopen() };
 
   public static Operation operationById(String id) {
     for (Operation op : OPERATIONS) {

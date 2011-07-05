@@ -91,6 +91,7 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
     setAttributeValue(data, schema.DATE_MODIFICATION, dateToString(modification));
 
     setAttributeValue(data, schema.STATUS, review.getStatus());
+    setAttributeValue(data, schema.RESOLUTION, review.getResolution());
     if (SonarClient.STATUS_CLOSED.equals(review.getStatus()) || SonarClient.STATUS_RESOLVED.equals(review.getStatus())) {
       // Set the completion date, this allows Mylyn mark the review as completed
       setAttributeValue(data, schema.DATE_COMPLETION, dateToString(modification));

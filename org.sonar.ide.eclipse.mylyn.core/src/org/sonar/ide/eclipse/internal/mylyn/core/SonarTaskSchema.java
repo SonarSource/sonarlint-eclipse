@@ -47,6 +47,14 @@ public class SonarTaskSchema extends AbstractTaskSchema {
       TaskAttribute.TYPE_SHORT_TEXT);
 
   /**
+   * Possible values: FIXED, FALSE-POSITIVE.
+   * 
+   * @since Sonar 2.9
+   */
+  public final Field RESOLUTION = createField(TaskAttribute.RESOLUTION, Messages.SonarTaskSchema_Resolution_Label,
+      TaskAttribute.TYPE_SHORT_TEXT);
+
+  /**
    * Possible values: BLOCKER, CRITICAL, MAJOR, MINOR, INFO.
    */
   public final Field PRIORITY = createField(TaskAttribute.PRIORITY, Messages.SonarTaskSchema_Priority_Label,
