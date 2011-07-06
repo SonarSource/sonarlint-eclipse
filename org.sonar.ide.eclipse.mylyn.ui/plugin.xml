@@ -115,5 +115,8 @@
       <resolver
             class="org.sonar.ide.eclipse.internal.mylyn.ui.OpenReviewResolver">
       </resolver>
+      <resolver
+            class="org.sonar.ide.eclipse.internal.mylyn.ui.CreateReviewResolver">
+      </resolver>
    </extension>
 </plugin>

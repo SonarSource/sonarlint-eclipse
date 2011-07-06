@@ -83,4 +83,6 @@ public class SonarTaskSchema extends AbstractTaskSchema {
 
   public final Field LINE = createField("sonarLine", "", TaskAttribute.TYPE_INTEGER); //$NON-NLS-1$ //$NON-NLS-2$
 
+  public final Field VIOLATION_ID = createField("violationId", "", TaskAttribute.TYPE_LONG); //$NON-NLS-1$ //$NON-NLS-2$
+
 }

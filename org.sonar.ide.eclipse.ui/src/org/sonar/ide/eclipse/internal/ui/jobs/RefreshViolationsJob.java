@@ -96,6 +96,7 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
     extraInfos.put("rulekey", violation.getRuleKey());
     extraInfos.put("rulename", violation.getRuleName());
     extraInfos.put("rulepriority", violation.getSeverity());
+    extraInfos.put("violationId", Long.toString(violation.getId()));
     if (violation.getReview() != null) {
       extraInfos.put("reviewId", Long.toString(violation.getReview().getId()));
     }

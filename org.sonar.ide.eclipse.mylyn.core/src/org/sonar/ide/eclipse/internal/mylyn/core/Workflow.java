@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.osgi.util.NLS;
-import org.sonar.wsclient.services.Review;
 
 /**
  * Workflow for review can be described as following:
@@ -46,6 +45,10 @@ public final class Workflow {
   private static String getAttribute(TaskData taskData, String attributeId) {
     TaskAttribute attribute = taskData.getRoot().getAttribute(attributeId);
     return attribute == null ? null : attribute.getValue();
+  }
+
+  private static String getStatus(TaskData taskData) {
+    return getAttribute(taskData, TaskAttribute.STATUS);
   }
 
   private static String getAssignee(TaskData taskData) {
@@ -70,20 +73,95 @@ public final class Workflow {
       return false;
     }
 
-    abstract String getLabel(Review review);
+    abstract String getLabel(TaskData taskData);
 
-    abstract boolean canPerform(Review review);
+    abstract boolean canPerform(TaskData taskData);
 
-    abstract void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException;
+    abstract long perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException;
+  }
+
+  public abstract static class CreateOperation extends Operation {
+    final boolean canPerform(TaskData taskData) {
+      return taskData.isNew();
+    }
+
+    final long perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException {
+      final long violationId = Long.parseLong(taskData.getRoot().getAttribute("violationId").getValue());
+      final String comment = getComment(taskData);
+      if ("".equals(comment)) { //$NON-NLS-1$
+        throw createException(Messages.Workflow_CommentRequired_Error);
+      }
+      return performCreate(client, violationId, comment, taskData, monitor);
+    }
+
+    abstract long performCreate(SonarClient client, long violationId, String comment, TaskData taskData, IProgressMonitor monitor) throws CoreException;
+  }
+
+  public abstract static class EditOperation extends Operation {
+    @Override
+    final boolean canPerform(TaskData taskData) {
+      return !taskData.isNew() && canPerformEdit(getStatus(taskData));
+    }
+
+    abstract boolean canPerformEdit(String status);
+
+    @Override
+    final long perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException {
+      performEdit(client, taskData, monitor);
+      return getReviewId(taskData);
+    }
+
+    abstract void performEdit(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException;
+  }
+
+  public static class DefaultCreate extends CreateOperation {
+    @Override
+    boolean isDefault() {
+      return true;
+    }
+
+    @Override
+    String getLabel(TaskData taskData) {
+      return "Create";
+    }
+
+    @Override
+    long performCreate(SonarClient client, long violationId, String comment, TaskData taskData, IProgressMonitor monitor) throws CoreException {
+      return client.create(violationId, SonarClient.STATUS_OPEN, null, comment, getAssignee(taskData), monitor).getId();
+    }
+  }
+
+  public static class CreateFalsePositive extends CreateOperation {
+    @Override
+    String getLabel(TaskData taskData) {
+      return Messages.Workflow_ResolveAsFalsePositive_Label;
+    }
+
+    @Override
+    long performCreate(SonarClient client, long violationId, String comment, TaskData taskData, IProgressMonitor monitor) throws CoreException {
+      return client.create(violationId, SonarClient.STATUS_RESOLVED, SonarClient.RESOLUTION_FALSE_POSITIVE, comment, null, monitor).getId();
+    }
+  }
+
+  public static class CreateFixed extends CreateOperation {
+    @Override
+    String getLabel(TaskData taskData) {
+      return Messages.Workflow_ResolveAsFixed_Label;
+    }
+
+    @Override
+    long performCreate(SonarClient client, long violationId, String comment, TaskData taskData, IProgressMonitor monitor) throws CoreException {
+      return client.create(violationId, SonarClient.STATUS_RESOLVED, SonarClient.RESOLUTION_FIXED, comment, getAssignee(taskData), monitor).getId();
+    }
   }
 
   /**
    * Leave status as is, but maybe add comment or reassign.
    */
-  public static class Default extends Operation {
+  public static class Default extends EditOperation {
     @Override
-    String getLabel(Review review) {
-      return NLS.bind(Messages.Workflow_Default_Label, review.getStatus());
+    String getLabel(TaskData taskData) {
+      return NLS.bind(Messages.Workflow_Default_Label, getStatus(taskData));
     }
 
     @Override
@@ -92,14 +170,14 @@ public final class Workflow {
     }
 
     @Override
-    boolean canPerform(Review review) {
-      return !SonarClient.STATUS_CLOSED.equals(review.getStatus());
+    boolean canPerformEdit(String status) {
+      return !SonarClient.STATUS_CLOSED.equals(status);
     }
 
     @Override
-    void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) {
-      final String status = getAttribute(taskData, TaskAttribute.STATUS);
+    void performEdit(SonarClient client, TaskData taskData, IProgressMonitor monitor) {
       final String comment = getComment(taskData);
+      final String status = getAttribute(taskData, TaskAttribute.STATUS);
       if (!SonarClient.STATUS_CLOSED.equals(status) && !"".equals(comment)) { //$NON-NLS-1$
         client.addComment(getReviewId(taskData), comment, monitor);
       }
@@ -112,20 +190,20 @@ public final class Workflow {
   /**
    * Change status from "OPEN" or "REOPENED" to "RESOLVED" with resolution "FIXED".
    */
-  public static class ResolveAsFixed extends Operation {
+  public static class ResolveAsFixed extends EditOperation {
     @Override
-    String getLabel(Review review) {
+    String getLabel(TaskData taskData) {
       return Messages.Workflow_ResolveAsFixed_Label;
     }
 
     @Override
-    boolean canPerform(Review review) {
-      return SonarClient.STATUS_OPEN.equals(review.getStatus())
-          || SonarClient.STATUS_REOPENED.equals(review.getStatus());
+    boolean canPerformEdit(String status) {
+      return SonarClient.STATUS_OPEN.equals(status)
+          || SonarClient.STATUS_REOPENED.equals(status);
     }
 
     @Override
-    void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) {
+    void performEdit(SonarClient client, TaskData taskData, IProgressMonitor monitor) {
       client.resolve(getReviewId(taskData), SonarClient.RESOLUTION_FIXED, getComment(taskData), monitor);
     }
   }
@@ -133,20 +211,20 @@ public final class Workflow {
   /**
    * Change status from "OPEN" or "REOPENED" to "RESOLVED" with resolution "FALSE-POSITIVE".
    */
-  public static class ResolveAsFalsePositive extends Operation {
+  public static class ResolveAsFalsePositive extends EditOperation {
     @Override
-    String getLabel(Review review) {
+    String getLabel(TaskData taskData) {
       return Messages.Workflow_ResolveAsFalsePositive_Label;
     }
 
     @Override
-    boolean canPerform(Review review) {
-      return SonarClient.STATUS_OPEN.equals(review.getStatus())
-          || SonarClient.STATUS_REOPENED.equals(review.getStatus());
+    boolean canPerformEdit(String status) {
+      return SonarClient.STATUS_OPEN.equals(status)
+          || SonarClient.STATUS_REOPENED.equals(status);
     }
 
     @Override
-    void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException {
+    void performEdit(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException {
       final String comment = getComment(taskData);
       if ("".equals(comment)) { //$NON-NLS-1$
         throw createException(Messages.Workflow_CommentRequired_Error);
@@ -158,19 +236,19 @@ public final class Workflow {
   /**
    * Change status from "RESOLVED" to "REOPENED".
    */
-  public static class Reopen extends Operation {
+  public static class Reopen extends EditOperation {
     @Override
-    String getLabel(Review review) {
+    String getLabel(TaskData taskData) {
       return Messages.Workflow_Reopen_Label;
     }
 
     @Override
-    boolean canPerform(Review review) {
-      return SonarClient.STATUS_RESOLVED.equals(review.getStatus());
+    boolean canPerformEdit(String status) {
+      return SonarClient.STATUS_RESOLVED.equals(status);
     }
 
     @Override
-    void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException {
+    void performEdit(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException {
       final String comment = getComment(taskData);
       final String resolution = getAttribute(taskData, TaskAttribute.RESOLUTION);
       if (SonarClient.RESOLUTION_FALSE_POSITIVE.equals(resolution) && "".equals(comment)) { //$NON-NLS-1$
@@ -183,7 +261,9 @@ public final class Workflow {
   /**
    * All possible workflow operations.
    */
-  public static final Operation[] OPERATIONS = new Operation[] { new Default(), new ResolveAsFixed(), new ResolveAsFalsePositive(), new Reopen() };
+  public static final Operation[] OPERATIONS = new Operation[] {
+      new DefaultCreate(), new CreateFalsePositive(), new CreateFixed(),
+      new Default(), new ResolveAsFixed(), new ResolveAsFalsePositive(), new Reopen() };
 
   public static Operation operationById(String id) {
     for (Operation op : OPERATIONS) {

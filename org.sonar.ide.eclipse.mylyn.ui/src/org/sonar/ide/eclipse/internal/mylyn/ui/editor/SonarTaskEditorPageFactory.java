@@ -22,6 +22,7 @@ package org.sonar.ide.eclipse.internal.mylyn.ui.editor;
 import org.eclipse.mylyn.internal.provisional.commons.ui.CommonImages;
 import org.eclipse.mylyn.tasks.ui.ITasksUiConstants;
 import org.eclipse.mylyn.tasks.ui.TasksUiImages;
+import org.eclipse.mylyn.tasks.ui.TasksUiUtil;
 import org.eclipse.mylyn.tasks.ui.editors.AbstractTaskEditorPageFactory;
 import org.eclipse.mylyn.tasks.ui.editors.TaskEditor;
 import org.eclipse.mylyn.tasks.ui.editors.TaskEditorInput;
@@ -33,7 +34,8 @@ public class SonarTaskEditorPageFactory extends AbstractTaskEditorPageFactory {
 
   @Override
   public boolean canCreatePageFor(TaskEditorInput input) {
-    return input.getTask().getConnectorKind().equals(SonarConnector.CONNECTOR_KIND);
+    return input.getTask().getConnectorKind().equals(SonarConnector.CONNECTOR_KIND)
+        || TasksUiUtil.isOutgoingNewTask(input.getTask(), SonarConnector.CONNECTOR_KIND);
   }
 
   @Override

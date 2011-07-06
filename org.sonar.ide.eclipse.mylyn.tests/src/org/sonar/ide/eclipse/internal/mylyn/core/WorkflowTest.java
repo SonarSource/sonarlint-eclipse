@@ -28,10 +28,28 @@ public class WorkflowTest {
 
   @Test
   public void shouldProvideOperations() {
-    assertThat(Workflow.OPERATIONS.length, is(4));
+    assertThat(Workflow.OPERATIONS.length, is(7));
     for (Workflow.Operation operation : Workflow.OPERATIONS) {
       assertThat(Workflow.operationById(operation.getId()), is(operation));
     }
+  }
+
+  @Test
+  public void testDefaultCreate() {
+    Workflow.Operation operation = new Workflow.DefaultCreate();
+    assertThat(operation.isDefault(), is(true));
+  }
+
+  @Test
+  public void testCreateFixed() {
+    Workflow.Operation operation = new Workflow.CreateFixed();
+    assertThat(operation.isDefault(), is(false));
+  }
+
+  @Test
+  public void testCreateFalsePositive() {
+    Workflow.Operation operation = new Workflow.CreateFalsePositive();
+    assertThat(operation.isDefault(), is(false));
   }
 
   @Test

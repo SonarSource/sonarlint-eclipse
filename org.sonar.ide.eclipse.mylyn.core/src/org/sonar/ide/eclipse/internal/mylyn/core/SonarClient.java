@@ -26,10 +26,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.WSClientFactory;
-import org.sonar.wsclient.services.Review;
-import org.sonar.wsclient.services.ReviewQuery;
-import org.sonar.wsclient.services.ReviewUpdateQuery;
-import org.sonar.wsclient.services.ServerQuery;
+import org.sonar.wsclient.services.*;
 
 import java.util.Collection;
 
@@ -93,7 +90,7 @@ public class SonarClient {
   }
 
   /**
-   * Since Sonar 2.9
+   * @since Sonar 2.9
    */
   public void addComment(long id, String comment, IProgressMonitor monitor) {
     if (comment != null && comment.length() > 0) {
@@ -103,7 +100,7 @@ public class SonarClient {
   }
 
   /**
-   * Since Sonar 2.9
+   * @since Sonar 2.9
    */
   public void resolve(long id, String resolution, String comment, IProgressMonitor monitor) {
     Sonar sonar = create();
@@ -111,7 +108,7 @@ public class SonarClient {
   }
 
   /**
-   * Since Sonar 2.9
+   * @since Sonar 2.9
    */
   public void reassign(long id, String user, IProgressMonitor monitor) {
     Sonar sonar = create();
@@ -119,11 +116,24 @@ public class SonarClient {
   }
 
   /**
-   * Since Sonar 2.9
+   * @since Sonar 2.9
    */
   public void reopen(long id, String comment, IProgressMonitor monitor) {
     Sonar sonar = create();
     sonar.update(ReviewUpdateQuery.reopen(id).setComment(comment));
+  }
+
+  /**
+   * @since Sonar 2.9
+   */
+  public Review create(long violationId, String status, String resolution, String comment, String assignee, IProgressMonitor monitor) {
+    ReviewCreateQuery query = new ReviewCreateQuery()
+        .setViolationId(violationId)
+        .setStatus(status)
+        .setResolution(resolution)
+        .setComment(comment)
+        .setAssignee(assignee);
+    return create().create(query);
   }
 
   public String getServerVersion() {

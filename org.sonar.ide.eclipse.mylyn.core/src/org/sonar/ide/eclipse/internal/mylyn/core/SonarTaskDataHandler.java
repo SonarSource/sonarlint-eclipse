@@ -61,6 +61,24 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
     }
   }
 
+  public void createTaskData(TaskRepository repository, TaskData data, long violationId, String title) {
+    SonarTaskSchema schema = SonarTaskSchema.getDefault();
+    setAttributeValue(data, schema.SUMMARY, title);
+    setAttributeValue(data, schema.STATUS, SonarClient.STATUS_OPEN);
+    setAttributeValue(data, schema.USER_REPORTER, repository.getUserName());
+    setAttributeValue(data, schema.USER_ASSIGNED, repository.getUserName());
+    setAttributeValue(data, schema.VIOLATION_ID, violationId);
+    data.getRoot().getAttribute(TaskAttribute.USER_ASSIGNED).getMetaData().setReadOnly(false);
+
+    data.getRoot()
+        .createAttribute(TaskAttribute.COMMENT_NEW)
+        .getMetaData()
+        .setType(TaskAttribute.TYPE_LONG_RICH_TEXT)
+        .setReadOnly(false);
+
+    createOperations(data);
+  }
+
   public void updateTaskData(TaskRepository repository, TaskData data, Review review) {
     SonarTaskSchema schema = SonarTaskSchema.getDefault();
 
@@ -108,23 +126,23 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
           .setReadOnly(false);
     }
 
-    createOperations(data, review);
+    createOperations(data);
   }
 
-  private void createOperations(TaskData data, Review review) {
+  private void createOperations(TaskData data) {
     TaskAttribute operationAttribute = data.getRoot().createAttribute(TaskAttribute.OPERATION);
     operationAttribute.getMetaData().setType(TaskAttribute.TYPE_OPERATION);
 
     for (Workflow.Operation operation : Workflow.OPERATIONS) {
-      if (operation.canPerform(review)) {
-        addOperation(data, review, operation);
+      if (operation.canPerform(data)) {
+        addOperation(data, operation);
       }
     }
   }
 
-  private void addOperation(TaskData data, Review review, Operation operation) {
+  private void addOperation(TaskData data, Operation operation) {
     String id = operation.getId();
-    String label = operation.getLabel(review);
+    String label = operation.getLabel(data);
     TaskAttribute attribute = data.getRoot().createAttribute(TaskAttribute.PREFIX_OPERATION + id);
     TaskOperation.applyTo(attribute, id, label);
 
@@ -172,15 +190,16 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
 
   @Override
   public RepositoryResponse postTaskData(TaskRepository repository, TaskData taskData, Set<TaskAttribute> oldAttributes, IProgressMonitor monitor) throws CoreException {
-    SonarClient client = new SonarClient(repository);
+    final SonarClient client = new SonarClient(repository);
     TaskAttribute operationAttribute = taskData.getRoot().getAttribute(TaskAttribute.OPERATION);
     if (operationAttribute != null) {
       Workflow.Operation operation = Workflow.operationById(operationAttribute.getValue());
       if (operation != null) {
-        operation.perform(client, taskData, monitor);
+        long reviewId = operation.perform(client, taskData, monitor);
+        return new RepositoryResponse(taskData.isNew() ? ResponseKind.TASK_CREATED : ResponseKind.TASK_UPDATED, Long.toString(reviewId));
       }
     }
-    return new RepositoryResponse(ResponseKind.TASK_UPDATED, taskData.getTaskId());
+    return null;
   }
 
   @Override
