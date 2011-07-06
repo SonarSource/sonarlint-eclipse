@@ -120,6 +120,6 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
   public void applyTo(TaskRepository repository) {
     super.applyTo(repository);
     // Explicit values for constants due to compatibility with Mylyn 3.2.0
-    repository.setProperty("category" /* IRepositoryConstants.PROPERTY_CATEGORY */, "org.eclipse.mylyn.category.review" /* IRepositoryConstants.CATEGORY_REVIEW */);
+    repository.setProperty("category" /* IRepositoryConstants.PROPERTY_CATEGORY */, "org.eclipse.mylyn.category.review" /* IRepositoryConstants.CATEGORY_REVIEW */); //$NON-NLS-1$ //$NON-NLS-2$
   }
 }

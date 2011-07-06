@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.osgi.util.NLS;
 import org.sonar.wsclient.services.Review;
 
 /**
@@ -53,7 +54,7 @@ public final class Workflow {
 
   private static String getComment(TaskData taskData) {
     String comment = getAttribute(taskData, TaskAttribute.COMMENT_NEW);
-    return comment == null ? "" : comment;
+    return comment == null ? "" : comment; //$NON-NLS-1$
   }
 
   private static CoreException createException(String message) {
@@ -82,7 +83,7 @@ public final class Workflow {
   public static class Default extends Operation {
     @Override
     String getLabel(Review review) {
-      return "Leave as " + review.getStatus();
+      return NLS.bind(Messages.Workflow_Default_Label, review.getStatus());
     }
 
     @Override
@@ -99,7 +100,7 @@ public final class Workflow {
     void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) {
       final String status = getAttribute(taskData, TaskAttribute.STATUS);
       final String comment = getComment(taskData);
-      if (!SonarClient.STATUS_CLOSED.equals(status) && !"".equals(comment)) {
+      if (!SonarClient.STATUS_CLOSED.equals(status) && !"".equals(comment)) { //$NON-NLS-1$
         client.addComment(getReviewId(taskData), comment, monitor);
       }
       if (SonarClient.STATUS_OPEN.equals(status) || SonarClient.STATUS_REOPENED.equals(status)) {
@@ -114,7 +115,7 @@ public final class Workflow {
   public static class ResolveAsFixed extends Operation {
     @Override
     String getLabel(Review review) {
-      return "Resolve as fixed";
+      return Messages.Workflow_ResolveAsFixed_Label;
     }
 
     @Override
@@ -135,7 +136,7 @@ public final class Workflow {
   public static class ResolveAsFalsePositive extends Operation {
     @Override
     String getLabel(Review review) {
-      return "Resolve as false-positive";
+      return Messages.Workflow_ResolveAsFalsePositive_Label;
     }
 
     @Override
@@ -147,8 +148,8 @@ public final class Workflow {
     @Override
     void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException {
       final String comment = getComment(taskData);
-      if ("".equals(comment)) {
-        throw createException("You must provide comment.");
+      if ("".equals(comment)) { //$NON-NLS-1$
+        throw createException(Messages.Workflow_CommentRequired_Error);
       }
       client.resolve(getReviewId(taskData), SonarClient.RESOLUTION_FALSE_POSITIVE, getComment(taskData), monitor);
     }
@@ -160,7 +161,7 @@ public final class Workflow {
   public static class Reopen extends Operation {
     @Override
     String getLabel(Review review) {
-      return "Reopen";
+      return Messages.Workflow_Reopen_Label;
     }
 
     @Override
@@ -172,8 +173,8 @@ public final class Workflow {
     void perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException {
       final String comment = getComment(taskData);
       final String resolution = getAttribute(taskData, TaskAttribute.RESOLUTION);
-      if (SonarClient.RESOLUTION_FALSE_POSITIVE.equals(resolution) && "".equals(comment)) {
-        throw createException("You must provide comment.");
+      if (SonarClient.RESOLUTION_FALSE_POSITIVE.equals(resolution) && "".equals(comment)) { //$NON-NLS-1$
+        throw createException(Messages.Workflow_CommentRequired_Error);
       }
       client.reopen(getReviewId(taskData), getComment(taskData), monitor);
     }

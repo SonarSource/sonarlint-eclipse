@@ -59,7 +59,7 @@ public class SonarConnectorUi extends AbstractRepositoryConnectorUi {
 
   @Override
   public String getReplyText(TaskRepository taskRepository, ITask task, ITaskComment taskComment, boolean includeTask) {
-    return "";
+    return ""; //$NON-NLS-1$
   }
 
   @Override

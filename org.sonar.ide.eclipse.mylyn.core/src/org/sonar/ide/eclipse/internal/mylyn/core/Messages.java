@@ -62,4 +62,10 @@ public class Messages extends NLS {
 
   public static String SonarTaskSchema_URL_Label;
 
+  public static String Workflow_Default_Label;
+  public static String Workflow_ResolveAsFixed_Label;
+  public static String Workflow_ResolveAsFalsePositive_Label;
+  public static String Workflow_Reopen_Label;
+  public static String Workflow_CommentRequired_Error;
+
 }
