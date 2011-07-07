@@ -26,13 +26,15 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.console.*;
+import org.sonar.batch.SonarLogListener;
+import org.sonar.batch.LogEntry;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.ui.ISonarConsole;
 
 import java.io.IOException;
 
-public class SonarConsole extends IOConsole implements ISonarConsole {
+public class SonarConsole extends IOConsole implements ISonarConsole, SonarLogListener {
 
   static final String P_DEBUG_OUTPUT = "debugOutput"; //$NON-NLS-1$
   static final String P_SHOW_CONSOLE = "showConsole"; //$NON-NLS-1$
@@ -74,6 +76,25 @@ public class SonarConsole extends IOConsole implements ISonarConsole {
     super.dispose();
 
     warnColor.dispose();
+  }
+
+  public void logged(LogEntry entry) {
+    switch (entry.getLevel()) {
+      case LogEntry.DEBUG:
+        debug(entry.getMessage());
+        break;
+      case LogEntry.INFO:
+        info(entry.getMessage());
+        break;
+      case LogEntry.WARNING:
+        warn(entry.getMessage());
+        break;
+      case LogEntry.ERROR:
+        error(entry.getMessage());
+        break;
+      default:
+        break;
+    }
   }
 
   public void debug(String msg) {

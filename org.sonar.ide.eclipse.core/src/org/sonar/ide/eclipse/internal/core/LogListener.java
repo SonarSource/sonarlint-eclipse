@@ -27,7 +27,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Translates {@link IStatus} to slf4j.
+ * 
+ * @deprecated must not be used and should be deleted - see SONARIDE-259
  */
+@Deprecated
 public class LogListener implements ILogListener {
 
   public void logging(IStatus status, String plugin) {

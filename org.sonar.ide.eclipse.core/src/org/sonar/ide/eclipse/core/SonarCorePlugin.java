@@ -21,7 +21,6 @@ package org.sonar.ide.eclipse.core;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.internal.core.*;
@@ -51,7 +50,8 @@ public class SonarCorePlugin extends AbstractPlugin {
     return plugin;
   }
 
-  private LogListener logListener;
+  // See SONARIDE-259
+  // private LogListener logListener;
 
   private ServersManager serversManager;
 
@@ -59,8 +59,9 @@ public class SonarCorePlugin extends AbstractPlugin {
   public void start(BundleContext context) {
     super.start(context);
 
-    logListener = new LogListener();
-    Platform.addLogListener(logListener);
+    // See SONARIDE-259
+    // logListener = new LogListener();
+    // Platform.addLogListener(logListener);
 
     serversManager = new ServersManager();
     serversManager.load();
@@ -70,7 +71,8 @@ public class SonarCorePlugin extends AbstractPlugin {
   public void stop(BundleContext context) {
     serversManager.save();
 
-    Platform.removeLogListener(logListener);
+    // See SONARIDE-259
+    // Platform.removeLogListener(logListener);
 
     super.stop(context);
   }

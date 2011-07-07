@@ -1,11 +1,9 @@
 Manifest-Version: 1.0
 Require-Bundle: org.sonar.ide.eclipse.wsclient,org.eclipse.core.runtim
- e,org.slf4j.api;bundle-version="1.6.1",org.slf4j.jcl;bundle-version="
- 1.6.1",org.slf4j.log4j;bundle-version="1.6.1",com.google.collect;bund
- le-version="1.0.0",org.apache.commons.io;bundle-version="2.0.1",org.a
- pache.commons.lang;bundle-version="2.4.0",org.apache.commons.collecti
- ons;bundle-version="3.2.0",org.apache.commons.codec;bundle-version="1
- .3.0"
+ e,com.google.collect;bundle-version="1.0.0",org.apache.commons.io;bun
+ dle-version="2.0.1",org.apache.commons.lang;bundle-version="2.4.0",or
+ g.apache.commons.collections;bundle-version="3.2.0",org.apache.common
+ s.codec;bundle-version="1.3.0"
 Export-Package: org.picocontainer.visitors,org.picocontainer.classname
  ,org.picocontainer.annotations,org.sonar.api.qualitymodel,org.sonar.a
  pi,org.sonar.api.web,org.sonar.api.violations,org.sonar.api.web.gwt.c
@@ -34,12 +32,13 @@ Bundle-ClassPath: .,jars/sonar-batch-maven-compat-2.8.jar,jars/sonar-b
  lugin-api-2.8.jar,jars/sonar-check-api-2.8.jar,jars/sonar-colorizer-2
  .8.jar,jars/sonar-channel-2.8.jar,jars/sonar-duplications-2.8.jar,jar
  s/sonar-graph-2.8.jar,jars/commons-configuration-1.6.jar,jars/commons
- -beanutils-core-1.8.0.jar,jars/xstream-1.3.1.jar,jars/xpp3-1.1.3.3.ja
- r,jars/woodstox-core-lgpl-4.0.4.jar,jars/stax-api-1.0.1.jar,jars/stax
- 2-api-3.0.1.jar,jars/staxmate-2.0.0.jar,jars/xercesImpl-2.8.1.jar,jar
- s/xml-apis-1.3.03.jar,jars/xalan-2.7.1.jar,jars/serializer-2.7.1.jar,
- jars/sonar-squid-2.8.jar,jars/picocontainer-2.10.2.jar,jars/jsr250-ap
- i-1.0.jar,jars/javax.inject-1.jar,jars/antlr-2.7.6.jar
+ -beanutils-core-1.8.0.jar,jars/jcl-over-slf4j-1.5.6.jar,jars/xstream-
+ 1.3.1.jar,jars/xpp3-1.1.3.3.jar,jars/woodstox-core-lgpl-4.0.4.jar,jar
+ s/stax-api-1.0.1.jar,jars/stax2-api-3.0.1.jar,jars/staxmate-2.0.0.jar
+ ,jars/xercesImpl-2.8.1.jar,jars/xml-apis-1.3.03.jar,jars/xalan-2.7.1.
+ jar,jars/serializer-2.7.1.jar,jars/sonar-squid-2.8.jar,jars/picoconta
+ iner-2.10.2.jar,jars/jsr250-api-1.0.jar,jars/javax.inject-1.jar,jars/
+ slf4j-api-1.5.6.jar,jars/antlr-2.7.6.jar
 Bundle-Version: 2.2.0.qualifier
 Bundle-Name: Embedded Sonar
 Bundle-Activator: org.sonar.batch.EmbeddedSonarPlugin

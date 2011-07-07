@@ -25,6 +25,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
+import org.sonar.batch.EmbeddedSonarPlugin;
+import org.sonar.batch.SonarLogListener;
 import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
@@ -61,11 +63,19 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     RefreshViolationsJob.setupViolationsUpdater();
 
     getFavouriteMetricsManager().set(SonarUiPreferenceInitializer.getFavouriteMetrics());
+
+    if (getSonarConsole() != null) {
+      EmbeddedSonarPlugin.getDefault().addSonarLogListener((SonarLogListener) getSonarConsole());
+    }
   }
 
   @Override
   public void stop(final BundleContext context) {
     try {
+      if (getSonarConsole() != null) {
+        EmbeddedSonarPlugin.getDefault().addSonarLogListener((SonarLogListener) getSonarConsole());
+      }
+
       SonarUiPreferenceInitializer.setFavouriteMetrics(getFavouriteMetricsManager().get());
     } finally {
       try {

@@ -31,18 +31,22 @@
       <version>${sonar.version}</version>
       <exclusions>
         <!-- logging -->
+        <!-- SONARIDE-259 used by Sonar itself
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
         </exclusion>
+        -->
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>log4j-over-slf4j</artifactId>
         </exclusion>
+        <!-- SONARIDE-259 used by transitive dependency - commons-beanutils
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>jcl-over-slf4j</artifactId>
         </exclusion>
+        -->
         <!-- database -->
         <!-- TODO we can't exclude hibernate-annotations, because it's used in sonar-plugin-api -->
         <exclusion>
@@ -236,7 +240,7 @@
               </exportPackages>
               <manifestAttributes>
                 <Bundle-RequiredExecutionEnvironment>J2SE-1.5,JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
-                <Require-Bundle>org.sonar.ide.eclipse.wsclient,org.eclipse.core.runtime,org.slf4j.api;bundle-version="1.6.1",org.slf4j.jcl;bundle-version="1.6.1",org.slf4j.log4j;bundle-version="1.6.1",com.google.collect;bundle-version="1.0.0",org.apache.commons.io;bundle-version="2.0.1",org.apache.commons.lang;bundle-version="2.4.0",org.apache.commons.collections;bundle-version="3.2.0",org.apache.commons.codec;bundle-version="1.3.0"</Require-Bundle>
+                <Require-Bundle>org.sonar.ide.eclipse.wsclient,org.eclipse.core.runtime,com.google.collect;bundle-version="1.0.0",org.apache.commons.io;bundle-version="2.0.1",org.apache.commons.lang;bundle-version="2.4.0",org.apache.commons.collections;bundle-version="3.2.0",org.apache.commons.codec;bundle-version="1.3.0"</Require-Bundle>
                 <Bundle-Activator>org.sonar.batch.EmbeddedSonarPlugin</Bundle-Activator>
                 <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
               </manifestAttributes>

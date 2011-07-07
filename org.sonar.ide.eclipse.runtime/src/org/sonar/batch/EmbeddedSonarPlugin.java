@@ -29,7 +29,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 public class EmbeddedSonarPlugin extends Plugin {
 
@@ -76,6 +78,22 @@ public class EmbeddedSonarPlugin extends Plugin {
 
   public static EmbeddedSonarPlugin getDefault() {
     return plugin;
+  }
+
+  private final List<SonarLogListener> listeners = new ArrayList<SonarLogListener>();
+
+  public void addSonarLogListener(SonarLogListener listener) {
+    listeners.add(listener);
+  }
+
+  public void removeSonarLogListener(SonarLogListener listener) {
+    listeners.remove(listener);
+  }
+
+  public void log(LogEntry logEntry) {
+    for (SonarLogListener listener : listeners) {
+      listener.logged(logEntry);
+    }
   }
 
   public org.sonar.api.Plugin[] getPlugins() {
