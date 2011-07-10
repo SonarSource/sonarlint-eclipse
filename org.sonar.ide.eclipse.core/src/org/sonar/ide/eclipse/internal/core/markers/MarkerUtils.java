@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.core.markers;
 
-import java.util.Collection;
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -31,6 +28,9 @@ import org.slf4j.LoggerFactory;
 import org.sonar.api.rules.Rule;
 import org.sonar.api.rules.Violation;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
+
+import java.util.Collection;
+import java.util.Map;
 
 public final class MarkerUtils {
 
@@ -50,7 +50,8 @@ public final class MarkerUtils {
       Rule rule = violation.getRule();
       markerAttributes.put("rulekey", rule.getKey()); //$NON-NLS-1$
       markerAttributes.put("rulename", rule.getName()); //$NON-NLS-1$
-      markerAttributes.put("rulepriority", rule.getSeverity().toString()); //$NON-NLS-1$
+      // Don't use rule.getSeverity() here - see SONARIDE-218
+      markerAttributes.put("rulepriority", violation.getSeverity().toString()); //$NON-NLS-1$
 
       try {
         IMarker marker = resource.createMarker(SonarCorePlugin.MARKER_ID);
