@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.*;
 import org.eclipse.ui.progress.UIJob;
+import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
@@ -51,7 +52,11 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
 
   @Override
   protected Collection<Violation> retrieveDatas(EclipseSonar sonar, IResource resource) {
-    return sonar.search(resource).getViolations();
+    SourceCode sourceCode = sonar.search(resource);
+    if (sourceCode == null) {
+      return Collections.emptyList();
+    }
+    return sourceCode.getViolations();
   }
 
   @Override
