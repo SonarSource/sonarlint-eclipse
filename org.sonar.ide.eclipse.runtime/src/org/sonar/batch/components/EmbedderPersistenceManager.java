@@ -25,11 +25,13 @@ import org.sonar.api.batch.Event;
 import org.sonar.api.database.model.Snapshot;
 import org.sonar.api.design.Dependency;
 import org.sonar.api.measures.Measure;
+import org.sonar.api.measures.RuleMeasure;
 import org.sonar.api.resources.Project;
 import org.sonar.api.resources.ProjectLink;
 import org.sonar.api.resources.Resource;
 import org.sonar.api.resources.ResourceUtils;
 import org.sonar.api.rules.Violation;
+import org.sonar.api.utils.SonarException;
 import org.sonar.batch.index.PersistenceManager;
 
 import java.util.Collection;
@@ -103,6 +105,9 @@ public class EmbedderPersistenceManager implements PersistenceManager, EmbedderI
     if (!ResourceUtils.isPersistable(resource)) {
       return;
     }
+    if (measure instanceof RuleMeasure) {
+      return; // See SONARIDE-252
+    }
     String resourceKey = resource.getKey();
     final Map<String, Measure> measuresByMetric;
     if (measuresByResource.containsKey(resourceKey)) {
@@ -110,6 +115,9 @@ public class EmbedderPersistenceManager implements PersistenceManager, EmbedderI
     } else {
       measuresByMetric = Maps.newHashMap();
       measuresByResource.put(resourceKey, measuresByMetric);
+    }
+    if (measuresByMetric.containsKey(measure.getMetricKey())) {
+      throw new SonarException("Can not add twice the same measure on " + resource + ": " + measure);
     }
     measuresByMetric.put(measure.getMetricKey(), measure);
   }
