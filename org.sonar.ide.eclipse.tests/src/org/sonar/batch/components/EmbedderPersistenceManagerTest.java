@@ -27,9 +27,13 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonar.api.measures.Measure;
+import org.sonar.api.measures.Metric;
+import org.sonar.api.measures.RuleMeasure;
 import org.sonar.api.resources.JavaFile;
 import org.sonar.api.resources.Resource;
 import org.sonar.api.resources.Scopes;
+import org.sonar.api.rules.RulePriority;
+import org.sonar.api.utils.SonarException;
 
 public class EmbedderPersistenceManagerTest {
 
@@ -49,6 +53,14 @@ public class EmbedderPersistenceManagerTest {
     assertThat(persistenceManager.getMeasures("org.foo.Bar").size(), is(1));
   }
 
+  @Test(expected = SonarException.class)
+  public void shouldNotSaveMeasureTwice() {
+    Resource resource = new JavaFile("org.foo.Bar");
+    Measure measure = new Measure("lines");
+    persistenceManager.saveMeasure(resource, measure);
+    persistenceManager.saveMeasure(resource, measure);
+  }
+
   @Test
   public void shouldNotSave() {
     Resource resource = mock(Resource.class);
@@ -57,4 +69,13 @@ public class EmbedderPersistenceManagerTest {
     persistenceManager.saveMeasure(resource, measure);
     assertThat(persistenceManager.getAllMeasures().size(), is(0));
   }
+
+  @Test
+  public void shouldNotSaveRuleMeasure() {
+    Resource resource = new JavaFile("org.foo.Bar");
+    RuleMeasure measure = RuleMeasure.createForPriority(new Metric.Builder("violations", "Violations", Metric.ValueType.INT).create(), RulePriority.BLOCKER, 1D);
+    persistenceManager.saveMeasure(resource, measure);
+    assertThat(persistenceManager.getAllMeasures().size(), is(0));
+  }
+
 }
