@@ -48,7 +48,8 @@ public class CreateReviewResolver implements ISonarResolver {
       if (SonarCorePlugin.MARKER_ID.equals(marker.getType())) {
         rulename = marker.getAttribute("rulename", "");
         violationId = marker.getAttribute("violationId", "");
-        if (!"".equals(violationId) && !"".equals(rulename)) {
+        String reviewId = marker.getAttribute("reviewId", "");
+        if (!"".equals(violationId) && !"".equals(rulename) && "".equals(reviewId)) {
           String sonarServerUrl = ProjectProperties.getInstance(marker.getResource()).getUrl();
           repository = TasksUi.getRepositoryManager().getRepository(SonarConnector.CONNECTOR_KIND, sonarServerUrl);
           return repository != null;
