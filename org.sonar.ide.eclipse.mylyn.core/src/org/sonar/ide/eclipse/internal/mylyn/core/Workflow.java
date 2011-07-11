@@ -178,11 +178,12 @@ public final class Workflow {
     void performEdit(SonarClient client, TaskData taskData, IProgressMonitor monitor) {
       final String comment = getComment(taskData);
       final String status = getAttribute(taskData, TaskAttribute.STATUS);
-      if (!SonarClient.STATUS_CLOSED.equals(status) && !"".equals(comment)) { //$NON-NLS-1$
-        client.addComment(getReviewId(taskData), comment, monitor);
-      }
+      // First try to reassign - if this will fail, then we will not add comment
       if (SonarClient.STATUS_OPEN.equals(status) || SonarClient.STATUS_REOPENED.equals(status)) {
         client.reassign(getReviewId(taskData), getAssignee(taskData), monitor);
+      }
+      if (!SonarClient.STATUS_CLOSED.equals(status) && !"".equals(comment)) { //$NON-NLS-1$
+        client.addComment(getReviewId(taskData), comment, monitor);
       }
     }
   }

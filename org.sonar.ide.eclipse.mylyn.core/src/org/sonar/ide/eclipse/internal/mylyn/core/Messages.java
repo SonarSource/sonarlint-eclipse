@@ -35,6 +35,7 @@ public class Messages extends NLS {
   public static String SonarConnector_Executing_query;
 
   public static String SonarTaskDataHandler_Downloading_task;
+  public static String SonarTaskDataHandler_ConnectionException;
 
   public static String SonarTaskSchema_Completion_Label;
 

@@ -21,16 +21,18 @@ package org.sonar.ide.eclipse.internal.mylyn.core;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.commons.net.Policy;
-import org.eclipse.mylyn.tasks.core.ITaskMapping;
-import org.eclipse.mylyn.tasks.core.RepositoryResponse;
+import org.eclipse.mylyn.tasks.core.*;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse.ResponseKind;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.*;
 import org.sonar.ide.eclipse.internal.mylyn.core.AbstractTaskSchema.Field;
 import org.sonar.ide.eclipse.internal.mylyn.core.Workflow.Operation;
+import org.sonar.wsclient.connectors.ConnectionException;
 import org.sonar.wsclient.services.Review;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.Set;
 
@@ -195,8 +197,17 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
     if (operationAttribute != null) {
       Workflow.Operation operation = Workflow.operationById(operationAttribute.getValue());
       if (operation != null) {
-        long reviewId = operation.perform(client, taskData, monitor);
-        return new RepositoryResponse(taskData.isNew() ? ResponseKind.TASK_CREATED : ResponseKind.TASK_UPDATED, Long.toString(reviewId));
+        try {
+          long reviewId = operation.perform(client, taskData, monitor);
+          return new RepositoryResponse(taskData.isNew() ? ResponseKind.TASK_CREATED : ResponseKind.TASK_UPDATED, Long.toString(reviewId));
+        } catch (ConnectionException e) {
+          StringWriter sw = new StringWriter();
+          sw.append(e.getMessage() + "\n"); //$NON-NLS-1$
+          e.printStackTrace(new PrintWriter(sw));
+          RepositoryStatus status = RepositoryStatus.createHtmlStatus(repository.getUrl(), IStatus.ERROR, SonarMylynCorePlugin.PLUGIN_ID, RepositoryStatus.ERROR_REPOSITORY,
+              Messages.SonarTaskDataHandler_ConnectionException, sw.getBuffer().toString());
+          throw new CoreException(status);
+        }
       }
     }
     return null;
