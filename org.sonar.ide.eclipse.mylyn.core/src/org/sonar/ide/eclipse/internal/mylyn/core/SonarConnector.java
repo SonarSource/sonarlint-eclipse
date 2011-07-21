@@ -42,7 +42,7 @@ public class SonarConnector extends AbstractRepositoryConnector {
   /**
    * Minimal supported version of Sonar server.
    */
-  public static final String MINIMAL_VERSION = "2.8"; //$NON-NLS-1$
+  public static final String MINIMAL_VERSION = "2.9"; //$NON-NLS-1$
 
   private static final String REVIEW_PREFIX = "/reviews/view/"; //$NON-NLS-1$
 

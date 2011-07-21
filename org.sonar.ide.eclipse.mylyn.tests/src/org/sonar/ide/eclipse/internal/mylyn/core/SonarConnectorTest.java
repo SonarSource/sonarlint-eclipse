@@ -68,6 +68,6 @@ public class SonarConnectorTest {
   public void shouldCompareServerVersion() {
     assertThat(SonarConnector.isServerVersionSupported("1.1"), is(false));
     assertThat(SonarConnector.isServerVersionSupported("2.7-SNAPSHOT"), is(false));
-    assertThat(SonarConnector.isServerVersionSupported("2.8-RC2"), is(true));
+    assertThat(SonarConnector.isServerVersionSupported("2.9-RC2"), is(true));
   }
 }
