@@ -8,7 +8,7 @@ Require-Bundle: org.junit;bundle-version="4.0.0";visibility:=reexport,
  org.sonar.ide.eclipse.ui
 Bundle-Vendor: SonarSource
 Bundle-ClassPath: .
-Bundle-Version: 2.2.0.qualifier
+Bundle-Version: 2.3.0.qualifier
 Bundle-Name: Sonar Integration for Eclipse Tests Common
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.sonar.ide.eclipse.tests.common;singleton:=tru

@@ -8,7 +8,7 @@ Bundle-Vendor: SonarSource
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,jars/sonar-ws-client-2.9.jar,jars/json-simple-1.1.
  jar
-Bundle-Version: 2.2.0.qualifier
+Bundle-Version: 2.3.0.qualifier
 Bundle-Name: Sonar Web Service Client
 Bundle-Activator: org.sonar.wsclient.internal.WSClientPlugin
 Bundle-ManifestVersion: 2
