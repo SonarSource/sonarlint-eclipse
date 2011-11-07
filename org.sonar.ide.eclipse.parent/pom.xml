@@ -107,9 +107,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.min.version>1.5</jdk.min.version>
 
-    <tycho.version>0.12.0</tycho.version>
+    <tycho.version>0.13.0</tycho.version>
 
     <target.platform>e36</target.platform>
+    <orbit-repository-url>http://download.eclipse.org/tools/orbit/downloads/drops/R20110523182458/repository/</orbit-repository-url>
+    <mylyn-repository-url>http://download.eclipse.org/mylyn/releases/latest/</mylyn-repository-url>
 
     <!-- Version of Sonar for integration tests -->
     <sonar.runtimeVersion>2.4</sonar.runtimeVersion>
@@ -126,19 +128,6 @@
     <sonar.java.target>1.5</sonar.java.target>
     <sonar.scm.ignoreLocalModifications>true</sonar.scm.ignoreLocalModifications>
   </properties>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>sonatype-public</id>
-      <url>http://repository.sonatype.org/content/groups/sonatype-public-grid</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
 
   <build>
     <extensions>
@@ -209,6 +198,16 @@
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-p2-plugin</artifactId>
+          <version>${tycho.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-maven-plugin</artifactId>
+          <version>${tycho.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>target-platform-configuration</artifactId>
           <version>${tycho.version}</version>
         </plugin>
 
@@ -330,6 +329,11 @@
 
     <plugins>
       <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-maven-plugin</artifactId>
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
@@ -351,72 +355,6 @@
         <version>2.7</version>
         <configuration>
           <downloadSources>true</downloadSources>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-        <artifactId>tycho-maven-plugin</artifactId>
-        <version>${tycho.version}</version>
-        <extensions>true</extensions>
-      </plugin>
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-        <artifactId>target-platform-configuration</artifactId>
-        <version>${tycho.version}</version>
-        <configuration>
-          <resolver>p2</resolver>
-          <!-- TODO Godin: seems unusable for now (TYCHO-404)
-          <pomDependencies>consider</pomDependencies>
-          -->
-          <target>
-            <artifact>
-              <groupId>org.codehaus.sonar-ide.eclipse</groupId>
-              <artifactId>target-platform</artifactId>
-              <version>${project.version}</version>
-              <classifier>${target.platform}</classifier>
-            </artifact>
-          </target>
-          <ignoreTychoRepositories>true</ignoreTychoRepositories>
-          <environments>
-            <environment>
-              <os>linux</os>
-              <ws>gtk</ws>
-              <arch>x86_64</arch>
-            </environment>
-            <environment>
-              <os>linux</os>
-              <ws>gtk</ws>
-              <arch>x86</arch>
-            </environment>
-            <environment>
-              <os>win32</os>
-              <ws>win32</ws>
-              <arch>x86</arch>
-            </environment>
-            <environment>
-              <os>win32</os>
-              <ws>win32</ws>
-              <arch>x86_64</arch>
-            </environment>
-            <!-- TODO see SONARIDE-82 -->
-            <!-- doesn't work with e34 target platform
-            <environment>
-              <os>macosx</os>
-              <ws>carbon</ws>
-              <arch>x86</arch>
-            </environment>
-            <environment>
-              <os>macosx</os>
-              <ws>cocoa</ws>
-              <arch>x86</arch>
-            </environment>
-            <environment>
-              <os>macosx</os>
-              <ws>cocoa</ws>
-              <arch>x86_64</arch>
-            </environment>
-            -->
-          </environments>
         </configuration>
       </plugin>
       <plugin>
@@ -457,6 +395,161 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>e3.5</id>
+      <activation>
+        <property>
+          <name>target-profile</name>
+          <value>e3.5</value>
+         </property>
+      </activation>
+      <properties>
+        <target.platform>e35</target.platform>
+        <platform-repository-url>http://download.eclipse.org/releases/galileo/</platform-repository-url>
+        <!-- Marked as unsupported on site http://eclipse.org/swtbot/downloads.php -->
+        <swtbot-repository-url>http://download.eclipse.org/technology/swtbot/galileo/dev-build/update-site/</swtbot-repository-url>
+      </properties>
+    </profile>
+    <profile>
+      <id>e3.6</id>
+      <activation>
+        <property>
+          <name>!target-profile</name>
+        </property>
+      </activation>
+      <properties>
+        <target.platform>e36</target.platform>
+        <platform-repository-url>http://download.eclipse.org/releases/helios/</platform-repository-url>
+        <swtbot-repository-url>http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/</swtbot-repository-url>
+      </properties>
+    </profile>
+    <profile>
+      <id>e3.7</id>
+      <activation>
+        <property>
+          <name>target-profile</name>
+          <value>e3.7</value>
+         </property>
+      </activation>
+      <properties>
+        <target.platform>e37</target.platform>
+        <platform-repository-url>http://download.eclipse.org/releases/indigo/</platform-repository-url>
+        <swtbot-repository-url>http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/</swtbot-repository-url>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>explicit-target</id>
+      <activation>
+        <property>
+          <name>explicit-target</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.tycho</groupId>
+            <artifactId>target-platform-configuration</artifactId>
+            <configuration>
+              <resolver>p2</resolver>
+              <ignoreTychoRepositories>true</ignoreTychoRepositories>
+              <target>
+                <artifact>
+                  <groupId>org.codehaus.sonar-ide.eclipse</groupId>
+                  <artifactId>target-platform</artifactId>
+                  <version>${project.version}</version>
+                  <classifier>${target.platform}</classifier>
+                </artifact>
+              </target>
+              <environments>
+                <environment>
+                  <os>linux</os>
+                  <ws>gtk</ws>
+                  <arch>x86_64</arch>
+                </environment>
+                <environment>
+                  <os>linux</os>
+                  <ws>gtk</ws>
+                  <arch>x86</arch>
+                </environment>
+                <environment>
+                  <os>win32</os>
+                  <ws>win32</ws>
+                  <arch>x86</arch>
+                </environment>
+                <environment>
+                  <os>win32</os>
+                  <ws>win32</ws>
+                  <arch>x86_64</arch>
+                </environment>
+                <!-- TODO see SONARIDE-82 -->
+                <!-- doesn't work with e34 target platform
+                <environment>
+                  <os>macosx</os>
+                  <ws>carbon</ws>
+                  <arch>x86</arch>
+                </environment>
+                <environment>
+                  <os>macosx</os>
+                  <ws>cocoa</ws>
+                  <arch>x86</arch>
+                </environment>
+                <environment>
+                  <os>macosx</os>
+                  <ws>cocoa</ws>
+                  <arch>x86_64</arch>
+                </environment>
+                -->
+              </environments>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>implicit-target</id>
+      <activation>
+        <property>
+          <name>!explicit-target</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.tycho</groupId>
+            <artifactId>target-platform-configuration</artifactId>
+            <configuration>
+              <resolver>p2</resolver>
+              <ignoreTychoRepositories>true</ignoreTychoRepositories>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+      <repositories>
+        <repository>
+          <id>eclipse-platform</id>
+          <layout>p2</layout>
+          <url>${platform-repository-url}</url>
+        </repository>
+        <repository>
+          <id>eclipse-orbit</id>
+          <layout>p2</layout>
+          <url>${orbit-repository-url}</url>
+        </repository>
+        <repository>
+          <id>eclipse-mylyn</id>
+          <layout>p2</layout>
+          <url>${mylyn-repository-url}</url>
+        </repository>
+        <repository>
+          <id>eclipse-swtbot</id>
+          <layout>p2</layout>
+          <url>${swtbot-repository-url}</url>
+        </repository>
+      </repositories>
+    </profile>
+
     <!-- This profile is used to launch integration tests -->
     <profile>
       <id>its</id>
