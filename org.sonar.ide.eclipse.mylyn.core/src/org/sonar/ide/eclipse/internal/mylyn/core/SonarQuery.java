@@ -24,6 +24,8 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 
 /**
  * Constants and utility methods to work with {@link IRepositoryQuery}.
+ * 
+ * @since 2.3
  */
 public final class SonarQuery {
 
@@ -42,12 +44,36 @@ public final class SonarQuery {
 
   public static final String SEVERITIES = "severities"; //$NON-NLS-1$
 
+  public static final String ANY_USER = "Any"; //$NON-NLS-1$
+  public static final String CURRENT_USER = "Current user"; //$NON-NLS-1$
+  public static final String SPECIFIED_USER = "Specified user"; //$NON-NLS-1$
+
   public static String[] getStatuses(IRepositoryQuery query) {
     return StringUtils.split(query.getAttribute(SonarQuery.STATUSES), ',');
   }
 
   public static String[] getSeverities(IRepositoryQuery query) {
     return StringUtils.split(query.getAttribute(SonarQuery.SEVERITIES), ',');
+  }
+
+  public static String[] getReporter(IRepositoryQuery query, String currentUser) {
+    return getUser(query.getAttribute(REPORTER), currentUser, query.getAttribute(REPORTER_USER));
+  }
+
+  public static String[] getAssignee(IRepositoryQuery query, String currentUser) {
+    return getUser(query.getAttribute(ASSIGNEE), currentUser, query.getAttribute(ASSIGNEE_USER));
+  }
+
+  private static String[] getUser(String type, String currentUser, String specifiedUser) {
+    if (ANY_USER.equalsIgnoreCase(type)) {
+      return null;
+    } else if (CURRENT_USER.equalsIgnoreCase(type)) {
+      return new String[] { currentUser };
+    } else if (SPECIFIED_USER.equalsIgnoreCase(type)) {
+      return new String[] { specifiedUser };
+    } else {
+      throw new IllegalStateException();
+    }
   }
 
 }

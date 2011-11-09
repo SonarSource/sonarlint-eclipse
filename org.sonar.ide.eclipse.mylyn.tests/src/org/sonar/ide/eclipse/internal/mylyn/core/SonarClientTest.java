@@ -25,9 +25,12 @@ import static org.junit.Assert.assertThat;
 
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.junit.Test;
 import org.sonar.wsclient.Host;
+import org.sonar.wsclient.services.ReviewQuery;
 
 public class SonarClientTest {
 
@@ -47,4 +50,23 @@ public class SonarClientTest {
     assertThat(host.getPassword(), is("password"));
   }
 
+  @Test
+  public void testConvertQuery() {
+    TaskRepository repository = new TaskRepository(SonarConnector.CONNECTOR_KIND, "http://localhost:9000");
+    repository.setCredentials(AuthenticationType.REPOSITORY, new AuthenticationCredentials("username", "password"), false);
+    SonarClient client = new SonarClient(repository);
+
+    IRepositoryQuery repositoryQuery = new RepositoryQuery(SonarConnector.CONNECTOR_KIND, "");
+    repositoryQuery.setAttribute(SonarQuery.PROJECT, "key");
+    repositoryQuery.setAttribute(SonarQuery.REPORTER, "Any");
+    repositoryQuery.setAttribute(SonarQuery.ASSIGNEE, "Current user");
+    repositoryQuery.setAttribute(SonarQuery.STATUSES, "OPEN,REOPENED");
+    repositoryQuery.setAttribute(SonarQuery.SEVERITIES, "BLOCKER");
+    ReviewQuery query = client.convertQuery(repositoryQuery);
+    assertThat(query.getProjectKeysOrIds(), is(new String[] { "key" }));
+    assertThat(query.getAuthorLoginsOrIds(), nullValue());
+    assertThat(query.getAssigneeLoginsOrIds(), is(new String[] { "username" }));
+    assertThat(query.getStatuses(), is(new String[] { "OPEN", "REOPENED" }));
+    assertThat(query.getSeverities(), is(new String[] { "BLOCKER" }));
+  }
 }

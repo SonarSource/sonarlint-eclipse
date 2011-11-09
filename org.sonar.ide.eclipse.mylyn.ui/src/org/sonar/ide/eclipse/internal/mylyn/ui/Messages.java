@@ -46,4 +46,14 @@ public class Messages extends NLS {
 
   public static String SonarQueryPage_Query_Title;
 
+  public static String SonarQueryPage_Project_Title;
+
+  public static String SonarQueryPage_Reporter_Title;
+
+  public static String SonarQueryPage_Assignee_Title;
+
+  public static String SonarQueryPage_Status_Title;
+
+  public static String SonarQueryPage_Severity_Title;
+
 }

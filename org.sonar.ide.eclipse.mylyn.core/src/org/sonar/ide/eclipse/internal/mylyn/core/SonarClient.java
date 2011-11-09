@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
@@ -82,43 +81,23 @@ public class SonarClient {
     return review;
   }
 
-  public Collection<Review> getReviews(IRepositoryQuery query, IProgressMonitor monitor) {
+  /**
+   * Visibility has been relaxed for test.
+   */
+  public ReviewQuery convertQuery(IRepositoryQuery query) {
     String currentUser = repository.getCredentials(AuthenticationType.REPOSITORY).getUserName();
+    ReviewQuery result = new ReviewQuery();
+    result.setProjectKeysOrIds(query.getAttribute(SonarQuery.PROJECT));
+    result.setAuthorLoginsOrIds(SonarQuery.getReporter(query, currentUser));
+    result.setAssigneeLoginsOrIds(SonarQuery.getAssignee(query, currentUser));
+    result.setStatuses(SonarQuery.getStatuses(query));
+    result.setSeverities(SonarQuery.getSeverities(query));
+    return result;
+  }
 
-    final String reporterType = query.getAttribute(SonarQuery.REPORTER);
-    final String reporter;
-    if ("Any".equalsIgnoreCase(reporterType)) {
-      reporter = null;
-    } else if ("Current user".equalsIgnoreCase(reporterType)) {
-      reporter = currentUser;
-    } else if ("Specified user".equalsIgnoreCase(reporterType)) {
-      reporter = query.getAttribute(SonarQuery.REPORTER_USER);
-    } else {
-      throw new IllegalStateException();
-    }
-
-    final String assigneeType = query.getAttribute(SonarQuery.ASSIGNEE);
-    final String assignee;
-    if ("Any".equalsIgnoreCase(reporterType)) {
-      assignee = null;
-    } else if ("Current user".equalsIgnoreCase(assigneeType)) {
-      assignee = currentUser;
-    } else if ("Specified user".equalsIgnoreCase(assigneeType)) {
-      assignee = query.getAttribute(SonarQuery.ASSIGNEE_USER);
-    } else if ("Unassigned".equalsIgnoreCase(assigneeType)) {
-      throw new NotImplementedException(); // FIXME
-    } else {
-      throw new IllegalStateException();
-    }
-
+  public Collection<Review> getReviews(IRepositoryQuery query, IProgressMonitor monitor) {
     Sonar sonar = create();
-    ReviewQuery q = new ReviewQuery();
-    q.setProjectKeysOrIds(query.getAttribute(SonarQuery.PROJECT));
-    q.setAuthorLoginsOrIds(reporter);
-    q.setAssigneeLoginsOrIds(assignee);
-    q.setStatuses(SonarQuery.getStatuses(query));
-    q.setSeverities(SonarQuery.getSeverities(query));
-    return sonar.findAll(q);
+    return sonar.findAll(convertQuery(query));
   }
 
   /**

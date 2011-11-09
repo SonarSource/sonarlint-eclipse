@@ -49,7 +49,7 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
   public SonarQueryPage(TaskRepository repository, IRepositoryQuery query) {
     super(Messages.SonarQueryPage_Title, repository, query);
     setTitle(Messages.SonarQueryPage_Title);
-    setDescription(Messages.SonarQueryPage_Description); // FIXME
+    setDescription(Messages.SonarQueryPage_Description);
     this.query = query;
   }
 
@@ -68,17 +68,15 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
       }
     });
 
-    // TODO i18n:
-
     Label projectLabel = new Label(control, SWT.NONE);
-    projectLabel.setText("Project Key:");
+    projectLabel.setText(Messages.SonarQueryPage_Project_Title);
     projectText = new Text(control, SWT.BORDER);
     projectText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1));
 
     Label reporterLabel = new Label(control, SWT.NONE);
-    reporterLabel.setText("Created By:");
+    reporterLabel.setText(Messages.SonarQueryPage_Reporter_Title);
     reporterCombo = new Combo(control, SWT.READ_ONLY | SWT.BORDER);
-    reporterCombo.setItems(new String[] { "Any", "Current user", "Specified user" });
+    reporterCombo.setItems(new String[] { SonarQuery.ANY_USER, SonarQuery.CURRENT_USER, SonarQuery.SPECIFIED_USER });
     reporterText = new Text(control, SWT.BORDER);
     reporterText.setEnabled(false);
     reporterText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
@@ -89,9 +87,10 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
     });
 
     Label assigneeLabel = new Label(control, SWT.NONE);
-    assigneeLabel.setText("Assigned To:");
+    assigneeLabel.setText(Messages.SonarQueryPage_Assignee_Title);
     assigneeCombo = new Combo(control, SWT.READ_ONLY | SWT.BORDER);
-    assigneeCombo.setItems(new String[] { "Any", "Unassigned", "Current user", "Specified user" });
+    // TODO "Unassigned" not supported - see SONARIDE-277
+    assigneeCombo.setItems(new String[] { SonarQuery.ANY_USER, SonarQuery.CURRENT_USER, SonarQuery.SPECIFIED_USER });
     assigneeText = new Text(control, SWT.BORDER);
     assigneeText.setEnabled(false);
     assigneeText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
@@ -101,18 +100,28 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
       }
     });
 
-    // TODO better layout:
-    Label statusLabel = new Label(control, SWT.NONE);
-    statusLabel.setText("Status:");
-    statusList = new List(control, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
-    statusList.setItems(new String[] { SonarClient.STATUS_OPEN, SonarClient.STATUS_REOPENED, SonarClient.STATUS_RESOLVED, SonarClient.STATUS_CLOSED });
-    statusList.setLayoutData(new GridData(SWT.BEGINNING, SWT.TOP, true, false, 2, 1));
-
-    Label severityLabel = new Label(control, SWT.NONE);
-    severityLabel.setText("Severity:");
-    severityList = new List(control, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
-    severityList.setItems(new String[] { SonarClient.PRIORITY_BLOCKER, SonarClient.PRIORITY_CRITICAL, SonarClient.PRIORITY_MAJOR, SonarClient.PRIORITY_MINOR, SonarClient.PRIORITY_INFO });
-    severityList.setLayoutData(new GridData(SWT.BEGINNING, SWT.TOP, true, false, 2, 1));
+    Composite cc = new Composite(control, SWT.NONE);
+    cc.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 3, 1));
+    cc.setLayout(new GridLayout(2, false));
+    {
+      Composite comp = new Composite(cc, SWT.NONE);
+      comp.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
+      comp.setLayout(new GridLayout());
+      Label statusLabel = new Label(comp, SWT.NONE);
+      statusLabel.setText(Messages.SonarQueryPage_Status_Title);
+      statusList = new List(comp, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+      statusList.setItems(new String[] { SonarClient.STATUS_OPEN, SonarClient.STATUS_REOPENED, SonarClient.STATUS_RESOLVED, SonarClient.STATUS_CLOSED });
+      statusList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    }
+    {
+      Composite comp = new Composite(cc, SWT.NONE);
+      comp.setLayout(new GridLayout());
+      Label severityLabel = new Label(comp, SWT.NONE);
+      severityLabel.setText(Messages.SonarQueryPage_Severity_Title);
+      severityList = new List(comp, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+      severityList.setItems(new String[] { SonarClient.PRIORITY_BLOCKER, SonarClient.PRIORITY_CRITICAL, SonarClient.PRIORITY_MAJOR, SonarClient.PRIORITY_MINOR, SonarClient.PRIORITY_INFO });
+      severityList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    }
 
     if (query != null) {
       // Set values from query
