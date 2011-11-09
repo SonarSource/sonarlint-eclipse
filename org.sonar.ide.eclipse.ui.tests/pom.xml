@@ -28,6 +28,13 @@
           <argLine>-Xmx800m -XX:MaxPermSize=256m</argLine>
           <appArgLine>-pluginCustomization ${project.basedir}/plugin_customization.ini</appArgLine>
           <forkedProcessTimeoutInSeconds>7200</forkedProcessTimeoutInSeconds>
+          <dependencies>
+            <dependency>
+              <type>p2-installable-unit</type>
+              <artifactId>org.eclipse.pde.feature.group</artifactId>
+              <!--<version>${platform-version}</version>-->
+            </dependency>
+          </dependencies>
         </configuration>
       </plugin>
 
