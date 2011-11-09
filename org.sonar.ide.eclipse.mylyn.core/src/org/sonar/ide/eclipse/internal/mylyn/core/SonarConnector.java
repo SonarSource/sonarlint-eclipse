@@ -121,7 +121,7 @@ public class SonarConnector extends AbstractRepositoryConnector {
       monitor.beginTask(Messages.SonarConnector_Executing_query, IProgressMonitor.UNKNOWN);
 
       SonarClient client = new SonarClient(repository);
-      Collection<Review> reviews = client.getReviews(monitor);
+      Collection<Review> reviews = client.getReviews(query, monitor);
       for (Review review : reviews) {
         TaskData taskData = taskDataHandler.createTaskData(repository, review.getId() + "", monitor); //$NON-NLS-1$
         taskData.setPartial(true);

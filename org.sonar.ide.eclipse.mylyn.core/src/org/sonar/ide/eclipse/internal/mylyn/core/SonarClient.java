@@ -19,9 +19,11 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
@@ -80,13 +82,43 @@ public class SonarClient {
     return review;
   }
 
-  public Collection<Review> getReviews(IProgressMonitor monitor) {
+  public Collection<Review> getReviews(IRepositoryQuery query, IProgressMonitor monitor) {
+    String currentUser = repository.getCredentials(AuthenticationType.REPOSITORY).getUserName();
+
+    final String reporterType = query.getAttribute(SonarQuery.REPORTER);
+    final String reporter;
+    if ("Any".equalsIgnoreCase(reporterType)) {
+      reporter = null;
+    } else if ("Current user".equalsIgnoreCase(reporterType)) {
+      reporter = currentUser;
+    } else if ("Specified user".equalsIgnoreCase(reporterType)) {
+      reporter = query.getAttribute(SonarQuery.REPORTER_USER);
+    } else {
+      throw new IllegalStateException();
+    }
+
+    final String assigneeType = query.getAttribute(SonarQuery.ASSIGNEE);
+    final String assignee;
+    if ("Any".equalsIgnoreCase(reporterType)) {
+      assignee = null;
+    } else if ("Current user".equalsIgnoreCase(assigneeType)) {
+      assignee = currentUser;
+    } else if ("Specified user".equalsIgnoreCase(assigneeType)) {
+      assignee = query.getAttribute(SonarQuery.ASSIGNEE_USER);
+    } else if ("Unassigned".equalsIgnoreCase(assigneeType)) {
+      throw new NotImplementedException(); // FIXME
+    } else {
+      throw new IllegalStateException();
+    }
+
     Sonar sonar = create();
-    String assignee = repository.getCredentials(AuthenticationType.REPOSITORY).getUserName();
-    ReviewQuery query = new ReviewQuery()
-        .setStatuses(STATUS_OPEN, STATUS_REOPENED)
-        .setAssigneeLoginsOrIds(assignee);
-    return sonar.findAll(query);
+    ReviewQuery q = new ReviewQuery();
+    q.setProjectKeysOrIds(query.getAttribute(SonarQuery.PROJECT));
+    q.setAuthorLoginsOrIds(reporter);
+    q.setAssigneeLoginsOrIds(assignee);
+    q.setStatuses(SonarQuery.getStatuses(query));
+    q.setSeverities(SonarQuery.getSeverities(query));
+    return sonar.findAll(q);
   }
 
   /**
