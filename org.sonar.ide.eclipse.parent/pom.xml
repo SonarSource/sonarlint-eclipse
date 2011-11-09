@@ -632,5 +632,58 @@
         </plugins>
       </build>
     </profile>
+
+    <profile>
+      <id>m2e</id>
+      <activation>
+        <!-- This profile is active only when used from Eclipse m2e and is used only to store settings. -->
+        <property>
+          <name>m2e.version</name>
+        </property>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.eclipse.m2e</groupId>
+              <artifactId>lifecycle-mapping</artifactId>
+              <version>1.0.0</version>
+              <configuration>
+                <lifecycleMappingMetadata>
+                  <pluginExecutions>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.eclipse.tycho</groupId>
+                        <artifactId>tycho-packaging-plugin</artifactId>
+                        <versionRange>[0.13.0,)</versionRange>
+                        <goals>
+                          <goal>validate-id</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore />
+                      </action>
+                    </pluginExecution>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <versionRange>[1.0,)</versionRange>
+                        <goals>
+                          <goal>enforce</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore />
+                      </action>
+                    </pluginExecution>
+                  </pluginExecutions>
+                </lifecycleMappingMetadata>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
   </profiles>
 </project>
