@@ -21,14 +21,11 @@ package org.sonar.ide.eclipse.internal.mylyn.core;
 
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 
-/**
- * Everything should be read-only for the moment - see http://jira.codehaus.org/browse/SONARIDE-228
- */
 public class SonarTaskSchema extends AbstractTaskSchema {
-  private static final SonarTaskSchema instance = new SonarTaskSchema();
+  private static final SonarTaskSchema INSTANCE = new SonarTaskSchema();
 
   public static SonarTaskSchema getDefault() {
-    return instance;
+    return INSTANCE;
   }
 
   public final Field ID = createField(TaskAttribute.TASK_KEY, Messages.SonarTaskSchema_ID_Label,

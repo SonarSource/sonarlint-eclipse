@@ -36,6 +36,21 @@ import org.sonar.ide.eclipse.internal.mylyn.ui.Messages;
 
 public class SonarQueryPage extends AbstractRepositoryQueryPage {
 
+  private static final String[] STATUSES = new String[] {
+    SonarClient.STATUS_OPEN,
+    SonarClient.STATUS_REOPENED,
+    SonarClient.STATUS_RESOLVED,
+    SonarClient.STATUS_CLOSED
+  };
+
+  private static final String[] SEVERITIES = new String[] {
+    SonarClient.PRIORITY_BLOCKER,
+    SonarClient.PRIORITY_CRITICAL,
+    SonarClient.PRIORITY_MAJOR,
+    SonarClient.PRIORITY_MINOR,
+    SonarClient.PRIORITY_INFO
+  };
+
   private IRepositoryQuery query;
   private Text titleText;
   private Text projectText;
@@ -110,7 +125,7 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
       Label statusLabel = new Label(comp, SWT.NONE);
       statusLabel.setText(Messages.SonarQueryPage_Status_Title);
       statusList = new List(comp, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
-      statusList.setItems(new String[] { SonarClient.STATUS_OPEN, SonarClient.STATUS_REOPENED, SonarClient.STATUS_RESOLVED, SonarClient.STATUS_CLOSED });
+      statusList.setItems(STATUSES);
       statusList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     }
     {
@@ -119,7 +134,7 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
       Label severityLabel = new Label(comp, SWT.NONE);
       severityLabel.setText(Messages.SonarQueryPage_Severity_Title);
       severityList = new List(comp, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
-      severityList.setItems(new String[] { SonarClient.PRIORITY_BLOCKER, SonarClient.PRIORITY_CRITICAL, SonarClient.PRIORITY_MAJOR, SonarClient.PRIORITY_MINOR, SonarClient.PRIORITY_INFO });
+      severityList.setItems(SEVERITIES);
       severityList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     }
 

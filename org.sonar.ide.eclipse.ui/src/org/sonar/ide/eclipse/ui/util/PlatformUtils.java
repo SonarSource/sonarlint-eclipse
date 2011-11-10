@@ -85,7 +85,7 @@ public final class PlatformUtils {
     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     try {
       HashMap map = new HashMap(2);
-      map.put(IMarker.LINE_NUMBER, new Integer(line));
+      map.put(IMarker.LINE_NUMBER, Integer.valueOf(line));
       IMarker marker = file.createMarker(IMarker.TEXT);
       marker.setAttributes(map);
       IDE.openEditor(page, marker);

@@ -263,8 +263,8 @@ public final class Workflow {
    * All possible workflow operations.
    */
   public static final Operation[] OPERATIONS = new Operation[] {
-      new DefaultCreate(), new CreateFalsePositive(), new CreateFixed(),
-      new Default(), new ResolveAsFixed(), new ResolveAsFalsePositive(), new Reopen() };
+    new DefaultCreate(), new CreateFalsePositive(), new CreateFixed(),
+    new Default(), new ResolveAsFixed(), new ResolveAsFalsePositive(), new Reopen() };
 
   public static Operation operationById(String id) {
     for (Operation op : OPERATIONS) {

@@ -116,10 +116,19 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
     }
   }
 
+  /**
+   * Value of org.eclipse.mylyn.internal.tasks.core.IRepositoryConstants#PROPERTY_CATEGORY , which is not available in Mylyn 3.2.0
+   */
+  private static final String PROPERTY_CATEGORY = "category"; //$NON-NLS-1$
+
+  /**
+   * Value of org.eclipse.mylyn.internal.tasks.core.IRepositoryConstants#CATEGORY_REVIEW , which is not available in Mylyn 3.2.0
+   */
+  private static final String CATEGORY_REVIEW = "org.eclipse.mylyn.category.review"; //$NON-NLS-1$
+
   @Override
   public void applyTo(TaskRepository repository) {
     super.applyTo(repository);
-    // Explicit values for constants due to compatibility with Mylyn 3.2.0
-    repository.setProperty("category" /* IRepositoryConstants.PROPERTY_CATEGORY */, "org.eclipse.mylyn.category.review" /* IRepositoryConstants.CATEGORY_REVIEW */); //$NON-NLS-1$ //$NON-NLS-2$
+    repository.setProperty(PROPERTY_CATEGORY, CATEGORY_REVIEW);
   }
 }
