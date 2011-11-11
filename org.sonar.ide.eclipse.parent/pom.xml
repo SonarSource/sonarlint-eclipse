@@ -62,12 +62,6 @@
     <module>../org.sonar.ide.eclipse.mylyn.tests</module>
     <module>../org.sonar.ide.eclipse.mylyn.feature</module>
 
-    <!-- TODO remove - see SONARIDE-259
-    <module>../org.sonar.ide.eclipse.logback</module>
-    <module>../org.sonar.ide.eclipse.logback.appenders</module>
-    <module>../org.sonar.ide.eclipse.logback.feature</module>
-    -->
-
     <module>../org.sonar.ide.eclipse.tests.common</module>
     <module>../org.sonar.ide.eclipse.tests</module>
 
@@ -170,29 +164,6 @@
             </includes>
             <!-- Kill test JVM if tests take more than 10 minutes (600 seconds) to finish -->
             <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
-            <!-- Activate org.sonar.ide.eclipse.logback during execution of tests -->
-            <!-- TODO remove - see SONARIDE-259
-            <bundleStartLevel>
-              <bundle>
-                <id>org.sonar.ide.eclipse.logback</id>
-                <level>4</level>
-                <autoStart>true</autoStart>
-              </bundle>
-            </bundleStartLevel>
-            -->
-            <!-- See https://docs.sonatype.org/display/TYCHO/FAQ about how to include additional bundles (eg. fragments) -->
-            <!-- TODO remove - see SONARIDE-259
-            <dependencies>
-              <dependency>
-                <artifactId>org.sonar.ide.eclipse.logback.appenders</artifactId>
-                <type>p2-installable-unit</type>
-              </dependency>
-              <dependency>
-                <artifactId>org.sonar.ide.eclipse.logback</artifactId>
-                <type>p2-installable-unit</type>
-              </dependency>
-            </dependencies>
-            -->
           </configuration>
         </plugin>
         <plugin>

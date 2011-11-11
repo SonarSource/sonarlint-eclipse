@@ -31,22 +31,10 @@
       <version>${sonar.version}</version>
       <exclusions>
         <!-- logging -->
-        <!-- SONARIDE-259 used by Sonar itself
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-        -->
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>log4j-over-slf4j</artifactId>
         </exclusion>
-        <!-- SONARIDE-259 used by transitive dependency - commons-beanutils
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>jcl-over-slf4j</artifactId>
-        </exclusion>
-        -->
         <!-- database -->
         <!-- TODO we can't exclude hibernate-annotations, because it's used in sonar-plugin-api -->
         <exclusion>

@@ -50,18 +50,11 @@ public class SonarCorePlugin extends AbstractPlugin {
     return plugin;
   }
 
-  // See SONARIDE-259
-  // private LogListener logListener;
-
   private ServersManager serversManager;
 
   @Override
   public void start(BundleContext context) {
     super.start(context);
-
-    // See SONARIDE-259
-    // logListener = new LogListener();
-    // Platform.addLogListener(logListener);
 
     serversManager = new ServersManager();
     serversManager.load();
@@ -70,9 +63,6 @@ public class SonarCorePlugin extends AbstractPlugin {
   @Override
   public void stop(BundleContext context) {
     serversManager.save();
-
-    // See SONARIDE-259
-    // Platform.removeLogListener(logListener);
 
     super.stop(context);
   }
