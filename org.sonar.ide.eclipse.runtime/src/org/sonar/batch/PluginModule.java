@@ -29,11 +29,11 @@ import org.sonar.api.utils.AnnotationUtils;
 public class PluginModule extends Module {
 
   private static final String[] BLACK_LIST = {
-      "org.sonar.plugins.core.security.",
-      "org.sonar.plugins.core.timemachine.",
-      "org.sonar.plugins.core.sensors.AsynchronousMeasuresSensor",
-      "org.sonar.plugins.core.sensors.GenerateAlertEvents",
-      "org.sonar.plugins.core.sensors.CloseReviewsDecorator"
+    "org.sonar.plugins.core.security.",
+    "org.sonar.plugins.core.timemachine.",
+    "org.sonar.plugins.core.sensors.AsynchronousMeasuresSensor",
+    "org.sonar.plugins.core.sensors.GenerateAlertEvents",
+    "org.sonar.plugins.core.sensors.CloseReviewsDecorator"
   };
 
   private Plugin plugin;

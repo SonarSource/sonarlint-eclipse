@@ -31,7 +31,7 @@ import java.net.URL;
 
 public final class SonarImages {
 
-  private static final URL baseUrl = SonarUiPlugin.getDefault().getBundle().getEntry("/icons/"); //$NON-NLS-1$
+  private static final URL BASE_URL = SonarUiPlugin.getDefault().getBundle().getEntry("/icons/"); //$NON-NLS-1$
 
   public static final ImageDescriptor STAR = createImageDescriptor("star.png"); //$NON-NLS-1$
   public static final ImageDescriptor STAR_OFF = createImageDescriptor("star_off.png"); //$NON-NLS-1$
@@ -54,9 +54,9 @@ public final class SonarImages {
   public static final ImageDescriptor SHOW_CONSOLE = createImageDescriptor("showConsole.gif"); //$NON-NLS-1$
 
   private static final ImageDescriptor[][] TENDENCY = {
-      { createTendency("-2-red"), createTendency("-1-red"), null, createTendency("1-red"), createTendency("2-red") },
-      { createTendency("-2-black"), createTendency("-1-black"), null, createTendency("1-black"), createTendency("2-black") },
-      { createTendency("-2-green"), createTendency("-1-green"), null, createTendency("1-green"), createTendency("2-green") } };
+    { createTendency("-2-red"), createTendency("-1-red"), null, createTendency("1-red"), createTendency("2-red") },
+    { createTendency("-2-black"), createTendency("-1-black"), null, createTendency("1-black"), createTendency("2-black") },
+    { createTendency("-2-green"), createTendency("-1-green"), null, createTendency("1-green"), createTendency("2-green") } };
 
   public static ImageDescriptor forTendency(ISonarMeasure measure) {
     int trend = measure.getTrend(); // color: -1 = red; 0 = black, 1 = green
@@ -75,7 +75,7 @@ public final class SonarImages {
   }
 
   private static URL getUrl(String key) throws MalformedURLException {
-    return new URL(baseUrl, key);
+    return new URL(BASE_URL, key);
   }
 
   private static Image createImage(String key) {

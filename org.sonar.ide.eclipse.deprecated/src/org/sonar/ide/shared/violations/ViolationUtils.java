@@ -41,6 +41,14 @@ public final class ViolationUtils {
   public static final String PRIORITY_MINOR = "minor";
   public static final String PRIORITY_INFO = "info";
 
+  private static final String[] PRIORITIES = new String[] {
+    PRIORITY_BLOCKER,
+    PRIORITY_CRITICAL,
+    PRIORITY_MAJOR,
+    PRIORITY_MINOR,
+    PRIORITY_INFO
+  };
+
   /**
    * Sorts violations by priority in descending order.
    * 
@@ -74,16 +82,10 @@ public final class ViolationUtils {
    * @return converted priority
    */
   public static int convertPriority(String priority) {
-    if (PRIORITY_BLOCKER.equalsIgnoreCase(priority)) {
-      return 0;
-    } else if (PRIORITY_CRITICAL.equalsIgnoreCase(priority)) {
-      return 1;
-    } else if (PRIORITY_MAJOR.equalsIgnoreCase(priority)) {
-      return 2;
-    } else if (PRIORITY_MINOR.equalsIgnoreCase(priority)) {
-      return 3;
-    } else if (PRIORITY_INFO.equalsIgnoreCase(priority)) {
-      return 4;
+    for (int i = 0; i < PRIORITIES.length; i++) {
+      if (PRIORITIES[i].equalsIgnoreCase(priority)) {
+        return i;
+      }
     }
     return 4;
   }

@@ -23,20 +23,21 @@ import org.eclipse.mylyn.tasks.core.ITask.PriorityLevel;
 
 public final class Utils {
 
+  private static final String[] PRIORITIES = {
+    SonarClient.PRIORITY_BLOCKER,
+    SonarClient.PRIORITY_CRITICAL,
+    SonarClient.PRIORITY_MAJOR,
+    SonarClient.PRIORITY_MINOR,
+    SonarClient.PRIORITY_INFO
+  };
+
   public static PriorityLevel toMylynPriority(String value) {
-    if (SonarClient.PRIORITY_BLOCKER.equals(value)) { //$NON-NLS-1$
-      return PriorityLevel.P1;
-    } else if (SonarClient.PRIORITY_CRITICAL.equals(value)) { //$NON-NLS-1$
-      return PriorityLevel.P2;
-    } else if (SonarClient.PRIORITY_MAJOR.equals(value)) { //$NON-NLS-1$
-      return PriorityLevel.P3;
-    } else if (SonarClient.PRIORITY_MINOR.equals(value)) { //$NON-NLS-1$
-      return PriorityLevel.P4;
-    } else if (SonarClient.PRIORITY_INFO.equals(value)) { //$NON-NLS-1$
-      return PriorityLevel.P5;
-    } else {
-      return null;
+    for (int i = 0; i < PRIORITIES.length; i++) {
+      if (PRIORITIES[i].equals(value)) {
+        return PriorityLevel.fromLevel(i + 1);
+      }
     }
+    return null;
   }
 
   private Utils() {
