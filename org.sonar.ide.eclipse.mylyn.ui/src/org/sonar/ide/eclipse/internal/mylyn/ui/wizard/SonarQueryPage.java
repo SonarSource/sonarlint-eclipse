@@ -111,7 +111,7 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
     assigneeText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
     assigneeCombo.addModifyListener(new ModifyListener() {
       public void modifyText(ModifyEvent e) {
-        assigneeText.setEnabled(assigneeCombo.getSelectionIndex() == 3);
+        assigneeText.setEnabled(assigneeCombo.getSelectionIndex() == 2);
       }
     });
 
@@ -120,7 +120,7 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
     cc.setLayout(new GridLayout(2, false));
     {
       Composite comp = new Composite(cc, SWT.NONE);
-      comp.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
+      comp.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, false));
       comp.setLayout(new GridLayout());
       Label statusLabel = new Label(comp, SWT.NONE);
       statusLabel.setText(Messages.SonarQueryPage_Status_Title);
@@ -151,9 +151,7 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
     } else {
       // Set default values
       reporterCombo.select(0);
-      assigneeCombo.select(2);
-      statusList.selectAll();
-      severityList.selectAll();
+      assigneeCombo.select(1);
     }
 
     Dialog.applyDialogFont(control);
