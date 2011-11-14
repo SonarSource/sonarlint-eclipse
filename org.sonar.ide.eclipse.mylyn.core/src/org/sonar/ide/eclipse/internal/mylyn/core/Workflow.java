@@ -255,7 +255,9 @@ public final class Workflow {
       if (SonarClient.RESOLUTION_FALSE_POSITIVE.equals(resolution) && "".equals(comment)) { //$NON-NLS-1$
         throw createException(Messages.Workflow_CommentRequired_Error);
       }
-      client.reopen(getReviewId(taskData), getComment(taskData), monitor);
+      long id = getReviewId(taskData);
+      client.reopen(id, getComment(taskData), monitor);
+      client.reassign(id, getAssignee(taskData), monitor);
     }
   }
 
