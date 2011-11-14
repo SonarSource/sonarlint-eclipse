@@ -19,18 +19,21 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.*;
+import org.eclipse.mylyn.context.core.IInteractionContext;
+import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
+import org.eclipse.mylyn.monitor.core.InteractionEvent;
 import org.eclipse.mylyn.tasks.core.*;
 import org.eclipse.mylyn.tasks.core.ITask.PriorityLevel;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.eclipse.mylyn.tasks.core.data.TaskMapper;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
 import org.eclipse.osgi.util.NLS;
 import org.osgi.framework.Version;
+import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.Review;
 
 import java.util.Collection;
@@ -71,7 +74,6 @@ public class SonarConnector extends AbstractRepositoryConnector {
 
   @Override
   public boolean canCreateTaskFromKey(TaskRepository repository) {
-    // TODO Auto-generated method stub
     return false;
   }
 
@@ -154,6 +156,30 @@ public class SonarConnector extends AbstractRepositoryConnector {
   public void updateTaskFromTaskData(TaskRepository repository, ITask task, TaskData taskData) {
     TaskMapper mapper = (TaskMapper) getTaskMapping(taskData);
     mapper.applyTo(task);
+
+    populateContext(task, taskData);
+  }
+
+  private void populateContext(ITask task, TaskData taskData) {
+    TaskAttribute attribute = taskData.getRoot().getAttribute(SonarTaskSchema.getDefault().RESOURCE.getKey());
+    if (attribute == null) {
+      return;
+    }
+    String sonarResourceKey = attribute.getValue();
+
+    // Godin: in fact this is not a good way to locate IFile by Sonar resourceKey and should be improved
+    IFile file = (IFile) Platform.getAdapterManager().loadAdapter(new Resource().setKey(sonarResourceKey), IFile.class.getName());
+    if (file == null) {
+      return;
+    }
+
+    IInteractionContext context = ContextCorePlugin.getContextStore().loadContext(task.getHandleIdentifier());
+    ContextCorePlugin.getContextManager().processInteractionEvent(
+        file,
+        InteractionEvent.Kind.PROPAGATION,
+        InteractionEvent.ID_UNKNOWN,
+        context);
+    ContextCorePlugin.getContextStore().saveContext(context);
   }
 
   @Override
