@@ -19,7 +19,7 @@
    </license>
 
    <requires>
-      <import feature="org.sonar.ide.eclipse.feature" version="2.3.0" match="equivalent"/>
+      <import feature="org.sonar.ide.eclipse.feature" version="2.4.0" match="equivalent"/>
       <import feature="org.eclipse.mylyn_feature" version="3.2.0" match="compatible"/>
    </requires>
 
