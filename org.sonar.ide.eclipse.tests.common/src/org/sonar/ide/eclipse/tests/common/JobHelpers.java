@@ -33,7 +33,7 @@ public final class JobHelpers {
     waitForIdle();
   }
 
-  private static final long MAX_IDLE = 60 * 1000L;
+  private static final long MAX_IDLE = 20 * 60 * 1000L;
 
   private static void waitForIdle() {
     waitForIdle(MAX_IDLE);
