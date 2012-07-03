@@ -105,7 +105,7 @@
 
     <target.platform>e36</target.platform>
     <orbit-repository-url>http://download.eclipse.org/tools/orbit/downloads/drops/R20110523182458/repository/</orbit-repository-url>
-    <mylyn-repository-url>http://download.eclipse.org/mylyn/releases/latest/</mylyn-repository-url>
+    <mylyn-repository-url>http://download.eclipse.org/mylyn/releases/3.6/</mylyn-repository-url>
 
     <!-- Version of Sonar for integration tests -->
     <sonar.runtimeVersion>2.4</sonar.runtimeVersion>
