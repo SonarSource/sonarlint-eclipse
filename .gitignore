@@ -3,6 +3,7 @@ target/
 
 # Tycho
 jars/
+org.sonar.ide.eclipse.runtime/plugins/*.jar
 
 # Eclipse
 .classpath
