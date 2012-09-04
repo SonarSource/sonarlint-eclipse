@@ -78,7 +78,7 @@ public class HotspotsView extends AbstractSonarInfoView {
   private ISonarMetric metric;
   private TableViewerColumn column2;
 
-  private FavouriteMetricsManager.Listener favouriteMetricsListener = new FavouriteMetricsManager.Listener() {
+  private final FavouriteMetricsManager.Listener favouriteMetricsListener = new FavouriteMetricsManager.Listener() {
     public void updated() {
       updateFavouriteMetrics();
     }

@@ -46,7 +46,7 @@ public class ServersManager implements ISonarServersManager {
   public static final String NODE = "org.sonar.ide.eclipse.core"; // plugin key
   private static final String PREF_SERVERS = "servers";
 
-  private Map<String, SonarServer> servers = Maps.newHashMap();
+  private final Map<String, SonarServer> servers = Maps.newHashMap();
 
   public void load() {
     for (SonarServer server : loadServers()) {

@@ -66,7 +66,7 @@ public class AnalyseProjectJob extends Job {
 
   private static final Logger LOG = LoggerFactory.getLogger(AnalyseProjectJob.class);
 
-  private IProject project;
+  private final IProject project;
 
   public AnalyseProjectJob(IProject project) {
     super(Messages.AnalyseProjectJob_title);
@@ -165,7 +165,7 @@ public class AnalyseProjectJob extends Job {
   }
 
   private static class SonarProgressMonitor implements SensorExecutionHandler, DecoratorExecutionHandler {
-    private IProgressMonitor monitor;
+    private final IProgressMonitor monitor;
 
     public SonarProgressMonitor(IProgressMonitor monitor) {
       this.monitor = monitor;

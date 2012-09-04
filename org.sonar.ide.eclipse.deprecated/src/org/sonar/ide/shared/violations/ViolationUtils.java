@@ -99,7 +99,7 @@ public final class ViolationUtils {
 
     for (Violation violation : violations) {
       Integer originalLine = violation.getLine();
-      if (originalLine == null || originalLine == 0) {
+      if ((originalLine == null) || (originalLine == 0)) {
         // skip violation on whole file
         // TODO Godin: we can show them on first line
         continue;

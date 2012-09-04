@@ -61,7 +61,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
    */
   private ISonarResource lastSelection;
 
-  private IPartListener2 partListener = new IPartListener2() {
+  private final IPartListener2 partListener = new IPartListener2() {
     public void partVisible(IWorkbenchPartReference ref) {
       if (ref.getId().equals(getSite().getId())) {
         IWorkbenchPart activePart = ref.getPage().getActivePart();
@@ -79,7 +79,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
     }
 
     public void partInputChanged(IWorkbenchPartReference ref) {
-      if ( !ref.getId().equals(getSite().getId())) {
+      if (!ref.getId().equals(getSite().getId())) {
         computeAndSetInput(ref.getPart(false));
       }
     }
@@ -149,7 +149,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
 
     @Override
     public void run() {
-      setLinkingEnabled( !isLinkingEnabled());
+      setLinkingEnabled(!isLinkingEnabled());
     }
   }
 
@@ -161,7 +161,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
    */
   protected void setLinkingEnabled(boolean enabled) {
     linking = enabled;
-    if (linking && lastSelection != null) {
+    if (linking && (lastSelection != null)) {
       setInput(lastSelection);
     }
   }
@@ -198,7 +198,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
     if (part.equals(this)) {
       return;
     }
-    if ( !linking) {
+    if (!linking) {
       ISonarResource sonarResource = findSelectedSonarResource(part, selection);
       if (sonarResource != null) {
         lastSelection = sonarResource;
@@ -215,7 +215,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
       return;
     }
     final ISelection selection = provider.getSelection();
-    if (selection == null || selection.isEmpty()) {
+    if ((selection == null) || selection.isEmpty()) {
       return;
     }
     final ISonarResource input = findSelectedSonarResource(part, selection);
@@ -270,6 +270,6 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
   }
 
   protected boolean isIgnoringNewInput(ISonarResource sonarResource, IWorkbenchPart part, ISelection selection) {
-    return currentViewInput != null && currentViewInput.equals(sonarResource) && sonarResource != null;
+    return (currentViewInput != null) && currentViewInput.equals(sonarResource) && (sonarResource != null);
   }
 }

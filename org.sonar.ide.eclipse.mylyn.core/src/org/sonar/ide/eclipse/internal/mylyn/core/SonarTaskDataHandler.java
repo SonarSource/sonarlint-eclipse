@@ -46,7 +46,7 @@ import java.util.Set;
 
 public class SonarTaskDataHandler extends AbstractTaskDataHandler {
 
-  private SonarConnector connector;
+  private final SonarConnector connector;
 
   public SonarTaskDataHandler(SonarConnector connector) {
     this.connector = connector;

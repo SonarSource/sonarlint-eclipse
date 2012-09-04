@@ -34,7 +34,7 @@ public class EmbedderMetricFinderTest {
     Metric metric1 = new Metric.Builder("key1", "name1", Metric.ValueType.STRING).create();
     Metric metric2 = new Metric.Builder("key2", "name2", Metric.ValueType.STRING).create();
     Metric metric3 = new Metric.Builder("key3", "name3", Metric.ValueType.STRING).create();
-    EmbedderMetricFinder finder = new EmbedderMetricFinder(new Metric[] { metric1, metric2, metric3 });
+    EmbedderMetricFinder finder = new EmbedderMetricFinder(new Metric[] {metric1, metric2, metric3});
 
     assertThat(finder.findByKey("key1"), is(metric1));
     assertThat(finder.findByKey("notfound"), nullValue());

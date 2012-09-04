@@ -41,8 +41,8 @@ import java.util.Map;
 
 public class EmbedderPersistenceManager implements PersistenceManager, EmbedderIndex {
 
-  private Map<String, Map<String, Measure>> measuresByResource = Maps.newHashMap();
-  private Map<String, List<Violation>> violationsByResource = Maps.newHashMap();
+  private final Map<String, Map<String, Measure>> measuresByResource = Maps.newHashMap();
+  private final Map<String, List<Violation>> violationsByResource = Maps.newHashMap();
 
   public Collection<Measure> getMeasures(String resourceKey) {
     if (!measuresByResource.containsKey(resourceKey)) {

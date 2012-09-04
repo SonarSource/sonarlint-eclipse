@@ -42,7 +42,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   // The shared instance
   private static SonarUiPlugin plugin;
 
-  private FavouriteMetricsManager favouriteMetricsManager = new FavouriteMetricsManager();
+  private final FavouriteMetricsManager favouriteMetricsManager = new FavouriteMetricsManager();
 
   public SonarUiPlugin() {
     plugin = this; // NOSONAR
@@ -119,7 +119,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
   public synchronized ISonarConsole getSonarConsole() {
     // Don't try to initialize console without actual UI - it will cause headless tests failure
-    if (console == null && PlatformUI.isWorkbenchRunning()) {
+    if ((console == null) && PlatformUI.isWorkbenchRunning()) {
       console = new SonarConsole(SonarImages.SONAR16_IMG);
     }
     return console;

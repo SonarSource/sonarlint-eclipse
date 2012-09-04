@@ -46,7 +46,7 @@ public class EmbedderRuleFinder implements RuleFinder {
       rulesByKey.put(rule.getKey(), rule);
     }
     Logs.INFO.info("Registered repository " + repository.getKey() + "/" + repository.getLanguage()
-        + " with " + rulesByKey.size() + " rules");
+      + " with " + rulesByKey.size() + " rules");
     rules.put(repository.getKey(), rulesByKey);
   }
 

@@ -50,7 +50,7 @@ import org.sonar.wsclient.services.Resource;
 @SuppressWarnings("rawtypes")
 public class JavaElementsAdapterFactory implements IAdapterFactory {
 
-  private static final Class<?>[] ADAPTER_LIST = { ISonarResource.class, ISonarFile.class, ISonarProject.class, Resource.class, IFile.class };
+  private static final Class<?>[] ADAPTER_LIST = {ISonarResource.class, ISonarFile.class, ISonarProject.class, Resource.class, IFile.class};
 
   public Object getAdapter(Object adaptableObject, Class adapterType) {
     if (ISonarResource.class.equals(adapterType) || ISonarFile.class.equals(adapterType) || ISonarProject.class.equals(adapterType)) {
@@ -76,8 +76,8 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
         for (IProject project : root.getRoot().getProjects()) {
           if (project.isAccessible()) {
             ISonarProject sonarProject = SonarUiPlugin.getSonarProject(project);
-            if (sonarProject != null && StringUtils.equals(sonarProject.getGroupId(), groupId)
-                && StringUtils.equals(sonarProject.getArtifactId(), artifactId)) {
+            if ((sonarProject != null) && StringUtils.equals(sonarProject.getGroupId(), groupId)
+              && StringUtils.equals(sonarProject.getArtifactId(), artifactId)) {
               IJavaProject javaProject = JavaCore.create(project);
               try {
                 IType type = javaProject.findType(className);

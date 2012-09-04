@@ -95,7 +95,7 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
   }
 
   public class SonarValidator extends Validator {
-    private TaskRepository repository;
+    private final TaskRepository repository;
 
     public SonarValidator(TaskRepository repository) {
       this.repository = repository;

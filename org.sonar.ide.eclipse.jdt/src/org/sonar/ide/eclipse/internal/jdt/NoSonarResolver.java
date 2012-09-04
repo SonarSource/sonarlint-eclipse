@@ -85,7 +85,7 @@ public class NoSonarResolver implements ISonarResolver {
 
   public boolean resolve(final IMarker marker, final ICompilationUnit cu) {
     final int line = marker.getAttribute(IMarker.LINE_NUMBER, -1);
-    if (line == -1 || cu == null) {
+    if ((line == -1) || (cu == null)) {
       return false;
     }
     try {

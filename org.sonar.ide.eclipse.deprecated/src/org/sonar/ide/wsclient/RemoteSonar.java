@@ -33,7 +33,7 @@ import java.util.Collection;
  */
 public class RemoteSonar implements SourceCodeSearchEngine {
 
-  private RemoteSonarIndex index;
+  private final RemoteSonarIndex index;
 
   public RemoteSonar(Host host) {
     this(host, new SimpleSourceCodeDiffEngine());

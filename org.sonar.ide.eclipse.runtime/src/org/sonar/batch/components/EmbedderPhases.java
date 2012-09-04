@@ -34,14 +34,14 @@ import org.sonar.batch.phases.SensorsExecutor;
  */
 public class EmbedderPhases {
 
-  private Project project;
-  private DefaultIndex index;
-  private RulesProfile rulesProfile;
-  private ViolationFilters violationFilters;
-  private InitializersExecutor initializersExecutor;
-  private SensorsExecutor sensorsExecutor;
-  private DecoratorsExecutor decoratorsExecutor;
-  private SensorContext sensorContext;
+  private final Project project;
+  private final DefaultIndex index;
+  private final RulesProfile rulesProfile;
+  private final ViolationFilters violationFilters;
+  private final InitializersExecutor initializersExecutor;
+  private final SensorsExecutor sensorsExecutor;
+  private final DecoratorsExecutor decoratorsExecutor;
+  private final SensorContext sensorContext;
 
   public EmbedderPhases(Project project, DefaultIndex index, RulesProfile rulesProfile, ViolationFilters violationFilters,
       InitializersExecutor initializersExecutor, SensorsExecutor sensorsExecutor, DecoratorsExecutor decoratorsExecutor,

@@ -50,8 +50,8 @@ import org.sonar.batch.index.DefaultIndex;
 
 public class ProjectModule extends Module {
 
-  private ProjectDefinition projectDefinition;
-  private Project project;
+  private final ProjectDefinition projectDefinition;
+  private final Project project;
 
   public ProjectModule(ProjectDefinition projectDefinition) {
     this.projectDefinition = projectDefinition;

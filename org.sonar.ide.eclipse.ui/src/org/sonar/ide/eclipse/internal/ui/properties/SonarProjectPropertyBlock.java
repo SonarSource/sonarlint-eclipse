@@ -113,7 +113,7 @@ public class SonarProjectPropertyBlock {
       public void widgetSelected(SelectionEvent e) {
         PreferenceDialog preference = PreferencesUtil.createPreferenceDialogOn(PlatformUI.getWorkbench().getDisplay().getActiveShell(),
             ISonarConstants.PLUGIN_ID + ".preferences.SonarPreferencePage", null, null);
-        if (preference != null && (preference.open() == Window.OK)) {
+        if ((preference != null) && (preference.open() == Window.OK)) {
           serversCombo.removeAll();
           List<Host> servers = SonarCorePlugin.getServersManager().getHosts();
           for (Host server : servers) {

@@ -40,7 +40,7 @@ public class EmbedderRuleFinderTest {
         return Arrays.asList(rule1);
       }
     };
-    EmbedderRuleFinder ruleFinder = new EmbedderRuleFinder(new RuleRepository[] { ruleRepository });
+    EmbedderRuleFinder ruleFinder = new EmbedderRuleFinder(new RuleRepository[] {ruleRepository});
 
     assertThat(ruleFinder.findByKey("pmd", "rule1"), is(rule1));
     assertThat(ruleFinder.findByKey("pmd", "notfound"), nullValue());

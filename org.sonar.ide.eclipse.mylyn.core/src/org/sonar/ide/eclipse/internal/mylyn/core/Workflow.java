@@ -202,7 +202,7 @@ public final class Workflow {
     @Override
     boolean canPerformEdit(String status) {
       return SonarClient.STATUS_OPEN.equals(status)
-          || SonarClient.STATUS_REOPENED.equals(status);
+        || SonarClient.STATUS_REOPENED.equals(status);
     }
 
     @Override
@@ -223,7 +223,7 @@ public final class Workflow {
     @Override
     boolean canPerformEdit(String status) {
       return SonarClient.STATUS_OPEN.equals(status)
-          || SonarClient.STATUS_REOPENED.equals(status);
+        || SonarClient.STATUS_REOPENED.equals(status);
     }
 
     @Override
@@ -268,7 +268,7 @@ public final class Workflow {
    */
   public static final Operation[] OPERATIONS = new Operation[] {
     new DefaultCreate(), new CreateFalsePositive(), new CreateFixed(),
-    new Default(), new ResolveAsFixed(), new ResolveAsFalsePositive(), new Reopen() };
+    new Default(), new ResolveAsFixed(), new ResolveAsFalsePositive(), new Reopen()};
 
   public static Operation operationById(String id) {
     for (Operation op : OPERATIONS) {

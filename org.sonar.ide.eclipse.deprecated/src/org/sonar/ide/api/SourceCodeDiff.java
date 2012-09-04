@@ -30,7 +30,7 @@ public final class SourceCodeDiff {
 
   public static final int NOT_FOUND = -1;
 
-  private Map<Integer, Integer> diff = new HashMap<Integer, Integer>();
+  private final Map<Integer, Integer> diff = new HashMap<Integer, Integer>();
 
   public SourceCodeDiff() {
   }

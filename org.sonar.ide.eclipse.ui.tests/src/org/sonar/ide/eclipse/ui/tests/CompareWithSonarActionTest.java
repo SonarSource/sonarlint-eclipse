@@ -38,7 +38,7 @@ import static org.junit.Assert.fail;
 public class CompareWithSonarActionTest extends UITestCase {
   private static final String PROJECT_NAME = "reference";
 
-  private static final String[] MENUBAR_PATH = { "Compare With", "Sonar server" };
+  private static final String[] MENUBAR_PATH = {"Compare With", "Sonar server"};
 
   @BeforeClass
   public static void importProject() throws Exception {

@@ -33,10 +33,10 @@ import java.util.List;
 public class AbstractTaskSchema {
 
   public static class Field {
-    private String key;
-    private String label;
-    private String type;
-    private String kind;
+    private final String key;
+    private final String label;
+    private final String type;
+    private final String kind;
 
     protected Field(String key, String label, String type, String kind) {
       Assert.isNotNull(key);
@@ -80,7 +80,7 @@ public class AbstractTaskSchema {
     }
   }
 
-  private List<Field> fields = new ArrayList<Field>();
+  private final List<Field> fields = new ArrayList<Field>();
 
   public void initialize(TaskData taskData) {
     for (Field field : fields) {

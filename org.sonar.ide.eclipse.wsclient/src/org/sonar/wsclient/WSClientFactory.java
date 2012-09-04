@@ -95,7 +95,7 @@ public final class WSClientFactory {
    */
   private static void configureCredentials(HttpClient httpClient, Host server) {
     String username = server.getUsername();
-    if (username != null && !"".equals(username)) {
+    if ((username != null) && !"".equals(username)) {
       httpClient.getParams().setAuthenticationPreemptive(true);
       Credentials credentials = new UsernamePasswordCredentials(server.getUsername(), server.getPassword());
       httpClient.getState().setCredentials(AuthScope.ANY, credentials);

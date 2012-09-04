@@ -54,7 +54,7 @@ public class SonarMarkerResolution implements IMarkerResolution2 {
 
   public void run(final IMarker marker) {
     final IResource resource = marker.getResource();
-    if (resource instanceof IFile && resource.isAccessible()) {
+    if ((resource instanceof IFile) && resource.isAccessible()) {
       if (resolver.resolve(marker, (IFile) resource)) {
         try {
           marker.delete();

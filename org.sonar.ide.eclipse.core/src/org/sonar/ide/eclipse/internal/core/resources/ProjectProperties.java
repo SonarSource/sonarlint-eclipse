@@ -30,7 +30,7 @@ import org.sonar.ide.eclipse.core.SonarKeyUtils;
  */
 public class ProjectProperties implements ISonarProject {
 
-  private IProject project;
+  private final IProject project;
   private String url;
   private String groupId;
   private String artifactId;
@@ -46,7 +46,7 @@ public class ProjectProperties implements ISonarProject {
       return null;
     }
     IProject project = resource.getProject();
-    if (project == null || !project.isAccessible()) {
+    if ((project == null) || !project.isAccessible()) {
       return null;
     }
     return SonarCorePlugin.getDefault().getProjectManager().readSonarConfiguration(project);

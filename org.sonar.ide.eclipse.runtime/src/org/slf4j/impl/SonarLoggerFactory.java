@@ -48,7 +48,7 @@ public class SonarLoggerFactory implements ILoggerFactory {
   }
 
   private Logger determineLogger(String name) {
-    if (name != null && name.startsWith("org.sonar")) {
+    if ((name != null) && name.startsWith("org.sonar")) {
       return SonarLoggerBridge.SINGLETON;
     } else {
       return NOPLogger.NOP_LOGGER;

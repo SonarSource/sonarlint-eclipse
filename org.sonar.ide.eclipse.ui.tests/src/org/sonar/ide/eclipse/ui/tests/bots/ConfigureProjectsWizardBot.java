@@ -24,7 +24,7 @@ import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
 
 public class ConfigureProjectsWizardBot {
-  private SWTBot bot = new SWTBot();
+  private final SWTBot bot = new SWTBot();
 
   public ConfigureProjectsWizardBot() {
     bot.shell("Associate with Sonar").activate();

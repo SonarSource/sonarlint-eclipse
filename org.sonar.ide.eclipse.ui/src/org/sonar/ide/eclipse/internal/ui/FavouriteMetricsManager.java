@@ -37,9 +37,9 @@ public final class FavouriteMetricsManager {
     void updated();
   }
 
-  private Set<Listener> listeners = Sets.newHashSet();
+  private final Set<Listener> listeners = Sets.newHashSet();
 
-  private List<ISonarMetric> metrics = Lists.newArrayList();
+  private final List<ISonarMetric> metrics = Lists.newArrayList();
 
   public List<ISonarMetric> get() {
     return Collections.unmodifiableList(metrics);

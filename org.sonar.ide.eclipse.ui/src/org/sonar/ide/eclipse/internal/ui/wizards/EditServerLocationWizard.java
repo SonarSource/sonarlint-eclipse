@@ -26,7 +26,7 @@ import org.sonar.wsclient.Host;
 
 public class EditServerLocationWizard extends AbstractServerLocationWizard {
 
-  private Host host;
+  private final Host host;
 
   public EditServerLocationWizard(Host server) {
     super(new ServerLocationWizardPage(server), "Edit Sonar Server");
@@ -36,7 +36,7 @@ public class EditServerLocationWizard extends AbstractServerLocationWizard {
   @Override
   protected void doFinish(String serverUrl, String username, String password, IProgressMonitor monitor) throws Exception {
     String oldServerUrl = host.getHost();
-    if (StringUtils.isNotBlank(oldServerUrl) && SonarCorePlugin.getServersManager().findServer(oldServerUrl) != null) {
+    if (StringUtils.isNotBlank(oldServerUrl) && (SonarCorePlugin.getServersManager().findServer(oldServerUrl) != null)) {
       SonarCorePlugin.getServersManager().removeServer(oldServerUrl);
     }
     super.doFinish(serverUrl, username, password, monitor);

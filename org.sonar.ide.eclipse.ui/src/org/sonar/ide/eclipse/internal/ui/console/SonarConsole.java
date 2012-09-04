@@ -154,12 +154,12 @@ public class SonarConsole extends IOConsole implements ISonarConsole, SonarLogLi
       }
     }
     // not found - create a new one
-    manager.addConsoles(new IConsole[] { this });
+    manager.addConsoles(new IConsole[] {this});
   }
 
   public void closeConsole() {
     IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
-    manager.removeConsoles(new IConsole[] { this });
+    manager.removeConsoles(new IConsole[] {this});
   }
 
   private IOConsoleOutputStream getDebugStream() {

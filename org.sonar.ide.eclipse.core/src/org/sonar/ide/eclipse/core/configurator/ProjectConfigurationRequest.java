@@ -24,8 +24,8 @@ import org.sonar.batch.bootstrapper.ProjectDefinition;
 
 public class ProjectConfigurationRequest {
 
-  private IProject project;
-  private ProjectDefinition sonarProject;
+  private final IProject project;
+  private final ProjectDefinition sonarProject;
 
   public ProjectConfigurationRequest(IProject eclipseProject, ProjectDefinition sonarProject) {
     this.project = eclipseProject;

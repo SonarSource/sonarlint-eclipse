@@ -25,7 +25,7 @@ import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.sonar.ide.eclipse.ui.tests.utils.ContextMenuHelper;
 
 public class PackageExplorerBot {
-  private SWTBotView viewBot;
+  private final SWTBotView viewBot;
 
   public PackageExplorerBot() {
     viewBot = new SWTWorkbenchBot().viewById(JavaUI.ID_PACKAGES);

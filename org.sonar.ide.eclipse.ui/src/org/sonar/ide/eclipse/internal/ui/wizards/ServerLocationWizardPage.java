@@ -55,7 +55,7 @@ public class ServerLocationWizardPage extends WizardPage {
   private Text serverPasswordText;
   private Button testConnectionButton;
 
-  private Host host;
+  private final Host host;
 
   public ServerLocationWizardPage() {
     this(new Host("http://localhost:9000"));

@@ -68,9 +68,9 @@ public final class SonarQuery {
     if (ANY_USER.equalsIgnoreCase(type)) {
       return null;
     } else if (CURRENT_USER.equalsIgnoreCase(type)) {
-      return new String[] { currentUser };
+      return new String[] {currentUser};
     } else if (SPECIFIED_USER.equalsIgnoreCase(type)) {
-      return new String[] { specifiedUser };
+      return new String[] {specifiedUser};
     } else {
       throw new IllegalStateException();
     }

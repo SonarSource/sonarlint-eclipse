@@ -72,8 +72,8 @@ public class ConfigureProjectsWizard extends Wizard {
   private static final Logger LOG = LoggerFactory.getLogger(ConfigureProjectsWizard.class);
 
   private ConfigureProjectsPage mainPage;
-  private List<IProject> projects;
-  private List<IProject> selected;
+  private final List<IProject> projects;
+  private final List<IProject> selected;
 
   public ConfigureProjectsWizard(List<IProject> projects, List<IProject> initialSelection) {
     setNeedsProgressMonitor(true);
@@ -95,8 +95,8 @@ public class ConfigureProjectsWizard extends Wizard {
 
   // TODO move to top level
   public class ConfigureProjectsPage extends WizardPage {
-    private List<IProject> projects;
-    private List<IProject> selected;
+    private final List<IProject> projects;
+    private final List<IProject> selected;
     private CheckboxTableViewer viewer;
     private ComboViewer comboViewer;
 
@@ -172,10 +172,10 @@ public class ConfigureProjectsWizard extends Wizard {
       ViewerSupport.bind(
           viewer,
           new WritableList(list, SonarProject.class),
-          new IValueProperty[] { BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_PROJECT_NAME),
-              BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_GROUP_ID),
-              BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_ARTIFACT_ID),
-              BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_BRANCH) });
+          new IValueProperty[] {BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_PROJECT_NAME),
+            BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_GROUP_ID),
+            BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_ARTIFACT_ID),
+            BeanProperties.value(SonarProject.class, SonarProject.PROPERTY_BRANCH)});
       viewer.setCheckedElements(selectedList.toArray(new SonarProject[selectedList.size()]));
 
       Button autoConfigButton = new Button(container, SWT.PUSH);
@@ -309,8 +309,8 @@ public class ConfigureProjectsWizard extends Wizard {
 
     public class AssociateProjects implements IRunnableWithProgress {
 
-      private String url;
-      private SonarProject[] projects;
+      private final String url;
+      private final SonarProject[] projects;
 
       public AssociateProjects(String url, SonarProject[] projects) {
         Assert.isNotNull(url);
@@ -344,7 +344,7 @@ public class ConfigureProjectsWizard extends Wizard {
       public static final String PROPERTY_ARTIFACT_ID = "artifactId";
       public static final String PROPERTY_BRANCH = "branch";
 
-      private IProject project;
+      private final IProject project;
       private String groupId;
       private String artifactId;
       private String branch;

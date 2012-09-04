@@ -26,11 +26,11 @@ public final class LogEntry {
   public static final int WARNING = 2;
   public static final int ERROR = 3;
 
-  private int level;
+  private final int level;
 
-  private String message;
+  private final String message;
 
-  private Throwable exception;
+  private final Throwable exception;
 
   public LogEntry(int level, String message) {
     this(level, message, null);

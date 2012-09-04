@@ -55,7 +55,7 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
     SonarClient.PRIORITY_INFO
   };
 
-  private IRepositoryQuery query;
+  private final IRepositoryQuery query;
   private Text titleText;
   private Text projectText;
   private Combo reporterCombo;
@@ -95,7 +95,7 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
     Label reporterLabel = new Label(control, SWT.NONE);
     reporterLabel.setText(Messages.SonarQueryPage_Reporter_Title);
     reporterCombo = new Combo(control, SWT.READ_ONLY | SWT.BORDER);
-    reporterCombo.setItems(new String[] { SonarQuery.ANY_USER, SonarQuery.CURRENT_USER, SonarQuery.SPECIFIED_USER });
+    reporterCombo.setItems(new String[] {SonarQuery.ANY_USER, SonarQuery.CURRENT_USER, SonarQuery.SPECIFIED_USER});
     reporterText = new Text(control, SWT.BORDER);
     reporterText.setEnabled(false);
     reporterText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
@@ -109,7 +109,7 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
     assigneeLabel.setText(Messages.SonarQueryPage_Assignee_Title);
     assigneeCombo = new Combo(control, SWT.READ_ONLY | SWT.BORDER);
     // TODO "Unassigned" not supported - see SONARIDE-277
-    assigneeCombo.setItems(new String[] { SonarQuery.ANY_USER, SonarQuery.CURRENT_USER, SonarQuery.SPECIFIED_USER });
+    assigneeCombo.setItems(new String[] {SonarQuery.ANY_USER, SonarQuery.CURRENT_USER, SonarQuery.SPECIFIED_USER});
     assigneeText = new Text(control, SWT.BORDER);
     assigneeText.setEnabled(false);
     assigneeText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));

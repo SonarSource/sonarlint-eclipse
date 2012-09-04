@@ -30,7 +30,7 @@ import org.sonar.api.rules.Violation;
 @DependsUpon(DecoratorBarriers.END_OF_VIOLATIONS_GENERATION)
 public class EmbedderViolationsDecorator implements Decorator {
 
-  private EmbedderPersistenceManager persistenceManager;
+  private final EmbedderPersistenceManager persistenceManager;
 
   public EmbedderViolationsDecorator(EmbedderPersistenceManager persistenceManager) {
     this.persistenceManager = persistenceManager;

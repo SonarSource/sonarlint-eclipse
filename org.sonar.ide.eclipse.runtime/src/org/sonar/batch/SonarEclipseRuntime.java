@@ -24,7 +24,7 @@ import org.sonar.batch.components.EmbedderIndex;
 
 public class SonarEclipseRuntime {
 
-  private org.sonar.api.Plugin[] plugins;
+  private final org.sonar.api.Plugin[] plugins;
 
   private GlobalModule globalModule;
 

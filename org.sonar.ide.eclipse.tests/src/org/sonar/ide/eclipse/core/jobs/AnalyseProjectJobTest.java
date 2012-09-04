@@ -73,8 +73,8 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   static class IsMarker extends BaseMatcher<IMarker> {
 
-    private String path;
-    private int line;
+    private final String path;
+    private final int line;
 
     public IsMarker(String path, int line) {
       this.path = path;
@@ -85,7 +85,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
       IMarker marker = (IMarker) item;
       String actualPath = marker.getResource().getProjectRelativePath().toString();
       int actualLine = marker.getAttribute(IMarker.LINE_NUMBER, -1);
-      return StringUtils.equals(actualPath, path) && actualLine == line;
+      return StringUtils.equals(actualPath, path) && (actualLine == line);
     }
 
     public void describeTo(Description description) {

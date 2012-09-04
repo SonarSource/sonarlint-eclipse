@@ -22,7 +22,7 @@ package org.sonar.ide.eclipse.ui.tests.bots;
 import org.eclipse.swtbot.swt.finder.SWTBot;
 
 public class ImportProjectBot {
-  private SWTBot bot = new SWTBot();
+  private final SWTBot bot = new SWTBot();
 
   public ImportProjectBot() {
     bot.menu("File").menu("Import...").click();

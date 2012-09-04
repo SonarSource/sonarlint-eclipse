@@ -40,19 +40,19 @@ public class SonarQueryTest {
   @Test
   public void testGetStatuses() {
     query.setAttribute(SonarQuery.STATUSES, "OPEN");
-    assertThat(SonarQuery.getStatuses(query), is(new String[] { "OPEN" }));
+    assertThat(SonarQuery.getStatuses(query), is(new String[] {"OPEN"}));
 
     query.setAttribute(SonarQuery.STATUSES, "OPEN,REOPENED");
-    assertThat(SonarQuery.getStatuses(query), is(new String[] { "OPEN", "REOPENED" }));
+    assertThat(SonarQuery.getStatuses(query), is(new String[] {"OPEN", "REOPENED"}));
   }
 
   @Test
   public void testGetSeverities() {
     query.setAttribute(SonarQuery.SEVERITIES, "BLOCKER");
-    assertThat(SonarQuery.getSeverities(query), is(new String[] { "BLOCKER" }));
+    assertThat(SonarQuery.getSeverities(query), is(new String[] {"BLOCKER"}));
 
     query.setAttribute(SonarQuery.SEVERITIES, "BLOCKER,MAJOR");
-    assertThat(SonarQuery.getSeverities(query), is(new String[] { "BLOCKER", "MAJOR" }));
+    assertThat(SonarQuery.getSeverities(query), is(new String[] {"BLOCKER", "MAJOR"}));
   }
 
   @Test
@@ -67,11 +67,11 @@ public class SonarQueryTest {
     assertThat(SonarQuery.getReporter(query, "foo"), nullValue());
 
     query.setAttribute(SonarQuery.REPORTER, SonarQuery.CURRENT_USER);
-    assertThat(SonarQuery.getReporter(query, "foo"), is(new String[] { "foo" }));
+    assertThat(SonarQuery.getReporter(query, "foo"), is(new String[] {"foo"}));
 
     query.setAttribute(SonarQuery.REPORTER, SonarQuery.SPECIFIED_USER);
     query.setAttribute(SonarQuery.REPORTER_USER, "bar");
-    assertThat(SonarQuery.getReporter(query, "foo"), is(new String[] { "bar" }));
+    assertThat(SonarQuery.getReporter(query, "foo"), is(new String[] {"bar"}));
   }
 
   @Test
@@ -86,11 +86,11 @@ public class SonarQueryTest {
     assertThat(SonarQuery.getAssignee(query, "foo"), nullValue());
 
     query.setAttribute(SonarQuery.ASSIGNEE, SonarQuery.CURRENT_USER);
-    assertThat(SonarQuery.getAssignee(query, "foo"), is(new String[] { "foo" }));
+    assertThat(SonarQuery.getAssignee(query, "foo"), is(new String[] {"foo"}));
 
     query.setAttribute(SonarQuery.ASSIGNEE, SonarQuery.SPECIFIED_USER);
     query.setAttribute(SonarQuery.ASSIGNEE_USER, "bar");
-    assertThat(SonarQuery.getAssignee(query, "foo"), is(new String[] { "bar" }));
+    assertThat(SonarQuery.getAssignee(query, "foo"), is(new String[] {"bar"}));
   }
 
 }

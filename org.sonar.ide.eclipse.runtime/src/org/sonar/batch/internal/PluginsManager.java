@@ -43,12 +43,12 @@ public class PluginsManager implements IPluginsManager {
 
   private static final Logger LOG = LoggerFactory.getLogger(PluginsManager.class);
 
-  private File workDir;
+  private final File workDir;
 
-  private ClassLoader parentClassLoader;
+  private final ClassLoader parentClassLoader;
 
-  private Map<File, Manifest> manifests = new HashMap<File, Manifest>();
-  private Map<String, String> plugins = new HashMap<String, String>();
+  private final Map<File, Manifest> manifests = new HashMap<File, Manifest>();
+  private final Map<String, String> plugins = new HashMap<String, String>();
 
   public PluginsManager(ClassLoader cl, File workDir) {
     this.parentClassLoader = cl;

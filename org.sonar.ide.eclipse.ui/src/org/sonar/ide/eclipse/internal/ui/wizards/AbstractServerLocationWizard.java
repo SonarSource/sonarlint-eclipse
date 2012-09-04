@@ -33,7 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public abstract class AbstractServerLocationWizard extends Wizard implements INewWizard {
 
-  private ServerLocationWizardPage page;
+  private final ServerLocationWizardPage page;
 
   public AbstractServerLocationWizard(ServerLocationWizardPage page, String title) {
     super();

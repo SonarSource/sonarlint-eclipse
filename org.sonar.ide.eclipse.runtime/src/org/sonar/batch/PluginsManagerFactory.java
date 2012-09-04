@@ -23,7 +23,6 @@ import org.sonar.batch.internal.PluginsManager;
 
 import java.io.File;
 
-
 public final class PluginsManagerFactory {
 
   public static IPluginsManager newPluginsManager(File workDir) {

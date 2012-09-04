@@ -91,9 +91,9 @@ public class MeasuresView extends AbstractSonarInfoView {
   private Map<String, ISonarMeasure> measuresByKey;
   private Map<String, Collection<ISonarMeasure>> measuresByDomain;
 
-  private BaseSelectionListenerAction toggleFavoriteAction = new ToggleFavouriteMetricAction();
+  private final BaseSelectionListenerAction toggleFavoriteAction = new ToggleFavouriteMetricAction();
 
-  private FavouriteMetricsManager.Listener favouriteMetricsListener = new FavouriteMetricsManager.Listener() {
+  private final FavouriteMetricsManager.Listener favouriteMetricsListener = new FavouriteMetricsManager.Listener() {
     public void updated() {
       Collection<ISonarMeasure> favourites = measuresByDomain.get(FAVORITES_CATEGORY);
       if (favourites == null) {

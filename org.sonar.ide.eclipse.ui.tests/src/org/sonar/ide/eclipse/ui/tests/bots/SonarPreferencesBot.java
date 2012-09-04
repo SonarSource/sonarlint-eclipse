@@ -24,7 +24,7 @@ import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 
 public class SonarPreferencesBot {
-  private SWTBot bot = new SWTBot();
+  private final SWTBot bot = new SWTBot();
 
   public SonarPreferencesBot() {
     bot.menu("Window").menu("Preferences").click();

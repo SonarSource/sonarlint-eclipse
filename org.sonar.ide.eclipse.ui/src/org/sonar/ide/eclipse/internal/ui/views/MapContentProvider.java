@@ -44,7 +44,7 @@ public class MapContentProvider implements ITreeContentProvider {
       if (value instanceof Collection) {
         return ((Collection) value).toArray();
       }
-      return new Object[] { value };
+      return new Object[] {value};
     }
     return new Object[0];
   }

@@ -24,7 +24,7 @@ import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 
 public class JavaElementFiltersDialogBot {
-  private SWTBot bot = new SWTBot();
+  private final SWTBot bot = new SWTBot();
 
   protected JavaElementFiltersDialogBot() {
     bot.shell("Java Element Filters").activate();

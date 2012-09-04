@@ -39,7 +39,7 @@ public final class SwtBotUtils {
 
   public static boolean waitForClose(SWTBotShell shell) {
     for (int i = 0; i < 50; i++) {
-      if ( !shell.isOpen()) {
+      if (!shell.isOpen()) {
         return true;
       }
       shell.bot().sleep(200);

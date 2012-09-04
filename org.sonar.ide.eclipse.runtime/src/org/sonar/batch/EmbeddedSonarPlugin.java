@@ -100,7 +100,7 @@ public class EmbeddedSonarPlugin extends Plugin {
     return pluginsManager.getPlugins();
   }
 
-  private CustomProjectComponentsModule customizer = new CustomProjectComponentsModule();
+  private final CustomProjectComponentsModule customizer = new CustomProjectComponentsModule();
 
   public CustomProjectComponentsModule getSonarCustomizer() {
     return customizer;

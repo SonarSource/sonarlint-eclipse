@@ -134,7 +134,7 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
   }
 
   static class DebugAction extends Action {
-    private IPropertyChangeListener listener = new IPropertyChangeListener() {
+    private final IPropertyChangeListener listener = new IPropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent event) {
         if (SonarConsole.P_DEBUG_OUTPUT.equals(event.getProperty())) {
           setChecked(isDebugEnabled());

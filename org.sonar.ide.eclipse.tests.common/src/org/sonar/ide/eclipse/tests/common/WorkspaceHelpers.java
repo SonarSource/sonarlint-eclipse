@@ -47,8 +47,8 @@ public final class WorkspaceHelpers {
 
       public void run(IProgressMonitor monitor) throws CoreException {
         IProject[] projects = workspace.getRoot().getProjects();
-        for (int i = 0; i < projects.length; i++) {
-          projects[i].delete(true, true, monitor);
+        for (IProject project : projects) {
+          project.delete(true, true, monitor);
         }
       }
     }, new NullProgressMonitor());

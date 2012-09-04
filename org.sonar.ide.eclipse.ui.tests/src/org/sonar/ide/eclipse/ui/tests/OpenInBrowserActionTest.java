@@ -29,7 +29,7 @@ public class OpenInBrowserActionTest extends UITestCase {
   private static final String PROJECT_NAME = "reference";
 
   private static final String WEB_BROWSER_EDITOR_ID = "org.eclipse.ui.browser.editor";
-  private static final String[] MENUBAR_PATH = { "Sonar", "Open in Sonar server" };
+  private static final String[] MENUBAR_PATH = {"Sonar", "Open in Sonar server"};
 
   @BeforeClass
   public static void importProject() throws Exception {

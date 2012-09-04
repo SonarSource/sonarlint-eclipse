@@ -28,7 +28,7 @@ import java.util.Map;
 public class CustomProjectComponentsModule extends Module {
   private static final Logger LOG = LoggerFactory.getLogger(CustomProjectComponentsModule.class);
 
-  private Map<Class, Object> components = Maps.newHashMap();
+  private final Map<Class, Object> components = Maps.newHashMap();
 
   @Override
   public void configure() {

@@ -70,14 +70,14 @@ public class SimpleSourceCodeDiffEngine implements SourceCodeDiffEngine {
     int newLine = -1;
     int originalHashCode = getHashCode(originalSourceLine);
     // line might not exists in working copy
-    if (originalLine - 1 < hashCodes.length) {
+    if ((originalLine - 1) < hashCodes.length) {
       if (hashCodes[originalLine - 1] == originalHashCode) {
         newLine = originalLine;
       }
     }
     for (int i = 0; i < hashCodes.length; i++) {
       if (hashCodes[i] == originalHashCode) {
-        if (newLine != -1 && newLine != originalLine) {
+        if ((newLine != -1) && (newLine != originalLine)) {
           // may be more than one match, but we take into account only first
           LOG.debug("Found more than one match for line '{}'", originalSourceLine);
           break;

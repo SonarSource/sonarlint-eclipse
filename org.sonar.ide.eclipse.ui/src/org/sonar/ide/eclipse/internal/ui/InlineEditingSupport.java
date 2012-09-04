@@ -35,8 +35,8 @@ import org.eclipse.swt.widgets.Composite;
  * see Snippet013TableViewerEditing
  */
 public class InlineEditingSupport extends ObservableValueEditingSupport {
-  private CellEditor cellEditor;
-  private String propName;
+  private final CellEditor cellEditor;
+  private final String propName;
 
   public InlineEditingSupport(ColumnViewer viewer, DataBindingContext dbc, String propName) {
     super(viewer, dbc);

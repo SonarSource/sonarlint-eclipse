@@ -155,7 +155,7 @@ public class SonarPreferencePage extends PreferencePage implements IWorkbenchPre
         Host selected = getSelectedServer();
         if (MessageDialog.openConfirm(SonarPreferencePage.this.getShell(), "Remove sonar server connection",
             MessageFormat.format("Confirm removing {0}",
-                new Object[] { selected.getHost() }))) {
+                new Object[] {selected.getHost()}))) {
           SonarCorePlugin.getServersManager().removeServer(selected.getHost());
           servers.remove(selected);
           serversViewer.refresh();

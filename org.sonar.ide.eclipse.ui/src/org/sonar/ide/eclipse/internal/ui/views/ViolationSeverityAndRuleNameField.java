@@ -65,7 +65,7 @@ public class ViolationSeverityAndRuleNameField extends MarkerField {
 
   @Override
   public String getValue(MarkerItem item) {
-    if (item == null || item.getMarker() == null) {
+    if ((item == null) || (item.getMarker() == null)) {
       return null;
     }
     return item.getMarker().getAttribute("rulename", "");

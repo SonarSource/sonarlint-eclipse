@@ -36,7 +36,7 @@ public class PluginModule extends Module {
     "org.sonar.plugins.core.sensors.CloseReviewsDecorator"
   };
 
-  private Plugin plugin;
+  private final Plugin plugin;
 
   public PluginModule(Plugin plugin) {
     this.plugin = plugin;
@@ -53,7 +53,7 @@ public class PluginModule extends Module {
 
   private boolean shouldRegisterExtension(Object extension) {
     return (isType(extension, BatchExtension.class) && isSupportsEnvironment(extension) && isNotBlackListed(extension))
-        || isType(extension, RuleRepository.class);
+      || isType(extension, RuleRepository.class);
   }
 
   private boolean isNotBlackListed(Object extension) {

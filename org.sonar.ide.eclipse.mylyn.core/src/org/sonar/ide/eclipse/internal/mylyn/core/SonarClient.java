@@ -69,7 +69,7 @@ public class SonarClient {
   public static final String PRIORITY_MINOR = "MINOR"; //$NON-NLS-1$
   public static final String PRIORITY_INFO = "INFO"; //$NON-NLS-1$
 
-  private TaskRepository repository;
+  private final TaskRepository repository;
 
   public SonarClient(TaskRepository repository) {
     this.repository = repository;
@@ -108,7 +108,7 @@ public class SonarClient {
    * @since Sonar 2.9
    */
   public void addComment(long id, String comment, IProgressMonitor monitor) {
-    if (comment != null && comment.length() > 0) {
+    if ((comment != null) && (comment.length() > 0)) {
       Sonar sonar = create();
       sonar.update(ReviewUpdateQuery.addComment(id, comment));
     }

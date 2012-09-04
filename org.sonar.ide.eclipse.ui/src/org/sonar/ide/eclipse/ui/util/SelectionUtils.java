@@ -32,7 +32,7 @@ public final class SelectionUtils {
    * @return the selected first element or null
    */
   public static Object getSingleElement(ISelection s) {
-    if ( !(s instanceof IStructuredSelection)) {
+    if (!(s instanceof IStructuredSelection)) {
       return null;
     }
     IStructuredSelection selection = (IStructuredSelection) s;

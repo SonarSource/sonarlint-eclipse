@@ -24,7 +24,7 @@ import org.eclipse.swtbot.swt.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
 
 public class SonarServerWizardBot {
-  private SWTBot bot = new SWTBot();
+  private final SWTBot bot = new SWTBot();
 
   /**
    * Can be constructed only from {@link SonarPreferencesBot}.

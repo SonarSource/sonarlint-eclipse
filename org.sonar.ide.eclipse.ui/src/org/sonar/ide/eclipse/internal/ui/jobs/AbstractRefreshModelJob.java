@@ -98,7 +98,7 @@ public abstract class AbstractRefreshModelJob<M> extends AbstractRemoteSonarJob 
   protected abstract Collection<M> retrieveDatas(EclipseSonar sonar, IResource resource);
 
   private void retrieveMarkers(final IFile resource, final IProgressMonitor monitor) {
-    if (resource == null || !resource.exists() || monitor.isCanceled()) {
+    if ((resource == null) || !resource.exists() || monitor.isCanceled()) {
       return;
     }
     try {

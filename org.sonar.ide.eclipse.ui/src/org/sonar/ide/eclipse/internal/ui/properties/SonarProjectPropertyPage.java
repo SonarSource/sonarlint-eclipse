@@ -65,7 +65,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
   @Override
   protected void performApply() {
     ProjectProperties projectProperties = ProjectProperties.getInstance(getProject());
-    if (projectProperties == null || block == null) {
+    if ((projectProperties == null) || (block == null)) {
       return;
     }
     projectProperties.setUrl(block.getUrl());

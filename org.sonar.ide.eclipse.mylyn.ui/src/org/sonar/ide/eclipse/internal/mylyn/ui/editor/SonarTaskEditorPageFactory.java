@@ -35,7 +35,7 @@ public class SonarTaskEditorPageFactory extends AbstractTaskEditorPageFactory {
   @Override
   public boolean canCreatePageFor(TaskEditorInput input) {
     return input.getTask().getConnectorKind().equals(SonarConnector.CONNECTOR_KIND)
-        || TasksUiUtil.isOutgoingNewTask(input.getTask(), SonarConnector.CONNECTOR_KIND);
+      || TasksUiUtil.isOutgoingNewTask(input.getTask(), SonarConnector.CONNECTOR_KIND);
   }
 
   @Override
@@ -46,7 +46,7 @@ public class SonarTaskEditorPageFactory extends AbstractTaskEditorPageFactory {
   @Override
   public String[] getConflictingIds(TaskEditorInput input) {
     // Hide "planning" page, because we use "private" section
-    return new String[] { ITasksUiConstants.ID_PAGE_PLANNING };
+    return new String[] {ITasksUiConstants.ID_PAGE_PLANNING};
   }
 
   @Override
