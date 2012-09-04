@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.views;
 
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
@@ -30,6 +28,7 @@ import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 
 /**
  * @author Evgeny Mandrikov

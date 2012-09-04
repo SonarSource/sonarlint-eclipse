@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.tests;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
@@ -35,6 +32,9 @@ import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 import org.sonar.ide.eclipse.tests.common.WorkspaceHelpers;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * TODO use Xvfb ("fake" X-server)

@@ -19,13 +19,13 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.ui;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarConnector;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
 @Ignore("Requires UI")
 public class SonarConnectorUiTest {

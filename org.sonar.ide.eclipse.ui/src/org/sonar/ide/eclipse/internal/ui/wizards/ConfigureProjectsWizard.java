@@ -19,11 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.databinding.DataBindingContext;
@@ -54,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.SonarKeyUtils;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.ui.AbstractModelObject;
 import org.sonar.ide.eclipse.internal.ui.InlineEditingSupport;
 import org.sonar.ide.eclipse.internal.ui.Messages;
@@ -64,6 +60,9 @@ import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 /**
  * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertedProjectWizard

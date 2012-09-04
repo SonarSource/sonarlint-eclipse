@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.preferences;
 
-import java.text.MessageFormat;
-import java.util.List;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -51,6 +48,9 @@ import org.sonar.ide.eclipse.internal.ui.wizards.NewServerLocationWizard;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 import org.sonar.wsclient.Host;
+
+import java.text.MessageFormat;
+import java.util.List;
 
 /**
  * Preference page for the workspace.

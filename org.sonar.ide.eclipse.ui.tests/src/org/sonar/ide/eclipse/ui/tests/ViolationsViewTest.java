@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.tests;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.junit.Test;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
@@ -30,6 +27,9 @@ import org.sonar.ide.eclipse.ui.tests.bots.ImportProjectBot;
 import org.sonar.ide.eclipse.ui.tests.bots.PackageExplorerBot;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 @SuppressWarnings("restriction")
 public class ViolationsViewTest extends UITestCase {

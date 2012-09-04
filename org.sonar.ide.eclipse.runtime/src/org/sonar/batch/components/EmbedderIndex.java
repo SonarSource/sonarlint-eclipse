@@ -19,10 +19,10 @@
  */
 package org.sonar.batch.components;
 
-import java.util.Collection;
-
 import org.sonar.api.measures.Measure;
 import org.sonar.api.rules.Violation;
+
+import java.util.Collection;
 
 public interface EmbedderIndex {
 

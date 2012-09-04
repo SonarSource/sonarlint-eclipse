@@ -19,11 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
@@ -34,6 +29,11 @@ import org.junit.Test;
 import org.sonar.wsclient.services.Review;
 
 import java.util.Date;
+
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
 public class SonarTaskDataHandlerTest {
   private SonarConnector connector;

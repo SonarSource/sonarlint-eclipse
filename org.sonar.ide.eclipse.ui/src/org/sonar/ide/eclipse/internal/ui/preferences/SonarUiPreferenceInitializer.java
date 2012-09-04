@@ -19,11 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.preferences;
 
-import java.io.StringReader;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -35,6 +30,11 @@ import org.sonar.ide.eclipse.core.ISonarMetric;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
+
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 public class SonarUiPreferenceInitializer extends AbstractPreferenceInitializer {
 

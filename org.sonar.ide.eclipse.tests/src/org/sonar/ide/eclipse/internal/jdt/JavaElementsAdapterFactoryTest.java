@@ -19,12 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.jdt;
 
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -34,8 +28,13 @@ import org.junit.Test;
 import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 @SuppressWarnings("restriction")
 public class JavaElementsAdapterFactoryTest extends SonarTestCase {

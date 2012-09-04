@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.actions;
 
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
-
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -30,6 +28,7 @@ import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import java.net.URL;

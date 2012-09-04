@@ -19,13 +19,12 @@
  */
 package org.sonar.ide.eclipse.internal.ui.properties;
 
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 
 /**

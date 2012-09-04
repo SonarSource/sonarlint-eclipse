@@ -19,20 +19,25 @@
  */
 package org.sonar.ide.eclipse.internal.ui.preferences;
 
+import com.google.common.collect.Lists;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.sonar.ide.eclipse.core.ISonarMetric;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-
-import com.google.common.collect.Lists;
 
 import java.util.List;
 

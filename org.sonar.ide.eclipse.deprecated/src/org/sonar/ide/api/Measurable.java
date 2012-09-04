@@ -19,10 +19,10 @@
  */
 package org.sonar.ide.api;
 
-import java.util.List;
-
 import org.sonar.wsclient.services.Rule;
 import org.sonar.wsclient.services.Violation;
+
+import java.util.List;
 
 /**
  * @author Evgeny Mandrikov

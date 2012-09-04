@@ -21,7 +21,6 @@ package org.sonar.ide.eclipse.internal.ui.wizards;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.ui.INewWizard;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.wsclient.Host;
 

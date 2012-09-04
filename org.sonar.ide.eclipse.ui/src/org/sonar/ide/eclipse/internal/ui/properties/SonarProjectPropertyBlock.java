@@ -19,10 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.properties;
 
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
-
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.window.Window;
@@ -42,8 +38,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.wsclient.Host;
+
+import java.util.List;
 
 /**
  * @author Jérémie Lagarde

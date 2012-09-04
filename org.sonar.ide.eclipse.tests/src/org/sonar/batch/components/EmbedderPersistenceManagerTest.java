@@ -19,11 +19,6 @@
  */
 package org.sonar.batch.components;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.sonar.api.measures.Measure;
@@ -34,6 +29,11 @@ import org.sonar.api.resources.Resource;
 import org.sonar.api.resources.Scopes;
 import org.sonar.api.rules.RulePriority;
 import org.sonar.api.utils.SonarException;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class EmbedderPersistenceManagerTest {
 

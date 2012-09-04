@@ -27,7 +27,11 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.WSClientFactory;
-import org.sonar.wsclient.services.*;
+import org.sonar.wsclient.services.Review;
+import org.sonar.wsclient.services.ReviewCreateQuery;
+import org.sonar.wsclient.services.ReviewQuery;
+import org.sonar.wsclient.services.ReviewUpdateQuery;
+import org.sonar.wsclient.services.ServerQuery;
 
 import java.util.Collection;
 

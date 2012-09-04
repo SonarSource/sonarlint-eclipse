@@ -22,7 +22,11 @@ package org.sonar.ide.eclipse.internal.jdt;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.*;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
 import org.sonar.ide.eclipse.core.ResourceResolver;
 
 public class JavaResourceResolver extends ResourceResolver {

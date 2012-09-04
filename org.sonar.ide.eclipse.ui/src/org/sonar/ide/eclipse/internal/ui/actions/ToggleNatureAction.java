@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.actions;
 
-import java.util.Iterator;
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -36,6 +33,9 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshAllViolationsJob;
+
+import java.util.Iterator;
+import java.util.List;
 
 public class ToggleNatureAction implements IObjectActionDelegate {
 

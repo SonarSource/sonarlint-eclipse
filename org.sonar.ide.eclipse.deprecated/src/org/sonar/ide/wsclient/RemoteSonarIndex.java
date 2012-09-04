@@ -19,11 +19,6 @@
  */
 package org.sonar.ide.wsclient;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -37,6 +32,11 @@ import org.sonar.wsclient.services.Metric;
 import org.sonar.wsclient.services.MetricQuery;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * EXPERIMENTAL!!!

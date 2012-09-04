@@ -19,13 +19,12 @@
  */
 package org.sonar.ide.eclipse.internal.ui;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.eclipse.core.runtime.SafeRunner;
 import org.sonar.ide.eclipse.core.AbstractSafeRunnable;
 import org.sonar.ide.eclipse.core.ISonarMetric;
 import org.sonar.ide.eclipse.internal.ui.preferences.SonarUiPreferenceInitializer;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.Collections;

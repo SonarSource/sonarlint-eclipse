@@ -19,11 +19,11 @@
  */
 package org.sonar.ide.eclipse.core;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @noimplement This interface is not intended to be implemented by clients.

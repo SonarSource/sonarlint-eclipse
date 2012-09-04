@@ -19,11 +19,11 @@
  */
 package org.sonar.ide.eclipse.internal.ui.views;
 
-import java.util.Collection;
-import java.util.Map;
-
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Evgeny Mandrikov

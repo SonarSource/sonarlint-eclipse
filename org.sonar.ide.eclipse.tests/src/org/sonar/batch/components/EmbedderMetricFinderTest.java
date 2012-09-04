@@ -19,14 +19,14 @@
  */
 package org.sonar.batch.components;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-
 import org.junit.Test;
 import org.sonar.api.measures.Metric;
 
 import java.util.Arrays;
+
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 public class EmbedderMetricFinderTest {
   @Test

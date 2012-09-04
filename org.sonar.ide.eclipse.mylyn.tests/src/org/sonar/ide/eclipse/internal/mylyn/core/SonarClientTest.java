@@ -19,10 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertThat;
-
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
@@ -31,6 +27,10 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.junit.Test;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.services.ReviewQuery;
+
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertThat;
 
 public class SonarClientTest {
 

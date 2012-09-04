@@ -19,9 +19,9 @@
  */
 package org.sonar.batch;
 
-import java.io.File;
-
 import org.sonar.api.Plugin;
+
+import java.io.File;
 
 public interface IPluginsManager {
 

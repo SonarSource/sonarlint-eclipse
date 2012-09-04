@@ -19,11 +19,11 @@
  */
 package org.sonar.batch.components;
 
-import java.io.IOException;
-import java.util.Collections;
-
 import org.sonar.api.resources.Project;
 import org.sonar.batch.ProjectTree;
+
+import java.io.IOException;
+import java.util.Collections;
 
 public class EmbedderProjectTree extends ProjectTree {
 

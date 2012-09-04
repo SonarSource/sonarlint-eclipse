@@ -19,10 +19,6 @@
  */
 package org.sonar.ide.eclipse.core.jobs;
 
-import static org.hamcrest.Matchers.hasItemInArray;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -39,6 +35,10 @@ import org.sonar.batch.ProfileLoader;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.tests.common.JobHelpers;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
+
+import static org.hamcrest.Matchers.hasItemInArray;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class AnalyseProjectJobTest extends SonarTestCase {
 

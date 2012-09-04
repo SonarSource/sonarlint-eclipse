@@ -29,9 +29,23 @@ import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.api.SourceCodeDiff;
 import org.sonar.ide.shared.measures.MeasureData;
 import org.sonar.ide.shared.violations.ViolationUtils;
-import org.sonar.wsclient.services.*;
+import org.sonar.wsclient.services.Measure;
+import org.sonar.wsclient.services.Metric;
+import org.sonar.wsclient.services.Resource;
+import org.sonar.wsclient.services.ResourceQuery;
+import org.sonar.wsclient.services.Rule;
+import org.sonar.wsclient.services.RuleQuery;
+import org.sonar.wsclient.services.Source;
+import org.sonar.wsclient.services.SourceQuery;
+import org.sonar.wsclient.services.Violation;
+import org.sonar.wsclient.services.ViolationQuery;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Evgeny Mandrikov

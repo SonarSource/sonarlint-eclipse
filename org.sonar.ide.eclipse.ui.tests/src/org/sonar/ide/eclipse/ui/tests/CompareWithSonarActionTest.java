@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.tests;
 
-import static org.junit.Assert.fail;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -34,6 +32,8 @@ import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+
+import static org.junit.Assert.fail;
 
 public class CompareWithSonarActionTest extends UITestCase {
   private static final String PROJECT_NAME = "reference";

@@ -30,13 +30,22 @@ import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.measures.Metric;
 import org.sonar.api.measures.MetricFinder;
 import org.sonar.api.platform.ServerFileSystem;
-import org.sonar.api.resources.*;
+import org.sonar.api.resources.DefaultProjectFileSystem;
+import org.sonar.api.resources.Java;
+import org.sonar.api.resources.Languages;
+import org.sonar.api.resources.Project;
 import org.sonar.api.resources.Project.AnalysisType;
+import org.sonar.api.resources.ProjectFileSystem;
 import org.sonar.api.rules.AnnotationRuleParser;
 import org.sonar.api.rules.RuleFinder;
 import org.sonar.api.rules.XMLRuleParser;
 import org.sonar.batch.bootstrapper.ProjectDefinition;
-import org.sonar.batch.components.*;
+import org.sonar.batch.components.EmbedderFileSystem;
+import org.sonar.batch.components.EmbedderMetricFinder;
+import org.sonar.batch.components.EmbedderProjectTree;
+import org.sonar.batch.components.EmbedderRuleFinder;
+import org.sonar.batch.components.EmbedderViolationsDecorator;
+import org.sonar.batch.components.RemoteProfileLoader;
 import org.sonar.batch.index.DefaultIndex;
 
 public class ProjectModule extends Module {

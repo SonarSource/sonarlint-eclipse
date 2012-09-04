@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.tests;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import org.eclipse.jdt.ui.JavaUI;
 import org.junit.Test;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
@@ -30,6 +27,9 @@ import org.sonar.ide.eclipse.internal.ui.views.MeasuresView;
 import org.sonar.ide.eclipse.internal.ui.views.ViolationsView;
 import org.sonar.ide.eclipse.internal.ui.views.WebView;
 import org.sonar.ide.eclipse.ui.tests.utils.SwtBotUtils;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 @SuppressWarnings("restriction")
 public class PerspectiveTest extends UITestCase {

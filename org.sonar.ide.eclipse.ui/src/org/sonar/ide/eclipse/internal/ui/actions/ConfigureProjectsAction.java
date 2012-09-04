@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.internal.ui.actions;
 
+import com.google.common.collect.Lists;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.IAction;
@@ -31,8 +32,6 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.sonar.ide.eclipse.internal.ui.wizards.ConfigureProjectsWizard;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-
-import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.List;

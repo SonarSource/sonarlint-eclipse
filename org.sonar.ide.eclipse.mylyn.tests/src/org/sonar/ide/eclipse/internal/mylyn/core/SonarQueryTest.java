@@ -19,14 +19,14 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.core.IsNull.nullValue;
-import static org.hamcrest.core.Is.is;
-
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertThat;
 
 public class SonarQueryTest {
 

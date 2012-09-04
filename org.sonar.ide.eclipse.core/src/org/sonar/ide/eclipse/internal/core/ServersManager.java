@@ -19,11 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.core;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -40,6 +35,11 @@ import org.sonar.wsclient.WSClientFactory;
 import org.sonar.wsclient.connectors.ConnectionException;
 import org.sonar.wsclient.services.Server;
 import org.sonar.wsclient.services.ServerQuery;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class ServersManager implements ISonarServersManager {
 

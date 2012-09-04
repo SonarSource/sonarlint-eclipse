@@ -19,9 +19,9 @@
  */
 package org.sonar.batch;
 
-import java.io.File;
-
 import org.sonar.batch.internal.PluginsManager;
+
+import java.io.File;
 
 
 public final class PluginsManagerFactory {

@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.tests;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,6 +27,9 @@ import org.sonar.ide.eclipse.internal.core.ServersManager;
 import org.sonar.ide.eclipse.ui.tests.bots.SonarPreferencesBot;
 import org.sonar.ide.eclipse.ui.tests.bots.SonarServerWizardBot;
 import org.sonar.ide.eclipse.ui.tests.utils.ProjectUtils;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 @SuppressWarnings("restriction")
 public class ConfigurationTest extends UITestCase {

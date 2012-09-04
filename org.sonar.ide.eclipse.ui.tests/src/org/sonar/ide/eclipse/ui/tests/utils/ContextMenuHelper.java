@@ -19,10 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.tests.utils;
 
-import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withMnemonic;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.instanceOf;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
@@ -37,6 +33,10 @@ import org.eclipse.swtbot.swt.finder.widgets.AbstractSWTBot;
 import org.hamcrest.Matcher;
 
 import java.util.Arrays;
+
+import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.withMnemonic;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.instanceOf;
 
 /**
  * Inspired by http://dev.eclipse.org/mhonarc/newsLists/news.eclipse.swtbot/msg01038.html

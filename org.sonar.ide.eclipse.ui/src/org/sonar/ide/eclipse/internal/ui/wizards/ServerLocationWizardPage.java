@@ -19,10 +19,12 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
-import org.eclipse.core.runtime.IStatus;
-
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.WizardPage;

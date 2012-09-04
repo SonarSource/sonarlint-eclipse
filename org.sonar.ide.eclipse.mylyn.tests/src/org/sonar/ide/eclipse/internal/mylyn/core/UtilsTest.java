@@ -19,12 +19,12 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
+import org.eclipse.mylyn.tasks.core.ITask.PriorityLevel;
+import org.junit.Test;
+
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
-
-import org.eclipse.mylyn.tasks.core.ITask.PriorityLevel;
-import org.junit.Test;
 
 public class UtilsTest {
 
