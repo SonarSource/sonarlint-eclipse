@@ -38,7 +38,7 @@ public class SonarLoggerFactory implements ILoggerFactory {
     Logger logger = null;
     // protect against concurrent access of loggerMap
     synchronized (this) {
-      logger = (Logger) loggerMap.get(name);
+      logger = loggerMap.get(name);
       if (logger == null) {
         logger = determineLogger(name);
         loggerMap.put(name, logger);

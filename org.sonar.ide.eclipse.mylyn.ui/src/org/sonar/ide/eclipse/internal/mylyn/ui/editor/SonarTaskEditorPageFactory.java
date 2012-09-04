@@ -49,7 +49,6 @@ public class SonarTaskEditorPageFactory extends AbstractTaskEditorPageFactory {
     return new String[] { ITasksUiConstants.ID_PAGE_PLANNING };
   }
 
-  @SuppressWarnings("restriction")
   @Override
   public Image getPageImage() {
     return CommonImages.getImage(TasksUiImages.REPOSITORY_SMALL);

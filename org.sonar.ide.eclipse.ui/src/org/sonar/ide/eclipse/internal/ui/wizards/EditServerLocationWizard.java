@@ -25,7 +25,7 @@ import org.eclipse.ui.INewWizard;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.wsclient.Host;
 
-public class EditServerLocationWizard extends AbstractServerLocationWizard implements INewWizard {
+public class EditServerLocationWizard extends AbstractServerLocationWizard {
 
   private Host host;
 
@@ -34,6 +34,7 @@ public class EditServerLocationWizard extends AbstractServerLocationWizard imple
     this.host = server;
   }
 
+  @Override
   protected void doFinish(String serverUrl, String username, String password, IProgressMonitor monitor) throws Exception {
     String oldServerUrl = host.getHost();
     if (StringUtils.isNotBlank(oldServerUrl) && SonarCorePlugin.getServersManager().findServer(oldServerUrl) != null) {

@@ -6,7 +6,6 @@ Fragment-Host: org.sonar.ide.eclipse.mylyn.core
 Bundle-Version: 2.4.0.qualifier
 Bundle-Vendor: SonarSource
 Require-Bundle: org.junit;bundle-version="4.0.0",
- org.sonar.ide.eclipse.mylyn.core,
  org.sonar.ide.eclipse.mylyn.ui,
  org.sonar.ide.eclipse.wsclient,
  org.eclipse.core.runtime,

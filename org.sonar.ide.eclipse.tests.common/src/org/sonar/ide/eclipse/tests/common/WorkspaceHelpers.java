@@ -36,12 +36,12 @@ import java.io.IOException;
  */
 public final class WorkspaceHelpers {
 
-  public static void cleanWorkspace() throws InterruptedException, CoreException, IOException {
+  public static void cleanWorkspace() throws CoreException, IOException {
     // TODO Godin: implement me
     doCleanWorkspace();
   }
 
-  private static void doCleanWorkspace() throws InterruptedException, CoreException, IOException {
+  private static void doCleanWorkspace() throws CoreException, IOException {
     final IWorkspace workspace = ResourcesPlugin.getWorkspace();
     workspace.run(new IWorkspaceRunnable() {
 

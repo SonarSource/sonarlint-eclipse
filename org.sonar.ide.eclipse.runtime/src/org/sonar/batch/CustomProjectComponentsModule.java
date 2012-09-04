@@ -30,6 +30,7 @@ public class CustomProjectComponentsModule extends Module {
 
   private Map<Class, Object> components = Maps.newHashMap();
 
+  @Override
   public void configure() {
     for (Map.Entry<Class, Object> entry : components.entrySet()) {
       Class<?> role = entry.getKey();

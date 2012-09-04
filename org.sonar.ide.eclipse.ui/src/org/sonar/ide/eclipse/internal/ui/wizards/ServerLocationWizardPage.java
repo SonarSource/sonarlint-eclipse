@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
+import org.eclipse.core.runtime.IStatus;
+
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -115,9 +117,9 @@ public class ServerLocationWizardPage extends WizardPage {
               monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
               try {
                 if (SonarCorePlugin.getServersManager().testSonar(serverUrl, username, password)) {
-                  status = new Status(Status.OK, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);
+                  status = new Status(IStatus.OK, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);
                 } else {
-                  status = new Status(Status.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
+                  status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
                 }
               } catch (CoreException e) {
                 status = e.getStatus();

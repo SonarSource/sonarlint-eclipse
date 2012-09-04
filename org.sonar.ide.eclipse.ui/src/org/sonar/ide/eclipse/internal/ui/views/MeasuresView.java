@@ -113,7 +113,6 @@ public class MeasuresView extends AbstractSonarInfoView {
       /**
        * This is a workaround to show measures, which belongs to specified category.
        */
-      @SuppressWarnings("unchecked")
       @Override
       protected boolean isParentMatch(Viewer viewer, Object element) {
         Map<String, List<IMeasure>> map = (Map<String, List<IMeasure>>) viewer.getInput();
@@ -194,6 +193,7 @@ public class MeasuresView extends AbstractSonarInfoView {
 
   class MeasuresLabelProvider extends AbstractTableLabelProvider implements ILabelProvider {
 
+    @Override
     public Image getColumnImage(Object element, int columnIndex) {
       if ((columnIndex == 1) && (element instanceof ISonarMeasure)) {
         ISonarMeasure measure = (ISonarMeasure) element;
@@ -205,6 +205,7 @@ public class MeasuresView extends AbstractSonarInfoView {
       return null;
     }
 
+    @Override
     @SuppressWarnings("rawtypes")
     public String getColumnText(Object element, int columnIndex) {
       if (element instanceof Map.Entry) {

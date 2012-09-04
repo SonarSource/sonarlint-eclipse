@@ -21,7 +21,7 @@ package org.sonar.ide.eclipse.internal.ui.wizards;
 
 import org.eclipse.ui.INewWizard;
 
-public class NewServerLocationWizard extends AbstractServerLocationWizard implements INewWizard {
+public class NewServerLocationWizard extends AbstractServerLocationWizard {
 
   public NewServerLocationWizard() {
     super(new ServerLocationWizardPage(), "Add Sonar Server");

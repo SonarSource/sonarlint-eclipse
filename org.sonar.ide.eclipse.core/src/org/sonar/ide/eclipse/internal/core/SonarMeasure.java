@@ -78,6 +78,7 @@ public class SonarMeasure extends PlatformObject implements ISonarMeasure {
     return measure.getVar() == null ? 0 : measure.getVar();
   }
 
+  @Override
   @SuppressWarnings("rawtypes")
   public Object getAdapter(Class adapter) {
     if (adapter == ISonarMetric.class) {

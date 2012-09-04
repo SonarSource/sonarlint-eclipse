@@ -47,7 +47,7 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
   /**
    * Retrieves task data for the given review from repository.
    */
-  public TaskData getTaskData(TaskRepository repository, String taskId, IProgressMonitor monitor) throws CoreException {
+  public TaskData getTaskData(TaskRepository repository, String taskId, IProgressMonitor monitor) {
     monitor = Policy.monitorFor(monitor);
     try {
       monitor.beginTask(Messages.SonarTaskDataHandler_Downloading_task, IProgressMonitor.UNKNOWN);

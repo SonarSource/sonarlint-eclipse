@@ -44,14 +44,17 @@ public class InlineEditingSupport extends ObservableValueEditingSupport {
     this.propName = propName;
   }
 
+  @Override
   protected CellEditor getCellEditor(Object element) {
     return cellEditor;
   }
 
+  @Override
   protected IObservableValue doCreateCellEditorObservable(CellEditor cellEditor) {
     return SWTObservables.observeText(cellEditor.getControl(), SWT.Modify);
   }
 
+  @Override
   protected IObservableValue doCreateElementObservable(Object element, ViewerCell cell) {
     return BeansObservables.observeValue(element, propName);
   }

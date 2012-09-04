@@ -81,10 +81,12 @@ public final class Workflow {
   }
 
   public abstract static class CreateOperation extends Operation {
+    @Override
     final boolean canPerform(TaskData taskData) {
       return taskData.isNew();
     }
 
+    @Override
     final long perform(SonarClient client, TaskData taskData, IProgressMonitor monitor) throws CoreException {
       final long violationId = Long.parseLong(taskData.getRoot().getAttribute("violationId").getValue());
       final String comment = getComment(taskData);
