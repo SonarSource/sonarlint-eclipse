@@ -32,9 +32,6 @@ import org.sonar.ide.eclipse.core.SonarServer;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.WSClientFactory;
-import org.sonar.wsclient.connectors.ConnectionException;
-import org.sonar.wsclient.services.Server;
-import org.sonar.wsclient.services.ServerQuery;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ServersManager implements ISonarServersManager {
-
   public static final String NODE = "org.sonar.ide.eclipse.core"; // plugin key
   private static final String PREF_SERVERS = "servers";
 
@@ -135,19 +131,7 @@ public class ServersManager implements ISonarServersManager {
   }
 
   public Sonar getSonar(String url) {
-    final Host server = findServer(url);
+    Host server = findServer(url);
     return WSClientFactory.create(server);
-  }
-
-  public boolean testSonar(String url, String user, String password) throws Exception {
-    try {
-      Sonar sonar = WSClientFactory.create(new Host(url, user, password));
-      Server server = sonar.find(new ServerQuery());
-      LoggerFactory.getLogger(getClass()).info("Connected to Sonar " + server.getVersion());
-      return true;
-    } catch (ConnectionException e) {
-      LoggerFactory.getLogger(getClass()).error("Unable to connect", e);
-      return false;
-    }
   }
 }

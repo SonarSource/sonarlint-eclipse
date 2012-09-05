@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
+import org.sonar.ide.eclipse.core.ISonarConnectionTester.TestResult;
+
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -118,13 +120,18 @@ public class ServerLocationWizardPage extends WizardPage {
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
               monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
               try {
-                if (SonarCorePlugin.getServersManager().testSonar(serverUrl, username, password)) {
-                  status = new Status(IStatus.OK, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);
-                } else {
-                  status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
+                TestResult result = SonarCorePlugin.getServerConnectionTester().testSonar(serverUrl, username, password);
+                switch (result) {
+                  case OK:
+                    status = new Status(IStatus.OK, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);
+                    break;
+                  case AUTHENTICATION_ERROR:
+                    status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_authentication_error);
+                    break;
+                  case CONNECT_ERROR:
+                    status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connection_error);
+                    break;
                 }
-              } catch (CoreException e) {
-                status = e.getStatus();
               } catch (OperationCanceledException e) {
                 status = Status.CANCEL_STATUS;
                 throw new InterruptedException();

@@ -47,7 +47,8 @@ public final class Messages extends NLS {
   public static String ServerLocationWizardPage_action_test;
   public static String ServerLocationWizardPage_action_test_tooltip;
   public static String ServerLocationWizardPage_msg_connected;
-  public static String ServerLocationWizardPage_msg_error;
+  public static String ServerLocationWizardPage_msg_connection_error;
+  public static String ServerLocationWizardPage_msg_authentication_error;
 
   public static String SonarProjectPropertyBlock_label_host;
   public static String SonarProjectPropertyBlock_label_groupId;

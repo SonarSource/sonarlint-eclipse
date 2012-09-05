@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.core;
 
+import org.sonar.ide.eclipse.internal.core.ServerConnectionTester;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.QualifiedName;
@@ -55,6 +57,7 @@ public class SonarCorePlugin extends AbstractPlugin {
   }
 
   private ServersManager serversManager;
+  private ServerConnectionTester serverConnectionTester;
 
   @Override
   public void start(BundleContext context) {
@@ -62,6 +65,7 @@ public class SonarCorePlugin extends AbstractPlugin {
 
     serversManager = new ServersManager();
     serversManager.load();
+    serverConnectionTester = new ServerConnectionTester();
   }
 
   @Override
@@ -82,6 +86,10 @@ public class SonarCorePlugin extends AbstractPlugin {
 
   public static ISonarServersManager getServersManager() {
     return getDefault().serversManager;
+  }
+
+  public static ISonarConnectionTester getServerConnectionTester() {
+    return getDefault().serverConnectionTester;
   }
 
   public static ISonarResource createSonarResource(IResource resource, String key, String name) {
