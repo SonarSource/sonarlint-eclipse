@@ -17,38 +17,37 @@
  * License along with Sonar; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.core;
+package org.sonar.wsclient;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.ISonarConnectionTester;
-import org.sonar.wsclient.Host;
-import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.WSClientFactory;
 import org.sonar.wsclient.connectors.ConnectionException;
 import org.sonar.wsclient.services.MetricQuery;
 import org.sonar.wsclient.services.Server;
 import org.sonar.wsclient.services.ServerQuery;
 import org.sonar.wsclient.services.UserPropertyQuery;
 
-public class ServerConnectionTester implements ISonarConnectionTester {
-  public TestResult testSonar(String url, String user, String password) {
+public class SonarConnectionTester {
+  public static enum ConnectionTestResult {
+    OK, CONNECT_ERROR, AUTHENTICATION_ERROR;
+  }
+
+  public ConnectionTestResult testSonar(String url, String user, String password) {
     Sonar sonar = getSonar(url, user, password);
 
     try {
       checkUrl(sonar);
     } catch (ConnectionException e) {
       LoggerFactory.getLogger(getClass()).error("Unable to connect", e);
-      return TestResult.CONNECT_ERROR;
+      return ConnectionTestResult.CONNECT_ERROR;
     }
 
     try {
       checkAuthentication(sonar, user, password);
     } catch (ConnectionException e) {
-      return TestResult.AUTHENTICATION_ERROR;
+      return ConnectionTestResult.AUTHENTICATION_ERROR;
     }
 
-    return TestResult.OK;
+    return ConnectionTestResult.OK;
   }
 
   private Sonar getSonar(String url, String user, String password) {
@@ -58,7 +57,7 @@ public class ServerConnectionTester implements ISonarConnectionTester {
   private void checkAuthentication(Sonar sonar, String user, String password) {
     sonar.find(MetricQuery.all()); // Will succeed only if user/password are ok OR user/password are wrong but anonymous access is on
 
-    if (!StringUtils.isBlank(user) || !StringUtils.isBlank(password)) {
+    if (!"".equals(user) || !"".equals(password)) {
       sonar.find(new UserPropertyQuery()); // Will succeed only if user/password are ok
     }
   }

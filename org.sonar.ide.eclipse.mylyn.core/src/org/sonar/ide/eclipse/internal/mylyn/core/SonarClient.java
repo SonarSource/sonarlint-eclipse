@@ -19,6 +19,10 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
+import org.sonar.wsclient.SonarConnectionTester.ConnectionTestResult;
+
+import org.sonar.wsclient.SonarConnectionTester;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
@@ -89,7 +93,7 @@ public class SonarClient {
    * Visibility has been relaxed for test.
    */
   public ReviewQuery convertQuery(IRepositoryQuery query) {
-    String currentUser = repository.getCredentials(AuthenticationType.REPOSITORY).getUserName();
+    String currentUser = repository.getUserName();
     ReviewQuery result = new ReviewQuery();
     result.setProjectKeysOrIds(query.getAttribute(SonarQuery.PROJECT));
     result.setAuthorLoginsOrIds(SonarQuery.getReporter(query, currentUser));
@@ -155,6 +159,13 @@ public class SonarClient {
     return create().find(new ServerQuery()).getVersion();
   }
 
+  public ConnectionTestResult validateCredentials() {
+    AuthenticationCredentials credentials = repository.getCredentials(AuthenticationType.REPOSITORY);
+    String userName = repository.getUserName();
+    String password = credentials.getPassword();
+    return new SonarConnectionTester().testSonar(repository.getRepositoryUrl(), userName, password);
+  }
+
   private Sonar create() {
     return WSClientFactory.create(getSonarHost());
   }
@@ -164,9 +175,9 @@ public class SonarClient {
    */
   public Host getSonarHost() {
     Host host = new Host(repository.getRepositoryUrl());
+    host.setUsername(repository.getUserName());
     AuthenticationCredentials credentials = repository.getCredentials(AuthenticationType.REPOSITORY);
     if (credentials != null) {
-      host.setUsername(credentials.getUserName());
       host.setPassword(credentials.getPassword());
     }
     return host;

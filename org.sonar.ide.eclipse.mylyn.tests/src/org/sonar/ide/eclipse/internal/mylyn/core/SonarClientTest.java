@@ -33,12 +33,11 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class SonarClientTest {
+  TaskRepository repository = new TaskRepository(SonarConnector.CONNECTOR_KIND, "http://localhost:9000");
+  SonarClient client = new SonarClient(repository);
 
   @Test
   public void testGetSonarHost() {
-    TaskRepository repository = new TaskRepository(SonarConnector.CONNECTOR_KIND, "http://localhost:9000");
-    SonarClient client = new SonarClient(repository);
-
     Host host = client.getSonarHost();
     assertThat(host.getHost(), is("http://localhost:9000"));
     assertThat(host.getUsername(), nullValue());
@@ -52,9 +51,7 @@ public class SonarClientTest {
 
   @Test
   public void testConvertQuery() {
-    TaskRepository repository = new TaskRepository(SonarConnector.CONNECTOR_KIND, "http://localhost:9000");
     repository.setCredentials(AuthenticationType.REPOSITORY, new AuthenticationCredentials("username", "password"), false);
-    SonarClient client = new SonarClient(repository);
 
     IRepositoryQuery repositoryQuery = new RepositoryQuery(SonarConnector.CONNECTOR_KIND, "");
     repositoryQuery.setAttribute(SonarQuery.PROJECT, "key");

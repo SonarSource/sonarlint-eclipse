@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.ui.wizard;
 
+import org.sonar.wsclient.SonarConnectionTester.ConnectionTestResult;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -104,11 +106,25 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
     @Override
     public void run(IProgressMonitor monitor) throws CoreException {
       try {
-        String version = new SonarClient(repository).getServerVersion();
+        SonarClient sonarClient = new SonarClient(repository);
+        String version = sonarClient.getServerVersion();
         if (!SonarConnector.isServerVersionSupported(version)) {
           setStatus(RepositoryStatus.createStatus(repository, IStatus.ERROR, SonarMylynUiPlugin.PLUGIN_ID,
               NLS.bind(Messages.SonarRepositorySettingsPage_Unsupported_version, version, SonarConnector.MINIMAL_VERSION)));
         }
+
+        ConnectionTestResult result = sonarClient.validateCredentials();
+        switch (result) {
+          case OK:
+            break;
+          case AUTHENTICATION_ERROR:
+            setStatus(RepositoryStatus.createStatus(repository, IStatus.ERROR, SonarMylynUiPlugin.PLUGIN_ID, Messages.SonarRepositorySettingsPage_Authentication_failed));
+            break;
+          case CONNECT_ERROR:
+            setStatus(RepositoryStatus.createStatus(repository, IStatus.ERROR, SonarMylynUiPlugin.PLUGIN_ID, Messages.SonarRepositorySettingsPage_Connection_failed));
+            break;
+        }
+
       } catch (Exception e) {
         setStatus(RepositoryStatus.createStatus(repository, IStatus.ERROR, SonarMylynUiPlugin.PLUGIN_ID,
             Messages.SonarRepositorySettingsPage_Connection_failed));

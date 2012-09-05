@@ -39,12 +39,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.ISonarConnectionTester.TestResult;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.wsclient.Host;
+import org.sonar.wsclient.SonarConnectionTester.ConnectionTestResult;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -118,7 +118,7 @@ public class ServerLocationWizardPage extends WizardPage {
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
               monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
               try {
-                TestResult result = SonarCorePlugin.getServerConnectionTester().testSonar(serverUrl, username, password);
+                ConnectionTestResult result = SonarCorePlugin.getServerConnectionTester().testSonar(serverUrl, username, password);
                 switch (result) {
                   case OK:
                     status = new Status(IStatus.OK, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);

@@ -19,6 +19,12 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
+import org.sonar.wsclient.connectors.ConnectionException;
+
+import org.apache.commons.lang.exception.ExceptionUtils;
+
+import org.eclipse.jface.dialogs.IMessageProvider;
+
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.databinding.DataBindingContext;
@@ -62,24 +68,24 @@ import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.ConnectException;
 import java.util.List;
 
 /**
  * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertedProjectWizard
  */
 public class ConfigureProjectsWizard extends Wizard {
-
   private static final Logger LOG = LoggerFactory.getLogger(ConfigureProjectsWizard.class);
 
-  private ConfigureProjectsPage mainPage;
   private final List<IProject> projects;
   private final List<IProject> selected;
+  private ConfigureProjectsPage mainPage;
 
   public ConfigureProjectsWizard(List<IProject> projects, List<IProject> initialSelection) {
-    setNeedsProgressMonitor(true);
-    setWindowTitle("Associate with Sonar");
     this.projects = projects;
     this.selected = initialSelection;
+    setNeedsProgressMonitor(true);
+    setWindowTitle("Associate with Sonar");
   }
 
   @Override
@@ -185,13 +191,24 @@ public class ConfigureProjectsWizard extends Wizard {
         @Override
         public void widgetSelected(SelectionEvent e) {
           String serverUrl = getServerUrl();
-          SonarProject[] projects = getProjects();
           try {
-            getWizard().getContainer().run(true, false, new AssociateProjects(serverUrl, projects));
+            if (null == serverUrl) {
+              setMessage("Please configure a sonar server first", IMessageProvider.ERROR);
+            } else {
+              SonarProject[] projects = getProjects();
+              getWizard().getContainer().run(true, false, new AssociateProjects(serverUrl, projects));
+            }
+            setMessage("", IMessageProvider.NONE);
           } catch (InvocationTargetException ex) {
             LOG.error(ex.getMessage(), ex);
-          } catch (InterruptedException ex) {
+            if (ex.getTargetException() instanceof ConnectionException) {
+              setMessage("Unable to connect to " + serverUrl + ". Check your connection settings.", IMessageProvider.ERROR);
+            } else {
+              setMessage("Error: " + ex.getMessage(), IMessageProvider.ERROR);
+            }
+          } catch (Exception ex) {
             LOG.error(ex.getMessage(), ex);
+            setMessage("Error: " + ex.getMessage(), IMessageProvider.ERROR);
           }
         }
       });
@@ -221,7 +238,7 @@ public class ConfigureProjectsWizard extends Wizard {
 
     private String getServerUrl() {
       Host host = (Host) SelectionUtils.getSingleElement(comboViewer.getSelection());
-      return host.getHost();
+      return null == host ? null : host.getHost();
     }
 
     String errorMessage;

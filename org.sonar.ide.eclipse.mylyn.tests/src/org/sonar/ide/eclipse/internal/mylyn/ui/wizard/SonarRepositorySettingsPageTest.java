@@ -28,7 +28,6 @@ import static org.junit.Assert.assertThat;
 
 @Ignore("Requires UI")
 public class SonarRepositorySettingsPageTest {
-
   private SonarRepositorySettingsPage page;
 
   @Before
@@ -37,10 +36,13 @@ public class SonarRepositorySettingsPageTest {
   }
 
   @Test
-  public void shouldValidateUrl() {
+  public void should_accept_valid_urls() {
     assertThat(page.isValidUrl("http://localhost"), is(true));
     assertThat(page.isValidUrl("https://localhost:9000"), is(true));
+  }
 
+  @Test
+  public void should_reject_invalid_urls() {
     assertThat(page.isValidUrl("http://localhost:9000/"), is(false)); // ends on slash
     assertThat(page.isValidUrl("http:/localhost:9000"), is(false)); // missing slash in protocol
     assertThat(page.isValidUrl("http://localhost:9000:9000"), is(false)); // MailformedURLException

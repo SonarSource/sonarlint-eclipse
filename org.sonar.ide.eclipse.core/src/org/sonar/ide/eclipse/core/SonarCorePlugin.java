@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.core;
 
-import org.sonar.ide.eclipse.internal.core.ServerConnectionTester;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.QualifiedName;
@@ -31,6 +29,7 @@ import org.sonar.ide.eclipse.internal.core.SonarMeasure;
 import org.sonar.ide.eclipse.internal.core.SonarMetric;
 import org.sonar.ide.eclipse.internal.core.SonarResource;
 import org.sonar.ide.eclipse.internal.core.resources.SonarProjectManager;
+import org.sonar.wsclient.SonarConnectionTester;
 import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Metric;
 
@@ -57,7 +56,7 @@ public class SonarCorePlugin extends AbstractPlugin {
   }
 
   private ServersManager serversManager;
-  private ServerConnectionTester serverConnectionTester;
+  private SonarConnectionTester sonarConnectionTester;
 
   @Override
   public void start(BundleContext context) {
@@ -65,7 +64,7 @@ public class SonarCorePlugin extends AbstractPlugin {
 
     serversManager = new ServersManager();
     serversManager.load();
-    serverConnectionTester = new ServerConnectionTester();
+    sonarConnectionTester = new SonarConnectionTester();
   }
 
   @Override
@@ -88,8 +87,8 @@ public class SonarCorePlugin extends AbstractPlugin {
     return getDefault().serversManager;
   }
 
-  public static ISonarConnectionTester getServerConnectionTester() {
-    return getDefault().serverConnectionTester;
+  public static SonarConnectionTester getServerConnectionTester() {
+    return getDefault().sonarConnectionTester;
   }
 
   public static ISonarResource createSonarResource(IResource resource, String key, String name) {
