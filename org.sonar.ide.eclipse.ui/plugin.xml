@@ -193,7 +193,7 @@
               class="org.sonar.ide.eclipse.internal.ui.actions.ChangeAnalysisModeAction"
               enablesFor="1"
               id="org.sonar.ide.eclipse.runtime.ui.enableLocalAnalysisAction"
-              label="Locally"
+              label="Local"
               menubarPath="sonar.menu/mode/group1"
               style="radio">
         </action>
@@ -201,7 +201,7 @@
               class="org.sonar.ide.eclipse.internal.ui.actions.ChangeAnalysisModeAction"
               enablesFor="1"
               id="org.sonar.ide.eclipse.runtime.ui.enableRemoteAnalysisAction"
-              label="Remotely"
+              label="Remote"
               menubarPath="sonar.menu/mode/group1"
               style="radio">
         </action>
@@ -373,7 +373,7 @@
            </separator>
            <menu
                  id="mode"
-                 label="Analyse...">
+                 label="Mode">
               <separator
                     name="group1">
               </separator>
