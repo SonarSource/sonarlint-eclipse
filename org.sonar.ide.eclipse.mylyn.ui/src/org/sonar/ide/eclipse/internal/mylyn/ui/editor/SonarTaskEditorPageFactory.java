@@ -19,7 +19,7 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.ui.editor;
 
-import org.eclipse.mylyn.internal.provisional.commons.ui.CommonImages;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.mylyn.tasks.ui.ITasksUiConstants;
 import org.eclipse.mylyn.tasks.ui.TasksUiImages;
 import org.eclipse.mylyn.tasks.ui.TasksUiUtil;
@@ -51,7 +51,24 @@ public class SonarTaskEditorPageFactory extends AbstractTaskEditorPageFactory {
 
   @Override
   public Image getPageImage() {
-    return CommonImages.getImage(TasksUiImages.REPOSITORY_SMALL);
+    // Use reflection to return CommonImages.getImage(TasksUiImages.REPOSITORY_SMALL);
+    // Because the package changed in mylyn 3.7 and was removed in mylyn 3.8
+    Class<?> clazzCommonImages;
+    try {
+      clazzCommonImages = Class.forName("org.eclipse.mylyn.internal.provisional.commons.ui.CommonImages");
+    } catch (ClassNotFoundException e) {
+      try {
+        clazzCommonImages = Class.forName("org.eclipse.mylyn.commons.ui.CommonImages");
+      } catch (ClassNotFoundException ex) {
+        throw new IllegalStateException("Unable to load image");
+      }
+    }
+
+    try {
+      return (Image) clazzCommonImages.getMethod("getImage", ImageDescriptor.class).invoke(null, TasksUiImages.REPOSITORY_SMALL);
+    } catch (Exception e) {
+      throw new IllegalStateException("Unable to load image");
+    }
   }
 
   @Override

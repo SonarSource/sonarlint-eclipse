@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
 
-<target name="sonar-ide-e37" sequenceNumber="4">
+<target name="sonar-ide-e37" sequenceNumber="7">
 <locations>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
-<unit id="org.eclipse.emf.common.feature.group" version="2.7.0.v20110912-0920"/>
-<unit id="org.eclipse.wst.common.emf" version="1.2.100.v201101101900"/>
-<unit id="org.eclipse.wst.sse.core" version="1.1.601.v201108151912"/>
-<unit id="org.eclipse.wst.xml.core" version="1.1.601.v201108302147"/>
-<unit id="org.eclipse.wst.sse.ui" version="1.3.1.v201108191312"/>
-<unit id="org.eclipse.emf.ecore.edit.feature.group" version="2.7.0.v20110913-1156"/>
-<unit id="org.eclipse.emf.edit.ui.feature.group" version="2.7.0.v20110913-1156"/>
-<unit id="org.eclipse.wst.xsd.core" version="1.1.600.v201104070312"/>
-<unit id="org.eclipse.wst.web_ui.feature.feature.group" version="3.3.1.v201107072200-7O7IFhREMiB5vNoYqf01XHTvUndyz-yx-9kUyXXL"/>
-<unit id="org.slf4j.api" version="1.6.1.v20100831-0715"/>
-<unit id="org.eclipse.epp.usagedata.feature.feature.group" version="1.4.0.R201106061540"/>
-<repository location="http://download.eclipse.org/releases/indigo"/>
-</location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
 <unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.0.5.20111003_1754-3676ac8-dev-e36"/>
 <unit id="org.eclipse.swtbot.eclipse.gef.feature.group" version="2.0.5.20111003_1754-3676ac8-dev-e36"/>
@@ -37,9 +23,26 @@
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20110523182458/repository"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
-<unit id="org.eclipse.mylyn.commons.feature.group" version="3.6.0.v20110608-1400"/>
-<unit id="org.eclipse.mylyn.sdk_feature.feature.group" version="3.6.0.v20110608-1400"/>
-<repository location="http://archive.eclipse.org/mylyn/drops/3.6.0/v20110608-1400"/>
+<unit id="org.eclipse.emf.common.feature.group" version="2.7.0.v20110912-0920"/>
+<unit id="org.eclipse.wst.common.emf" version="1.2.100.v201101101900"/>
+<unit id="org.eclipse.wst.sse.core" version="1.1.601.v201108151912"/>
+<unit id="org.eclipse.wst.xml.core" version="1.1.601.v201108302147"/>
+<unit id="org.eclipse.wst.sse.ui" version="1.3.1.v201108191312"/>
+<unit id="org.eclipse.emf.ecore.edit.feature.group" version="2.7.0.v20110913-1156"/>
+<unit id="org.eclipse.emf.edit.ui.feature.group" version="2.7.0.v20110913-1156"/>
+<unit id="org.eclipse.wst.xsd.core" version="1.1.600.v201104070312"/>
+<unit id="org.eclipse.wst.web_ui.feature.feature.group" version="3.3.1.v201107072200-7O7IFhREMiB5vNoYqf01XHTvUndyz-yx-9kUyXXL"/>
+<unit id="org.slf4j.api" version="1.6.1.v20100831-0715"/>
+<unit id="org.eclipse.epp.usagedata.feature.feature.group" version="1.4.0.R201106061540"/>
+<repository location="http://download.eclipse.org/releases/indigo"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
+<unit id="org.eclipse.mylyn.builds.sdk.feature.group" version="1.0.1.v20120725-0100"/>
+<unit id="org.eclipse.mylyn.commons.sdk.feature.group" version="3.8.1.v20120725-0100"/>
+<unit id="org.eclipse.mylyn.context.sdk.feature.group" version="3.8.1.v20120725-0100"/>
+<unit id="org.eclipse.mylyn.reviews.sdk.feature.feature.group" version="1.0.1.v20120725-0100"/>
+<unit id="org.eclipse.mylyn.sdk_feature.feature.group" version="3.8.1.v20120725-0100"/>
+<repository location="http://archive.eclipse.org/mylyn/drops/3.8.1/v20120725-0100"/>
 </location>
 </locations>
 </target>
