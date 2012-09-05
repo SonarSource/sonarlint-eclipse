@@ -19,10 +19,7 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
-import org.sonar.ide.eclipse.core.ISonarConnectionTester.TestResult;
-
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -42,6 +39,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.ISonarConnectionTester.TestResult;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.Messages;
@@ -51,13 +49,13 @@ import org.sonar.wsclient.Host;
 import java.lang.reflect.InvocationTargetException;
 
 public class ServerLocationWizardPage extends WizardPage {
+  private final Host host;
 
   private Text serverUrlText;
   private Text serverUsernameText;
   private Text serverPasswordText;
   private Button testConnectionButton;
-
-  private final Host host;
+  private IStatus status;
 
   public ServerLocationWizardPage() {
     this(new Host("http://localhost:9000"));
@@ -133,7 +131,6 @@ public class ServerLocationWizardPage extends WizardPage {
                     break;
                 }
               } catch (OperationCanceledException e) {
-                status = Status.CANCEL_STATUS;
                 throw new InterruptedException();
               } catch (Exception e) {
                 throw new InvocationTargetException(e);
@@ -144,7 +141,10 @@ public class ServerLocationWizardPage extends WizardPage {
           });
         } catch (InvocationTargetException e1) {
           LoggerFactory.getLogger(getClass()).error(e1.getMessage(), e1);
+
+          status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
         } catch (InterruptedException e1) { // NOSONAR - canceled
+          status = Status.CANCEL_STATUS;
         }
         getWizard().getContainer().updateButtons();
 
@@ -170,8 +170,6 @@ public class ServerLocationWizardPage extends WizardPage {
     serverUsernameText.setText(StringUtils.defaultString(host.getUsername()));
     serverPasswordText.setText(StringUtils.defaultString(host.getPassword()));
   }
-
-  private IStatus status;
 
   private void dialogChanged() {
     if (StringUtils.isBlank(getServerUrl())) {
