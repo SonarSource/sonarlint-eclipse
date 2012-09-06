@@ -209,7 +209,7 @@ public class HotspotsView extends AbstractSonarInfoView {
           column2.getColumn().setText(combo.getText());
           viewer.setInput(content);
         } catch (IllegalStateException e) {
-          // Ignore until we find find this happens
+          // Ignore until we find why this happens
         }
       }
     });

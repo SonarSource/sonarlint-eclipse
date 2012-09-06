@@ -254,7 +254,7 @@ public class MeasuresView extends AbstractSonarInfoView {
           viewer.setInput(content);
           viewer.expandAll();
         } catch (IllegalStateException e) {
-          // Ignore until we find find this happens
+          // Ignore until we find why this happens
         }
       }
     });
