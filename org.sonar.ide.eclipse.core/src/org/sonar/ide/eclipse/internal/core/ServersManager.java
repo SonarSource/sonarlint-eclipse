@@ -81,6 +81,10 @@ public class ServersManager implements ISonarServersManager {
     IEclipsePreferences rootNode = new InstanceScope().getNode(NODE);
     try {
       Preferences serversNode = rootNode.node(PREF_SERVERS);
+      serversNode.put("initialized", "true");
+      for (String child : serversNode.childrenNames()) {
+        serversNode.node(child).removeNode();
+      }
       for (SonarServer server : servers) {
         String encodedUrl = EncodingUtils.encodeSlashes(server.getUrl());
         serversNode.node(encodedUrl).putBoolean("auth", server.hasCredentials());
