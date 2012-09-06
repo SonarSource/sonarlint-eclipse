@@ -90,6 +90,10 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
   }
 
   public void updateTaskData(TaskRepository repository, TaskData data, Review review) {
+    if (null == review) {
+      return;
+    }
+
     SonarTaskSchema schema = SonarTaskSchema.getDefault();
 
     // Workaround for SONAR-2449
