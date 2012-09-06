@@ -29,7 +29,6 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class SonarQueryTest {
-
   private IRepositoryQuery query;
 
   @Before
@@ -66,6 +65,9 @@ public class SonarQueryTest {
     query.setAttribute(SonarQuery.REPORTER, SonarQuery.ANY_USER);
     assertThat(SonarQuery.getReporter(query, "foo"), nullValue());
 
+    query.setAttribute(SonarQuery.REPORTER, SonarQuery.UNASSIGNED);
+    assertThat(SonarQuery.getReporter(query, "foo"), is(new String[] {""}));
+
     query.setAttribute(SonarQuery.REPORTER, SonarQuery.CURRENT_USER);
     assertThat(SonarQuery.getReporter(query, "foo"), is(new String[] {"foo"}));
 
@@ -84,6 +86,9 @@ public class SonarQueryTest {
 
     query.setAttribute(SonarQuery.ASSIGNEE, SonarQuery.ANY_USER);
     assertThat(SonarQuery.getAssignee(query, "foo"), nullValue());
+
+    query.setAttribute(SonarQuery.ASSIGNEE, SonarQuery.UNASSIGNED);
+    assertThat(SonarQuery.getAssignee(query, "foo"), is(new String[] {""}));
 
     query.setAttribute(SonarQuery.ASSIGNEE, SonarQuery.CURRENT_USER);
     assertThat(SonarQuery.getAssignee(query, "foo"), is(new String[] {"foo"}));

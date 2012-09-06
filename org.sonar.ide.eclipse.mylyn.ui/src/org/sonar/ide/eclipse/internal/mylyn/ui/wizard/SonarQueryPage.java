@@ -109,7 +109,7 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
     assigneeLabel.setText(Messages.SonarQueryPage_Assignee_Title);
     assigneeCombo = new Combo(control, SWT.READ_ONLY | SWT.BORDER);
     // TODO "Unassigned" not supported - see SONARIDE-277
-    assigneeCombo.setItems(new String[] {SonarQuery.ANY_USER, SonarQuery.CURRENT_USER, SonarQuery.SPECIFIED_USER});
+    assigneeCombo.setItems(new String[] {SonarQuery.ANY_USER, SonarQuery.CURRENT_USER, SonarQuery.SPECIFIED_USER, SonarQuery.UNASSIGNED});
     assigneeText = new Text(control, SWT.BORDER);
     assigneeText.setEnabled(false);
     assigneeText.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
@@ -197,5 +197,4 @@ public class SonarQueryPage extends AbstractRepositoryQueryPage {
     query.setAttribute(SonarQuery.STATUSES, StringUtils.join(statusList.getSelection(), ','));
     query.setAttribute(SonarQuery.SEVERITIES, StringUtils.join(severityList.getSelection(), ','));
   }
-
 }
