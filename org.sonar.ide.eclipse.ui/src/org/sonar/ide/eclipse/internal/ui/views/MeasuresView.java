@@ -52,6 +52,8 @@ import org.eclipse.ui.actions.BaseSelectionListenerAction;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarMeasure;
@@ -82,9 +84,9 @@ import java.util.Map;
  * @author Evgeny Mandrikov
  */
 public class MeasuresView extends AbstractSonarInfoView {
+  private static final Logger LOG = LoggerFactory.getLogger(MeasuresView.class);
 
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.MeasuresView";
-
   private static final String FAVORITES_CATEGORY = "Favourites";
 
   private TreeViewer viewer;
@@ -249,15 +251,21 @@ public class MeasuresView extends AbstractSonarInfoView {
   private void update(final Object content) {
     Display.getDefault().asyncExec(new Runnable() {
       public void run() {
-        try {
-          setContentDescription(getInput().getName());
-          viewer.setInput(content);
-          viewer.expandAll();
-        } catch (IllegalStateException e) {
-          // Ignore until we find why this happens
-        }
+        doAsyncUpdate(content);
       }
     });
+  }
+
+  protected void doAsyncUpdate(Object content) {
+    LOG.debug("Update Measures view " + System.identityHashCode(viewer));
+
+    try {
+      setContentDescription(getInput().getName());
+      viewer.setInput(content);
+      viewer.expandAll();
+    } catch (IllegalStateException e) {
+      // Widget was closed
+    }
   }
 
   @Override

@@ -68,14 +68,10 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
         if (activePart != null) {
           selectionChanged(activePart, ref.getPage().getSelection());
         }
-        startListeningForSelectionChanges();
       }
     }
 
     public void partHidden(IWorkbenchPartReference ref) {
-      if (ref.getId().equals(getSite().getId())) {
-        stopListeningForSelectionChanges();
-      }
     }
 
     public void partInputChanged(IWorkbenchPartReference ref) {
@@ -122,9 +118,11 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
   @Override
   public final void createPartControl(Composite parent) {
     internalCreatePartControl(parent);
-    getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
     createActions();
     createToolbar();
+
+    getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
+    startListeningForSelectionChanges();
   }
 
   protected void createActions() {
@@ -180,16 +178,10 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
     getControl().setFocus();
   }
 
-  /**
-   * Start to listen for selection changes.
-   */
   protected void startListeningForSelectionChanges() {
     getSite().getPage().addPostSelectionListener(this);
   }
 
-  /**
-   * Stop to listen for selection changes.
-   */
   protected void stopListeningForSelectionChanges() {
     getSite().getPage().removePostSelectionListener(this);
   }
@@ -271,5 +263,13 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
 
   protected boolean isIgnoringNewInput(ISonarResource sonarResource, IWorkbenchPart part, ISelection selection) {
     return (currentViewInput != null) && currentViewInput.equals(sonarResource) && (sonarResource != null);
+  }
+
+  @Override
+  public void dispose() {
+    stopListeningForSelectionChanges();
+    getSite().getWorkbenchWindow().getPartService().removePartListener(partListener);
+
+    super.dispose();
   }
 }

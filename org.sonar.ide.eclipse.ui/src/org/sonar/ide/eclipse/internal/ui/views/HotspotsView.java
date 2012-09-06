@@ -47,6 +47,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.progress.IWorkbenchSiteProgressService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarMeasure;
 import org.sonar.ide.eclipse.core.ISonarMetric;
 import org.sonar.ide.eclipse.core.ISonarResource;
@@ -67,9 +69,9 @@ import org.sonar.wsclient.services.ResourceQuery;
 import java.util.List;
 
 public class HotspotsView extends AbstractSonarInfoView {
+  private static final Logger LOG = LoggerFactory.getLogger(HotspotsView.class);
 
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.HotspotsView";
-
   private static final int LIMIT = 20;
 
   private TableViewer viewer;
@@ -203,16 +205,21 @@ public class HotspotsView extends AbstractSonarInfoView {
   private void update(final Object content) {
     getSite().getShell().getDisplay().asyncExec(new Runnable() {
       public void run() {
-        try {
-          setContentDescription(getInput().getName());
-          updateFavouriteMetrics();
-          column2.getColumn().setText(combo.getText());
-          viewer.setInput(content);
-        } catch (IllegalStateException e) {
-          // Ignore until we find why this happens
-        }
+        doAsyncUpdate(content);
       }
     });
+  }
+
+  protected void doAsyncUpdate(Object content) {
+    LOG.debug("Update Hotspots view " + System.identityHashCode(viewer));
+    try {
+      setContentDescription(getInput().getName());
+      updateFavouriteMetrics();
+      column2.getColumn().setText(combo.getText());
+      viewer.setInput(content);
+    } catch (IllegalStateException e) {
+      // Widget was closed
+    }
   }
 
   @Override
