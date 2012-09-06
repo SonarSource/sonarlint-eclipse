@@ -19,12 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
-import org.sonar.wsclient.connectors.ConnectionException;
-
-import org.apache.commons.lang.exception.ExceptionUtils;
-
-import org.eclipse.jface.dialogs.IMessageProvider;
-
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.databinding.DataBindingContext;
@@ -36,6 +30,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -64,11 +59,11 @@ import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.connectors.ConnectionException;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
 
 import java.lang.reflect.InvocationTargetException;
-import java.net.ConnectException;
 import java.util.List;
 
 /**
