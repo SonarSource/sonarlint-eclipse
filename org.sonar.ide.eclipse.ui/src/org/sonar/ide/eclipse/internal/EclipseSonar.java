@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal;
 
+import org.apache.commons.lang.StringUtils;
+
 import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -56,19 +58,16 @@ public final class EclipseSonar extends RemoteSonar {
   }
 
   /**
-   * @deprecated use {@link #search(ISonarResource)} instead
-   */
-  @Override
-  @Deprecated
-  public SourceCode search(String key) {
-    return super.search(key);
-  }
-
-  /**
    * @return null, if not found
    */
   public SourceCode search(ISonarResource resource) {
-    return super.search(resource.getKey());
+    String key;
+    if (resource instanceof ProjectProperties) {
+      key = ((ProjectProperties) resource).getKeyNoBranch();
+    } else {
+      key = resource.getKey();
+    }
+    return super.search(key);
   }
 
   private static void displayError(Throwable e) {
@@ -84,9 +83,7 @@ public final class EclipseSonar extends RemoteSonar {
     if (element == null) {
       return null;
     }
-    String key = element.getKey();
-
-    SourceCode code = search(key);
+    SourceCode code = search(element);
     if (code == null) {
       return null;
     }

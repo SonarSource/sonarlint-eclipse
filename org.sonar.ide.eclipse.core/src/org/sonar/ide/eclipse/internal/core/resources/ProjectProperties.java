@@ -100,6 +100,10 @@ public class ProjectProperties implements ISonarProject {
     return SonarKeyUtils.projectKey(getGroupId(), getArtifactId(), getBranch());
   }
 
+  public String getKeyNoBranch() {
+    return SonarKeyUtils.projectKey(getGroupId(), getArtifactId(), "");
+  }
+
   public String getName() {
     return project.getName();
   }

@@ -22,11 +22,8 @@ package org.sonar.ide.eclipse.core;
 import org.apache.commons.lang.StringUtils;
 
 public final class SonarKeyUtils {
-
   public static final char PROJECT_DELIMITER = ':';
-
   public static final char PACKAGE_DELIMITER = '.';
-
   public static final char PATH_DELIMITER = '/';
 
   /**
@@ -38,6 +35,9 @@ public final class SonarKeyUtils {
    * Default directory name for files in root directory.
    */
   public static final String DEFAULT_DIRECTORY_NAME = "[root]";
+
+  private SonarKeyUtils() {
+  }
 
   /**
    * Examples:
@@ -65,11 +65,8 @@ public final class SonarKeyUtils {
    * 
    * @return key for Java package
    */
-  public static String packageKey(String projectKey, String packageName) {
-    if (StringUtils.isBlank(packageName)) {
-      return projectKey + PROJECT_DELIMITER + DEFAULT_PACKAGE_NAME;
-    }
-    return projectKey + PROJECT_DELIMITER + packageName;
+  public static String packageKey(ISonarProject project, String packageName) {
+    return project.getKey() + PROJECT_DELIMITER + StringUtils.defaultIfEmpty(packageName, DEFAULT_PACKAGE_NAME);
   }
 
   /**
@@ -81,11 +78,7 @@ public final class SonarKeyUtils {
    * 
    * @return key for Java file
    */
-  public static String classKey(String projectKey, String packageName, String fileName) {
-    return packageKey(projectKey, packageName) + PACKAGE_DELIMITER + fileName;
+  public static String classKey(ISonarProject project, String packageName, String fileName) {
+    return packageKey(project, packageName) + PACKAGE_DELIMITER + fileName;
   }
-
-  private SonarKeyUtils() {
-  }
-
 }

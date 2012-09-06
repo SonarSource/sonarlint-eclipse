@@ -55,21 +55,23 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
   public Object getAdapter(Object adaptableObject, Class adapterType) {
     if (ISonarResource.class.equals(adapterType) || ISonarFile.class.equals(adapterType) || ISonarProject.class.equals(adapterType)) {
       return getSonarResource(adaptableObject);
-    } else if (adapterType == Resource.class) {
+    }
+
+    if (adapterType == Resource.class) {
       if (adaptableObject instanceof IJavaProject) {
         IJavaProject javaProject = (IJavaProject) adaptableObject;
-        String key = getProjectKey(javaProject.getProject());
+        String key = SonarUiPlugin.getSonarProject(javaProject.getProject()).getKey();
         return new Resource().setKey(key);
       }
     } else if (adapterType == IFile.class) {
       if (adaptableObject instanceof Resource) {
         Resource resource = (Resource) adaptableObject;
         String key = resource.getKey();
-        String[] parts = StringUtils.split(key, SonarKeyUtils.PROJECT_DELIMITER);
+        String keyWithoutBranch = key.replaceFirst("([^:]*):([^:]*):([^:]*):([^:]*)", "$1:$2:$4");
+        String[] parts = StringUtils.split(keyWithoutBranch, SonarKeyUtils.PROJECT_DELIMITER);
         String groupId = parts[0];
         String artifactId = parts[1];
         String className = StringUtils.removeStart(parts[2], "[default]."); //$NON-NLS-1$
-        // FIXME branch
 
         IWorkspace root = ResourcesPlugin.getWorkspace();
         // TODO this is not optimal
@@ -114,10 +116,10 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
       if (!isConfigured(project)) {
         return null;
       }
-      String projectKey = getProjectKey(folder.getProject());
+      ISonarProject sonarProject = SonarUiPlugin.getSonarProject(folder.getProject());
       String packageName = getPackageName(JavaCore.create(folder));
       if (packageName != null) {
-        return SonarCorePlugin.createSonarResource(folder, SonarKeyUtils.packageKey(projectKey, packageName), packageName);
+        return SonarCorePlugin.createSonarResource(folder, SonarKeyUtils.packageKey(sonarProject, packageName), packageName);
       }
     } else if (adaptableObject instanceof IFile) {
       IFile file = (IFile) adaptableObject;
@@ -125,12 +127,12 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
       if (!isConfigured(project)) {
         return null;
       }
-      String projectKey = getProjectKey(file.getProject());
+      ISonarProject sonarProject = SonarUiPlugin.getSonarProject(file.getProject());
       IJavaElement javaElement = JavaCore.create(file);
       if (javaElement instanceof ICompilationUnit) {
         String packageName = getPackageName(javaElement.getParent());
         String className = StringUtils.substringBeforeLast(javaElement.getElementName(), "."); //$NON-NLS-1$
-        return SonarCorePlugin.createSonarFile(file, SonarKeyUtils.classKey(projectKey, packageName, className), className);
+        return SonarCorePlugin.createSonarFile(file, SonarKeyUtils.classKey(sonarProject, packageName, className), className);
       }
     }
     return null;
@@ -154,9 +156,4 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
     }
     return packageName;
   }
-
-  private String getProjectKey(IProject project) {
-    return SonarUiPlugin.getSonarProject(project).getKey();
-  }
-
 }
