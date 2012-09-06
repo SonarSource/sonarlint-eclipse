@@ -46,7 +46,7 @@ public class SonarProjectManager {
   private static final String VERSION = "1";
 
   public ProjectProperties readSonarConfiguration(IProject project) {
-    LOG.debug("Rading configuration for project " + project.getName());
+    LOG.debug("Reading configuration for project " + project.getName());
     IScopeContext projectScope = new ProjectScope(project);
     IEclipsePreferences projectNode = projectScope.getNode(SonarCorePlugin.PLUGIN_ID);
     if (projectNode == null) {
