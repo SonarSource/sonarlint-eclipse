@@ -69,9 +69,9 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
         String key = resource.getKey();
         String keyWithoutBranch = key.replaceFirst("([^:]*):([^:]*):([^:]*):([^:]*)", "$1:$2:$4");
         String[] parts = StringUtils.split(keyWithoutBranch, SonarKeyUtils.PROJECT_DELIMITER);
-        String groupId = parts[0];
-        String artifactId = parts[1];
-        String className = StringUtils.removeStart(parts[2], "[default]."); //$NON-NLS-1$
+        String groupId = parts.length > 0 ? parts[0] : "";
+        String artifactId = parts.length > 1 ? parts[1] : "";
+        String className = StringUtils.removeStart(parts.length > 2 ? parts[2] : "", "[default]."); //$NON-NLS-1$
 
         IWorkspace root = ResourcesPlugin.getWorkspace();
         // TODO this is not optimal
