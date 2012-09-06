@@ -249,9 +249,13 @@ public class MeasuresView extends AbstractSonarInfoView {
   private void update(final Object content) {
     Display.getDefault().asyncExec(new Runnable() {
       public void run() {
-        setContentDescription(getInput().getName());
-        viewer.setInput(content);
-        viewer.expandAll();
+        try {
+          setContentDescription(getInput().getName());
+          viewer.setInput(content);
+          viewer.expandAll();
+        } catch (IllegalStateException e) {
+          // Ignore until we find find this happens
+        }
       }
     });
   }

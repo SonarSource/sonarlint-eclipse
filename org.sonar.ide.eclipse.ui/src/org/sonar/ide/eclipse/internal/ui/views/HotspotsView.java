@@ -203,10 +203,14 @@ public class HotspotsView extends AbstractSonarInfoView {
   private void update(final Object content) {
     getSite().getShell().getDisplay().asyncExec(new Runnable() {
       public void run() {
-        setContentDescription(getInput().getName());
-        updateFavouriteMetrics();
-        column2.getColumn().setText(combo.getText());
-        viewer.setInput(content);
+        try {
+          setContentDescription(getInput().getName());
+          updateFavouriteMetrics();
+          column2.getColumn().setText(combo.getText());
+          viewer.setInput(content);
+        } catch (IllegalStateException e) {
+          // Ignore until we find find this happens
+        }
       }
     });
   }
