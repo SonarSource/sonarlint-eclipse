@@ -19,21 +19,23 @@
  */
 package org.sonar.ide.eclipse.internal.ui.views;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
+import org.sonar.ide.eclipse.internal.SonarUrls;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 
 /**
  * @author Evgeny Mandrikov
  */
 public class WebView extends AbstractSonarInfoView {
+  private static final Logger LOG = LoggerFactory.getLogger(HotspotsView.class);
 
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.WebView";
 
@@ -60,13 +62,11 @@ public class WebView extends AbstractSonarInfoView {
       browser.setText("Not found.");
       return;
     }
-    ProjectProperties properties = ProjectProperties.getInstance(sonarResource.getProject());
-    StringBuffer url = new StringBuffer(properties.getUrl()).append("/resource/index/").append(sourceCode.getKey());
-    if (sonarResource.getResource() instanceof IFile) {
-      url.append("?metric=coverage");
-    } else {
-      url.append("?page=dashboard");
-    }
-    browser.setUrl(url.toString());
+
+    String url = new SonarUrls().resourceUrl(sonarResource);
+
+    LOG.debug("Opening url {} in web view", url);
+
+    browser.setUrl(url);
   }
 }
