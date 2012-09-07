@@ -29,6 +29,7 @@ import org.sonar.api.rules.RuleFinder;
 import org.sonar.api.rules.RulePriority;
 import org.sonar.batch.ProfileLoader;
 import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
 import org.sonar.wsclient.services.RuleQuery;
 
@@ -48,9 +49,13 @@ public class RemoteProfileLoader implements ProfileLoader {
   }
 
   public RulesProfile load(Project project) {
+    Resource remoteResource = sonar.find(ResourceQuery.createForMetrics(project.getKey(), CoreMetrics.PROFILE_KEY));
+    if (null == remoteResource) {
+      throw new RuntimeException("Project cannot be found on sonar server. Either it was deleted or its groupId/artifactId was changed.");
+    }
+
     try {
-      String profileName = sonar.find(ResourceQuery.createForMetrics(project.getKey(), CoreMetrics.PROFILE_KEY))
-          .getMeasure(CoreMetrics.PROFILE_KEY).getData();
+      String profileName = remoteResource.getMeasure(CoreMetrics.PROFILE_KEY).getData();
 
       RulesProfile profile = RulesProfile.create(profileName, project.getLanguageKey());
 
