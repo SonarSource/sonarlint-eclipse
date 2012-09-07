@@ -20,7 +20,6 @@
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.wsclient.Host;
 
@@ -34,11 +33,11 @@ public class EditServerLocationWizard extends AbstractServerLocationWizard {
   }
 
   @Override
-  protected void doFinish(String serverUrl, String username, String password, IProgressMonitor monitor) throws Exception {
+  protected void doFinish(String serverUrl, String username, String password) throws Exception {
     String oldServerUrl = host.getHost();
     if (StringUtils.isNotBlank(oldServerUrl) && (SonarCorePlugin.getServersManager().findServer(oldServerUrl) != null)) {
       SonarCorePlugin.getServersManager().removeServer(oldServerUrl);
     }
-    super.doFinish(serverUrl, username, password, monitor);
+    super.doFinish(serverUrl, username, password);
   }
 }

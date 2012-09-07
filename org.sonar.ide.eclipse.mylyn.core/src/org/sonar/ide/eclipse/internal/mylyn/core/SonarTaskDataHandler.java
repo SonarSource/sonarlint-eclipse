@@ -61,7 +61,7 @@ public class SonarTaskDataHandler extends AbstractTaskDataHandler {
       monitor.beginTask(Messages.SonarTaskDataHandler_Downloading_task, IProgressMonitor.UNKNOWN);
 
       SonarClient client = new SonarClient(repository);
-      Review review = client.getReview(Long.parseLong(taskId), monitor);
+      Review review = client.getReview(Long.parseLong(taskId));
 
       TaskData taskData = createTaskData(repository, taskId, monitor);
       updateTaskData(repository, taskData, review);

@@ -60,7 +60,7 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
       public void run(IProgressMonitor monitor) throws InvocationTargetException {
         monitor.beginTask("Saving " + serverUrl, 1);
         try {
-          doFinish(serverUrl, username, password, monitor);
+          doFinish(serverUrl, username, password);
         } catch (Exception e) {
           LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
         } finally {
@@ -80,7 +80,7 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
     return true;
   }
 
-  protected void doFinish(String serverUrl, String username, String password, IProgressMonitor monitor) throws Exception {
+  protected void doFinish(String serverUrl, String username, String password) throws Exception {
     SonarCorePlugin.getServersManager().addServer(serverUrl, username, password);
   }
 }

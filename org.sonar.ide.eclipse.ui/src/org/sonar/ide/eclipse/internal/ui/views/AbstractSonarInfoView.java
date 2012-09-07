@@ -211,7 +211,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
       return;
     }
     final ISonarResource input = findSelectedSonarResource(part, selection);
-    if (isIgnoringNewInput(input, part, selection)) {
+    if (isIgnoringNewInput(input)) {
       return;
     }
     if (input == null) {
@@ -261,7 +261,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
     return currentViewInput;
   }
 
-  protected boolean isIgnoringNewInput(ISonarResource sonarResource, IWorkbenchPart part, ISelection selection) {
+  protected boolean isIgnoringNewInput(ISonarResource sonarResource) {
     return (currentViewInput != null) && currentViewInput.equals(sonarResource) && (sonarResource != null);
   }
 

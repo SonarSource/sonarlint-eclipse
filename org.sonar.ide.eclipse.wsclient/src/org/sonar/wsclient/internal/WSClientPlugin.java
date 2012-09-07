@@ -41,6 +41,7 @@ public class WSClientPlugin extends Plugin {
     if (proxyServiceReference == null) {
       return new IProxyData[0];
     }
+    @SuppressWarnings("unchecked")
     IProxyService service = (IProxyService) context.getService(proxyServiceReference);
     return service.select(uri);
   }

@@ -19,17 +19,14 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
-import org.sonar.wsclient.SonarConnectionTester.ConnectionTestResult;
-
-import org.sonar.wsclient.SonarConnectionTester;
-
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.SonarConnectionTester;
+import org.sonar.wsclient.SonarConnectionTester.ConnectionTestResult;
 import org.sonar.wsclient.WSClientFactory;
 import org.sonar.wsclient.services.Review;
 import org.sonar.wsclient.services.ReviewCreateQuery;
@@ -79,7 +76,7 @@ public class SonarClient {
     this.repository = repository;
   }
 
-  public Review getReview(long id, IProgressMonitor monitor) {
+  public Review getReview(long id) {
     Sonar sonar = create();
     Review review = sonar.find(new ReviewQuery().setId(id));
     if (review == null) {
@@ -103,7 +100,7 @@ public class SonarClient {
     return result;
   }
 
-  public Collection<Review> getReviews(IRepositoryQuery query, IProgressMonitor monitor) {
+  public Collection<Review> getReviews(IRepositoryQuery query) {
     Sonar sonar = create();
     return sonar.findAll(convertQuery(query));
   }
@@ -111,7 +108,7 @@ public class SonarClient {
   /**
    * @since Sonar 2.9
    */
-  public void addComment(long id, String comment, IProgressMonitor monitor) {
+  public void addComment(long id, String comment) {
     if ((comment != null) && (comment.length() > 0)) {
       Sonar sonar = create();
       sonar.update(ReviewUpdateQuery.addComment(id, comment));
@@ -121,7 +118,7 @@ public class SonarClient {
   /**
    * @since Sonar 2.9
    */
-  public void resolve(long id, String resolution, String comment, IProgressMonitor monitor) {
+  public void resolve(long id, String resolution, String comment) {
     Sonar sonar = create();
     sonar.update(ReviewUpdateQuery.resolve(id, resolution).setComment(comment));
   }
@@ -129,7 +126,7 @@ public class SonarClient {
   /**
    * @since Sonar 2.9
    */
-  public void reassign(long id, String user, IProgressMonitor monitor) {
+  public void reassign(long id, String user) {
     Sonar sonar = create();
     sonar.update(ReviewUpdateQuery.reassign(id, user));
   }
@@ -137,7 +134,7 @@ public class SonarClient {
   /**
    * @since Sonar 2.9
    */
-  public void reopen(long id, String comment, IProgressMonitor monitor) {
+  public void reopen(long id, String comment) {
     Sonar sonar = create();
     sonar.update(ReviewUpdateQuery.reopen(id).setComment(comment));
   }
@@ -145,7 +142,7 @@ public class SonarClient {
   /**
    * @since Sonar 2.9
    */
-  public Review create(long violationId, String status, String resolution, String comment, String assignee, IProgressMonitor monitor) {
+  public Review create(long violationId, String status, String resolution, String comment, String assignee) {
     ReviewCreateQuery query = new ReviewCreateQuery()
         .setViolationId(violationId)
         .setStatus(status)

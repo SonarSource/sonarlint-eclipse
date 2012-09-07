@@ -129,7 +129,7 @@ public final class Workflow {
 
     @Override
     long performCreate(SonarClient client, long violationId, String comment, TaskData taskData, IProgressMonitor monitor) throws CoreException {
-      return client.create(violationId, SonarClient.STATUS_OPEN, null, comment, getAssignee(taskData), monitor).getId();
+      return client.create(violationId, SonarClient.STATUS_OPEN, null, comment, getAssignee(taskData)).getId();
     }
   }
 
@@ -141,7 +141,7 @@ public final class Workflow {
 
     @Override
     long performCreate(SonarClient client, long violationId, String comment, TaskData taskData, IProgressMonitor monitor) throws CoreException {
-      return client.create(violationId, SonarClient.STATUS_RESOLVED, SonarClient.RESOLUTION_FALSE_POSITIVE, comment, null, monitor).getId();
+      return client.create(violationId, SonarClient.STATUS_RESOLVED, SonarClient.RESOLUTION_FALSE_POSITIVE, comment, null).getId();
     }
   }
 
@@ -153,7 +153,7 @@ public final class Workflow {
 
     @Override
     long performCreate(SonarClient client, long violationId, String comment, TaskData taskData, IProgressMonitor monitor) throws CoreException {
-      return client.create(violationId, SonarClient.STATUS_RESOLVED, SonarClient.RESOLUTION_FIXED, comment, getAssignee(taskData), monitor).getId();
+      return client.create(violationId, SonarClient.STATUS_RESOLVED, SonarClient.RESOLUTION_FIXED, comment, getAssignee(taskData)).getId();
     }
   }
 
@@ -182,10 +182,10 @@ public final class Workflow {
       final String status = getAttribute(taskData, TaskAttribute.STATUS);
       // First try to reassign - if this will fail, then we will not add comment
       if (SonarClient.STATUS_OPEN.equals(status) || SonarClient.STATUS_REOPENED.equals(status)) {
-        client.reassign(getReviewId(taskData), getAssignee(taskData), monitor);
+        client.reassign(getReviewId(taskData), getAssignee(taskData));
       }
       if (!SonarClient.STATUS_CLOSED.equals(status) && !"".equals(comment)) { //$NON-NLS-1$
-        client.addComment(getReviewId(taskData), comment, monitor);
+        client.addComment(getReviewId(taskData), comment);
       }
     }
   }
@@ -207,7 +207,7 @@ public final class Workflow {
 
     @Override
     void performEdit(SonarClient client, TaskData taskData, IProgressMonitor monitor) {
-      client.resolve(getReviewId(taskData), SonarClient.RESOLUTION_FIXED, getComment(taskData), monitor);
+      client.resolve(getReviewId(taskData), SonarClient.RESOLUTION_FIXED, getComment(taskData));
     }
   }
 
@@ -232,7 +232,7 @@ public final class Workflow {
       if ("".equals(comment)) { //$NON-NLS-1$
         throw createException(Messages.Workflow_CommentRequired_Error);
       }
-      client.resolve(getReviewId(taskData), SonarClient.RESOLUTION_FALSE_POSITIVE, getComment(taskData), monitor);
+      client.resolve(getReviewId(taskData), SonarClient.RESOLUTION_FALSE_POSITIVE, getComment(taskData));
     }
   }
 
@@ -258,8 +258,8 @@ public final class Workflow {
         throw createException(Messages.Workflow_CommentRequired_Error);
       }
       long id = getReviewId(taskData);
-      client.reopen(id, getComment(taskData), monitor);
-      client.reassign(id, getAssignee(taskData), monitor);
+      client.reopen(id, getComment(taskData));
+      client.reassign(id, getAssignee(taskData));
     }
   }
 

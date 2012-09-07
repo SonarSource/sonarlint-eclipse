@@ -8,21 +8,22 @@ Export-Package: org.picocontainer.visitors,org.picocontainer.classname
  ,org.picocontainer.annotations,org.sonar.api.qualitymodel,org.sonar.a
  pi,org.sonar.api.web,org.sonar.api.violations,org.sonar.api.web.gwt.c
  lient.widgets,org.sonar.api.charts,org.sonar.api.utils.command,org.so
- nar.api.utils,org.sonar.api.checks,org.picocontainer.containers,org.p
- icocontainer.references,org.apache.commons.configuration,org.picocont
- ainer.behaviors,org.picocontainer.monitors,org.sonar.api.security,org
- .sonar.api.web.gwt,org.sonar.batch,org.picocontainer,org.sonar.batch.
- bootstrap,org.picocontainer.composers,org.sonar.api.resources,org.pic
- ocontainer.adapters,org.sonar.api.rules,org.sonar.api.batch.events,or
- g.sonar.batch.index,org.sonar.api.database.configuration,org.picocont
- ainer.parameters,org.sonar.api.batch,org.sonar.api.measures,org.sonar
- .api.design,org.sonar.api.web.gwt.client,org.sonar.batch.phases,org.p
- icocontainer.paranamer,org.sonar.api.profiles,org.sonar.api.platform,
- org.sonar.api.database.model,org.sonar.batch.bootstrapper,org.picocon
- tainer.injectors,org.picocontainer.lifecycle,org.sonar.batch.componen
- ts,org.sonar.api.utils.dag,org.picocontainer.security,org.picocontain
- er.converters,org.sonar.api.web.gwt.client.webservices,org.sonar.api.
- database,org.sonar.batch.events,org.sonar.api.batch.maven
+ nar.api.utils,org.sonar.api.checks,org.sonar.batch.internal,org.picoc
+ ontainer.containers,org.picocontainer.references,org.apache.commons.c
+ onfiguration,org.picocontainer.behaviors,org.picocontainer.monitors,o
+ rg.sonar.api.security,org.sonar.api.web.gwt,org.sonar.batch,org.picoc
+ ontainer,org.sonar.batch.bootstrap,org.picocontainer.composers,org.so
+ nar.api.resources,org.picocontainer.adapters,org.sonar.api.rules,org.
+ sonar.api.batch.events,org.sonar.batch.index,org.sonar.api.database.c
+ onfiguration,org.picocontainer.parameters,org.sonar.api.batch,org.son
+ ar.api.measures,org.sonar.api.design,org.sonar.api.web.gwt.client,org
+ .sonar.batch.phases,org.picocontainer.paranamer,org.sonar.api.profile
+ s,org.sonar.api.platform,org.sonar.api.database.model,org.sonar.batch
+ .bootstrapper,org.picocontainer.injectors,org.picocontainer.lifecycle
+ ,org.sonar.batch.components,org.sonar.api.utils.dag,org.picocontainer
+ .security,org.picocontainer.converters,org.sonar.api.web.gwt.client.w
+ ebservices,org.sonar.api.database,org.sonar.batch.events,org.sonar.ap
+ i.batch.maven
 Bundle-Vendor: SonarSource
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,jars/sonar-batch-maven-compat-2.8.jar,jars/sonar-b

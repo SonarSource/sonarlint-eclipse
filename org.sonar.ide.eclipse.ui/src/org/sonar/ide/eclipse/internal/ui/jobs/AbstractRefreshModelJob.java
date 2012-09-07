@@ -170,9 +170,7 @@ public abstract class AbstractRefreshModelJob<M> extends AbstractRemoteSonarJob 
 
   protected abstract String getMessage(M data);
 
-  protected Map<String, Object> getExtraInfos(final M data) {
-    return null;
-  }
+  protected abstract Map<String, Object> getExtraInfos(M data);
 
   /**
    * Remove all Sonar markers.

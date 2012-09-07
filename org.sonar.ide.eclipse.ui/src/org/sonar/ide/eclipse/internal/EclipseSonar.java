@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal;
 
-import org.apache.commons.lang.StringUtils;
-
 import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
