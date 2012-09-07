@@ -31,11 +31,11 @@
       <echo>Executing @{dir}$ mvn @{args}</echo>
       <exec dir="@{dir}" failonerror="@{failonerror}" executable="mvn.bat" osfamily="Windows">
         <arg line="@{args} -B -V -e" />
-        <env key="MAVEN_OPTS" value="-Xmx384m" />
+        <env key="MAVEN_OPTS" value="-Xmx512m" />
       </exec>
       <exec dir="@{dir}" failonerror="@{failonerror}" executable="mvn" osfamily="unix">
         <arg line="@{args} -B -V -e" />
-        <env key="MAVEN_OPTS" value="-Xmx384m" />
+        <env key="MAVEN_OPTS" value="-Xmx512m" />
       </exec>
     </sequential>
   </macrodef>
