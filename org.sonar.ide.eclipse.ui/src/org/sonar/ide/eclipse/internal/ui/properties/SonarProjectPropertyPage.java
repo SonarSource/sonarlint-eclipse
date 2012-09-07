@@ -28,7 +28,7 @@ import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 
 /**
- * Property page for projects to configure sonar server connection. It store in
+ * Property page for projects to view sonar server connection. It store in
  * <project>/.settings/org.sonar.ide.eclipse.prefs following properties:
  * - url,
  * - groupId, artifactId, branch
@@ -36,9 +36,6 @@ import org.sonar.ide.eclipse.internal.ui.Messages;
  * @author Jérémie Lagarde
  */
 public class SonarProjectPropertyPage extends PropertyPage {
-
-  private SonarProjectPropertyBlock block;
-
   public SonarProjectPropertyPage() {
     setTitle(Messages.SonarProjectPropertyPage_title);
   }
@@ -48,35 +45,16 @@ public class SonarProjectPropertyPage extends PropertyPage {
     if (parent == null) {
       return new Composite(parent, SWT.NULL);
     }
-    ProjectProperties projectProperties = ProjectProperties.getInstance(getProject());
-    if (projectProperties == null) {
+
+    ProjectProperties properties = ProjectProperties.getInstance(getProject());
+    if (properties == null) {
       return new Composite(parent, SWT.NULL);
     }
-    block = new SonarProjectPropertyBlock();
-    return block.createContents(parent, projectProperties);
-  }
 
-  @Override
-  public boolean performOk() {
-    performApply();
-    return super.performOk();
-  }
-
-  @Override
-  protected void performApply() {
-    ProjectProperties projectProperties = ProjectProperties.getInstance(getProject());
-    if ((projectProperties == null) || (block == null)) {
-      return;
-    }
-    projectProperties.setUrl(block.getUrl());
-    projectProperties.setGroupId(block.getGroupId());
-    projectProperties.setArtifactId(block.getArtifactId());
-    projectProperties.setBranch(block.getBranch());
-    projectProperties.save();
+    return new SonarProjectPropertyBlock().createContents(parent, properties);
   }
 
   private IProject getProject() {
     return (IProject) getElement().getAdapter(IProject.class);
   }
-
 }

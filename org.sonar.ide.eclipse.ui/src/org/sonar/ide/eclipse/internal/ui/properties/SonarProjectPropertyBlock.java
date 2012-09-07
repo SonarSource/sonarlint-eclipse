@@ -19,157 +19,39 @@
  */
 package org.sonar.ide.eclipse.internal.ui.properties;
 
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.ui.Messages;
-import org.sonar.wsclient.Host;
 
-import java.util.List;
-
-/**
- * @author Jérémie Lagarde
- * 
- */
 public class SonarProjectPropertyBlock {
-
-  private Combo serversCombo;
-  private Button serverConfigButton;
-
-  private Text projectGroupIdText;
-  private Text projectArtifactIdText;
-  private Text projectBranchText;
-
-  public SonarProjectPropertyBlock() {
-  }
-
-  public Control createContents(Composite parent, ProjectProperties projectProperties) {
+  public Control createContents(Composite parent, ProjectProperties properties) {
     Composite container = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout();
     container.setLayout(layout);
     layout.numColumns = 2;
     layout.verticalSpacing = 9;
 
-    addServerData(container, projectProperties);
-    addSeparator(container);
-    addProjectData(container, projectProperties);
+    addText(Messages.SonarProjectPropertyBlock_label_host, properties.getUrl(), container);
+    addText(Messages.SonarProjectPropertyBlock_label_groupId, properties.getGroupId(), container);
+    addText(Messages.SonarProjectPropertyBlock_label_artifactId, properties.getArtifactId(), container);
+    addText(Messages.SonarProjectPropertyBlock_label_branch, properties.getBranch(), container);
 
     return container;
   }
 
-  private void addServerData(Composite container, ProjectProperties projectProperties) {
-    // Create group
-    Group group = new Group(container, SWT.NONE);
-    GridData data = new GridData(GridData.FILL_HORIZONTAL);
-    data.horizontalSpan = 2;
-    data.grabExcessHorizontalSpace = true;
-    group.setLayoutData(data);
-    group.setText(Messages.SonarProjectPropertyBlock_label_host);
-    GridLayout gridLayout = new GridLayout(3, false);
-    group.setLayout(gridLayout);
+  private void addText(String label, String text, Composite container) {
+    Label labelField = new Label(container, SWT.NULL);
+    labelField.setText(label);
 
-    // Create select list of servers.
-    serversCombo = new Combo(group, SWT.READ_ONLY);
-    List<Host> servers = SonarCorePlugin.getServersManager().getHosts();
-    String defaultServer = projectProperties.getUrl();
-    int index = -1;
-    for (int i = 0; i < servers.size(); i++) {
-      Host server = servers.get(i);
-      if (StringUtils.equals(defaultServer, server.getHost())) {
-        index = i;
-      }
-      serversCombo.add(server.getHost());
-    }
-    if (index == -1) {
-      serversCombo.add(defaultServer);
-      index = servers.size();
-    }
-    serversCombo.select(index);
-
-    // Create open preference button.
-    serverConfigButton = new Button(group, SWT.PUSH);
-    serverConfigButton.setText(Messages.SonarProjectPropertyBlock_action_server);
-    serverConfigButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
-    serverConfigButton.addSelectionListener(new SelectionAdapter() {
-
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        PreferenceDialog preference = PreferencesUtil.createPreferenceDialogOn(PlatformUI.getWorkbench().getDisplay().getActiveShell(),
-            ISonarConstants.PLUGIN_ID + ".preferences.SonarPreferencePage", null, null);
-        if ((preference != null) && (preference.open() == Window.OK)) {
-          serversCombo.removeAll();
-          List<Host> servers = SonarCorePlugin.getServersManager().getHosts();
-          for (Host server : servers) {
-            serversCombo.add(server.getHost());
-          }
-          serversCombo.select(servers.size() - 1);
-        }
-      }
-    });
-  }
-
-  private void addSeparator(Composite parent) {
-    Label separator = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-    GridData gridData = new GridData();
-    gridData.horizontalAlignment = GridData.FILL;
-    gridData.horizontalSpan = 2;
-    gridData.grabExcessHorizontalSpace = true;
-    separator.setLayoutData(gridData);
-  }
-
-  private void addProjectData(Composite container, ProjectProperties projectProperties) {
-    // Project groupId
-    Label labelGroupId = new Label(container, SWT.NULL);
-    labelGroupId.setText(Messages.SonarProjectPropertyBlock_label_groupId);
-    projectGroupIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    projectGroupIdText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    projectGroupIdText.setText(projectProperties.getGroupId());
-
-    // Project artifactId
-    Label labelArtifactId = new Label(container, SWT.NULL);
-    labelArtifactId.setText(Messages.SonarProjectPropertyBlock_label_artifactId);
-    projectArtifactIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    projectArtifactIdText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    projectArtifactIdText.setText(projectProperties.getArtifactId());
-
-    // Project branch
-    Label labelBranch = new Label(container, SWT.NULL);
-    labelBranch.setText(Messages.SonarProjectPropertyBlock_label_branch);
-    projectBranchText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    projectBranchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    projectBranchText.setText(projectProperties.getBranch());
-  }
-
-  protected String getUrl() {
-    return serversCombo.getText();
-  }
-
-  protected String getGroupId() {
-    return projectGroupIdText.getText();
-  }
-
-  protected String getArtifactId() {
-    return projectArtifactIdText.getText();
-  }
-
-  protected String getBranch() {
-    return projectBranchText.getText();
+    Text textField = new Text(container, SWT.BORDER | SWT.SINGLE);
+    textField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    textField.setText(text);
+    textField.setEditable(false);
   }
 }
