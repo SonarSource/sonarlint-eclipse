@@ -97,6 +97,9 @@ public class MeasuresView extends AbstractSonarInfoView {
 
   private final FavouriteMetricsManager.Listener favouriteMetricsListener = new FavouriteMetricsManager.Listener() {
     public void updated() {
+      if (measuresByDomain == null) {
+        return; // Avoid error but don't know why it happens
+      }
       Collection<ISonarMeasure> favourites = measuresByDomain.get(FAVORITES_CATEGORY);
       if (favourites == null) {
         favourites = Lists.newArrayList();
