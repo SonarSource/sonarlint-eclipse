@@ -220,7 +220,7 @@ public class HotspotsView extends AbstractSonarInfoView {
   }
 
   protected void doAsyncUpdate(Object content) {
-    LOG.debug("Update Hotspots view " + System.identityHashCode(viewer));
+    LOG.debug("Update Hotspots view");
     try {
       setContentDescription(getInput().getName());
       updateFavouriteMetrics();

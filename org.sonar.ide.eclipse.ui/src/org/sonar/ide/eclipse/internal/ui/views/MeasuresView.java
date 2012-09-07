@@ -257,7 +257,7 @@ public class MeasuresView extends AbstractSonarInfoView {
   }
 
   protected void doAsyncUpdate(Object content) {
-    LOG.debug("Update Measures view " + System.identityHashCode(viewer));
+    LOG.debug("Update Measures view");
 
     try {
       setContentDescription(getInput().getName());
