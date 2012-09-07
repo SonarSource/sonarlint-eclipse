@@ -75,7 +75,7 @@ public final class WSClientFactory {
     try {
       IProxyData[] proxyDatas = WSClientPlugin.selectProxy(new URI(server.getHost()));
       for (IProxyData proxyData : proxyDatas) {
-        LOG.debug("Proxy for {} - {}", server.getHost(), proxyData);
+        LOG.debug("Proxy for [{}] - [{}]", server.getHost(), proxyData);
         httpClient.getHostConfiguration().setProxy(proxyData.getHost(), proxyData.getPort());
         if (proxyData.isRequiresAuthentication()) {
           Credentials proxyCredentials = new UsernamePasswordCredentials(proxyData.getUserId(), proxyData.getPassword());
@@ -83,7 +83,7 @@ public final class WSClientFactory {
         }
         return;
       }
-      LOG.debug("No proxy for {}", server.getHost());
+      LOG.debug("No proxy for [{}]", server.getHost());
     } catch (Exception e) {
       LOG.error("Unable to configure proxy for sonar-ws-client", e);
     }
