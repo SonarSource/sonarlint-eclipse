@@ -122,8 +122,17 @@ public class HotspotsView extends AbstractSonarInfoView {
     viewer.setLabelProvider(new HotspotsLabelProvider());
     viewer.addDoubleClickListener(new IDoubleClickListener() {
       public void doubleClick(DoubleClickEvent event) {
-        ISonarMeasure measure = (ISonarMeasure) SelectionUtils.getSingleElement(viewer.getSelection());
-        IResource resource = measure.getSonarResource().getResource();
+        ISonarMeasure measure = (ISonarMeasure) SelectionUtils.getSingleElement(event.getSelection());
+        if (null == measure) {
+          return; // Ignore
+        }
+
+        ISonarResource sonarResource = measure.getSonarResource();
+        if (null == sonarResource) {
+          return; // Ignore
+        }
+
+        IResource resource = sonarResource.getResource();
         if (resource instanceof IFile) {
           PlatformUtils.openEditor((IFile) resource);
         }
