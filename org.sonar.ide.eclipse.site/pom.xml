@@ -65,7 +65,7 @@
                   <serverId>sonar-ide</serverId>
                   <fromDir>${project.basedir}/target/site</fromDir>
                   <includes>**</includes>
-                  <url>${sonar-ide.site}/eclipse</url>
+                  <url>${sonar-ide.site}</url>
                 </configuration>
               </execution>
             </executions>
