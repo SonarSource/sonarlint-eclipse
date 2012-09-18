@@ -2,7 +2,7 @@
 <feature
       id="org.sonar.ide.eclipse.mylyn.feature"
       label="%feature_name"
-      version="2.4.0.qualifier"
+      version="2.4.0.20120918-1351"
       provider-name="%provider_name"
       plugin="org.sonar.ide.eclipse.ui">
 

@@ -40,7 +40,7 @@ Bundle-ClassPath: .,jars/sonar-batch-maven-compat-2.8.jar,jars/sonar-b
  jar,jars/serializer-2.7.1.jar,jars/sonar-squid-2.8.jar,jars/picoconta
  iner-2.10.2.jar,jars/jsr250-api-1.0.jar,jars/javax.inject-1.jar,jars/
  slf4j-api-1.5.6.jar,jars/antlr-2.7.6.jar
-Bundle-Version: 2.4.0.qualifier
+Bundle-Version: 2.4.0.20120918-1351
 Bundle-Name: Embedded Sonar
 Bundle-Activator: org.sonar.batch.EmbeddedSonarPlugin
 Bundle-ManifestVersion: 2
