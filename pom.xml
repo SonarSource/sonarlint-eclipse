@@ -48,26 +48,26 @@
   </prerequisites>
 
   <modules>
-    <module>../org.sonar.ide.eclipse.core</module>
-    <module>../org.sonar.ide.eclipse.deprecated</module>
-    <module>../org.sonar.ide.eclipse.wsclient</module>
-    <module>../org.sonar.ide.eclipse.runtime</module>
-    <module>../org.sonar.ide.eclipse.ui</module>
-    <module>../org.sonar.ide.eclipse.jdt</module>
+    <module>org.sonar.ide.eclipse.core</module>
+    <module>org.sonar.ide.eclipse.deprecated</module>
+    <module>org.sonar.ide.eclipse.wsclient</module>
+    <module>org.sonar.ide.eclipse.runtime</module>
+    <module>org.sonar.ide.eclipse.ui</module>
+    <module>org.sonar.ide.eclipse.jdt</module>
 
-    <module>../org.sonar.ide.eclipse.site</module>
+    <module>org.sonar.ide.eclipse.site</module>
 
-    <module>../org.sonar.ide.eclipse.mylyn.core</module>
-    <module>../org.sonar.ide.eclipse.mylyn.ui</module>
-    <module>../org.sonar.ide.eclipse.mylyn.tests</module>
-    <module>../org.sonar.ide.eclipse.mylyn.feature</module>
+    <module>org.sonar.ide.eclipse.mylyn.core</module>
+    <module>org.sonar.ide.eclipse.mylyn.ui</module>
+    <module>org.sonar.ide.eclipse.mylyn.tests</module>
+    <module>org.sonar.ide.eclipse.mylyn.feature</module>
 
-    <module>../org.sonar.ide.eclipse.tests.common</module>
-    <module>../org.sonar.ide.eclipse.tests</module>
+    <module>org.sonar.ide.eclipse.tests.common</module>
+    <module>org.sonar.ide.eclipse.tests</module>
 
-    <module>../org.sonar.ide.eclipse.feature</module>
+    <module>org.sonar.ide.eclipse.feature</module>
 
-    <module>../target-platform</module>
+    <module>target-platform</module>
   </modules>
 
   <scm>
@@ -352,7 +352,7 @@
         <groupId>com.mycila.maven-license-plugin</groupId>
         <artifactId>maven-license-plugin</artifactId>
         <configuration>
-          <header>${project.basedir}/../LICENSE.txt</header>
+          <header>${project.basedir}/LICENSE.txt</header>
           <strictCheck>true</strictCheck>
           <includes>
             <include>src/**/*.java</include>
@@ -525,7 +525,7 @@
     <profile>
       <id>its</id>
       <modules>
-        <module>../org.sonar.ide.eclipse.ui.tests</module>
+        <module>org.sonar.ide.eclipse.ui.tests</module>
       </modules>
     </profile>
     <!-- This profile is used to gather code coverage for Sonar -->
@@ -534,7 +534,7 @@
       <properties>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-        <sonar.jacoco.reportPath>../org.sonar.ide.eclipse.parent/target/jacoco.exec</sonar.jacoco.reportPath>
+        <sonar.jacoco.reportPath>org.sonar.ide.eclipse.parent/target/jacoco.exec</sonar.jacoco.reportPath>
       </properties>
 
       <build>

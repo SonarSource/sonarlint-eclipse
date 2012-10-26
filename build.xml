@@ -2,11 +2,11 @@
 <project name="Sonar Eclipse" basedir="." default="build">
 
   <target name="build" description="Complete build" depends="update-dependencies">
-    <mvn dir="org.sonar.ide.eclipse.parent" args="clean install" />
+    <mvn dir="." args="clean install" />
   </target>
 
   <target name="integration-tests" description="Integration tests" depends="update-dependencies">
-    <mvn dir="org.sonar.ide.eclipse.parent" args="clean install -Pits" />
+    <mvn dir="." args="clean install -Pits" />
   </target>
 
   <target name="update-dependencies" description="Update dependencies">
