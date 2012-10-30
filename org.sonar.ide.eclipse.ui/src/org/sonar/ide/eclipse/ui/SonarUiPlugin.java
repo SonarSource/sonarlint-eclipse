@@ -31,25 +31,17 @@ import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
-import org.sonar.ide.eclipse.internal.ui.FavouriteMetricsManager;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.console.SonarConsole;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshViolationsJob;
-import org.sonar.ide.eclipse.internal.ui.preferences.SonarUiPreferenceInitializer;
 
 public class SonarUiPlugin extends AbstractUIPlugin {
 
   // The shared instance
   private static SonarUiPlugin plugin;
 
-  private final FavouriteMetricsManager favouriteMetricsManager = new FavouriteMetricsManager();
-
   public SonarUiPlugin() {
     plugin = this; // NOSONAR
-  }
-
-  public static FavouriteMetricsManager getFavouriteMetricsManager() {
-    return getDefault().favouriteMetricsManager;
   }
 
   @Override
@@ -62,8 +54,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
     RefreshViolationsJob.setupViolationsUpdater();
 
-    getFavouriteMetricsManager().set(SonarUiPreferenceInitializer.getFavouriteMetrics());
-
     if (getSonarConsole() != null) {
       EmbeddedSonarPlugin.getDefault().addSonarLogListener((SonarLogListener) getSonarConsole());
     }
@@ -75,8 +65,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
       if (getSonarConsole() != null) {
         EmbeddedSonarPlugin.getDefault().addSonarLogListener((SonarLogListener) getSonarConsole());
       }
-
-      SonarUiPreferenceInitializer.setFavouriteMetrics(getFavouriteMetricsManager().get());
     } finally {
       try {
         super.start(context);

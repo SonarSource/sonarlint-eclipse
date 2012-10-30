@@ -27,9 +27,6 @@ public interface ISonarConstants {
 
   String PLUGIN_ID = "org.sonar.ide.eclipse.ui";
 
-  // TODO change value to .sonarPerspective
-  String PERSPECTIVE_ID = PLUGIN_ID + ".perspectives.SonarPerspective";
-
   Object REMOTE_SONAR_JOB_FAMILY = new Object();
 
 }

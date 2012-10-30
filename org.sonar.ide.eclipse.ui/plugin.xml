@@ -14,12 +14,6 @@
         id="org.sonar.ide.eclipse.ui.preferences.SonarPreferencePage"
         name="%sonar.preference.page.name">
     </page>
-    <page
-          category="org.sonar.ide.eclipse.ui.preferences.SonarPreferencePage"
-          class="org.sonar.ide.eclipse.internal.ui.preferences.FavouriteMetricsPreferencePage"
-          id="org.sonar.ide.eclipse.ui.preferences.FavouriteMetricsPreferencePage"
-          name="Favourite Metrics">
-    </page>
   </extension>
   <extension point="org.eclipse.core.runtime.preferences">
     <initializer
@@ -31,20 +25,6 @@
         name="%sonar.category.view.name"
         id="org.sonar.ide.eclipse">
     </category>
-    <view
-    	category="org.sonar.ide.eclipse"
-    	class="org.sonar.ide.eclipse.internal.ui.views.MeasuresView"
-    	icon="icons/sonar.png"
-    	id="org.sonar.ide.eclipse.ui.views.MeasuresView"
-    	name="%sonar.measures.view.name">
-    </view>
-    <view
-    	category="org.sonar.ide.eclipse"
-    	class="org.sonar.ide.eclipse.internal.ui.views.HotspotsView"
-    	icon="icons/sonar.png"
-    	id="org.sonar.ide.eclipse.ui.views.HotspotsView"
-    	name="Hotspots">
-    </view>
     <view
         category="org.sonar.ide.eclipse"
         class="org.sonar.ide.eclipse.internal.ui.views.ViolationsView"
@@ -295,15 +275,6 @@
               verticalRulerPreferenceValue="true"/>
     </extension>
    
-   <extension
-         point="org.eclipse.ui.perspectives">
-      <perspective
-            class="org.sonar.ide.eclipse.internal.ui.SonarPerspectiveFactory"
-            icon="icons/sonar.png"
-            id="org.sonar.ide.eclipse.ui.perspectives.SonarPerspective"
-            name="%sonar.perspective.name">
-      </perspective>
-   </extension>
 
   <!-- Welcome -->
   <extension point="org.eclipse.ui.intro.configExtension">

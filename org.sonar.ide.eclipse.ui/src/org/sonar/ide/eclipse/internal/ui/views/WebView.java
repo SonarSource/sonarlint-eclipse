@@ -35,7 +35,7 @@ import org.sonar.ide.eclipse.internal.core.ISonarConstants;
  * @author Evgeny Mandrikov
  */
 public class WebView extends AbstractSonarInfoView {
-  private static final Logger LOG = LoggerFactory.getLogger(HotspotsView.class);
+  private static final Logger LOG = LoggerFactory.getLogger(WebView.class);
 
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.WebView";
 
