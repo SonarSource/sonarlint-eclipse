@@ -30,8 +30,6 @@ import java.util.List;
  */
 public interface Measurable {
 
-  List<IMeasure> getMeasures();
-
   /*
    * TODO Godin:
    * I'm not sure that following methods should be here.

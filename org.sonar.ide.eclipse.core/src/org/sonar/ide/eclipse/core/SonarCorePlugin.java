@@ -21,17 +21,12 @@ package org.sonar.ide.eclipse.core;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.QualifiedName;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.internal.core.ServersManager;
 import org.sonar.ide.eclipse.internal.core.SonarFile;
-import org.sonar.ide.eclipse.internal.core.SonarMeasure;
-import org.sonar.ide.eclipse.internal.core.SonarMetric;
 import org.sonar.ide.eclipse.internal.core.SonarResource;
 import org.sonar.ide.eclipse.internal.core.resources.SonarProjectManager;
 import org.sonar.wsclient.SonarConnectionTester;
-import org.sonar.wsclient.services.Measure;
-import org.sonar.wsclient.services.Metric;
 
 public class SonarCorePlugin extends AbstractPlugin {
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.core";
@@ -42,8 +37,6 @@ public class SonarCorePlugin extends AbstractPlugin {
    * Godin: It would be better to use only one MARKER_ID at least at first time.
    */
   public static final String MARKER_ID = PLUGIN_ID + ".sonarProblem";
-
-  public static final QualifiedName SESSION_PROPERY_MEASURES = new QualifiedName(PLUGIN_ID, "measures");
 
   private static SonarCorePlugin plugin;
 
@@ -97,22 +90,6 @@ public class SonarCorePlugin extends AbstractPlugin {
 
   public static ISonarFile createSonarFile(IFile file, String key, String name) {
     return new SonarFile(file, key, name);
-  }
-
-  public static ISonarMeasure createSonarMeasure(ISonarResource sonarResource, Measure measure) {
-    return new SonarMeasure(sonarResource, measure);
-  }
-
-  public static ISonarMeasure createSonarMeasure(ISonarResource sonarResource, Metric metric, Measure measure) {
-    return new SonarMeasure(sonarResource, metric, measure);
-  }
-
-  public static ISonarMetric createSonarMetric(String metricKey) {
-    return new SonarMetric(new Metric().setKey(metricKey).setName(metricKey));
-  }
-
-  public static ISonarMetric createSonarMetric(String metricKey, String metricName) {
-    return new SonarMetric(new Metric().setKey(metricKey).setName(metricName));
   }
 
 }

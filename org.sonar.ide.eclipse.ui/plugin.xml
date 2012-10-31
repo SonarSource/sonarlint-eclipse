@@ -15,11 +15,6 @@
         name="%sonar.preference.page.name">
     </page>
   </extension>
-  <extension point="org.eclipse.core.runtime.preferences">
-    <initializer
-        class="org.sonar.ide.eclipse.internal.ui.preferences.SonarUiPreferenceInitializer">
-    </initializer>
-  </extension>
   <extension point="org.eclipse.ui.views">
     <category
         name="%sonar.category.view.name"
@@ -45,22 +40,6 @@
          point="org.eclipse.ui.menus">
       <menuContribution
             locationURI="menu:org.sonar.ide.eclipse.ui.views.ViolationsView">
-         <!-- menu
-               id="org.eclipse.ui.ide.problems.filtersMenu"
-               label="Show">
-            <dynamic
-                  class="org.eclipse.ui.internal.views.markers.FiltersContribution"
-                  id="org.eclipse.ui.ide.filtersContribution">
-            </dynamic>
-         </menu -->
-         <!-- menu
-               id="problemsGroupByMenu"
-               label="Group By">
-            <dynamic
-                  class="org.eclipse.ui.internal.views.markers.GroupsContribution"
-                  id="org.eclipse.ui.ide.dynamic1">
-            </dynamic>
-         </menu -->
          <menu
                id="org.eclipse.ui.ide.problems.markerSortMenu"
                label="Sort"

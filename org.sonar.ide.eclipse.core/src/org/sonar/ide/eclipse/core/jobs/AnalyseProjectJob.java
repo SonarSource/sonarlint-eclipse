@@ -37,15 +37,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.events.DecoratorExecutionHandler;
 import org.sonar.api.batch.events.SensorExecutionHandler;
-import org.sonar.api.measures.Measure;
-import org.sonar.api.measures.Metric;
 import org.sonar.batch.CustomProjectComponentsModule;
 import org.sonar.batch.EmbeddedSonarPlugin;
 import org.sonar.batch.SonarEclipseRuntime;
 import org.sonar.batch.bootstrapper.ProjectDefinition;
 import org.sonar.batch.components.EmbedderIndex;
-import org.sonar.ide.eclipse.core.ISonarMeasure;
-import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
@@ -117,7 +113,7 @@ public class AnalyseProjectJob extends Job {
     runtime.analyse(sonarProject);
     final EmbedderIndex index = runtime.getIndex();
 
-    // Create markers and save measures
+    // Create markers
     try {
       project.accept(new IResourceVisitor() {
         public boolean visit(IResource resource) throws CoreException {
@@ -125,30 +121,6 @@ public class AnalyseProjectJob extends Job {
           String sonarKey = ResourceUtils.getSonarKey(resource, monitor);
           if (sonarKey != null) {
             MarkerUtils.createMarkersForViolations(resource, index.getViolations(sonarKey));
-
-            // Save measures
-            List<ISonarMeasure> measures = new ArrayList<ISonarMeasure>();
-            ISonarResource sonarResource = SonarCorePlugin.createSonarResource(resource, sonarKey, resource.getName());
-
-            for (Measure measure : index.getMeasures(sonarKey)) {
-              if (!measure.getMetric().isHidden() && measure.getMetric().isNumericType()) {
-                org.sonar.wsclient.services.Metric metricModel = new org.sonar.wsclient.services.Metric();
-
-                Metric metric = measure.getMetric();
-                metricModel.setKey(metric.getKey());
-                metricModel.setName(metric.getName());
-                metricModel.setDescription(metric.getDescription());
-                metricModel.setDomain(metric.getDomain());
-
-                org.sonar.wsclient.services.Measure measureModel = new org.sonar.wsclient.services.Measure();
-                measureModel.setMetricKey(measure.getMetricKey());
-                measureModel.setMetricName(measure.getMetric().getName());
-                measureModel.setFormattedValue(Double.toString(measure.getValue()));
-
-                measures.add(SonarCorePlugin.createSonarMeasure(sonarResource, metricModel, measureModel));
-              }
-            }
-            resource.setSessionProperty(SonarCorePlugin.SESSION_PROPERY_MEASURES, measures);
           }
           // don't go deeper than file
           return resource instanceof IFile ? false : true;

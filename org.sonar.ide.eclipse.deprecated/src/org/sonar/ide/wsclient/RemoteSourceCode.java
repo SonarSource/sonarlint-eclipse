@@ -19,18 +19,14 @@
  */
 package org.sonar.ide.wsclient;
 
-import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.api.IMeasure;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.api.SourceCodeDiff;
-import org.sonar.ide.shared.measures.MeasureData;
 import org.sonar.ide.shared.violations.ViolationUtils;
 import org.sonar.wsclient.services.Measure;
-import org.sonar.wsclient.services.Metric;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
 import org.sonar.wsclient.services.Rule;
@@ -44,7 +40,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -145,27 +140,6 @@ class RemoteSourceCode implements SourceCode {
       diff = index.getDiffEngine().diff(SimpleSourceCodeDiffEngine.split(getLocalContent()), getRemoteContentAsArray());
     }
     return diff;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public List<IMeasure> getMeasures() {
-    Map<String, Metric> metricsByKey = index.getMetrics();
-    Set<String> keys = metricsByKey.keySet();
-    String[] metricKeys = keys.toArray(new String[keys.size()]);
-    ResourceQuery query = ResourceQuery.createForMetrics(getKey(), metricKeys);
-    Resource resource = index.getSonar().find(query);
-    List<IMeasure> result = Lists.newArrayList();
-    for (Measure measure : resource.getMeasures()) {
-      final Metric metric = metricsByKey.get(measure.getMetricKey());
-      final String value = measure.getFormattedValue();
-      // Hacks around SONAR-1620
-      if (!metric.getHidden() && !"DATA".equals(metric.getType()) && StringUtils.isNotBlank(measure.getFormattedValue())) {
-        result.add(new MeasureData().setMetricDef(metric).setValue(value));
-      }
-    }
-    return result;
   }
 
   /**
