@@ -28,11 +28,9 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.api.CoreProperties;
-import org.sonar.api.resources.Java;
-import org.sonar.batch.bootstrapper.ProjectDefinition;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
+import org.sonar.ide.eclipse.runner.SonarProperties;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import java.io.File;
@@ -47,19 +45,23 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     IProject project = request.getProject();
     if (SonarUiPlugin.hasJavaNature(project)) {
       IJavaProject javaProject = JavaCore.create(project);
-      configureJavaProject(javaProject, request.getSonarProject());
+      configureJavaProject(javaProject, request.getSonarProjectProperties());
     }
   }
 
-  private void configureJavaProject(IJavaProject javaProject, ProjectDefinition sonarProject) {
-    Properties properties = sonarProject.getProperties();
+  private void appendProperty(Properties properties, String key, String value) {
+    String newValue = properties.getProperty(key, "") + SonarProperties.SEPARATOR + value;
+    properties.put(key, newValue);
+  }
+
+  private void configureJavaProject(IJavaProject javaProject, Properties sonarProjectProperties) {
     String javaSource = javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
     String javaTarget = javaProject.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true);
 
-    properties.setProperty(CoreProperties.PROJECT_LANGUAGE_PROPERTY, Java.KEY);
-    properties.setProperty("sonar.java.source", javaSource);
+    sonarProjectProperties.setProperty(SonarProperties.PROJECT_LANGUAGE_PROPERTY, "java");
+    sonarProjectProperties.setProperty("sonar.java.source", javaSource);
     LOG.info("Source Java version: {}", javaSource);
-    properties.setProperty("sonar.java.target", javaTarget);
+    sonarProjectProperties.setProperty("sonar.java.target", javaTarget);
     LOG.info("Target Java version: {}", javaTarget);
 
     try {
@@ -72,18 +74,18 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
             }
             String srcDir = getAbsolutePath(javaProject, entry.getPath());
             LOG.debug("Source directory: {}", srcDir);
-            sonarProject.addSourceDir(srcDir);
+            appendProperty(sonarProjectProperties, SonarProperties.SOURCE_DIRS_PROPERTY, srcDir);
             if (entry.getOutputLocation() != null) {
               String binDir = getAbsolutePath(javaProject, entry.getOutputLocation());
               LOG.debug("Binary directory: {}", binDir);
-              sonarProject.addBinaryDir(binDir);
+              appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
             }
             break;
 
           case IClasspathEntry.CPE_LIBRARY:
             String libDir = entry.getPath().toOSString();
             LOG.debug("Library: {}", libDir);
-            sonarProject.addLibrary(libDir);
+            appendProperty(sonarProjectProperties, SonarProperties.LIBRARIES_PROPERTY, libDir);
             break;
 
           default:
@@ -94,7 +96,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
 
       String binDir = getAbsolutePath(javaProject, javaProject.getOutputLocation());
       LOG.debug("Default binary directory: {}", binDir);
-      sonarProject.addBinaryDir(binDir);
+      appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
     } catch (JavaModelException e) {
       LOG.error(e.getMessage(), e);
     }

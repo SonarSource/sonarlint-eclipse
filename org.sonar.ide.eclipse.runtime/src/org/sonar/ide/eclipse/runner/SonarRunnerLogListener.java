@@ -17,20 +17,13 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.batch.components;
+package org.sonar.ide.eclipse.runner;
 
-/**
- * Indicates that the requested operation is not supported by embedded Sonar.
- */
-public class EmbedderUnsupportedOperationException extends UnsupportedOperationException {
 
-  private static final String DEFAULT_MESSAGE = "Not supported by embedded Sonar";
+public interface SonarRunnerLogListener {
 
-  public EmbedderUnsupportedOperationException() {
-    this(null);
-  }
+  void info(String msg);
 
-  public EmbedderUnsupportedOperationException(String message) {
-    super(message == null ? DEFAULT_MESSAGE : DEFAULT_MESSAGE + "(" + message + ")");
-  }
+  void error(String msg);
+
 }

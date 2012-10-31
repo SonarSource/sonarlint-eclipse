@@ -20,10 +20,10 @@
 package org.sonar.ide.eclipse.internal.core.configurator;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonar.api.CoreProperties;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.runner.SonarProperties;
 
 import java.util.Properties;
 
@@ -32,12 +32,12 @@ public class DefaultProjectConfigurator extends ProjectConfigurator {
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
     ProjectProperties remoteProject = ProjectProperties.getInstance(request.getProject());
 
-    Properties properties = request.getSonarProject().getProperties();
+    Properties properties = request.getSonarProjectProperties();
     String projectName = request.getProject().getName();
     String projectKey = remoteProject.getKey();
 
-    properties.setProperty(CoreProperties.PROJECT_KEY_PROPERTY, projectKey);
-    properties.setProperty(CoreProperties.PROJECT_NAME_PROPERTY, projectName);
-    properties.setProperty(CoreProperties.PROJECT_VERSION_PROPERTY, "0.1-SNAPSHOT");
+    properties.setProperty(SonarProperties.PROJECT_KEY_PROPERTY, projectKey);
+    properties.setProperty(SonarProperties.PROJECT_NAME_PROPERTY, projectName);
+    properties.setProperty(SonarProperties.PROJECT_VERSION_PROPERTY, "0.1-SNAPSHOT");
   }
 }

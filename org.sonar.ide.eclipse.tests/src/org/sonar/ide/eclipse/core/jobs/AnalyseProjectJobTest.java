@@ -27,11 +27,7 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.sonar.batch.EmbeddedSonarPlugin;
-import org.sonar.batch.ProfileLoader;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.tests.common.JobHelpers;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
@@ -41,16 +37,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class AnalyseProjectJobTest extends SonarTestCase {
-
-  @Before
-  public void setUp() {
-    EmbeddedSonarPlugin.getDefault().getSonarCustomizer().replace(ProfileLoader.class, FakeProfileLoader.class);
-  }
-
-  @After
-  public void tearDown() {
-    EmbeddedSonarPlugin.getDefault().getSonarCustomizer().restore(ProfileLoader.class);
-  }
 
   @Test
   public void shouldAnalyse() throws Exception {
@@ -64,7 +50,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     JobHelpers.waitForJobsToComplete();
 
     IMarker[] markers = project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
-    assertThat(markers.length, is(3));
+    assertThat(markers.length, is(5));
 
     assertThat(markers, hasItemInArray(new IsMarker("src/Findbugs.java", 5)));
     assertThat(markers, hasItemInArray(new IsMarker("src/Pmd.java", 2)));

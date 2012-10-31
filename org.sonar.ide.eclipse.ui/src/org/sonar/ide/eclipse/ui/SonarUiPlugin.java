@@ -25,8 +25,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
-import org.sonar.batch.EmbeddedSonarPlugin;
-import org.sonar.batch.SonarLogListener;
 import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
@@ -34,6 +32,8 @@ import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.console.SonarConsole;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshViolationsJob;
+import org.sonar.ide.eclipse.runner.SonarRunnerLogListener;
+import org.sonar.ide.eclipse.runner.SonarRunnerPlugin;
 
 public class SonarUiPlugin extends AbstractUIPlugin {
 
@@ -55,7 +55,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     RefreshViolationsJob.setupViolationsUpdater();
 
     if (getSonarConsole() != null) {
-      EmbeddedSonarPlugin.getDefault().addSonarLogListener((SonarLogListener) getSonarConsole());
+      SonarRunnerPlugin.getDefault().addSonarLogListener((SonarRunnerLogListener) getSonarConsole());
     }
   }
 
@@ -63,7 +63,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   public void stop(final BundleContext context) {
     try {
       if (getSonarConsole() != null) {
-        EmbeddedSonarPlugin.getDefault().addSonarLogListener((SonarLogListener) getSonarConsole());
+        SonarRunnerPlugin.getDefault().addSonarLogListener((SonarRunnerLogListener) getSonarConsole());
       }
     } finally {
       try {

@@ -33,26 +33,22 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.api.batch.events.DecoratorExecutionHandler;
-import org.sonar.api.batch.events.SensorExecutionHandler;
-import org.sonar.batch.CustomProjectComponentsModule;
-import org.sonar.batch.EmbeddedSonarPlugin;
-import org.sonar.batch.SonarEclipseRuntime;
-import org.sonar.batch.bootstrapper.ProjectDefinition;
-import org.sonar.batch.components.EmbedderIndex;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.internal.core.Messages;
 import org.sonar.ide.eclipse.internal.core.markers.MarkerUtils;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.core.resources.ResourceUtils;
-import org.sonar.wsclient.Sonar;
+import org.sonar.ide.eclipse.runner.SonarEclipseRunner;
+import org.sonar.ide.eclipse.runner.SonarProperties;
+import org.sonar.ide.eclipse.runner.SonarRunnerPlugin;
 
 import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -93,75 +89,57 @@ public class AnalyseProjectJob extends Job {
     // Configure
     File baseDir = project.getLocation().toFile();
     File workDir = new File(baseDir, "target/sonar-embedder-work"); // TODO hard-coded value
+    File outputFile = new File(workDir, "dryRun.json");
     Properties properties = new Properties();
-    ProjectDefinition sonarProject = new ProjectDefinition(baseDir, workDir, properties);
-    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, sonarProject);
+    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, properties);
     for (ProjectConfigurator configurator : getConfigurators()) {
       LOG.debug("Project configurator: {}", configurator);
       configurator.configure(request, monitor);
     }
 
+    properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
+    properties.setProperty(SonarProperties.WORK_DIR, workDir.toString());
+    properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
+    properties.setProperty(SonarProperties.DRY_RUN_OUTPUT_PROPERTY, outputFile.getName()); // Output file is relative to working dir
+    if (isDebugEnabled()) {
+      properties.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
+    }
+
     // Analyse
-    CustomProjectComponentsModule customizer = EmbeddedSonarPlugin.getDefault().getSonarCustomizer();
-    customizer.bind(SonarProgressMonitor.class, new SonarProgressMonitor(monitor));
+    IStatus result = SonarEclipseRunner.run(project, properties, monitor);
+    if (result != Status.OK_STATUS) {
+      return result;
+    }
 
-    Sonar sonar = SonarCorePlugin.getServersManager().getSonar(ProjectProperties.getInstance(project).getUrl());
-    customizer.bind(Sonar.class, sonar);
-
-    SonarEclipseRuntime runtime = new SonarEclipseRuntime(EmbeddedSonarPlugin.getDefault().getPlugins());
-    runtime.start();
-    runtime.analyse(sonarProject);
-    final EmbedderIndex index = runtime.getIndex();
-
-    // Create markers
+    // Create markers and save measures
     try {
+      Object obj = JSONValue.parse(new FileReader(outputFile));
+      JSONObject sonarResult = (JSONObject) obj;
+      String sonarVersion = sonarResult.get("version").toString();
+      SonarRunnerPlugin.getDefault().info("Parsing resulting file (version: " + sonarVersion + ")\n");
+      final JSONObject violationByResources = (JSONObject) sonarResult.get("violations_per_resource");
       project.accept(new IResourceVisitor() {
         public boolean visit(IResource resource) throws CoreException {
           MarkerUtils.deleteViolationsMarkers(resource);
           String sonarKey = ResourceUtils.getSonarKey(resource, monitor);
-          if (sonarKey != null) {
-            MarkerUtils.createMarkersForViolations(resource, index.getViolations(sonarKey));
+          if (sonarKey != null && violationByResources.get(sonarKey) != null) {
+            MarkerUtils.createMarkersForViolations(resource, (JSONArray) violationByResources.get(sonarKey));
           }
           // don't go deeper than file
           return resource instanceof IFile ? false : true;
         }
       });
-    } catch (CoreException e) {
+    } catch (Exception e) {
       LOG.error(e.getMessage(), e);
+      throw new RuntimeException(e);
     }
-
-    runtime.stop();
 
     monitor.done();
     return Status.OK_STATUS;
   }
 
-  private static class SonarProgressMonitor implements SensorExecutionHandler, DecoratorExecutionHandler {
-    private final IProgressMonitor monitor;
-
-    public SonarProgressMonitor(IProgressMonitor monitor) {
-      this.monitor = monitor;
-    }
-
-    public void onSensorExecution(SensorExecutionEvent event) {
-      checkCanceled();
-      if (event.isStart()) {
-        monitor.subTask(NLS.bind(Messages.AnalyseProjectJob_sutask_sensor, event.getSensor()));
-      }
-    }
-
-    public void onDecoratorExecution(DecoratorExecutionEvent event) {
-      checkCanceled();
-      if (event.isStart()) {
-        monitor.subTask(NLS.bind(Messages.AnalyseProjectJob_sutask_decorator, event.getDecorator()));
-      }
-    }
-
-    private void checkCanceled() {
-      if (monitor.isCanceled()) {
-        throw new SonarEclipseException("Interrupted");
-      }
-    }
+  private boolean isDebugEnabled() {
+    return Platform.getPreferencesService().getBoolean(SonarProperties.UI_PLUGIN_ID, SonarProperties.P_DEBUG_OUTPUT, false, null);
   }
 
 }

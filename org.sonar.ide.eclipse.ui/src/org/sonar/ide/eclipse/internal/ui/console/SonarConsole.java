@@ -30,15 +30,14 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
-import org.sonar.batch.LogEntry;
-import org.sonar.batch.SonarLogListener;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.Messages;
+import org.sonar.ide.eclipse.runner.SonarRunnerLogListener;
 import org.sonar.ide.eclipse.ui.ISonarConsole;
 
 import java.io.IOException;
 
-public class SonarConsole extends IOConsole implements ISonarConsole, SonarLogListener {
+public class SonarConsole extends IOConsole implements SonarRunnerLogListener, ISonarConsole {
 
   static final String P_DEBUG_OUTPUT = "debugOutput"; //$NON-NLS-1$
   static final String P_SHOW_CONSOLE = "showConsole"; //$NON-NLS-1$
@@ -72,7 +71,6 @@ public class SonarConsole extends IOConsole implements ISonarConsole, SonarLogLi
     warnColor = new Color(display, new RGB(255, 0, 0));
 
     getWarnStream().setColor(warnColor);
-    getErrorStream().setColor(warnColor);
   }
 
   @Override
@@ -82,35 +80,6 @@ public class SonarConsole extends IOConsole implements ISonarConsole, SonarLogLi
     warnColor.dispose();
   }
 
-  public void logged(LogEntry entry) {
-    switch (entry.getLevel()) {
-      case LogEntry.DEBUG:
-        debug(entry.getMessage());
-        break;
-      case LogEntry.INFO:
-        info(entry.getMessage());
-        break;
-      case LogEntry.WARNING:
-        warn(entry.getMessage());
-        break;
-      case LogEntry.ERROR:
-        error(entry.getMessage());
-        break;
-      default:
-        break;
-    }
-  }
-
-  public void debug(String msg) {
-    if (!isDebugEnabled()) {
-      return;
-    }
-    if (isShowConsoleOnOutput()) {
-      bringConsoleToFront();
-    }
-    write(getDebugStream(), msg);
-  }
-
   public void info(String msg) {
     if (isShowConsoleOnOutput()) {
       bringConsoleToFront();
@@ -118,24 +87,16 @@ public class SonarConsole extends IOConsole implements ISonarConsole, SonarLogLi
     write(getInfoStream(), msg);
   }
 
-  public void warn(String msg) {
-    if (isShowConsoleOnOutput()) {
+  public void error(String msg) {
+    if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
       bringConsoleToFront();
     }
     write(getWarnStream(), msg);
   }
 
-  public void error(String msg) {
-    if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
-      bringConsoleToFront();
-    }
-    write(getErrorStream(), msg);
-  }
-
   private void write(IOConsoleOutputStream stream, String msg) {
     try {
       stream.write(msg);
-      stream.write("\n"); //$NON-NLS-1$
     } catch (IOException e) {
       e.printStackTrace(); // NOSONAR Don't log using slf4j - it will cause a cycle
     }
@@ -162,24 +123,12 @@ public class SonarConsole extends IOConsole implements ISonarConsole, SonarLogLi
     manager.removeConsoles(new IConsole[] {this});
   }
 
-  private IOConsoleOutputStream getDebugStream() {
-    return infoStream;
-  }
-
   private IOConsoleOutputStream getInfoStream() {
     return infoStream;
   }
 
   private IOConsoleOutputStream getWarnStream() {
     return warnStream;
-  }
-
-  private IOConsoleOutputStream getErrorStream() {
-    return warnStream;
-  }
-
-  private boolean isDebugEnabled() {
-    return Platform.getPreferencesService().getBoolean(ISonarConstants.PLUGIN_ID, P_DEBUG_OUTPUT, false, null);
   }
 
   private String getShowConsolePreference() {

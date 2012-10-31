@@ -20,16 +20,16 @@
 package org.sonar.ide.eclipse.internal.core.markers;
 
 import com.google.common.collect.Maps;
+import org.apache.commons.lang.ObjectUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.api.rules.Rule;
-import org.sonar.api.rules.Violation;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 
-import java.util.Collection;
 import java.util.Map;
 
 public final class MarkerUtils {
@@ -39,19 +39,21 @@ public final class MarkerUtils {
   private MarkerUtils() {
   }
 
-  public static void createMarkersForViolations(IResource resource, Collection<Violation> violations) {
-    for (Violation violation : violations) {
+  public static void createMarkersForViolations(IResource resource, JSONArray violations) {
+    for (Object violationObj : violations) {
+      JSONObject violation = (JSONObject) violationObj;
       final Map<String, Object> markerAttributes = Maps.newHashMap();
-      markerAttributes.put(IMarker.LINE_NUMBER, violation.getLineId());
-      markerAttributes.put(IMarker.MESSAGE, violation.getMessage());
+      Long line = (Long) violation.get("line");
+      if (line != null) {
+        markerAttributes.put(IMarker.LINE_NUMBER, line.intValue());
+      }
+      markerAttributes.put(IMarker.MESSAGE, ObjectUtils.toString(violation.get("message")));
       markerAttributes.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
       markerAttributes.put(IMarker.PRIORITY, IMarker.PRIORITY_LOW);
 
-      Rule rule = violation.getRule();
-      markerAttributes.put("rulekey", rule.getKey()); //$NON-NLS-1$
-      markerAttributes.put("rulename", rule.getName()); //$NON-NLS-1$
-      // Don't use rule.getSeverity() here - see SONARIDE-218
-      markerAttributes.put("rulepriority", violation.getSeverity().toString()); //$NON-NLS-1$
+      markerAttributes.put("rulekey", ObjectUtils.toString(violation.get("rule_key"))); //$NON-NLS-1$
+      markerAttributes.put("rulename", ObjectUtils.toString(violation.get("rule_name"))); //$NON-NLS-1$
+      markerAttributes.put("rulepriority", ObjectUtils.toString(violation.get("severity"))); //$NON-NLS-1$
 
       try {
         IMarker marker = resource.createMarker(SonarCorePlugin.MARKER_ID);

@@ -36,6 +36,7 @@ import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.runner.SonarRunnerPlugin;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.Host;
 
@@ -70,7 +71,7 @@ public abstract class SonarTestCase {
 
   /**
    * Installs specified project to specified directory.
-   * 
+   *
    * @param projectName
    *          name of project
    * @param destDir
@@ -110,6 +111,8 @@ public abstract class SonarTestCase {
 
     plugin = SonarUiPlugin.getDefault();
     cleanWorkspace();
+
+    SonarRunnerPlugin.getDefault().addSonarLogListener(new FakeSonarConsole());
   }
 
   @AfterClass
@@ -138,7 +141,7 @@ public abstract class SonarTestCase {
 
   /**
    * Import test project into the Eclipse workspace
-   * 
+   *
    * @return created projects
    */
   public static IProject importEclipseProject(final String projectdir) throws IOException, CoreException {

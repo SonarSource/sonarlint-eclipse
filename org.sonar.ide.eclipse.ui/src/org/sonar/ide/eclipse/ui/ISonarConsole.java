@@ -21,17 +21,13 @@ package org.sonar.ide.eclipse.ui;
 
 /**
  * Sonar Console.
- * 
+ *
  * @noimplement This interface is not intended to be implemented by clients.
  * @noextend This interface is not intended to be extended by clients.
  */
 public interface ISonarConsole {
 
-  void debug(String msg);
-
   void info(String msg);
-
-  void warn(String msg);
 
   void error(String msg);
 

@@ -17,18 +17,18 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.batch;
+package org.sonar.ide.eclipse.tests.common;
 
-import org.sonar.batch.components.EmbedderPersistenceManager;
+import org.sonar.ide.eclipse.runner.SonarRunnerLogListener;
 
-public class GlobalModule extends Module {
+public class FakeSonarConsole implements SonarRunnerLogListener {
 
-  @Override
-  protected void configure() {
-    addComponent(DefaultResourceCreationLock.class);
+  public void info(String msg) {
+    System.out.print(msg);
+  }
 
-    addComponent(FakeMavenPluginExecutor.class);
-    addComponent(EmbedderPersistenceManager.class);
+  public void error(String msg) {
+    System.err.print(msg);
   }
 
 }

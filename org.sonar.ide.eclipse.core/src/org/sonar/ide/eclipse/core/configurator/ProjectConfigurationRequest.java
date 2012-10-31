@@ -20,24 +20,25 @@
 package org.sonar.ide.eclipse.core.configurator;
 
 import org.eclipse.core.resources.IProject;
-import org.sonar.batch.bootstrapper.ProjectDefinition;
+
+import java.util.Properties;
 
 public class ProjectConfigurationRequest {
 
   private final IProject project;
-  private final ProjectDefinition sonarProject;
+  private final Properties sonarProjectProperties;
 
-  public ProjectConfigurationRequest(IProject eclipseProject, ProjectDefinition sonarProject) {
+  public ProjectConfigurationRequest(IProject eclipseProject, Properties sonarProjectProperties) {
     this.project = eclipseProject;
-    this.sonarProject = sonarProject;
+    this.sonarProjectProperties = sonarProjectProperties;
   }
 
   public IProject getProject() {
     return project;
   }
 
-  public ProjectDefinition getSonarProject() {
-    return sonarProject;
+  public Properties getSonarProjectProperties() {
+    return sonarProjectProperties;
   }
 
 }

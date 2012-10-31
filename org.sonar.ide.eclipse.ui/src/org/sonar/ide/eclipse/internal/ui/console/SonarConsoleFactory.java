@@ -25,7 +25,7 @@ import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 /**
  * Used to show the console from the "Open Console" drop-down action in Console view.
- * 
+ *
  * @see org.eclipse.ui.console.consoleFactory extension point
  */
 public class SonarConsoleFactory implements IConsoleFactory {
