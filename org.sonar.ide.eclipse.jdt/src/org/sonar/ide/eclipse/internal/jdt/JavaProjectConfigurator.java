@@ -39,6 +39,7 @@ import java.util.Properties;
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
   private static final Logger LOG = LoggerFactory.getLogger(JavaProjectConfigurator.class);
+  private static final String TEST_PATTERN = ".*test.*"; // TODO Allow to configure this
 
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
@@ -73,12 +74,19 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
               break;
             }
             String srcDir = getAbsolutePath(javaProject, entry.getPath());
-            LOG.debug("Source directory: {}", srcDir);
-            appendProperty(sonarProjectProperties, SonarProperties.SOURCE_DIRS_PROPERTY, srcDir);
-            if (entry.getOutputLocation() != null) {
-              String binDir = getAbsolutePath(javaProject, entry.getOutputLocation());
-              LOG.debug("Binary directory: {}", binDir);
-              appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
+            String relativeDir = getRelativePath(javaProject, entry.getPath());
+            if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
+              LOG.debug("Test directory: {}", srcDir);
+              appendProperty(sonarProjectProperties, SonarProperties.TEST_DIRS_PROPERTY, srcDir);
+            }
+            else {
+              LOG.debug("Source directory: {}", srcDir);
+              appendProperty(sonarProjectProperties, SonarProperties.SOURCE_DIRS_PROPERTY, srcDir);
+              if (entry.getOutputLocation() != null) {
+                String binDir = getAbsolutePath(javaProject, entry.getOutputLocation());
+                LOG.debug("Binary directory: {}", binDir);
+                appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
+              }
             }
             break;
 
@@ -120,7 +128,11 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
 
   private String getAbsolutePath(IJavaProject javaProject, IPath path) {
     File baseDir = javaProject.getProject().getLocation().toFile();
-    String relativePath = path.makeRelativeTo(javaProject.getPath()).toOSString();
+    String relativePath = getRelativePath(javaProject, path);
     return new File(baseDir, relativePath).getAbsolutePath();
+  }
+
+  private String getRelativePath(IJavaProject javaProject, IPath path) {
+    return path.makeRelativeTo(javaProject.getPath()).toOSString();
   }
 }
