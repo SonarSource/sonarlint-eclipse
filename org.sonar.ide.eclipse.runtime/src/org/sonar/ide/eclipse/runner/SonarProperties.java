@@ -26,6 +26,7 @@ public interface SonarProperties {
   String PROJECT_KEY_PROPERTY = "sonar.projectKey";
   String PROJECT_NAME_PROPERTY = "sonar.projectName";
   String PROJECT_LANGUAGE_PROPERTY = "sonar.language";
+  String ENCODING_PROPERTY = "sonar.sourceEncoding";
 
   String SOURCE_DIRS_PROPERTY = "sonar.sources";
   String TEST_DIRS_PROPERTY = "sonar.tests";

@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.internal.core.configurator;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
@@ -35,9 +36,16 @@ public class DefaultProjectConfigurator extends ProjectConfigurator {
     Properties properties = request.getSonarProjectProperties();
     String projectName = request.getProject().getName();
     String projectKey = remoteProject.getKey();
+    String encoding;
+    try {
+      encoding = request.getProject().getDefaultCharset();
+    } catch (CoreException e) {
+      throw new RuntimeException("Unable to get charset from project", e);
+    }
 
     properties.setProperty(SonarProperties.PROJECT_KEY_PROPERTY, projectKey);
     properties.setProperty(SonarProperties.PROJECT_NAME_PROPERTY, projectName);
     properties.setProperty(SonarProperties.PROJECT_VERSION_PROPERTY, "0.1-SNAPSHOT");
+    properties.setProperty(SonarProperties.ENCODING_PROPERTY, encoding);
   }
 }
