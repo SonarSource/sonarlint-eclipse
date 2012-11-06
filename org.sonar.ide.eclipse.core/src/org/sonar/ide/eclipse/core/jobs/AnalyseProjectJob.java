@@ -42,10 +42,10 @@ import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.internal.core.Messages;
 import org.sonar.ide.eclipse.internal.core.markers.MarkerUtils;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.core.resources.ResourceUtils;
 import org.sonar.ide.eclipse.runner.SonarEclipseRunner;
 import org.sonar.ide.eclipse.runner.SonarProperties;
-import org.sonar.ide.eclipse.runner.SonarRunnerPlugin;
 
 import java.io.File;
 import java.io.FileReader;
@@ -97,6 +97,8 @@ public class AnalyseProjectJob extends Job {
       configurator.configure(request, monitor);
     }
 
+    ProjectProperties projectProperties = ProjectProperties.getInstance(project);
+    properties.setProperty(SonarProperties.SONAR_URL, projectProperties.getUrl());
     properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
     properties.setProperty(SonarProperties.WORK_DIR, workDir.toString());
     properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
@@ -115,8 +117,6 @@ public class AnalyseProjectJob extends Job {
     try {
       Object obj = JSONValue.parse(new FileReader(outputFile));
       JSONObject sonarResult = (JSONObject) obj;
-      String sonarVersion = sonarResult.get("version").toString();
-      SonarRunnerPlugin.getDefault().info("Parsing resulting file (version: " + sonarVersion + ")\n");
       final JSONObject violationByResources = (JSONObject) sonarResult.get("violations_per_resource");
       project.accept(new IResourceVisitor() {
         public boolean visit(IResource resource) throws CoreException {

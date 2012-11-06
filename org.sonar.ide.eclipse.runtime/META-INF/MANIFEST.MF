@@ -9,12 +9,12 @@ Bundle-SymbolicName: org.sonar.ide.eclipse.runtime;singleton:=true
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,JavaSE-1.6
 Require-Bundle: org.eclipse.core.runtime,
  org.apache.commons.io,
- com.google.collect,
  org.apache.commons.lang,
  org.slf4j.api,
  org.eclipse.jdt.launching,
  org.eclipse.debug.core,
- org.eclipse.jdt.core
+ org.eclipse.jdt.core,
+ com.google.guava;bundle-version="10.0.1"
 Export-Package: org.json.simple,
  org.sonar.ide.eclipse.runner
 Bundle-ClassPath: jars/json-simple-1.1.1.jar,

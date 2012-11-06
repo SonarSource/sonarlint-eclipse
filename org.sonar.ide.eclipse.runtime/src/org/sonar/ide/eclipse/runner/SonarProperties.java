@@ -36,6 +36,7 @@ public interface SonarProperties {
   String DRY_RUN_PROPERTY = "sonar.dryRun";
   String DRY_RUN_OUTPUT_PROPERTY = "sonar.dryRun.export.path";
 
+  String SONAR_URL = "sonar.host.url";
   String PROJECT_BASEDIR = "sonar.projectBaseDir";
   String WORK_DIR = "sonar.working.directory";
 

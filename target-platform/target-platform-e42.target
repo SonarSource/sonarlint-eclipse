@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.8"?><target name="sonar-eclipse-e42" sequenceNumber="32">
+<locations>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
+<unit id="org.apache.commons.io" version="2.0.1.v201105210651"/>
+<unit id="org.apache.commons.lang" version="2.6.0.v201205030909"/>
+<unit id="com.google.guava" version="10.0.1.v201203051515"/>
+<unit id="org.apache.commons.codec" version="1.3.0.v201101211617"/>
+<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20120526062928/repository/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
+<unit id="org.eclipse.jdt.feature.group" version="3.8.1.v20120814-104540-8-8nFqpFNOfwKDRVz-tXOcL5d_83"/>
+<unit id="org.eclipse.platform.ide" version="4.2.1.M20120914-1800"/>
+<unit id="org.eclipse.jetty.slf4jlogback.feature.group" version="8.1.3.201206060641"/>
+<unit id="org.eclipse.mylyn.builds.feature.group" version="1.0.2.v20120916-1200"/>
+<unit id="org.eclipse.mylyn.commons.feature.group" version="3.8.2.v20120916-1200"/>
+<unit id="org.eclipse.mylyn.context.sdk.feature.group" version="3.8.2.v20120916-1200"/>
+<unit id="org.eclipse.mylyn.reviews.feature.feature.group" version="1.0.2.v20120916-1200"/>
+<unit id="org.eclipse.mylyn_feature.feature.group" version="3.8.2.v20120916-1200"/>
+<repository location="http://download.eclipse.org/releases/juno"/>
+</location>
+</locations>
+</target>

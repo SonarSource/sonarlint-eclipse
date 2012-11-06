@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.mylyn.tasks.ui;bundle-version="[3.2.0,4.0.0)",
  org.eclipse.mylyn.commons.ui;bundle-version="[3.2.0,4.0.0)",
  org.eclipse.ui,
- org.eclipse.ui.forms
+ org.eclipse.ui.forms,
+ org.sonar.ide.eclipse.wsclient
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6
 Bundle-ActivationPolicy: lazy

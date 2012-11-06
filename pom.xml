@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
   <parent>
     <groupId>org.codehaus.sonar-plugins</groupId>
     <artifactId>parent</artifactId>
     <version>14</version>
   </parent>
-  
+
   <groupId>org.codehaus.sonar-ide.eclipse</groupId>
   <artifactId>eclipse-parent</artifactId>
   <packaging>pom</packaging>
@@ -55,24 +55,22 @@
   </prerequisites>
 
   <modules>
-    <module>org.sonar.ide.eclipse.core</module>
-    <module>org.sonar.ide.eclipse.deprecated</module>
     <module>org.sonar.ide.eclipse.wsclient</module>
     <module>org.sonar.ide.eclipse.runtime</module>
+
+    <module>org.sonar.ide.eclipse.core</module>
+    <module>org.sonar.ide.eclipse.deprecated</module>
     <module>org.sonar.ide.eclipse.ui</module>
     <module>org.sonar.ide.eclipse.jdt</module>
-
-    <module>org.sonar.ide.eclipse.site</module>
+    <module>org.sonar.ide.eclipse.feature</module>
 
     <module>org.sonar.ide.eclipse.mylyn.core</module>
     <module>org.sonar.ide.eclipse.mylyn.ui</module>
-    <module>org.sonar.ide.eclipse.mylyn.tests</module>
     <module>org.sonar.ide.eclipse.mylyn.feature</module>
 
-    <module>org.sonar.ide.eclipse.tests.common</module>
-    <module>org.sonar.ide.eclipse.tests</module>
+    <module>org.sonar.ide.eclipse.thirdparty.feature</module>
 
-    <module>org.sonar.ide.eclipse.feature</module>
+    <module>org.sonar.ide.eclipse.site</module>
 
     <module>target-platform</module>
   </modules>
@@ -110,14 +108,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.min.version>1.5</jdk.min.version>
 
-    <tycho.version>0.14.1</tycho.version>
-
-    <target.platform>e36</target.platform>
-    <orbit-repository-url>http://download.eclipse.org/tools/orbit/downloads/drops/R20110523182458/repository/</orbit-repository-url>
-    <mylyn-repository-url>http://download.eclipse.org/mylyn/releases/3.6/</mylyn-repository-url>
-
-    <!-- Version of Sonar for integration tests -->
-    <sonar.runtimeVersion>2.4</sonar.runtimeVersion>
+    <tycho.version>0.16.0</tycho.version>
 
     <!-- disable accidental deployment -->
     <sonar-ide.site>dav:http://localhost</sonar-ide.site>
@@ -183,11 +174,16 @@
           <version>${tycho.version}</version>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.5</version>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-p2-publisher-plugin</artifactId>
+          <version>${tycho.version}</version>
         </plugin>
-	<!-- MENFORCER-117 -->
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-p2-repository-plugin</artifactId>
+          <version>${tycho.version}</version>
+        </plugin>
+  <!-- MENFORCER-117 -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
@@ -218,77 +214,19 @@
           </includes>
         </configuration>
       </plugin>
-    </plugins>
-  </build>
-
-  <profiles>
-    <profile>
-      <id>e3.5</id>
-      <activation>
-        <property>
-          <name>target-profile</name>
-          <value>e3.5</value>
-         </property>
-      </activation>
-      <properties>
-        <target.platform>e35</target.platform>
-        <platform-repository-url>http://download.eclipse.org/releases/galileo/</platform-repository-url>
-        <!-- Marked as unsupported on site http://eclipse.org/swtbot/downloads.php -->
-        <swtbot-repository-url>http://download.eclipse.org/technology/swtbot/galileo/dev-build/update-site/</swtbot-repository-url>
-      </properties>
-    </profile>
-    <profile>
-      <id>e3.6</id>
-      <activation>
-        <property>
-          <name>!target-profile</name>
-        </property>
-      </activation>
-      <properties>
-        <target.platform>e36</target.platform>
-        <platform-repository-url>http://download.eclipse.org/releases/helios/</platform-repository-url>
-        <swtbot-repository-url>http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/</swtbot-repository-url>
-      </properties>
-    </profile>
-    <profile>
-      <id>e3.7</id>
-      <activation>
-        <property>
-          <name>target-profile</name>
-          <value>e3.7</value>
-         </property>
-      </activation>
-      <properties>
-        <target.platform>e37</target.platform>
-        <platform-repository-url>http://download.eclipse.org/releases/indigo/</platform-repository-url>
-        <swtbot-repository-url>http://download.eclipse.org/technology/swtbot/helios/dev-build/update-site/</swtbot-repository-url>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>explicit-target</id>
-      <activation>
-        <property>
-          <name>explicit-target</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.eclipse.tycho</groupId>
-            <artifactId>target-platform-configuration</artifactId>
-            <configuration>
-              <resolver>p2</resolver>
-              <ignoreTychoRepositories>true</ignoreTychoRepositories>
-              <target>
-                <artifact>
-                  <groupId>org.codehaus.sonar-ide.eclipse</groupId>
-                  <artifactId>target-platform</artifactId>
-                  <version>${project.version}</version>
-                  <classifier>${target.platform}</classifier>
-                </artifact>
-              </target>
-              <environments>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>target-platform-configuration</artifactId>
+        <configuration>
+          <pomDependencies>consider</pomDependencies>
+          <target>
+            <artifact>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>target-platform-e42</artifactId>
+              <version>${project.version}</version>
+            </artifact>
+          </target>
+          <environments>
                 <environment>
                   <os>linux</os>
                   <ws>gtk</ws>
@@ -328,62 +266,12 @@
                 </environment>
                 -->
               </environments>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
-    <profile>
-      <id>implicit-target</id>
-      <activation>
-        <property>
-          <name>!explicit-target</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.eclipse.tycho</groupId>
-            <artifactId>target-platform-configuration</artifactId>
-            <configuration>
-              <resolver>p2</resolver>
-              <ignoreTychoRepositories>true</ignoreTychoRepositories>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-      <repositories>
-        <repository>
-          <id>eclipse-platform</id>
-          <layout>p2</layout>
-          <url>${platform-repository-url}</url>
-        </repository>
-        <repository>
-          <id>eclipse-orbit</id>
-          <layout>p2</layout>
-          <url>${orbit-repository-url}</url>
-        </repository>
-        <repository>
-          <id>eclipse-mylyn</id>
-          <layout>p2</layout>
-          <url>${mylyn-repository-url}</url>
-        </repository>
-        <repository>
-          <id>eclipse-swtbot</id>
-          <layout>p2</layout>
-          <url>${swtbot-repository-url}</url>
-        </repository>
-      </repositories>
-    </profile>
-
-    <!-- This profile is used to launch integration tests -->
-    <profile>
-      <id>its</id>
-      <modules>
-        <module>org.sonar.ide.eclipse.ui.tests</module>
-      </modules>
-    </profile>
+  <profiles>
     <!-- This profile is used to gather code coverage for Sonar -->
     <profile>
       <id>jacoco</id>
@@ -413,27 +301,7 @@
         </plugins>
       </build>
     </profile>
-    <!-- This profile is used to check copyright/license headers -->
-    <profile>
-      <id>license</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.mycila.maven-license-plugin</groupId>
-            <artifactId>maven-license-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>enforce-license-headers</id>
-                <phase>validate</phase>
-                <goals>
-                  <goal>check</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
+
     <!-- TODO This profile is used to sign artifacts -->
     <profile>
       <id>sign</id>
@@ -457,59 +325,6 @@
             </executions>
           </plugin>
         </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <id>m2e</id>
-      <activation>
-        <!-- This profile is active only when used from Eclipse m2e and is used only to store settings. -->
-        <property>
-          <name>m2e.version</name>
-        </property>
-      </activation>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.eclipse.m2e</groupId>
-              <artifactId>lifecycle-mapping</artifactId>
-              <version>1.0.0</version>
-              <configuration>
-                <lifecycleMappingMetadata>
-                  <pluginExecutions>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>org.eclipse.tycho</groupId>
-                        <artifactId>tycho-packaging-plugin</artifactId>
-                        <versionRange>[0.13.0,)</versionRange>
-                        <goals>
-                          <goal>validate-id</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-enforcer-plugin</artifactId>
-                        <versionRange>[1.0,)</versionRange>
-                        <goals>
-                          <goal>enforce</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                  </pluginExecutions>
-                </lifecycleMappingMetadata>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
       </build>
     </profile>
   </profiles>

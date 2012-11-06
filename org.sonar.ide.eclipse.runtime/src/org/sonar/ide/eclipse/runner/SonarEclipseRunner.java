@@ -28,10 +28,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.core.model.IProcess;
-import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMRunner;
@@ -71,20 +69,21 @@ public class SonarEclipseRunner {
       vmConfig.setVMArguments(prepareVMArgs(props));
 
       final ILaunch launch = new Launch(null, ILaunchManager.RUN_MODE, null) {
+
         @Override
         public void addProcess(IProcess process) {
-          process.getStreamsProxy().getErrorStreamMonitor().addListener(new IStreamListener() {
-
-            public void streamAppended(String msg, IStreamMonitor monitor) {
-              SonarRunnerPlugin.getDefault().error(msg);
+          new StreamListener(process.getStreamsProxy().getErrorStreamMonitor()) {
+            @Override
+            protected void write(String text) {
+              SonarRunnerPlugin.getDefault().error(text);
             }
-          });
-          process.getStreamsProxy().getOutputStreamMonitor().addListener(new IStreamListener() {
-
-            public void streamAppended(String msg, IStreamMonitor monitor) {
-              SonarRunnerPlugin.getDefault().info(msg);
+          };
+          new StreamListener(process.getStreamsProxy().getOutputStreamMonitor()) {
+            @Override
+            protected void write(String text) {
+              SonarRunnerPlugin.getDefault().info(text);
             }
-          });
+          };
           super.addProcess(process);
         }
       };

@@ -19,16 +19,16 @@
  */
 package org.sonar.wsclient;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.wsclient.connectors.HttpClient3Connector;
+import org.sonar.wsclient.connectors.HttpClient4Connector;
 import org.sonar.wsclient.internal.WSClientPlugin;
 
 import java.net.URI;
@@ -37,10 +37,6 @@ public final class WSClientFactory {
 
   private static final Logger LOG = LoggerFactory.getLogger(WSClientFactory.class);
 
-  private static final int TIMEOUT_MS = 30000;
-  private static final int MAX_TOTAL_CONNECTIONS = 40;
-  private static final int MAX_HOST_CONNECTIONS = 4;
-
   private WSClientFactory() {
   }
 
@@ -48,24 +44,9 @@ public final class WSClientFactory {
    * Creates Sonar web service client, which uses proxy settings from Eclipse.
    */
   public static Sonar create(Host host) {
-    HttpClient httpClient = createHttpClient();
-    configureCredentials(httpClient, host);
-    configureProxy(httpClient, host);
-    return new Sonar(new HttpClient3Connector(host, httpClient));
-  }
-
-  /**
-   * @see org.sonar.wsclient.connectors.HttpClient3Connector#createClient()
-   */
-  private static HttpClient createHttpClient() {
-    final HttpConnectionManagerParams params = new HttpConnectionManagerParams();
-    params.setConnectionTimeout(TIMEOUT_MS);
-    params.setSoTimeout(TIMEOUT_MS);
-    params.setDefaultMaxConnectionsPerHost(MAX_HOST_CONNECTIONS);
-    params.setMaxTotalConnections(MAX_TOTAL_CONNECTIONS);
-    final MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
-    connectionManager.setParams(params);
-    return new HttpClient(connectionManager);
+    HttpClient4Connector connector = new HttpClient4Connector(host);
+    configureProxy(connector.getHttpClient(), host);
+    return new Sonar(connector);
   }
 
   /**
@@ -76,29 +57,18 @@ public final class WSClientFactory {
       IProxyData[] proxyDatas = WSClientPlugin.selectProxy(new URI(server.getHost()));
       for (IProxyData proxyData : proxyDatas) {
         LOG.debug("Proxy for [{}] - [{}]", server.getHost(), proxyData);
-        httpClient.getHostConfiguration().setProxy(proxyData.getHost(), proxyData.getPort());
+        HttpHost proxy = new HttpHost(proxyData.getHost(), proxyData.getPort());
+        httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
         if (proxyData.isRequiresAuthentication()) {
-          Credentials proxyCredentials = new UsernamePasswordCredentials(proxyData.getUserId(), proxyData.getPassword());
-          httpClient.getState().setProxyCredentials(AuthScope.ANY, proxyCredentials);
+          ((DefaultHttpClient) httpClient).getCredentialsProvider().setCredentials(
+              new AuthScope(proxyData.getHost(), proxyData.getPort()),
+              new UsernamePasswordCredentials(proxyData.getUserId(), proxyData.getPassword()));
         }
         return;
       }
       LOG.debug("No proxy for [{}]", server.getHost());
     } catch (Exception e) {
       LOG.error("Unable to configure proxy for sonar-ws-client", e);
-    }
-  }
-
-  /**
-   * TODO Godin: I suppose that call of method {@link HttpClient3Connector#configureCredentials()} can be added to constructor
-   * {@link HttpClient3Connector#HttpClient3Connector(Host, HttpClient)}
-   */
-  private static void configureCredentials(HttpClient httpClient, Host server) {
-    String username = server.getUsername();
-    if ((username != null) && !"".equals(username)) {
-      httpClient.getParams().setAuthenticationPreemptive(true);
-      Credentials credentials = new UsernamePasswordCredentials(server.getUsername(), server.getPassword());
-      httpClient.getState().setCredentials(AuthScope.ANY, credentials);
     }
   }
 

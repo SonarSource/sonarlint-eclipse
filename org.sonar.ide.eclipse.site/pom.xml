@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>org.sonar.ide.eclipse.site</artifactId>
-  <packaging>eclipse-feature</packaging>
+  <packaging>eclipse-repository</packaging>
 
   <name>Sonar Integration for Eclipse (update-site)</name>
 
@@ -19,27 +19,9 @@
     <plugins>
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
-        <artifactId>tycho-packaging-plugin</artifactId>
+        <artifactId>target-platform-configuration</artifactId>
         <configuration>
-          <deployableFeature>true</deployableFeature>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.eclipse.tycho</groupId>
-        <artifactId>tycho-p2-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>categorization</id>
-            <phase>package</phase>
-            <goals>
-              <goal>category-p2-metadata</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <metadataRepositoryName>Sonar Integration for Eclipse</metadataRepositoryName>
-          <artifactRepositoryName>Sonar Integration for Eclipse</artifactRepositoryName>
-          <compressRepository>false</compressRepository>
+          <includePackedArtifacts>true</includePackedArtifacts>
         </configuration>
       </plugin>
     </plugins>
