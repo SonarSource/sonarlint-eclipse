@@ -44,9 +44,7 @@ public final class MarkerUtils {
       JSONObject violation = (JSONObject) violationObj;
       final Map<String, Object> markerAttributes = Maps.newHashMap();
       Long line = (Long) violation.get("line");
-      if (line != null) {
-        markerAttributes.put(IMarker.LINE_NUMBER, line.intValue());
-      }
+      markerAttributes.put(IMarker.LINE_NUMBER, line != null ? line.intValue() : 1); // SONARIDE-64
       markerAttributes.put(IMarker.MESSAGE, ObjectUtils.toString(violation.get("message")));
       markerAttributes.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
       markerAttributes.put(IMarker.PRIORITY, IMarker.PRIORITY_LOW);

@@ -74,9 +74,7 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
         // Split violations by resource
         ArrayListMultimap<String, Violation> mm = ArrayListMultimap.create();
         for (Violation violation : violations) {
-          if (violation.getLine() != null) { // TODO violation not associated with line
-            mm.put(violation.getResourceKey(), violation);
-          }
+          mm.put(violation.getResourceKey(), violation);
         }
         // Associate violations with resources
         for (String resourceKey : mm.keySet()) {

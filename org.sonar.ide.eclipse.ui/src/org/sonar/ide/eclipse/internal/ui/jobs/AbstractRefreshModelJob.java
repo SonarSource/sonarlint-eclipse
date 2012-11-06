@@ -118,9 +118,10 @@ public abstract class AbstractRefreshModelJob<M> extends AbstractRemoteSonarJob 
 
   protected IMarker createMarker(final IFile file, final M data) throws CoreException {
     final Map<String, Object> markerAttributes = new HashMap<String, Object>();
+    Integer line = getLine(data);
     markerAttributes.put(IMarker.PRIORITY, getPriority(data));
     markerAttributes.put(IMarker.SEVERITY, getSeverity(data));
-    markerAttributes.put(IMarker.LINE_NUMBER, getLine(data));
+    markerAttributes.put(IMarker.LINE_NUMBER, line != null ? line : 1); // SONARIDE-64
     markerAttributes.put(IMarker.MESSAGE, getMessage(data));
 
     InputStream inputStream = file.getContents();
@@ -133,7 +134,9 @@ public abstract class AbstractRefreshModelJob<M> extends AbstractRemoteSonarJob 
       IOUtils.closeQuietly(inputStream);
     }
 
-    addLine(markerAttributes, getLine(data), source);
+    if (line != null) { // Don't highlight line 1 for file level violation
+      addLine(markerAttributes, getLine(data), source);
+    }
     final Map<String, Object> extraInfos = getExtraInfos(data);
     if (extraInfos != null) {
       for (Map.Entry<String, Object> entry : extraInfos.entrySet()) {
@@ -152,7 +155,7 @@ public abstract class AbstractRefreshModelJob<M> extends AbstractRemoteSonarJob 
 
   /**
    * @return Severity marker attribute. A number from the set of error, warning and info severities defined by the platform.
-   * 
+   *
    * @see IMarker.SEVERITY_ERROR
    * @see IMarker.SEVERITY_WARNING
    * @see IMarker.SEVERITY_INFO
@@ -161,7 +164,7 @@ public abstract class AbstractRefreshModelJob<M> extends AbstractRemoteSonarJob 
 
   /**
    * @return Priority marker attribute. A number from the set of high, normal and low priorities defined by the platform.
-   * 
+   *
    * @see IMarker.PRIORITY_HIGH
    * @see IMarker.PRIORITY_NORMAL
    * @see IMarker.PRIORITY_LOW
