@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.internal.ui.views;
 
+import org.apache.commons.codec.binary.Base64;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
@@ -27,9 +28,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.SonarUrls;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
+import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.wsclient.Host;
 
 /**
  * @author Evgeny Mandrikov
@@ -58,15 +62,23 @@ public class WebView extends AbstractSonarInfoView {
   protected void doSetInput(Object input) {
     ISonarResource sonarResource = (ISonarResource) input;
     SourceCode sourceCode = EclipseSonar.getInstance(sonarResource.getProject()).search(sonarResource);
+    ProjectProperties properties = ProjectProperties.getInstance(sonarResource.getProject());
     if (sourceCode == null) {
       browser.setText("Not found.");
       return;
     }
 
     String url = new SonarUrls().resourceUrl(sonarResource);
-
+    Host host = SonarCorePlugin.getServersManager().findServer(properties.getUrl());
     LOG.debug("Opening url {} in web view", url);
 
-    browser.setUrl(url);
+    if (host.getUsername() != null) {
+      String userpwd = host.getUsername() + ":" + host.getPassword();
+      byte[] encodedBytes = Base64.encodeBase64(userpwd.getBytes());
+      browser.setUrl(url, null, new String[] {"Authorization: Basic " + new String(encodedBytes)});
+    }
+    else {
+      browser.setUrl(url);
+    }
   }
 }

@@ -24,21 +24,21 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.internal.SonarUrls;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-
-import java.net.URL;
+import org.sonar.ide.eclipse.internal.ui.views.WebView;
 
 /**
  * Open the internal web browser to show the page of the sonar server corresponding to the selection.
- * 
+ *
  * @author Jérémie Lagarde
  */
 public class OpenInBrowserAction implements IObjectActionDelegate {
+
+  private static final Logger LOG = LoggerFactory.getLogger(OpenInBrowserAction.class);
 
   private IStructuredSelection selection;
 
@@ -61,19 +61,10 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
   }
 
   protected void openBrowser(ISonarResource sonarResource) {
-    IWorkbenchBrowserSupport browserSupport = SonarUiPlugin.getDefault().getWorkbench().getBrowserSupport();
-    ProjectProperties properties = ProjectProperties.getInstance(sonarResource.getProject());
     try {
-      String url = new SonarUrls().resourceUrl(sonarResource);
-
-      URL consoleURL = new URL(url);
-      if (browserSupport.isInternalWebBrowserAvailable()) {
-        browserSupport.createBrowser("id" + properties.getUrl().hashCode()).openURL(consoleURL);
-      } else {
-        browserSupport.getExternalBrowser().openURL(consoleURL);
-      }
-    } catch (Exception e) {
-      LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
+      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(WebView.ID);
+    } catch (PartInitException e) {
+      LOG.error("Unable to open Web View", e);
     }
   }
 
