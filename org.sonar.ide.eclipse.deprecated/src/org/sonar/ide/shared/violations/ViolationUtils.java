@@ -51,7 +51,7 @@ public final class ViolationUtils {
 
   /**
    * Sorts violations by priority in descending order.
-   * 
+   *
    * @param violations list of violations to sort
    * @return sorted list of violations
    */
@@ -77,7 +77,7 @@ public final class ViolationUtils {
 
   /**
    * Converts priority from string to integer.
-   * 
+   *
    * @param priority priority to convert
    * @return converted priority
    */
@@ -100,8 +100,8 @@ public final class ViolationUtils {
     for (Violation violation : violations) {
       Integer originalLine = violation.getLine();
       if ((originalLine == null) || (originalLine == 0)) {
-        // skip violation on whole file
-        // TODO Godin: we can show them on first line
+        violation.setLine(1); // Display global violations on line 1
+        result.add(violation);
         continue;
       }
 
@@ -139,7 +139,7 @@ public final class ViolationUtils {
 
   /**
    * TODO Godin: can we include this method into sonar-ws-client for debug purposes ?
-   * 
+   *
    * @param violation violation to convert to string
    * @return string representation of violation
    * @see #toString(java.util.Collection)
