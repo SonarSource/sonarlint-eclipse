@@ -20,9 +20,12 @@
 package org.sonar.ide.eclipse.internal.jdt;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
@@ -66,48 +69,94 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     LOG.info("Target Java version: {}", javaTarget);
 
     try {
-      IClasspathEntry[] classPath = javaProject.getResolvedClasspath(true);
-      for (IClasspathEntry entry : classPath) {
-        switch (entry.getEntryKind()) {
-          case IClasspathEntry.CPE_SOURCE:
-            if (isSourceExcluded(entry)) {
-              break;
-            }
-            String srcDir = getAbsolutePath(javaProject, entry.getPath());
-            String relativeDir = getRelativePath(javaProject, entry.getPath());
-            if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
-              LOG.debug("Test directory: {}", srcDir);
-              appendProperty(sonarProjectProperties, SonarProperties.TEST_DIRS_PROPERTY, srcDir);
-            }
-            else {
-              LOG.debug("Source directory: {}", srcDir);
-              appendProperty(sonarProjectProperties, SonarProperties.SOURCE_DIRS_PROPERTY, srcDir);
-              if (entry.getOutputLocation() != null) {
-                String binDir = getAbsolutePath(javaProject, entry.getOutputLocation());
-                LOG.debug("Binary directory: {}", binDir);
-                appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
-              }
-            }
-            break;
-
-          case IClasspathEntry.CPE_LIBRARY:
-            String libDir = entry.getPath().toOSString();
-            LOG.debug("Library: {}", libDir);
-            appendProperty(sonarProjectProperties, SonarProperties.LIBRARIES_PROPERTY, libDir);
-            break;
-
-          default:
-            LOG.warn("Unhandled ClassPathEntry : {}", entry);
-            break;
-        }
-      }
-
-      String binDir = getAbsolutePath(javaProject, javaProject.getOutputLocation());
-      LOG.debug("Default binary directory: {}", binDir);
-      appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
+      addClassPathToSonarProject(javaProject, sonarProjectProperties, true);
     } catch (JavaModelException e) {
       LOG.error(e.getMessage(), e);
     }
+  }
+
+  /**
+   * Adds the classpath of an eclipse project to the sonarProject recursively, i.e
+   * it iterates all dependent projects. Libraries and output folders of dependent projects
+   * are added, but no source folders.
+   * @param javaProject the eclipse project to get the classpath from
+   * @param sonarProjectProperties the sonar project properties to add the classpath to
+   * @param topProject indicate we are working on the project to be analysed and not on a dependent project
+   * @throws JavaModelException see {@link IJavaProject#getResolvedClasspath(boolean)}
+   */
+  private void addClassPathToSonarProject(IJavaProject javaProject, Properties sonarProjectProperties, boolean topProject)
+      throws JavaModelException {
+    IClasspathEntry[] classPath = javaProject.getResolvedClasspath(true);
+    for (IClasspathEntry entry : classPath) {
+      switch (entry.getEntryKind()) {
+        case IClasspathEntry.CPE_SOURCE:
+          if (isSourceExcluded(entry)) {
+            break;
+          }
+          String srcDir = getAbsolutePath(javaProject, entry.getPath());
+          String relativeDir = getRelativePath(javaProject, entry.getPath());
+          if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
+            if (topProject) {
+              LOG.debug("Test directory: {}", srcDir);
+              appendProperty(sonarProjectProperties, SonarProperties.TEST_DIRS_PROPERTY, srcDir);
+            }
+          }
+          else {
+            if (topProject) {
+              LOG.debug("Source directory: {}", srcDir);
+              appendProperty(sonarProjectProperties, SonarProperties.SOURCE_DIRS_PROPERTY, srcDir);
+            }
+            if (entry.getOutputLocation() != null) {
+              String binDir = getAbsolutePath(javaProject, entry.getOutputLocation());
+              LOG.debug("Binary directory: {}", binDir);
+              appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
+            }
+          }
+          break;
+
+        case IClasspathEntry.CPE_LIBRARY:
+          if (topProject || entry.isExported()) {
+            final String libDir = resolveLibrary(javaProject, entry);
+            LOG.debug("Library: {}", libDir);
+            appendProperty(sonarProjectProperties, SonarProperties.LIBRARIES_PROPERTY, libDir);
+          }
+          break;
+        case IClasspathEntry.CPE_PROJECT:
+          IJavaModel javaModel = javaProject.getJavaModel();
+          IJavaProject referredProject = javaModel.getJavaProject(entry.getPath().segment(0));
+          LOG.debug("Adding project: {}", referredProject.getProject().getName());
+          addClassPathToSonarProject(referredProject, sonarProjectProperties, false);
+          break;
+        default:
+          LOG.warn("Unhandled ClassPathEntry : {}", entry);
+          break;
+      }
+    }
+
+    String binDir = getAbsolutePath(javaProject, javaProject.getOutputLocation());
+    LOG.debug("Default binary directory: {}", binDir);
+    appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
+  }
+
+  private String resolveLibrary(IJavaProject javaProject, IClasspathEntry entry) {
+    final String libDir;
+    IResource member = findPath(javaProject.getProject(), entry.getPath());
+    if (member != null) {
+      LOG.debug("Found member: {}", member.getLocation().toOSString());
+      libDir = member.getLocation().toOSString();
+    } else {
+      libDir = entry.getPath().makeAbsolute().toOSString();
+    }
+    return libDir;
+  }
+
+  private IResource findPath(IProject project, IPath path) {
+    IResource member = project.findMember(path);
+    if (member == null) {
+      IWorkspaceRoot workSpaceRoot = project.getWorkspace().getRoot();
+      member = workSpaceRoot.findMember(path);
+    }
+    return member;
   }
 
   /**
