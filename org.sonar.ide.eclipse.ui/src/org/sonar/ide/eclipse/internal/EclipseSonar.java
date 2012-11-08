@@ -37,7 +37,7 @@ import java.io.IOException;
 
 /**
  * This is experimental class, which maybe removed in future. Used for migration to new API.
- * 
+ *
  * @author Evgeny Mandrikov
  */
 public final class EclipseSonar extends RemoteSonar {
@@ -59,13 +59,7 @@ public final class EclipseSonar extends RemoteSonar {
    * @return null, if not found
    */
   public SourceCode search(ISonarResource resource) {
-    String key;
-    if (resource instanceof ProjectProperties) {
-      key = ((ProjectProperties) resource).getKeyNoBranch();
-    } else {
-      key = resource.getKey();
-    }
-    return super.search(key);
+    return super.search(resource.getKey());
   }
 
   private static void displayError(Throwable e) {

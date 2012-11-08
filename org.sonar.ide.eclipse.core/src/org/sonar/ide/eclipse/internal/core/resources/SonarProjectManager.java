@@ -28,6 +28,7 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.SonarKeyUtils;
 
 /**
  * @author Evgeny Mandrikov
@@ -35,12 +36,16 @@ import org.sonar.ide.eclipse.core.SonarCorePlugin;
 public class SonarProjectManager {
   private static final Logger LOG = LoggerFactory.getLogger(SonarProjectManager.class);
 
-  private static final String VERSION = "1";
+  private static final String VERSION = "2";
   private static final String P_VERSION = "version";
   private static final String P_SONAR_SERVER_URL = "serverUrl";
+  @Deprecated
   private static final String P_PROJECT_GROUPID = "projectGroupId";
+  @Deprecated
   private static final String P_PROJECT_ARTIFACTID = "projectArtifactId";
+  @Deprecated
   private static final String P_PROJECT_BRANCH = "projectBranch";
+  private static final String P_PROJECT_KEY = "projectKey";
   private static final String P_ANALYSE_LOCALLY = "analyseLocally";
 
   public ProjectProperties readSonarConfiguration(IProject project) {
@@ -55,18 +60,29 @@ public class SonarProjectManager {
 
     String version = projectNode.get(P_VERSION, null);
     // Godin: we can perform migration here
-    String artifactId = projectNode.get(P_PROJECT_ARTIFACTID, "");
+    final String key;
+
     if (version == null) {
+      String artifactId = projectNode.get(P_PROJECT_ARTIFACTID, "");
       if (StringUtils.isBlank(artifactId)) {
         artifactId = project.getName();
       }
+      String groupId = projectNode.get(P_PROJECT_GROUPID, "");
+      String branch = projectNode.get(P_PROJECT_BRANCH, "");
+      key = SonarKeyUtils.projectKey(groupId, artifactId, branch);
+    } else if ("1".equals(version)) {
+      String artifactId = projectNode.get(P_PROJECT_ARTIFACTID, "");
+      String groupId = projectNode.get(P_PROJECT_GROUPID, "");
+      String branch = projectNode.get(P_PROJECT_BRANCH, "");
+      key = SonarKeyUtils.projectKey(groupId, artifactId, branch);
+    }
+    else {
+      key = projectNode.get(P_PROJECT_KEY, "");
     }
 
     ProjectProperties properties = new ProjectProperties(project);
     properties.setUrl(projectNode.get(P_SONAR_SERVER_URL, ""));
-    properties.setGroupId(projectNode.get(P_PROJECT_GROUPID, ""));
-    properties.setArtifactId(artifactId);
-    properties.setBranch(projectNode.get(P_PROJECT_BRANCH, ""));
+    properties.setKey(key);
     properties.setAnalysedLocally(projectNode.getBoolean(P_ANALYSE_LOCALLY, false));
     return properties;
   }
@@ -85,9 +101,7 @@ public class SonarProjectManager {
     projectNode.put(P_VERSION, VERSION);
 
     projectNode.put(P_SONAR_SERVER_URL, configuration.getUrl());
-    projectNode.put(P_PROJECT_GROUPID, configuration.getGroupId());
-    projectNode.put(P_PROJECT_ARTIFACTID, configuration.getArtifactId());
-    projectNode.put(P_PROJECT_BRANCH, configuration.getBranch());
+    projectNode.put(P_PROJECT_KEY, configuration.getKey());
     projectNode.putBoolean(P_ANALYSE_LOCALLY, configuration.isAnalysedLocally());
 
     try {

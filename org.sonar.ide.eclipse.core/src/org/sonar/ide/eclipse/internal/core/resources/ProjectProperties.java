@@ -23,7 +23,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.core.SonarKeyUtils;
 
 /**
  * @author Evgeny Mandrikov
@@ -32,9 +31,7 @@ public class ProjectProperties implements ISonarProject {
 
   private final IProject project;
   private String url;
-  private String groupId;
-  private String artifactId;
-  private String branch;
+  private String key;
   private boolean analysedLocally;
 
   public ProjectProperties(IProject project) {
@@ -64,30 +61,6 @@ public class ProjectProperties implements ISonarProject {
     this.url = url;
   }
 
-  public String getGroupId() {
-    return groupId;
-  }
-
-  public void setGroupId(String groupId) {
-    this.groupId = groupId;
-  }
-
-  public String getArtifactId() {
-    return artifactId;
-  }
-
-  public void setArtifactId(String artifactId) {
-    this.artifactId = artifactId;
-  }
-
-  public String getBranch() {
-    return branch;
-  }
-
-  public void setBranch(String branch) {
-    this.branch = branch;
-  }
-
   public IProject getProject() {
     return project;
   }
@@ -97,11 +70,11 @@ public class ProjectProperties implements ISonarProject {
   }
 
   public String getKey() {
-    return SonarKeyUtils.projectKey(getGroupId(), getArtifactId(), getBranch());
+    return key;
   }
 
-  public String getKeyNoBranch() {
-    return SonarKeyUtils.projectKey(getGroupId(), getArtifactId(), "");
+  public void setKey(String key) {
+    this.key = key;
   }
 
   public String getName() {

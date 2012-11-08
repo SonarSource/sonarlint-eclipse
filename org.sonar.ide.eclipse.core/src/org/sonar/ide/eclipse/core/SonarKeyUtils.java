@@ -45,9 +45,11 @@ public final class SonarKeyUtils {
    * <li>org.example:myproject</li>
    * <li>org.example:myproject:branch-1.0</li>
    * </ul>
-   * 
+   *
    * @return key for project
+   * @deprecated Do not use groupId/artifactId
    */
+  @Deprecated
   public static String projectKey(String groupId, String artifactId, String branch) {
     StringBuilder sb = new StringBuilder().append(groupId).append(PROJECT_DELIMITER).append(artifactId);
     if (StringUtils.isNotBlank(branch)) {
@@ -62,7 +64,7 @@ public final class SonarKeyUtils {
    * <li>org.example:myproject:[default]</li>
    * <li>org.example:myproject:org.example.mypackage</li>
    * </ul>
-   * 
+   *
    * @return key for Java package
    */
   public static String packageKey(ISonarProject project, String packageName) {
@@ -75,7 +77,7 @@ public final class SonarKeyUtils {
    * <li>org.example:myproject:[default].ClassOnDefaultPackage</li>
    * <li>org.example:myproject:org.example.mypackage.ClassOne</li>
    * </ul>
-   * 
+   *
    * @return key for Java file
    */
   public static String classKey(ISonarProject project, String packageName, String fileName) {

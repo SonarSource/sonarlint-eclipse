@@ -38,9 +38,7 @@ public class SonarProjectPropertyBlock {
     layout.verticalSpacing = 9;
 
     addText(Messages.SonarProjectPropertyBlock_label_host, properties.getUrl(), container);
-    addText(Messages.SonarProjectPropertyBlock_label_groupId, properties.getGroupId(), container);
-    addText(Messages.SonarProjectPropertyBlock_label_artifactId, properties.getArtifactId(), container);
-    addText(Messages.SonarProjectPropertyBlock_label_branch, properties.getBranch(), container);
+    addText(Messages.SonarProjectPropertyBlock_label_key, properties.getKey(), container);
 
     return container;
   }

@@ -17,15 +17,36 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.core;
+package org.sonar.ide.eclipse.internal.ui.wizards.associate;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.wizard.Wizard;
+
+import java.util.List;
 
 /**
- * Represents a view of a project in terms of Sonar.
- *
- * @noimplement This interface is not intended to be implemented by clients.
- * @noextend This interface is not intended to be extended by clients.
+ * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertedProjectWizard
  */
-public interface ISonarProject extends ISonarResource {
+public class ConfigureProjectsWizard extends Wizard {
 
-  String getKey();
+  private final List<IProject> projects;
+  private ConfigureProjectsPage mainPage;
+
+  public ConfigureProjectsWizard(List<IProject> projects) {
+    this.projects = projects;
+    setNeedsProgressMonitor(true);
+    setWindowTitle("Associate with Sonar");
+  }
+
+  @Override
+  public void addPages() {
+    mainPage = new ConfigureProjectsPage(projects);
+    addPage(mainPage);
+  }
+
+  @Override
+  public boolean performFinish() {
+    return mainPage.finish();
+  }
+
 }

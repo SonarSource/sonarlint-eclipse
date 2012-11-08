@@ -19,9 +19,10 @@
  */
 package org.sonar.ide.eclipse.internal.ui.actions;
 
+import org.sonar.ide.eclipse.internal.ui.wizards.associate.ConfigureProjectsWizard;
+
 import com.google.common.collect.Lists;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -30,15 +31,12 @@ import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
-import org.sonar.ide.eclipse.internal.ui.wizards.ConfigureProjectsWizard;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertProjectsAction
- * 
+ *
  * @see ConfigureProjectsWizard
  */
 public class ConfigureProjectsAction implements IObjectActionDelegate {
@@ -46,22 +44,17 @@ public class ConfigureProjectsAction implements IObjectActionDelegate {
   private ISelection selection;
 
   public void run(IAction action) {
-    List<IProject> unconfigured = getUnconfiguredProjects();
-    if (unconfigured.isEmpty()) {
-      // TODO show message
-    }
-
-    List<IProject> initialSelection = Lists.newArrayList();
+    List<IProject> selectedProjects = Lists.newArrayList();
 
     @SuppressWarnings("rawtypes")
     List elems = ((IStructuredSelection) selection).toList();
     for (Object elem : elems) {
       if (elem instanceof IProject) {
-        initialSelection.add((IProject) elem);
+        selectedProjects.add((IProject) elem);
       }
     }
 
-    ConfigureProjectsWizard wizard = new ConfigureProjectsWizard(unconfigured, initialSelection);
+    ConfigureProjectsWizard wizard = new ConfigureProjectsWizard(selectedProjects);
 
     final Display display = getDisplay();
     final WizardDialog dialog = new WizardDialog(display.getActiveShell(), wizard);
@@ -70,19 +63,6 @@ public class ConfigureProjectsAction implements IObjectActionDelegate {
         dialog.open();
       }
     });
-  }
-
-  /**
-   * @return open projects from workspace with Java nature and without Sonar nature
-   */
-  private List<IProject> getUnconfiguredProjects() {
-    ArrayList<IProject> unconfigured = Lists.newArrayList();
-    for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-      if (project.isOpen() && !SonarUiPlugin.hasSonarNature(project) && SonarUiPlugin.hasJavaNature(project)) {
-        unconfigured.add(project);
-      }
-    }
-    return unconfigured;
   }
 
   public Display getDisplay() {

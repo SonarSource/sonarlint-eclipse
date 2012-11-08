@@ -39,8 +39,6 @@ public final class Messages extends NLS {
   public static String ViolationsView_action_refresh;
   public static String ViolationsView_action_refresh_tooltip;
 
-  public static String ConfigureProjectsWizard_action_autoconfig;
-
   public static String ServerLocationWizardPage_label_host;
   public static String ServerLocationWizardPage_label_username;
   public static String ServerLocationWizardPage_label_password;
@@ -52,9 +50,7 @@ public final class Messages extends NLS {
   public static String ServerLocationWizardPage_msg_authentication_error;
 
   public static String SonarProjectPropertyBlock_label_host;
-  public static String SonarProjectPropertyBlock_label_groupId;
-  public static String SonarProjectPropertyBlock_label_artifactId;
-  public static String SonarProjectPropertyBlock_label_branch;
+  public static String SonarProjectPropertyBlock_label_key;
   public static String SonarProjectPropertyBlock_action_server;
 
   public static String SonarPreferencePage_title;

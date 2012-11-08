@@ -66,22 +66,20 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
     } else if (adapterType == IFile.class) {
       if (adaptableObject instanceof Resource) {
         Resource resource = (Resource) adaptableObject;
-        String key = resource.getKey();
-        String keyWithoutBranch = key.replaceFirst("([^:]*):([^:]*):([^:]*):([^:]*)", "$1:$2:$4");
-        String[] parts = StringUtils.split(keyWithoutBranch, SonarKeyUtils.PROJECT_DELIMITER);
-        String groupId = parts.length > 0 ? parts[0] : "";
-        String artifactId = parts.length > 1 ? parts[1] : "";
-        String className = StringUtils.removeStart(parts.length > 2 ? parts[2] : "", "[default]."); //$NON-NLS-1$
 
         IWorkspace root = ResourcesPlugin.getWorkspace();
         // TODO this is not optimal
         for (IProject project : root.getRoot().getProjects()) {
           if (project.isAccessible()) {
             ISonarProject sonarProject = SonarUiPlugin.getSonarProject(project);
-            if ((sonarProject != null) && StringUtils.equals(sonarProject.getGroupId(), groupId)
-              && StringUtils.equals(sonarProject.getArtifactId(), artifactId)) {
+            if ((sonarProject != null) && resource.getKey().startsWith(sonarProject.getKey())) {
               IJavaProject javaProject = JavaCore.create(project);
               try {
+                String resourceKeyMinusProjectKey = resource.getKey().substring(
+                    sonarProject.getKey().length() + 1); // +1 because ":"
+                String[] parts = StringUtils.split(resourceKeyMinusProjectKey, SonarKeyUtils.PROJECT_DELIMITER);
+                String className = StringUtils.removeStart(parts.length > 0 ? parts[0] : "", "[default]."); //$NON-NLS-1$
+
                 IType type = javaProject.findType(className);
                 if (type == null) {
                   return null;
