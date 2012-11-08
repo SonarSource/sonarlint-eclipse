@@ -22,6 +22,7 @@ package org.sonar.ide.eclipse.internal.jdt;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -36,7 +37,6 @@ import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.runner.SonarProperties;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
-import java.io.File;
 import java.util.Properties;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
@@ -176,9 +176,10 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   }
 
   private String getAbsolutePath(IJavaProject javaProject, IPath path) {
-    File baseDir = javaProject.getProject().getLocation().toFile();
-    String relativePath = getRelativePath(javaProject, path);
-    return new File(baseDir, relativePath).getAbsolutePath();
+    // IPath should be resolved this way in order to handle linked resources (SONARIDE-271)
+    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+    IResource res = root.findMember(path);
+    return res.getLocation().toString();
   }
 
   private String getRelativePath(IJavaProject javaProject, IPath path) {
