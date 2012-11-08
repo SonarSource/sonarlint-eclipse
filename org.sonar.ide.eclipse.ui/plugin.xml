@@ -5,7 +5,7 @@
 <!-- Extension points -->
 
    <extension-point id="resolver" name="sonar resolver" schema="schema/org.sonar.ide.eclipse.markers.resolver.exsd"/>
-   
+
 <!-- Extensions -->
 
   <extension point="org.eclipse.ui.preferencePages">
@@ -67,7 +67,7 @@
          </command>
       </menuContribution>
   </extension>
-  
+
   <extension
       point="org.eclipse.ui.ide.markerSupport">
     <markerContentGenerator
@@ -77,7 +77,7 @@
               id="org.sonar.ide.eclipse.core.sonarProblem"/>
         <markerFieldReference
               id="org.sonar.ide.eclipse.ui.views.violationRuleKeyField"
-              visible="false"/>  
+              visible="false"/>
         <markerFieldReference
               id="org.sonar.ide.eclipse.ui.views.violationSeverityAndRuleNameField"
               visible="true"/>
@@ -97,18 +97,18 @@
               scope="ON_SELECTED_AND_CHILDREN">
         </markerFieldConfiguration>
     </markerContentGenerator>
-    <markerField 
-        class="org.sonar.ide.eclipse.internal.ui.views.ViolationSeverityAndRuleNameField" 
-        id="org.sonar.ide.eclipse.ui.views.violationSeverityAndRuleNameField" 
-        name="Rule"> 
-    </markerField> 
-    <markerField 
-        class="org.sonar.ide.eclipse.internal.ui.views.ViolationRuleKeyField" 
-        id="org.sonar.ide.eclipse.ui.views.violationRuleKeyField" 
-        name="%sonar.violation.view.rulekeyfield"> 
-    </markerField> 
+    <markerField
+        class="org.sonar.ide.eclipse.internal.ui.views.ViolationSeverityAndRuleNameField"
+        id="org.sonar.ide.eclipse.ui.views.violationSeverityAndRuleNameField"
+        name="Rule">
+    </markerField>
+    <markerField
+        class="org.sonar.ide.eclipse.internal.ui.views.ViolationRuleKeyField"
+        id="org.sonar.ide.eclipse.ui.views.violationRuleKeyField"
+        name="%sonar.violation.view.rulekeyfield">
+    </markerField>
   </extension>
-  
+
   <extension point="org.eclipse.ui.newWizards">
     <category id="org.sonar.ide.eclipse.ui.wizcat" name="%sonar.category.wizard.name"/>
     <wizard
@@ -200,25 +200,25 @@
     <objectContribution id="org.sonar.ide.eclipse.ui.objectContribution1"
                         adaptable="true"
                         objectClass="org.eclipse.core.resources.IProject">
-      	<visibility>
-        	<and>
-          		<not>
-            		<objectState name="nature" value="org.sonar.ide.eclipse.core.sonarNature"/>
-          		</not>
-          		<objectState name="nature" value="org.eclipse.jdt.core.javanature"/>
-        	</and>
-      	</visibility>
-      	<!-- about this menubarPath see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=231611 -->
-      	<action id="org.sonar.ide.ui.ConvertedProjectWizard" 
-        	    label="Associate with Sonar..."
-            	class="org.sonar.ide.eclipse.internal.ui.actions.ConfigureProjectsAction"
-              	menubarPath="org.eclipse.ui.projectConfigure/additions"
-              	enablesFor="+"
-              	icon="icons/sonar.png">
-      	</action>
-	</objectContribution>
+        <visibility>
+          <and>
+              <not>
+                <objectState name="nature" value="org.sonar.ide.eclipse.core.sonarNature"/>
+              </not>
+              <objectState name="nature" value="org.eclipse.jdt.core.javanature"/>
+          </and>
+        </visibility>
+        <!-- about this menubarPath see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=231611 -->
+        <action id="org.sonar.ide.ui.ConvertedProjectWizard"
+              label="Associate with Sonar..."
+              class="org.sonar.ide.eclipse.internal.ui.actions.ConfigureProjectsAction"
+                menubarPath="org.eclipse.ui.projectConfigure/additions"
+                enablesFor="+"
+                icon="icons/sonar.png">
+        </action>
+  </objectContribution>
   </extension>
-  
+
    <extension
         point="org.eclipse.ui.editors.annotationTypes">
         <type
@@ -253,7 +253,7 @@
               verticalRulerPreferenceKey="org.sonar.ide.eclipse.ui.violation.verticalruler"
               verticalRulerPreferenceValue="true"/>
     </extension>
-   
+
 
   <!-- Welcome -->
   <extension point="org.eclipse.ui.intro.configExtension">
@@ -273,14 +273,14 @@
            markerType="org.sonar.ide.eclipse.core.sonarProblem">
      </markerResolutionGenerator>
   </extension>
-  
+
   <extension
         point="org.sonar.ide.eclipse.ui.resolver">
      <resolver
            class="org.sonar.ide.eclipse.internal.ui.markers.IgnoreMarkerResolver">
      </resolver>
   </extension>
-  
+
   <!-- Quick diff -->
   <extension
         point="org.eclipse.ui.workbench.texteditor.quickDiffReferenceProvider">
@@ -356,4 +356,22 @@
            name="Refresh violations">
      </command>
   </extension>
+
+  <!-- Label decorator -->
+  <extension point="org.eclipse.ui.decorators">
+     <decorator
+           adaptable="true"
+           icon="icons/slabel.gif"
+           id="org.sonar.ide.eclipse.ui.sonarDecorator"
+           label="%sonar.decorator.name"
+           lightweight="true"
+           location="TOP_RIGHT"
+           state="true">
+       <description>%sonar.decorator.description</description>
+       <enablement>
+         <objectState name="nature" value="org.sonar.ide.eclipse.core.sonarNature"/>
+       </enablement>
+     </decorator>
+
+   </extension>
 </plugin>
