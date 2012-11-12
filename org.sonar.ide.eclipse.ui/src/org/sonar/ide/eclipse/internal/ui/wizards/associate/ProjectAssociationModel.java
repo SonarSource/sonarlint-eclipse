@@ -50,7 +50,7 @@ public class ProjectAssociationModel extends AbstractModelObject {
 
   public String getSonarFullName() {
     if (key == null) {
-      return "<Select a Sonar project>";
+      return "<Click here to select a Sonar project>";
     }
     else {
       return sonarProjectName + " on " + url + " (" + key + ")";
