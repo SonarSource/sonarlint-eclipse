@@ -43,8 +43,8 @@ import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
+import org.sonar.ide.eclipse.wsclient.SonarConnectionTester.ConnectionTestResult;
 import org.sonar.wsclient.Host;
-import org.sonar.wsclient.SonarConnectionTester.ConnectionTestResult;
 
 import java.lang.reflect.InvocationTargetException;
 

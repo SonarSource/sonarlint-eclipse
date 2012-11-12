@@ -12,82 +12,10 @@
 
   <artifactId>org.sonar.ide.eclipse.wsclient</artifactId>
   <packaging>eclipse-plugin</packaging>
-
-  <dependencies>
-    <dependency>
-      <!-- Note that sonar-ws-client supports both of httpclient 3.x and 4.x -->
-      <groupId>org.codehaus.sonar</groupId>
-      <artifactId>sonar-ws-client</artifactId>
-      <version>2.9</version>
-    </dependency>
-  </dependencies>
+  <name>Sonar Integration for Eclipse WSClient Utils</name>
 
   <build>
     <sourceDirectory>src</sourceDirectory>
   </build>
-
-  <profiles>
-    <profile>
-      <id>update-dependencies</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-clean-plugin</artifactId>
-            <configuration>
-              <filesets>
-                <fileset>
-                  <directory>jars</directory>
-                  <followSymlinks>false</followSymlinks>
-                  <includes>
-                    <include>**/*.jar</include>
-                  </includes>
-                </fileset>
-                <fileset>
-                  <directory>META-INF</directory>
-                  <followSymlinks>false</followSymlinks>
-                  <includes>
-                    <include>**/MANIFEST.MF</include>
-                  </includes>
-                </fileset>
-              </filesets>
-            </configuration>
-          </plugin>
-
-          <plugin>
-            <groupId>org.eclipse.tycho</groupId>
-            <artifactId>tycho-packaging-plugin</artifactId>
-            <!-- TODO Workaround for SONARIDE-238 -->
-            <version>0.12.0</version>
-            <executions>
-              <execution>
-                <phase>generate-resources</phase>
-                <goals>
-                  <goal>generate-bundle</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <packageSources>false</packageSources>
-              <bundleClasspath>
-                <bundleClasspath>.</bundleClasspath>
-              </bundleClasspath>
-              <exportPackages>
-                org.sonar.wsclient,
-                org.sonar.wsclient.services,
-                org.sonar.wsclient.connectors,
-              </exportPackages>
-              <manifestAttributes>
-                <Bundle-RequiredExecutionEnvironment>J2SE-1.5, JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
-                <Require-Bundle>org.eclipse.core.runtime,org.eclipse.core.net,org.slf4j.api;bundle-version="1.6.1",org.apache.commons.httpclient;bundle-version="3.1.0"</Require-Bundle>
-                <Bundle-Activator>org.sonar.wsclient.internal.WSClientPlugin</Bundle-Activator>
-                <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
-                <Bundle-Name>Sonar Web Service Client</Bundle-Name>
-              </manifestAttributes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
 </project>

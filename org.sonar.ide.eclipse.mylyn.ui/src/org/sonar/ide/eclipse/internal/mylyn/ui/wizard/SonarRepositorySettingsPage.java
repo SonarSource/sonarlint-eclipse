@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.ui.wizard;
 
-import org.sonar.wsclient.SonarConnectionTester.ConnectionTestResult;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -34,6 +32,7 @@ import org.sonar.ide.eclipse.internal.mylyn.core.SonarClient;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarConnector;
 import org.sonar.ide.eclipse.internal.mylyn.ui.Messages;
 import org.sonar.ide.eclipse.internal.mylyn.ui.SonarMylynUiPlugin;
+import org.sonar.ide.eclipse.wsclient.SonarConnectionTester.ConnectionTestResult;
 
 import java.net.MalformedURLException;
 import java.net.URL;

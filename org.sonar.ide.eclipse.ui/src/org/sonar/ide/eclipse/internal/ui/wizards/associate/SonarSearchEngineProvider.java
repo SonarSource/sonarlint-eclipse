@@ -19,14 +19,17 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards.associate;
 
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.jface.wizard.WizardPage;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.Resource;
-import org.sonar.wsclient.services.ResourceQuery;
+import org.sonar.wsclient.services.ResourceSearchQuery;
+import org.sonar.wsclient.services.ResourceSearchResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,27 +44,39 @@ import java.util.List;
 public class SonarSearchEngineProvider implements IContentProposalProvider {
 
   private final List<Host> hosts;
+  private final WizardPage parentPage;
 
-  public SonarSearchEngineProvider(List<Host> hosts) {
+  public SonarSearchEngineProvider(List<Host> hosts, WizardPage parentPage) {
     this.hosts = hosts;
+    this.parentPage = parentPage;
   }
 
   public IContentProposal[] getProposals(String contents, int position) {
+    if (contents == null || contents.length() < 3) {
+      parentPage.setMessage("Please type at least 3 characters", IMessageProvider.INFORMATION);
+      return new IContentProposal[0];
+    }
     ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
     for (Host host : hosts) {
       String url = host.getHost();
-      ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT,
+      ResourceSearchQuery query = ResourceSearchQuery.create(contents).setQualifiers(Resource.QUALIFIER_PROJECT,
           Resource.QUALIFIER_MODULE);
       Sonar sonar = SonarCorePlugin.getServersManager().getSonar(url);
-      List<Resource> resources = sonar.findAll(query);
-      for (Resource resource : resources) {
-        if (resource.getName().toLowerCase().contains(contents.toLowerCase())) {
-          RemoteSonarProject prj = new RemoteSonarProject(host.getHost(), resource.getKey(), resource.getName());
-          list.add(new ContentProposal(prj.asString(), resource.getName(), prj.getDescription()));
-        }
+      ResourceSearchResult result = sonar.find(query);
+
+      for (ResourceSearchResult.Resource resource : result.getResources()) {
+        RemoteSonarProject prj = new RemoteSonarProject(host.getHost(), resource.key(), resource.name());
+        list.add(new ContentProposal(prj.asString(), resource.name(), prj.getDescription()));
       }
     }
-    return (IContentProposal[]) list.toArray(new IContentProposal[list.size()]);
+    if (list.size() > 0) {
+      parentPage.setMessage("", IMessageProvider.NONE);
+      return (IContentProposal[]) list.toArray(new IContentProposal[list.size()]);
+    }
+    else {
+      parentPage.setMessage("No result", IMessageProvider.INFORMATION);
+      return new IContentProposal[0];
+    }
   }
 
 }

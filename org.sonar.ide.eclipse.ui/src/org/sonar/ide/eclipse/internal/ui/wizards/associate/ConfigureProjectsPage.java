@@ -149,13 +149,13 @@ public class ConfigureProjectsPage extends WizardPage {
             if (hosts.isEmpty()) {
               setMessage("Please configure a sonar server first", IMessageProvider.ERROR);
             } else {
+              setMessage("", IMessageProvider.NONE);
               getWizard().getContainer().run(true, false, new AssociateProjects(hosts, getProjects()));
             }
-            setMessage("", IMessageProvider.NONE);
           } catch (InvocationTargetException ex) {
             LOG.error(ex.getMessage(), ex);
             if (ex.getTargetException() instanceof ConnectionException) {
-              setMessage("Unable to connect to " + "FIXME" + ". Check your connection settings.", IMessageProvider.ERROR);
+              setMessage("Unable to connect to one Sonar server. Check your connection settings.", IMessageProvider.ERROR);
             } else {
               setMessage("Error: " + ex.getMessage(), IMessageProvider.ERROR);
             }
@@ -172,7 +172,7 @@ public class ConfigureProjectsPage extends WizardPage {
 
   private class ProjectAssociationModelEditingSupport extends EditingSupport {
 
-    SonarSearchEngineProvider contentProposalProvider = new SonarSearchEngineProvider(hosts);
+    SonarSearchEngineProvider contentProposalProvider = new SonarSearchEngineProvider(hosts, ConfigureProjectsPage.this);
 
     public ProjectAssociationModelEditingSupport(TableViewer viewer) {
       super(viewer);

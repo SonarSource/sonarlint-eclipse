@@ -17,19 +17,20 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.wsclient;
+package org.sonar.ide.eclipse.wsclient;
 
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.HttpClient;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.wsclient.internal.WSClientPlugin;
+import org.sonar.wsclient.Host;
+import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.connectors.HttpClient4Connector;
-import org.sonar.wsclient.internal.WSClientPlugin;
 
 import java.net.URI;
 
@@ -52,7 +53,7 @@ public final class WSClientFactory {
   /**
    * Workaround for http://jira.codehaus.org/browse/SONAR-1586
    */
-  private static void configureProxy(HttpClient httpClient, Host server) {
+  private static void configureProxy(DefaultHttpClient httpClient, Host server) {
     try {
       IProxyData[] proxyDatas = WSClientPlugin.selectProxy(new URI(server.getHost()));
       for (IProxyData proxyData : proxyDatas) {
@@ -60,7 +61,7 @@ public final class WSClientFactory {
         HttpHost proxy = new HttpHost(proxyData.getHost(), proxyData.getPort());
         httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
         if (proxyData.isRequiresAuthentication()) {
-          ((DefaultHttpClient) httpClient).getCredentialsProvider().setCredentials(
+          httpClient.getCredentialsProvider().setCredentials(
               new AuthScope(proxyData.getHost(), proxyData.getPort()),
               new UsernamePasswordCredentials(proxyData.getUserId(), proxyData.getPassword()));
         }

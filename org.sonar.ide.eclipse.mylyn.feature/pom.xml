@@ -12,5 +12,6 @@
 
   <artifactId>org.sonar.ide.eclipse.mylyn.feature</artifactId>
   <packaging>eclipse-feature</packaging>
+  <name>Sonar Integration for Eclipse Mylyn (feature)</name>
 
 </project>

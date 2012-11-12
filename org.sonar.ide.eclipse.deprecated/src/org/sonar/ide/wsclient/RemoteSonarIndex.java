@@ -25,9 +25,9 @@ import com.google.common.collect.Maps;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.api.SourceCodeDiffEngine;
 import org.sonar.ide.api.SourceCodeSearchEngine;
+import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.WSClientFactory;
 import org.sonar.wsclient.services.Metric;
 import org.sonar.wsclient.services.MetricQuery;
 import org.sonar.wsclient.services.Resource;
@@ -42,7 +42,7 @@ import java.util.Map;
  * EXPERIMENTAL!!!
  * Layer between Sonar IDE and Sonar based on sonar-ws-client :
  * Sonar IDE -> RemoteSonarIndex -> sonar-ws-client -> Sonar
- * 
+ *
  * @author Evgeny Mandrikov
  * @since 0.2
  */

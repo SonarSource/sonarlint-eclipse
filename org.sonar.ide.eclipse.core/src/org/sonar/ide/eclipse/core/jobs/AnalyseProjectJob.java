@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.core.jobs;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -38,6 +39,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.internal.core.Messages;
@@ -46,6 +48,7 @@ import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.core.resources.ResourceUtils;
 import org.sonar.ide.eclipse.runner.SonarEclipseRunner;
 import org.sonar.ide.eclipse.runner.SonarProperties;
+import org.sonar.wsclient.Host;
 
 import java.io.File;
 import java.io.FileReader;
@@ -98,7 +101,12 @@ public class AnalyseProjectJob extends Job {
     }
 
     ProjectProperties projectProperties = ProjectProperties.getInstance(project);
-    properties.setProperty(SonarProperties.SONAR_URL, projectProperties.getUrl());
+    Host host = SonarCorePlugin.getServersManager().findServer(projectProperties.getUrl());
+    properties.setProperty(SonarProperties.SONAR_URL, host.getHost());
+    if (StringUtils.isNotBlank(host.getUsername())) {
+      properties.setProperty(SonarProperties.SONAR_LOGIN, host.getUsername());
+      properties.setProperty(SonarProperties.SONAR_PASSWORD, host.getPassword());
+    }
     properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
     properties.setProperty(SonarProperties.WORK_DIR, workDir.toString());
     properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");

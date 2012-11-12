@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.core;
 
+import org.sonar.ide.eclipse.wsclient.SonarConnectionTester;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.osgi.framework.BundleContext;
@@ -26,7 +28,6 @@ import org.sonar.ide.eclipse.internal.core.ServersManager;
 import org.sonar.ide.eclipse.internal.core.SonarFile;
 import org.sonar.ide.eclipse.internal.core.SonarResource;
 import org.sonar.ide.eclipse.internal.core.resources.SonarProjectManager;
-import org.sonar.wsclient.SonarConnectionTester;
 
 public class SonarCorePlugin extends AbstractPlugin {
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.core";

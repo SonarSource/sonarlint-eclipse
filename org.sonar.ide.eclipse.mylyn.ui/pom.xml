@@ -12,6 +12,7 @@
 
   <artifactId>org.sonar.ide.eclipse.mylyn.ui</artifactId>
   <packaging>eclipse-plugin</packaging>
+  <name>Sonar Integration for Eclipse Mylyn UI</name>
 
   <build>
     <sourceDirectory>src</sourceDirectory>

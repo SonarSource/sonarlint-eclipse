@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.actions;
 
-import org.sonar.ide.eclipse.internal.ui.wizards.associate.ConfigureProjectsWizard;
-
 import com.google.common.collect.Lists;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.IAction;
@@ -31,6 +29,7 @@ import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
+import org.sonar.ide.eclipse.internal.ui.wizards.associate.ConfigureProjectsWizard;
 
 import java.util.List;
 

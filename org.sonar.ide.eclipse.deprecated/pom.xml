@@ -16,17 +16,4 @@
   <name>Sonar Integration for Eclipse Deprecated</name>
   <description>Temporary, should be removed in future</description>
 
-  <build>
-    <sourceDirectory>src</sourceDirectory>
-
-    <resources>
-      <resource>
-        <directory>${basedir}/src</directory>
-        <includes>
-          <include>**/*.properties</include>
-        </includes>
-      </resource>
-    </resources>
-  </build>
-
 </project>

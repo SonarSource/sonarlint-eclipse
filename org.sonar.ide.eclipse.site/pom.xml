@@ -29,25 +29,25 @@
 
   <profiles>
     <profile>
-      <id>publish-site</id>
+      <id>publish-site-snapshot</id>
       <build>
         <plugins>
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>wagon-maven-plugin</artifactId>
+            <version>1.0-beta-4</version>
             <executions>
               <execution>
                 <id>publish-site</id>
-                <!-- We don't want deployment to Maven repository, so phase is install -->
-                <phase>install</phase>
+                <phase>deploy</phase>
                 <goals>
                   <goal>upload</goal>
                 </goals>
                 <configuration>
                   <serverId>sonar-ide</serverId>
-                  <fromDir>${project.basedir}/target/site</fromDir>
+                  <fromDir>${project.basedir}/target/repository</fromDir>
                   <includes>**</includes>
-                  <url>${sonar-ide.site}</url>
+                  <url>${sonar-ide.site}/eclipse-snapshot/${unqualifiedVersion}/</url>
                 </configuration>
               </execution>
             </executions>

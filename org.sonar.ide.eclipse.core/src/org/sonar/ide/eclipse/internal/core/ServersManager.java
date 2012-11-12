@@ -29,9 +29,9 @@ import org.osgi.service.prefs.Preferences;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarServersManager;
 import org.sonar.ide.eclipse.core.SonarServer;
+import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.WSClientFactory;
 
 import java.util.Arrays;
 import java.util.Collection;

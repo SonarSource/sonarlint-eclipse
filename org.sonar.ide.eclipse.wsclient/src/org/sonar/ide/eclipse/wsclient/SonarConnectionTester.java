@@ -17,9 +17,11 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.wsclient;
+package org.sonar.ide.eclipse.wsclient;
 
 import org.slf4j.LoggerFactory;
+import org.sonar.wsclient.Host;
+import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.connectors.ConnectionException;
 import org.sonar.wsclient.services.MetricQuery;
 import org.sonar.wsclient.services.Server;
