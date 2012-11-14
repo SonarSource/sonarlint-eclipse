@@ -6,7 +6,7 @@ Bundle-Name: Embedded Sonar Runner
 Bundle-Activator: org.sonar.ide.eclipse.runner.SonarRunnerPlugin
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.sonar.ide.eclipse.runtime;singleton:=true
-Bundle-RequiredExecutionEnvironment: J2SE-1.5,JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Require-Bundle: org.eclipse.core.runtime,
  org.apache.commons.io,
  org.apache.commons.lang,

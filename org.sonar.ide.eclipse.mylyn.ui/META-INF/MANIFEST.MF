@@ -17,8 +17,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui,
  org.eclipse.ui.forms,
  org.sonar.ide.eclipse.wsclient
-Bundle-RequiredExecutionEnvironment: J2SE-1.5,
- JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.sonar.ide.eclipse.internal.mylyn.ui.SonarMylynUiPlugin
 Export-Package: org.sonar.ide.eclipse.internal.mylyn.ui;x-friends:="org.sonar.ide.eclipse.mylyn.tests",

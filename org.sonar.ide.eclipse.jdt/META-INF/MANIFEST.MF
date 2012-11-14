@@ -18,7 +18,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.sonar.ide.eclipse.core,
  org.sonar.ide.eclipse.wsclient
 Export-Package: org.sonar.ide.eclipse.internal.jdt;x-internal:=true
-Bundle-RequiredExecutionEnvironment: J2SE-1.5,
- JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
