@@ -134,8 +134,13 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     }
 
     String binDir = getAbsolutePath(javaProject, javaProject.getOutputLocation());
-    LOG.debug("Default binary directory: {}", binDir);
-    appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
+    if (binDir != null) {
+      LOG.debug("Default binary directory: {}", binDir);
+      appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
+    }
+    else {
+      LOG.warn("Binary directory was not added because it was not found. Maybe should you enable auto build of your project.");
+    }
   }
 
   private String resolveLibrary(IJavaProject javaProject, IClasspathEntry entry) {
@@ -179,7 +184,12 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     // IPath should be resolved this way in order to handle linked resources (SONARIDE-271)
     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
     IResource res = root.findMember(path);
-    return res.getLocation().toString();
+    if (res != null) {
+      return res.getLocation().toString();
+    }
+    else {
+      return null;
+    }
   }
 
   private String getRelativePath(IJavaProject javaProject, IPath path) {

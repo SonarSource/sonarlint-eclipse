@@ -73,6 +73,10 @@
     <module>org.sonar.ide.eclipse.site</module>
 
     <module>target-platform</module>
+
+    <module>org.sonar.ide.eclipse.tests.common</module>
+    <module>org.sonar.ide.eclipse.core.tests</module>
+    <module>org.sonar.ide.eclipse.mylyn.tests</module>
   </modules>
 
   <scm>
@@ -185,10 +189,6 @@
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-packaging-plugin</artifactId>
           <version>${tycho.version}</version>
-          <configuration>
-            <!-- workaround for TYCHO-349 or TYCHO-313 -->
-            <strictVersions>false</strictVersions>
-          </configuration>
         </plugin>
         <plugin>
           <groupId>org.eclipse.tycho</groupId>
@@ -205,6 +205,7 @@
           <version>${tycho.version}</version>
           <configuration>
             <skipExec>${skipTests}</skipExec>
+            <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <useUIHarness>false</useUIHarness>
             <includes>
               <include>**/*Test.java</include>
@@ -333,7 +334,7 @@
       <properties>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-        <sonar.jacoco.reportPath>org.sonar.ide.eclipse.parent/target/jacoco.exec</sonar.jacoco.reportPath>
+        <sonar.jacoco.reportPath>../target/jacoco.exec</sonar.jacoco.reportPath>
       </properties>
 
       <build>
@@ -341,13 +342,14 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.5.3.201107060350</version>
+            <version>0.6.0.201210061924</version>
             <executions>
               <execution>
                 <goals>
                   <goal>prepare-agent</goal>
                 </goals>
                 <configuration>
+                  <append>true</append>
                   <destFile>${sonar.jacoco.reportPath}</destFile>
                 </configuration>
               </execution>

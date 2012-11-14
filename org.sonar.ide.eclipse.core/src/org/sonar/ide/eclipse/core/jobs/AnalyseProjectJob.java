@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.core.jobs;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -28,6 +30,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
@@ -90,38 +93,25 @@ public class AnalyseProjectJob extends Job {
     monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analysing, project.getName()), IProgressMonitor.UNKNOWN);
 
     // Configure
-    File baseDir = project.getLocation().toFile();
-    File workDir = new File(baseDir, "target/sonar-embedder-work"); // TODO hard-coded value
-    File outputFile = new File(workDir, "dryRun.json");
     Properties properties = new Properties();
-    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, properties);
-    for (ProjectConfigurator configurator : getConfigurators()) {
-      LOG.debug("Project configurator: {}", configurator);
-      configurator.configure(request, monitor);
-    }
-
-    ProjectProperties projectProperties = ProjectProperties.getInstance(project);
-    Host host = SonarCorePlugin.getServersManager().findServer(projectProperties.getUrl());
-    properties.setProperty(SonarProperties.SONAR_URL, host.getHost());
-    if (StringUtils.isNotBlank(host.getUsername())) {
-      properties.setProperty(SonarProperties.SONAR_LOGIN, host.getUsername());
-      properties.setProperty(SonarProperties.SONAR_PASSWORD, host.getPassword());
-    }
-    properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
-    properties.setProperty(SonarProperties.WORK_DIR, workDir.toString());
-    properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
-    properties.setProperty(SonarProperties.DRY_RUN_OUTPUT_PROPERTY, outputFile.getName()); // Output file is relative to working dir
-    if (isDebugEnabled()) {
-      properties.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
-    }
+    File outputFile = configureAnalysis(monitor, properties);
 
     // Analyse
+    FileUtils.deleteQuietly(outputFile); // To be sure to not reuse something from a previous analysis
     IStatus result = SonarEclipseRunner.run(project, properties, monitor);
     if (result != Status.OK_STATUS) {
       return result;
     }
 
     // Create markers and save measures
+    createMarkers(monitor, outputFile);
+
+    monitor.done();
+    return Status.OK_STATUS;
+  }
+
+  @VisibleForTesting
+  public void createMarkers(final IProgressMonitor monitor, File outputFile) {
     try {
       Object obj = JSONValue.parse(new FileReader(outputFile));
       JSONObject sonarResult = (JSONObject) obj;
@@ -141,9 +131,43 @@ public class AnalyseProjectJob extends Job {
       LOG.error(e.getMessage(), e);
       throw new RuntimeException(e);
     }
+  }
 
-    monitor.done();
-    return Status.OK_STATUS;
+  /**
+   * Populate properties with everything required for the Sonar analysis in dryRun mode.
+   * @param monitor
+   * @param properties
+   * @return
+   */
+  @VisibleForTesting
+  public File configureAnalysis(final IProgressMonitor monitor, Properties properties) {
+    File baseDir = project.getLocation().toFile();
+    IPath projectSpecificWorkDir = project.getWorkingLocation(SonarCorePlugin.PLUGIN_ID);
+    // FIXME For now outputFile should be relative to work dir IPath pluginWorkDir = SonarCorePlugin.getDefault().getStateLocation();
+    IPath pluginWorkDir = projectSpecificWorkDir;
+    File outputFile = new File(projectSpecificWorkDir.toFile(), "dryRun.json");
+
+    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, properties);
+    for (ProjectConfigurator configurator : getConfigurators()) {
+      LOG.debug("Project configurator: {}", configurator);
+      configurator.configure(request, monitor);
+    }
+
+    ProjectProperties projectProperties = ProjectProperties.getInstance(project);
+    Host host = SonarCorePlugin.getServersManager().findServer(projectProperties.getUrl());
+    properties.setProperty(SonarProperties.SONAR_URL, host.getHost());
+    if (StringUtils.isNotBlank(host.getUsername())) {
+      properties.setProperty(SonarProperties.SONAR_LOGIN, host.getUsername());
+      properties.setProperty(SonarProperties.SONAR_PASSWORD, host.getPassword());
+    }
+    properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
+    properties.setProperty(SonarProperties.WORK_DIR, pluginWorkDir.toString());
+    properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
+    properties.setProperty(SonarProperties.DRY_RUN_OUTPUT_PROPERTY, outputFile.getName()); // Output file is relative to working dir
+    if (isDebugEnabled()) {
+      properties.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
+    }
+    return outputFile;
   }
 
   private boolean isDebugEnabled() {
