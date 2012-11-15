@@ -52,11 +52,11 @@ public class SonarUiPlugin extends AbstractUIPlugin {
       throw new SonarEclipseException("Unable to start " + context.getBundle().getSymbolicName(), e);
     }
 
-    RefreshViolationsJob.setupViolationsUpdater();
-
     if (getSonarConsole() != null) {
       SonarRunnerPlugin.getDefault().addSonarLogListener((SonarRunnerLogListener) getSonarConsole());
     }
+
+    RefreshViolationsJob.setupViolationsUpdater();
   }
 
   @Override
