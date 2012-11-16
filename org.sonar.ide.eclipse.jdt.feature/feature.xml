@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.sonar.ide.eclipse.feature"
+      id="org.sonar.ide.eclipse.jdt.feature"
       label="%feature_name"
       version="2.5.0.qualifier"
       provider-name="%provider_name"
@@ -19,7 +19,7 @@
    </license>
 
    <requires>
-      <import feature="org.eclipse.platform" version="3.5.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.platform" version="3.6.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin

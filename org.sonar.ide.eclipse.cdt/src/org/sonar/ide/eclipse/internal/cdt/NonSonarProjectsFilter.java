@@ -17,9 +17,9 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.jdt;
+package org.sonar.ide.eclipse.internal.cdt;
 
-import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.cdt.core.model.ICProject;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
@@ -31,9 +31,9 @@ public class NonSonarProjectsFilter extends ViewerFilter {
 
   @Override
   public boolean select(Viewer viewer, Object parentElement, Object element) {
-    if (element instanceof IJavaProject) {
-      // For Package Explorer
-      return SonarUiPlugin.hasSonarNature(((IJavaProject) element).getProject());
+    if (element instanceof ICProject) {
+      // For C/C++ Projects
+      return SonarUiPlugin.hasSonarNature(((ICProject) element).getProject());
     }
     return true;
   }

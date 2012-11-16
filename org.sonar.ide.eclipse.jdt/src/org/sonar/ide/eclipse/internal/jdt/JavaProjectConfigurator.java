@@ -22,7 +22,6 @@ package org.sonar.ide.eclipse.internal.jdt;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -35,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.runner.SonarProperties;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import java.util.Properties;
 
@@ -47,7 +45,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
     IProject project = request.getProject();
-    if (SonarUiPlugin.hasJavaNature(project)) {
+    if (SonarJdtPlugin.hasJavaNature(project)) {
       IJavaProject javaProject = JavaCore.create(project);
       configureJavaProject(javaProject, request.getSonarProjectProperties());
     }
@@ -93,7 +91,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
           if (isSourceExcluded(entry)) {
             break;
           }
-          String srcDir = getAbsolutePath(javaProject, entry.getPath());
+          String srcDir = getAbsolutePath(entry.getPath());
           String relativeDir = getRelativePath(javaProject, entry.getPath());
           if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
             if (topProject) {
@@ -107,7 +105,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
               appendProperty(sonarProjectProperties, SonarProperties.SOURCE_DIRS_PROPERTY, srcDir);
             }
             if (entry.getOutputLocation() != null) {
-              String binDir = getAbsolutePath(javaProject, entry.getOutputLocation());
+              String binDir = getAbsolutePath(entry.getOutputLocation());
               LOG.debug("Binary directory: {}", binDir);
               appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
             }
@@ -133,7 +131,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       }
     }
 
-    String binDir = getAbsolutePath(javaProject, javaProject.getOutputLocation());
+    String binDir = getAbsolutePath(javaProject.getOutputLocation());
     if (binDir != null) {
       LOG.debug("Default binary directory: {}", binDir);
       appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
@@ -178,18 +176,6 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       }
     }
     return false;
-  }
-
-  private String getAbsolutePath(IJavaProject javaProject, IPath path) {
-    // IPath should be resolved this way in order to handle linked resources (SONARIDE-271)
-    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-    IResource res = root.findMember(path);
-    if (res != null) {
-      return res.getLocation().toString();
-    }
-    else {
-      return null;
-    }
   }
 
   private String getRelativePath(IJavaProject javaProject, IPath path) {

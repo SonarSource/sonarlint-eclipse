@@ -19,9 +19,13 @@
  */
 package org.sonar.ide.eclipse.internal.jdt;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.JavaCore;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 public class SonarJdtPlugin extends AbstractPlugin {
 
@@ -50,6 +54,15 @@ public class SonarJdtPlugin extends AbstractPlugin {
   public void stop(BundleContext context) {
     super.stop(context);
     LoggerFactory.getLogger(getClass()).debug("SonarJdtPlugin stopped");
+  }
+
+  public static boolean hasJavaNature(IProject project) {
+    try {
+      return project.hasNature(JavaCore.NATURE_ID);
+    } catch (CoreException e) {
+      LoggerFactory.getLogger(SonarUiPlugin.class).error(e.getMessage(), e);
+      return false;
+    }
   }
 
 }

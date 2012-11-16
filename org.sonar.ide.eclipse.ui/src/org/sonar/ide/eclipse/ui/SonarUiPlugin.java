@@ -90,15 +90,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     }
   }
 
-  public static boolean hasJavaNature(IProject project) {
-    try {
-      return project.hasNature("org.eclipse.jdt.core.javanature");
-    } catch (CoreException e) {
-      LoggerFactory.getLogger(SonarUiPlugin.class).error(e.getMessage(), e);
-      return false;
-    }
-  }
-
   public static ISonarProject getSonarProject(IProject project) {
     return ProjectProperties.getInstance(project);
   }

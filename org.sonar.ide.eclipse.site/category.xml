@@ -3,10 +3,13 @@
    <description url="http://sonar-ide.codehaus.org/">
       Sonar Integration for Eclipse
    </description>
-   <feature url="features/org.sonar.ide.eclipse.feature_0.0.0.jar" id="org.sonar.ide.eclipse.feature" version="0.0.0">
+   <feature url="features/org.sonar.ide.eclipse.mylyn.feature_0.0.0.jar" id="org.sonar.ide.eclipse.mylyn.feature" version="0.0.0">
       <category name="Sonar"/>
    </feature>
-   <feature url="features/org.sonar.ide.eclipse.mylyn.feature_0.0.0.jar" id="org.sonar.ide.eclipse.mylyn.feature" version="0.0.0">
+   <feature url="features/org.sonar.ide.eclipse.cdt.feature_2.5.0.qualifier.jar" id="org.sonar.ide.eclipse.cdt.feature" version="2.5.0.qualifier">
+      <category name="Sonar"/>
+   </feature>
+   <feature url="features/org.sonar.ide.eclipse.jdt.feature_2.5.0.qualifier.jar" id="org.sonar.ide.eclipse.jdt.feature" version="2.5.0.qualifier">
       <category name="Sonar"/>
    </feature>
    <category-def name="Sonar" label="Sonar">

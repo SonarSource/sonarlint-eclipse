@@ -10,9 +10,9 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>org.sonar.ide.eclipse.feature</artifactId>
+  <artifactId>org.sonar.ide.eclipse.cdt.feature</artifactId>
   <packaging>eclipse-feature</packaging>
 
-  <name>Sonar Integration for Eclipse (feature)</name>
+  <name>Sonar Integration for Eclipse CDT (feature)</name>
 
 </project>

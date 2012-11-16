@@ -17,32 +17,39 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.ui.actions;
+package org.sonar.ide.eclipse.internal.ui.command;
 
 import com.google.common.collect.Lists;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IObjectActionDelegate;
-import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonar.ide.eclipse.internal.ui.wizards.associate.ConfigureProjectsWizard;
 
 import java.util.List;
 
 /**
- * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertProjectsAction
  *
  * @see ConfigureProjectsWizard
  */
-public class ConfigureProjectsAction implements IObjectActionDelegate {
+public class ConfigureProjectsCommand extends AbstractHandler {
 
-  private ISelection selection;
+  public Display getDisplay() {
+    Display display = Display.getCurrent();
+    if (display == null) {
+      display = Display.getDefault();
+    }
+    return display;
+  }
 
-  public void run(IAction action) {
+  public Object execute(ExecutionEvent event) throws ExecutionException {
+    IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
+
     List<IProject> selectedProjects = Lists.newArrayList();
 
     @SuppressWarnings("rawtypes")
@@ -62,21 +69,8 @@ public class ConfigureProjectsAction implements IObjectActionDelegate {
         dialog.open();
       }
     });
-  }
 
-  public Display getDisplay() {
-    Display display = Display.getCurrent();
-    if (display == null) {
-      display = Display.getDefault();
-    }
-    return display;
-  }
-
-  public void selectionChanged(IAction action, ISelection selection) {
-    this.selection = selection;
-  }
-
-  public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+    return null;
   }
 
 }

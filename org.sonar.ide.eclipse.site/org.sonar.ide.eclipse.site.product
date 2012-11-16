@@ -14,9 +14,10 @@
    </plugins>
 
    <features>
-      <feature id="org.sonar.ide.eclipse.feature"/>
       <feature id="org.sonar.ide.eclipse.mylyn.feature"/>
       <feature id="org.sonar.ide.eclipse.thirdparty.feature"/>
+      <feature id="org.sonar.ide.eclipse.cdt.feature" version="2.5.0.qualifier"/>
+      <feature id="org.sonar.ide.eclipse.jdt.feature" version="2.5.0.qualifier"/>
    </features>
 
 

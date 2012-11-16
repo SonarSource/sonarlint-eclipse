@@ -197,26 +197,27 @@
               icon="icons/sonar.png">
         </action>
     </objectContribution>
-    <objectContribution id="org.sonar.ide.eclipse.ui.objectContribution1"
-                        adaptable="true"
-                        objectClass="org.eclipse.core.resources.IProject">
-        <visibility>
-          <and>
-              <not>
-                <objectState name="nature" value="org.sonar.ide.eclipse.core.sonarNature"/>
-              </not>
-              <objectState name="nature" value="org.eclipse.jdt.core.javanature"/>
-          </and>
-        </visibility>
-        <!-- about this menubarPath see: https://bugs.eclipse.org/bugs/show_bug.cgi?id=231611 -->
-        <action id="org.sonar.ide.ui.ConvertedProjectWizard"
-              label="Associate with Sonar..."
-              class="org.sonar.ide.eclipse.internal.ui.actions.ConfigureProjectsAction"
-                menubarPath="org.eclipse.ui.projectConfigure/additions"
-                enablesFor="+"
-                icon="icons/sonar.png">
-        </action>
-  </objectContribution>
+  </extension>
+
+  <extension point="org.eclipse.ui.commands">
+  <command
+        description="Open Sonar association wizard"
+        id="org.sonar.ide.eclipse.internal.ui.command.ConfigureProjectsCommand"
+        name="Associate with Sonar...">
+  </command>
+  </extension>
+
+  <extension point="org.eclipse.ui.handlers">
+  <handler
+        class="org.sonar.ide.eclipse.internal.ui.command.ConfigureProjectsCommand"
+        commandId="org.sonar.ide.eclipse.internal.ui.command.ConfigureProjectsCommand">
+  </handler>
+  </extension>
+
+  <extension point="org.eclipse.ui.commandImages">
+    <image
+      commandId="org.sonar.ide.eclipse.internal.ui.command.ConfigureProjectsCommand"
+      icon="icons/sonar.png" />
   </extension>
 
    <extension
@@ -373,5 +374,17 @@
        </enablement>
      </decorator>
 
+   </extension>
+
+
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <commonFilter
+            class="org.sonar.ide.eclipse.internal.ui.filters.NonSonarProjectsFilter"
+            id="org.sonar.ide.eclipse.internal.ui.filters.HideNonSonarProjects"
+            name="Non-Sonar projects"
+            description="Hides all projects without Sonar nature"
+            activeByDefault="false">
+      </commonFilter>
    </extension>
 </plugin>

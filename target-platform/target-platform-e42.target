@@ -3,6 +3,7 @@
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
 <unit id="org.eclipse.jdt.feature.group" version="3.8.1.v20120814-104540-8-8nFqpFNOfwKDRVz-tXOcL5d_83"/>
+<unit id="org.eclipse.cdt.feature.group" version="8.1.1.201209170703"/>
 <unit id="org.eclipse.platform.ide" version="4.2.1.M20120914-1800"/>
 <unit id="org.eclipse.mylyn.builds.feature.group" version="1.0.2.v20120916-1200"/>
 <unit id="org.eclipse.mylyn.commons.feature.group" version="3.8.2.v20120916-1200"/>

@@ -63,30 +63,4 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
       }
     });
   }
-
-  // /**
-  // * Return the {@link ContentProposalAdapter} of this cell editor.
-  // *
-  // * @return the {@link ContentProposalAdapter}
-  // */
-  // public ContentProposalAdapter getContentProposalAdapter() {
-  // return contentProposalAdapter;
-  // }
-  //
-  // protected void focusLost() {
-  // if (!popupOpen) {
-  // // Focus lost deactivates the cell editor.
-  // // This must not happen if focus lost was caused by activating
-  // // the completion proposal popup.
-  // super.focusLost();
-  // }
-  // }
-  //
-  // protected boolean dependsOnExternalFocusListener() {
-  // // Always return false;
-  // // Otherwise, the ColumnViewerEditor will install an additional focus listener
-  // // that cancels cell editing on focus lost, even if focus gets lost due to
-  // // activation of the completion proposal popup. See also bug 58777.
-  // return false;
-  // }
 }

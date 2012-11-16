@@ -74,6 +74,18 @@ public final class SonarKeyUtils {
   /**
    * Examples:
    * <ul>
+   * <li>myproject:ui/foo.c</li>
+   * </ul>
+   *
+   * @return key for non Java resources
+   */
+  public static String resourceKey(ISonarProject project, String resourcePath) {
+    return project.getKey() + PROJECT_DELIMITER + resourcePath;
+  }
+
+  /**
+   * Examples:
+   * <ul>
    * <li>org.example:myproject:[default].ClassOnDefaultPackage</li>
    * <li>org.example:myproject:org.example.mypackage.ClassOne</li>
    * </ul>

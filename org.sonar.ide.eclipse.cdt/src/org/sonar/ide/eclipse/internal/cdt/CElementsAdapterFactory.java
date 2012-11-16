@@ -17,24 +17,22 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.jdt;
+package org.sonar.ide.eclipse.internal.cdt;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.cdt.core.model.CModelException;
+import org.eclipse.cdt.core.model.CoreModel;
+import org.eclipse.cdt.core.model.ICContainer;
+import org.eclipse.cdt.core.model.ICElement;
+import org.eclipse.cdt.core.model.ICProject;
+import org.eclipse.cdt.core.model.ISourceRoot;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.core.runtime.IPath;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarProject;
@@ -48,7 +46,7 @@ import org.sonar.wsclient.services.Resource;
  * Adapter factory for Java elements.
  */
 @SuppressWarnings("rawtypes")
-public class JavaElementsAdapterFactory implements IAdapterFactory {
+public class CElementsAdapterFactory implements IAdapterFactory {
 
   private static final Class<?>[] ADAPTER_LIST = {ISonarResource.class, ISonarFile.class, ISonarProject.class, Resource.class, IFile.class};
 
@@ -58,9 +56,9 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
     }
 
     if (adapterType == Resource.class) {
-      if (adaptableObject instanceof IJavaProject) {
-        IJavaProject javaProject = (IJavaProject) adaptableObject;
-        String key = SonarUiPlugin.getSonarProject(javaProject.getProject()).getKey();
+      if (adaptableObject instanceof ICProject) {
+        ICProject cProject = (ICProject) adaptableObject;
+        String key = SonarUiPlugin.getSonarProject(cProject.getProject()).getKey();
         return new Resource().setKey(key);
       }
     } else if (adapterType == IFile.class) {
@@ -73,20 +71,22 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
           if (project.isAccessible()) {
             ISonarProject sonarProject = SonarUiPlugin.getSonarProject(project);
             if ((sonarProject != null) && resource.getKey().startsWith(sonarProject.getKey())) {
-              IJavaProject javaProject = JavaCore.create(project);
+              ICProject cProject = CoreModel.getDefault().create(project);
               try {
                 String resourceKeyMinusProjectKey = resource.getKey().substring(
                     sonarProject.getKey().length() + 1); // +1 because ":"
                 String[] parts = StringUtils.split(resourceKeyMinusProjectKey, SonarKeyUtils.PROJECT_DELIMITER);
-                String className = StringUtils.removeStart(parts.length > 0 ? parts[0] : "", "[default]."); //$NON-NLS-1$
+                String relativeFilePath = parts[0];
 
-                IType type = javaProject.findType(className);
-                if (type == null) {
-                  return null;
+                // Now we have to iterate over source folders to find the location of the file
+                for (ISourceRoot sourceRoot : cProject.getAllSourceRoots()) {
+                  IPath potentialPath = sourceRoot.getPath().append(relativeFilePath);
+                  if (potentialPath.toFile().exists()) {
+                    return CoreModel.getDefault().create(potentialPath).getResource();
+                  }
                 }
-                IResource result = type.getCompilationUnit().getResource();
-                return result instanceof IFile ? result : null;
-              } catch (JavaModelException e) {
+                return null;
+              } catch (CModelException e) {
                 LoggerFactory.getLogger(getClass()).warn(e.getMessage(), e);
               }
             }
@@ -99,9 +99,9 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
   }
 
   private ISonarResource getSonarResource(Object adaptableObject) {
-    if (adaptableObject instanceof IJavaElement) {
-      IJavaElement javaElement = (IJavaElement) adaptableObject;
-      return (ISonarResource) getAdapter(javaElement.getResource(), ISonarResource.class);
+    if (adaptableObject instanceof ICElement) {
+      ICElement cElement = (ICElement) adaptableObject;
+      return (ISonarResource) getAdapter(cElement.getResource(), ISonarResource.class);
     } else if (adaptableObject instanceof IProject) {
       IProject project = (IProject) adaptableObject;
       if (!isConfigured(project)) {
@@ -115,9 +115,13 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
         return null;
       }
       ISonarProject sonarProject = SonarUiPlugin.getSonarProject(folder.getProject());
-      String packageName = getPackageName(JavaCore.create(folder));
-      if (packageName != null) {
-        return SonarCorePlugin.createSonarResource(folder, SonarKeyUtils.packageKey(sonarProject, packageName), packageName);
+      ICContainer cFolder = CoreModel.getDefault().create(folder);
+      if (cFolder != null) {
+        ICContainer sourceRoot = SonarCdtPlugin.getSourceFolder(cFolder);
+        if (sourceRoot != null) {
+          String packageName = SonarCdtPlugin.getRelativePath(sourceRoot.getPath(), cFolder.getPath());
+          return SonarCorePlugin.createSonarResource(folder, SonarKeyUtils.resourceKey(sonarProject, packageName), packageName);
+        }
       }
     } else if (adaptableObject instanceof IFile) {
       IFile file = (IFile) adaptableObject;
@@ -126,32 +130,24 @@ public class JavaElementsAdapterFactory implements IAdapterFactory {
         return null;
       }
       ISonarProject sonarProject = SonarUiPlugin.getSonarProject(file.getProject());
-      IJavaElement javaElement = JavaCore.create(file);
-      if (javaElement instanceof ICompilationUnit) {
-        String packageName = getPackageName(javaElement.getParent());
-        String className = StringUtils.substringBeforeLast(javaElement.getElementName(), "."); //$NON-NLS-1$
-        return SonarCorePlugin.createSonarFile(file, SonarKeyUtils.classKey(sonarProject, packageName, className), className);
+      ICElement cElement = CoreModel.getDefault().create(file);
+      if (cElement != null) {
+        ICContainer sourceRoot = SonarCdtPlugin.getSourceFolder(cElement);
+        if (sourceRoot != null) {
+          String packageName = SonarCdtPlugin.getRelativePath(sourceRoot.getPath(), cElement.getPath());
+          return SonarCorePlugin.createSonarFile(file, SonarKeyUtils.resourceKey(sonarProject, packageName), cElement.getElementName());
+        }
       }
     }
     return null;
   }
 
   private boolean isConfigured(IProject project) {
-    return project.isAccessible() && SonarUiPlugin.hasSonarNature(project) && SonarJdtPlugin.hasJavaNature(project);
+    return project.isAccessible() && SonarUiPlugin.hasSonarNature(project) && CoreModel.hasCNature(project);
   }
 
   public Class[] getAdapterList() {
     return ADAPTER_LIST;
   }
 
-  private String getPackageName(IJavaElement javaElement) {
-    String packageName = null;
-    if (javaElement instanceof IPackageFragmentRoot) {
-      packageName = ""; //$NON-NLS-1$
-    } else if (javaElement instanceof IPackageFragment) {
-      IPackageFragment packageFragment = (IPackageFragment) javaElement;
-      packageName = packageFragment.getElementName();
-    }
-    return packageName;
-  }
 }

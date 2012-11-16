@@ -19,6 +19,10 @@
  */
 package org.sonar.ide.eclipse.core.configurator;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 public abstract class ProjectConfigurator {
@@ -33,6 +37,18 @@ public abstract class ProjectConfigurator {
   @Override
   public String toString() {
     return getClass().getName();
+  }
+
+  protected String getAbsolutePath(IPath path) {
+    // IPath should be resolved this way in order to handle linked resources (SONARIDE-271)
+    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+    IResource res = root.findMember(path);
+    if (res != null) {
+      return res.getLocation().toString();
+    }
+    else {
+      return null;
+    }
   }
 
 }
