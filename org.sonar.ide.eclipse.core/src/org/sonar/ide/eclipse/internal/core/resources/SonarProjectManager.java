@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.core.resources;
 
+import org.sonar.ide.eclipse.internal.core.SonarKeyUtils;
+
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
@@ -28,7 +30,6 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.core.SonarKeyUtils;
 
 /**
  * @author Evgeny Mandrikov
@@ -48,14 +49,14 @@ public class SonarProjectManager {
   private static final String P_PROJECT_KEY = "projectKey";
   private static final String P_ANALYSE_LOCALLY = "analyseLocally";
 
-  public ProjectProperties readSonarConfiguration(IProject project) {
+  public SonarProject readSonarConfiguration(IProject project) {
     LOG.debug("Reading configuration for project " + project.getName());
 
     IScopeContext projectScope = new ProjectScope(project);
     IEclipsePreferences projectNode = projectScope.getNode(SonarCorePlugin.PLUGIN_ID);
     if (projectNode == null) {
       LOG.error("Unable to read configuration for project " + project.getName());
-      return new ProjectProperties(project);
+      return new SonarProject(project);
     }
 
     String version = projectNode.get(P_VERSION, null);
@@ -80,7 +81,7 @@ public class SonarProjectManager {
       key = projectNode.get(P_PROJECT_KEY, "");
     }
 
-    ProjectProperties properties = new ProjectProperties(project);
+    SonarProject properties = new SonarProject(project);
     properties.setUrl(projectNode.get(P_SONAR_SERVER_URL, ""));
     properties.setKey(key);
     properties.setAnalysedLocally(projectNode.getBoolean(P_ANALYSE_LOCALLY, false));
@@ -90,7 +91,7 @@ public class SonarProjectManager {
   /**
    * @return false, if unable to save configuration
    */
-  public boolean saveSonarConfiguration(IProject project, ProjectProperties configuration) {
+  public boolean saveSonarConfiguration(IProject project, SonarProject configuration) {
     IScopeContext projectScope = new ProjectScope(project);
     IEclipsePreferences projectNode = projectScope.getNode(SonarCorePlugin.PLUGIN_ID);
     if (projectNode == null) {

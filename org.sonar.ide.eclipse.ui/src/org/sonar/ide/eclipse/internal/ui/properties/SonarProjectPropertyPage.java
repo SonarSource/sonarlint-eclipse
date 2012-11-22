@@ -24,7 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 
 /**
@@ -46,7 +46,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
       return new Composite(parent, SWT.NULL);
     }
 
-    ProjectProperties properties = ProjectProperties.getInstance(getProject());
+    SonarProject properties = SonarProject.getInstance(getProject());
     if (properties == null) {
       return new Composite(parent, SWT.NULL);
     }

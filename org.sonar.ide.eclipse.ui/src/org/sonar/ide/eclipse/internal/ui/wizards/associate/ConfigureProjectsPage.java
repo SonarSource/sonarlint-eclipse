@@ -54,7 +54,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
 import org.sonar.wsclient.Host;
@@ -204,7 +204,7 @@ public class ConfigureProjectsPage extends WizardPage {
       if (StringUtils.isNotBlank(projectAssociation.getKey())) {
         try {
           IProject project = projectAssociation.getProject();
-          ProjectProperties properties = ProjectProperties.getInstance(project);
+          SonarProject properties = SonarProject.getInstance(project);
           properties.setUrl(projectAssociation.getUrl());
           properties.setKey(projectAssociation.getKey());
           properties.save();

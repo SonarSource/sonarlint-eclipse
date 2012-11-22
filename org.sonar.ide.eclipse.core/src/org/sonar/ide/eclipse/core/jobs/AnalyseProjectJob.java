@@ -42,13 +42,13 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.ResourceUtils;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.internal.core.Messages;
 import org.sonar.ide.eclipse.internal.core.markers.MarkerUtils;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
-import org.sonar.ide.eclipse.internal.core.resources.ResourceUtils;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.runner.SonarEclipseRunner;
 import org.sonar.ide.eclipse.runner.SonarProperties;
 import org.sonar.wsclient.Host;
@@ -119,7 +119,7 @@ public class AnalyseProjectJob extends Job {
       project.accept(new IResourceVisitor() {
         public boolean visit(IResource resource) throws CoreException {
           MarkerUtils.deleteViolationsMarkers(resource);
-          String sonarKey = ResourceUtils.getSonarKey(resource, monitor);
+          String sonarKey = ResourceUtils.getSonarKey(resource);
           if (sonarKey != null && violationByResources.get(sonarKey) != null) {
             MarkerUtils.createMarkersForViolations(resource, (JSONArray) violationByResources.get(sonarKey));
           }
@@ -153,7 +153,7 @@ public class AnalyseProjectJob extends Job {
       configurator.configure(request, monitor);
     }
 
-    ProjectProperties projectProperties = ProjectProperties.getInstance(project);
+    SonarProject projectProperties = SonarProject.getInstance(project);
     Host host = SonarCorePlugin.getServersManager().findServer(projectProperties.getUrl());
     properties.setProperty(SonarProperties.SONAR_URL, host.getHost());
     if (StringUtils.isNotBlank(host.getUsername())) {

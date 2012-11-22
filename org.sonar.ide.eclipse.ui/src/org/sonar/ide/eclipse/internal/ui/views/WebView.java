@@ -32,7 +32,7 @@ import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.SonarUrls;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.wsclient.Host;
 
 /**
@@ -62,7 +62,7 @@ public class WebView extends AbstractSonarInfoView {
   protected void doSetInput(Object input) {
     ISonarResource sonarResource = (ISonarResource) input;
     SourceCode sourceCode = EclipseSonar.getInstance(sonarResource.getProject()).search(sonarResource);
-    ProjectProperties properties = ProjectProperties.getInstance(sonarResource.getProject());
+    SonarProject properties = SonarProject.getInstance(sonarResource.getProject());
     if (sourceCode == null) {
       browser.setText("Not found.");
       return;

@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
-import org.sonar.ide.eclipse.ui.util.PlatformUtils;
+import org.sonar.ide.eclipse.internal.core.AdapterUtils;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.wsclient.RemoteSonar;
 import org.sonar.wsclient.Host;
 
@@ -43,7 +43,7 @@ import java.io.IOException;
 public final class EclipseSonar extends RemoteSonar {
 
   public static EclipseSonar getInstance(IProject project) {
-    ProjectProperties properties = ProjectProperties.getInstance(project);
+    SonarProject properties = SonarProject.getInstance(project);
     Host host = SonarCorePlugin.getServersManager().findServer(properties.getUrl());
     return new EclipseSonar(host);
   }
@@ -71,7 +71,7 @@ public final class EclipseSonar extends RemoteSonar {
    * @return null, if not found
    */
   public SourceCode search(IResource resource) {
-    ISonarResource element = PlatformUtils.adapt(resource, ISonarResource.class);
+    ISonarResource element = AdapterUtils.adapt(resource, ISonarResource.class);
     if (element == null) {
       return null;
     }
@@ -93,5 +93,4 @@ public final class EclipseSonar extends RemoteSonar {
     }
     return code;
   }
-
 }

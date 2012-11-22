@@ -22,8 +22,6 @@ package org.sonar.ide.eclipse.ui.util;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -37,29 +35,6 @@ import java.util.HashMap;
 
 @SuppressWarnings("unchecked")
 public final class PlatformUtils {
-
-  /**
-   * Returns an object that is an instance of the given class associated with the given object. Returns <code>null</code> if no such object
-   * can be found or if given object is <code>null</code>.
-   */
-  public static <T> T adapt(Object adaptable, Class<T> adapter) {
-    if (adaptable == null) {
-      return null;
-    }
-    if (adapter.isInstance(adaptable)) {
-      return (T) adaptable;
-    }
-    Object result = null;
-    if (adaptable instanceof IAdaptable) {
-      result = ((IAdaptable) adaptable).getAdapter(adapter);
-    }
-    if (result == null) {
-      // From IAdapterManager :
-      // this method should be used judiciously, in order to avoid unnecessary plug-in activations
-      result = Platform.getAdapterManager().loadAdapter(adaptable, adapter.getName());
-    }
-    return (T) result;
-  }
 
   /**
    * Opens editor for given file.

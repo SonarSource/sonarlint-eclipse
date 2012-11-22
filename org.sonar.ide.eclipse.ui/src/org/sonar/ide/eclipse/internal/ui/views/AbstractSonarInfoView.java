@@ -39,13 +39,13 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.ViewPart;
 import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.internal.core.AdapterUtils;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
-import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 
 /**
  * Abstract class for views which show information for a given element. Inspired by org.eclipse.jdt.internal.ui.infoviews.AbstractInfoView
- * 
+ *
  * @since 0.3
  */
 public abstract class AbstractSonarInfoView extends ViewPart implements ISelectionListener {
@@ -98,7 +98,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
 
   /**
    * Create the part control.
-   * 
+   *
    * @param parent
    *          the parent control
    * @see IWorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
@@ -153,7 +153,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
 
   /**
    * Sets whether this info view reacts to selection changes in the workbench.
-   * 
+   *
    * @param enabled
    *          if true then the input is set on selection changes
    */
@@ -166,7 +166,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
 
   /**
    * Returns whether this info view reacts to selection changes in the workbench.
-   * 
+   *
    * @return true if linking with selection is enabled
    */
   protected boolean isLinkingEnabled() {
@@ -248,8 +248,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
       return null;
     }
     if (element instanceof IAdaptable) {
-      // return (ISonarResource) ((IAdaptable) element).getAdapter(ISonarResource.class);
-      return PlatformUtils.adapt(element, ISonarResource.class);
+      return AdapterUtils.adapt(element, ISonarResource.class);
     }
     return null;
   }

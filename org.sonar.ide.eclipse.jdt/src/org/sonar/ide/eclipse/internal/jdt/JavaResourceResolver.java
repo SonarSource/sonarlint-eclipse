@@ -20,24 +20,32 @@
 package org.sonar.ide.eclipse.internal.jdt;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ResourceResolver;
+import org.sonar.ide.eclipse.internal.core.SonarKeyUtils;
 
 public class JavaResourceResolver extends ResourceResolver {
 
   @Override
-  public String resolve(IResource resource, IProgressMonitor monitor) {
+  public String getSonarPartialKey(IResource resource) {
     IJavaElement javaElement = JavaCore.create(resource);
     if (javaElement instanceof ICompilationUnit) {
       String packageName = getPackageName(javaElement.getParent());
       String className = StringUtils.substringBeforeLast(javaElement.getElementName(), "."); //$NON-NLS-1$
       return packageName + "." + className; //$NON-NLS-1$
+    } else if (javaElement instanceof IPackageFragmentRoot) {
+      return "[default]"; //$NON-NLS-1$
     } else if (javaElement instanceof IPackageFragment) {
       return getPackageName(javaElement);
     }
@@ -56,6 +64,27 @@ public class JavaResourceResolver extends ResourceResolver {
       packageName = "[default]"; //$NON-NLS-1$
     }
     return packageName;
+  }
+
+  @Override
+  public IResource locate(IProject project, String resourceKey) {
+    IJavaProject javaProject = JavaCore.create(project);
+    if (javaProject != null) {
+      try {
+        String[] parts = StringUtils.split(resourceKey, SonarKeyUtils.PROJECT_DELIMITER);
+        String className = StringUtils.removeStart(parts.length > 0 ? parts[0] : "", "[default]."); //$NON-NLS-1$
+
+        IType type = javaProject.findType(className);
+        if (type == null) {
+          return null;
+        }
+        IResource result = type.getCompilationUnit().getResource();
+        return result instanceof IFile ? result : null;
+      } catch (JavaModelException e) {
+        LoggerFactory.getLogger(getClass()).warn(e.getMessage(), e);
+      }
+    }
+    return null;
   }
 
 }

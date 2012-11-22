@@ -25,7 +25,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.sonar.ide.eclipse.core.jobs.AnalyseProjectJob;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshAllViolationsJob;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 
@@ -44,7 +44,7 @@ public class ChangeAnalysisModeAction implements IObjectActionDelegate {
    * @see org.eclipse.ui.IActionDelegate#run(IAction)
    */
   public void run(IAction action) {
-    ProjectProperties projectProperties = ProjectProperties.getInstance(project);
+    SonarProject projectProperties = SonarProject.getInstance(project);
     projectProperties.setAnalysedLocally(isLocalAnalysis(action));
     projectProperties.save();
 
@@ -63,13 +63,13 @@ public class ChangeAnalysisModeAction implements IObjectActionDelegate {
   public void selectionChanged(IAction action, ISelection selection) {
     project = (IProject) SelectionUtils.getSingleElement(selection);
     if (project != null) {
-      ProjectProperties projectProperties = ProjectProperties.getInstance(project);
+      SonarProject projectProperties = SonarProject.getInstance(project);
       action.setChecked(isChecked(action, projectProperties));
       action.setEnabled(!action.isChecked());
     }
   }
 
-  private boolean isChecked(IAction action, ProjectProperties projectProperties) {
+  private boolean isChecked(IAction action, SonarProject projectProperties) {
     if (isLocalAnalysis(action)) {
       return projectProperties.isAnalysedLocally();
     } else {

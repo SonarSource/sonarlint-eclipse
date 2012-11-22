@@ -26,11 +26,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 
 public class SonarProjectPropertyBlock {
-  public Control createContents(Composite parent, ProjectProperties properties) {
+  public Control createContents(Composite parent, SonarProject properties) {
     Composite container = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout();
     container.setLayout(layout);

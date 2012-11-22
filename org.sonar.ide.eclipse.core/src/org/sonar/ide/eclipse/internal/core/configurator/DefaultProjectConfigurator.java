@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.runner.SonarProperties;
 
 import java.util.Properties;
@@ -31,7 +31,7 @@ import java.util.Properties;
 public class DefaultProjectConfigurator extends ProjectConfigurator {
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
-    ProjectProperties remoteProject = ProjectProperties.getInstance(request.getProject());
+    SonarProject remoteProject = SonarProject.getInstance(request.getProject());
 
     Properties properties = request.getSonarProjectProperties();
     String projectName = request.getProject().getName();

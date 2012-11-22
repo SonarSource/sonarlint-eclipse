@@ -20,6 +20,7 @@
 package org.sonar.ide.eclipse.internal.mylyn.ui.editor;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskDataModel;
@@ -33,9 +34,9 @@ import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
+import org.sonar.ide.eclipse.core.ResourceUtils;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarTaskSchema;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
-import org.sonar.wsclient.services.Resource;
 
 public class ResourceAttributeEditor extends AbstractAttributeEditor {
 
@@ -53,12 +54,11 @@ public class ResourceAttributeEditor extends AbstractAttributeEditor {
         String sonarResourceKey = getResource();
         Integer line = getLine();
 
-        // Godin: in fact this is not a good way to locate IFile by Sonar resourceKey and should be improved
-        IFile file = PlatformUtils.adapt(new Resource().setKey(sonarResourceKey), IFile.class);
-        if (file == null) {
+        IResource resource = ResourceUtils.getResource(sonarResourceKey);
+        if (resource == null || !(resource instanceof IFile)) {
           MessageDialog.openWarning(null, "Resource not found", "Failed to locate resource '" + sonarResourceKey + "' in workspace.");
         } else {
-          PlatformUtils.openEditor(file, line);
+          PlatformUtils.openEditor((IFile) resource, line);
         }
       }
     });

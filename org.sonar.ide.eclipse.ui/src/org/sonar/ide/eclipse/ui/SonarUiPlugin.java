@@ -25,10 +25,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.console.SonarConsole;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshViolationsJob;
@@ -88,10 +86,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
       LoggerFactory.getLogger(SonarUiPlugin.class).error(e.getMessage(), e);
       return false;
     }
-  }
-
-  public static ISonarProject getSonarProject(IProject project) {
-    return ProjectProperties.getInstance(project);
   }
 
   private SonarConsole console;

@@ -35,7 +35,7 @@ import org.eclipse.ui.PlatformUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.jobs.AnalyseProjectJob;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.ui.views.ViolationsView;
 
 import java.util.ArrayList;
@@ -98,7 +98,7 @@ public class AnalyseProjectAction implements IObjectActionDelegate {
         Object element = iterator.next();
 
         IProject project = (IProject) element;
-        ProjectProperties projectProperties = ProjectProperties.getInstance(project);
+        SonarProject projectProperties = SonarProject.getInstance(project);
         actionEnabled &= projectProperties.isAnalysedLocally();
         projects.add(project);
       }

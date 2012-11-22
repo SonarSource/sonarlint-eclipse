@@ -36,9 +36,9 @@ import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.internal.core.AdapterUtils;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.wsclient.services.Violation;
 
 import java.util.Collection;
@@ -49,9 +49,9 @@ import java.util.Map;
 
 /**
  * This class load violations in background.
- * 
+ *
  * @link http://jira.codehaus.org/browse/SONARIDE-27
- * 
+ *
  * @author Jérémie Lagarde
  */
 public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
@@ -138,9 +138,9 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
         IEditorInput input = ((IEditorPart) part).getEditorInput();
         if (input instanceof IFileEditorInput) {
           IResource resource = ((IFileEditorInput) input).getFile();
-          ISonarResource sonarResource = PlatformUtils.adapt(resource, ISonarResource.class);
+          ISonarResource sonarResource = AdapterUtils.adapt(resource, ISonarResource.class);
           if (sonarResource != null) {
-            ProjectProperties projectProperties = ProjectProperties.getInstance(resource);
+            SonarProject projectProperties = SonarProject.getInstance(resource);
             if (!projectProperties.isAnalysedLocally()) {
               new RefreshViolationsJob(Collections.singletonList(resource)).schedule();
             }

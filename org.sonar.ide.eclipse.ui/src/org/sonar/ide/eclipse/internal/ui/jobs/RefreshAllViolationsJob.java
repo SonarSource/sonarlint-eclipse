@@ -26,10 +26,10 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.core.ResourceUtils;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.Violation;
 
@@ -61,7 +61,7 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
         return false;
       }
 
-      ProjectProperties projectProperties = ProjectProperties.getInstance(project);
+      SonarProject projectProperties = SonarProject.getInstance(project);
       if (projectProperties.isAnalysedLocally()) {
         return false;
       }
@@ -79,11 +79,10 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
         // Associate violations with resources
         for (String resourceKey : mm.keySet()) {
           Resource sonarResource = new Resource().setKey(resourceKey);
-          // adapt org.sonar.wsclient.services.Resource to IFile
-          IFile file = PlatformUtils.adapt(sonarResource, IFile.class);
-          if (file != null) {
+          IResource eclipseResource = ResourceUtils.getResource(sonarResource.getKey());
+          if (eclipseResource != null && eclipseResource instanceof IFile) {
             for (Violation violation : mm.get(resourceKey)) {
-              createMarker(file, violation);
+              createMarker((IFile) eclipseResource, violation);
             }
           }
         }

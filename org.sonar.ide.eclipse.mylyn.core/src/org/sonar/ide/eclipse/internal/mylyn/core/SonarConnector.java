@@ -20,10 +20,10 @@
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.mylyn.context.core.IInteractionContext;
 import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
@@ -41,7 +41,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskMapper;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
 import org.eclipse.osgi.util.NLS;
 import org.osgi.framework.Version;
-import org.sonar.wsclient.services.Resource;
+import org.sonar.ide.eclipse.core.ResourceUtils;
 import org.sonar.wsclient.services.Review;
 
 import java.util.Collection;
@@ -53,7 +53,7 @@ public class SonarConnector extends AbstractRepositoryConnector {
   /**
    * Minimal supported version of Sonar server.
    */
-  public static final String MINIMAL_VERSION = "2.9"; //$NON-NLS-1$
+  public static final String MINIMAL_VERSION = "3.4"; //$NON-NLS-1$
 
   private static final String REVIEW_PREFIX = "/reviews/view/"; //$NON-NLS-1$
 
@@ -174,12 +174,11 @@ public class SonarConnector extends AbstractRepositoryConnector {
       return;
     }
     String sonarResourceKey = attribute.getValue();
-
-    // Godin: in fact this is not a good way to locate IFile by Sonar resourceKey and should be improved
-    IFile file = (IFile) Platform.getAdapterManager().loadAdapter(new Resource().setKey(sonarResourceKey), IFile.class.getName());
-    if (file == null) {
+    IResource resource = ResourceUtils.getResource(sonarResourceKey);
+    if (resource == null || !(resource instanceof IFile)) {
       return;
     }
+    IFile file = (IFile) resource;
 
     IInteractionContext context = ContextCorePlugin.getContextStore().loadContext(task.getHandleIdentifier());
     ContextCorePlugin.getContextManager().processInteractionEvent(

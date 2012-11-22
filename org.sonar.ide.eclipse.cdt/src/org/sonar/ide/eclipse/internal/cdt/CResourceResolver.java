@@ -19,22 +19,52 @@
  */
 package org.sonar.ide.eclipse.internal.cdt;
 
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.model.ICContainer;
 import org.eclipse.cdt.core.model.ICElement;
+import org.eclipse.cdt.core.model.ICProject;
+import org.eclipse.cdt.core.model.ISourceRoot;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IPath;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ResourceResolver;
+import org.sonar.ide.eclipse.internal.core.SonarKeyUtils;
 
 public class CResourceResolver extends ResourceResolver {
 
   @Override
-  public String resolve(IResource resource, IProgressMonitor monitor) {
+  public String getSonarPartialKey(IResource resource) {
     ICElement cElement = CoreModel.getDefault().create(resource);
     if (cElement != null) {
       ICContainer sourceRoot = SonarCdtPlugin.getSourceFolder(cElement);
       if (sourceRoot != null) {
         return SonarCdtPlugin.getRelativePath(sourceRoot.getPath(), cElement.getPath());
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public IResource locate(IProject project, String resourceKey) {
+    ICProject cProject = CoreModel.getDefault().create(project);
+    if (cProject != null) {
+      try {
+        String[] parts = StringUtils.split(resourceKey, SonarKeyUtils.PROJECT_DELIMITER);
+        String relativeFilePath = parts[0];
+
+        // Now we have to iterate over source folders to find the location of the file
+        for (ISourceRoot sourceRoot : cProject.getAllSourceRoots()) {
+          IPath potentialPath = sourceRoot.getPath().append(relativeFilePath);
+          if (potentialPath.toFile().exists()) {
+            return CoreModel.getDefault().create(potentialPath).getResource();
+          }
+        }
+        return null;
+      } catch (CModelException e) {
+        LoggerFactory.getLogger(getClass()).warn(e.getMessage(), e);
       }
     }
     return null;

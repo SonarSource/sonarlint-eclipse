@@ -26,7 +26,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.ui.TasksUi;
 import org.eclipse.mylyn.tasks.ui.TasksUiUtil;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarConnector;
 import org.sonar.ide.eclipse.ui.ISonarResolver;
 
@@ -48,7 +48,7 @@ public class OpenReviewResolver implements ISonarResolver {
       if (SonarCorePlugin.MARKER_ID.equals(marker.getType())) {
         reviewId = marker.getAttribute("reviewId", "");
         if (!"".equals(reviewId)) {
-          String sonarServerUrl = ProjectProperties.getInstance(marker.getResource()).getUrl();
+          String sonarServerUrl = SonarProject.getInstance(marker.getResource()).getUrl();
           repository = TasksUi.getRepositoryManager().getRepository(SonarConnector.CONNECTOR_KIND, sonarServerUrl);
           return repository != null;
         }

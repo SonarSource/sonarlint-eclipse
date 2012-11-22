@@ -19,16 +19,24 @@
  */
 package org.sonar.ide.eclipse.core;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IProgressMonitor;
 
 public abstract class ResourceResolver {
 
   public static final String ATTR_CLASS = "class"; //$NON-NLS-1$
 
   /**
-   * @return Sonar resource key or null, if this resolver can't determine key
+   * @return Sonar resource key without project key prefix or null, if this resolver can't determine key
    */
-  public abstract String resolve(IResource resource, IProgressMonitor monitor);
+  public abstract String getSonarPartialKey(IResource resource);
+
+  /**
+   * Find a resource in a project.
+   * @param project
+   * @param partialResourceKey The resource key (without the project prefix)
+   * @param monitor
+   */
+  public abstract IResource locate(IProject project, String partialResourceKey);
 
 }

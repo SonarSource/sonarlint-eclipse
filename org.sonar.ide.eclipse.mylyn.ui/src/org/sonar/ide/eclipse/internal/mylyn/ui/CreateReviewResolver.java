@@ -25,7 +25,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.ui.TasksUi;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarConnector;
 import org.sonar.ide.eclipse.ui.ISonarResolver;
 
@@ -50,7 +50,7 @@ public class CreateReviewResolver implements ISonarResolver {
         violationId = marker.getAttribute("violationId", "");
         String reviewId = marker.getAttribute("reviewId", "");
         if (!"".equals(violationId) && !"".equals(rulename) && "".equals(reviewId)) {
-          String sonarServerUrl = ProjectProperties.getInstance(marker.getResource()).getUrl();
+          String sonarServerUrl = SonarProject.getInstance(marker.getResource()).getUrl();
           repository = TasksUi.getRepositoryManager().getRepository(SonarConnector.CONNECTOR_KIND, sonarServerUrl);
           return repository != null;
         }

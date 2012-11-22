@@ -21,7 +21,7 @@ package org.sonar.ide.eclipse.internal;
 
 import org.eclipse.core.resources.IFile;
 import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.internal.core.resources.ProjectProperties;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 
 public class SonarUrls {
   public String resourceUrl(ISonarResource resource) {
@@ -40,7 +40,7 @@ public class SonarUrls {
     return "%s/project/index/%s";
   }
 
-  private ProjectProperties properties(ISonarResource resource) {
-    return ProjectProperties.getInstance(resource.getProject());
+  private SonarProject properties(ISonarResource resource) {
+    return SonarProject.getInstance(resource.getProject());
   }
 }
