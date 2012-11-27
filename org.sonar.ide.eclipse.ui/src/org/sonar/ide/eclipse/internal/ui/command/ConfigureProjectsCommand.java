@@ -24,6 +24,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.custom.BusyIndicator;
@@ -57,6 +58,12 @@ public class ConfigureProjectsCommand extends AbstractHandler {
     for (Object elem : elems) {
       if (elem instanceof IProject) {
         selectedProjects.add((IProject) elem);
+      }
+      else if (elem instanceof IAdaptable) {
+        IProject proj = (IProject) ((IAdaptable) elem).getAdapter(IProject.class);
+        if (proj != null) {
+          selectedProjects.add(proj);
+        }
       }
     }
 

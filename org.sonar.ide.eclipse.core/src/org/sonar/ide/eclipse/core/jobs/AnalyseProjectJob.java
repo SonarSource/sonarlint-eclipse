@@ -21,6 +21,7 @@ package org.sonar.ide.eclipse.core.jobs;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -112,8 +113,10 @@ public class AnalyseProjectJob extends Job {
 
   @VisibleForTesting
   public void createMarkers(final IProgressMonitor monitor, File outputFile) {
+    FileReader fileReader = null;
     try {
-      Object obj = JSONValue.parse(new FileReader(outputFile));
+      fileReader = new FileReader(outputFile);
+      Object obj = JSONValue.parse(fileReader);
       JSONObject sonarResult = (JSONObject) obj;
       final JSONObject violationByResources = (JSONObject) sonarResult.get("violations_per_resource");
       project.accept(new IResourceVisitor() {
@@ -130,6 +133,8 @@ public class AnalyseProjectJob extends Job {
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
       throw new RuntimeException(e);
+    } finally {
+      IOUtils.closeQuietly(fileReader);
     }
   }
 
