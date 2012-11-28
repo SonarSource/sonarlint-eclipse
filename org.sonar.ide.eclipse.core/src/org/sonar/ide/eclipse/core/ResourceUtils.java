@@ -43,7 +43,7 @@ public final class ResourceUtils {
 
   private static List<ResourceResolver> resolvers;
 
-  public synchronized static String getSonarKey(IResource resource) {
+  public static String getSonarKey(IResource resource) {
     for (ResourceResolver resolver : getResolvers()) {
       String sonarKey = resolver.getSonarPartialKey(resource);
       if (sonarKey != null) {
@@ -53,7 +53,7 @@ public final class ResourceUtils {
     return null;
   }
 
-  public synchronized static IResource getResource(String resourceKey) {
+  public static IResource getResource(String resourceKey) {
     IWorkspace root = ResourcesPlugin.getWorkspace();
     for (IProject project : root.getRoot().getProjects()) {
       if (project.isAccessible()) {
@@ -73,7 +73,7 @@ public final class ResourceUtils {
     return null;
   }
 
-  private static List<ResourceResolver> getResolvers() {
+  private synchronized static List<ResourceResolver> getResolvers() {
     if (resolvers == null) {
       resolvers = new ArrayList<ResourceResolver>();
       IExtensionRegistry registry = Platform.getExtensionRegistry();

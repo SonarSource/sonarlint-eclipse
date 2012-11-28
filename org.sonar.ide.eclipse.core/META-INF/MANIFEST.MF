@@ -10,10 +10,10 @@ Bundle-Localization: OSGI-INF/l10n/bundle
 Export-Package: org.sonar.ide.eclipse.core,
  org.sonar.ide.eclipse.core.configurator,
  org.sonar.ide.eclipse.core.jobs,
- org.sonar.ide.eclipse.internal.core;x-friends:="org.sonar.ide.eclipse.ui",
+ org.sonar.ide.eclipse.internal.core;x-friends:="org.sonar.ide.eclipse.ui,org.sonar.ide.eclipse.m2e",
  org.sonar.ide.eclipse.internal.core.configurator;x-internal:=true,
  org.sonar.ide.eclipse.internal.core.markers;x-internal:=true,
- org.sonar.ide.eclipse.internal.core.resources;x-friends:="org.sonar.ide.eclipse.ui"
+ org.sonar.ide.eclipse.internal.core.resources;x-friends:="org.sonar.ide.eclipse.ui,org.sonar.ide.eclipse.m2e"
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,

@@ -19,15 +19,18 @@
  */
 package org.sonar.ide.eclipse.core;
 
-import org.sonar.ide.eclipse.wsclient.SonarConnectionTester;
-
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.internal.core.ServersManager;
 import org.sonar.ide.eclipse.internal.core.SonarFile;
+import org.sonar.ide.eclipse.internal.core.SonarNature;
 import org.sonar.ide.eclipse.internal.core.SonarResource;
+import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.core.resources.SonarProjectManager;
+import org.sonar.ide.eclipse.wsclient.SonarConnectionTester;
 
 public class SonarCorePlugin extends AbstractPlugin {
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.core";
@@ -91,6 +94,25 @@ public class SonarCorePlugin extends AbstractPlugin {
 
   public static ISonarFile createSonarFile(IFile file, String key, String name) {
     return new SonarFile(file, key, name);
+  }
+
+  /**
+   * Create a new Sonar project from the given project. Enable Sonar nature.
+   * @param project
+   * @param url
+   * @param key
+   * @param analysedLocally
+   * @return
+   * @throws CoreException
+   */
+  public static ISonarProject createSonarProject(IProject project, String url, String key, boolean analysedLocally) throws CoreException {
+    SonarProject sonarProject = SonarProject.getInstance(project);
+    sonarProject.setUrl(url);
+    sonarProject.setKey(key);
+    sonarProject.setAnalysedLocally(analysedLocally);
+    sonarProject.save();
+    SonarNature.enableNature(project);
+    return sonarProject;
   }
 
 }

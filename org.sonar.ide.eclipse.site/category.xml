@@ -12,6 +12,9 @@
    <feature url="features/org.sonar.ide.eclipse.jdt.feature_2.5.0.qualifier.jar" id="org.sonar.ide.eclipse.jdt.feature" version="2.5.0.qualifier">
       <category name="Sonar"/>
    </feature>
+   <feature url="features/org.sonar.ide.eclipse.m2e.feature_2.5.0.qualifier.jar" id="org.sonar.ide.eclipse.m2e.feature" version="2.5.0.qualifier">
+      <category name="Sonar"/>
+   </feature>
    <category-def name="Sonar" label="Sonar">
       <description>
          Sonar Integration for Eclipse

@@ -36,8 +36,6 @@ import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
-import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.Host;
 
@@ -176,17 +174,7 @@ public abstract class SonarTestCase {
 
   public static void configureProject(String name) throws Exception {
     IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(name);
-    configureProject(project, "http://localhost:9000", "org.sonar-ide.tests:name", false);
-  }
-
-  // TODO should be in core
-  public static void configureProject(IProject project, String url, String key, boolean analysedLocally) throws Exception {
-    SonarProject properties = SonarProject.getInstance(project);
-    properties.setUrl(url);
-    properties.setKey(key);
-    properties.setAnalysedLocally(analysedLocally);
-    properties.save();
-    ToggleNatureAction.enableNature(project);
+    SonarCorePlugin.createSonarProject(project, "http://localhost:9000", "org.sonar-ide.tests:name", false);
   }
 
 }

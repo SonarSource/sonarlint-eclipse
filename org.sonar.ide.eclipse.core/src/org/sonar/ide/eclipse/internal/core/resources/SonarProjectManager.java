@@ -81,11 +81,11 @@ public class SonarProjectManager {
       key = projectNode.get(P_PROJECT_KEY, "");
     }
 
-    SonarProject properties = new SonarProject(project);
-    properties.setUrl(projectNode.get(P_SONAR_SERVER_URL, ""));
-    properties.setKey(key);
-    properties.setAnalysedLocally(projectNode.getBoolean(P_ANALYSE_LOCALLY, false));
-    return properties;
+    SonarProject sonarProject = new SonarProject(project);
+    sonarProject.setUrl(projectNode.get(P_SONAR_SERVER_URL, ""));
+    sonarProject.setKey(key);
+    sonarProject.setAnalysedLocally(projectNode.getBoolean(P_ANALYSE_LOCALLY, false));
+    return sonarProject;
   }
 
   /**

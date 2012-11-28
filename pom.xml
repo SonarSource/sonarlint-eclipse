@@ -68,6 +68,9 @@
     <module>org.sonar.ide.eclipse.cdt</module>
     <module>org.sonar.ide.eclipse.cdt.feature</module>
 
+    <module>org.sonar.ide.eclipse.m2e</module>
+    <module>org.sonar.ide.eclipse.m2e.feature</module>
+
     <module>org.sonar.ide.eclipse.mylyn.core</module>
     <module>org.sonar.ide.eclipse.mylyn.ui</module>
     <module>org.sonar.ide.eclipse.mylyn.feature</module>

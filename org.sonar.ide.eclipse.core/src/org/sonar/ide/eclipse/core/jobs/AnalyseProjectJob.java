@@ -158,8 +158,8 @@ public class AnalyseProjectJob extends Job {
       configurator.configure(request, monitor);
     }
 
-    SonarProject projectProperties = SonarProject.getInstance(project);
-    Host host = SonarCorePlugin.getServersManager().findServer(projectProperties.getUrl());
+    SonarProject sonarProject = SonarProject.getInstance(project);
+    Host host = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     properties.setProperty(SonarProperties.SONAR_URL, host.getHost());
     if (StringUtils.isNotBlank(host.getUsername())) {
       properties.setProperty(SonarProperties.SONAR_LOGIN, host.getUsername());

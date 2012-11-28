@@ -19,9 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.core;
 
-import org.sonar.ide.eclipse.core.ISonarProject;
-
 import org.apache.commons.lang.StringUtils;
+import org.sonar.ide.eclipse.core.ISonarProject;
 
 public final class SonarKeyUtils {
   public static final char PROJECT_DELIMITER = ':';
@@ -49,9 +48,7 @@ public final class SonarKeyUtils {
    * </ul>
    *
    * @return key for project
-   * @deprecated Do not use groupId/artifactId
    */
-  @Deprecated
   public static String projectKey(String groupId, String artifactId, String branch) {
     StringBuilder sb = new StringBuilder().append(groupId).append(PROJECT_DELIMITER).append(artifactId);
     if (StringUtils.isNotBlank(branch)) {

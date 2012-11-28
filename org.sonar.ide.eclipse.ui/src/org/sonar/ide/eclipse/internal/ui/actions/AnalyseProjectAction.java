@@ -64,6 +64,7 @@ public class AnalyseProjectAction implements IObjectActionDelegate {
       AnalyseProjectJob job = new AnalyseProjectJob(project);
       // Display violation view after analysis is completed
       job.addJobChangeListener(new JobChangeAdapter() {
+        @Override
         public void done(IJobChangeEvent event) {
           if (Status.OK_STATUS == event.getResult()) {
             Display.getDefault().asyncExec(new Runnable() {
@@ -92,7 +93,7 @@ public class AnalyseProjectAction implements IObjectActionDelegate {
     projects.clear();
     boolean actionEnabled = true;
     // get All selected Elements
-    if (selection != null & selection instanceof IStructuredSelection) {
+    if (selection != null && selection instanceof IStructuredSelection) {
       IStructuredSelection strucSelection = (IStructuredSelection) selection;
       for (Iterator<Object> iterator = strucSelection.iterator(); iterator.hasNext();) {
         Object element = iterator.next();

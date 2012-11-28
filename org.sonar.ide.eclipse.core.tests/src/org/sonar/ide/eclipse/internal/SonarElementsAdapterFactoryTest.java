@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.sonar.ide.eclipse.core.ISonarFile;
 import org.sonar.ide.eclipse.core.ISonarProject;
 import org.sonar.ide.eclipse.core.ISonarResource;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.core.SonarElementsAdapterFactory;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
@@ -45,7 +46,7 @@ public class SonarElementsAdapterFactoryTest extends SonarTestCase {
   public static void importProject() throws Exception {
     project = importEclipseProject("SimpleProject");
     // Configure the project
-    configureProject(project, "http://localhost:9000", key, true);
+    SonarCorePlugin.createSonarProject(project, "http://localhost:9000", key, true);
   }
 
   private SonarElementsAdapterFactory factory;

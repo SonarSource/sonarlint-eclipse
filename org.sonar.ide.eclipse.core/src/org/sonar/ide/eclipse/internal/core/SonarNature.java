@@ -19,9 +19,15 @@
  */
 package org.sonar.ide.eclipse.internal.core;
 
+import com.google.common.collect.Lists;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.sonar.ide.eclipse.core.SonarCorePlugin;
+
+import java.util.List;
 
 public class SonarNature implements IProjectNature {
 
@@ -39,6 +45,30 @@ public class SonarNature implements IProjectNature {
 
   public void setProject(IProject project) {
     this.project = project;
+  }
+
+  public static void enableNature(IProject project) throws CoreException {
+    IProjectDescription description = project.getDescription();
+    String[] prevNatures = description.getNatureIds();
+    String[] newNatures = new String[prevNatures.length + 1];
+    System.arraycopy(prevNatures, 0, newNatures, 1, prevNatures.length);
+    newNatures[0] = SonarCorePlugin.NATURE_ID;
+    description.setNatureIds(newNatures);
+    project.setDescription(description, null);
+  }
+
+  public static void disableNature(IProject project) throws CoreException {
+    project.deleteMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+
+    IProjectDescription description = project.getDescription();
+    List<String> newNatures = Lists.newArrayList();
+    for (String natureId : description.getNatureIds()) {
+      if (!SonarCorePlugin.NATURE_ID.equals(natureId)) {
+        newNatures.add(natureId);
+      }
+    }
+    description.setNatureIds(newNatures.toArray(new String[newNatures.size()]));
+    project.setDescription(description, null);
   }
 
 }

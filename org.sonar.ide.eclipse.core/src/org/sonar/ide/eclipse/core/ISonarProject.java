@@ -28,4 +28,6 @@ package org.sonar.ide.eclipse.core;
 public interface ISonarProject extends ISonarResource {
 
   String getKey();
+
+  String getUrl();
 }

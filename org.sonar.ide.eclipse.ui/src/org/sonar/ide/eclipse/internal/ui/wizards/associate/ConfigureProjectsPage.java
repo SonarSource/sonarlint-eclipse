@@ -54,9 +54,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
+import org.sonar.ide.eclipse.internal.core.SonarNature;
 import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
-import org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction;
+import org.sonar.ide.eclipse.internal.ui.jobs.RefreshAllViolationsJob;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.connectors.ConnectionException;
@@ -114,6 +115,7 @@ public class ConfigureProjectsPage extends WizardPage {
     }
 
     ColumnViewerEditorActivationStrategy activationSupport = new ColumnViewerEditorActivationStrategy(viewer) {
+      @Override
       protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event) {
         return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
           || event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
@@ -178,18 +180,22 @@ public class ConfigureProjectsPage extends WizardPage {
       super(viewer);
     }
 
+    @Override
     protected boolean canEdit(Object element) {
       return (element instanceof ProjectAssociationModel);
     }
 
+    @Override
     protected CellEditor getCellEditor(Object element) {
       return new TextCellEditorWithContentProposal(viewer.getTable(), contentProposalProvider, null, null, ((ProjectAssociationModel) element));
     }
 
+    @Override
     protected Object getValue(Object element) {
       return StringUtils.trimToEmpty(((ProjectAssociationModel) element).getSonarProjectName());
     }
 
+    @Override
     protected void setValue(Object element, Object value) {
       // Don't set value as the model was already updated in the text adapter
     }
@@ -208,7 +214,8 @@ public class ConfigureProjectsPage extends WizardPage {
           properties.setUrl(projectAssociation.getUrl());
           properties.setKey(projectAssociation.getKey());
           properties.save();
-          ToggleNatureAction.enableNature(project);
+          SonarNature.enableNature(project);
+          RefreshAllViolationsJob.createAndSchedule(project);
         } catch (CoreException e) {
           LOG.error(e.getMessage(), e);
           return false;

@@ -19,10 +19,7 @@
  */
 package org.sonar.ide.eclipse.internal.ui.actions;
 
-import com.google.common.collect.Lists;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IAction;
@@ -32,10 +29,9 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.ui.jobs.RefreshAllViolationsJob;
+import org.sonar.ide.eclipse.internal.core.SonarNature;
 
 import java.util.Iterator;
-import java.util.List;
 
 public class ToggleNatureAction implements IObjectActionDelegate {
 
@@ -64,37 +60,10 @@ public class ToggleNatureAction implements IObjectActionDelegate {
 
   private void toggleNature(IProject project) throws CoreException {
     if (project.hasNature(SonarCorePlugin.NATURE_ID)) {
-      disableNature(project);
+      SonarNature.disableNature(project);
     } else {
-      enableNature(project);
+      SonarNature.enableNature(project);
     }
-  }
-
-  public static void enableNature(IProject project) throws CoreException {
-    IProjectDescription description = project.getDescription();
-    String[] prevNatures = description.getNatureIds();
-    String[] newNatures = new String[prevNatures.length + 1];
-    System.arraycopy(prevNatures, 0, newNatures, 1, prevNatures.length);
-    newNatures[0] = SonarCorePlugin.NATURE_ID;
-    description.setNatureIds(newNatures);
-    project.setDescription(description, null);
-
-    // see http://jira.codehaus.org/browse/SONARIDE-167
-    RefreshAllViolationsJob.createAndSchedule(project);
-  }
-
-  private void disableNature(IProject project) throws CoreException {
-    project.deleteMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
-
-    IProjectDescription description = project.getDescription();
-    List<String> newNatures = Lists.newArrayList();
-    for (String natureId : description.getNatureIds()) {
-      if (!SonarCorePlugin.NATURE_ID.equals(natureId)) {
-        newNatures.add(natureId);
-      }
-    }
-    description.setNatureIds(newNatures.toArray(new String[newNatures.size()]));
-    project.setDescription(description, null);
   }
 
   public void selectionChanged(IAction action, ISelection selection) {

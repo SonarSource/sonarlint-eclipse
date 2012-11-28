@@ -50,7 +50,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     project = importEclipseProject("reference");
 
     // Enable Sonar Nature
-    configureProject(project, "http://localhost:9000", "bar:foo", true);
+    SonarCorePlugin.createSonarProject(project, "http://localhost:9000", "bar:foo", true);
   }
 
   @Test
