@@ -19,6 +19,10 @@
  */
 package org.sonar.ide.eclipse.internal.ui.actions;
 
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+
+import org.sonar.ide.eclipse.core.internal.SonarNature;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -28,8 +32,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.core.SonarNature;
 
 import java.util.Iterator;
 

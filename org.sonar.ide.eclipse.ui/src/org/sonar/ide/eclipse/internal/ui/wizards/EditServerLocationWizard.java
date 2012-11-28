@@ -19,8 +19,9 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+
 import org.apache.commons.lang.StringUtils;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.wsclient.Host;
 
 public class EditServerLocationWizard extends AbstractServerLocationWizard {

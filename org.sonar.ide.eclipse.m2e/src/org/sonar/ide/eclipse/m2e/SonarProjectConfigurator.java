@@ -27,11 +27,11 @@ import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
 import org.eclipse.m2e.core.project.configurator.AbstractProjectConfigurator;
 import org.eclipse.m2e.core.project.configurator.ProjectConfigurationRequest;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.core.SonarServer;
-import org.sonar.ide.eclipse.internal.core.SonarKeyUtils;
-import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
-import org.sonar.ide.eclipse.runner.SonarProperties;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
+import org.sonar.ide.eclipse.core.internal.SonarProperties;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 
 import java.util.Collection;
 

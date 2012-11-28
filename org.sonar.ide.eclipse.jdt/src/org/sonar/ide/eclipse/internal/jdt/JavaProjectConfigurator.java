@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.jdt;
 
+import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -33,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
-import org.sonar.ide.eclipse.runner.SonarProperties;
 
 import java.util.Properties;
 
@@ -55,7 +56,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     String javaSource = javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
     String javaTarget = javaProject.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true);
 
-    sonarProjectProperties.setProperty(SonarProperties.PROJECT_LANGUAGE_PROPERTY, "java");
+    sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "java");
     sonarProjectProperties.setProperty("sonar.java.source", javaSource);
     LOG.info("Source Java version: {}", javaSource);
     sonarProjectProperties.setProperty("sonar.java.target", javaTarget);
@@ -91,18 +92,18 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
           if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
             if (topProject) {
               LOG.debug("Test directory: {}", srcDir);
-              appendProperty(sonarProjectProperties, SonarProperties.TEST_DIRS_PROPERTY, srcDir);
+              appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, srcDir);
             }
           }
           else {
             if (topProject) {
               LOG.debug("Source directory: {}", srcDir);
-              appendProperty(sonarProjectProperties, SonarProperties.SOURCE_DIRS_PROPERTY, srcDir);
+              appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, srcDir);
             }
             if (entry.getOutputLocation() != null) {
               String binDir = getAbsolutePath(entry.getOutputLocation());
               LOG.debug("Binary directory: {}", binDir);
-              appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
+              appendProperty(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, binDir);
             }
           }
           break;
@@ -111,7 +112,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
           if (topProject || entry.isExported()) {
             final String libDir = resolveLibrary(javaProject, entry);
             LOG.debug("Library: {}", libDir);
-            appendProperty(sonarProjectProperties, SonarProperties.LIBRARIES_PROPERTY, libDir);
+            appendProperty(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, libDir);
           }
           break;
         case IClasspathEntry.CPE_PROJECT:
@@ -129,7 +130,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     String binDir = getAbsolutePath(javaProject.getOutputLocation());
     if (binDir != null) {
       LOG.debug("Default binary directory: {}", binDir);
-      appendProperty(sonarProjectProperties, SonarProperties.BINARIES_PROPERTY, binDir);
+      appendProperty(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, binDir);
     }
     else {
       LOG.warn("Binary directory was not added because it was not found. Maybe should you enable auto build of your project.");

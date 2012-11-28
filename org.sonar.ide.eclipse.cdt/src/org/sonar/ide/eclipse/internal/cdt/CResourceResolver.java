@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.cdt;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.model.ICContainer;
@@ -31,7 +30,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ResourceResolver;
-import org.sonar.ide.eclipse.internal.core.SonarKeyUtils;
 
 public class CResourceResolver extends ResourceResolver {
 
@@ -52,8 +50,7 @@ public class CResourceResolver extends ResourceResolver {
     ICProject cProject = CoreModel.getDefault().create(project);
     if (cProject != null) {
       try {
-        String[] parts = StringUtils.split(resourceKey, SonarKeyUtils.PROJECT_DELIMITER);
-        String relativeFilePath = parts[0];
+        String relativeFilePath = resourceKey;
 
         // Now we have to iterate over source folders to find the location of the file
         for (ISourceRoot sourceRoot : cProject.getAllSourceRoots()) {

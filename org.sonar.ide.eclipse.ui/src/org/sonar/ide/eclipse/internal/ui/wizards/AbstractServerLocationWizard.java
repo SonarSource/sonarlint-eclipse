@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards;
 
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -27,7 +29,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
 
 import java.lang.reflect.InvocationTargetException;
 

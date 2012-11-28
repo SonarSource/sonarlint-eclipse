@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -41,7 +43,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskMapper;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
 import org.eclipse.osgi.util.NLS;
 import org.osgi.framework.Version;
-import org.sonar.ide.eclipse.core.ResourceUtils;
 import org.sonar.wsclient.services.Review;
 
 import java.util.Collection;

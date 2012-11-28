@@ -19,6 +19,11 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards.associate;
 
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+
+import org.sonar.ide.eclipse.core.internal.SonarNature;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.databinding.beans.BeanProperties;
@@ -53,9 +58,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.core.SonarNature;
-import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshAllViolationsJob;
 import org.sonar.wsclient.Host;

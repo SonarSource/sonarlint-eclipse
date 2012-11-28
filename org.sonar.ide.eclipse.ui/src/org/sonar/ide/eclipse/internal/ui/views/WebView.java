@@ -19,6 +19,12 @@
  */
 package org.sonar.ide.eclipse.internal.ui.views;
 
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+
+import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
+
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+
 import org.apache.commons.codec.binary.Base64;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
@@ -27,12 +33,9 @@ import org.eclipse.swt.widgets.Control;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SourceCode;
-import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.SonarUrls;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
-import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.wsclient.Host;
 
 /**

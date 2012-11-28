@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.cdt;
 
+import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
+
 import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.model.ICProject;
@@ -29,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
-import org.sonar.ide.eclipse.runner.SonarProperties;
 
 import java.util.Properties;
 
@@ -47,11 +48,11 @@ public class CProjectConfigurator extends ProjectConfigurator {
   }
 
   private void configureCProject(ICProject cProject, Properties sonarProjectProperties) {
-    sonarProjectProperties.setProperty(SonarProperties.PROJECT_LANGUAGE_PROPERTY, "cpp");
+    sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "cpp");
     try {
       ISourceRoot[] sourceRoots = cProject.getSourceRoots();
       for (ISourceRoot sourceRoot : sourceRoots) {
-        appendProperty(sonarProjectProperties, SonarProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(sourceRoot.getPath()));
+        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(sourceRoot.getPath()));
       }
     } catch (CModelException e) {
       LOG.error(e.getMessage(), e);

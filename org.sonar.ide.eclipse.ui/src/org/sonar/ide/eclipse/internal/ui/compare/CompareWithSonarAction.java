@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.ui.compare;
 
+import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
+
 import org.eclipse.compare.CompareUI;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -27,7 +29,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import org.sonar.ide.api.SourceCode;
-import org.sonar.ide.eclipse.core.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 

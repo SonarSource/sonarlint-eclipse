@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.ui.actions;
 
+import org.sonar.ide.eclipse.core.internal.jobs.AnalyseProjectJob;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -34,8 +36,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.jobs.AnalyseProjectJob;
-import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.internal.ui.console.SonarConsole;
 import org.sonar.ide.eclipse.internal.ui.views.ViolationsView;
 
 import java.util.ArrayList;
@@ -60,8 +62,9 @@ public class AnalyseProjectAction implements IObjectActionDelegate {
    * @see org.eclipse.ui.IActionDelegate#run(IAction)
    */
   public void run(IAction action) {
+    boolean debugEnabled = SonarConsole.isDebugEnabled();
     for (IProject project : projects) {
-      AnalyseProjectJob job = new AnalyseProjectJob(project);
+      AnalyseProjectJob job = new AnalyseProjectJob(project, debugEnabled);
       // Display violation view after analysis is completed
       job.addJobChangeListener(new JobChangeAdapter() {
         @Override

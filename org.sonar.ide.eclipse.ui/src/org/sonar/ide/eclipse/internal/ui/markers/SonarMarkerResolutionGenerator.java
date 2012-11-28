@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.ui.markers;
 
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -26,7 +28,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.ISonarResolver;
 
 import java.util.ArrayList;

@@ -19,6 +19,13 @@
  */
 package org.sonar.ide.eclipse.internal.ui.jobs;
 
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+
+import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
+
+import org.sonar.ide.eclipse.core.internal.AdapterUtils;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -33,11 +40,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.progress.UIJob;
 import org.sonar.ide.api.SourceCode;
-import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
-import org.sonar.ide.eclipse.internal.core.AdapterUtils;
-import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.services.Violation;
 

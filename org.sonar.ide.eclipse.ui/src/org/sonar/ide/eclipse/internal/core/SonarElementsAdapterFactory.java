@@ -19,16 +19,23 @@
  */
 package org.sonar.ide.eclipse.internal.core;
 
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
+
+import org.sonar.ide.eclipse.core.internal.resources.ISonarFile;
+import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
+import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
+
+
+import org.sonar.ide.eclipse.core.internal.AdapterUtils;
+import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.sonar.ide.eclipse.core.ISonarFile;
-import org.sonar.ide.eclipse.core.ISonarProject;
-import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.core.ResourceUtils;
-import org.sonar.ide.eclipse.core.SonarCorePlugin;
-import org.sonar.ide.eclipse.internal.core.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.services.Resource;
 

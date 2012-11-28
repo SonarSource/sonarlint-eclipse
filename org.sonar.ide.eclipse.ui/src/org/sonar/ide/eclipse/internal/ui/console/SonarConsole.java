@@ -34,6 +34,7 @@ import org.sonar.ide.eclipse.internal.core.ISonarConstants;
 import org.sonar.ide.eclipse.internal.ui.Messages;
 import org.sonar.ide.eclipse.runner.SonarRunnerLogListener;
 import org.sonar.ide.eclipse.ui.ISonarConsole;
+import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 
 import java.io.IOException;
 
@@ -142,4 +143,9 @@ public class SonarConsole extends IOConsole implements SonarRunnerLogListener, I
   private boolean isShowConsoleOnError() {
     return StringUtils.equals(getShowConsolePreference(), P_SHOW_CONSOLE_ON_ERROR);
   }
+
+  public static boolean isDebugEnabled() {
+    return SonarUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarConsole.P_DEBUG_OUTPUT);
+  }
+
 }

@@ -24,13 +24,11 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonar.ide.eclipse.runner.SonarProperties;
+import org.sonar.ide.eclipse.core.internal.SonarProperties;
 
 import java.util.Properties;
 
 public abstract class ProjectConfigurator {
-
-  public static final String ATTR_CLASS = "class"; //$NON-NLS-1$
 
   /**
    * Configures Sonar project, using information from Eclipse project.

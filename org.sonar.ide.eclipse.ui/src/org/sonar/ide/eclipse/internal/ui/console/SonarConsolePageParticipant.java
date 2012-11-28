@@ -137,7 +137,7 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
     private final IPropertyChangeListener listener = new IPropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent event) {
         if (SonarConsole.P_DEBUG_OUTPUT.equals(event.getProperty())) {
-          setChecked(isDebugEnabled());
+          setChecked(SonarConsole.isDebugEnabled());
         }
       }
     };
@@ -147,7 +147,7 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
       setImageDescriptor(SonarImages.DEBUG);
 
       getPreferenceStore().addPropertyChangeListener(listener);
-      setChecked(isDebugEnabled());
+      setChecked(SonarConsole.isDebugEnabled());
     }
 
     /**
@@ -164,10 +164,6 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
 
     private IPreferenceStore getPreferenceStore() {
       return SonarUiPlugin.getDefault().getPreferenceStore();
-    }
-
-    boolean isDebugEnabled() {
-      return getPreferenceStore().getBoolean(SonarConsole.P_DEBUG_OUTPUT);
     }
 
   }

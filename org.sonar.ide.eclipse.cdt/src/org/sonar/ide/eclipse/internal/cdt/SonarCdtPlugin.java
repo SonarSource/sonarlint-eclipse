@@ -19,12 +19,11 @@
  */
 package org.sonar.ide.eclipse.internal.cdt;
 
-import org.eclipse.core.runtime.IPath;
-
 import org.eclipse.cdt.core.model.ICContainer;
 import org.eclipse.cdt.core.model.ICElement;
 import org.eclipse.cdt.core.model.ICProject;
 import org.eclipse.cdt.core.model.ISourceRoot;
+import org.eclipse.core.runtime.IPath;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
@@ -36,7 +35,7 @@ public class SonarCdtPlugin extends AbstractPlugin {
   private static SonarCdtPlugin plugin;
 
   public SonarCdtPlugin() {
-    plugin = this; // NOSONAR
+    plugin = this;
   }
 
   /**

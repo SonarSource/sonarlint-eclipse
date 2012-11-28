@@ -19,6 +19,10 @@
  */
 package org.sonar.ide.eclipse.internal.ui.views;
 
+import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
+
+import org.sonar.ide.eclipse.core.internal.AdapterUtils;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
@@ -38,8 +42,6 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.ViewPart;
-import org.sonar.ide.eclipse.core.ISonarResource;
-import org.sonar.ide.eclipse.internal.core.AdapterUtils;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 

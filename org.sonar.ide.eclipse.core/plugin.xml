@@ -7,7 +7,7 @@
    <extension
          point="org.sonar.ide.eclipse.core.projectConfigurators">
       <configurator
-            class="org.sonar.ide.eclipse.internal.core.configurator.DefaultProjectConfigurator">
+            class="org.sonar.ide.eclipse.core.internal.configurator.DefaultProjectConfigurator">
       </configurator>
    </extension>
 
@@ -17,7 +17,7 @@
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
-               class="org.sonar.ide.eclipse.internal.core.SonarNature">
+               class="org.sonar.ide.eclipse.core.internal.SonarNature">
          </run>
       </runtime>
    </extension>

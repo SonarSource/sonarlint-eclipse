@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.ui.editor;
 
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -34,7 +36,6 @@ import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
-import org.sonar.ide.eclipse.core.ResourceUtils;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarTaskSchema;
 import org.sonar.ide.eclipse.ui.util.PlatformUtils;
 

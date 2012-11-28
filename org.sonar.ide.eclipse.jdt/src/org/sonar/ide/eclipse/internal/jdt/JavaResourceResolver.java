@@ -33,7 +33,6 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ResourceResolver;
-import org.sonar.ide.eclipse.internal.core.SonarKeyUtils;
 
 public class JavaResourceResolver extends ResourceResolver {
 
@@ -71,8 +70,7 @@ public class JavaResourceResolver extends ResourceResolver {
     IJavaProject javaProject = JavaCore.create(project);
     if (javaProject != null) {
       try {
-        String[] parts = StringUtils.split(resourceKey, SonarKeyUtils.PROJECT_DELIMITER);
-        String className = StringUtils.removeStart(parts.length > 0 ? parts[0] : "", "[default]."); //$NON-NLS-1$
+        String className = StringUtils.removeStart(resourceKey, "[default]."); //$NON-NLS-1$
 
         IType type = javaProject.findType(className);
         if (type == null) {
