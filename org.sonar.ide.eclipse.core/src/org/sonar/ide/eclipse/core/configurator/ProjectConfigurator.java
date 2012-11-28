@@ -24,6 +24,9 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.sonar.ide.eclipse.runner.SonarProperties;
+
+import java.util.Properties;
 
 public abstract class ProjectConfigurator {
 
@@ -49,6 +52,11 @@ public abstract class ProjectConfigurator {
     else {
       return null;
     }
+  }
+
+  protected void appendProperty(Properties properties, String key, String value) {
+    String newValue = properties.getProperty(key, "") + SonarProperties.SEPARATOR + value;
+    properties.put(key, newValue);
   }
 
 }

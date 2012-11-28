@@ -46,15 +46,8 @@ public class CProjectConfigurator extends ProjectConfigurator {
     }
   }
 
-  private void appendProperty(Properties properties, String key, String value) {
-    String newValue = properties.getProperty(key, "") + SonarProperties.SEPARATOR + value;
-    properties.put(key, newValue);
-  }
-
   private void configureCProject(ICProject cProject, Properties sonarProjectProperties) {
-
     sonarProjectProperties.setProperty(SonarProperties.PROJECT_LANGUAGE_PROPERTY, "cpp");
-
     try {
       ISourceRoot[] sourceRoots = cProject.getSourceRoots();
       for (ISourceRoot sourceRoot : sourceRoots) {

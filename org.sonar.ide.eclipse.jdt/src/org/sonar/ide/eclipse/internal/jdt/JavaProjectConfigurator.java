@@ -51,11 +51,6 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     }
   }
 
-  private void appendProperty(Properties properties, String key, String value) {
-    String newValue = properties.getProperty(key, "") + SonarProperties.SEPARATOR + value;
-    properties.put(key, newValue);
-  }
-
   private void configureJavaProject(IJavaProject javaProject, Properties sonarProjectProperties) {
     String javaSource = javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
     String javaTarget = javaProject.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true);
