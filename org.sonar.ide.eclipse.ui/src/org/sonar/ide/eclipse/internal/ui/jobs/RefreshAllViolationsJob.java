@@ -19,10 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.jobs;
 
-import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
-
-import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-
 import com.google.common.collect.ArrayListMultimap;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -30,8 +26,10 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.Violation;
 
@@ -59,7 +57,7 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
   public boolean visit(final IResource resource) throws CoreException {
     if (resource instanceof IProject) {
       IProject project = (IProject) resource;
-      if (!SonarUiPlugin.hasSonarNature(project)) {
+      if (!SonarCorePlugin.hasSonarNature(project)) {
         return false;
       }
 

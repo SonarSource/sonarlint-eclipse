@@ -19,12 +19,7 @@
  */
 package org.sonar.ide.eclipse.internal;
 
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
-
-import org.sonar.ide.eclipse.core.internal.AdapterUtils;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
@@ -33,6 +28,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.wsclient.RemoteSonar;
 import org.sonar.wsclient.Host;
 
@@ -74,7 +72,7 @@ public final class EclipseSonar extends RemoteSonar {
    * @return null, if not found
    */
   public SourceCode search(IResource resource) {
-    ISonarResource element = AdapterUtils.adapt(resource, ISonarResource.class);
+    ISonarResource element = ResourceUtils.adapt(resource);
     if (element == null) {
       return null;
     }

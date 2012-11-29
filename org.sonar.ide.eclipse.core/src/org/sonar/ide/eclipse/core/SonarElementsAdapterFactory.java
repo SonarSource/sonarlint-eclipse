@@ -17,66 +17,43 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.internal.core;
-
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
-
-import org.sonar.ide.eclipse.core.internal.resources.ISonarFile;
-import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
-import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
-
-
-import org.sonar.ide.eclipse.core.internal.AdapterUtils;
-import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+package org.sonar.ide.eclipse.core;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
-import org.sonar.wsclient.services.Resource;
+import org.sonar.ide.eclipse.core.internal.AdapterUtils;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
+import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.resources.ISonarFile;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 /**
- * Adapter factory for Java elements.
+ * Adapter factory for Sonar elements.
  */
 @SuppressWarnings("rawtypes")
 public class SonarElementsAdapterFactory implements IAdapterFactory {
 
-  private static final Class<?>[] ADAPTER_LIST = {ISonarResource.class, ISonarFile.class, ISonarProject.class, Resource.class};
+  private static final Class<?>[] ADAPTER_LIST = {ISonarResource.class, ISonarFile.class};
 
   public Object getAdapter(Object adaptableObject, Class adapterType) {
-    if (ISonarResource.class.equals(adapterType) || ISonarFile.class.equals(adapterType) || ISonarProject.class.equals(adapterType)) {
+    if (adapterType == ISonarResource.class) {
       return getSonarResource(adaptableObject);
     }
-
-    if (adapterType == Resource.class) {
-      IProject project;
-      if (adaptableObject instanceof IProject) {
-        project = (IProject) adaptableObject;
-      }
-      else {
-        project = AdapterUtils.adapt(adaptableObject, IProject.class);
-      }
-      if (project != null) {
-        String key = SonarProject.getInstance(project).getKey();
-        return new Resource().setKey(key);
-      }
+    else if (adapterType == ISonarFile.class) {
+      ISonarResource res = getSonarResource(adaptableObject);
+      return (res instanceof ISonarFile) ? res : null;
     }
     return null;
   }
 
   private ISonarResource getSonarResource(Object adaptableObject) {
     // Projects
-    IProject project = null;
-    if (adaptableObject instanceof IProject) {
-      project = (IProject) adaptableObject;
-    }
-    else {
-      project = AdapterUtils.adapt(adaptableObject, IProject.class);
-    }
+    IProject project = AdapterUtils.adapt(adaptableObject, IProject.class);
     if (project != null && isConfigured(project)) {
       return SonarProject.getInstance(project);
     }
@@ -95,7 +72,7 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
         return null;
       }
       ISonarProject sonarProject = SonarProject.getInstance(parentProject);
-      String keyWithoutProject = ResourceUtils.getSonarKey(file);
+      String keyWithoutProject = ResourceUtils.getSonarResourcePartialKey(file);
       if (keyWithoutProject != null) {
         return SonarCorePlugin.createSonarFile(file, SonarKeyUtils.resourceKey(sonarProject, keyWithoutProject), file.getName());
       }
@@ -115,7 +92,7 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
         return null;
       }
       ISonarProject sonarProject = SonarProject.getInstance(parentProject);
-      String keyWithoutProject = ResourceUtils.getSonarKey(resource);
+      String keyWithoutProject = ResourceUtils.getSonarResourcePartialKey(resource);
       if (keyWithoutProject != null) {
         if (resource instanceof IFile) {
           return SonarCorePlugin.createSonarFile((IFile) resource, SonarKeyUtils.resourceKey(sonarProject, keyWithoutProject), resource.getName());
@@ -127,7 +104,7 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
   }
 
   private boolean isConfigured(IProject project) {
-    return project.isAccessible() && SonarUiPlugin.hasSonarNature(project);
+    return project.isAccessible() && SonarCorePlugin.hasSonarNature(project);
   }
 
   public Class[] getAdapterList() {

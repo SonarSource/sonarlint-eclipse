@@ -19,14 +19,9 @@
  */
 package org.sonar.ide.eclipse.ui;
 
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.console.SonarConsole;
@@ -78,15 +73,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
    */
   public static SonarUiPlugin getDefault() {
     return plugin;
-  }
-
-  public static boolean hasSonarNature(IProject project) {
-    try {
-      return project.hasNature(SonarCorePlugin.NATURE_ID);
-    } catch (CoreException e) {
-      LoggerFactory.getLogger(SonarUiPlugin.class).error(e.getMessage(), e);
-      return false;
-    }
   }
 
   private SonarConsole console;

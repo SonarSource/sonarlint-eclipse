@@ -20,6 +20,8 @@
 package org.sonar.ide.eclipse.core.internal.resources;
 
 
+import org.sonar.ide.eclipse.core.resources.ISonarFile;
+
 import org.eclipse.core.resources.IFile;
 
 public class SonarFile extends SonarResource implements ISonarFile {

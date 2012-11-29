@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.core.internal.resources;
 
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
+
 /**
  * Represents a view of a project in terms of Sonar.
  *

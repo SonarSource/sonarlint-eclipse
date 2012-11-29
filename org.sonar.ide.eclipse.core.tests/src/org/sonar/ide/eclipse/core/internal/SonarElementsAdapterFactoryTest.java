@@ -19,19 +19,15 @@
  */
 package org.sonar.ide.eclipse.core.internal;
 
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-import org.sonar.ide.eclipse.core.internal.resources.ISonarFile;
-import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
-import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.sonar.ide.eclipse.internal.core.SonarElementsAdapterFactory;
+import org.sonar.ide.eclipse.core.SonarElementsAdapterFactory;
+import org.sonar.ide.eclipse.core.resources.ISonarFile;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -60,14 +56,7 @@ public class SonarElementsAdapterFactoryTest extends SonarTestCase {
 
   @Test
   public void testAdapterList() {
-    assertThat(factory.getAdapterList().length, is(4));
-  }
-
-  @Test
-  public void shouldAdaptProjectToSonarProject() {
-    ISonarProject sonarElement = (ISonarProject) factory.getAdapter(project, ISonarProject.class);
-    assertThat(sonarElement, notNullValue());
-    assertThat(sonarElement.getKey(), is(key));
+    assertThat(factory.getAdapterList().length, is(2));
   }
 
   @Test

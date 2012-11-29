@@ -19,9 +19,10 @@
  */
 package org.sonar.ide.eclipse.internal.ui.views;
 
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
+
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
-import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
 
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 

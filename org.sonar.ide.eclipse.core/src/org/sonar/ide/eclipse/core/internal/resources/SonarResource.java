@@ -20,6 +20,8 @@
 package org.sonar.ide.eclipse.core.internal.resources;
 
 
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;

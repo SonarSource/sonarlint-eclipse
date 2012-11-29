@@ -19,12 +19,9 @@
  */
 package org.sonar.ide.eclipse.internal.ui.views;
 
-import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
-
-import org.sonar.ide.eclipse.core.internal.AdapterUtils;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
@@ -42,6 +39,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.ViewPart;
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.ui.util.SelectionUtils;
 
@@ -235,22 +233,9 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
       EditorPart editor = (EditorPart) part;
       IEditorInput editorInput = editor.getEditorInput();
       IResource resource = ResourceUtil.getResource(editorInput);
-      return findSonarResource(resource);
+      return ResourceUtils.adapt(resource);
     } else if (selection instanceof IStructuredSelection) {
-      return findSonarResource(SelectionUtils.getSingleElement(selection));
-    }
-    return null;
-  }
-
-  /**
-   * Tries to get a Sonar resource out of the given element.
-   */
-  protected ISonarResource findSonarResource(Object element) {
-    if (element == null) {
-      return null;
-    }
-    if (element instanceof IAdaptable) {
-      return AdapterUtils.adapt(element, ISonarResource.class);
+      return ResourceUtils.adapt(SelectionUtils.getSingleElement(selection));
     }
     return null;
   }

@@ -19,27 +19,22 @@
  */
 package org.sonar.ide.eclipse.core.internal;
 
-import org.sonar.ide.eclipse.core.AbstractPlugin;
-
-import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
-
-import org.sonar.ide.eclipse.core.internal.servers.ServersManager;
-
-import org.sonar.ide.eclipse.core.internal.resources.SonarFile;
-import org.sonar.ide.eclipse.core.internal.resources.SonarResource;
-
-import org.sonar.ide.eclipse.core.internal.resources.ISonarFile;
-import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
-import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
-
-import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProjectManager;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.osgi.framework.BundleContext;
+import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.AbstractPlugin;
+import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
+import org.sonar.ide.eclipse.core.internal.resources.SonarFile;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProjectManager;
+import org.sonar.ide.eclipse.core.internal.resources.SonarResource;
+import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
+import org.sonar.ide.eclipse.core.internal.servers.ServersManager;
+import org.sonar.ide.eclipse.core.resources.ISonarFile;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
 import org.sonar.ide.eclipse.wsclient.SonarConnectionTester;
 
 public class SonarCorePlugin extends AbstractPlugin {
@@ -123,6 +118,15 @@ public class SonarCorePlugin extends AbstractPlugin {
     sonarProject.save();
     SonarNature.enableNature(project);
     return sonarProject;
+  }
+
+  public static boolean hasSonarNature(IProject project) {
+    try {
+      return project.hasNature(SonarCorePlugin.NATURE_ID);
+    } catch (CoreException e) {
+      LoggerFactory.getLogger(SonarCorePlugin.class).error(e.getMessage(), e);
+      return false;
+    }
   }
 
 }

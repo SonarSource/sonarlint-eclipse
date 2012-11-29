@@ -105,7 +105,7 @@ public class AnalyseProjectJob extends Job {
       project.accept(new IResourceVisitor() {
         public boolean visit(IResource resource) throws CoreException {
           MarkerUtils.deleteViolationsMarkers(resource);
-          String sonarKey = ResourceUtils.getSonarKey(resource);
+          String sonarKey = ResourceUtils.getSonarResourcePartialKey(resource);
           if (sonarKey != null && violationByResources.get(sonarKey) != null) {
             MarkerUtils.createMarkersForViolations(resource, (JSONArray) violationByResources.get(sonarKey));
           }

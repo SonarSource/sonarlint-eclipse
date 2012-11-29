@@ -19,12 +19,7 @@
  */
 package org.sonar.ide.eclipse.internal.ui.jobs;
 
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
-
-import org.sonar.ide.eclipse.core.internal.AdapterUtils;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -40,6 +35,9 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.progress.UIJob;
 import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.services.Violation;
@@ -141,7 +139,7 @@ public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
         IEditorInput input = ((IEditorPart) part).getEditorInput();
         if (input instanceof IFileEditorInput) {
           IResource resource = ((IFileEditorInput) input).getFile();
-          ISonarResource sonarResource = AdapterUtils.adapt(resource, ISonarResource.class);
+          ISonarResource sonarResource = ResourceUtils.adapt(resource);
           if (sonarResource != null) {
             SonarProject projectProperties = SonarProject.getInstance(resource);
             if (!projectProperties.isAnalysedLocally()) {

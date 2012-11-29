@@ -4,6 +4,13 @@
    <extension-point id="projectConfigurators" name="Project Configurators" schema="schema/projectConfigurators.exsd"/>
    <extension-point id="resourceResolvers" name="Resource Resolvers" schema="schema/resourceResolvers.exsd"/>
 
+   <extension point="org.eclipse.core.runtime.adapters">
+      <factory adaptableType="org.eclipse.core.resources.IResource"
+               class="org.sonar.ide.eclipse.core.SonarElementsAdapterFactory">
+         <adapter type="org.sonar.ide.eclipse.core.resources.ISonarResource"/>
+      </factory>
+   </extension>
+
    <extension
          point="org.sonar.ide.eclipse.core.projectConfigurators">
       <configurator
@@ -21,7 +28,7 @@
          </run>
       </runtime>
    </extension>
-   
+
    <extension
         id="sonarProblem"
         name="Sonar Violation"
@@ -29,7 +36,7 @@
       <super
             type="org.eclipse.core.resources.problemmarker">
       </super>
-      <persistent	
+      <persistent
             value="true">
       </persistent>
       <attribute
@@ -40,5 +47,5 @@
       </attribute>
    </extension>
 
-   
+
 </plugin>

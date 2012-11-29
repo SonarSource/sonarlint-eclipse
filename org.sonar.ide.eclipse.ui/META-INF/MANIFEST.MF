@@ -22,7 +22,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  com.google.guava;bundle-version="10.0.1",
  org.sonar.ide.eclipse.wsclient,
- org.apache.commons.codec;bundle-version="1.7.0"
+ org.apache.commons.codec;bundle-version="1.7.0",
+ org.eclipse.ui.navigator
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonar.ide.eclipse.internal;x-internal:=true,

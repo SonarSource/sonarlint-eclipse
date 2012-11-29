@@ -19,7 +19,7 @@
  */
 package org.sonar.ide.eclipse.internal.ui.compare;
 
-import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 import org.eclipse.compare.CompareUI;
 import org.eclipse.jface.action.IAction;

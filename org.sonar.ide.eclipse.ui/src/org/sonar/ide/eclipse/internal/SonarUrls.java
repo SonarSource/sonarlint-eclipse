@@ -19,7 +19,7 @@
  */
 package org.sonar.ide.eclipse.internal;
 
-import org.sonar.ide.eclipse.core.internal.resources.ISonarResource;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 

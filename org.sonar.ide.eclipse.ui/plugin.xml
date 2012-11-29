@@ -7,27 +7,6 @@
    <extension-point id="resolver" name="sonar resolver" schema="schema/org.sonar.ide.eclipse.markers.resolver.exsd"/>
 
 <!-- Extensions -->
-
-   <extension point="org.eclipse.core.runtime.adapters">
-      <factory adaptableType="org.sonar.wsclient.services.Resource"
-               class="org.sonar.ide.eclipse.internal.core.SonarElementsAdapterFactory">
-         <adapter type="org.eclipse.core.resources.IFile"/>
-      </factory>
-
-      <factory adaptableType="org.eclipse.jdt.core.IJavaElement"
-               class="org.sonar.ide.eclipse.internal.core.SonarElementsAdapterFactory">
-         <adapter type="org.sonar.ide.eclipse.core.ISonarResource"/>
-      </factory>
-      <factory adaptableType="org.eclipse.jdt.core.ICompilationUnit"
-               class="org.sonar.ide.eclipse.internal.core.SonarElementsAdapterFactory">
-         <adapter type="org.sonar.ide.eclipse.core.ISonarFile"/>
-      </factory>
-      <factory adaptableType="org.eclipse.core.resources.IResource"
-               class="org.sonar.ide.eclipse.internal.core.SonarElementsAdapterFactory">
-         <adapter type="org.sonar.ide.eclipse.core.ISonarResource"/>
-      </factory>
-   </extension>
-
   <extension point="org.eclipse.ui.preferencePages">
     <page
         class="org.sonar.ide.eclipse.internal.ui.preferences.SonarPreferencePage"
@@ -55,6 +34,28 @@
           name="Web">
     </view>
   </extension>
+
+  <extension point="org.eclipse.ui.navigator.navigatorContent">
+    <commonFilter
+        class="org.sonar.ide.eclipse.ui.NonSonarProjectsFilter"
+        description="Hides all projects without Sonar nature"
+        id="org.sonar.ide.eclipse.ui.filters.HideNonSonarProjects"
+        name="Non-Sonar projects"
+        activeByDefault="false">
+    </commonFilter>
+  </extension>
+
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewerContentBinding
+            viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+         <includes>
+            <contentExtension
+                  pattern="org.sonar.ide.eclipse.ui.filters.HideNonSonarProjects">
+            </contentExtension>
+         </includes>
+      </viewerContentBinding>
+   </extension>
 
    <extension
          point="org.eclipse.ui.menus">
@@ -193,7 +194,7 @@
     </objectContribution>
     <objectContribution
            id="org.sonar.ide.eclipse.ui.resourceContributions"
-           objectClass="org.sonar.ide.eclipse.core.ISonarResource"
+           objectClass="org.sonar.ide.eclipse.core.resources.ISonarResource"
            adaptable="true">
         <action
               class="org.sonar.ide.eclipse.internal.ui.actions.OpenInBrowserAction"
@@ -206,7 +207,7 @@
     </objectContribution>
     <objectContribution
            id="org.sonar.ide.eclipse.ui.fileContributions"
-           objectClass="org.sonar.ide.eclipse.core.ISonarFile"
+           objectClass="org.sonar.ide.eclipse.core.resources.ISonarFile"
            adaptable="true">
         <action
               label="Sonar server"

@@ -17,7 +17,7 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.core.internal.resources;
+package org.sonar.ide.eclipse.core.resources;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;

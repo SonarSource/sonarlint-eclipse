@@ -19,7 +19,7 @@
  */
 package org.sonar.ide.eclipse.core.internal.resources;
 
-import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
@@ -33,6 +33,8 @@ import org.eclipse.core.runtime.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ResourceResolver;
+import org.sonar.ide.eclipse.core.internal.AdapterUtils;
+import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +48,7 @@ public final class ResourceUtils {
 
   private static List<ResourceResolver> resolvers;
 
-  public static String getSonarKey(IResource resource) {
+  public static String getSonarResourcePartialKey(IResource resource) {
     for (ResourceResolver resolver : getResolvers()) {
       String sonarKey = resolver.getSonarPartialKey(resource);
       if (sonarKey != null) {
@@ -54,6 +56,13 @@ public final class ResourceUtils {
       }
     }
     return null;
+  }
+
+  public static ISonarResource adapt(Object eclipseObject) {
+    if (eclipseObject == null) {
+      return null;
+    }
+    return AdapterUtils.adapt(eclipseObject, ISonarResource.class);
   }
 
   public static IResource getResource(String resourceKey) {
