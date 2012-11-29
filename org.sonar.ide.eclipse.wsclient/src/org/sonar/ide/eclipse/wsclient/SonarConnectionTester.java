@@ -23,10 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.connectors.ConnectionException;
-import org.sonar.wsclient.services.MetricQuery;
-import org.sonar.wsclient.services.Server;
-import org.sonar.wsclient.services.ServerQuery;
-import org.sonar.wsclient.services.UserPropertyQuery;
+import org.sonar.wsclient.services.Authentication;
+import org.sonar.wsclient.services.AuthenticationQuery;
 
 public class SonarConnectionTester {
   public static enum ConnectionTestResult {
@@ -34,39 +32,23 @@ public class SonarConnectionTester {
   }
 
   public ConnectionTestResult testSonar(String url, String user, String password) {
-    Sonar sonar = getSonar(url, user, password);
-
     try {
-      checkUrl(sonar);
+      Sonar sonar = getSonar(url, user, password);
+      Authentication auth = sonar.find(new AuthenticationQuery());
+      if (auth.isValid()) {
+        return ConnectionTestResult.OK;
+      }
+      else {
+        return ConnectionTestResult.AUTHENTICATION_ERROR;
+      }
     } catch (ConnectionException e) {
       LoggerFactory.getLogger(getClass()).error("Unable to connect", e);
       return ConnectionTestResult.CONNECT_ERROR;
     }
-
-    try {
-      checkAuthentication(sonar, user, password);
-    } catch (ConnectionException e) {
-      return ConnectionTestResult.AUTHENTICATION_ERROR;
-    }
-
-    return ConnectionTestResult.OK;
   }
 
   private Sonar getSonar(String url, String user, String password) {
     return WSClientFactory.create(new Host(url, user, password));
   }
 
-  private void checkAuthentication(Sonar sonar, String user, String password) {
-    sonar.find(MetricQuery.all()); // Will succeed only if user/password are ok OR user/password are wrong but anonymous access is on
-
-    if (!"".equals(user) || !"".equals(password)) {
-      sonar.find(new UserPropertyQuery()); // Will succeed only if user/password are ok
-    }
-  }
-
-  private void checkUrl(Sonar sonar) {
-    Server server = sonar.find(new ServerQuery());
-
-    LoggerFactory.getLogger(getClass()).info("Connected to Sonar " + server.getVersion());
-  }
 }
