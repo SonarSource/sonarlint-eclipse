@@ -19,11 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.ui.wizards.associate;
 
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-import org.sonar.ide.eclipse.core.internal.SonarNature;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.databinding.beans.BeanProperties;
@@ -58,6 +53,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.SonarNature;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.ui.SonarImages;
 import org.sonar.ide.eclipse.internal.ui.jobs.RefreshAllViolationsJob;
 import org.sonar.wsclient.Host;
@@ -120,7 +118,7 @@ public class ConfigureProjectsPage extends WizardPage {
       @Override
       protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event) {
         return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
-          || event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
+          || event.eventType == ColumnViewerEditorActivationEvent.MOUSE_CLICK_SELECTION
           || event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC
           || (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == KeyLookupFactory
               .getDefault().formalKeyLookup(IKeyLookup.F2_NAME));
@@ -159,7 +157,7 @@ public class ConfigureProjectsPage extends WizardPage {
           } catch (InvocationTargetException ex) {
             LOG.error(ex.getMessage(), ex);
             if (ex.getTargetException() instanceof ConnectionException) {
-              setMessage("Unable to connect to one Sonar server. Check your connection settings.", IMessageProvider.ERROR);
+              setMessage("One of your Sonar server cannot be reached. Please check your connection settings.", IMessageProvider.ERROR);
             } else {
               setMessage("Error: " + ex.getMessage(), IMessageProvider.ERROR);
             }

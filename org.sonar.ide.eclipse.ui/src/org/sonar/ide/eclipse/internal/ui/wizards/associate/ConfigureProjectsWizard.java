@@ -36,6 +36,7 @@ public class ConfigureProjectsWizard extends Wizard {
     this.projects = projects;
     setNeedsProgressMonitor(true);
     setWindowTitle("Associate with Sonar");
+    setHelpAvailable(false);
   }
 
   @Override

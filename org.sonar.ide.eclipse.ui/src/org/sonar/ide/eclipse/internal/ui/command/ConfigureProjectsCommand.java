@@ -54,7 +54,7 @@ public class ConfigureProjectsCommand extends AbstractHandler {
     List<IProject> selectedProjects = Lists.newArrayList();
 
     @SuppressWarnings("rawtypes")
-    List elems = ((IStructuredSelection) selection).toList();
+    List elems = selection.toList();
     for (Object elem : elems) {
       if (elem instanceof IProject) {
         selectedProjects.add((IProject) elem);
@@ -71,6 +71,7 @@ public class ConfigureProjectsCommand extends AbstractHandler {
 
     final Display display = getDisplay();
     final WizardDialog dialog = new WizardDialog(display.getActiveShell(), wizard);
+    dialog.setHelpAvailable(false);
     BusyIndicator.showWhile(display, new Runnable() {
       public void run() {
         dialog.open();
