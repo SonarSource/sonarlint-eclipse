@@ -67,7 +67,7 @@ public class ServersManager implements ISonarServersManager {
         }
       } else {
         // Defaults
-        return Arrays.asList(new SonarServer("http://localhost:9000"), new SonarServer("http://nemo.sonarsource.org"));
+        return Arrays.asList(new SonarServer("http://localhost:9000"));
       }
     } catch (BackingStoreException e) {
       LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
