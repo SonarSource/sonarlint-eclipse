@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.wsclient;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
@@ -33,7 +34,9 @@ public class SonarConnectionTester {
 
   public ConnectionTestResult testSonar(String url, String user, String password) {
     try {
-      Sonar sonar = getSonar(url, user, password);
+      Sonar sonar = getSonar(url,
+          StringUtils.isNotEmpty(user) ? user : null,
+          StringUtils.isNotEmpty(password) ? password : null);
       Authentication auth = sonar.find(new AuthenticationQuery());
       if (auth.isValid()) {
         return ConnectionTestResult.OK;

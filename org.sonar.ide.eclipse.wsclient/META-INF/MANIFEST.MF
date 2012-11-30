@@ -4,7 +4,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.codehaus.sonar.ws-client;bundle-version="3.4.0";visibility:=reexport,
  org.apache.httpcomponents.httpclient;bundle-version="4.2.2",
  org.apache.httpcomponents.httpcore;bundle-version="4.2.2",
- slf4j.api;bundle-version="1.6.6"
+ slf4j.api;bundle-version="1.6.6",
+ org.apache.commons.lang;bundle-version="2.6.0"
 Export-Package: org.sonar.ide.eclipse.wsclient
 Bundle-Vendor: SonarSource
 Bundle-ActivationPolicy: lazy
