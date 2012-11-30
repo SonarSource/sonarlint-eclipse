@@ -65,7 +65,10 @@ import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ConfigureProjectsPage extends WizardPage {
 
@@ -244,6 +247,8 @@ public class ConfigureProjectsPage extends WizardPage {
 
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
       monitor.beginTask("Associating Sonar projects", IProgressMonitor.UNKNOWN);
+      // First check for all potential matches for a all non associated projects on all Sonar servers
+      Map<ProjectAssociationModel, List<PotentialMatchForProject>> potentialMatches = new HashMap<ProjectAssociationModel, List<PotentialMatchForProject>>();
       for (Host host : hosts) {
         String url = host.getHost();
         ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT,
@@ -252,17 +257,57 @@ public class ConfigureProjectsPage extends WizardPage {
         List<Resource> resources = sonar.findAll(query);
         for (ProjectAssociationModel sonarProject : projects) {
           if (StringUtils.isBlank(sonarProject.getKey())) {// Not associated yet
+            if (!potentialMatches.containsKey(sonarProject)) {
+              potentialMatches.put(sonarProject, new ArrayList<ConfigureProjectsPage.AssociateProjects.PotentialMatchForProject>());
+            }
             for (Resource resource : resources) {
+              // A resource is a potential match if resource key contains Eclipse name
               if (resource.getKey().contains(sonarProject.getEclipseName())) {
-                sonarProject.associate(host.getHost(), resource.getName(), resource.getKey());
+                potentialMatches.get(sonarProject).add(new PotentialMatchForProject(resource, host.getHost()));
               }
             }
           }
         }
       }
+      // Now for each project try to find the better match
+      for (Map.Entry<ProjectAssociationModel, List<PotentialMatchForProject>> entry : potentialMatches.entrySet()) {
+        List<PotentialMatchForProject> potentialMatchesForProject = entry.getValue();
+        if (!potentialMatchesForProject.isEmpty()) {
+          // Take the better choice according to Levenshtein distance
+          PotentialMatchForProject best = potentialMatchesForProject.get(0);
+          int currentBestDistance = StringUtils.getLevenshteinDistance(best.getResource().getKey(), entry.getKey().getEclipseName());
+          for (PotentialMatchForProject potentialMatch : potentialMatchesForProject) {
+            int distance = StringUtils.getLevenshteinDistance(potentialMatch.getResource().getKey(), entry.getKey().getEclipseName());
+            if (distance < currentBestDistance) {
+              best = potentialMatch;
+              currentBestDistance = distance;
+            }
+          }
+          entry.getKey().associate(best.getHost(), best.getResource().getName(), best.getResource().getKey());
+        }
+      }
       monitor.done();
     }
 
+    private class PotentialMatchForProject {
+      private Resource resource;
+      private String host;
+
+      public PotentialMatchForProject(Resource resource, String host) {
+        super();
+        this.resource = resource;
+        this.host = host;
+      }
+
+      public Resource getResource() {
+        return resource;
+      }
+
+      public String getHost() {
+        return host;
+      }
+
+    }
   }
 
 }
