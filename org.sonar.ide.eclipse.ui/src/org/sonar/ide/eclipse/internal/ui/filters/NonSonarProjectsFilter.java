@@ -19,10 +19,11 @@
  */
 package org.sonar.ide.eclipse.internal.ui.filters;
 
+import org.sonar.ide.eclipse.core.internal.SonarNature;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 /**
  * Filters non-Sonar projects
@@ -34,7 +35,7 @@ public class NonSonarProjectsFilter extends ViewerFilter {
     if (element instanceof IProject) {
       // For Project Explorer
       IProject project = (IProject) element;
-      return !project.isOpen() || SonarCorePlugin.hasSonarNature(project);
+      return !project.isOpen() || SonarNature.hasSonarNature(project);
     }
     return true;
   }

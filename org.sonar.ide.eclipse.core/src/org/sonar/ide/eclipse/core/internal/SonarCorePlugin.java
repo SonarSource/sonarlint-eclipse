@@ -24,7 +24,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.osgi.framework.BundleContext;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
 import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarFile;
@@ -39,8 +38,6 @@ import org.sonar.ide.eclipse.wsclient.SonarConnectionTester;
 
 public class SonarCorePlugin extends AbstractPlugin {
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.core";
-
-  public static final String NATURE_ID = PLUGIN_ID + ".sonarNature";
 
   /**
    * Godin: It would be better to use only one MARKER_ID at least at first time.
@@ -118,15 +115,6 @@ public class SonarCorePlugin extends AbstractPlugin {
     sonarProject.save();
     SonarNature.enableNature(project);
     return sonarProject;
-  }
-
-  public static boolean hasSonarNature(IProject project) {
-    try {
-      return project.hasNature(SonarCorePlugin.NATURE_ID);
-    } catch (CoreException e) {
-      LoggerFactory.getLogger(SonarCorePlugin.class).error(e.getMessage(), e);
-      return false;
-    }
   }
 
 }

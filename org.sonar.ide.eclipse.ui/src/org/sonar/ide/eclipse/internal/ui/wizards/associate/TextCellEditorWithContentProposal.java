@@ -21,7 +21,6 @@ package org.sonar.ide.eclipse.internal.ui.wizards.associate;
 
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
-import org.eclipse.jface.fieldassist.IContentProposalListener2;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.widgets.Composite;
@@ -31,7 +30,6 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 public class TextCellEditorWithContentProposal extends TextCellEditor {
 
   private ContentProposalAdapter contentProposalAdapter;
-  private boolean popupOpen = false; // true, if popup is currently open
 
   public TextCellEditorWithContentProposal(Composite parent, IContentProposalProvider contentProposalProvider,
       KeyStroke keyStroke, char[] autoActivationCharacters, ProjectAssociationModel sonarProject) {
@@ -50,17 +48,5 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
         null,
         true);
     contentProposalAdapter.setAutoActivationCharacters(null);
-
-    // Listen for popup open/close events to be able to handle focus events correctly
-    contentProposalAdapter.addContentProposalListener(new IContentProposalListener2() {
-
-      public void proposalPopupClosed(ContentProposalAdapter adapter) {
-        popupOpen = false;
-      }
-
-      public void proposalPopupOpened(ContentProposalAdapter adapter) {
-        popupOpen = true;
-      }
-    });
   }
 }

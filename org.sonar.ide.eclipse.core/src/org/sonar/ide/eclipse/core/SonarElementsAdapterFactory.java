@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.core;
 
+import org.sonar.ide.eclipse.core.internal.SonarNature;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -104,7 +106,7 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
   }
 
   private boolean isConfigured(IProject project) {
-    return project.isAccessible() && SonarCorePlugin.hasSonarNature(project);
+    return project.isAccessible() && SonarNature.hasSonarNature(project);
   }
 
   public Class[] getAdapterList() {

@@ -207,18 +207,39 @@ public class ConfigureProjectsPage extends WizardPage {
 
   String errorMessage;
 
+  /**
+   * Update all Eclipse projects when an association was provided:
+   *   - enable Sonar nature
+   *   - update sonar URL / key
+   *   - refresh violations if necessary
+   * @return
+   */
   public boolean finish() {
     final ProjectAssociationModel[] projects = getProjects();
     for (ProjectAssociationModel projectAssociation : projects) {
       if (StringUtils.isNotBlank(projectAssociation.getKey())) {
         try {
+          boolean changed = false;
           IProject project = projectAssociation.getProject();
-          SonarProject properties = SonarProject.getInstance(project);
-          properties.setUrl(projectAssociation.getUrl());
-          properties.setKey(projectAssociation.getKey());
-          properties.save();
-          SonarNature.enableNature(project);
-          RefreshAllViolationsJob.createAndSchedule(project);
+          SonarProject sonarProject = SonarProject.getInstance(project);
+          if (!projectAssociation.getUrl().equals(sonarProject.getUrl())) {
+            sonarProject.setUrl(projectAssociation.getUrl());
+            changed = true;
+          }
+          if (!projectAssociation.getKey().equals(sonarProject.getKey())) {
+            sonarProject.setKey(projectAssociation.getKey());
+            changed = true;
+          }
+          if (changed) {
+            sonarProject.save();
+          }
+          if (!SonarNature.hasSonarNature(project)) {
+            SonarNature.enableNature(project);
+            changed = true;
+          }
+          if (changed) {
+            RefreshAllViolationsJob.createAndSchedule(project);
+          }
         } catch (CoreException e) {
           LOG.error(e.getMessage(), e);
           return false;
@@ -247,23 +268,54 @@ public class ConfigureProjectsPage extends WizardPage {
 
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
       monitor.beginTask("Associating Sonar projects", IProgressMonitor.UNKNOWN);
-      // First check for all potential matches for a all non associated projects on all Sonar servers
-      Map<ProjectAssociationModel, List<PotentialMatchForProject>> potentialMatches = new HashMap<ProjectAssociationModel, List<PotentialMatchForProject>>();
+      // First retrieve list of all remote projects
+      Map<String, List<Resource>> remoteSonarProjects = new HashMap<String, List<Resource>>();
       for (Host host : hosts) {
         String url = host.getHost();
         ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT,
             Resource.QUALIFIER_MODULE);
         Sonar sonar = SonarCorePlugin.getServersManager().getSonar(url);
         List<Resource> resources = sonar.findAll(query);
+        remoteSonarProjects.put(url, resources);
+      }
+      // Now verify that all projects already associated are found on remote
+      for (ProjectAssociationModel projectAssociation : projects) {
+        if (SonarNature.hasSonarNature(projectAssociation.getProject())) {
+          SonarProject sonarProject = SonarProject.getInstance(projectAssociation.getProject());
+          String key = sonarProject.getKey();
+          String url = sonarProject.getUrl();
+          boolean found = false;
+          if (remoteSonarProjects.containsKey(url)) {
+            for (Resource remoteProject : remoteSonarProjects.get(url)) {
+              if (remoteProject.getKey().equals(key)) {
+                found = true;
+                // Call associate to have the name
+                projectAssociation.associate(url, remoteProject.getName(), key);
+                break;
+              }
+            }
+          }
+          if (!found) {
+            // There is no Sonar server with the provided URL or not matching project so consider the project is not associated
+            projectAssociation.unassociate();
+          }
+        }
+      }
+
+      // Now check for all potential matches for a all non associated projects on all Sonar servers
+      Map<ProjectAssociationModel, List<PotentialMatchForProject>> potentialMatches = new HashMap<ProjectAssociationModel, List<PotentialMatchForProject>>();
+      for (String url : remoteSonarProjects.keySet()) {
+        List<Resource> resources = remoteSonarProjects.get(url);
         for (ProjectAssociationModel sonarProject : projects) {
-          if (StringUtils.isBlank(sonarProject.getKey())) {// Not associated yet
+          if (StringUtils.isBlank(sonarProject.getKey())) {
+            // Not associated yet
             if (!potentialMatches.containsKey(sonarProject)) {
-              potentialMatches.put(sonarProject, new ArrayList<ConfigureProjectsPage.AssociateProjects.PotentialMatchForProject>());
+              potentialMatches.put(sonarProject, new ArrayList<PotentialMatchForProject>());
             }
             for (Resource resource : resources) {
               // A resource is a potential match if resource key contains Eclipse name
               if (resource.getKey().contains(sonarProject.getEclipseName())) {
-                potentialMatches.get(sonarProject).add(new PotentialMatchForProject(resource, host.getHost()));
+                potentialMatches.get(sonarProject).add(new PotentialMatchForProject(resource, url));
               }
             }
           }

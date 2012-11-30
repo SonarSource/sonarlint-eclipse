@@ -29,6 +29,7 @@ import org.eclipse.m2e.core.project.configurator.AbstractProjectConfigurator;
 import org.eclipse.m2e.core.project.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
+import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
@@ -39,7 +40,7 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
 
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) throws CoreException {
-    if (!request.getProject().hasNature(SonarCorePlugin.NATURE_ID)) {
+    if (!SonarNature.hasSonarNature(request.getProject())) {
       SonarMavenInfos infos = new SonarMavenInfos(request.getMavenProjectFacade());
       Collection<SonarServer> servers = SonarCorePlugin.getServersManager().getServers();
       if (servers.size() > 0) {
@@ -50,9 +51,9 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
   }
 
   @Override
-  public void mavenProjectChanged(MavenProjectChangedEvent event, IProgressMonitor monitor) throws CoreException {
+  public void mavenProjectChanged(MavenProjectChangedEvent event, IProgressMonitor monitor) {
     IProject project = event.getMavenProject().getProject();
-    if (project.hasNature(SonarCorePlugin.NATURE_ID)) {
+    if (SonarNature.hasSonarNature(project)) {
       SonarMavenInfos oldInfos = new SonarMavenInfos(event.getOldMavenProject());
       SonarMavenInfos newInfos = new SonarMavenInfos(event.getMavenProject());
       if (oldInfos.equals(newInfos)) {

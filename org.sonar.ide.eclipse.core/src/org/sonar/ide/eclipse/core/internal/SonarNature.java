@@ -25,10 +25,13 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class SonarNature implements IProjectNature {
+
+  public static final String NATURE_ID = SonarCorePlugin.PLUGIN_ID + ".sonarNature";
 
   private IProject project;
 
@@ -46,12 +49,21 @@ public class SonarNature implements IProjectNature {
     this.project = project;
   }
 
+  public static boolean hasSonarNature(IProject project) {
+    try {
+      return project.hasNature(NATURE_ID);
+    } catch (CoreException e) {
+      LoggerFactory.getLogger(SonarCorePlugin.class).error(e.getMessage(), e);
+      return false;
+    }
+  }
+
   public static void enableNature(IProject project) throws CoreException {
     IProjectDescription description = project.getDescription();
     String[] prevNatures = description.getNatureIds();
     String[] newNatures = new String[prevNatures.length + 1];
     System.arraycopy(prevNatures, 0, newNatures, 1, prevNatures.length);
-    newNatures[0] = SonarCorePlugin.NATURE_ID;
+    newNatures[0] = NATURE_ID;
     description.setNatureIds(newNatures);
     project.setDescription(description, null);
   }
@@ -62,7 +74,7 @@ public class SonarNature implements IProjectNature {
     IProjectDescription description = project.getDescription();
     List<String> newNatures = Lists.newArrayList();
     for (String natureId : description.getNatureIds()) {
-      if (!SonarCorePlugin.NATURE_ID.equals(natureId)) {
+      if (!NATURE_ID.equals(natureId)) {
         newNatures.add(natureId);
       }
     }

@@ -20,6 +20,8 @@
 package org.sonar.ide.eclipse.internal.ui.wizards.associate;
 
 import org.eclipse.core.resources.IProject;
+import org.sonar.ide.eclipse.core.internal.SonarNature;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.internal.ui.AbstractModelObject;
 
 /**
@@ -38,6 +40,12 @@ public class ProjectAssociationModel extends AbstractModelObject {
 
   public ProjectAssociationModel(IProject project) {
     this.project = project;
+    if (SonarNature.hasSonarNature(project)) {
+      SonarProject sonarProject = SonarProject.getInstance(project);
+      this.key = sonarProject.getKey();
+      this.url = sonarProject.getUrl();
+      this.sonarProjectName = "<Searching name...>";
+    }
   }
 
   public IProject getProject() {
@@ -66,6 +74,14 @@ public class ProjectAssociationModel extends AbstractModelObject {
     this.key = key;
     this.url = url;
     this.sonarProjectName = sonarProjectName;
+    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());
+  }
+
+  public void unassociate() {
+    String oldValue = getSonarFullName();
+    this.key = null;
+    this.url = null;
+    this.sonarProjectName = null;
     firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());
   }
 
