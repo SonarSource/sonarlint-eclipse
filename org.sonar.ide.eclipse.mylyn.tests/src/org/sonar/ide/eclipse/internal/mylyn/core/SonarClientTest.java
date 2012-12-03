@@ -61,8 +61,8 @@ public class SonarClientTest {
     repositoryQuery.setAttribute(SonarQuery.SEVERITIES, "BLOCKER");
     ReviewQuery query = client.convertQuery(repositoryQuery);
     assertThat(query.getProjectKeysOrIds(), is(new String[] {"key"}));
-    assertThat(query.getAuthorLoginsOrIds(), nullValue());
-    assertThat(query.getAssigneeLoginsOrIds(), is(new String[] {"username"}));
+    assertThat(query.getAuthorLogins(), nullValue());
+    assertThat(query.getAssigneeLogins(), is(new String[] {"username"}));
     assertThat(query.getStatuses(), is(new String[] {"OPEN", "REOPENED"}));
     assertThat(query.getSeverities(), is(new String[] {"BLOCKER"}));
   }

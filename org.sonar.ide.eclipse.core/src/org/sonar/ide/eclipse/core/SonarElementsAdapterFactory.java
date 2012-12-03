@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.core;
 
-import org.sonar.ide.eclipse.core.internal.SonarNature;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -28,6 +26,7 @@ import org.eclipse.core.runtime.IAdapterFactory;
 import org.sonar.ide.eclipse.core.internal.AdapterUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
+import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;

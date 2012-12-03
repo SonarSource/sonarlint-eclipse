@@ -34,7 +34,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-@SuppressWarnings("restriction")
 public class SonarElementsAdapterFactoryTest extends SonarTestCase {
 
   private static final String key = "org.sonar-ide.tests.SimpleProject:SimpleProject";

@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.core.internal.markers;
 
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.ObjectUtils;
 import org.eclipse.core.resources.IMarker;
@@ -30,6 +28,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 import java.util.Map;
 

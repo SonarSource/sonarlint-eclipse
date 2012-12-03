@@ -9,7 +9,7 @@
 <!-- Extensions -->
   <extension point="org.eclipse.ui.preferencePages">
     <page
-        class="org.sonar.ide.eclipse.internal.ui.preferences.SonarPreferencePage"
+        class="org.sonar.ide.eclipse.ui.internal.preferences.SonarPreferencePage"
         id="org.sonar.ide.eclipse.ui.preferences.SonarPreferencePage"
         name="%sonar.preference.page.name">
     </page>
@@ -21,14 +21,14 @@
     </category>
     <view
         category="org.sonar.ide.eclipse"
-        class="org.sonar.ide.eclipse.internal.ui.views.ViolationsView"
+        class="org.sonar.ide.eclipse.ui.internal.views.ViolationsView"
         icon="icons/sonar.png"
         id="org.sonar.ide.eclipse.ui.views.ViolationsView"
         name="%sonar.violation.view.name">
     </view>
     <view
           category="org.sonar.ide.eclipse"
-          class="org.sonar.ide.eclipse.internal.ui.views.WebView"
+          class="org.sonar.ide.eclipse.ui.internal.views.WebView"
           icon="icons/sonar.png"
           id="org.sonar.ide.eclipse.ui.views.WebView"
           name="Web">
@@ -119,12 +119,12 @@
         </markerFieldConfiguration>
     </markerContentGenerator>
     <markerField
-        class="org.sonar.ide.eclipse.internal.ui.views.ViolationSeverityAndRuleNameField"
+        class="org.sonar.ide.eclipse.ui.internal.views.ViolationSeverityAndRuleNameField"
         id="org.sonar.ide.eclipse.ui.views.violationSeverityAndRuleNameField"
         name="Rule">
     </markerField>
     <markerField
-        class="org.sonar.ide.eclipse.internal.ui.views.ViolationRuleKeyField"
+        class="org.sonar.ide.eclipse.ui.internal.views.ViolationRuleKeyField"
         id="org.sonar.ide.eclipse.ui.views.violationRuleKeyField"
         name="%sonar.violation.view.rulekeyfield">
     </markerField>
@@ -135,7 +135,7 @@
     <wizard
         canFinishEarly="true"
         category="org.sonar.ide.eclipse.wizcat"
-        class="org.sonar.ide.eclipse.internal.ui.wizards.NewServerLocationWizard"
+        class="org.sonar.ide.eclipse.ui.internal.wizards.NewServerLocationWizard"
         icon="icons/sonar.png"
         id="org.sonar.ide.eclipse.ui.wizards.newserverlocationwizard"
         name="%sonar.wizard.newserverlocation.name ">
@@ -145,7 +145,7 @@
   <extension
       point="org.eclipse.ui.propertyPages">
     <page
-      class="org.sonar.ide.eclipse.internal.ui.properties.SonarProjectPropertyPage"
+      class="org.sonar.ide.eclipse.ui.internal.properties.SonarProjectPropertyPage"
        id="org.sonar.ide.eclipse.ui.properties.sonarProjectPropertyPage"
        name="%sonar.properties.page.name">
        <filter name="projectNature" value="org.sonar.ide.eclipse.core.sonarNature"/>
@@ -163,14 +163,14 @@
            <objectState name="nature" value="org.sonar.ide.eclipse.core.sonarNature"/>
         </visibility>
         <action
-              class="org.sonar.ide.eclipse.internal.ui.actions.AnalyseProjectAction"
+              class="org.sonar.ide.eclipse.ui.internal.actions.AnalyseProjectAction"
               icon="icons/inspect.png"
               id="org.sonar.ide.eclipse.runtime.ui.analyseAction"
               label="Run Local Analysis"
               menubarPath="sonar.menu/group2">
         </action>
         <action
-              class="org.sonar.ide.eclipse.internal.ui.actions.ChangeAnalysisModeAction"
+              class="org.sonar.ide.eclipse.ui.internal.actions.ChangeAnalysisModeAction"
               enablesFor="1"
               id="org.sonar.ide.eclipse.runtime.ui.enableLocalAnalysisAction"
               label="Local"
@@ -178,7 +178,7 @@
               style="radio">
         </action>
         <action
-              class="org.sonar.ide.eclipse.internal.ui.actions.ChangeAnalysisModeAction"
+              class="org.sonar.ide.eclipse.ui.internal.actions.ChangeAnalysisModeAction"
               enablesFor="1"
               id="org.sonar.ide.eclipse.runtime.ui.enableRemoteAnalysisAction"
               label="Remote"
@@ -186,7 +186,7 @@
               style="radio">
         </action>
         <action id="org.sonar.ide.eclipse.addRemoveNatureAction"
-              class="org.sonar.ide.eclipse.internal.ui.actions.ToggleNatureAction"
+              class="org.sonar.ide.eclipse.ui.internal.actions.ToggleNatureAction"
               enablesFor="+"
               label="Remove Sonar Nature"
               menubarPath="sonar.menu/group3">
@@ -197,7 +197,7 @@
            objectClass="org.sonar.ide.eclipse.core.resources.ISonarResource"
            adaptable="true">
         <action
-              class="org.sonar.ide.eclipse.internal.ui.actions.OpenInBrowserAction"
+              class="org.sonar.ide.eclipse.ui.internal.actions.OpenInBrowserAction"
               enablesFor="1"
               id="org.sonar.ide.eclipse.openInBrowserAction"
               label="%sonar.action.openinbrowser.label"
@@ -212,7 +212,7 @@
         <action
               label="Sonar server"
               enablesFor="1"
-              class="org.sonar.ide.eclipse.internal.ui.compare.CompareWithSonarAction"
+              class="org.sonar.ide.eclipse.ui.internal.compare.CompareWithSonarAction"
               menubarPath="compareWithMenu/compareWithGroup"
               id="org.sonar.ide.eclipse.compareWithSonar"
               icon="icons/sonar.png">
@@ -223,7 +223,7 @@
   <extension point="org.eclipse.ui.menus">
     <menuContribution locationURI="popup:sonar.menu?after=group1">
        <command
-             commandId="org.sonar.ide.eclipse.internal.ui.command.ReConfigureProjectsCommand"
+             commandId="org.sonar.ide.eclipse.ui.internal.command.ReConfigureProjectsCommand"
              style="push">
           <visibleWhen>
               <with variable="activeMenuSelection">
@@ -241,33 +241,33 @@
   <extension point="org.eclipse.ui.commands">
     <command
           description="Open Sonar association wizard"
-          id="org.sonar.ide.eclipse.internal.ui.command.ConfigureProjectsCommand"
+          id="org.sonar.ide.eclipse.ui.command.ConfigureProjectsCommand"
           name="Associate with Sonar...">
     </command>
     <command
           description="Open Sonar association wizard"
-          id="org.sonar.ide.eclipse.internal.ui.command.ReConfigureProjectsCommand"
+          id="org.sonar.ide.eclipse.ui.internal.command.ReConfigureProjectsCommand"
           name="Change project association...">
     </command>
   </extension>
 
   <extension point="org.eclipse.ui.handlers">
     <handler
-          class="org.sonar.ide.eclipse.internal.ui.command.ConfigureProjectsCommand"
-          commandId="org.sonar.ide.eclipse.internal.ui.command.ConfigureProjectsCommand">
+          class="org.sonar.ide.eclipse.ui.internal.command.ConfigureProjectsCommand"
+          commandId="org.sonar.ide.eclipse.ui.command.ConfigureProjectsCommand">
     </handler>
     <handler
-          class="org.sonar.ide.eclipse.internal.ui.command.ConfigureProjectsCommand"
-          commandId="org.sonar.ide.eclipse.internal.ui.command.ReConfigureProjectsCommand">
+          class="org.sonar.ide.eclipse.ui.internal.command.ConfigureProjectsCommand"
+          commandId="org.sonar.ide.eclipse.ui.internal.command.ReConfigureProjectsCommand">
     </handler>
   </extension>
 
   <extension point="org.eclipse.ui.commandImages">
     <image
-      commandId="org.sonar.ide.eclipse.internal.ui.command.ConfigureProjectsCommand"
+      commandId="org.sonar.ide.eclipse.ui.command.ConfigureProjectsCommand"
       icon="icons/sonar.png" />
     <image
-      commandId="org.sonar.ide.eclipse.internal.ui.command.ReConfigureProjectsCommand"
+      commandId="org.sonar.ide.eclipse.ui.internal.command.ReConfigureProjectsCommand"
       icon="icons/sonar.png" />
   </extension>
 
@@ -281,7 +281,7 @@
     <extension
         point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
-              annotationImageProvider="org.sonar.ide.eclipse.internal.ui.markers.SonarMarkerImageProvider"
+              annotationImageProvider="org.sonar.ide.eclipse.ui.internal.markers.SonarMarkerImageProvider"
               annotationType="org.sonar.ide.eclipse.violationAnnotationType"
               colorPreferenceKey="org.sonar.ide.eclipse.ui.violation.color"
               colorPreferenceValue="255,246,191"
@@ -321,7 +321,7 @@
   <extension
         point="org.eclipse.ui.ide.markerResolution">
      <markerResolutionGenerator
-           class="org.sonar.ide.eclipse.internal.ui.markers.SonarMarkerResolutionGenerator"
+           class="org.sonar.ide.eclipse.ui.internal.markers.SonarMarkerResolutionGenerator"
            markerType="org.sonar.ide.eclipse.core.sonarProblem">
      </markerResolutionGenerator>
   </extension>
@@ -329,7 +329,7 @@
   <extension
         point="org.sonar.ide.eclipse.ui.resolver">
      <resolver
-           class="org.sonar.ide.eclipse.internal.ui.markers.IgnoreMarkerResolver">
+           class="org.sonar.ide.eclipse.ui.internal.markers.IgnoreMarkerResolver">
      </resolver>
   </extension>
 
@@ -338,7 +338,7 @@
         point="org.eclipse.ui.workbench.texteditor.quickDiffReferenceProvider">
      <referenceprovider
             label="Sonar source"
-           class="org.sonar.ide.eclipse.internal.ui.compare.SonarReferenceProvider"
+           class="org.sonar.ide.eclipse.ui.internal.compare.SonarReferenceProvider"
            id="org.sonar.ide.eclipse.referenceprovider">
      </referenceprovider>
   </extension>
@@ -346,7 +346,7 @@
   <extension
         point="org.eclipse.ui.console.consoleFactories">
      <consoleFactory
-           class="org.sonar.ide.eclipse.internal.ui.console.SonarConsoleFactory"
+           class="org.sonar.ide.eclipse.ui.internal.console.SonarConsoleFactory"
            icon="icons/sonar.png"
            label="%consoleFactory.label">
      </consoleFactory>
@@ -355,10 +355,10 @@
   <extension
         point="org.eclipse.ui.console.consolePageParticipants">
      <consolePageParticipant
-           class="org.sonar.ide.eclipse.internal.ui.console.SonarConsolePageParticipant"
+           class="org.sonar.ide.eclipse.ui.internal.console.SonarConsolePageParticipant"
            id="org.sonar.ide.eclipse.ui.consolePageParticipant1">
         <enablement>
-           <instanceof value="org.sonar.ide.eclipse.internal.ui.console.SonarConsole" />
+           <instanceof value="org.sonar.ide.eclipse.ui.internal.console.SonarConsole" />
         </enablement>
      </consolePageParticipant>
   </extension>
@@ -403,7 +403,7 @@
   <extension
         point="org.eclipse.ui.commands">
      <command
-           defaultHandler="org.sonar.ide.eclipse.internal.ui.command.RefreshViolationsCommand"
+           defaultHandler="org.sonar.ide.eclipse.ui.internal.command.RefreshViolationsCommand"
            id="org.sonar.ide.eclipse.ui.RefreshViolationsCommand"
            name="Refresh violations">
      </command>
@@ -431,7 +431,7 @@
    <extension
          point="org.eclipse.ui.navigator.navigatorContent">
       <commonFilter
-            class="org.sonar.ide.eclipse.internal.ui.filters.NonSonarProjectsFilter"
+            class="org.sonar.ide.eclipse.ui.internal.filters.NonSonarProjectsFilter"
             id="org.sonar.ide.eclipse.internal.ui.filters.HideNonSonarProjects"
             name="Non-Sonar projects"
             description="Hides all projects without Sonar nature"

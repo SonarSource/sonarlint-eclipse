@@ -26,20 +26,20 @@
    <extension
          point="org.sonar.ide.eclipse.core.projectConfigurators">
       <configurator
-            class="org.sonar.ide.eclipse.internal.jdt.JavaProjectConfigurator">
+            class="org.sonar.ide.eclipse.jdt.internal.JavaProjectConfigurator">
       </configurator>
    </extension>
    <extension
          point="org.sonar.ide.eclipse.core.resourceResolvers">
       <resolver
-            class="org.sonar.ide.eclipse.internal.jdt.JavaResourceResolver">
+            class="org.sonar.ide.eclipse.jdt.internal.JavaResourceResolver">
       </resolver>
    </extension>
 
   <extension point="org.eclipse.ui.menus">
     <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
        <command
-             commandId="org.sonar.ide.eclipse.internal.ui.command.ConfigureProjectsCommand"
+             commandId="org.sonar.ide.eclipse.ui.command.ConfigureProjectsCommand"
              style="push">
           <visibleWhen>
               <with variable="activeMenuSelection">

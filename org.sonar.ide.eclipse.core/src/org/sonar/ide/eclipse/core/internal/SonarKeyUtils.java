@@ -19,9 +19,8 @@
  */
 package org.sonar.ide.eclipse.core.internal;
 
-import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
-
 import org.apache.commons.lang.StringUtils;
+import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
 
 public final class SonarKeyUtils {
   public static final char PROJECT_DELIMITER = ':';

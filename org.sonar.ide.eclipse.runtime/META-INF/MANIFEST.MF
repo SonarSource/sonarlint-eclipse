@@ -15,6 +15,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.core,
  com.google.guava;bundle-version="10.0.1",
  slf4j.api;bundle-version="1.6.6"
-Export-Package: org.sonar.ide.eclipse.runner;x-friends:="org.sonar.ide.eclipse.core"
+Export-Package: org.sonar.ide.eclipse.runner;x-friends:="org.sonar.ide.eclipse.core,org.sonar.ide.eclipse.ui"
 Bundle-ClassPath: .
 

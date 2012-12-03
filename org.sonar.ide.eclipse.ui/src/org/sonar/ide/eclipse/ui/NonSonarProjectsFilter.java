@@ -19,12 +19,11 @@
  */
 package org.sonar.ide.eclipse.ui;
 
-import org.sonar.ide.eclipse.core.internal.SonarNature;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.sonar.ide.eclipse.core.internal.AdapterUtils;
+import org.sonar.ide.eclipse.core.internal.SonarNature;
 
 /**
  * Filters non-Sonar projects

@@ -36,7 +36,6 @@ import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.Host;
 
 import java.io.File;
@@ -57,7 +56,6 @@ public abstract class SonarTestCase {
 
   protected static final IProgressMonitor monitor = new NullProgressMonitor();
   protected static IWorkspace workspace;
-  protected static SonarUiPlugin plugin;
 
   protected static File projectsSource;
   protected static File projectsWorkdir;
@@ -108,7 +106,6 @@ public abstract class SonarTestCase {
     description.setAutoBuilding(false);
     workspace.setDescription(description);
 
-    plugin = SonarUiPlugin.getDefault();
     cleanWorkspace();
   }
 

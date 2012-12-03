@@ -19,10 +19,9 @@
  */
 package org.sonar.ide.eclipse.core.internal.resources;
 
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 /**
  * @author Evgeny Mandrikov
