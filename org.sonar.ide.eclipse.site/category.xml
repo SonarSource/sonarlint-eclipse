@@ -6,13 +6,13 @@
    <feature url="features/org.sonar.ide.eclipse.mylyn.feature_0.0.0.jar" id="org.sonar.ide.eclipse.mylyn.feature" version="0.0.0">
       <category name="Sonar"/>
    </feature>
-   <feature url="features/org.sonar.ide.eclipse.cdt.feature_2.5.0.qualifier.jar" id="org.sonar.ide.eclipse.cdt.feature" version="2.5.0.qualifier">
+   <feature url="features/org.sonar.ide.eclipse.cdt.feature_0.0.0.jar" id="org.sonar.ide.eclipse.cdt.feature" version="0.0.0">
       <category name="Sonar"/>
    </feature>
-   <feature url="features/org.sonar.ide.eclipse.jdt.feature_2.5.0.qualifier.jar" id="org.sonar.ide.eclipse.jdt.feature" version="2.5.0.qualifier">
+   <feature url="features/org.sonar.ide.eclipse.jdt.feature_0.0.0.jar" id="org.sonar.ide.eclipse.jdt.feature" version="0.0.0">
       <category name="Sonar"/>
    </feature>
-   <feature url="features/org.sonar.ide.eclipse.m2e.feature_2.5.0.qualifier.jar" id="org.sonar.ide.eclipse.m2e.feature" version="2.5.0.qualifier">
+   <feature url="features/org.sonar.ide.eclipse.m2e.feature_0.0.0.jar" id="org.sonar.ide.eclipse.m2e.feature" version="0.0.0">
       <category name="Sonar"/>
    </feature>
    <category-def name="Sonar" label="Sonar">
