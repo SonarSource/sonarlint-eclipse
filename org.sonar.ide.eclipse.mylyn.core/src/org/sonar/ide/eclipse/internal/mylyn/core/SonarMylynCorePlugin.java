@@ -26,6 +26,11 @@ public class SonarMylynCorePlugin extends Plugin {
 
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.mylyn.core"; //$NON-NLS-1$
 
+  /**
+   * Minimal supported version of Sonar server.
+   */
+  public static final String MINIMAL_SONAR_VERSION = "3.4"; //$NON-NLS-1$
+
   private static SonarMylynCorePlugin plugin;
 
   private SonarConnector connector;

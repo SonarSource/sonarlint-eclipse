@@ -19,20 +19,17 @@
  */
 package org.sonar.ide.eclipse.core.internal.servers;
 
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-import org.sonar.ide.eclipse.core.internal.servers.ServersManager;
-
 import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.wsclient.Host;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class SonarServerManagerTest {
@@ -46,11 +43,11 @@ public class SonarServerManagerTest {
   }
 
   @Test
-  public void shouldCreateFakeServer() throws Exception {
+  public void shouldNotCreateFakeServer() throws Exception {
     String url = "http://new";
     Host host = serversManager.findServer(url);
-    assertThat(host, notNullValue());
-    assertThat(serversManager.getServers().size(), is(1));
+    assertThat(host, nullValue());
+    assertThat(serversManager.getServers().size(), is(0));
   }
 
   @Test

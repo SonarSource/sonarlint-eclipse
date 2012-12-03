@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -29,8 +27,8 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
-import org.sonar.ide.eclipse.core.internal.jobs.AnalyseProjectJob;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
 import java.io.File;
@@ -49,6 +47,8 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @BeforeClass
   public static void prepare() throws Exception {
+    SonarCorePlugin.getServersManager().addServer("http://localhost:9000", null, null);
+
     project = importEclipseProject("reference");
 
     // Enable Sonar Nature

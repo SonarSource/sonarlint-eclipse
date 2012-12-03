@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.tests.common;
 
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -37,6 +35,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.SonarUiPlugin;
 import org.sonar.wsclient.Host;
 
@@ -123,9 +122,6 @@ public abstract class SonarTestCase {
   }
 
   private static void cleanWorkspace() throws Exception {
-    // Job.getJobManager().suspend();
-    // waitForJobs();
-
     final List<Host> hosts = new ArrayList<Host>();
     hosts.addAll(SonarCorePlugin.getServersManager().getHosts());
     for (final Host host : hosts) {

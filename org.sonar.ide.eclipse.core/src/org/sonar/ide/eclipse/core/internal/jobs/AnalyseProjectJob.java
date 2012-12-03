@@ -19,10 +19,6 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
-
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -47,12 +43,18 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.internal.Messages;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.configurator.ConfiguratorUtils;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.runner.SonarEclipseRunner;
+import org.sonar.ide.eclipse.wsclient.SonarVersionTester;
+import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 import org.sonar.wsclient.Host;
+import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.services.ServerQuery;
 
 import java.io.File;
 import java.io.FileReader;
@@ -64,17 +66,29 @@ public class AnalyseProjectJob extends Job {
 
   private final IProject project;
   private final boolean debugEnabled;
+  private final SonarProject sonarProject;
 
   public AnalyseProjectJob(IProject project, boolean debugEnabled) {
     super(Messages.AnalyseProjectJob_title);
     this.project = project;
     this.debugEnabled = debugEnabled;
+    sonarProject = SonarProject.getInstance(project);
     setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule()); // Prevent modifications of project during analysis
   }
 
   @Override
   protected IStatus run(final IProgressMonitor monitor) {
     monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analysing, project.getName()), IProgressMonitor.UNKNOWN);
+
+    // Verify Host
+    if (getHost() == null) {
+      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
+          NLS.bind(Messages.No_matching_server_in_configuration_for_project, project.getName(), sonarProject.getUrl()));
+    }
+    if (!SonarVersionTester.isServerVersionSupported(SonarCorePlugin.LOCAL_MODE_MINIMAL_SONAR_VERSION, getServerVersion())) {
+      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
+          NLS.bind(Messages.AnalyseProjectJob_unsupported_version, SonarCorePlugin.LOCAL_MODE_MINIMAL_SONAR_VERSION));
+    }
 
     // Configure
     Properties properties = new Properties();
@@ -92,6 +106,18 @@ public class AnalyseProjectJob extends Job {
 
     monitor.done();
     return Status.OK_STATUS;
+  }
+
+  private Host getHost() {
+    return SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+  }
+
+  private Sonar create() {
+    return WSClientFactory.create(getHost());
+  }
+
+  public String getServerVersion() {
+    return create().find(new ServerQuery()).getVersion();
   }
 
   @VisibleForTesting
@@ -141,8 +167,7 @@ public class AnalyseProjectJob extends Job {
       configurator.configure(request, monitor);
     }
 
-    SonarProject sonarProject = SonarProject.getInstance(project);
-    Host host = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+    Host host = getHost();
     properties.setProperty(SonarProperties.SONAR_URL, host.getHost());
     if (StringUtils.isNotBlank(host.getUsername())) {
       properties.setProperty(SonarProperties.SONAR_LOGIN, host.getUsername());

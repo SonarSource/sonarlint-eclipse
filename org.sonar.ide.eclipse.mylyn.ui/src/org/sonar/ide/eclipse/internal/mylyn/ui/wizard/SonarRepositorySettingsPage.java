@@ -30,9 +30,11 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarClient;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarConnector;
+import org.sonar.ide.eclipse.internal.mylyn.core.SonarMylynCorePlugin;
 import org.sonar.ide.eclipse.internal.mylyn.ui.Messages;
 import org.sonar.ide.eclipse.internal.mylyn.ui.SonarMylynUiPlugin;
 import org.sonar.ide.eclipse.wsclient.SonarConnectionTester.ConnectionTestResult;
+import org.sonar.ide.eclipse.wsclient.SonarVersionTester;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -107,9 +109,9 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
       try {
         SonarClient sonarClient = new SonarClient(repository);
         String version = sonarClient.getServerVersion();
-        if (!SonarConnector.isServerVersionSupported(version)) {
+        if (!SonarVersionTester.isServerVersionSupported(SonarMylynCorePlugin.MINIMAL_SONAR_VERSION, version)) {
           setStatus(RepositoryStatus.createStatus(repository, IStatus.ERROR, SonarMylynUiPlugin.PLUGIN_ID,
-              NLS.bind(Messages.SonarRepositorySettingsPage_Unsupported_version, version, SonarConnector.MINIMAL_VERSION)));
+              NLS.bind(Messages.SonarRepositorySettingsPage_Unsupported_version, version, SonarMylynCorePlugin.MINIMAL_SONAR_VERSION)));
         }
 
         ConnectionTestResult result = sonarClient.validateCredentials();

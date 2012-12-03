@@ -24,9 +24,12 @@ import com.google.common.collect.Maps;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.EncodingUtils;
+import org.eclipse.osgi.util.NLS;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.SonarEclipseException;
+import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
@@ -124,16 +127,17 @@ public class ServersManager implements ISonarServersManager {
 
   public Host findServer(String url) {
     SonarServer server = servers.get(url);
-    if (server == null) { // FIXME dirty hack
-      addServer(url, "", "");
-      return new Host(url, "", "");
-    } else {
+    if (server != null) {
       return server.getHost();
     }
+    return null;
   }
 
   public Sonar getSonar(String url) {
     Host server = findServer(url);
+    if (server == null) {
+      throw new SonarEclipseException(NLS.bind(Messages.No_matching_server_in_configuration, url));
+    }
     return WSClientFactory.create(server);
   }
 }

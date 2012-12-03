@@ -78,12 +78,7 @@ public class SonarClient {
 
   public Review getReview(long id) {
     Sonar sonar = create();
-    Review review = sonar.find(new ReviewQuery().setId(id));
-    if (review == null) {
-      // Workaround for SONAR-2421, can be removed after upgrade of minimal Sonar version to 2.9
-      review = sonar.find(new ReviewQuery().setId(id).setReviewType(TYPE_FALSE_POSITIVE));
-    }
-    return review;
+    return sonar.find(new ReviewQuery().setId(id));
   }
 
   /**
@@ -93,8 +88,8 @@ public class SonarClient {
     String currentUser = repository.getUserName();
     ReviewQuery result = new ReviewQuery();
     result.setProjectKeysOrIds(query.getAttribute(SonarQuery.PROJECT));
-    result.setAuthorLoginsOrIds(SonarQuery.getReporter(query, currentUser));
-    result.setAssigneeLoginsOrIds(SonarQuery.getAssignee(query, currentUser));
+    result.setAuthorLogins(SonarQuery.getReporter(query, currentUser));
+    result.setAssigneeLogins(SonarQuery.getAssignee(query, currentUser));
     result.setStatuses(SonarQuery.getStatuses(query));
     result.setSeverities(SonarQuery.getSeverities(query));
     return result;

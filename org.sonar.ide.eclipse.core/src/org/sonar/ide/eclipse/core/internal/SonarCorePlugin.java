@@ -44,6 +44,11 @@ public class SonarCorePlugin extends AbstractPlugin {
    */
   public static final String MARKER_ID = PLUGIN_ID + ".sonarProblem";
 
+  /**
+   * Minimal supported version of Sonar server for local analysis.
+   */
+  public static final String LOCAL_MODE_MINIMAL_SONAR_VERSION = "3.4"; //$NON-NLS-1$
+
   private static SonarCorePlugin plugin;
 
   public SonarCorePlugin() {

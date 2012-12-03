@@ -19,8 +19,6 @@
  */
 package org.sonar.ide.eclipse.internal.mylyn.core;
 
-import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -42,7 +40,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.eclipse.mylyn.tasks.core.data.TaskMapper;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
 import org.eclipse.osgi.util.NLS;
-import org.osgi.framework.Version;
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.wsclient.services.Review;
 
 import java.util.Collection;
@@ -50,11 +48,6 @@ import java.util.Collection;
 public class SonarConnector extends AbstractRepositoryConnector {
 
   public static final String CONNECTOR_KIND = "sonar"; //$NON-NLS-1$
-
-  /**
-   * Minimal supported version of Sonar server.
-   */
-  public static final String MINIMAL_VERSION = "3.4"; //$NON-NLS-1$
 
   private static final String REVIEW_PREFIX = "/reviews/view/"; //$NON-NLS-1$
 
@@ -73,7 +66,7 @@ public class SonarConnector extends AbstractRepositoryConnector {
 
   @Override
   public String getLabel() {
-    return NLS.bind(Messages.SonarConnector_Label, MINIMAL_VERSION);
+    return NLS.bind(Messages.SonarConnector_Label, SonarMylynCorePlugin.MINIMAL_SONAR_VERSION);
   }
 
   @Override
@@ -206,19 +199,4 @@ public class SonarConnector extends AbstractRepositoryConnector {
     }
   }
 
-  /**
-   * Visibility has been relaxed for test.
-   */
-  public static boolean isServerVersionSupported(String version) {
-    return parseServerVersion(MINIMAL_VERSION).compareTo(parseServerVersion(version)) <= 0;
-  }
-
-  private static Version parseServerVersion(String version) {
-    int i = version.indexOf('-');
-    if (i != -1) {
-      version = version.substring(0, i);
-    }
-    version += ".0"; //$NON-NLS-1$
-    return Version.parseVersion(version);
-  }
 }

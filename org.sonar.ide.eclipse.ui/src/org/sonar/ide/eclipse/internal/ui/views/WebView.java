@@ -19,14 +19,8 @@
  */
 package org.sonar.ide.eclipse.internal.ui.views;
 
-import org.sonar.ide.eclipse.core.resources.ISonarResource;
-
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-
-import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-
 import org.apache.commons.codec.binary.Base64;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
@@ -34,6 +28,10 @@ import org.eclipse.swt.widgets.Control;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.core.internal.Messages;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
 import org.sonar.ide.eclipse.internal.EclipseSonar;
 import org.sonar.ide.eclipse.internal.SonarUrls;
 import org.sonar.ide.eclipse.internal.core.ISonarConstants;
@@ -65,15 +63,19 @@ public class WebView extends AbstractSonarInfoView {
   @Override
   protected void doSetInput(Object input) {
     ISonarResource sonarResource = (ISonarResource) input;
+    SonarProject sonarProject = SonarProject.getInstance(sonarResource.getProject());
+    String url = new SonarUrls().resourceUrl(sonarResource);
+    Host host = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+    if (host == null) {
+      browser.setText(NLS.bind(Messages.No_matching_server_in_configuration_for_project, sonarProject.getProject().getName(), url));
+      return;
+    }
+
     SourceCode sourceCode = EclipseSonar.getInstance(sonarResource.getProject()).search(sonarResource);
-    SonarProject properties = SonarProject.getInstance(sonarResource.getProject());
     if (sourceCode == null) {
       browser.setText("Not found.");
       return;
     }
-
-    String url = new SonarUrls().resourceUrl(sonarResource);
-    Host host = SonarCorePlugin.getServersManager().findServer(properties.getUrl());
     LOG.debug("Opening url {} in web view", url);
 
     if (host.getUsername() != null) {

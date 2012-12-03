@@ -19,18 +19,20 @@
  */
 package org.sonar.ide.eclipse.internal;
 
-import org.sonar.ide.eclipse.core.resources.ISonarResource;
-
 import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.osgi.util.NLS;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SourceCode;
+import org.sonar.ide.eclipse.core.SonarEclipseException;
+import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
 import org.sonar.ide.wsclient.RemoteSonar;
 import org.sonar.wsclient.Host;
 
@@ -44,8 +46,12 @@ import java.io.IOException;
 public final class EclipseSonar extends RemoteSonar {
 
   public static EclipseSonar getInstance(IProject project) {
-    SonarProject properties = SonarProject.getInstance(project);
-    Host host = SonarCorePlugin.getServersManager().findServer(properties.getUrl());
+    SonarProject sonarProject = SonarProject.getInstance(project);
+    Host host = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+    if (host == null) {
+      throw new SonarEclipseException(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
+          sonarProject.getProject().getName(), sonarProject.getUrl()));
+    }
     return new EclipseSonar(host);
   }
 

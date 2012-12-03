@@ -17,27 +17,20 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.core.internal;
+package org.sonar.ide.eclipse.core.internal.servers;
 
-import org.eclipse.osgi.util.NLS;
+import org.junit.Test;
+import org.sonar.ide.eclipse.wsclient.SonarVersionTester;
 
-public final class Messages extends NLS {
-  private static final String BUNDLE_NAME = "org.sonar.ide.eclipse.core.internal.messages"; //$NON-NLS-1$
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
-  static {
-    // load message values from bundle file
-    NLS.initializeMessages(BUNDLE_NAME, Messages.class);
+public class SonarVersionTesterTest {
+
+  @Test
+  public void shouldCompareServerVersion() {
+    assertThat(SonarVersionTester.isServerVersionSupported("3.4", "1.1"), is(false));
+    assertThat(SonarVersionTester.isServerVersionSupported("3.4", "2.7-SNAPSHOT"), is(false));
+    assertThat(SonarVersionTester.isServerVersionSupported("3.4", "3.4-RC2"), is(true));
   }
-
-  private Messages() {
-  }
-
-  public static String AnalyseProjectJob_title;
-  public static String AnalyseProjectJob_task_analysing;
-  public static String AnalyseProjectJob_sutask_sensor;
-  public static String AnalyseProjectJob_sutask_decorator;
-  public static String AnalyseProjectJob_unsupported_version;
-
-  public static String No_matching_server_in_configuration_for_project;
-  public static String No_matching_server_in_configuration;
 }
