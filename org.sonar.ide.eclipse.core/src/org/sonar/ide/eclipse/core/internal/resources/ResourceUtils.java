@@ -38,6 +38,7 @@ import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,6 +115,10 @@ public final class ResourceUtils {
       return res.getLocation().toString();
     }
     else {
+      File external = path.toFile();
+      if (external.exists()) {
+        return path.toString();
+      }
       return null;
     }
   }

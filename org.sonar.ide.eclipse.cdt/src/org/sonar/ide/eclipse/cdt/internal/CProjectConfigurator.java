@@ -22,6 +22,7 @@ package org.sonar.ide.eclipse.cdt.internal;
 import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.model.ICProject;
+import org.eclipse.cdt.core.model.IIncludeReference;
 import org.eclipse.cdt.core.model.ISourceRoot;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -52,6 +53,10 @@ public class CProjectConfigurator extends ProjectConfigurator {
       ISourceRoot[] sourceRoots = cProject.getSourceRoots();
       for (ISourceRoot sourceRoot : sourceRoots) {
         appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(sourceRoot.getPath()));
+      }
+      IIncludeReference[] includes = cProject.getIncludeReferences();
+      for (IIncludeReference include : includes) {
+        appendProperty(sonarProjectProperties, "sonar.cpp.library.directories", getAbsolutePath(include.getPath()));
       }
     } catch (CModelException e) {
       LOG.error(e.getMessage(), e);
