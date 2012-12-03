@@ -91,13 +91,6 @@
       <repository
             addAutomatically="false"
             anonymous="true"
-            label="SonarSource Nemo"
-            repositoryKind="sonar"
-            urlRepository="http://nemo.sonarsource.org">
-      </repository>
-      <repository
-            addAutomatically="false"
-            anonymous="true"
             label="Default Sonar"
             repositoryKind="sonar"
             urlRepository="http://localhost:9000">
