@@ -55,7 +55,7 @@ public class CResourceResolver extends ResourceResolver {
         // Now we have to iterate over source folders to find the location of the file
         for (ISourceRoot sourceRoot : cProject.getAllSourceRoots()) {
           IPath potentialPath = sourceRoot.getPath().append(relativeFilePath);
-          if (potentialPath.toFile().exists()) {
+          if (getAbsolutePath(potentialPath) != null && sourceRoot.isOnSourceEntry(potentialPath)) {
             return CoreModel.getDefault().create(potentialPath).getResource();
           }
         }

@@ -21,6 +21,8 @@ package org.sonar.ide.eclipse.core;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 
 public abstract class ResourceResolver {
 
@@ -38,5 +40,9 @@ public abstract class ResourceResolver {
    * @param monitor
    */
   public abstract IResource locate(IProject project, String partialResourceKey);
+
+  protected String getAbsolutePath(IPath path) {
+    return ResourceUtils.getAbsolutePath(path);
+  }
 
 }

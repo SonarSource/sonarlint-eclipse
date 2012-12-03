@@ -31,7 +31,6 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ResourceResolver;
 
 public class JavaResourceResolver extends ResourceResolver {
@@ -79,7 +78,7 @@ public class JavaResourceResolver extends ResourceResolver {
         IResource result = type.getCompilationUnit().getResource();
         return result instanceof IFile ? result : null;
       } catch (JavaModelException e) {
-        LoggerFactory.getLogger(getClass()).warn(e.getMessage(), e);
+        return null;
       }
     }
     return null;

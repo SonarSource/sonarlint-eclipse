@@ -19,22 +19,24 @@
  */
 package org.sonar.ide.eclipse.core.internal.resources;
 
-import org.sonar.ide.eclipse.core.resources.ISonarResource;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ResourceResolver;
 import org.sonar.ide.eclipse.core.internal.AdapterUtils;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
+import org.sonar.ide.eclipse.core.internal.SonarNature;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +70,7 @@ public final class ResourceUtils {
   public static IResource getResource(String resourceKey) {
     IWorkspace root = ResourcesPlugin.getWorkspace();
     for (IProject project : root.getRoot().getProjects()) {
-      if (project.isAccessible()) {
+      if (project.isAccessible() && SonarNature.hasSonarNature(project)) {
         ISonarProject sonarProject = SonarProject.getInstance(project);
         if (sonarProject != null && resourceKey.startsWith(sonarProject.getKey())) {
           String resourceKeyMinusProjectKey = resourceKey.substring(
@@ -102,6 +104,18 @@ public final class ResourceUtils {
       }
     }
     return resolvers;
+  }
+
+  public static String getAbsolutePath(IPath path) {
+    // IPath should be resolved this way in order to handle linked resources (SONARIDE-271)
+    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+    IResource res = root.findMember(path);
+    if (res != null) {
+      return res.getLocation().toString();
+    }
+    else {
+      return null;
+    }
   }
 
 }
