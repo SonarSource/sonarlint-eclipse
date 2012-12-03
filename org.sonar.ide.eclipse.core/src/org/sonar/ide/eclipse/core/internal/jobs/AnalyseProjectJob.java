@@ -128,12 +128,12 @@ public class AnalyseProjectJob extends Job {
       Object obj = JSONValue.parse(fileReader);
       JSONObject sonarResult = (JSONObject) obj;
       final JSONObject violationByResources = (JSONObject) sonarResult.get("violations_per_resource");
+      MarkerUtils.deleteViolationsMarkers(project);
       project.accept(new IResourceVisitor() {
         public boolean visit(IResource resource) throws CoreException {
-          MarkerUtils.deleteViolationsMarkers(resource);
           String sonarKey = ResourceUtils.getSonarResourcePartialKey(resource);
           if (sonarKey != null && violationByResources.get(sonarKey) != null) {
-            MarkerUtils.createMarkersForViolations(resource, (JSONArray) violationByResources.get(sonarKey));
+            MarkerUtils.createMarkersForJSONViolations(resource, (JSONArray) violationByResources.get(sonarKey));
           }
           // don't go deeper than file
           return resource instanceof IFile ? false : true;

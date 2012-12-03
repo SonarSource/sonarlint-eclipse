@@ -16,6 +16,7 @@ Export-Package: org.sonar.ide.eclipse.core,
    org.sonar.ide.eclipse.mylyn.ui,
    org.sonar.ide.eclipse.tests.common",
  org.sonar.ide.eclipse.core.internal.jobs;x-friends:="org.sonar.ide.eclipse.ui,org.sonar.ide.eclipse.core.tests",
+ org.sonar.ide.eclipse.core.internal.markers;x-friends:="org.sonar.ide.eclipse.ui",
  org.sonar.ide.eclipse.core.internal.resources;
   x-friends:="org.sonar.ide.eclipse.ui,
    org.sonar.ide.eclipse.m2e,

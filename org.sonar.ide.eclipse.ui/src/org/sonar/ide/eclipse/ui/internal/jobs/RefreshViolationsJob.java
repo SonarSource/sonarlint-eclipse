@@ -19,11 +19,14 @@
  */
 package org.sonar.ide.eclipse.ui.internal.jobs;
 
-import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -32,20 +35,21 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.progress.UIJob;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 import org.sonar.ide.eclipse.ui.internal.EclipseSonar;
+import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.wsclient.services.Violation;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This class load violations in background.
@@ -54,70 +58,78 @@ import java.util.Map;
  *
  * @author Jérémie Lagarde
  */
-public class RefreshViolationsJob extends AbstractRefreshModelJob<Violation> {
+public class RefreshViolationsJob extends AbstractRemoteSonarJob implements IResourceVisitor {
+
+  private final List<IResource> resources;
+  private IProgressMonitor monitor;
+  private IStatus status;
 
   public RefreshViolationsJob(final List<IResource> resources) {
-    super(resources, SonarCorePlugin.MARKER_ID);
+    super("Retrieve sonar " + SonarCorePlugin.MARKER_ID);
+    setPriority(Job.LONG);
+    this.resources = resources;
   }
 
   @Override
+  protected IStatus run(final IProgressMonitor monitor) {
+    this.monitor = monitor;
+    try {
+      monitor.beginTask("Retrieve sonar data", resources.size());
+
+      for (final IResource resource : resources) {
+        if (!monitor.isCanceled() && resource.isAccessible()) {
+          monitor.subTask("updating " + resource.getName());
+          resource.accept(this);
+        }
+        monitor.worked(1);
+      }
+
+      if (!monitor.isCanceled()) {
+        status = Status.OK_STATUS;
+      } else {
+        status = Status.CANCEL_STATUS;
+      }
+    } catch (final Exception e) {
+      status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, IStatus.ERROR, e.getLocalizedMessage(), e);
+    } finally {
+      monitor.done();
+    }
+    return status;
+  }
+
+  public boolean visit(final IResource resource) throws CoreException {
+    if (resource instanceof IFile) {
+      IFile file = (IFile) resource;
+      retrieveMarkers(file, monitor);
+      return false; // do not visit members of this resource
+    }
+    return true;
+  }
+
+  private void retrieveMarkers(final IFile resource, final IProgressMonitor monitor) {
+    if ((resource == null) || !resource.exists() || monitor.isCanceled()) {
+      return;
+    }
+    try {
+      monitor.beginTask("Retrieve sonar informations for " + resource.getName(), 1);
+      final Collection<Violation> violations = retrieveDatas(EclipseSonar.getInstance(resource.getProject()), resource);
+      MarkerUtils.deleteViolationsMarkers(resource);
+      for (final Violation violation : violations) {
+        MarkerUtils.createMarkerForWSViolation(resource, violation);
+      }
+    } catch (final Exception ex) {
+      LoggerFactory.getLogger(getClass()).error(ex.getMessage(), ex);
+    } finally {
+      monitor.done();
+    }
+  }
+
   protected Collection<Violation> retrieveDatas(EclipseSonar sonar, IResource resource) {
     SourceCode sourceCode = sonar.search(resource);
     if (sourceCode == null) {
       return Collections.emptyList();
     }
     return sourceCode.getViolations();
-  }
-
-  @Override
-  protected Integer getLine(final Violation violation) {
-    return violation.getLine();
-  }
-
-  @Override
-  protected String getMessage(final Violation violation) {
-    return violation.getRuleName() + " : " + violation.getMessage();
-  }
-
-  @Override
-  protected Integer getPriority(final Violation violation) {
-    if ("blocker".equalsIgnoreCase(violation.getSeverity())) {
-      return Integer.valueOf(IMarker.PRIORITY_HIGH);
-    }
-    if ("critical".equalsIgnoreCase(violation.getSeverity())) {
-      return Integer.valueOf(IMarker.PRIORITY_HIGH);
-    }
-    if ("major".equalsIgnoreCase(violation.getSeverity())) {
-      return Integer.valueOf(IMarker.PRIORITY_NORMAL);
-    }
-    if ("minor".equalsIgnoreCase(violation.getSeverity())) {
-      return Integer.valueOf(IMarker.PRIORITY_LOW);
-    }
-    if ("info".equalsIgnoreCase(violation.getSeverity())) {
-      return Integer.valueOf(IMarker.PRIORITY_LOW);
-    }
-    // TODO handle unknown severity
-    return Integer.valueOf(IMarker.PRIORITY_LOW);
-  }
-
-  @Override
-  protected Integer getSeverity(final Violation violation) {
-    return Integer.valueOf(IMarker.SEVERITY_WARNING);
-  }
-
-  @Override
-  protected Map<String, Object> getExtraInfos(final Violation violation) {
-    final Map<String, Object> extraInfos = new HashMap<String, Object>();
-    extraInfos.put("rulekey", violation.getRuleKey());
-    extraInfos.put("rulename", violation.getRuleName());
-    extraInfos.put("rulepriority", violation.getSeverity());
-    if (violation.getId() != null) { // id available since Sonar 2.9
-      extraInfos.put("violationId", Long.toString(violation.getId()));
-    }
-    if (violation.getReview() != null) {
-      extraInfos.put("reviewId", Long.toString(violation.getReview().getId()));
-    }
-    return extraInfos;
   }
 
   public static void setupViolationsUpdater() {

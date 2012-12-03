@@ -27,6 +27,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
+import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.EclipseSonar;
@@ -66,7 +67,7 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
         return false;
       }
 
-      cleanMarkers(project);
+      MarkerUtils.deleteViolationsMarkers(project);
       EclipseSonar sonar = EclipseSonar.getInstance(project);
       SourceCode sourceCode = sonar.search(project);
       if (sourceCode != null) {
@@ -82,7 +83,7 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
           IResource eclipseResource = ResourceUtils.getResource(sonarResource.getKey());
           if (eclipseResource != null && eclipseResource instanceof IFile) {
             for (Violation violation : mm.get(resourceKey)) {
-              createMarker((IFile) eclipseResource, violation);
+              MarkerUtils.createMarkerForWSViolation(eclipseResource, violation);
             }
           }
         }
