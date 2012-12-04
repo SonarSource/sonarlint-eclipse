@@ -12,7 +12,7 @@
   <groupId>org.codehaus.sonar-ide.eclipse</groupId>
   <artifactId>eclipse-parent</artifactId>
   <packaging>pom</packaging>
-  <version>3.0.0.20121204-0944</version>
+  <version>3.0.0.20121204-1030-M1</version>
 
   <name>Sonar Integration for Eclipse (parent)</name>
   <description></description>
