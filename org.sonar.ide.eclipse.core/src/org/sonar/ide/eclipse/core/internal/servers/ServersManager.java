@@ -20,7 +20,6 @@
 package org.sonar.ide.eclipse.core.internal.servers;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.EncodingUtils;
@@ -38,24 +37,11 @@ import org.sonar.wsclient.Sonar;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 public class ServersManager implements ISonarServersManager {
   static final String PREF_SERVERS = "servers";
 
-  private final Map<String, SonarServer> servers = Maps.newHashMap();
-
-  public void load() {
-    for (SonarServer server : loadServers()) {
-      servers.put(server.getUrl(), server);
-    }
-  }
-
-  public void save() {
-    saveServers(servers.values());
-  }
-
-  private static Collection<SonarServer> loadServers() {
+  public Collection<SonarServer> getServers() {
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     List<SonarServer> servers = Lists.newArrayList();
     try {
@@ -78,33 +64,32 @@ public class ServersManager implements ISonarServersManager {
     return servers;
   }
 
-  private static void saveServers(Collection<SonarServer> servers) {
+  public void addServer(String url, String username, String password) {
+    SonarServer server = new SonarServer(url, username, password);
+    String encodedUrl = EncodingUtils.encodeSlashes(server.getUrl());
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     try {
       Preferences serversNode = rootNode.node(PREF_SERVERS);
       serversNode.put("initialized", "true");
-      for (String child : serversNode.childrenNames()) {
-        serversNode.node(child).removeNode();
-      }
-      for (SonarServer server : servers) {
-        String encodedUrl = EncodingUtils.encodeSlashes(server.getUrl());
-        serversNode.node(encodedUrl).putBoolean("auth", server.hasCredentials());
-      }
+      serversNode.node(encodedUrl).putBoolean("auth", server.hasCredentials());
       serversNode.flush();
     } catch (BackingStoreException e) {
       LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
     }
   }
 
-  public Collection<SonarServer> getServers() {
-    return servers.values();
-  }
-
   /**
    * For tests.
    */
   public void clean() {
-    servers.clear();
+    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
+    try {
+      rootNode.node(PREF_SERVERS).removeNode();
+      rootNode.node(PREF_SERVERS).put("initialized", "true");
+      rootNode.flush();
+    } catch (BackingStoreException e) {
+      LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
+    }
   }
 
   // From old implementation
@@ -118,17 +103,22 @@ public class ServersManager implements ISonarServersManager {
   }
 
   public void removeServer(String url) {
-    servers.remove(url);
-  }
-
-  public void addServer(String url, String username, String password) {
-    servers.put(url, new SonarServer(url, username, password));
+    String encodedUrl = EncodingUtils.encodeSlashes(url);
+    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
+    try {
+      Preferences serversNode = rootNode.node(PREF_SERVERS);
+      serversNode.node(encodedUrl).removeNode();
+      serversNode.flush();
+    } catch (BackingStoreException e) {
+      LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
+    }
   }
 
   public Host findServer(String url) {
-    SonarServer server = servers.get(url);
-    if (server != null) {
-      return server.getHost();
+    for (Host host : getHosts()) {
+      if (host.getHost().equals(url)) {
+        return host;
+      }
     }
     return null;
   }

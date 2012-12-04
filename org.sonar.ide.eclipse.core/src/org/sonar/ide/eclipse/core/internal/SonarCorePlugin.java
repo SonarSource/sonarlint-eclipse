@@ -67,14 +67,11 @@ public class SonarCorePlugin extends AbstractPlugin {
     super.start(context);
 
     serversManager = new ServersManager();
-    serversManager.load();
     sonarConnectionTester = new SonarConnectionTester();
   }
 
   @Override
   public void stop(BundleContext context) {
-    serversManager.save();
-
     super.stop(context);
   }
 
