@@ -29,7 +29,7 @@
 
   <profiles>
     <profile>
-      <id>publish-site-snapshot</id>
+      <id>publish-site</id>
       <build>
         <plugins>
           <plugin>
@@ -39,7 +39,7 @@
             <executions>
               <execution>
                 <id>publish-site</id>
-                <phase>deploy</phase>
+                <phase>install</phase>
                 <goals>
                   <goal>upload</goal>
                 </goals>
@@ -47,7 +47,7 @@
                   <serverId>sonar-ide</serverId>
                   <fromDir>${project.basedir}/target/repository</fromDir>
                   <includes>**</includes>
-                  <url>${sonar-ide.site}/eclipse-snapshot/${unqualifiedVersion}/</url>
+                  <url>${sonar-ide.site}</url>
                 </configuration>
               </execution>
             </executions>
