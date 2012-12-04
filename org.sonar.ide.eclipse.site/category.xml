@@ -4,20 +4,30 @@
       Sonar Integration for Eclipse
    </description>
    <feature url="features/org.sonar.ide.eclipse.mylyn.feature_0.0.0.jar" id="org.sonar.ide.eclipse.mylyn.feature" version="0.0.0">
-      <category name="Sonar"/>
+      <category name="Sonar optional connectors"/>
    </feature>
    <feature url="features/org.sonar.ide.eclipse.cdt.feature_0.0.0.jar" id="org.sonar.ide.eclipse.cdt.feature" version="0.0.0">
-      <category name="Sonar"/>
+      <category name="Sonar C/C++"/>
    </feature>
    <feature url="features/org.sonar.ide.eclipse.jdt.feature_0.0.0.jar" id="org.sonar.ide.eclipse.jdt.feature" version="0.0.0">
-      <category name="Sonar"/>
+      <category name="Sonar Java"/>
    </feature>
    <feature url="features/org.sonar.ide.eclipse.m2e.feature_0.0.0.jar" id="org.sonar.ide.eclipse.m2e.feature" version="0.0.0">
-      <category name="Sonar"/>
+      <category name="Sonar optional connectors"/>
    </feature>
-   <category-def name="Sonar" label="Sonar">
+   <category-def name="Sonar Java" label="Sonar Java">
       <description>
-         Sonar Integration for Eclipse
+         Needed feature for analysing JDT projects with Sonar.
+      </description>
+   </category-def>
+   <category-def name="Sonar C/C++" label="Sonar C/C++">
+      <description>
+         Needed feature for analysing CDT projects with Sonar.
+      </description>
+   </category-def>
+   <category-def name="Sonar optional connectors" label="Sonar optional connectors">
+      <description>
+         Sonar optional connectors
       </description>
    </category-def>
 </site>
