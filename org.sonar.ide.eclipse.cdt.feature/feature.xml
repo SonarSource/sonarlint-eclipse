@@ -2,7 +2,7 @@
 <feature
       id="org.sonar.ide.eclipse.cdt.feature"
       label="%feature_name"
-      version="3.0.0.20121204-1030-M1"
+      version="3.0.0.qualifier"
       provider-name="%provider_name"
       plugin="org.sonar.ide.eclipse.ui">
 
