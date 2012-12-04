@@ -19,17 +19,21 @@
  */
 package org.sonar.ide.eclipse.core.internal.configurator;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Utility class to deal with configurator extension point.
@@ -42,7 +46,7 @@ public class ConfiguratorUtils {
 
   public static final String ATTR_CLASS = "class"; //$NON-NLS-1$
 
-  public static Collection<ProjectConfigurator> getConfigurators() {
+  private static Collection<ProjectConfigurator> getConfigurators() {
     List<ProjectConfigurator> result = new ArrayList<ProjectConfigurator>();
     IExtensionRegistry registry = Platform.getExtensionRegistry();
     IConfigurationElement[] config = registry.getConfigurationElementsFor("org.sonar.ide.eclipse.core.projectConfigurators");
@@ -56,6 +60,15 @@ public class ConfiguratorUtils {
       }
     }
     return result;
+  }
+
+  public static void configure(final IProject project, final Properties properties, final IProgressMonitor monitor) {
+    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, properties);
+    for (ProjectConfigurator configurator : ConfiguratorUtils.getConfigurators()) {
+      if (configurator.canConfigure(project)) {
+        configurator.configure(request, monitor);
+      }
+    }
   }
 
 }

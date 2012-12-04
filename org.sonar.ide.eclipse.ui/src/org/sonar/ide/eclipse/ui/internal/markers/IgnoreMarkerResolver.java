@@ -22,7 +22,6 @@ package org.sonar.ide.eclipse.ui.internal.markers;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.ISonarResolver;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 
@@ -37,16 +36,13 @@ public class IgnoreMarkerResolver implements ISonarResolver {
 
   public boolean canResolve(final IMarker marker) {
     try {
-      if (SonarCorePlugin.MARKER_ID.equals(marker.getType())) {
-        final Object ruleName = marker.getAttribute("rulename"); //$NON-NLS-1$
-        label = MessageFormat.format(Messages.IgnoreMarkerResolver_label, ruleName);
-        description = MessageFormat.format(Messages.IgnoreMarkerResolver_description, ruleName);
-        return true;
-      }
+      final Object ruleName = marker.getAttribute("rulename"); //$NON-NLS-1$
+      label = MessageFormat.format(Messages.IgnoreMarkerResolver_label, ruleName);
+      description = MessageFormat.format(Messages.IgnoreMarkerResolver_description, ruleName);
+      return true;
     } catch (final CoreException e) {
       return false;
     }
-    return false;
   }
 
   public String getDescription() {

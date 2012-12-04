@@ -43,12 +43,15 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   private static final String TEST_PATTERN = ".*test.*"; // TODO Allow to configure this
 
   @Override
+  public boolean canConfigure(IProject project) {
+    return SonarJdtPlugin.hasJavaNature(project);
+  }
+
+  @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
     IProject project = request.getProject();
-    if (SonarJdtPlugin.hasJavaNature(project)) {
-      IJavaProject javaProject = JavaCore.create(project);
-      configureJavaProject(javaProject, request.getSonarProjectProperties());
-    }
+    IJavaProject javaProject = JavaCore.create(project);
+    configureJavaProject(javaProject, request.getSonarProjectProperties());
   }
 
   private void configureJavaProject(IJavaProject javaProject, Properties sonarProjectProperties) {

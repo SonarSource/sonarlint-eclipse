@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.ui.internal.properties;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -26,20 +27,26 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
+import org.sonar.ide.eclipse.core.internal.configurator.ConfiguratorUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 
+import java.util.Properties;
+
 public class SonarProjectPropertyBlock {
-  public Control createContents(Composite parent, SonarProject properties) {
+  public Control createContents(Composite parent, SonarProject sonarProject) {
     Composite container = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout();
     container.setLayout(layout);
     layout.numColumns = 2;
     layout.verticalSpacing = 9;
 
-    addText(Messages.SonarProjectPropertyBlock_label_host, properties.getUrl(), container);
-    addText(Messages.SonarProjectPropertyBlock_label_key, properties.getKey(), container);
-
+    addText(Messages.SonarProjectPropertyBlock_label_host, sonarProject.getUrl(), container);
+    addText(Messages.SonarProjectPropertyBlock_label_key, sonarProject.getKey(), container);
+    Properties props = new Properties();
+    ConfiguratorUtils.configure(sonarProject.getProject(), props, new NullProgressMonitor());
+    addText(Messages.SonarProjectPropertyBlock_label_language, props.getProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY), container);
     return container;
   }
 

@@ -40,8 +40,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
-import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
@@ -161,12 +159,10 @@ public class AnalyseProjectJob extends Job {
     IPath pluginWorkDir = projectSpecificWorkDir;
     File outputFile = new File(projectSpecificWorkDir.toFile(), "dryRun.json");
 
-    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, properties);
-    for (ProjectConfigurator configurator : ConfiguratorUtils.getConfigurators()) {
-      LOG.debug("Project configurator: {}", configurator);
-      configurator.configure(request, monitor);
-    }
+    // Configuration by configurators (common and language specific)
+    ConfiguratorUtils.configure(project, properties, monitor);
 
+    // Global configuration
     Host host = getHost();
     properties.setProperty(SonarProperties.SONAR_URL, host.getHost());
     if (StringUtils.isNotBlank(host.getUsername())) {

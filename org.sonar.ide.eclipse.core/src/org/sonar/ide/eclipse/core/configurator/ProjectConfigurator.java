@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.core.configurator;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
@@ -27,6 +28,12 @@ import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import java.util.Properties;
 
 public abstract class ProjectConfigurator {
+
+  /**
+   * Tell if this project configurator can configure the given project. It is already assumed
+   * that the project has the Sonar nature.
+   */
+  public abstract boolean canConfigure(IProject project);
 
   /**
    * Configures Sonar project, using information from Eclipse project.

@@ -37,7 +37,6 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.progress.UIJob;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SourceCode;
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
@@ -45,6 +44,7 @@ import org.sonar.ide.eclipse.core.resources.ISonarResource;
 import org.sonar.ide.eclipse.ui.internal.EclipseSonar;
 import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
+import org.sonar.wsclient.connectors.ConnectionException;
 import org.sonar.wsclient.services.Violation;
 
 import java.util.Collection;
@@ -65,7 +65,7 @@ public class RefreshViolationsJob extends AbstractRemoteSonarJob implements IRes
   private IStatus status;
 
   public RefreshViolationsJob(final List<IResource> resources) {
-    super("Retrieve sonar " + SonarCorePlugin.MARKER_ID);
+    super("Refresh violations");
     setPriority(Job.LONG);
     this.resources = resources;
   }
@@ -89,6 +89,8 @@ public class RefreshViolationsJob extends AbstractRemoteSonarJob implements IRes
       } else {
         status = Status.CANCEL_STATUS;
       }
+    } catch (final ConnectionException e) {
+      status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, IStatus.ERROR, "Unable to contact Sonar server", e);
     } catch (final Exception e) {
       status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, IStatus.ERROR, e.getLocalizedMessage(), e);
     } finally {

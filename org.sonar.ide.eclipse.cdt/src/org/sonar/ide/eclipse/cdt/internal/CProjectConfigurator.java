@@ -39,12 +39,15 @@ public class CProjectConfigurator extends ProjectConfigurator {
   private static final Logger LOG = LoggerFactory.getLogger(CProjectConfigurator.class);
 
   @Override
+  public boolean canConfigure(IProject project) {
+    return CoreModel.hasCNature(project);
+  }
+
+  @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
     IProject project = request.getProject();
-    if (CoreModel.hasCNature(project)) {
-      ICProject cProject = CoreModel.getDefault().create(project);
-      configureCProject(cProject, request.getSonarProjectProperties());
-    }
+    ICProject cProject = CoreModel.getDefault().create(project);
+    configureCProject(cProject, request.getSonarProjectProperties());
   }
 
   private void configureCProject(ICProject cProject, Properties sonarProjectProperties) {

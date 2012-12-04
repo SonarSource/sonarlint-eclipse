@@ -431,8 +431,8 @@
    <extension
          point="org.eclipse.ui.navigator.navigatorContent">
       <commonFilter
-            class="org.sonar.ide.eclipse.ui.internal.filters.NonSonarProjectsFilter"
-            id="org.sonar.ide.eclipse.internal.ui.filters.HideNonSonarProjects"
+            class="org.sonar.ide.eclipse.ui.NonSonarProjectsFilter"
+            id="org.sonar.ide.eclipse.ui.HideNonSonarProjects"
             name="Non-Sonar projects"
             description="Hides all projects without Sonar nature"
             activeByDefault="false">
