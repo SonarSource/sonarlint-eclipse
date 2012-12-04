@@ -42,6 +42,8 @@ public final class MarkerUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(MarkerUtils.class);
 
+  private static int markerSeverity = IMarker.SEVERITY_WARNING;
+
   private MarkerUtils() {
   }
 
@@ -67,7 +69,7 @@ public final class MarkerUtils {
     final Map<String, Object> markerAttributes = new HashMap<String, Object>();
     Integer line = violation.getLine();
     markerAttributes.put(IMarker.PRIORITY, getPriority(violation));
-    markerAttributes.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+    markerAttributes.put(IMarker.SEVERITY, markerSeverity);
     markerAttributes.put(IMarker.LINE_NUMBER, line != null ? line : 1); // SONARIDE-64
     markerAttributes.put(IMarker.MESSAGE, getMessage(violation));
 
@@ -158,6 +160,10 @@ public final class MarkerUtils {
     } catch (CoreException e) {
       LOG.error(e.getMessage(), e);
     }
+  }
+
+  public static void setMarkerSeverity(int severity) {
+    markerSeverity = severity;
   }
 
 }

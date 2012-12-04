@@ -30,6 +30,7 @@ import org.osgi.service.prefs.Preferences;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.Messages;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
@@ -40,8 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ServersManager implements ISonarServersManager {
-  public static final String NODE = "org.sonar.ide.eclipse.core"; // plugin key
-  private static final String PREF_SERVERS = "servers";
+  static final String PREF_SERVERS = "servers";
 
   private final Map<String, SonarServer> servers = Maps.newHashMap();
 
@@ -56,7 +56,7 @@ public class ServersManager implements ISonarServersManager {
   }
 
   private static Collection<SonarServer> loadServers() {
-    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(NODE);
+    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     List<SonarServer> servers = Lists.newArrayList();
     try {
       rootNode.sync();
@@ -79,7 +79,7 @@ public class ServersManager implements ISonarServersManager {
   }
 
   private static void saveServers(Collection<SonarServer> servers) {
-    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(NODE);
+    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     try {
       Preferences serversNode = rootNode.node(PREF_SERVERS);
       serversNode.put("initialized", "true");

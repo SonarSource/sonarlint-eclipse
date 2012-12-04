@@ -19,10 +19,15 @@
  */
 package org.sonar.ide.eclipse.ui.internal;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
+import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.runner.SonarRunnerLogListener;
 import org.sonar.ide.eclipse.runner.SonarRunnerPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
@@ -32,6 +37,10 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
   // The shared instance
   private static SonarUiPlugin plugin;
+
+  public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
+
+  private IPropertyChangeListener listener;
 
   public SonarUiPlugin() {
     plugin = this; // NOSONAR
@@ -50,17 +59,27 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     }
 
     RefreshViolationsJob.setupViolationsUpdater();
+
+    listener = new IPropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent event) {
+        if (event.getProperty().equals(PREF_MARKER_SEVERITY)) {
+          MarkerUtils.setMarkerSeverity(getPreferenceStore().getInt(PREF_MARKER_SEVERITY));
+        }
+      }
+    };
+    getPreferenceStore().addPropertyChangeListener(listener);
   }
 
   @Override
   public void stop(final BundleContext context) {
     try {
       if (getSonarConsole() != null) {
-        SonarRunnerPlugin.getDefault().addSonarLogListener((SonarRunnerLogListener) getSonarConsole());
+        SonarRunnerPlugin.getDefault().removeSonarLogListener((SonarRunnerLogListener) getSonarConsole());
       }
+      getPreferenceStore().removePropertyChangeListener(listener);
     } finally {
       try {
-        super.start(context);
+        super.stop(context);
       } catch (Exception e) {
         throw new SonarEclipseException("Unable to stop " + context.getBundle().getSymbolicName(), e);
       }
@@ -82,6 +101,16 @@ public class SonarUiPlugin extends AbstractUIPlugin {
       console = new SonarConsole(SonarImages.SONAR16_IMG);
     }
     return console;
+  }
+
+  /**
+   * Initializes a preference store with default preference values
+   * for this plug-in.
+   */
+  @Override
+  protected void initializeDefaultPreferences(IPreferenceStore store) {
+    store.setDefault(PREF_MARKER_SEVERITY, IMarker.SEVERITY_WARNING);
+    MarkerUtils.setMarkerSeverity(store.getInt(PREF_MARKER_SEVERITY));
   }
 
 }

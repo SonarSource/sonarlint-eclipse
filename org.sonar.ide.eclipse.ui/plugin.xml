@@ -13,6 +13,12 @@
         id="org.sonar.ide.eclipse.ui.preferences.SonarPreferencePage"
         name="%sonar.preference.page.name">
     </page>
+    <page
+          category="org.sonar.ide.eclipse.ui.preferences.SonarPreferencePage"
+          class="org.sonar.ide.eclipse.ui.internal.preferences.SonarServerPreferencePage"
+          id="org.sonar.ide.eclipse.ui.preferences.SonarServerPreferencePage"
+          name="Servers">
+    </page>
   </extension>
   <extension point="org.eclipse.ui.views">
     <category

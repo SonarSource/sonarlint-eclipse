@@ -53,14 +53,16 @@ public final class Messages extends NLS {
   public static String SonarProjectPropertyBlock_label_key;
   public static String SonarProjectPropertyBlock_label_language;
 
-  public static String SonarPreferencePage_title;
-  public static String SonarPreferencePage_description;
-  public static String SonarPreferencePage_action_add;
-  public static String SonarPreferencePage_action_add_tooltip;
-  public static String SonarPreferencePage_action_edit;
-  public static String SonarPreferencePage_action_edit_tooltip;
-  public static String SonarPreferencePage_action_delete;
-  public static String SonarPreferencePage_action_delete_tooltip;
+  public static String SonarServerPreferencePage_title;
+  public static String SonarServerPreferencePage_description;
+  public static String SonarServerPreferencePage_action_add;
+  public static String SonarServerPreferencePage_action_add_tooltip;
+  public static String SonarServerPreferencePage_action_edit;
+  public static String SonarServerPreferencePage_action_edit_tooltip;
+  public static String SonarServerPreferencePage_action_delete;
+  public static String SonarServerPreferencePage_action_delete_tooltip;
+
+  public static String SonarPreferencePage_label_marker_severity;
 
   public static String SonarDebugOutputAction_tooltip;
 

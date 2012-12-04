@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.core.internal.servers;
 
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.equinox.security.storage.EncodingUtils;
@@ -70,7 +69,7 @@ public final class SonarServer {
 
   private String getKeyFromServerNode(String key) {
     try {
-      return SecurePreferencesFactory.getDefault().node(ServersManager.NODE).node(EncodingUtils.encodeSlashes(getUrl())).get(key, "");
+      return SecurePreferencesFactory.getDefault().node(ServersManager.PREF_SERVERS).node(EncodingUtils.encodeSlashes(getUrl())).get(key, "");
     } catch (StorageException e) {
       return "";
     }
@@ -78,7 +77,7 @@ public final class SonarServer {
 
   private void setKeyForServerNode(String key, String value, boolean encrypt) {
     try {
-      ISecurePreferences serverNode = SecurePreferencesFactory.getDefault().node(ServersManager.NODE)
+      ISecurePreferences serverNode = SecurePreferencesFactory.getDefault().node(ServersManager.PREF_SERVERS)
           .node(EncodingUtils.encodeSlashes(getUrl()));
       serverNode.put(key, value, encrypt);
     } catch (StorageException e) {
