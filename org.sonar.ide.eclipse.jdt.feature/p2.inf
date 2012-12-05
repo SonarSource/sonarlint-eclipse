@@ -1,0 +1,4 @@
+update.id = org.sonar.ide.eclipse.feature.feature.group
+update.range = [0.0.0,3.0.0)
+update.severity = 0
+update.description = Update Sonar Eclipse feature with old ID.
