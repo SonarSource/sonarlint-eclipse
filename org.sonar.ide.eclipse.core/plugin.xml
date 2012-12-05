@@ -9,6 +9,10 @@
                class="org.sonar.ide.eclipse.core.SonarElementsAdapterFactory">
          <adapter type="org.sonar.ide.eclipse.core.resources.ISonarResource"/>
       </factory>
+      <factory adaptableType="org.eclipse.core.resources.IFile"
+               class="org.sonar.ide.eclipse.core.SonarElementsAdapterFactory">
+         <adapter type="org.sonar.ide.eclipse.core.resources.ISonarFile"/>
+      </factory>
    </extension>
 
    <extension

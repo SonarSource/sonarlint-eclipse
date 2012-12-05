@@ -15,6 +15,9 @@
    <feature url="features/org.sonar.ide.eclipse.m2e.feature_0.0.0.jar" id="org.sonar.ide.eclipse.m2e.feature" version="0.0.0">
       <category name="Sonar optional connectors"/>
    </feature>
+   <feature url="features/org.sonar.ide.eclipse.pydev.feature_0.0.0.jar" id="org.sonar.ide.eclipse.pydev.feature" version="0.0.0">
+      <category name="Sonar Python"/>
+   </feature>
    <category-def name="Sonar Java" label="Sonar Java">
       <description>
          Needed feature for analysing JDT projects with Sonar.
@@ -23,6 +26,11 @@
    <category-def name="Sonar C/C++" label="Sonar C/C++">
       <description>
          Needed feature for analysing CDT projects with Sonar.
+      </description>
+   </category-def>
+   <category-def name="Sonar Python" label="Sonar Python">
+      <description>
+         Needed feature for analysing PyDev projects with Sonar.
       </description>
    </category-def>
    <category-def name="Sonar optional connectors" label="Sonar optional connectors">
