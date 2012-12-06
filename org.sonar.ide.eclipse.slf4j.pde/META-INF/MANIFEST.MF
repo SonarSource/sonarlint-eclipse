@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %bundle_name
+Bundle-SymbolicName: org.sonar.ide.eclipse.slf4j.pde;singleton:=true
+Bundle-Version: 3.0.0.qualifier
+Bundle-Vendor: %bundle_vendor
+Bundle-Activator: org.slf4j.pde.SLF4jPlugin
+Eclipse-AutoStart: true
+Require-Bundle: slf4j.api;bundle-version="1.6.6",
+ org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-ActivationPolicy: lazy
+Bundle-Localization: OSGI-INF/l10n/bundle
+Export-Package: org.slf4j.impl;version="1.6.0"

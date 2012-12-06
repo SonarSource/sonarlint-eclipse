@@ -40,6 +40,6 @@ Require-Bundle: org.eclipse.equinox.security,
  com.google.guava;bundle-version="10.0.1",
  com.googlecode.json-simple;bundle-version="1.1.1",
  slf4j.api;bundle-version="1.6.6";visibility:=reexport,
- ch.qos.logback.classic;bundle-version="1.0.7";visibility:=reexport
+ org.sonar.ide.eclipse.slf4j.pde;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5

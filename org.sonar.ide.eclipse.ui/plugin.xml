@@ -7,6 +7,12 @@
    <extension-point id="resolver" name="sonar resolver" schema="schema/org.sonar.ide.eclipse.markers.resolver.exsd"/>
 
 <!-- Extensions -->
+
+   <extension point="org.sonar.ide.eclipse.slf4j.pde.loggers">
+      <loggerMapEntry regexp="^org\.sonar\.ide\.eclipse\.ui.*"
+        symbolicName="org.sonar.ide.eclipse.ui"/>
+   </extension>
+
   <extension point="org.eclipse.ui.preferencePages">
     <page
         class="org.sonar.ide.eclipse.ui.internal.preferences.SonarPreferencePage"

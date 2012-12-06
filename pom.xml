@@ -55,6 +55,7 @@
   </prerequisites>
 
   <modules>
+    <module>org.sonar.ide.eclipse.slf4j.pde</module>
     <module>org.sonar.ide.eclipse.wsclient</module>
     <module>org.sonar.ide.eclipse.runtime</module>
 

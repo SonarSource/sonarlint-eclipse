@@ -5,7 +5,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.apache.httpcomponents.httpclient;bundle-version="4.2.2",
  org.apache.httpcomponents.httpcore;bundle-version="4.2.2",
  slf4j.api;bundle-version="1.6.6",
- org.apache.commons.lang;bundle-version="2.6.0"
+ org.apache.commons.lang;bundle-version="2.6.0",
+ org.sonar.ide.eclipse.slf4j.pde
 Export-Package: org.sonar.ide.eclipse.wsclient
 Bundle-Vendor: SonarSource
 Bundle-ActivationPolicy: lazy
