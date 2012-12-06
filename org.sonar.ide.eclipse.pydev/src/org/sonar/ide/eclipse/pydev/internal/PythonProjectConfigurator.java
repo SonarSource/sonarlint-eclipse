@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.pydev.internal;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -51,8 +50,7 @@ public class PythonProjectConfigurator extends ProjectConfigurator {
 
   private void configurePythonProject(PythonNature pyProject, Properties sonarProjectProperties) {
     sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "py");
-    String pathStr = SonarPyDevPlugin.getSourceFolder(pyProject);
-    if (StringUtils.isNotBlank(pathStr)) {
+    for (String pathStr : SonarPyDevPlugin.getSourceFolders(pyProject)) {
       IPath path = new Path(pathStr);
       appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(path));
     }

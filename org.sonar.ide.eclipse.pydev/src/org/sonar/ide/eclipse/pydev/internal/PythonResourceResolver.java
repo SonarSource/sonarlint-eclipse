@@ -34,10 +34,11 @@ public class PythonResourceResolver extends ResourceResolver {
   public String getSonarPartialKey(IResource resource) {
     PythonNature pyProject = PythonNature.getPythonNature(resource.getProject());
     if (pyProject != null) {
-      String src = SonarPyDevPlugin.getSourceFolder(pyProject);
-      IPath srcPath = new Path(getAbsolutePath(new Path(src)));
-      if (srcPath.isPrefixOf(resource.getLocation())) {
-        return SonarPyDevPlugin.getRelativePath(srcPath, resource.getLocation());
+      for (String src : SonarPyDevPlugin.getSourceFolders(pyProject)) {
+        IPath srcPath = new Path(getAbsolutePath(new Path(src)));
+        if (srcPath.isPrefixOf(resource.getLocation())) {
+          return SonarPyDevPlugin.getRelativePath(srcPath, resource.getLocation());
+        }
       }
     }
     return null;
@@ -46,12 +47,13 @@ public class PythonResourceResolver extends ResourceResolver {
   @Override
   public IResource locate(IProject project, String resourceKey) {
     PythonNature pyProject = PythonNature.getPythonNature(project);
-    String src = SonarPyDevPlugin.getSourceFolder(pyProject);
-    IPath srcPath = new Path(getAbsolutePath(new Path(src)));
-    IPath resourcePath = srcPath.append(resourceKey);
-    if (resourcePath.toFile().exists()) {
-      IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-      return root.getFileForLocation(resourcePath);
+    for (String src : SonarPyDevPlugin.getSourceFolders(pyProject)) {
+      IPath srcPath = new Path(getAbsolutePath(new Path(src)));
+      IPath resourcePath = srcPath.append(resourceKey);
+      if (resourcePath.toFile().exists()) {
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+        return root.getFileForLocation(resourcePath);
+      }
     }
     return null;
   }

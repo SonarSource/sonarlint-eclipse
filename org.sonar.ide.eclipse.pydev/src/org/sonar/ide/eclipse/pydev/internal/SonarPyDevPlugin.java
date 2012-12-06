@@ -19,14 +19,18 @@
  */
 package org.sonar.ide.eclipse.pydev.internal;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.osgi.framework.BundleContext;
 import org.python.pydev.plugin.nature.PythonNature;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
 
 public class SonarPyDevPlugin extends AbstractPlugin {
+
+  private static final Logger LOG = LoggerFactory.getLogger(SonarPyDevPlugin.class);
 
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.pydev"; //$NON-NLS-1$
 
@@ -59,13 +63,16 @@ public class SonarPyDevPlugin extends AbstractPlugin {
     return path.makeRelativeTo(rootPath).toOSString();
   }
 
-  static String getSourceFolder(PythonNature pyProject) {
+  static String[] getSourceFolders(PythonNature pyProject) {
+    String projectSourcePath;
     try {
-      return pyProject.getPythonPathNature().getProjectSourcePath(false);
+      projectSourcePath = pyProject.getPythonPathNature().getProjectSourcePath(true);
     } catch (CoreException e) {
-      // TODO
-      return "";
+      LOG.error(e.getMessage(), e);
+      throw new RuntimeException(e);
     }
+    String[] paths = StringUtils.split(projectSourcePath, '|');
+    return paths;
   }
 
 }
