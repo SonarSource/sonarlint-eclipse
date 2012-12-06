@@ -31,4 +31,6 @@ public interface ISonarConsole {
 
   void error(String msg);
 
+  void clearConsole();
+
 }

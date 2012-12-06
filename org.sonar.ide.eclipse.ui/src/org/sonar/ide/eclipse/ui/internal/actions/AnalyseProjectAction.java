@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyseProjectJob;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 import org.sonar.ide.eclipse.ui.internal.views.ViolationsView;
 
@@ -62,6 +63,7 @@ public class AnalyseProjectAction implements IObjectActionDelegate {
    */
   public void run(IAction action) {
     boolean debugEnabled = SonarConsole.isDebugEnabled();
+    SonarUiPlugin.getDefault().getSonarConsole().clearConsole();
     for (IProject project : projects) {
       AnalyseProjectJob job = new AnalyseProjectJob(project, debugEnabled);
       // Display violation view after analysis is completed
