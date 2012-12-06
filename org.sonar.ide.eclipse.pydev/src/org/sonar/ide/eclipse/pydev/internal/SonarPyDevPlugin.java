@@ -60,7 +60,7 @@ public class SonarPyDevPlugin extends AbstractPlugin {
   }
 
   static String getRelativePath(IPath rootPath, IPath path) {
-    return path.makeRelativeTo(rootPath).toOSString();
+    return path.makeRelativeTo(rootPath).toString();
   }
 
   static String[] getSourceFolders(PythonNature pyProject) {
