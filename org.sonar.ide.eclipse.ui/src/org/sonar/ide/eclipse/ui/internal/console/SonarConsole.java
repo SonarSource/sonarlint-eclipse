@@ -56,11 +56,6 @@ public class SonarConsole extends IOConsole implements SonarRunnerLogListener, I
 
   public SonarConsole(ImageDescriptor imageDescriptor) {
     super(TITLE, imageDescriptor);
-  }
-
-  @Override
-  protected void init() {
-    super.init();
     initStreams(Display.getDefault());
   }
 
