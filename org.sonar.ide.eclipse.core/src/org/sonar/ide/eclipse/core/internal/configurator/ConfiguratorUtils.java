@@ -46,6 +46,10 @@ public class ConfiguratorUtils {
 
   public static final String ATTR_CLASS = "class"; //$NON-NLS-1$
 
+  private ConfiguratorUtils() {
+    // Utility class
+  }
+
   private static Collection<ProjectConfigurator> getConfigurators() {
     List<ProjectConfigurator> result = new ArrayList<ProjectConfigurator>();
     IExtensionRegistry registry = Platform.getExtensionRegistry();

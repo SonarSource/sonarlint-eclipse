@@ -38,11 +38,6 @@ public class RemoteSonarProjectTextContentAdapter extends TextContentAdapter {
   }
 
   @Override
-  public String getControlContents(Control control) {
-    return super.getControlContents(control);
-  }
-
-  @Override
   public void insertControlContents(Control control, String text, int cursorPosition) {
     RemoteSonarProject prj = RemoteSonarProject.fromString(text);
     sonarProject.associate(prj.getUrl(), prj.getName(), prj.getKey());

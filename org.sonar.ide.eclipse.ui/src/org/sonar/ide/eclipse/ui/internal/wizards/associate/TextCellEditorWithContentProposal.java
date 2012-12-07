@@ -35,11 +35,10 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
       KeyStroke keyStroke, char[] autoActivationCharacters, ProjectAssociationModel sonarProject) {
     super(parent);
 
-    enableContentProposal(contentProposalProvider, keyStroke, autoActivationCharacters, sonarProject);
+    enableContentProposal(contentProposalProvider, sonarProject);
   }
 
-  private void enableContentProposal(IContentProposalProvider contentProposalProvider, KeyStroke keyStroke,
-      char[] autoActivationCharacters, ProjectAssociationModel sonarProject) {
+  private void enableContentProposal(IContentProposalProvider contentProposalProvider, ProjectAssociationModel sonarProject) {
     contentProposalAdapter = new ContentAssistCommandAdapter(
         text,
         new RemoteSonarProjectTextContentAdapter(sonarProject),

@@ -39,12 +39,25 @@ public class SonarProjectManager {
   private static final String VERSION = "2";
   private static final String P_VERSION = "version";
   private static final String P_SONAR_SERVER_URL = "serverUrl";
+
+  /**
+   * @deprecated
+   */
   @Deprecated
   private static final String P_PROJECT_GROUPID = "projectGroupId";
+
+  /**
+   * @deprecated
+   */
   @Deprecated
   private static final String P_PROJECT_ARTIFACTID = "projectArtifactId";
+
+  /**
+   * @deprecated
+   */
   @Deprecated
   private static final String P_PROJECT_BRANCH = "projectBranch";
+
   private static final String P_PROJECT_KEY = "projectKey";
   private static final String P_ANALYSE_LOCALLY = "analyseLocally";
 

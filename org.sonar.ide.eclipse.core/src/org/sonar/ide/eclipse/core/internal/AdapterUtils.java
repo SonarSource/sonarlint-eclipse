@@ -24,6 +24,10 @@ import org.eclipse.core.runtime.Platform;
 
 public class AdapterUtils {
 
+  private AdapterUtils() {
+    // Utility class
+  }
+
   /**
    * Returns an object that is an instance of the given class associated with the given object. Returns <code>null</code> if no such object
    * can be found or if given object is <code>null</code>.

@@ -215,8 +215,8 @@ public class ConfigureProjectsPage extends WizardPage {
    * @return
    */
   public boolean finish() {
-    final ProjectAssociationModel[] projects = getProjects();
-    for (ProjectAssociationModel projectAssociation : projects) {
+    final ProjectAssociationModel[] projectAssociations = getProjects();
+    for (ProjectAssociationModel projectAssociation : projectAssociations) {
       if (StringUtils.isNotBlank(projectAssociation.getKey())) {
         try {
           boolean changed = false;
@@ -250,11 +250,11 @@ public class ConfigureProjectsPage extends WizardPage {
   }
 
   private ProjectAssociationModel[] getProjects() {
-    WritableList projects = ((WritableList) viewer.getInput());
-    return (ProjectAssociationModel[]) projects.toArray(new ProjectAssociationModel[projects.size()]);
+    WritableList projectAssociations = ((WritableList) viewer.getInput());
+    return (ProjectAssociationModel[]) projectAssociations.toArray(new ProjectAssociationModel[projectAssociations.size()]);
   }
 
-  public class AssociateProjects implements IRunnableWithProgress {
+  public static class AssociateProjects implements IRunnableWithProgress {
 
     private final List<Host> hosts;
     private final ProjectAssociationModel[] projects;
@@ -304,8 +304,9 @@ public class ConfigureProjectsPage extends WizardPage {
 
       // Now check for all potential matches for a all non associated projects on all Sonar servers
       Map<ProjectAssociationModel, List<PotentialMatchForProject>> potentialMatches = new HashMap<ProjectAssociationModel, List<PotentialMatchForProject>>();
-      for (String url : remoteSonarProjects.keySet()) {
-        List<Resource> resources = remoteSonarProjects.get(url);
+      for (Map.Entry<String, List<Resource>> entry : remoteSonarProjects.entrySet()) {
+        String url = entry.getKey();
+        List<Resource> resources = entry.getValue();
         for (ProjectAssociationModel sonarProject : projects) {
           if (StringUtils.isBlank(sonarProject.getKey())) {
             // Not associated yet

@@ -70,11 +70,6 @@ public class SonarCorePlugin extends AbstractPlugin {
     sonarConnectionTester = new SonarConnectionTester();
   }
 
-  @Override
-  public void stop(BundleContext context) {
-    super.stop(context);
-  }
-
   private static SonarProjectManager projectManager;
 
   public synchronized SonarProjectManager getProjectManager() {

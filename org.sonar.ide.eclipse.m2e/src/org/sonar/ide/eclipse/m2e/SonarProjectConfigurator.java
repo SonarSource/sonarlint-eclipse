@@ -20,6 +20,7 @@
 package org.sonar.ide.eclipse.m2e;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -95,6 +96,15 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
             .isEquals();
       }
       return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return new HashCodeBuilder(7, 43)
+          .append(groupId)
+          .append(artifactId)
+          .append(branch)
+          .hashCode();
     }
   }
 }

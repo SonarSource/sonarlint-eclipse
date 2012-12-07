@@ -115,7 +115,7 @@ public class ServerLocationWizardPage extends WizardPage {
         try {
           getWizard().getContainer().run(true, true, new IRunnableWithProgress() {
 
-            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            public void run(IProgressMonitor monitor) {
               monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
               try {
                 ConnectionTestResult result = SonarCorePlugin.getServerConnectionTester().testSonar(serverUrl, username, password);
@@ -130,10 +130,6 @@ public class ServerLocationWizardPage extends WizardPage {
                     status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connection_error);
                     break;
                 }
-              } catch (OperationCanceledException e) {
-                throw new InterruptedException();
-              } catch (Exception e) {
-                throw new InvocationTargetException(e);
               } finally {
                 monitor.done();
               }
@@ -141,9 +137,11 @@ public class ServerLocationWizardPage extends WizardPage {
           });
         } catch (InvocationTargetException e1) {
           LoggerFactory.getLogger(getClass()).error(e1.getMessage(), e1);
-
           status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
-        } catch (InterruptedException e1) { // NOSONAR - canceled
+        } catch (InterruptedException e1) {
+          LoggerFactory.getLogger(getClass()).error(e1.getMessage(), e1);
+          status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
+        } catch (OperationCanceledException e1) {
           status = Status.CANCEL_STATUS;
         }
         getWizard().getContainer().updateButtons();

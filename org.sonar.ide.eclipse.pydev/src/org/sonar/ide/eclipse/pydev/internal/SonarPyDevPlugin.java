@@ -22,7 +22,6 @@ package org.sonar.ide.eclipse.pydev.internal;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.osgi.framework.BundleContext;
 import org.python.pydev.plugin.nature.PythonNature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,18 +46,6 @@ public class SonarPyDevPlugin extends AbstractPlugin {
     return plugin;
   }
 
-  @Override
-  public void start(BundleContext context) {
-    super.start(context);
-    LoggerFactory.getLogger(getClass()).debug("SonarPyDevPlugin started");
-  }
-
-  @Override
-  public void stop(BundleContext context) {
-    super.stop(context);
-    LoggerFactory.getLogger(getClass()).debug("SonarPyDevPlugin stopped");
-  }
-
   static String getRelativePath(IPath rootPath, IPath path) {
     return path.makeRelativeTo(rootPath).toString();
   }
@@ -71,8 +58,7 @@ public class SonarPyDevPlugin extends AbstractPlugin {
       LOG.error(e.getMessage(), e);
       throw new RuntimeException(e);
     }
-    String[] paths = StringUtils.split(projectSourcePath, '|');
-    return paths;
+    return StringUtils.split(projectSourcePath, '|');
   }
 
 }

@@ -97,7 +97,7 @@ public class AnalyseProjectAction implements IObjectActionDelegate {
     projects.clear();
     boolean actionEnabled = true;
     // get All selected Elements
-    if (selection != null && selection instanceof IStructuredSelection) {
+    if (selection instanceof IStructuredSelection) {
       IStructuredSelection strucSelection = (IStructuredSelection) selection;
       for (Iterator<Object> iterator = strucSelection.iterator(); iterator.hasNext();) {
         Object element = iterator.next();

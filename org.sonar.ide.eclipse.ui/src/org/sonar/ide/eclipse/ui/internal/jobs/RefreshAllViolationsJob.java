@@ -81,7 +81,7 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
         for (String resourceKey : mm.keySet()) {
           Resource sonarResource = new Resource().setKey(resourceKey);
           IResource eclipseResource = ResourceUtils.getResource(sonarResource.getKey());
-          if (eclipseResource != null && eclipseResource instanceof IFile) {
+          if (eclipseResource instanceof IFile) {
             for (Violation violation : mm.get(resourceKey)) {
               MarkerUtils.createMarkerForWSViolation(eclipseResource, violation);
             }

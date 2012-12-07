@@ -51,6 +51,10 @@ import java.util.Properties;
  */
 public class SonarEclipseRunner {
 
+  private SonarEclipseRunner() {
+    // Utility class
+  }
+
   /** Run the action. Display the Hello World message
    */
   public static IStatus run(IProject project, Properties props, final IProgressMonitor monitor) {
@@ -123,13 +127,14 @@ public class SonarEclipseRunner {
     if (project instanceof IJavaProject) {
       vmInstall = JavaRuntime.getVMInstall((IJavaProject) project);
     }
-    if (vmInstall == null)
+    if (vmInstall == null) {
       vmInstall = JavaRuntime.getDefaultVMInstall();
-    if (vmInstall == null)
+    }
+    if (vmInstall == null) {
       return null;
+    }
 
-    IVMRunner vmRunner = vmInstall.getVMRunner(ILaunchManager.RUN_MODE);
-    return vmRunner;
+    return vmInstall.getVMRunner(ILaunchManager.RUN_MODE);
   }
 
   private static String[] prepareVMArgs(Properties props) {

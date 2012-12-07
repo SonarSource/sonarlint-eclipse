@@ -173,7 +173,7 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     });
   }
 
-  private class ServersLabelProvider extends AbstractTableLabelProvider {
+  private static class ServersLabelProvider extends AbstractTableLabelProvider {
     @Override
     public String getColumnText(Object element, int columnIndex) {
       Host host = (Host) element;

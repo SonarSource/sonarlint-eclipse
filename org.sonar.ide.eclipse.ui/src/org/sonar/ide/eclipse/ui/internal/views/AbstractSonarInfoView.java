@@ -186,7 +186,7 @@ public abstract class AbstractSonarInfoView extends ViewPart implements ISelecti
   }
 
   public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-    if (part.equals(this)) {
+    if (this.equals(part)) {
       return;
     }
     if (!linking) {

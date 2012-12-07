@@ -55,7 +55,7 @@ public class ResourceAttributeEditor extends AbstractAttributeEditor {
         Integer line = getLine();
 
         IResource resource = ResourceUtils.getResource(sonarResourceKey);
-        if (resource == null || !(resource instanceof IFile)) {
+        if (!(resource instanceof IFile)) {
           MessageDialog.openWarning(null, "Resource not found", "Failed to locate resource '" + sonarResourceKey + "' in workspace.");
         } else {
           PlatformUtils.openEditor((IFile) resource, line);

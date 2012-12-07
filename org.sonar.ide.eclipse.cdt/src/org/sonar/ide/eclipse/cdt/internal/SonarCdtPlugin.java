@@ -24,8 +24,6 @@ import org.eclipse.cdt.core.model.ICElement;
 import org.eclipse.cdt.core.model.ICProject;
 import org.eclipse.cdt.core.model.ISourceRoot;
 import org.eclipse.core.runtime.IPath;
-import org.osgi.framework.BundleContext;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
 
 public class SonarCdtPlugin extends AbstractPlugin {
@@ -43,18 +41,6 @@ public class SonarCdtPlugin extends AbstractPlugin {
    */
   public static SonarCdtPlugin getDefault() {
     return plugin;
-  }
-
-  @Override
-  public void start(BundleContext context) {
-    super.start(context);
-    LoggerFactory.getLogger(getClass()).debug("SonarCdtPlugin started");
-  }
-
-  @Override
-  public void stop(BundleContext context) {
-    super.stop(context);
-    LoggerFactory.getLogger(getClass()).debug("SonarCdtPlugin stopped");
   }
 
   static String getRelativePath(IPath rootPath, IPath path) {

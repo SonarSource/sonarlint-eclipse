@@ -85,9 +85,6 @@ public abstract class SonarTestCase {
       if (destDir.isDirectory()) {
         LoggerFactory.getLogger(SonarTestCase.class).warn("Directory for project already exists: {}", destDir);
       }
-
-      // TODO interpolate files
-      // FileUtils.copyDirectory(projectFolder, destDir, HiddenFileFilter.VISIBLE);
       FileUtils.copyDirectory(projectFolder, destDir);
       return destDir;
     } finally {
@@ -111,8 +108,6 @@ public abstract class SonarTestCase {
 
   @AfterClass
   final static public void end() throws Exception {
-    // cleanWorkspace();
-
     final IWorkspaceDescription description = workspace.getDescription();
     description.setAutoBuilding(true);
     workspace.setDescription(description);

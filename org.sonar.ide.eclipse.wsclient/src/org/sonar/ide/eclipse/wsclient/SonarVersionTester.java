@@ -23,6 +23,10 @@ import org.osgi.framework.Version;
 
 public class SonarVersionTester {
 
+  private SonarVersionTester() {
+    // Utility class
+  }
+
   public static boolean isServerVersionSupported(String minimalVersion, String serverCurrentVersion) {
     return parseServerVersion(minimalVersion).compareTo(parseServerVersion(serverCurrentVersion)) <= 0;
   }

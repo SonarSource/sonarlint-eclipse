@@ -20,7 +20,6 @@
 package org.sonar.ide.eclipse.runner;
 
 import org.eclipse.core.runtime.Plugin;
-import org.osgi.framework.BundleContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,16 +32,6 @@ public class SonarRunnerPlugin extends Plugin {
 
   public SonarRunnerPlugin() {
     plugin = this; // NOSONAR
-  }
-
-  @Override
-  public void start(BundleContext context) throws Exception {
-    super.start(context);
-  }
-
-  @Override
-  public void stop(BundleContext context) throws Exception {
-    super.stop(context);
   }
 
   public static SonarRunnerPlugin getDefault() {

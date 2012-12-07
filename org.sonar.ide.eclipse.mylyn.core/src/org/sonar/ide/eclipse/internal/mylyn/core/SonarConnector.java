@@ -169,7 +169,7 @@ public class SonarConnector extends AbstractRepositoryConnector {
     }
     String sonarResourceKey = attribute.getValue();
     IResource resource = ResourceUtils.getResource(sonarResourceKey);
-    if (resource == null || !(resource instanceof IFile)) {
+    if (!(resource instanceof IFile)) {
       return;
     }
     IFile file = (IFile) resource;

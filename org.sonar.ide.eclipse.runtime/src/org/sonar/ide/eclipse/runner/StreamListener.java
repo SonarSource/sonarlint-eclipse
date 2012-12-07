@@ -48,7 +48,7 @@ public abstract class StreamListener implements IStreamListener {
    * @see org.eclipse.debug.core.IStreamListener#streamAppended(java.lang.String,
    * org.eclipse.debug.core.model.IStreamMonitor)
    */
-  public void streamAppended(String text, IStreamMonitor monitor) {
+  public final void streamAppended(String text, IStreamMonitor monitor) {
     if (fFlushed) {
       write(text);
     } else {

@@ -99,7 +99,7 @@ public class PDELoggerFactory implements ILoggerFactory {
             .getConfigurationElements();
         for (int j = 0; j < configs.length; j++) {
           IConfigurationElement c = configs[j];
-          if (c.getName().equals("loggerMapEntry")) {
+          if ("loggerMapEntry".equals(c.getName())) {
             String regex = c.getAttribute("regexp");
             String symbolicName = c.getAttribute("symbolicName");
             LoggerMapEntry e = new LoggerMapEntry();
