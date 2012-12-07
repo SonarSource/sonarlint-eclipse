@@ -19,10 +19,6 @@
  */
 package org.sonar.ide.eclipse.cdt.internal;
 
-import org.eclipse.cdt.core.model.ICContainer;
-import org.eclipse.cdt.core.model.ICElement;
-import org.eclipse.cdt.core.model.ICProject;
-import org.eclipse.cdt.core.model.ISourceRoot;
 import org.eclipse.core.runtime.IPath;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
 
@@ -45,32 +41,6 @@ public class SonarCdtPlugin extends AbstractPlugin {
 
   static String getRelativePath(IPath rootPath, IPath path) {
     return path.makeRelativeTo(rootPath).toOSString();
-  }
-
-  /**
-   * COPIED from {org.eclipse.cdt.internal.ui.wizards.classwizard.NewClassWizardUtil}
-   * Returns the parent source folder of the given element. If the given
-   * element is already a source folder, the element itself is returned.
-   *
-   * @param element the C Element
-   * @return the source folder
-   */
-  public static ICContainer getSourceFolder(ICElement element) {
-    ICContainer folder = null;
-    boolean foundSourceRoot = false;
-    ICElement curr = element;
-    while (curr != null && !foundSourceRoot) {
-      if (curr instanceof ICContainer && folder == null) {
-        folder = (ICContainer) curr;
-      }
-      foundSourceRoot = (curr instanceof ISourceRoot);
-      curr = curr.getParent();
-    }
-    if (folder == null) {
-      ICProject cproject = element.getCProject();
-      folder = cproject.findSourceRoot(cproject.getProject());
-    }
-    return folder;
   }
 
 }

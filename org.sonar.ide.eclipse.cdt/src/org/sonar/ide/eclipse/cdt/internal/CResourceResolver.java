@@ -37,7 +37,7 @@ public class CResourceResolver extends ResourceResolver {
   public String getSonarPartialKey(IResource resource) {
     ICElement cElement = CoreModel.getDefault().create(resource);
     if (cElement != null) {
-      ICContainer sourceRoot = SonarCdtPlugin.getSourceFolder(cElement);
+      ICContainer sourceRoot = cElement.getCProject().findSourceRoot(cElement.getResource());
       if (sourceRoot != null) {
         return SonarCdtPlugin.getRelativePath(sourceRoot.getPath(), cElement.getPath());
       }

@@ -47,12 +47,14 @@ public class PythonResourceResolver extends ResourceResolver {
   @Override
   public IResource locate(IProject project, String resourceKey) {
     PythonNature pyProject = PythonNature.getPythonNature(project);
-    for (String src : SonarPyDevPlugin.getSourceFolders(pyProject)) {
-      IPath srcPath = new Path(getAbsolutePath(new Path(src)));
-      IPath resourcePath = srcPath.append(resourceKey);
-      if (resourcePath.toFile().exists()) {
-        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-        return root.getFileForLocation(resourcePath);
+    if (pyProject != null) {
+      for (String src : SonarPyDevPlugin.getSourceFolders(pyProject)) {
+        IPath srcPath = new Path(getAbsolutePath(new Path(src)));
+        IPath resourcePath = srcPath.append(resourceKey);
+        if (resourcePath.toFile().exists()) {
+          IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+          return root.getFileForLocation(resourcePath);
+        }
       }
     }
     return null;
