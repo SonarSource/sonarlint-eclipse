@@ -42,7 +42,7 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) throws CoreException {
     if (!SonarNature.hasSonarNature(request.getProject())) {
-      SonarMavenInfos infos = new SonarMavenInfos(request.getMavenProjectFacade());
+      SonarMavenInfos infos = new SonarMavenInfos(request.getMavenProjectFacade(), monitor);
       Collection<SonarServer> servers = SonarCorePlugin.getServersManager().getServers();
       if (servers.size() > 0) {
         String url = servers.iterator().next().getUrl();
@@ -52,11 +52,11 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
   }
 
   @Override
-  public void mavenProjectChanged(MavenProjectChangedEvent event, IProgressMonitor monitor) {
+  public void mavenProjectChanged(MavenProjectChangedEvent event, IProgressMonitor monitor) throws CoreException {
     IProject project = event.getMavenProject().getProject();
     if (SonarNature.hasSonarNature(project)) {
-      SonarMavenInfos oldInfos = new SonarMavenInfos(event.getOldMavenProject());
-      SonarMavenInfos newInfos = new SonarMavenInfos(event.getMavenProject());
+      SonarMavenInfos oldInfos = new SonarMavenInfos(event.getOldMavenProject(), monitor);
+      SonarMavenInfos newInfos = new SonarMavenInfos(event.getMavenProject(), monitor);
       if (oldInfos.equals(newInfos)) {
         return;
       }
@@ -74,10 +74,10 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
     private String artifactId;
     private String branch;
 
-    public SonarMavenInfos(IMavenProjectFacade facade) {
+    public SonarMavenInfos(IMavenProjectFacade facade, IProgressMonitor monitor) throws CoreException {
       groupId = facade.getArtifactKey().getGroupId();
       artifactId = facade.getArtifactKey().getArtifactId();
-      Object branchObj = facade.getMavenProject().getProperties().get(SonarProperties.PROJECT_BRANCH_PROPERTY);
+      Object branchObj = facade.getMavenProject(monitor).getProperties().get(SonarProperties.PROJECT_BRANCH_PROPERTY);
       branch = branchObj != null ? branchObj.toString() : null;
     }
 
