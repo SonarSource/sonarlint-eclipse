@@ -24,7 +24,9 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -126,7 +128,6 @@ public final class MarkerUtils {
     if ("info".equalsIgnoreCase(violation.getSeverity())) {
       return Integer.valueOf(IMarker.PRIORITY_LOW);
     }
-    // TODO handle unknown severity
     return Integer.valueOf(IMarker.PRIORITY_LOW);
   }
 
@@ -159,6 +160,14 @@ public final class MarkerUtils {
       resource.deleteMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     } catch (CoreException e) {
       LOG.error(e.getMessage(), e);
+    }
+  }
+
+  public static void updateAllSonarMarkerSeverity(int newSeverity) throws CoreException {
+    for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+      for (IMarker marker : project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE)) {
+        marker.setAttribute(IMarker.SEVERITY, newSeverity);
+      }
     }
   }
 

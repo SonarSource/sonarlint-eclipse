@@ -20,12 +20,15 @@
 package org.sonar.ide.eclipse.ui.internal;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.runner.SonarRunnerLogListener;
@@ -39,6 +42,8 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   private static SonarUiPlugin plugin;
 
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
+
+  private final Logger logger = LoggerFactory.getLogger(SonarUiPlugin.class);
 
   private IPropertyChangeListener listener;
 
@@ -63,7 +68,13 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     listener = new IPropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent event) {
         if (event.getProperty().equals(PREF_MARKER_SEVERITY)) {
-          MarkerUtils.setMarkerSeverity(getPreferenceStore().getInt(PREF_MARKER_SEVERITY));
+          int newSeverity = getPreferenceStore().getInt(PREF_MARKER_SEVERITY);
+          MarkerUtils.setMarkerSeverity(newSeverity);
+          try {
+            MarkerUtils.updateAllSonarMarkerSeverity(newSeverity);
+          } catch (CoreException e) {
+            logger.error("Unable to update marker severity", e);
+          }
         }
       }
     };
