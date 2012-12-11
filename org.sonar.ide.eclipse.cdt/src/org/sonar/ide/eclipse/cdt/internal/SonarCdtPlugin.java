@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.cdt.internal;
 
-import org.eclipse.core.runtime.IPath;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
 
 public class SonarCdtPlugin extends AbstractPlugin {
@@ -37,10 +36,6 @@ public class SonarCdtPlugin extends AbstractPlugin {
    */
   public static SonarCdtPlugin getDefault() {
     return plugin;
-  }
-
-  static String getRelativePath(IPath rootPath, IPath path) {
-    return path.makeRelativeTo(rootPath).toOSString();
   }
 
 }

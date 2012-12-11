@@ -39,10 +39,14 @@ public class CResourceResolver extends ResourceResolver {
     if (cElement != null) {
       ICContainer sourceRoot = cElement.getCProject().findSourceRoot(cElement.getResource());
       if (sourceRoot != null) {
-        return SonarCdtPlugin.getRelativePath(sourceRoot.getPath(), cElement.getPath());
+        return getRelativePath(sourceRoot.getPath(), cElement.getPath());
       }
     }
     return null;
+  }
+
+  private static String getRelativePath(IPath rootPath, IPath path) {
+    return path.makeRelativeTo(rootPath).toString();
   }
 
   @Override
