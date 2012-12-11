@@ -165,8 +165,10 @@ public final class MarkerUtils {
 
   public static void updateAllSonarMarkerSeverity(int newSeverity) throws CoreException {
     for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-      for (IMarker marker : project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE)) {
-        marker.setAttribute(IMarker.SEVERITY, newSeverity);
+      if (project.isAccessible()) {
+        for (IMarker marker : project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE)) {
+          marker.setAttribute(IMarker.SEVERITY, newSeverity);
+        }
       }
     }
   }
