@@ -33,10 +33,11 @@ import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 public class SonarPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
   public SonarPreferencePage() {
-    super(GRID);
+    super(Messages.SonarPreferencePage_title, GRID);
   }
 
   public void init(IWorkbench workbench) {
+	setDescription(Messages.SonarPreferencePage_description);
     setPreferenceStore(SonarUiPlugin.getDefault().getPreferenceStore());
   }
 
