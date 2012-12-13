@@ -32,8 +32,6 @@ import java.util.List;
 public interface ISonarServersManager {
   Collection<SonarServer> getServers();
 
-  // TODO From old implementation, so should be reviewed :
-
   List<Host> getHosts();
 
   void removeServer(String host);

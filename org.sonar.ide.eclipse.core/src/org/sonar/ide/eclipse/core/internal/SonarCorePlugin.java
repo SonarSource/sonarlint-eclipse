@@ -52,7 +52,7 @@ public class SonarCorePlugin extends AbstractPlugin {
   private static SonarCorePlugin plugin;
 
   public SonarCorePlugin() {
-    plugin = this; // NOSONAR
+    plugin = this;
   }
 
   public static SonarCorePlugin getDefault() {

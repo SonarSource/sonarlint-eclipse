@@ -59,7 +59,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   public void shouldConfigureAnalysis() throws Exception {
     AnalyseProjectJob job = new AnalyseProjectJob(project, false);
     Properties props = new Properties();
-    job.configureAnalysis(monitor, props);
+    job.configureAnalysis(MONITOR, props);
 
     assertThat(props.get(SonarProperties.SONAR_URL).toString(), is("http://localhost:9000"));
     assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString(), is("bar:foo"));
@@ -68,7 +68,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   @Test
   public void shouldCreateMarkers() throws Exception {
     AnalyseProjectJob job = new AnalyseProjectJob(project, false);
-    job.createMarkers(monitor, new File("testdata/dryRun.json"));
+    job.createMarkers(MONITOR, new File("testdata/dryRun.json"));
 
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
     assertThat(markers.size(), is(6));
