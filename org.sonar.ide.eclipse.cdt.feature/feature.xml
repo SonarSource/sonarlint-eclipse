@@ -71,4 +71,13 @@
          version="0.0.0"
          unpack="false"/>
 
+   <!-- SONARIDE-182 Ensure we have the launching on MacOSX -->
+   <plugin
+         id="org.eclipse.jdt.launching.macosx"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"
+         os="macosx"/>
+
 </feature>
