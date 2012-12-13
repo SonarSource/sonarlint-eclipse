@@ -23,12 +23,12 @@
          Needed feature for analysing JDT projects with Sonar.
       </description>
    </category-def>
-   <category-def name="Sonar C/C++" label="Sonar C/C++">
+   <category-def name="Sonar C/C++" label="Sonar C/C + (requires Eclipse CDT and the SonarSource C++ plugin)">
       <description>
          Needed feature for analysing CDT projects with Sonar.
       </description>
    </category-def>
-   <category-def name="Sonar Python" label="Sonar Python">
+   <category-def name="Sonar Python" label="Sonar Python (requires Eclipse PyDev and the Sonar Python plugin)">
       <description>
          Needed feature for analysing PyDev projects with Sonar.
       </description>
