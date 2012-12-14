@@ -144,7 +144,7 @@
     <dependency>
       <groupId>org.codehaus.sonar</groupId>
       <artifactId>sonar-ws-client</artifactId>
-      <version>3.4-SNAPSHOT</version>
+      <version>3.4-RC2</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
