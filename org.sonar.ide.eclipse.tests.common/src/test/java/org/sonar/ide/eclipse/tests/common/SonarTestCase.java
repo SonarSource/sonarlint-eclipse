@@ -54,15 +54,15 @@ public abstract class SonarTestCase {
 
   private static final Logger LOG = LoggerFactory.getLogger(SonarTestCase.class);
 
-  protected static final IProgressMonitor monitor = new NullProgressMonitor();
+  protected static final IProgressMonitor MONITOR = new NullProgressMonitor();
   protected static IWorkspace workspace;
 
   protected static File projectsSource;
   protected static File projectsWorkdir;
-  private static final ReadWriteLock copyProjectLock = new ReentrantReadWriteLock();
+  private static final ReadWriteLock COPY_PROJECT_LOCK = new ReentrantReadWriteLock();
 
   protected static File getProject(String projectName) throws IOException {
-    File destDir = new File(projectsWorkdir, projectName); // TODO include testName
+    File destDir = new File(projectsWorkdir, projectName);
     return getProject(projectName, destDir);
   }
 
@@ -78,7 +78,7 @@ public abstract class SonarTestCase {
    *           if unable to prepare project directory
    */
   protected static File getProject(String projectName, File destDir) throws IOException {
-    copyProjectLock.writeLock().lock();
+    COPY_PROJECT_LOCK.writeLock().lock();
     try {
       File projectFolder = new File(projectsSource, projectName);
       assertTrue("Project " + projectName + " folder not found.\n" + projectFolder.getAbsolutePath(), projectFolder.isDirectory());
@@ -88,7 +88,7 @@ public abstract class SonarTestCase {
       FileUtils.copyDirectory(projectFolder, destDir);
       return destDir;
     } finally {
-      copyProjectLock.writeLock().unlock();
+      COPY_PROJECT_LOCK.writeLock().unlock();
     }
   }
 
@@ -121,7 +121,7 @@ public abstract class SonarTestCase {
     }
     final IWorkspaceRoot root = workspace.getRoot();
     for (final IProject project : root.getProjects()) {
-      project.delete(true, true, monitor);
+      project.delete(true, true, MONITOR);
     }
   }
 
@@ -155,7 +155,7 @@ public abstract class SonarTestCase {
         }
         addedProjectList.add(project);
       }
-    }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
+    }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, MONITOR);
     JobHelpers.waitForJobsToComplete();
     LOG.info("Eclipse project imported");
     return addedProjectList.get(0);

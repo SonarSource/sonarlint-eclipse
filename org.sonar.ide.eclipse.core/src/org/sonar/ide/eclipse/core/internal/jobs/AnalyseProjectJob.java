@@ -40,6 +40,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
@@ -71,7 +72,8 @@ public class AnalyseProjectJob extends Job {
     this.project = project;
     this.debugEnabled = debugEnabled;
     sonarProject = SonarProject.getInstance(project);
-    setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule()); // Prevent modifications of project during analysis
+    // Prevent modifications of project during analysis
+    setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
   }
 
   @Override
@@ -93,7 +95,8 @@ public class AnalyseProjectJob extends Job {
     File outputFile = configureAnalysis(monitor, properties);
 
     // Analyse
-    FileUtils.deleteQuietly(outputFile); // To be sure to not reuse something from a previous analysis
+    // To be sure to not reuse something from a previous analysis
+    FileUtils.deleteQuietly(outputFile);
     IStatus result = SonarEclipseRunner.run(project, properties, monitor);
     if (result != Status.OK_STATUS) {
       return result;
@@ -139,7 +142,7 @@ public class AnalyseProjectJob extends Job {
       });
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
-      throw new RuntimeException(e);
+      throw new SonarEclipseException("Unable to create markers", e);
     } finally {
       IOUtils.closeQuietly(fileReader);
     }
@@ -172,7 +175,8 @@ public class AnalyseProjectJob extends Job {
     properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
     properties.setProperty(SonarProperties.WORK_DIR, pluginWorkDir.toString());
     properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
-    properties.setProperty(SonarProperties.DRY_RUN_OUTPUT_PROPERTY, outputFile.getName()); // Output file is relative to working dir
+    // Output file is relative to working dir
+    properties.setProperty(SonarProperties.DRY_RUN_OUTPUT_PROPERTY, outputFile.getName());
     if (debugEnabled) {
       properties.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
     }

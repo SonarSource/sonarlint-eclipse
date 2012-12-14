@@ -35,29 +35,31 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LoggerMapEntry {
-	private String symbolicName;
-	private Pattern pattern;
-	
-	public String getRegex() {
-		return pattern.pattern();
-	}
-	public void setRegex(String regex) {
-		this.pattern = Pattern.compile(regex);
-	}
-	
-	public String getSymbolicName() {
-		return symbolicName;
-	}
-	public void setSymbolicName(String symbolicName) {
-		this.symbolicName = symbolicName;
-	}
-	
-	public Matcher matcher(String loggerName) {
-		return pattern.matcher(loggerName);
-	}
-	
-	public boolean matches(String loggerName) {
-		return pattern.matcher(loggerName).matches();
-	}
-	
+  private String symbolicName;
+  private Pattern pattern;
+
+  public String getRegex() {
+    return pattern.pattern();
+  }
+
+  public void setRegex(String regex) {
+    this.pattern = Pattern.compile(regex);
+  }
+
+  public String getSymbolicName() {
+    return symbolicName;
+  }
+
+  public void setSymbolicName(String symbolicName) {
+    this.symbolicName = symbolicName;
+  }
+
+  public Matcher matcher(String loggerName) {
+    return pattern.matcher(loggerName);
+  }
+
+  public boolean matches(String loggerName) {
+    return pattern.matcher(loggerName).matches();
+  }
+
 }

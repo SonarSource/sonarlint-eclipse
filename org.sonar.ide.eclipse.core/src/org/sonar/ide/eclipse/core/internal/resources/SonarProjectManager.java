@@ -41,19 +41,19 @@ public class SonarProjectManager {
   private static final String P_SONAR_SERVER_URL = "serverUrl";
 
   /**
-   * @deprecated
+   * @deprecated Replaced by P_PROJECT_KEY
    */
   @Deprecated
   private static final String P_PROJECT_GROUPID = "projectGroupId";
 
   /**
-   * @deprecated
+   * @deprecated Replaced by P_PROJECT_KEY
    */
   @Deprecated
   private static final String P_PROJECT_ARTIFACTID = "projectArtifactId";
 
   /**
-   * @deprecated
+   * @deprecated Replaced by P_PROJECT_KEY
    */
   @Deprecated
   private static final String P_PROJECT_BRANCH = "projectBranch";

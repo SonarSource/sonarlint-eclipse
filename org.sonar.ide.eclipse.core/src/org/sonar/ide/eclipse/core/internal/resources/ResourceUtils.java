@@ -75,7 +75,8 @@ public final class ResourceUtils {
         ISonarProject sonarProject = SonarProject.getInstance(project);
         if (sonarProject != null && resourceKey.startsWith(sonarProject.getKey())) {
           String resourceKeyMinusProjectKey = resourceKey.substring(
-              sonarProject.getKey().length() + 1); // +1 because ":"
+              // +1 because ":"
+              sonarProject.getKey().length() + 1);
           String[] parts = StringUtils.split(resourceKeyMinusProjectKey, SonarKeyUtils.PROJECT_DELIMITER);
           String partialResourceKey = parts.length > 0 ? parts[0] : "";
           for (ResourceResolver resolver : getResolvers()) {
@@ -90,7 +91,7 @@ public final class ResourceUtils {
     return null;
   }
 
-  private synchronized static List<ResourceResolver> getResolvers() {
+  private static synchronized List<ResourceResolver> getResolvers() {
     if (resolvers == null) {
       resolvers = new ArrayList<ResourceResolver>();
       IExtensionRegistry registry = Platform.getExtensionRegistry();
