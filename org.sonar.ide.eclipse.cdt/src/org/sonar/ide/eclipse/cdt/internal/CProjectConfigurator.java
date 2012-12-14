@@ -53,7 +53,7 @@ public class CProjectConfigurator extends ProjectConfigurator {
   private void configureCProject(ICProject cProject, Properties sonarProjectProperties) {
     sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "cpp");
     try {
-      ISourceRoot[] sourceRoots = cProject.getSourceRoots();
+      ISourceRoot[] sourceRoots = cProject.getAllSourceRoots();
       for (ISourceRoot sourceRoot : sourceRoots) {
         appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(sourceRoot.getPath()));
       }
