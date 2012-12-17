@@ -137,6 +137,7 @@
     <sonar.java.source>1.5</sonar.java.source>
     <sonar.java.target>1.5</sonar.java.target>
     <sonar.scm.ignoreLocalModifications>true</sonar.scm.ignoreLocalModifications>
+    <sonar.skippedModules>org.sonar.ide.eclipse.tests.common,org.sonar.ide.eclipse.core.tests,org.sonar.ide.eclipse.mylyn.tests</sonar.skippedModules>
   </properties>
 
   <!-- These dependencies will be added to the target platform -->
