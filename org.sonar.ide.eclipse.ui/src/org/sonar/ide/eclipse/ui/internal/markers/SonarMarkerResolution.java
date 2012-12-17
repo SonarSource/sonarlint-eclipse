@@ -54,13 +54,11 @@ public class SonarMarkerResolution implements IMarkerResolution2 {
 
   public void run(final IMarker marker) {
     final IResource resource = marker.getResource();
-    if ((resource instanceof IFile) && resource.isAccessible()) {
-      if (resolver.resolve(marker, (IFile) resource)) {
-        try {
-          marker.delete();
-        } catch (final CoreException e) {
-          LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
-        }
+    if ((resource instanceof IFile) && resource.isAccessible() && resolver.resolve(marker, (IFile) resource)) {
+      try {
+        marker.delete();
+      } catch (final CoreException e) {
+        LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
       }
     }
   }

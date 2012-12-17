@@ -26,18 +26,14 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.api.SourceCode;
 import org.sonar.ide.api.SourceCodeDiff;
 import org.sonar.ide.shared.violations.ViolationUtils;
-import org.sonar.wsclient.services.Measure;
 import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
-import org.sonar.wsclient.services.Rule;
-import org.sonar.wsclient.services.RuleQuery;
 import org.sonar.wsclient.services.Source;
 import org.sonar.wsclient.services.SourceQuery;
 import org.sonar.wsclient.services.Violation;
 import org.sonar.wsclient.services.ViolationQuery;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -157,21 +153,6 @@ class RemoteSourceCode implements SourceCode {
    */
   public List<Violation> getViolations2() {
     return getRemoteSonarIndex().getSonar().findAll(new ViolationQuery(key).setDepth(-1).setIncludeReview(true));
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public List<Rule> getRules() {
-    LOG.debug("Loading rules for {}", getKey());
-    final Resource resource = index.getSonar().find(ResourceQuery.createForMetrics(getKey(), "profile"));
-    final Measure measure = resource.getMeasure("profile");
-    if (measure == null) {
-      return Collections.emptyList();
-    }
-    final List<Rule> rules = getRemoteSonarIndex().getSonar().findAll(new RuleQuery(/* TODO */"java").setProfile(measure.getData()));
-    LOG.debug("Loaded {} rules for profile {}", rules.size(), measure.getData());
-    return rules;
   }
 
   private Source getCode() {

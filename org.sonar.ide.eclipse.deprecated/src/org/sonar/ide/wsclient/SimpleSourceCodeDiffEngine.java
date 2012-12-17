@@ -70,10 +70,9 @@ public class SimpleSourceCodeDiffEngine implements SourceCodeDiffEngine {
     int newLine = -1;
     int originalHashCode = getHashCode(originalSourceLine);
     // line might not exists in working copy
-    if ((originalLine - 1) < hashCodes.length) {
-      if (hashCodes[originalLine - 1] == originalHashCode) {
-        newLine = originalLine;
-      }
+    if ((originalLine - 1) < hashCodes.length
+      && hashCodes[originalLine - 1] == originalHashCode) {
+      newLine = originalLine;
     }
     for (int i = 0; i < hashCodes.length; i++) {
       if (hashCodes[i] == originalHashCode) {

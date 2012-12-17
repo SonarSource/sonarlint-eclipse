@@ -31,7 +31,7 @@ public class SonarRunnerPlugin extends Plugin {
   private static SonarRunnerPlugin plugin;
 
   public SonarRunnerPlugin() {
-    plugin = this; // NOSONAR
+    plugin = this;
   }
 
   public static SonarRunnerPlugin getDefault() {

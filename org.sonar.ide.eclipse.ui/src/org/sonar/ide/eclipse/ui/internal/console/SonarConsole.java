@@ -30,6 +30,7 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
+import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.runner.SonarRunnerLogListener;
 import org.sonar.ide.eclipse.ui.internal.ISonarConsole;
 import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
@@ -94,7 +95,7 @@ public class SonarConsole extends IOConsole implements SonarRunnerLogListener, I
     try {
       stream.write(msg);
     } catch (IOException e) {
-      e.printStackTrace(); // NOSONAR Don't log using slf4j - it will cause a cycle
+      throw new SonarEclipseException("Unable to write in console", e);
     }
   }
 

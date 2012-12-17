@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.api;
 
-import org.sonar.wsclient.services.Rule;
 import org.sonar.wsclient.services.Violation;
 
 import java.util.List;
@@ -39,7 +38,5 @@ public interface Measurable {
   List<Violation> getViolations();
 
   List<Violation> getViolations2();
-
-  List<Rule> getRules();
 
 }

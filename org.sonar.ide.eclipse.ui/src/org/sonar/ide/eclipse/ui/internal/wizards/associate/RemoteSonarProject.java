@@ -30,7 +30,7 @@ package org.sonar.ide.eclipse.ui.internal.wizards.associate;
  */
 public class RemoteSonarProject {
 
-  private final static String SEPARATOR = "|";
+  private static final String SEPARATOR = "|";
 
   private String url;
   private String name;

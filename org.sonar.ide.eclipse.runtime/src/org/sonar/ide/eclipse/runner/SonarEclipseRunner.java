@@ -56,8 +56,11 @@ public class SonarEclipseRunner {
   }
 
   /** Run the action. Display the Hello World message
+   * @throws InterruptedException
+   * @throws CoreException
+   * @throws IOException
    */
-  public static IStatus run(IProject project, Properties props, final IProgressMonitor monitor) {
+  public static IStatus run(IProject project, Properties props, final IProgressMonitor monitor) throws InterruptedException, CoreException, IOException {
 
     File tmpSonarRunnerJarPath = null;
     try {
@@ -68,29 +71,9 @@ public class SonarEclipseRunner {
         return new Status(Status.ERROR, SonarRunnerPlugin.PLUGIN_ID, "No usable JVM found");
       }
 
-      VMRunnerConfiguration vmConfig = new VMRunnerConfiguration("org.sonar.runner.Main", new String[] {tmpSonarRunnerJarPath.toString()});
-      vmConfig.setWorkingDirectory(project.getLocation().toOSString());
-      vmConfig.setVMArguments(prepareVMArgs(props));
+      VMRunnerConfiguration vmConfig = createVmConfig(project, props, tmpSonarRunnerJarPath);
 
-      final ILaunch launch = new Launch(null, ILaunchManager.RUN_MODE, null) {
-
-        @Override
-        public void addProcess(IProcess process) {
-          new StreamListener(process.getStreamsProxy().getErrorStreamMonitor()) {
-            @Override
-            protected void write(String text) {
-              SonarRunnerPlugin.getDefault().error(text);
-            }
-          };
-          new StreamListener(process.getStreamsProxy().getOutputStreamMonitor()) {
-            @Override
-            protected void write(String text) {
-              SonarRunnerPlugin.getDefault().info(text);
-            }
-          };
-          super.addProcess(process);
-        }
-      };
+      final ILaunch launch = createLaunch();
 
       // Start process
       vmRunner.run(vmConfig, launch, monitor);
@@ -114,12 +97,40 @@ public class SonarEclipseRunner {
         return new Status(Status.ERROR, SonarRunnerPlugin.PLUGIN_ID, "Check Sonar console for details");
       }
 
-    } catch (Exception e) {
-      throw new RuntimeException(e);
     } finally {
       FileUtils.deleteQuietly(tmpSonarRunnerJarPath);
     }
 
+  }
+
+  private static ILaunch createLaunch() {
+    final ILaunch launch = new Launch(null, ILaunchManager.RUN_MODE, null) {
+
+      @Override
+      public void addProcess(IProcess process) {
+        new StreamListener(process.getStreamsProxy().getErrorStreamMonitor()) {
+          @Override
+          protected void write(String text) {
+            SonarRunnerPlugin.getDefault().error(text);
+          }
+        };
+        new StreamListener(process.getStreamsProxy().getOutputStreamMonitor()) {
+          @Override
+          protected void write(String text) {
+            SonarRunnerPlugin.getDefault().info(text);
+          }
+        };
+        super.addProcess(process);
+      }
+    };
+    return launch;
+  }
+
+  private static VMRunnerConfiguration createVmConfig(IProject project, Properties props, File tmpSonarRunnerJarPath) {
+    VMRunnerConfiguration vmConfig = new VMRunnerConfiguration("org.sonar.runner.Main", new String[] {tmpSonarRunnerJarPath.toString()});
+    vmConfig.setWorkingDirectory(project.getLocation().toOSString());
+    vmConfig.setVMArguments(prepareVMArgs(props));
+    return vmConfig;
   }
 
   private static IVMRunner getVMRunner(IProject project) throws CoreException {

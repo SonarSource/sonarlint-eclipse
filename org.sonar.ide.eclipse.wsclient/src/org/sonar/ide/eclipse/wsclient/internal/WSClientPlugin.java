@@ -35,7 +35,7 @@ public class WSClientPlugin extends Plugin {
   private static WSClientPlugin plugin;
 
   public WSClientPlugin() {
-    plugin = this; // NOSONAR
+    plugin = this;
   }
 
   public static IProxyData[] selectProxy(URI uri) {

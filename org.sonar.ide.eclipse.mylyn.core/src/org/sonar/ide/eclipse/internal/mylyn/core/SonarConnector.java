@@ -133,7 +133,8 @@ public class SonarConnector extends AbstractRepositoryConnector {
         resultCollector.accept(taskData);
       }
 
-      if (session != null) { // See SONARIDE-246
+      // See SONARIDE-246
+      if (session != null) {
         /*
          * Godin: I'm not sure that all tasks from session should be marked as stale,
          * however this allows to update attributes in case when SonarTaskSchema was updated.

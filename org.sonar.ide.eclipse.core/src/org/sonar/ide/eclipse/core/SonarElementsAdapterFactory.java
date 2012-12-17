@@ -72,13 +72,17 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
       ISonarProject sonarProject = SonarProject.getInstance(parentProject);
       String keyWithoutProject = ResourceUtils.getSonarResourcePartialKey(resource);
       if (keyWithoutProject != null) {
-        if (resource instanceof IFile) {
-          return SonarCorePlugin.createSonarFile((IFile) resource, SonarKeyUtils.resourceKey(sonarProject, keyWithoutProject), resource.getName());
-        }
-        return SonarCorePlugin.createSonarResource(resource, SonarKeyUtils.resourceKey(sonarProject, keyWithoutProject), resource.getName());
+        return createSonarResource(resource, sonarProject, keyWithoutProject);
       }
     }
     return null;
+  }
+
+  private ISonarResource createSonarResource(IResource resource, ISonarProject sonarProject, String keyWithoutProject) {
+    if (resource instanceof IFile) {
+      return SonarCorePlugin.createSonarFile((IFile) resource, SonarKeyUtils.resourceKey(sonarProject, keyWithoutProject), resource.getName());
+    }
+    return SonarCorePlugin.createSonarResource(resource, SonarKeyUtils.resourceKey(sonarProject, keyWithoutProject), resource.getName());
   }
 
   private boolean isConfigured(IProject project) {

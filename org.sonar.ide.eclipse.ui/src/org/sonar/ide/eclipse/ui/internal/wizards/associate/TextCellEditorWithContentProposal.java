@@ -28,8 +28,6 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
 public class TextCellEditorWithContentProposal extends TextCellEditor {
 
-  private ContentProposalAdapter contentProposalAdapter;
-
   public TextCellEditorWithContentProposal(Composite parent, IContentProposalProvider contentProposalProvider,
       ProjectAssociationModel sonarProject) {
     super(parent);
@@ -38,7 +36,7 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
   }
 
   private void enableContentProposal(IContentProposalProvider contentProposalProvider, ProjectAssociationModel sonarProject) {
-    contentProposalAdapter = new ContentAssistCommandAdapter(
+    ContentProposalAdapter contentProposalAdapter = new ContentAssistCommandAdapter(
         text,
         new RemoteSonarProjectTextContentAdapter(sonarProject),
         contentProposalProvider,

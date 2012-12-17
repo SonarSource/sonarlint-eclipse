@@ -103,7 +103,8 @@ public class RefreshViolationsJob extends AbstractRemoteSonarJob implements IRes
     if (resource instanceof IFile) {
       IFile file = (IFile) resource;
       retrieveMarkers(file, monitor);
-      return false; // do not visit members of this resource
+      // do not visit members of this resource
+      return false;
     }
     return true;
   }

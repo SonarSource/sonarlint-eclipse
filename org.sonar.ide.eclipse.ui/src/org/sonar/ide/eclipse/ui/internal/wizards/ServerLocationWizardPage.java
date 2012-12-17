@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.Messages;
@@ -54,7 +55,6 @@ public class ServerLocationWizardPage extends WizardPage {
   private Text serverUrlText;
   private Text serverUsernameText;
   private Text serverPasswordText;
-  private Button testConnectionButton;
   private IStatus status;
 
   public ServerLocationWizardPage() {
@@ -75,6 +75,8 @@ public class ServerLocationWizardPage extends WizardPage {
     container.setLayout(layout);
     layout.numColumns = 2;
     layout.verticalSpacing = 9;
+
+    // Sonar Server URL
     Label label = new Label(container, SWT.NULL);
     label.setText(Messages.ServerLocationWizardPage_label_host);
     serverUrlText = new Text(container, SWT.BORDER | SWT.SINGLE);
@@ -99,7 +101,15 @@ public class ServerLocationWizardPage extends WizardPage {
     serverPasswordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
     // Sonar test connection button
-    testConnectionButton = new Button(container, SWT.PUSH);
+    createTestConnectionButton(container);
+
+    initialize();
+    dialogChanged();
+    setControl(container);
+  }
+
+  private void createTestConnectionButton(Composite container) {
+    Button testConnectionButton = new Button(container, SWT.PUSH);
     testConnectionButton.setText(Messages.ServerLocationWizardPage_action_test);
     testConnectionButton.setToolTipText(Messages.ServerLocationWizardPage_action_test_tooltip);
     testConnectionButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
@@ -129,6 +139,8 @@ public class ServerLocationWizardPage extends WizardPage {
                   case CONNECT_ERROR:
                     status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connection_error);
                     break;
+                  default:
+                    throw new SonarEclipseException("Unknow status code: " + result);
                 }
               } finally {
                 monitor.done();
@@ -157,10 +169,6 @@ public class ServerLocationWizardPage extends WizardPage {
         }
       }
     });
-
-    initialize();
-    dialogChanged();
-    setControl(container);
   }
 
   private void initialize() {

@@ -69,9 +69,9 @@ public class SonarSearchEngineProvider implements IContentProposalProvider {
         list.add(new ContentProposal(prj.asString(), resource.name(), prj.getDescription()));
       }
     }
-    if (list.size() > 0) {
+    if (!list.isEmpty()) {
       parentPage.setMessage("", IMessageProvider.NONE);
-      return (IContentProposal[]) list.toArray(new IContentProposal[list.size()]);
+      return list.toArray(new IContentProposal[list.size()]);
     }
     else {
       parentPage.setMessage("No result", IMessageProvider.INFORMATION);

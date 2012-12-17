@@ -44,7 +44,8 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
     if (!SonarNature.hasSonarNature(request.getProject())) {
       SonarMavenInfos infos = new SonarMavenInfos(request.getMavenProjectFacade(), monitor);
       Collection<SonarServer> servers = SonarCorePlugin.getServersManager().getServers();
-      if (servers.size() > 0) {
+      if (!servers.isEmpty()) {
+        // Take the first configured server
         String url = servers.iterator().next().getUrl();
         SonarCorePlugin.createSonarProject(request.getProject(), url, infos.getKey(), false);
       }

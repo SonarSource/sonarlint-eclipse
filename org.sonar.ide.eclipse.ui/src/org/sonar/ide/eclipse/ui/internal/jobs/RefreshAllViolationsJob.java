@@ -71,25 +71,30 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
       EclipseSonar sonar = EclipseSonar.getInstance(project);
       SourceCode sourceCode = sonar.search(project);
       if (sourceCode != null) {
-        List<Violation> violations = sourceCode.getViolations2();
-        // Split violations by resource
-        ArrayListMultimap<String, Violation> mm = ArrayListMultimap.create();
-        for (Violation violation : violations) {
-          mm.put(violation.getResourceKey(), violation);
-        }
-        // Associate violations with resources
-        for (String resourceKey : mm.keySet()) {
-          Resource sonarResource = new Resource().setKey(resourceKey);
-          IResource eclipseResource = ResourceUtils.getResource(sonarResource.getKey());
-          if (eclipseResource instanceof IFile) {
-            for (Violation violation : mm.get(resourceKey)) {
-              MarkerUtils.createMarkerForWSViolation(eclipseResource, violation);
-            }
-          }
-        }
+        doRefreshViolation(sourceCode);
       }
-      return false; // do not visit members of this resource
+      // do not visit members of this resource
+      return false;
     }
     return true;
+  }
+
+  private void doRefreshViolation(SourceCode sourceCode) throws CoreException {
+    List<Violation> violations = sourceCode.getViolations2();
+    // Split violations by resource
+    ArrayListMultimap<String, Violation> mm = ArrayListMultimap.create();
+    for (Violation violation : violations) {
+      mm.put(violation.getResourceKey(), violation);
+    }
+    // Associate violations with resources
+    for (String resourceKey : mm.keySet()) {
+      Resource sonarResource = new Resource().setKey(resourceKey);
+      IResource eclipseResource = ResourceUtils.getResource(sonarResource.getKey());
+      if (eclipseResource instanceof IFile) {
+        for (Violation violation : mm.get(resourceKey)) {
+          MarkerUtils.createMarkerForWSViolation(eclipseResource, violation);
+        }
+      }
+    }
   }
 }

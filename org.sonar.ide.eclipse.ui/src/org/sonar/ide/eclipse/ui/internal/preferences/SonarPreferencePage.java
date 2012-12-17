@@ -37,7 +37,7 @@ public class SonarPreferencePage extends FieldEditorPreferencePage implements IW
   }
 
   public void init(IWorkbench workbench) {
-	setDescription(Messages.SonarPreferencePage_description);
+    setDescription(Messages.SonarPreferencePage_description);
     setPreferenceStore(SonarUiPlugin.getDefault().getPreferenceStore());
   }
 

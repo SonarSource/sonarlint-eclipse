@@ -54,10 +54,9 @@ public class SonarMarkerResolutionGenerator implements IMarkerResolutionGenerato
     try {
       for (final IConfigurationElement element : config) {
         final Object resolver = element.createExecutableExtension("class");
-        if (resolver instanceof ISonarResolver) {
-          if (((ISonarResolver) resolver).canResolve(marker)) {
-            resolutions.add(new SonarMarkerResolution((ISonarResolver) resolver));
-          }
+        if (resolver instanceof ISonarResolver
+          && ((ISonarResolver) resolver).canResolve(marker)) {
+          resolutions.add(new SonarMarkerResolution((ISonarResolver) resolver));
         }
       }
     } catch (final CoreException ex) {

@@ -24,8 +24,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.python.pydev.plugin.nature.PythonNature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
@@ -33,8 +31,6 @@ import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 import java.util.Properties;
 
 public class PythonProjectConfigurator extends ProjectConfigurator {
-
-  private static final Logger LOG = LoggerFactory.getLogger(PythonProjectConfigurator.class);
 
   @Override
   public boolean canConfigure(IProject project) {

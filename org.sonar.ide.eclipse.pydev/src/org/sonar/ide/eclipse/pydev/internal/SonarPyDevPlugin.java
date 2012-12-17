@@ -26,6 +26,7 @@ import org.python.pydev.plugin.nature.PythonNature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
+import org.sonar.ide.eclipse.core.SonarEclipseException;
 
 public class SonarPyDevPlugin extends AbstractPlugin {
 
@@ -55,8 +56,7 @@ public class SonarPyDevPlugin extends AbstractPlugin {
     try {
       projectSourcePath = pyProject.getPythonPathNature().getProjectSourcePath(true);
     } catch (CoreException e) {
-      LOG.error(e.getMessage(), e);
-      throw new RuntimeException(e);
+      throw new SonarEclipseException("Error when getting Python source folder", e);
     }
     return StringUtils.split(projectSourcePath, '|');
   }
