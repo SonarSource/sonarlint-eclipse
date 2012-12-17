@@ -29,7 +29,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.runner.SonarRunnerLogListener;
 import org.sonar.ide.eclipse.runner.SonarRunnerPlugin;
@@ -48,16 +47,12 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   private IPropertyChangeListener listener;
 
   public SonarUiPlugin() {
-    plugin = this; // NOSONAR
+    plugin = this;
   }
 
   @Override
-  public void start(final BundleContext context) {
-    try {
-      super.start(context);
-    } catch (Exception e) {
-      throw new SonarEclipseException("Unable to start " + context.getBundle().getSymbolicName(), e);
-    }
+  public void start(final BundleContext context) throws Exception {
+    super.start(context);
 
     if (getSonarConsole() != null) {
       SonarRunnerPlugin.getDefault().addSonarLogListener((SonarRunnerLogListener) getSonarConsole());
@@ -82,18 +77,14 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   }
 
   @Override
-  public void stop(final BundleContext context) {
+  public void stop(final BundleContext context) throws Exception {
     try {
       if (getSonarConsole() != null) {
         SonarRunnerPlugin.getDefault().removeSonarLogListener((SonarRunnerLogListener) getSonarConsole());
       }
       getPreferenceStore().removePropertyChangeListener(listener);
     } finally {
-      try {
-        super.stop(context);
-      } catch (Exception e) {
-        throw new SonarEclipseException("Unable to stop " + context.getBundle().getSymbolicName(), e);
-      }
+      super.stop(context);
     }
   }
 

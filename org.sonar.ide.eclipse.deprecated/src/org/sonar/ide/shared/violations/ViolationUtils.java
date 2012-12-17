@@ -23,6 +23,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.sonar.ide.api.SourceCodeDiff;
 import org.sonar.wsclient.services.Violation;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -100,7 +101,8 @@ public final class ViolationUtils {
     for (Violation violation : violations) {
       Integer originalLine = violation.getLine();
       if ((originalLine == null) || (originalLine == 0)) {
-        violation.setLine(1); // Display global violations on line 1
+        // Display global violations on line 1
+        violation.setLine(1);
         result.add(violation);
         continue;
       }
@@ -115,7 +117,7 @@ public final class ViolationUtils {
     return result;
   }
 
-  static class PriorityComparator implements Comparator<Violation> {
+  static class PriorityComparator implements Comparator<Violation>, Serializable {
     public int compare(Violation o1, Violation o2) {
       int p1 = convertPriority(o1.getSeverity());
       int p2 = convertPriority(o2.getSeverity());
@@ -138,7 +140,6 @@ public final class ViolationUtils {
   }
 
   /**
-   * TODO Godin: can we include this method into sonar-ws-client for debug purposes ?
    *
    * @param violation violation to convert to string
    * @return string representation of violation

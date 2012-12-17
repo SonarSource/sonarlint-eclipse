@@ -59,32 +59,9 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
       return SonarProject.getInstance(project);
     }
 
-    // File
-    IFile file = null;
-    if (adaptableObject instanceof IFile) {
-      file = (IFile) adaptableObject;
-    }
-    else {
-      file = AdapterUtils.adapt(adaptableObject, IFile.class);
-    }
-    if (file != null) {
-      IProject parentProject = file.getProject();
-      if (!isConfigured(parentProject)) {
-        return null;
-      }
-      ISonarProject sonarProject = SonarProject.getInstance(parentProject);
-      String keyWithoutProject = ResourceUtils.getSonarResourcePartialKey(file);
-      if (keyWithoutProject != null) {
-        return SonarCorePlugin.createSonarFile(file, SonarKeyUtils.resourceKey(sonarProject, keyWithoutProject), file.getName());
-      }
-    }
-
-    // Other resources like folder and packages
-    IResource resource = null;
-    if (adaptableObject instanceof IResource) {
-      resource = (IResource) adaptableObject;
-    }
-    else {
+    // File && Other resources like folder and packages
+    IResource resource = AdapterUtils.adapt(adaptableObject, IFile.class);
+    if (resource == null) {
       resource = AdapterUtils.adapt(adaptableObject, IResource.class);
     }
     if (resource != null) {

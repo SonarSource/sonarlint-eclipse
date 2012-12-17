@@ -72,7 +72,8 @@ public final class MarkerUtils {
     Integer line = violation.getLine();
     markerAttributes.put(IMarker.PRIORITY, getPriority(violation));
     markerAttributes.put(IMarker.SEVERITY, markerSeverity);
-    markerAttributes.put(IMarker.LINE_NUMBER, line != null ? line : 1); // SONARIDE-64
+    // File level violation (line == null) are displayed on line 1
+    markerAttributes.put(IMarker.LINE_NUMBER, line != null ? line : 1);
     markerAttributes.put(IMarker.MESSAGE, getMessage(violation));
 
     String source = "";
@@ -88,7 +89,7 @@ public final class MarkerUtils {
       }
     }
 
-    if (line != null) { // Don't highlight line 1 for file level violation
+    if (line != null) {
       addLine(markerAttributes, line, source);
     }
     final Map<String, Object> extraInfos = getExtraInfos(violation);
@@ -113,22 +114,26 @@ public final class MarkerUtils {
    * @see IMarker.PRIORITY_LOW
    */
   private static Integer getPriority(final Violation violation) {
+    final int result;
     if ("blocker".equalsIgnoreCase(violation.getSeverity())) {
-      return Integer.valueOf(IMarker.PRIORITY_HIGH);
+      result = Integer.valueOf(IMarker.PRIORITY_HIGH);
     }
-    if ("critical".equalsIgnoreCase(violation.getSeverity())) {
-      return Integer.valueOf(IMarker.PRIORITY_HIGH);
+    else if ("critical".equalsIgnoreCase(violation.getSeverity())) {
+      result = Integer.valueOf(IMarker.PRIORITY_HIGH);
     }
-    if ("major".equalsIgnoreCase(violation.getSeverity())) {
-      return Integer.valueOf(IMarker.PRIORITY_NORMAL);
+    else if ("major".equalsIgnoreCase(violation.getSeverity())) {
+      result = Integer.valueOf(IMarker.PRIORITY_NORMAL);
     }
-    if ("minor".equalsIgnoreCase(violation.getSeverity())) {
-      return Integer.valueOf(IMarker.PRIORITY_LOW);
+    else if ("minor".equalsIgnoreCase(violation.getSeverity())) {
+      result = Integer.valueOf(IMarker.PRIORITY_LOW);
     }
-    if ("info".equalsIgnoreCase(violation.getSeverity())) {
-      return Integer.valueOf(IMarker.PRIORITY_LOW);
+    else if ("info".equalsIgnoreCase(violation.getSeverity())) {
+      result = Integer.valueOf(IMarker.PRIORITY_LOW);
     }
-    return Integer.valueOf(IMarker.PRIORITY_LOW);
+    else {
+      result = Integer.valueOf(IMarker.PRIORITY_LOW);
+    }
+    return result;
   }
 
   private static Map<String, Object> getExtraInfos(final Violation violation) {
@@ -136,7 +141,7 @@ public final class MarkerUtils {
     extraInfos.put("rulekey", violation.getRuleKey());
     extraInfos.put("rulename", violation.getRuleName());
     extraInfos.put("rulepriority", violation.getSeverity());
-    if (violation.getId() != null) { // id available since Sonar 2.9
+    if (violation.getId() != null) {
       extraInfos.put("violationId", Long.toString(violation.getId()));
     }
     if (violation.getReview() != null) {

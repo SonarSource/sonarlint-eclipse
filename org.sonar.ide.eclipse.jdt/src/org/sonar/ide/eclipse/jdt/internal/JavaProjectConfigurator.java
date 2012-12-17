@@ -40,7 +40,8 @@ import java.util.Properties;
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
   private static final Logger LOG = LoggerFactory.getLogger(JavaProjectConfigurator.class);
-  private static final String TEST_PATTERN = ".*test.*"; // TODO Allow to configure this
+  // TODO Allow to configure this pattern in Sonar Eclipse preferences
+  private static final String TEST_PATTERN = ".*test.*";
 
   @Override
   public boolean canConfigure(IProject project) {
@@ -80,36 +81,15 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
    * @param topProject indicate we are working on the project to be analysed and not on a dependent project
    * @throws JavaModelException see {@link IJavaProject#getResolvedClasspath(boolean)}
    */
-  private void addClassPathToSonarProject(IJavaProject javaProject, Properties sonarProjectProperties, boolean topProject)
-      throws JavaModelException {
+  private void addClassPathToSonarProject(IJavaProject javaProject, Properties sonarProjectProperties, boolean topProject) throws JavaModelException {
     IClasspathEntry[] classPath = javaProject.getResolvedClasspath(true);
     for (IClasspathEntry entry : classPath) {
       switch (entry.getEntryKind()) {
         case IClasspathEntry.CPE_SOURCE:
-          if (isSourceExcluded(entry)) {
-            break;
-          }
-          String srcDir = getAbsolutePath(entry.getPath());
-          String relativeDir = getRelativePath(javaProject, entry.getPath());
-          if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
-            if (topProject) {
-              LOG.debug("Test directory: {}", srcDir);
-              appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, srcDir);
-            }
-          }
-          else {
-            if (topProject) {
-              LOG.debug("Source directory: {}", srcDir);
-              appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, srcDir);
-            }
-            if (entry.getOutputLocation() != null) {
-              String binDir = getAbsolutePath(entry.getOutputLocation());
-              LOG.debug("Binary directory: {}", binDir);
-              appendProperty(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, binDir);
-            }
+          if (!isSourceExcluded(entry)) {
+            processSourceEntry(entry, javaProject, sonarProjectProperties, topProject);
           }
           break;
-
         case IClasspathEntry.CPE_LIBRARY:
           if (topProject || entry.isExported()) {
             final String libDir = resolveLibrary(javaProject, entry);
@@ -136,6 +116,28 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     }
     else {
       LOG.warn("Binary directory was not added because it was not found. Maybe should you enable auto build of your project.");
+    }
+  }
+
+  private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, Properties sonarProjectProperties, boolean topProject) {
+    String srcDir = getAbsolutePath(entry.getPath());
+    String relativeDir = getRelativePath(javaProject, entry.getPath());
+    if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
+      if (topProject) {
+        LOG.debug("Test directory: {}", srcDir);
+        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, srcDir);
+      }
+    }
+    else {
+      if (topProject) {
+        LOG.debug("Source directory: {}", srcDir);
+        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, srcDir);
+      }
+      if (entry.getOutputLocation() != null) {
+        String binDir = getAbsolutePath(entry.getOutputLocation());
+        LOG.debug("Binary directory: {}", binDir);
+        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, binDir);
+      }
     }
   }
 

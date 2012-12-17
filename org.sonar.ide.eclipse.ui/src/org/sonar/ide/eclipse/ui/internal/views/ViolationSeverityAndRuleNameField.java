@@ -45,22 +45,26 @@ public class ViolationSeverityAndRuleNameField extends MarkerField {
   }
 
   public static int convertSeverity(String severity) {
+    final int result;
     if ("blocker".equalsIgnoreCase(severity)) {
-      return 0;
+      result = 0;
     }
-    if ("critical".equalsIgnoreCase(severity)) {
-      return 1;
+    else if ("critical".equalsIgnoreCase(severity)) {
+      result = 1;
     }
-    if ("major".equalsIgnoreCase(severity)) {
-      return 2;
+    else if ("major".equalsIgnoreCase(severity)) {
+      result = 2;
     }
-    if ("minor".equalsIgnoreCase(severity)) {
-      return 3;
+    else if ("minor".equalsIgnoreCase(severity)) {
+      result = 3;
     }
-    if ("info".equalsIgnoreCase(severity)) {
-      return 4;
+    else if ("info".equalsIgnoreCase(severity)) {
+      result = 4;
     }
-    return 4;
+    else {
+      result = 4;
+    }
+    return result;
   }
 
   @Override
@@ -76,25 +80,29 @@ public class ViolationSeverityAndRuleNameField extends MarkerField {
   }
 
   private Image getSeverityImage(int severity) {
+    final Image result;
     switch (severity) {
       case 0:
-        return SonarImages.IMG_SEVERITY_BLOCKER;
+        result = SonarImages.IMG_SEVERITY_BLOCKER;
+        break;
       case 1:
-        return SonarImages.IMG_SEVERITY_CRITICAL;
+        result = SonarImages.IMG_SEVERITY_CRITICAL;
+        break;
       case 2:
-        return SonarImages.IMG_SEVERITY_MAJOR;
+        result = SonarImages.IMG_SEVERITY_MAJOR;
+        break;
       case 3:
-        return SonarImages.IMG_SEVERITY_MINOR;
+        result = SonarImages.IMG_SEVERITY_MINOR;
+        break;
       case 4:
-        return SonarImages.IMG_SEVERITY_INFO;
+        result = SonarImages.IMG_SEVERITY_INFO;
+        break;
       default:
         throw new IllegalArgumentException();
     }
+    return result;
   }
 
-  /**
-   * TODO see {@link #annotateImage(MarkerItem, Image)}
-   */
   @Override
   public void update(ViewerCell cell) {
     super.update(cell);

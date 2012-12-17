@@ -117,17 +117,7 @@ public class ConfigureProjectsPage extends WizardPage {
       list.add(sonarProject);
     }
 
-    ColumnViewerEditorActivationStrategy activationSupport = new ColumnViewerEditorActivationStrategy(viewer) {
-      @Override
-      protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event) {
-        return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
-          || event.eventType == ColumnViewerEditorActivationEvent.MOUSE_CLICK_SELECTION
-          || event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC
-          || (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == KeyLookupFactory
-              .getDefault().formalKeyLookup(IKeyLookup.F2_NAME));
-      }
-    };
-    activationSupport.setEnableEditorActivationWithKeyboard(true);
+    ColumnViewerEditorActivationStrategy activationSupport = createActivationSupport();
 
     /*
      * Without focus highlighter, keyboard events will not be delivered to
@@ -145,6 +135,27 @@ public class ConfigureProjectsPage extends WizardPage {
         new IValueProperty[] {BeanProperties.value(ProjectAssociationModel.class, ProjectAssociationModel.PROPERTY_PROJECT_ECLIPSE_NAME),
           BeanProperties.value(ProjectAssociationModel.class, ProjectAssociationModel.PROPERTY_PROJECT_SONAR_FULLNAME)});
 
+    scheduleAutomaticAssociation();
+
+    setControl(container);
+  }
+
+  private ColumnViewerEditorActivationStrategy createActivationSupport() {
+    ColumnViewerEditorActivationStrategy activationSupport = new ColumnViewerEditorActivationStrategy(viewer) {
+      @Override
+      protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event) {
+        return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
+          || event.eventType == ColumnViewerEditorActivationEvent.MOUSE_CLICK_SELECTION
+          || event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC
+          || (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == KeyLookupFactory
+              .getDefault().formalKeyLookup(IKeyLookup.F2_NAME));
+      }
+    };
+    activationSupport.setEnableEditorActivationWithKeyboard(true);
+    return activationSupport;
+  }
+
+  private void scheduleAutomaticAssociation() {
     getShell().addShellListener(new ShellAdapter() {
       @Override
       public void shellActivated(ShellEvent shellevent) {
@@ -171,8 +182,6 @@ public class ConfigureProjectsPage extends WizardPage {
         }
       }
     });
-
-    setControl(container);
   }
 
   private class ProjectAssociationModelEditingSupport extends EditingSupport {
@@ -190,7 +199,7 @@ public class ConfigureProjectsPage extends WizardPage {
 
     @Override
     protected CellEditor getCellEditor(Object element) {
-      return new TextCellEditorWithContentProposal(viewer.getTable(), contentProposalProvider, null, null, ((ProjectAssociationModel) element));
+      return new TextCellEditorWithContentProposal(viewer.getTable(), contentProposalProvider, ((ProjectAssociationModel) element));
     }
 
     @Override
@@ -268,17 +277,64 @@ public class ConfigureProjectsPage extends WizardPage {
 
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
       monitor.beginTask("Associating Sonar projects", IProgressMonitor.UNKNOWN);
-      // First retrieve list of all remote projects
-      Map<String, List<Resource>> remoteSonarProjects = new HashMap<String, List<Resource>>();
-      for (Host host : hosts) {
-        String url = host.getHost();
-        ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT,
-            Resource.QUALIFIER_MODULE);
-        Sonar sonar = SonarCorePlugin.getServersManager().getSonar(url);
-        List<Resource> resources = sonar.findAll(query);
-        remoteSonarProjects.put(url, resources);
+      // Retrieve list of all remote projects
+      Map<String, List<Resource>> remoteSonarProjects = fetchAllRemoteSonarProjects();
+
+      // Verify that all projects already associated are found on remote. If not found projects are considered as unassociated.
+      validateProjectAssociation(remoteSonarProjects);
+
+      // Now check for all potential matches for a all non associated projects on all Sonar servers
+      Map<ProjectAssociationModel, List<PotentialMatchForProject>> potentialMatches = findAllPotentialMatches(remoteSonarProjects);
+
+      // Now for each project try to find the better match
+      findBestMatchAndAssociate(potentialMatches);
+
+      monitor.done();
+    }
+
+    private void findBestMatchAndAssociate(Map<ProjectAssociationModel, List<PotentialMatchForProject>> potentialMatches) {
+      for (Map.Entry<ProjectAssociationModel, List<PotentialMatchForProject>> entry : potentialMatches.entrySet()) {
+        List<PotentialMatchForProject> potentialMatchesForProject = entry.getValue();
+        if (!potentialMatchesForProject.isEmpty()) {
+          // Take the better choice according to Levenshtein distance
+          PotentialMatchForProject best = potentialMatchesForProject.get(0);
+          int currentBestDistance = StringUtils.getLevenshteinDistance(best.getResource().getKey(), entry.getKey().getEclipseName());
+          for (PotentialMatchForProject potentialMatch : potentialMatchesForProject) {
+            int distance = StringUtils.getLevenshteinDistance(potentialMatch.getResource().getKey(), entry.getKey().getEclipseName());
+            if (distance < currentBestDistance) {
+              best = potentialMatch;
+              currentBestDistance = distance;
+            }
+          }
+          entry.getKey().associate(best.getHost(), best.getResource().getName(), best.getResource().getKey());
+        }
       }
-      // Now verify that all projects already associated are found on remote
+    }
+
+    private Map<ProjectAssociationModel, List<PotentialMatchForProject>> findAllPotentialMatches(Map<String, List<Resource>> remoteSonarProjects) {
+      Map<ProjectAssociationModel, List<PotentialMatchForProject>> potentialMatches = new HashMap<ProjectAssociationModel, List<PotentialMatchForProject>>();
+      for (Map.Entry<String, List<Resource>> entry : remoteSonarProjects.entrySet()) {
+        String url = entry.getKey();
+        List<Resource> resources = entry.getValue();
+        for (ProjectAssociationModel sonarProject : projects) {
+          if (StringUtils.isBlank(sonarProject.getKey())) {
+            // Not associated yet
+            if (!potentialMatches.containsKey(sonarProject)) {
+              potentialMatches.put(sonarProject, new ArrayList<PotentialMatchForProject>());
+            }
+            for (Resource resource : resources) {
+              // A resource is a potential match if resource key contains Eclipse name
+              if (resource.getKey().contains(sonarProject.getEclipseName())) {
+                potentialMatches.get(sonarProject).add(new PotentialMatchForProject(resource, url));
+              }
+            }
+          }
+        }
+      }
+      return potentialMatches;
+    }
+
+    private void validateProjectAssociation(Map<String, List<Resource>> remoteSonarProjects) {
       for (ProjectAssociationModel projectAssociation : projects) {
         if (SonarNature.hasSonarNature(projectAssociation.getProject())) {
           SonarProject sonarProject = SonarProject.getInstance(projectAssociation.getProject());
@@ -301,48 +357,22 @@ public class ConfigureProjectsPage extends WizardPage {
           }
         }
       }
-
-      // Now check for all potential matches for a all non associated projects on all Sonar servers
-      Map<ProjectAssociationModel, List<PotentialMatchForProject>> potentialMatches = new HashMap<ProjectAssociationModel, List<PotentialMatchForProject>>();
-      for (Map.Entry<String, List<Resource>> entry : remoteSonarProjects.entrySet()) {
-        String url = entry.getKey();
-        List<Resource> resources = entry.getValue();
-        for (ProjectAssociationModel sonarProject : projects) {
-          if (StringUtils.isBlank(sonarProject.getKey())) {
-            // Not associated yet
-            if (!potentialMatches.containsKey(sonarProject)) {
-              potentialMatches.put(sonarProject, new ArrayList<PotentialMatchForProject>());
-            }
-            for (Resource resource : resources) {
-              // A resource is a potential match if resource key contains Eclipse name
-              if (resource.getKey().contains(sonarProject.getEclipseName())) {
-                potentialMatches.get(sonarProject).add(new PotentialMatchForProject(resource, url));
-              }
-            }
-          }
-        }
-      }
-      // Now for each project try to find the better match
-      for (Map.Entry<ProjectAssociationModel, List<PotentialMatchForProject>> entry : potentialMatches.entrySet()) {
-        List<PotentialMatchForProject> potentialMatchesForProject = entry.getValue();
-        if (!potentialMatchesForProject.isEmpty()) {
-          // Take the better choice according to Levenshtein distance
-          PotentialMatchForProject best = potentialMatchesForProject.get(0);
-          int currentBestDistance = StringUtils.getLevenshteinDistance(best.getResource().getKey(), entry.getKey().getEclipseName());
-          for (PotentialMatchForProject potentialMatch : potentialMatchesForProject) {
-            int distance = StringUtils.getLevenshteinDistance(potentialMatch.getResource().getKey(), entry.getKey().getEclipseName());
-            if (distance < currentBestDistance) {
-              best = potentialMatch;
-              currentBestDistance = distance;
-            }
-          }
-          entry.getKey().associate(best.getHost(), best.getResource().getName(), best.getResource().getKey());
-        }
-      }
-      monitor.done();
     }
 
-    private class PotentialMatchForProject {
+    private Map<String, List<Resource>> fetchAllRemoteSonarProjects() {
+      Map<String, List<Resource>> remoteSonarProjects = new HashMap<String, List<Resource>>();
+      for (Host host : hosts) {
+        String url = host.getHost();
+        ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT,
+            Resource.QUALIFIER_MODULE);
+        Sonar sonar = SonarCorePlugin.getServersManager().getSonar(url);
+        List<Resource> resources = sonar.findAll(query);
+        remoteSonarProjects.put(url, resources);
+      }
+      return remoteSonarProjects;
+    }
+
+    private static class PotentialMatchForProject {
       private Resource resource;
       private String host;
 

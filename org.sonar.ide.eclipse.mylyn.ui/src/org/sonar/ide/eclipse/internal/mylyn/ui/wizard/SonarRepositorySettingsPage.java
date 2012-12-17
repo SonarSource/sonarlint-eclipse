@@ -28,6 +28,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.ui.wizards.AbstractRepositorySettingsPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
+import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarClient;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarConnector;
 import org.sonar.ide.eclipse.internal.mylyn.core.SonarMylynCorePlugin;
@@ -41,6 +42,16 @@ import java.net.URL;
 
 public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage {
 
+  /**
+   * Value of org.eclipse.mylyn.internal.tasks.core.IRepositoryConstants#PROPERTY_CATEGORY , which is not available in Mylyn 3.2.0
+   */
+  private static final String PROPERTY_CATEGORY = "category"; //$NON-NLS-1$
+
+  /**
+   * Value of org.eclipse.mylyn.internal.tasks.core.IRepositoryConstants#CATEGORY_REVIEW , which is not available in Mylyn 3.2.0
+   */
+  private static final String CATEGORY_REVIEW = "org.eclipse.mylyn.category.review"; //$NON-NLS-1$
+
   public SonarRepositorySettingsPage(TaskRepository taskRepository) {
     super(Messages.SonarRepositorySettingsPage_Title, Messages.SonarRepositorySettingsPage_Description, taskRepository);
     setNeedsAnonymousLogin(false);
@@ -49,7 +60,8 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
     setNeedsEncoding(false);
     setNeedsTimeZone(false);
     setNeedsHttpAuth(false);
-    setNeedsProxy(false); // We use settings from IDE
+    // We use settings from IDE
+    setNeedsProxy(false);
   }
 
   @Override
@@ -86,7 +98,8 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
       try {
         new URL(url);
         return true;
-      } catch (MalformedURLException e) { // NOSONAR: ignore
+      } catch (MalformedURLException e) {
+        return false;
       }
     }
     return false;
@@ -124,6 +137,8 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
           case CONNECT_ERROR:
             setStatus(RepositoryStatus.createStatus(repository, IStatus.ERROR, SonarMylynUiPlugin.PLUGIN_ID, Messages.SonarRepositorySettingsPage_Connection_failed));
             break;
+          default:
+            throw new SonarEclipseException("Unknow status code: " + result);
         }
 
       } catch (Exception e) {
@@ -132,16 +147,6 @@ public class SonarRepositorySettingsPage extends AbstractRepositorySettingsPage 
       }
     }
   }
-
-  /**
-   * Value of org.eclipse.mylyn.internal.tasks.core.IRepositoryConstants#PROPERTY_CATEGORY , which is not available in Mylyn 3.2.0
-   */
-  private static final String PROPERTY_CATEGORY = "category"; //$NON-NLS-1$
-
-  /**
-   * Value of org.eclipse.mylyn.internal.tasks.core.IRepositoryConstants#CATEGORY_REVIEW , which is not available in Mylyn 3.2.0
-   */
-  private static final String CATEGORY_REVIEW = "org.eclipse.mylyn.category.review"; //$NON-NLS-1$
 
   @Override
   public void applyTo(TaskRepository repository) {

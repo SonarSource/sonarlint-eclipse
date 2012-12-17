@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.internal.wizards.associate;
 
-import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.viewers.TextCellEditor;
@@ -32,7 +31,7 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
   private ContentProposalAdapter contentProposalAdapter;
 
   public TextCellEditorWithContentProposal(Composite parent, IContentProposalProvider contentProposalProvider,
-      KeyStroke keyStroke, char[] autoActivationCharacters, ProjectAssociationModel sonarProject) {
+      ProjectAssociationModel sonarProject) {
     super(parent);
 
     enableContentProposal(contentProposalProvider, sonarProject);
