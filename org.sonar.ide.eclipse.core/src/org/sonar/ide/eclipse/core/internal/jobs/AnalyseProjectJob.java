@@ -97,7 +97,12 @@ public class AnalyseProjectJob extends Job {
     // Analyse
     // To be sure to not reuse something from a previous analysis
     FileUtils.deleteQuietly(outputFile);
-    IStatus result = SonarEclipseRunner.run(project, properties, monitor);
+    IStatus result;
+    try {
+      result = SonarEclipseRunner.run(project, properties, monitor);
+    } catch (Exception e) {
+      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error when executing Sonar runner", e);
+    }
     if (result != Status.OK_STATUS) {
       return result;
     }
