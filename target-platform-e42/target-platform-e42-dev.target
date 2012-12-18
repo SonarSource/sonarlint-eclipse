@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="sonar-eclipse-e42" sequenceNumber="32">
+<?pde version="3.8"?>
+
+<target name="sonar-eclipse-e42-dev" sequenceNumber="35">
 <locations>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
+<location path="${M2_REPO}/com/googlecode/json-simple/json-simple/1.1.1" type="Directory"/>
+<location path="${M2_REPO}/org/apache/httpcomponents/httpclient-osgi/4.2.2" type="Directory"/>
+<location path="${M2_REPO}/org/apache/httpcomponents/httpcore-osgi/4.2.2" type="Directory"/>
+<location path="${M2_REPO}/org/codehaus/sonar/sonar-ws-client/3.4-RC2" type="Directory"/>
+<location path="${M2_REPO}/commons-io/commons-io/2.4" type="Directory"/>
+<location path="${M2_REPO}/commons-lang/commons-lang/2.6" type="Directory"/>
+<location path="${M2_REPO}/commons-codec/commons-codec/1.7" type="Directory"/>
+<location path="${M2_REPO}/com/google/guava/guava/13.0.1" type="Directory"/>
+<location path="${M2_REPO}/org/slf4j/slf4j-api/1.6.6" type="Directory"/>
+<location path="${M2_REPO}/org/slf4j/jcl-over-slf4j/1.6.6" type="Directory"/>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.jdt.feature.group" version="3.8.1.v20120814-104540-8-8nFqpFNOfwKDRVz-tXOcL5d_83"/>
 <unit id="org.eclipse.cdt.feature.group" version="8.1.1.201209170703"/>
 <unit id="org.eclipse.platform.ide" version="4.2.1.M20120914-1800"/>
@@ -12,7 +24,8 @@
 <unit id="org.eclipse.mylyn_feature.feature.group" version="3.8.2.v20120916-1200"/>
 <repository location="http://download.eclipse.org/releases/juno"/>
 </location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.m2e.sdk.feature.feature.group" version="1.2.0.20120903-1050"/>
 <unit id="org.eclipse.m2e.feature.feature.group" version="1.2.0.20120903-1050"/>
 <repository location="http://download.eclipse.org/technology/m2e/releases"/>
 </location>

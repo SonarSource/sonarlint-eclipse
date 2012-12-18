@@ -10,9 +10,9 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>org.sonar.ide.eclipse.core.tests</artifactId>
-  <packaging>eclipse-test-plugin</packaging>
+  <artifactId>target-platform-e37</artifactId>
+  <packaging>eclipse-target-definition</packaging>
 
-  <name>Sonar Integration for Eclipse Core Tests</name>
+  <name>Sonar Integration for Eclipse (target-platform for Indigo)</name>
 
 </project>

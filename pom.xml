@@ -83,7 +83,8 @@
 
     <module>org.sonar.ide.eclipse.site</module>
 
-    <module>target-platform</module>
+    <module>target-platform-e37</module>
+    <module>target-platform-e42</module>
 
     <module>org.sonar.ide.eclipse.tests.common</module>
     <module>org.sonar.ide.eclipse.core.tests</module>
@@ -125,6 +126,7 @@
     <jdk.min.version>1.5</jdk.min.version>
 
     <tycho.version>0.16.0</tycho.version>
+    <target.platform>e42</target.platform>
 
     <!-- disable accidental deployment -->
     <sonar-ide.site>dav:http://localhost</sonar-ide.site>
@@ -251,31 +253,6 @@
           <artifactId>tycho-p2-repository-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
-        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>com.mycila.maven-license-plugin</groupId>
-                    <artifactId>maven-license-plugin</artifactId>
-                    <versionRange>[1.9.0,)</versionRange>
-                    <goals>
-                      <goal>check</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore></ignore>
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -309,7 +286,7 @@
           <target>
             <artifact>
               <groupId>${project.groupId}</groupId>
-              <artifactId>target-platform-e42</artifactId>
+              <artifactId>target-platform-${target.platform}</artifactId>
               <version>${project.version}</version>
             </artifact>
           </target>
