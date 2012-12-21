@@ -23,14 +23,10 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.python.pydev.plugin.nature.PythonNature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 
 public class SonarPyDevPlugin extends AbstractPlugin {
-
-  private static final Logger LOG = LoggerFactory.getLogger(SonarPyDevPlugin.class);
 
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.pydev"; //$NON-NLS-1$
 
