@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-Vendor: SonarSource
 Bundle-ActivationPolicy: lazy
-Bundle-Version: 3.0.0.20121231-1028-RC2
+Bundle-Version: 3.0.0.qualifier
 Bundle-Name: Embedded Sonar Runner
 Bundle-Activator: org.sonar.ide.eclipse.runner.SonarRunnerPlugin
 Bundle-ManifestVersion: 2

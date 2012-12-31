@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Mylyn Sonar Connector Tests
 Bundle-SymbolicName: org.sonar.ide.eclipse.mylyn.tests;singleton:=true
 Fragment-Host: org.sonar.ide.eclipse.mylyn.core
-Bundle-Version: 3.0.0.20121231-1028-RC2
+Bundle-Version: 3.0.0.qualifier
 Bundle-Vendor: SonarSource
 Require-Bundle: org.junit;bundle-version="4.0.0",
  org.sonar.ide.eclipse.mylyn.ui,
