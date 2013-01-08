@@ -24,6 +24,7 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.junit.Before;
 import org.junit.Test;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.services.ReviewQuery;
@@ -33,8 +34,14 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class SonarClientTest {
-  TaskRepository repository = new TaskRepository(SonarConnector.CONNECTOR_KIND, "http://localhost:9000");
-  SonarClient client = new SonarClient(repository);
+  private TaskRepository repository;
+  private SonarClient client;
+
+  @Before
+  public void prepare() {
+    repository = new TaskRepository(SonarConnector.CONNECTOR_KIND, "http://localhost:9000");
+    client = new SonarClient(repository);
+  }
 
   @Test
   public void testGetSonarHost() {
