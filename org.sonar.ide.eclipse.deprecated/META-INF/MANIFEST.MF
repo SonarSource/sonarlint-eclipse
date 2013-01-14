@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundle_name
 Bundle-SymbolicName: org.sonar.ide.eclipse.deprecated;singleton:=true
-Bundle-Version: 3.0.0.20130108-1647-RELEASE
+Bundle-Version: 3.1.0.qualifier
 Bundle-Vendor: %bundle_vendor
 Bundle-Localization: OSGI-INF/l10n/bundle
 Export-Package: org.sonar.ide.api,
