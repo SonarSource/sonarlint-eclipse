@@ -2,16 +2,16 @@
 <plugin>
 
    <extension point="org.eclipse.core.runtime.adapters">
-      <factory adaptableType="org.python.pydev.navigator.elements.IWrappedResource"
+      <factory adaptableType="org.erlide.core.model.root.IErlElement"
                class="org.sonar.ide.eclipse.core.SonarElementsAdapterFactory">
          <adapter type="org.sonar.ide.eclipse.core.resources.ISonarResource"/>
       </factory>
-      <factory adaptableType="org.python.pydev.navigator.elements.IWrappedResource"
+      <factory adaptableType="org.erlide.core.model.root.IErlElement"
                class="org.sonar.ide.eclipse.core.SonarElementsAdapterFactory">
          <adapter type="org.sonar.ide.eclipse.core.resources.ISonarFile"/>
       </factory>
    </extension>
-
+<!--
    <extension point="org.eclipse.ui.navigator.navigatorContent">
       <commonFilter activeByDefault="false"
           name="Non-Sonar projects"
@@ -20,17 +20,17 @@
           class="org.sonar.ide.eclipse.ui.NonSonarProjectsFilter">
       </commonFilter>
    </extension>
-
+-->
    <extension
          point="org.sonar.ide.eclipse.core.projectConfigurators">
       <configurator
-            class="org.sonar.ide.eclipse.pydev.internal.PythonProjectConfigurator">
+            class="org.sonar.ide.eclipse.erlide.internal.ErlangProjectConfigurator">
       </configurator>
    </extension>
    <extension
          point="org.sonar.ide.eclipse.core.resourceResolvers">
       <resolver
-            class="org.sonar.ide.eclipse.pydev.internal.PythonResourceResolver">
+            class="org.sonar.ide.eclipse.erlide.internal.ErlangResourceResolver">
       </resolver>
    </extension>
 
@@ -46,7 +46,7 @@
                       <not>
                           <test property="org.eclipse.core.resources.projectNature" value="org.sonar.ide.eclipse.core.sonarNature"/>
                       </not>
-                      <test property="org.eclipse.core.resources.projectNature" value="org.python.pydev.pythonNature"/>
+                      <test property="org.eclipse.core.resources.projectNature" value="org.erlide.erlangNature"/>
                   </adapt>
                  </iterate>
              </with>

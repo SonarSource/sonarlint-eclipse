@@ -17,36 +17,36 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.pydev.internal;
+package org.sonar.ide.eclipse.erlide.internal;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.python.pydev.plugin.nature.PythonNature;
+import org.erlide.core.internal.services.builder.ErlangNature;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 
 import java.util.Properties;
 
-public class PythonProjectConfigurator extends ProjectConfigurator {
+public class ErlangProjectConfigurator extends ProjectConfigurator {
 
   @Override
   public boolean canConfigure(IProject project) {
-    return PythonNature.getPythonNature(project) != null;
+    return ErlangNature.getErlangNature(project) != null;
   }
 
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
     IProject project = request.getProject();
-    PythonNature pyProject = PythonNature.getPythonNature(project);
-    configurePythonProject(pyProject, request.getSonarProjectProperties());
+    ErlangNature pyProject = ErlangNature.getErlangNature(project);
+    configureErlangProject(pyProject, request.getSonarProjectProperties());
   }
 
-  private void configurePythonProject(PythonNature pyProject, Properties sonarProjectProperties) {
+  private void configureErlangProject(ErlangNature erlProject, Properties sonarProjectProperties) {
     sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "py");
-    for (String pathStr : SonarPyDevPlugin.getSourceFolders(pyProject)) {
+    for (String pathStr : SonarErlIdePlugin.getSourceFolders(erlProject)) {
       IPath path = new Path(pathStr);
       appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(path));
     }
