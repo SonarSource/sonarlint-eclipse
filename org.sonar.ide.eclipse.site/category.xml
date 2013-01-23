@@ -33,6 +33,11 @@
          Needed feature for analysing PyDev projects with Sonar.
       </description>
    </category-def>
+   <category-def name="Sonar Erlang" label="Sonar Erlang (requires Eclipse ErlIde and the Sonar Erlang plugin)">
+      <description>
+         Needed feature for analysing ErlIde projects with Sonar.
+      </description>
+   </category-def>
    <category-def name="Sonar optional connectors" label="Sonar optional connectors">
       <description>
          Sonar optional connectors
