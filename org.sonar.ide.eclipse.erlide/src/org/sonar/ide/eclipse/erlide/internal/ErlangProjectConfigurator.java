@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.erlide.core.internal.services.builder.ErlangNature;
+import org.erlide.core.model.util.ErlideUtil;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
@@ -34,18 +35,18 @@ public class ErlangProjectConfigurator extends ProjectConfigurator {
 
   @Override
   public boolean canConfigure(IProject project) {
-    return ErlangNature.getErlangNature(project) != null;
+    return ErlideUtil.hasErlangNature(project);
   }
 
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
     IProject project = request.getProject();
-    ErlangNature pyProject = ErlangNature.getErlangNature(project);
-    configureErlangProject(pyProject, request.getSonarProjectProperties());
+    ErlangNature erlProject = ErlangNature.getErlangNature(project);
+    configureErlangProject(erlProject, request.getSonarProjectProperties());
   }
 
   private void configureErlangProject(ErlangNature erlProject, Properties sonarProjectProperties) {
-    sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "py");
+    sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "erlang");
     for (String pathStr : SonarErlIdePlugin.getSourceFolders(erlProject)) {
       IPath path = new Path(pathStr);
       appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(path));
