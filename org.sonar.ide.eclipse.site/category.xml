@@ -18,6 +18,9 @@
    <feature url="features/org.sonar.ide.eclipse.pydev.feature_0.0.0.jar" id="org.sonar.ide.eclipse.pydev.feature" version="0.0.0">
       <category name="Sonar Python"/>
    </feature>
+   <feature url="features/org.sonar.ide.eclipse.erlide.feature_0.0.0.jar" id="org.sonar.ide.eclipse.erlide.feature" version="0.0.0">
+      <category name="Sonar Erlang"/>
+   </feature>
    <category-def name="Sonar Java" label="Sonar Java">
       <description>
          Needed feature for analysing JDT projects with Sonar.
