@@ -46,7 +46,7 @@
                       <not>
                           <test property="org.eclipse.core.resources.projectNature" value="org.sonar.ide.eclipse.core.sonarNature"/>
                       </not>
-                      <test property="org.eclipse.core.resources.projectNature" value="org.erlide.erlangNature"/>
+                      <test property="org.eclipse.core.resources.projectNature" value="org.erlide.core.erlnature"/>
                   </adapt>
                  </iterate>
              </with>
