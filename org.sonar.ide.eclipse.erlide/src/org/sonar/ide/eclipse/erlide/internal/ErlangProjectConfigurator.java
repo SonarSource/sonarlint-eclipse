@@ -33,23 +33,23 @@ import java.util.Properties;
 
 public class ErlangProjectConfigurator extends ProjectConfigurator {
 
-  @Override
-  public boolean canConfigure(IProject project) {
-    return ErlideUtil.hasErlangNature(project);
-  }
-
-  @Override
-  public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
-    IProject project = request.getProject();
-    ErlangNature erlProject = ErlangNature.getErlangNature(project);
-    configureErlangProject(erlProject, request.getSonarProjectProperties());
-  }
-
-  private void configureErlangProject(ErlangNature erlProject, Properties sonarProjectProperties) {
-    sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "erlang");
-    for (String pathStr : SonarErlIdePlugin.getSourceFolders(erlProject)) {
-      IPath path = new Path(pathStr);
-      appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(path));
+    @Override
+    public boolean canConfigure(IProject project) {
+        return ErlideUtil.hasErlangNature(project);
     }
-  }
+
+    @Override
+    public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
+        IProject project = request.getProject();
+        ErlangNature erlProject = ErlangNature.getErlangNature(project);
+        configureErlangProject(erlProject, request.getSonarProjectProperties());
+    }
+
+    private void configureErlangProject(ErlangNature erlProject, Properties sonarProjectProperties) {
+        sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "erlang");
+        for (String pathStr : SonarErlIdePlugin.getSourceFolders(erlProject)) {
+            IPath path = new Path(pathStr);
+            appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(path));
+        }
+    }
 }
