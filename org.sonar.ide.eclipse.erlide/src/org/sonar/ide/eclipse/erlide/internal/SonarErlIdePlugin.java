@@ -19,10 +19,13 @@
  */
 package org.sonar.ide.eclipse.erlide.internal;
 
+import org.eclipse.core.runtime.Path;
+
 import org.eclipse.core.runtime.IPath;
 import org.erlide.core.model.root.IErlProject;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -51,7 +54,8 @@ public class SonarErlIdePlugin extends AbstractPlugin {
     static List<String> getSourceFolders(String rootPath, IErlProject erlProject) {
         List<String> sources = new ArrayList<String>();
         for (IPath source : erlProject.getSourceDirs()) {
-            sources.add(rootPath+source.toOSString());
+            IPath srcPath = new Path(rootPath+"/"+source.toOSString());
+            sources.add(srcPath.toOSString());
         }
         return sources;
     }
