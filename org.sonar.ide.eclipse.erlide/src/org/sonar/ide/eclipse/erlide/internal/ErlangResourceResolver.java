@@ -25,16 +25,20 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.erlide.core.internal.services.builder.ErlangNature;
+import org.erlide.core.model.root.ErlModelManager;
+import org.erlide.core.model.root.IErlModel;
+import org.erlide.core.model.root.IErlProject;
 import org.sonar.ide.eclipse.core.ResourceResolver;
 
 public class ErlangResourceResolver extends ResourceResolver {
 
     @Override
     public String getSonarPartialKey(IResource resource) {
-        ErlangNature erlProject = ErlangNature.getErlangNature(resource.getProject());
+        IProject project = resource.getProject();
+        IErlModel model = ErlModelManager.getErlangModel();
+        IErlProject erlProject = model.getErlangProject(project);
         if (erlProject != null) {
-            for (String src : SonarErlIdePlugin.getSourceFolders(erlProject)) {
+            for (String src : SonarErlIdePlugin.getSourceFolders(project.getLocation().toOSString(), erlProject)) {
                 IPath srcPath = new Path(getAbsolutePath(new Path(src)));
                 if (srcPath.isPrefixOf(resource.getLocation())) {
                     return SonarErlIdePlugin.getRelativePath(srcPath, resource.getLocation());
@@ -46,9 +50,10 @@ public class ErlangResourceResolver extends ResourceResolver {
 
     @Override
     public IResource locate(IProject project, String resourceKey) {
-        ErlangNature pyProject = ErlangNature.getErlangNature(project);
-        if (pyProject != null) {
-            for (String src : SonarErlIdePlugin.getSourceFolders(pyProject)) {
+        IErlModel model = ErlModelManager.getErlangModel();
+        IErlProject erlProject = model.getErlangProject(project);
+        if (erlProject != null) {
+            for (String src : SonarErlIdePlugin.getSourceFolders(project.getLocation().toOSString(), erlProject)) {
                 IPath srcPath = new Path(getAbsolutePath(new Path(src)));
                 IPath resourcePath = srcPath.append(resourceKey);
                 if (resourcePath.toFile().exists()) {

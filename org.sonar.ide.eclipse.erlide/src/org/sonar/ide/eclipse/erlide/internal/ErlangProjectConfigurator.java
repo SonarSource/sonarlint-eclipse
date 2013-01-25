@@ -19,11 +19,14 @@
  */
 package org.sonar.ide.eclipse.erlide.internal;
 
+import org.eclipse.core.runtime.Path;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
-import org.erlide.core.internal.services.builder.ErlangNature;
+import org.erlide.core.model.root.ErlModelManager;
+import org.erlide.core.model.root.IErlModel;
+import org.erlide.core.model.root.IErlProject;
 import org.erlide.core.model.util.ErlideUtil;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
@@ -41,15 +44,15 @@ public class ErlangProjectConfigurator extends ProjectConfigurator {
     @Override
     public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
         IProject project = request.getProject();
-        ErlangNature erlProject = ErlangNature.getErlangNature(project);
-        configureErlangProject(erlProject, request.getSonarProjectProperties());
+        IErlModel model = ErlModelManager.getErlangModel();
+        IErlProject erlProject = model.getErlangProject(project);
+        configureErlangProject(project, erlProject, request.getSonarProjectProperties());
     }
 
-    private void configureErlangProject(ErlangNature erlProject, Properties sonarProjectProperties) {
+    private void configureErlangProject(IProject project, IErlProject erlProject, Properties sonarProjectProperties) {
         sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "erlang");
-        for (String pathStr : SonarErlIdePlugin.getSourceFolders(erlProject)) {
-            IPath path = new Path(pathStr);
-            appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(path));
+        for (String path : SonarErlIdePlugin.getSourceFolders(project.getLocation().toOSString(), erlProject)) {
+            appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(new Path(path)));
         }
     }
 }
