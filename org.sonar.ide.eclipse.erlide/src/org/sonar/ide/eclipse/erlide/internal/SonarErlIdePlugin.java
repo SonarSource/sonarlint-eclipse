@@ -19,15 +19,12 @@
  */
 package org.sonar.ide.eclipse.erlide.internal;
 
-import org.eclipse.core.runtime.Path;
-
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.erlide.core.model.root.IErlProject;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class SonarErlIdePlugin extends AbstractPlugin {

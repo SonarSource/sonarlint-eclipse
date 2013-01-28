@@ -19,11 +19,9 @@
  */
 package org.sonar.ide.eclipse.erlide.internal;
 
-import org.eclipse.core.runtime.Path;
-
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.erlide.core.model.root.ErlModelManager;
 import org.erlide.core.model.root.IErlModel;
 import org.erlide.core.model.root.IErlProject;
@@ -52,12 +50,13 @@ public class ErlangProjectConfigurator extends ProjectConfigurator {
     private void configureErlangProject(IProject project, IErlProject erlProject, Properties sonarProjectProperties) {
         sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "erlang");
         for (String path : SonarErlIdePlugin.getSourceFolders(project.getLocation().toOSString(), erlProject)) {
-            appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(new Path(path)));
+            //TODO: dirty hack, there is no test property in erlide so every test directory is in the src paths, we add all path as
+            //test path if it ends with test or tests
+            if(path.matches("tests?[/\\\\]*$")){
+                appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, getAbsolutePath(new Path(path)));
+            } else {
+                appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(new Path(path)));
+            }
         }
-        //TODO: dirty hack, there is no test property in erlide
-        //maybe we can get the sonar setting
-        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, getAbsolutePath(new Path(project.getLocation().toOSString()+"/"+"test/")));
-        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, getAbsolutePath(new Path(project.getLocation().toOSString()+"/"+"tests/")));
-        //TODO: add the binaries and libraries folder (it it makes sense)
     }
 }
