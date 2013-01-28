@@ -52,7 +52,7 @@ public class ErlangProjectConfigurator extends ProjectConfigurator {
         for (String path : SonarErlIdePlugin.getSourceFolders(project.getLocation().toOSString(), erlProject)) {
             //TODO: dirty hack, there is no test property in erlide so every test directory is in the src paths, we add all path as
             //test path if it ends with test or tests
-            if(path.matches("tests?[/\\\\]*$")){
+            if(path.matches(".*tests?[/\\\\]*$")){
                 appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, getAbsolutePath(new Path(path)));
             } else {
                 appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(new Path(path)));
