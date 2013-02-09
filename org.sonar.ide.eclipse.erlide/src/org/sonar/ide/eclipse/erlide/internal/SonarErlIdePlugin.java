@@ -29,32 +29,32 @@ import java.util.List;
 
 public class SonarErlIdePlugin extends AbstractPlugin {
 
-    public static final String PLUGIN_ID = "org.sonar.ide.eclipse.erlide"; //$NON-NLS-1$
+  public static final String PLUGIN_ID = "org.sonar.ide.eclipse.erlide"; //$NON-NLS-1$
 
-    private static SonarErlIdePlugin plugin;
+  private static SonarErlIdePlugin plugin;
 
-    public SonarErlIdePlugin() {
-        plugin = this;
+  public SonarErlIdePlugin() {
+    plugin = this;
+  }
+
+  /**
+   * @return the shared instance
+   */
+  public static SonarErlIdePlugin getDefault() {
+    return plugin;
+  }
+
+  static String getRelativePath(IPath rootPath, IPath path) {
+    return path.makeRelativeTo(rootPath).toString();
+  }
+
+  static List<String> getSourceFolders(String rootPath, IErlProject erlProject) {
+    List<String> sources = new ArrayList<String>();
+    for (IPath source : erlProject.getSourceDirs()) {
+      IPath srcPath = new Path(rootPath + "/" + source.toOSString());
+      sources.add(srcPath.toOSString());
     }
-
-    /**
-     * @return the shared instance
-     */
-    public static SonarErlIdePlugin getDefault() {
-        return plugin;
-    }
-
-    static String getRelativePath(IPath rootPath, IPath path) {
-        return path.makeRelativeTo(rootPath).toString();
-    }
-
-    static List<String> getSourceFolders(String rootPath, IErlProject erlProject) {
-        List<String> sources = new ArrayList<String>();
-        for (IPath source : erlProject.getSourceDirs()) {
-            IPath srcPath = new Path(rootPath+"/"+source.toOSString());
-            sources.add(srcPath.toOSString());
-        }
-        return sources;
-    }
+    return sources;
+  }
 
 }

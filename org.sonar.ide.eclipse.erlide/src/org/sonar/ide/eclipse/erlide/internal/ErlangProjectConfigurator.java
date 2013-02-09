@@ -34,29 +34,29 @@ import java.util.Properties;
 
 public class ErlangProjectConfigurator extends ProjectConfigurator {
 
-    @Override
-    public boolean canConfigure(IProject project) {
-        return ErlideUtil.hasErlangNature(project);
-    }
+  @Override
+  public boolean canConfigure(IProject project) {
+    return ErlideUtil.hasErlangNature(project);
+  }
 
-    @Override
-    public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
-        IProject project = request.getProject();
-        IErlModel model = ErlModelManager.getErlangModel();
-        IErlProject erlProject = model.getErlangProject(project);
-        configureErlangProject(project, erlProject, request.getSonarProjectProperties());
-    }
+  @Override
+  public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
+    IProject project = request.getProject();
+    IErlModel model = ErlModelManager.getErlangModel();
+    IErlProject erlProject = model.getErlangProject(project);
+    configureErlangProject(project, erlProject, request.getSonarProjectProperties());
+  }
 
-    private void configureErlangProject(IProject project, IErlProject erlProject, Properties sonarProjectProperties) {
-        sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "erlang");
-        for (String path : SonarErlIdePlugin.getSourceFolders(project.getLocation().toOSString(), erlProject)) {
-            //TODO: dirty hack, there is no test property in erlide so every test directory is in the src paths, we add all path as
-            //test path if it ends with test or tests
-            if(path.matches(".*tests?[/\\\\]*$")){
-                appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, getAbsolutePath(new Path(path)));
-            } else {
-                appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(new Path(path)));
-            }
-        }
+  private void configureErlangProject(IProject project, IErlProject erlProject, Properties sonarProjectProperties) {
+    sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "erlang");
+    for (String path : SonarErlIdePlugin.getSourceFolders(project.getLocation().toOSString(), erlProject)) {
+      // TODO: dirty hack, there is no test property in erlide so every test directory is in the src paths, we add all path as
+      // test path if it ends with test or tests
+      if (path.matches(".*tests?[/\\\\]*$")) {
+        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, getAbsolutePath(new Path(path)));
+      } else {
+        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, getAbsolutePath(new Path(path)));
+      }
     }
+  }
 }

@@ -32,37 +32,37 @@ import org.sonar.ide.eclipse.core.ResourceResolver;
 
 public class ErlangResourceResolver extends ResourceResolver {
 
-    @Override
-    public String getSonarPartialKey(IResource resource) {
-        IProject project = resource.getProject();
-        IErlModel model = ErlModelManager.getErlangModel();
-        IErlProject erlProject = model.getErlangProject(project);
-        if (erlProject != null) {
-            for (String src : SonarErlIdePlugin.getSourceFolders(project.getLocation().toOSString(), erlProject)) {
-                IPath srcPath = new Path(getAbsolutePath(new Path(src)));
-                if (srcPath.isPrefixOf(resource.getLocation())) {
-                    return SonarErlIdePlugin.getRelativePath(srcPath, resource.getLocation());
-                }
-            }
+  @Override
+  public String getSonarPartialKey(IResource resource) {
+    IProject project = resource.getProject();
+    IErlModel model = ErlModelManager.getErlangModel();
+    IErlProject erlProject = model.getErlangProject(project);
+    if (erlProject != null) {
+      for (String src : SonarErlIdePlugin.getSourceFolders(project.getLocation().toOSString(), erlProject)) {
+        IPath srcPath = new Path(getAbsolutePath(new Path(src)));
+        if (srcPath.isPrefixOf(resource.getLocation())) {
+          return SonarErlIdePlugin.getRelativePath(srcPath, resource.getLocation());
         }
-        return null;
+      }
     }
+    return null;
+  }
 
-    @Override
-    public IResource locate(IProject project, String resourceKey) {
-        IErlModel model = ErlModelManager.getErlangModel();
-        IErlProject erlProject = model.getErlangProject(project);
-        if (erlProject != null) {
-            for (String src : SonarErlIdePlugin.getSourceFolders(project.getLocation().toOSString(), erlProject)) {
-                IPath srcPath = new Path(getAbsolutePath(new Path(src)));
-                IPath resourcePath = srcPath.append(resourceKey);
-                if (resourcePath.toFile().exists()) {
-                    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-                    return root.getFileForLocation(resourcePath);
-                }
-            }
+  @Override
+  public IResource locate(IProject project, String resourceKey) {
+    IErlModel model = ErlModelManager.getErlangModel();
+    IErlProject erlProject = model.getErlangProject(project);
+    if (erlProject != null) {
+      for (String src : SonarErlIdePlugin.getSourceFolders(project.getLocation().toOSString(), erlProject)) {
+        IPath srcPath = new Path(getAbsolutePath(new Path(src)));
+        IPath resourcePath = srcPath.append(resourceKey);
+        if (resourcePath.toFile().exists()) {
+          IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+          return root.getFileForLocation(resourcePath);
         }
-        return null;
+      }
     }
+    return null;
+  }
 
 }
