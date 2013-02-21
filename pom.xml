@@ -85,6 +85,7 @@
 
     <module>target-platform-e37</module>
     <module>target-platform-e42</module>
+    <module>target-platform-e43</module>
 
     <module>org.sonar.ide.eclipse.tests.common</module>
     <module>org.sonar.ide.eclipse.core.tests</module>
