@@ -18,14 +18,24 @@
         class="org.sonar.ide.eclipse.ui.internal.preferences.SonarPreferencePage"
         id="org.sonar.ide.eclipse.ui.preferences.SonarPreferencePage"
         name="%sonar.preference.page.name">
+        <keywordReference id="org.sonar.ide.eclipse.ui.SonarKeyword"/>
     </page>
     <page
           category="org.sonar.ide.eclipse.ui.preferences.SonarPreferencePage"
           class="org.sonar.ide.eclipse.ui.internal.preferences.SonarServerPreferencePage"
           id="org.sonar.ide.eclipse.ui.preferences.SonarServerPreferencePage"
           name="Servers">
+          <keywordReference id="org.sonar.ide.eclipse.ui.SonarKeyword"/>
     </page>
   </extension>
+
+  <extension
+     point="org.eclipse.ui.keywords">
+    <keyword
+            label="sonar"
+            id="org.sonar.ide.eclipse.ui.SonarKeyword"/>
+   </extension>
+
   <extension point="org.eclipse.ui.views">
     <category
         name="%sonar.category.view.name"
