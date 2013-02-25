@@ -52,6 +52,7 @@ public final class Messages extends NLS {
   public static String SonarProjectPropertyBlock_label_host;
   public static String SonarProjectPropertyBlock_label_key;
   public static String SonarProjectPropertyBlock_label_language;
+  public static String SonarProjectPropertyBlock_label_analysis_date;
 
   public static String SonarServerPreferencePage_title;
   public static String SonarServerPreferencePage_description;

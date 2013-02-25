@@ -447,7 +447,18 @@
        </enablement>
      </decorator>
 
-   </extension>
+    <decorator id="org.sonar.ide.eclipse.ui.analysisDateDecorator"
+                adaptable="true"
+                label="%sonar.decorator.analysisDate.name"
+                lightweight="false"
+                class="org.sonar.ide.eclipse.ui.internal.decorator.SonarAnalysisDateDecorator"
+                state="false">
+       <description>%sonar.decorator.analysisDate.description</description>
+       <enablement>
+         <objectState name="nature" value="org.sonar.ide.eclipse.core.sonarNature"/>
+       </enablement>
+    </decorator>
+  </extension>
 
 
    <extension

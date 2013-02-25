@@ -57,6 +57,7 @@ import org.sonar.wsclient.services.ServerQuery;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.Calendar;
 import java.util.Properties;
 
 public class AnalyseProjectJob extends Job {
@@ -109,6 +110,10 @@ public class AnalyseProjectJob extends Job {
 
     // Create markers and save measures
     createMarkers(monitor, outputFile);
+
+    // Update analysis date
+    sonarProject.setLastAnalysisDate(Calendar.getInstance().getTime());
+    sonarProject.save();
 
     monitor.done();
     return Status.OK_STATUS;

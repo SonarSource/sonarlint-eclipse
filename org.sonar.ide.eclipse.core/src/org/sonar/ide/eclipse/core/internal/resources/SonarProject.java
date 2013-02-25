@@ -23,6 +23,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
+import java.util.Date;
+
 /**
  * @author Evgeny Mandrikov
  */
@@ -32,6 +34,7 @@ public class SonarProject implements ISonarProject {
   private String url;
   private String key;
   private boolean analysedLocally;
+  private Date lastAnalysisDate;
 
   public SonarProject(IProject project) {
     this.project = project;
@@ -86,6 +89,14 @@ public class SonarProject implements ISonarProject {
 
   public void setAnalysedLocally(boolean value) {
     this.analysedLocally = value;
+  }
+
+  public Date getLastAnalysisDate() {
+    return lastAnalysisDate;
+  }
+
+  public void setLastAnalysisDate(Date lastAnalysisDate) {
+    this.lastAnalysisDate = lastAnalysisDate;
   }
 
 }

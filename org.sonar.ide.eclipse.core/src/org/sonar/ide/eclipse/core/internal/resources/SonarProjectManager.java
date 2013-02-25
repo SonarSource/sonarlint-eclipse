@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
 
+import java.util.Date;
+
 /**
  * @author Evgeny Mandrikov
  */
@@ -60,6 +62,7 @@ public class SonarProjectManager {
 
   private static final String P_PROJECT_KEY = "projectKey";
   private static final String P_ANALYSE_LOCALLY = "analyseLocally";
+  private static final String P_LAST_ANALYSIS_DATE = "lastAnalysisDate";
 
   public SonarProject readSonarConfiguration(IProject project) {
     LOG.debug("Reading configuration for project " + project.getName());
@@ -97,6 +100,10 @@ public class SonarProjectManager {
     sonarProject.setUrl(projectNode.get(P_SONAR_SERVER_URL, ""));
     sonarProject.setKey(key);
     sonarProject.setAnalysedLocally(projectNode.getBoolean(P_ANALYSE_LOCALLY, false));
+    Long analysisTimestamp = projectNode.getLong(P_LAST_ANALYSIS_DATE, 0);
+    if (analysisTimestamp > 0) {
+      sonarProject.setLastAnalysisDate(new Date(analysisTimestamp));
+    }
     return sonarProject;
   }
 
@@ -116,6 +123,9 @@ public class SonarProjectManager {
     projectNode.put(P_SONAR_SERVER_URL, configuration.getUrl());
     projectNode.put(P_PROJECT_KEY, configuration.getKey());
     projectNode.putBoolean(P_ANALYSE_LOCALLY, configuration.isAnalysedLocally());
+    if (configuration.getLastAnalysisDate() != null) {
+      projectNode.putLong(P_LAST_ANALYSIS_DATE, configuration.getLastAnalysisDate().getTime());
+    }
 
     try {
       projectNode.flush();

@@ -32,9 +32,13 @@ import org.sonar.ide.eclipse.core.internal.configurator.ConfiguratorUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 
+import java.text.SimpleDateFormat;
 import java.util.Properties;
 
 public class SonarProjectPropertyBlock {
+
+  private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
   public Control createContents(Composite parent, SonarProject sonarProject) {
     Composite container = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout();
@@ -47,15 +51,20 @@ public class SonarProjectPropertyBlock {
     Properties props = new Properties();
     ConfiguratorUtils.configure(sonarProject.getProject(), props, new NullProgressMonitor());
     addText(Messages.SonarProjectPropertyBlock_label_language, props.getProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY), container);
+    if (sonarProject.getLastAnalysisDate() != null) {
+      addText(Messages.SonarProjectPropertyBlock_label_analysis_date, sdf.format(sonarProject.getLastAnalysisDate()), container);
+    }
     return container;
   }
 
   private void addText(String label, String text, Composite container) {
-    Label labelField = new Label(container, SWT.NULL);
+    Label labelField = new Label(container, SWT.NONE);
     labelField.setText(label);
 
-    Text textField = new Text(container, SWT.BORDER | SWT.SINGLE);
+    Text textField = new Text(container, SWT.WRAP | SWT.READ_ONLY);
     textField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    textField.setBackground(textField.getDisplay().getSystemColor(
+        SWT.COLOR_WIDGET_BACKGROUND));
     textField.setText(text);
     textField.setEditable(false);
   }

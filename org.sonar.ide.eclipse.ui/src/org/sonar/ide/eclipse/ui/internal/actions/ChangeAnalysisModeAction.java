@@ -47,6 +47,7 @@ public class ChangeAnalysisModeAction implements IObjectActionDelegate {
   public void run(IAction action) {
     SonarProject projectProperties = SonarProject.getInstance(project);
     projectProperties.setAnalysedLocally(isLocalAnalysis(action));
+    projectProperties.setLastAnalysisDate(null);
     projectProperties.save();
 
     if (isLocalAnalysis(action)) {

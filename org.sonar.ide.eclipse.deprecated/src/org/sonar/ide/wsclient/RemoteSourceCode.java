@@ -34,6 +34,7 @@ import org.sonar.wsclient.services.Violation;
 import org.sonar.wsclient.services.ViolationQuery;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -188,5 +189,13 @@ class RemoteSourceCode implements SourceCode {
 
   protected RemoteSonarIndex getRemoteSonarIndex() {
     return index;
+  }
+
+  public Date getAnalysisDate() {
+    Resource remoteResource = index.getSonar().find(ResourceQuery.createForMetrics(key));
+    if (remoteResource != null) {
+      return remoteResource.getDate();
+    }
+    return null;
   }
 }

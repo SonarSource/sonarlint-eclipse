@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.api;
 
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -40,10 +41,12 @@ public interface SourceCode extends Comparable<SourceCode>, Measurable {
 
   /**
    * HIGHLY EXPERIMENTAL!!!
-   * 
+   *
    * @param content content of this resource
    * @return this (for method chaining)
    */
   SourceCode setLocalContent(String content);
+
+  Date getAnalysisDate();
 
 }
