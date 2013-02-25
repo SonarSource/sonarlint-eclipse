@@ -41,6 +41,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   private static SonarUiPlugin plugin;
 
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
+  public static final String PREF_NEW_VIOLATION_MARKER_SEVERITY = "newViolationMarkerSeverity"; //$NON-NLS-1$
 
   private final Logger logger = LoggerFactory.getLogger(SonarUiPlugin.class);
 
@@ -62,11 +63,13 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
     listener = new IPropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent event) {
-        if (event.getProperty().equals(PREF_MARKER_SEVERITY)) {
+        if (event.getProperty().equals(PREF_MARKER_SEVERITY) || event.getProperty().equals(PREF_NEW_VIOLATION_MARKER_SEVERITY)) {
           int newSeverity = getPreferenceStore().getInt(PREF_MARKER_SEVERITY);
           MarkerUtils.setMarkerSeverity(newSeverity);
+          int newSeverityForNewViolations = getPreferenceStore().getInt(PREF_NEW_VIOLATION_MARKER_SEVERITY);
+          MarkerUtils.setMarkerSeverityForNewViolations(newSeverityForNewViolations);
           try {
-            MarkerUtils.updateAllSonarMarkerSeverity(newSeverity);
+            MarkerUtils.updateAllSonarMarkerSeverity();
           } catch (CoreException e) {
             logger.error("Unable to update marker severity", e);
           }
@@ -112,7 +115,9 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   @Override
   protected void initializeDefaultPreferences(IPreferenceStore store) {
     store.setDefault(PREF_MARKER_SEVERITY, IMarker.SEVERITY_WARNING);
+    store.setDefault(PREF_NEW_VIOLATION_MARKER_SEVERITY, IMarker.SEVERITY_ERROR);
     MarkerUtils.setMarkerSeverity(store.getInt(PREF_MARKER_SEVERITY));
+    MarkerUtils.setMarkerSeverityForNewViolations(store.getInt(PREF_NEW_VIOLATION_MARKER_SEVERITY));
   }
 
 }

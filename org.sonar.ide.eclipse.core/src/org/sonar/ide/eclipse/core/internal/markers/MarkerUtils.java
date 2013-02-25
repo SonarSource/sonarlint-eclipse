@@ -45,6 +45,14 @@ public final class MarkerUtils {
   private static final Logger LOG = LoggerFactory.getLogger(MarkerUtils.class);
 
   private static int markerSeverity = IMarker.SEVERITY_WARNING;
+  private static int markerSeverityForNewViolations = IMarker.SEVERITY_ERROR;
+
+  public static String SONAR_MARKER_RULE_KEY_ATTR = "rulekey";
+  public static String SONAR_MARKER_RULE_NAME_ATTR = "rulename";
+  public static String SONAR_MARKER_RULE_PRIORITY_ATTR = "rulepriority";
+  public static String SONAR_MARKER_VIOLATION_ID_ATTR = "violationId";
+  public static String SONAR_MARKER_REVIEW_ID_ATTR = "reviewId";
+  public static String SONAR_MARKER_IS_NEW_ATTR = "is_new";
 
   private MarkerUtils() {
   }
@@ -60,15 +68,16 @@ public final class MarkerUtils {
       violation.setRuleKey(ObjectUtils.toString(jsonViolation.get("rule_key")));//$NON-NLS-1$
       violation.setRuleName(ObjectUtils.toString(jsonViolation.get("rule_name"))); //$NON-NLS-1$
       violation.setSwitchedOff("true".equals(jsonViolation.get("switched_off"))); //$NON-NLS-1$
+      boolean isNew = Boolean.TRUE.equals(jsonViolation.get("is_new")); //$NON-NLS-1$
       try {
-        createMarkerForWSViolation(resource, violation);
+        createMarkerForWSViolation(resource, violation, isNew);
       } catch (CoreException e) {
         LOG.error(e.getMessage(), e);
       }
     }
   }
 
-  public static void createMarkerForWSViolation(final IResource resource, final Violation violation) throws CoreException {
+  public static void createMarkerForWSViolation(final IResource resource, final Violation violation, final boolean isNew) throws CoreException {
     if (violation.isSwitchedOff()) {
       // SONARIDE-281
       return;
@@ -76,10 +85,11 @@ public final class MarkerUtils {
     final Map<String, Object> markerAttributes = new HashMap<String, Object>();
     Integer line = violation.getLine();
     markerAttributes.put(IMarker.PRIORITY, getPriority(violation));
-    markerAttributes.put(IMarker.SEVERITY, markerSeverity);
+    markerAttributes.put(IMarker.SEVERITY, isNew ? markerSeverityForNewViolations : markerSeverity);
     // File level violation (line == null) are displayed on line 1
     markerAttributes.put(IMarker.LINE_NUMBER, line != null ? line : 1);
     markerAttributes.put(IMarker.MESSAGE, getMessage(violation));
+    markerAttributes.put(SONAR_MARKER_IS_NEW_ATTR, isNew);
 
     String source = "";
     if (resource instanceof IFile) {
@@ -103,7 +113,7 @@ public final class MarkerUtils {
         markerAttributes.put(entry.getKey(), entry.getValue());
       }
     }
-    final IMarker marker = resource.createMarker(SonarCorePlugin.MARKER_ID);
+    final IMarker marker = resource.createMarker(isNew ? SonarCorePlugin.NEW_VIOLATION_MARKER_ID : SonarCorePlugin.MARKER_ID);
     marker.setAttributes(markerAttributes);
   }
 
@@ -143,14 +153,14 @@ public final class MarkerUtils {
 
   private static Map<String, Object> getExtraInfos(final Violation violation) {
     final Map<String, Object> extraInfos = new HashMap<String, Object>();
-    extraInfos.put("rulekey", violation.getRuleKey());
-    extraInfos.put("rulename", violation.getRuleName());
-    extraInfos.put("rulepriority", violation.getSeverity());
+    extraInfos.put(SONAR_MARKER_RULE_KEY_ATTR, violation.getRuleKey());
+    extraInfos.put(SONAR_MARKER_RULE_NAME_ATTR, violation.getRuleName());
+    extraInfos.put(SONAR_MARKER_RULE_PRIORITY_ATTR, violation.getSeverity());
     if (violation.getId() != null) {
-      extraInfos.put("violationId", Long.toString(violation.getId()));
+      extraInfos.put(SONAR_MARKER_VIOLATION_ID_ATTR, Long.toString(violation.getId()));
     }
     if (violation.getReview() != null) {
-      extraInfos.put("reviewId", Long.toString(violation.getReview().getId()));
+      extraInfos.put(SONAR_MARKER_REVIEW_ID_ATTR, Long.toString(violation.getReview().getId()));
     }
     return extraInfos;
   }
@@ -173,11 +183,12 @@ public final class MarkerUtils {
     }
   }
 
-  public static void updateAllSonarMarkerSeverity(int newSeverity) throws CoreException {
+  public static void updateAllSonarMarkerSeverity() throws CoreException {
     for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
       if (project.isAccessible()) {
         for (IMarker marker : project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE)) {
-          marker.setAttribute(IMarker.SEVERITY, newSeverity);
+          boolean isNew = marker.getAttribute(SONAR_MARKER_IS_NEW_ATTR, false);
+          marker.setAttribute(IMarker.SEVERITY, isNew ? markerSeverityForNewViolations : markerSeverity);
         }
       }
     }
@@ -185,6 +196,10 @@ public final class MarkerUtils {
 
   public static void setMarkerSeverity(int severity) {
     markerSeverity = severity;
+  }
+
+  public static void setMarkerSeverityForNewViolations(int severity) {
+    markerSeverityForNewViolations = severity;
   }
 
 }

@@ -94,7 +94,7 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
       IResource eclipseResource = ResourceUtils.getResource(sonarResource.getKey());
       if (eclipseResource instanceof IFile) {
         for (Violation violation : mm.get(resourceKey)) {
-          MarkerUtils.createMarkerForWSViolation(eclipseResource, violation);
+          MarkerUtils.createMarkerForWSViolation(eclipseResource, violation, false);
         }
       }
     }

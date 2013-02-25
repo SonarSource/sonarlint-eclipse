@@ -23,14 +23,11 @@ import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 
-/**
- * @author Jérémie Lagarde
- */
-public class ViolationRuleKeyField extends MarkerField {
+public class ViolationIsNewField extends MarkerField {
 
   @Override
   public String getValue(MarkerItem item) {
-    return item.getMarker().getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "");
+    return "" + item.getMarker().getAttribute(MarkerUtils.SONAR_MARKER_IS_NEW_ATTR, false);
   }
 
 }

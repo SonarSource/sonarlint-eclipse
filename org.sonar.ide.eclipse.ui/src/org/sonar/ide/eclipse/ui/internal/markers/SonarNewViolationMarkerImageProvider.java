@@ -17,20 +17,26 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.ui.internal.views;
+package org.sonar.ide.eclipse.ui.internal.markers;
 
-import org.eclipse.ui.views.markers.MarkerField;
-import org.eclipse.ui.views.markers.MarkerItem;
-import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.texteditor.IAnnotationImageProvider;
+import org.sonar.ide.eclipse.ui.internal.SonarImages;
 
-/**
- * @author Jérémie Lagarde
- */
-public class ViolationRuleKeyField extends MarkerField {
+public class SonarNewViolationMarkerImageProvider implements IAnnotationImageProvider {
 
-  @Override
-  public String getValue(MarkerItem item) {
-    return item.getMarker().getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "");
+  public ImageDescriptor getImageDescriptor(String imageDescritporId) {
+    return null;
+  }
+
+  public String getImageDescriptorId(Annotation annotation) {
+    return null;
+  }
+
+  public Image getManagedImage(Annotation annotation) {
+    return SonarImages.IMG_NEW_VIOLATION;
   }
 
 }

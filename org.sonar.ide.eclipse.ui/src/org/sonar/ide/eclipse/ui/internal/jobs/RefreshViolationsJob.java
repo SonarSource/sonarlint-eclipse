@@ -118,7 +118,7 @@ public class RefreshViolationsJob extends AbstractRemoteSonarJob implements IRes
       final Collection<Violation> violations = retrieveDatas(EclipseSonar.getInstance(resource.getProject()), resource);
       MarkerUtils.deleteViolationsMarkers(resource);
       for (final Violation violation : violations) {
-        MarkerUtils.createMarkerForWSViolation(resource, violation);
+        MarkerUtils.createMarkerForWSViolation(resource, violation, false);
       }
     } catch (final Exception ex) {
       LoggerFactory.getLogger(getClass()).error(ex.getMessage(), ex);

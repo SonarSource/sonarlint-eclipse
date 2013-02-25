@@ -54,7 +54,30 @@
       <attribute
             name="rulekey">
       </attribute>
+      <attribute
+            name="is_new">
+      </attribute>
    </extension>
 
+   <extension
+        id="sonarProblemNewViolation"
+        name="New Sonar Violation"
+        point="org.eclipse.core.resources.markers">
+      <super
+            type="org.sonar.ide.eclipse.core.sonarProblem">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+      <attribute
+            name="rulename">
+      </attribute>
+      <attribute
+            name="rulekey">
+      </attribute>
+      <attribute
+            name="is_new">
+      </attribute>
+   </extension>
 
 </plugin>

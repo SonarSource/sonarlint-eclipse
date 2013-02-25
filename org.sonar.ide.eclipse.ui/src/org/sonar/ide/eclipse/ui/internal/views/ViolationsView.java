@@ -30,13 +30,4 @@ public class ViolationsView extends MarkerSupportView {
     super(ISonarConstants.PLUGIN_ID + ".markers.violationMarkerGenerator");
   }
 
-  /**
-   * TODO quote from {@link org.eclipse.ui.part.WorkbenchPart#getContentDescription()} : "It is considered bad practice to overload or extend this method."
-   */
-  @Override
-  public String getContentDescription() {
-    // TODO : add some metrics about violation makers.
-    return "";
-  }
-
 }

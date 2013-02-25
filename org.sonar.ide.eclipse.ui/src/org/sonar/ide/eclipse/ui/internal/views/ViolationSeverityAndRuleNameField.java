@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
+import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
 
 /**
@@ -41,7 +42,7 @@ public class ViolationSeverityAndRuleNameField extends MarkerField {
   }
 
   private int getSeverity(MarkerItem item) {
-    return convertSeverity(item.getMarker().getAttribute("rulepriority", ""));
+    return convertSeverity(item.getMarker().getAttribute(MarkerUtils.SONAR_MARKER_RULE_PRIORITY_ATTR, ""));
   }
 
   public static int convertSeverity(String severity) {
@@ -72,7 +73,7 @@ public class ViolationSeverityAndRuleNameField extends MarkerField {
     if ((item == null) || (item.getMarker() == null)) {
       return null;
     }
-    return item.getMarker().getAttribute("rulename", "");
+    return item.getMarker().getAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, "");
   }
 
   private Image getImage(MarkerItem item) {

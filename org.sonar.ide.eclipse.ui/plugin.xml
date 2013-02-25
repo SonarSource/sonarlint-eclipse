@@ -118,11 +118,16 @@
          name="Sonar Violation Marker Generator">
         <markerTypeReference
               id="org.sonar.ide.eclipse.core.sonarProblem"/>
+        <markerTypeReference
+              id="org.sonar.ide.eclipse.core.sonarProblemNewViolation"/>
         <markerFieldReference
               id="org.sonar.ide.eclipse.ui.views.violationRuleKeyField"
               visible="false"/>
         <markerFieldReference
               id="org.sonar.ide.eclipse.ui.views.violationSeverityAndRuleNameField"
+              visible="true"/>
+        <markerFieldReference
+              id="org.sonar.ide.eclipse.ui.views.violationIsNewField"
               visible="true"/>
         <markerFieldReference
               id="org.eclipse.ui.ide.resourceField"
@@ -149,6 +154,11 @@
         class="org.sonar.ide.eclipse.ui.internal.views.ViolationRuleKeyField"
         id="org.sonar.ide.eclipse.ui.views.violationRuleKeyField"
         name="%sonar.violation.view.rulekeyfield">
+    </markerField>
+    <markerField
+        class="org.sonar.ide.eclipse.ui.internal.views.ViolationIsNewField"
+        id="org.sonar.ide.eclipse.ui.views.violationIsNewField"
+        name="%sonar.violation.view.isnewfield">
     </markerField>
   </extension>
 
@@ -298,6 +308,9 @@
         <type
             name="org.sonar.ide.eclipse.violationAnnotationType"
             markerType="org.sonar.ide.eclipse.core.sonarProblem"/>
+        <type
+            name="org.sonar.ide.eclipse.newViolationAnnotationType"
+            markerType="org.sonar.ide.eclipse.core.sonarProblemNewViolation"/>
     </extension>
 
     <extension
@@ -317,7 +330,7 @@
               label="%sonar.marker.specification.label"
               overviewRulerPreferenceKey="org.sonar.ide.eclipse.ui.violation.overviewruler"
               overviewRulerPreferenceValue="true"
-              presentationLayer="5"
+              presentationLayer="3"
               showInNextPrevDropdownToolbarAction="true"
               showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.violation.dropdown"
               textPreferenceKey="org.sonar.ide.eclipse.ui.violation.error.text"
@@ -325,6 +338,30 @@
               textStylePreferenceKey="org.sonar.ide.eclipse.ui.violation.text.style"
               textStylePreferenceValue="BOX"
               verticalRulerPreferenceKey="org.sonar.ide.eclipse.ui.violation.verticalruler"
+              verticalRulerPreferenceValue="true"/>
+
+        <specification
+              annotationImageProvider="org.sonar.ide.eclipse.ui.internal.markers.SonarNewViolationMarkerImageProvider"
+              annotationType="org.sonar.ide.eclipse.newViolationAnnotationType"
+              colorPreferenceKey="org.sonar.ide.eclipse.ui.newviolation.color"
+              colorPreferenceValue="255,246,10"
+              highlightPreferenceKey="org.sonar.ide.eclipse.ui.newviolation.highlight"
+              highlightPreferenceValue="true"
+              isGoToNextNavigationTarget="true"
+              isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.newviolation.next"
+              isGoToPreviousNavigationTarget="true"
+              isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.newviolation.previous"
+              label="%sonar.new.violation.marker.specification.label"
+              overviewRulerPreferenceKey="org.sonar.ide.eclipse.ui.newviolation.overviewruler"
+              overviewRulerPreferenceValue="true"
+              presentationLayer="4"
+              showInNextPrevDropdownToolbarAction="true"
+              showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.newviolation.dropdown"
+              textPreferenceKey="org.sonar.ide.eclipse.ui.newviolation.error.text"
+              textPreferenceValue="true"
+              textStylePreferenceKey="org.sonar.ide.eclipse.ui.newviolation.text.style"
+              textStylePreferenceValue="BOX"
+              verticalRulerPreferenceKey="org.sonar.ide.eclipse.ui.newviolation.verticalruler"
               verticalRulerPreferenceValue="true"/>
     </extension>
 
@@ -345,6 +382,10 @@
      <markerResolutionGenerator
            class="org.sonar.ide.eclipse.ui.internal.markers.SonarMarkerResolutionGenerator"
            markerType="org.sonar.ide.eclipse.core.sonarProblem">
+     </markerResolutionGenerator>
+     <markerResolutionGenerator
+           class="org.sonar.ide.eclipse.ui.internal.markers.SonarMarkerResolutionGenerator"
+           markerType="org.sonar.ide.eclipse.core.sonarProblemNewViolation">
      </markerResolutionGenerator>
   </extension>
 
@@ -435,7 +476,7 @@
   <extension point="org.eclipse.ui.decorators">
      <decorator
            adaptable="true"
-           icon="icons/slabel.gif"
+           icon="icons/sonar-label-decorator.gif"
            id="org.sonar.ide.eclipse.ui.sonarDecorator"
            label="%sonar.decorator.name"
            lightweight="true"
