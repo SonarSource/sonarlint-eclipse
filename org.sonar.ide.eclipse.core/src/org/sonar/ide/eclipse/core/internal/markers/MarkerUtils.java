@@ -59,6 +59,7 @@ public final class MarkerUtils {
       violation.setSeverity(ObjectUtils.toString(jsonViolation.get("severity")));//$NON-NLS-1$
       violation.setRuleKey(ObjectUtils.toString(jsonViolation.get("rule_key")));//$NON-NLS-1$
       violation.setRuleName(ObjectUtils.toString(jsonViolation.get("rule_name"))); //$NON-NLS-1$
+      violation.setSwitchedOff("true".equals(jsonViolation.get("switched_off"))); //$NON-NLS-1$
       try {
         createMarkerForWSViolation(resource, violation);
       } catch (CoreException e) {
@@ -68,6 +69,10 @@ public final class MarkerUtils {
   }
 
   public static void createMarkerForWSViolation(final IResource resource, final Violation violation) throws CoreException {
+    if (violation.isSwitchedOff()) {
+      // SONARIDE-281
+      return;
+    }
     final Map<String, Object> markerAttributes = new HashMap<String, Object>();
     Integer line = violation.getLine();
     markerAttributes.put(IMarker.PRIORITY, getPriority(violation));
