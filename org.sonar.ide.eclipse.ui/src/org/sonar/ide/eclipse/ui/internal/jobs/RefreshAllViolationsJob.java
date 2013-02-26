@@ -72,9 +72,9 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
       SourceCode sourceCode = sonar.search(project);
       if (sourceCode != null) {
         doRefreshViolation(sourceCode);
+        projectProperties.setLastAnalysisDate(sourceCode.getAnalysisDate());
+        projectProperties.save();
       }
-      projectProperties.setLastAnalysisDate(sourceCode.getAnalysisDate());
-      projectProperties.save();
       // do not visit members of this resource
       return false;
     }
