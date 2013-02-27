@@ -26,6 +26,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyseProjectJob;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 import org.sonar.ide.eclipse.ui.internal.jobs.RefreshAllViolationsJob;
 import org.sonar.ide.eclipse.ui.internal.util.SelectionUtils;
@@ -51,7 +52,7 @@ public class ChangeAnalysisModeAction implements IObjectActionDelegate {
     projectProperties.save();
 
     if (isLocalAnalysis(action)) {
-      new AnalyseProjectJob(project, SonarConsole.isDebugEnabled()).schedule();
+      new AnalyseProjectJob(project, SonarConsole.isDebugEnabled(), SonarUiPlugin.getDefault().getExtraArgumentsForLocalAnalysis(project)).schedule();
     } else {
       RefreshAllViolationsJob.createAndSchedule(project);
     }

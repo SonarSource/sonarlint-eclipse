@@ -65,7 +65,7 @@ public class AnalyseProjectAction implements IObjectActionDelegate {
     boolean debugEnabled = SonarConsole.isDebugEnabled();
     SonarUiPlugin.getDefault().getSonarConsole().clearConsole();
     for (IProject project : projects) {
-      AnalyseProjectJob job = new AnalyseProjectJob(project, debugEnabled);
+      AnalyseProjectJob job = new AnalyseProjectJob(project, debugEnabled, SonarUiPlugin.getDefault().getExtraArgumentsForLocalAnalysis(project));
       // Display violation view after analysis is completed
       job.addJobChangeListener(new JobChangeAdapter() {
         @Override

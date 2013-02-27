@@ -67,11 +67,13 @@ public class AnalyseProjectJob extends Job {
   private final IProject project;
   private final boolean debugEnabled;
   private final SonarProject sonarProject;
+  private final String[] extraArgs;
 
-  public AnalyseProjectJob(IProject project, boolean debugEnabled) {
+  public AnalyseProjectJob(IProject project, boolean debugEnabled, String[] extraArgs) {
     super(Messages.AnalyseProjectJob_title);
     this.project = project;
     this.debugEnabled = debugEnabled;
+    this.extraArgs = extraArgs;
     sonarProject = SonarProject.getInstance(project);
     // Prevent modifications of project during analysis
     setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
@@ -100,7 +102,7 @@ public class AnalyseProjectJob extends Job {
     FileUtils.deleteQuietly(outputFile);
     IStatus result;
     try {
-      result = SonarEclipseRunner.run(project, properties, monitor);
+      result = SonarEclipseRunner.run(project, properties, extraArgs, debugEnabled, monitor);
     } catch (Exception e) {
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error when executing Sonar runner", e);
     }

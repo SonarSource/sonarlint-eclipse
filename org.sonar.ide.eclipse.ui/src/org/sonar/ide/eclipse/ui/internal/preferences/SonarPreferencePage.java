@@ -19,9 +19,13 @@
  */
 package org.sonar.ide.eclipse.ui.internal.preferences;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.ListEditor;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.sonar.ide.eclipse.ui.internal.Messages;
@@ -57,6 +61,27 @@ public class SonarPreferencePage extends FieldEditorPreferencePage implements IW
           {"Warning", String.valueOf(IMarker.SEVERITY_WARNING)},
           {"Error", String.valueOf(IMarker.SEVERITY_ERROR)}},
         getFieldEditorParent()));
+    addField(new ListEditor(SonarUiPlugin.PREF_EXTRA_ARGS,
+        Messages.SonarPreferencePage_label_extra_args, getFieldEditorParent()) {
+      @Override
+      protected String createList(String[] items) {
+        return StringUtils.join(items, "\n\r");
+      }
+
+      @Override
+      protected String[] parseString(String stringList) {
+        return StringUtils.split(stringList, "\n\r");
+      }
+
+      @Override
+      protected String getNewInputObject() {
+        InputDialog dialog = new InputDialog(getShell(), "New argument", "Input new argument", "-Dfoo=bar", null);
+        if (dialog.open() == Window.OK) {
+          return dialog.getValue();
+        }
+        return null;
+      }
+    });
   }
 
 }

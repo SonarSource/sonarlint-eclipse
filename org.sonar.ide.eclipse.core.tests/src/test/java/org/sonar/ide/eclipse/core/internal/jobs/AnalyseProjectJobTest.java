@@ -57,7 +57,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldConfigureAnalysis() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false);
+    AnalyseProjectJob job = new AnalyseProjectJob(project, false, new String[] {});
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props);
 
@@ -67,7 +67,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldCreateMarkers() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false);
+    AnalyseProjectJob job = new AnalyseProjectJob(project, false, new String[] {});
     job.createMarkers(MONITOR, new File("testdata/dryRun.json"));
 
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));

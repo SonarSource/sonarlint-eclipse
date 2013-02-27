@@ -21,6 +21,7 @@ package org.sonar.ide.eclipse.runner;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -60,7 +61,8 @@ public class SonarEclipseRunner {
    * @throws CoreException
    * @throws IOException
    */
-  public static IStatus run(IProject project, Properties props, final IProgressMonitor monitor) throws InterruptedException, CoreException, IOException {
+  public static IStatus run(IProject project, Properties props, String[] extraArgs, boolean debugEnabled, final IProgressMonitor monitor) throws InterruptedException,
+      CoreException, IOException {
 
     File tmpSonarRunnerJarPath = null;
     try {
@@ -71,7 +73,11 @@ public class SonarEclipseRunner {
         return new Status(Status.ERROR, SonarRunnerPlugin.PLUGIN_ID, "No usable JVM found");
       }
 
-      VMRunnerConfiguration vmConfig = createVmConfig(project, props, tmpSonarRunnerJarPath);
+      VMRunnerConfiguration vmConfig = createVmConfig(project, props, extraArgs, tmpSonarRunnerJarPath);
+      if (debugEnabled) {
+        String args = StringUtils.join(vmConfig.getProgramArguments(), " ");
+        SonarRunnerPlugin.getDefault().info("Start sonar-runner with args: " + args + "\n");
+      }
 
       final ILaunch launch = createLaunch();
 
@@ -126,10 +132,10 @@ public class SonarEclipseRunner {
     return launch;
   }
 
-  private static VMRunnerConfiguration createVmConfig(IProject project, Properties props, File tmpSonarRunnerJarPath) {
+  private static VMRunnerConfiguration createVmConfig(IProject project, Properties props, String[] extraArgs, File tmpSonarRunnerJarPath) {
     VMRunnerConfiguration vmConfig = new VMRunnerConfiguration("org.sonar.runner.Main", new String[] {tmpSonarRunnerJarPath.toString()});
     vmConfig.setWorkingDirectory(project.getLocation().toOSString());
-    vmConfig.setVMArguments(prepareVMArgs(props));
+    vmConfig.setProgramArguments(prepareArgs(props, extraArgs));
     return vmConfig;
   }
 
@@ -148,10 +154,13 @@ public class SonarEclipseRunner {
     return vmInstall.getVMRunner(ILaunchManager.RUN_MODE);
   }
 
-  private static String[] prepareVMArgs(Properties props) {
+  private static String[] prepareArgs(Properties props, String[] extraArgs) {
     ArrayList<String> args = new ArrayList<String>();
     for (Object key : props.keySet()) {
       args.add("-D" + key + "=" + props.getProperty(key.toString()));
+    }
+    for (String arg : extraArgs) {
+      args.add(arg);
     }
     return args.toArray(new String[args.size()]);
   }

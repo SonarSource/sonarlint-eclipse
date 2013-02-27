@@ -19,7 +19,9 @@
  */
 package org.sonar.ide.eclipse.ui.internal;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -30,6 +32,7 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.runner.SonarRunnerLogListener;
 import org.sonar.ide.eclipse.runner.SonarRunnerPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
@@ -42,6 +45,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
   public static final String PREF_NEW_VIOLATION_MARKER_SEVERITY = "newViolationMarkerSeverity"; //$NON-NLS-1$
+  public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
 
   private final Logger logger = LoggerFactory.getLogger(SonarUiPlugin.class);
 
@@ -116,8 +120,18 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   protected void initializeDefaultPreferences(IPreferenceStore store) {
     store.setDefault(PREF_MARKER_SEVERITY, IMarker.SEVERITY_WARNING);
     store.setDefault(PREF_NEW_VIOLATION_MARKER_SEVERITY, IMarker.SEVERITY_ERROR);
+    store.setDefault(PREF_EXTRA_ARGS, "");
     MarkerUtils.setMarkerSeverity(store.getInt(PREF_MARKER_SEVERITY));
     MarkerUtils.setMarkerSeverityForNewViolations(store.getInt(PREF_NEW_VIOLATION_MARKER_SEVERITY));
+  }
+
+  public String[] getExtraArgumentsForLocalAnalysis(IProject project) {
+    SonarProject sonarProject = SonarProject.getInstance(project);
+    if (sonarProject.getExtraArguments() != null) {
+      return sonarProject.getExtraArguments().toArray(new String[sonarProject.getExtraArguments().size()]);
+    }
+    String globalExtraArgs = SonarUiPlugin.getDefault().getPreferenceStore().getString(SonarUiPlugin.PREF_EXTRA_ARGS);
+    return StringUtils.split(globalExtraArgs, "\n\r");
   }
 
 }

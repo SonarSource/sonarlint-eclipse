@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -63,6 +65,7 @@ public class SonarProjectManager {
   private static final String P_PROJECT_KEY = "projectKey";
   private static final String P_ANALYSE_LOCALLY = "analyseLocally";
   private static final String P_LAST_ANALYSIS_DATE = "lastAnalysisDate";
+  private static final String P_EXTRA_ARGS = "extraArgs";
 
   public SonarProject readSonarConfiguration(IProject project) {
     LOG.debug("Reading configuration for project " + project.getName());
@@ -104,6 +107,10 @@ public class SonarProjectManager {
     if (analysisTimestamp > 0) {
       sonarProject.setLastAnalysisDate(new Date(analysisTimestamp));
     }
+    String extraArgsAsString = projectNode.get(P_EXTRA_ARGS, null);
+    if (extraArgsAsString != null) {
+      sonarProject.setExtraArguments(new ArrayList<String>(Arrays.asList(StringUtils.split(extraArgsAsString, "\r\n"))));
+    }
     return sonarProject;
   }
 
@@ -126,7 +133,12 @@ public class SonarProjectManager {
     if (configuration.getLastAnalysisDate() != null) {
       projectNode.putLong(P_LAST_ANALYSIS_DATE, configuration.getLastAnalysisDate().getTime());
     }
-
+    if (configuration.getExtraArguments() != null) {
+      projectNode.put(P_EXTRA_ARGS, StringUtils.join(configuration.getExtraArguments(), "\r\n"));
+    }
+    else {
+      projectNode.remove(P_EXTRA_ARGS);
+    }
     try {
       projectNode.flush();
       return true;
