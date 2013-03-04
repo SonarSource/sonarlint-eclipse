@@ -50,7 +50,13 @@ public abstract class ProjectConfigurator {
   }
 
   protected void appendProperty(Properties properties, String key, String value) {
-    String newValue = properties.getProperty(key, "") + SonarProperties.SEPARATOR + value;
+    String newValue = properties.getProperty(key, null);
+    if (newValue != null) {
+      newValue += SonarProperties.SEPARATOR + value;
+    }
+    else {
+      newValue = value;
+    }
     properties.put(key, newValue);
   }
 

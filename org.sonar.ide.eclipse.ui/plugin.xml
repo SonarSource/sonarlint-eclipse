@@ -24,7 +24,14 @@
           category="org.sonar.ide.eclipse.ui.preferences.SonarPreferencePage"
           class="org.sonar.ide.eclipse.ui.internal.preferences.SonarServerPreferencePage"
           id="org.sonar.ide.eclipse.ui.preferences.SonarServerPreferencePage"
-          name="Servers">
+          name="%sonar.preference.servers.page.name">
+          <keywordReference id="org.sonar.ide.eclipse.ui.SonarKeyword"/>
+    </page>
+    <page
+          category="org.sonar.ide.eclipse.ui.preferences.SonarPreferencePage"
+          class="org.sonar.ide.eclipse.ui.internal.properties.SonarExtraArgumentsPreferenceAndPropertyPage"
+          id="org.sonar.ide.eclipse.ui.properties.SonarExtraArgumentsPreferenceAndPropertyPage"
+          name="%sonar.preference.extraProps.page.name">
           <keywordReference id="org.sonar.ide.eclipse.ui.SonarKeyword"/>
     </page>
   </extension>
@@ -180,6 +187,16 @@
       class="org.sonar.ide.eclipse.ui.internal.properties.SonarProjectPropertyPage"
        id="org.sonar.ide.eclipse.ui.properties.sonarProjectPropertyPage"
        name="%sonar.properties.page.name">
+       <filter name="projectNature" value="org.sonar.ide.eclipse.core.sonarNature"/>
+       <enabledWhen>
+          <adapt type="org.eclipse.core.resources.IProject"/>
+       </enabledWhen>
+    </page>
+    <page
+      class="org.sonar.ide.eclipse.ui.internal.properties.SonarExtraArgumentsPreferenceAndPropertyPage"
+       id="org.sonar.ide.eclipse.ui.properties.SonarExtraArgumentsPreferenceAndPropertyPage"
+       category="org.sonar.ide.eclipse.ui.properties.sonarProjectPropertyPage"
+       name="%sonar.preference.extraProps.page.name">
        <filter name="projectNature" value="org.sonar.ide.eclipse.core.sonarNature"/>
        <enabledWhen>
           <adapt type="org.eclipse.core.resources.IProject"/>

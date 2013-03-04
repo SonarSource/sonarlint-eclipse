@@ -33,10 +33,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.runner.SonarRunnerLogListener;
 import org.sonar.ide.eclipse.runner.SonarRunnerPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 import org.sonar.ide.eclipse.ui.internal.jobs.RefreshViolationsJob;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SonarUiPlugin extends AbstractUIPlugin {
 
@@ -125,13 +129,22 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     MarkerUtils.setMarkerSeverityForNewViolations(store.getInt(PREF_NEW_VIOLATION_MARKER_SEVERITY));
   }
 
-  public String[] getExtraArgumentsForLocalAnalysis(IProject project) {
-    SonarProject sonarProject = SonarProject.getInstance(project);
-    if (sonarProject.getExtraArguments() != null) {
-      return sonarProject.getExtraArguments().toArray(new String[sonarProject.getExtraArguments().size()]);
-    }
+  public List<SonarProperty> getExtraPropertiesForLocalAnalysis(IProject project) {
+    List<SonarProperty> props = new ArrayList<SonarProperty>();
+    // First add all global properties
     String globalExtraArgs = SonarUiPlugin.getDefault().getPreferenceStore().getString(SonarUiPlugin.PREF_EXTRA_ARGS);
-    return StringUtils.split(globalExtraArgs, "\n\r");
-  }
+    String[] keyValuePairs = StringUtils.split(globalExtraArgs, "\n\r");
+    for (String keyValuePair : keyValuePairs) {
+      String[] keyValue = keyValuePair.split("=");
+      props.add(new SonarProperty(keyValue[0], keyValue[1]));
+    }
 
+    // Then add project properties
+    SonarProject sonarProject = SonarProject.getInstance(project);
+    if (sonarProject.getExtraProperties() != null) {
+      props.addAll(sonarProject.getExtraProperties());
+    }
+
+    return props;
+  }
 }

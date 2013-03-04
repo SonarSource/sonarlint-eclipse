@@ -29,9 +29,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -57,17 +59,35 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldConfigureAnalysis() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false, new String[] {});
+    AnalyseProjectJob job = new AnalyseProjectJob(project, false);
     Properties props = new Properties();
-    job.configureAnalysis(MONITOR, props);
+    job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
 
     assertThat(props.get(SonarProperties.SONAR_URL).toString(), is("http://localhost:9000"));
     assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString(), is("bar:foo"));
   }
 
   @Test
+  public void shouldConfigureAnalysisWithExtraProps() throws Exception {
+    AnalyseProjectJob job = new AnalyseProjectJob(project, false);
+    Properties props = new Properties();
+    job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.foo", "value")));
+
+    assertThat(props.get("sonar.foo").toString(), is("value"));
+  }
+
+  @Test
+  public void languageConfiguratorShouldOverrideExtraProps() throws Exception {
+    AnalyseProjectJob job = new AnalyseProjectJob(project, false);
+    Properties props = new Properties();
+    job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.language", "fake")));
+
+    assertThat(props.get("sonar.language").toString(), is("java"));
+  }
+
+  @Test
   public void shouldCreateMarkers() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false, new String[] {});
+    AnalyseProjectJob job = new AnalyseProjectJob(project, false);
     job.createMarkers(MONITOR, new File("testdata/dryRun.json"));
 
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));

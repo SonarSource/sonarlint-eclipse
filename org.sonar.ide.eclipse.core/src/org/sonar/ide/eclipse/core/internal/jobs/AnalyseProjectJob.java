@@ -48,6 +48,7 @@ import org.sonar.ide.eclipse.core.internal.configurator.ConfiguratorUtils;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.runner.SonarEclipseRunner;
 import org.sonar.ide.eclipse.wsclient.SonarVersionTester;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
@@ -58,6 +59,8 @@ import org.sonar.wsclient.services.ServerQuery;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 public class AnalyseProjectJob extends Job {
@@ -67,14 +70,19 @@ public class AnalyseProjectJob extends Job {
   private final IProject project;
   private final boolean debugEnabled;
   private final SonarProject sonarProject;
-  private final String[] extraArgs;
 
-  public AnalyseProjectJob(IProject project, boolean debugEnabled, String[] extraArgs) {
+  private List<SonarProperty> extraProps;
+
+  public AnalyseProjectJob(IProject project, boolean debugEnabled) {
+    this(project, debugEnabled, Collections.<SonarProperty> emptyList());
+  }
+
+  public AnalyseProjectJob(IProject project, boolean debugEnabled, List<SonarProperty> extraProps) {
     super(Messages.AnalyseProjectJob_title);
     this.project = project;
     this.debugEnabled = debugEnabled;
-    this.extraArgs = extraArgs;
-    sonarProject = SonarProject.getInstance(project);
+    this.extraProps = extraProps;
+    this.sonarProject = SonarProject.getInstance(project);
     // Prevent modifications of project during analysis
     setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
   }
@@ -95,14 +103,14 @@ public class AnalyseProjectJob extends Job {
 
     // Configure
     Properties properties = new Properties();
-    File outputFile = configureAnalysis(monitor, properties);
+    File outputFile = configureAnalysis(monitor, properties, extraProps);
 
     // Analyse
     // To be sure to not reuse something from a previous analysis
     FileUtils.deleteQuietly(outputFile);
     IStatus result;
     try {
-      result = SonarEclipseRunner.run(project, properties, extraArgs, debugEnabled, monitor);
+      result = SonarEclipseRunner.run(project, properties, debugEnabled, monitor);
     } catch (Exception e) {
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error when executing Sonar runner", e);
     }
@@ -167,12 +175,17 @@ public class AnalyseProjectJob extends Job {
    * @return
    */
   @VisibleForTesting
-  public File configureAnalysis(final IProgressMonitor monitor, Properties properties) {
+  public File configureAnalysis(final IProgressMonitor monitor, Properties properties, List<SonarProperty> extraProps) {
     File baseDir = project.getLocation().toFile();
     IPath projectSpecificWorkDir = project.getWorkingLocation(SonarCorePlugin.PLUGIN_ID);
     // FIXME For now outputFile should be relative to work dir IPath pluginWorkDir = SonarCorePlugin.getDefault().getStateLocation();
     IPath pluginWorkDir = projectSpecificWorkDir;
     File outputFile = new File(projectSpecificWorkDir.toFile(), "dryRun.json");
+
+    // First start by appending workspace and project properties
+    for (SonarProperty sonarProperty : extraProps) {
+      properties.put(sonarProperty.getName(), sonarProperty.getValue());
+    }
 
     // Configuration by configurators (common and language specific)
     ConfiguratorUtils.configure(project, properties, monitor);

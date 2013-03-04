@@ -31,8 +31,8 @@ import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author Evgeny Mandrikov
@@ -65,7 +65,7 @@ public class SonarProjectManager {
   private static final String P_PROJECT_KEY = "projectKey";
   private static final String P_ANALYSE_LOCALLY = "analyseLocally";
   private static final String P_LAST_ANALYSIS_DATE = "lastAnalysisDate";
-  private static final String P_EXTRA_ARGS = "extraArgs";
+  private static final String P_EXTRA_PROPS = "extraProperties";
 
   public SonarProject readSonarConfiguration(IProject project) {
     LOG.debug("Reading configuration for project " + project.getName());
@@ -107,10 +107,20 @@ public class SonarProjectManager {
     if (analysisTimestamp > 0) {
       sonarProject.setLastAnalysisDate(new Date(analysisTimestamp));
     }
-    String extraArgsAsString = projectNode.get(P_EXTRA_ARGS, null);
+    String extraArgsAsString = projectNode.get(P_EXTRA_PROPS, null);
+    List<SonarProperty> sonarProperties = new ArrayList<SonarProperty>();
     if (extraArgsAsString != null) {
-      sonarProject.setExtraArguments(new ArrayList<String>(Arrays.asList(StringUtils.split(extraArgsAsString, "\r\n"))));
+      try {
+        String[] props = StringUtils.split(extraArgsAsString, "\r\n");
+        for (String keyValuePair : props) {
+          String[] keyValue = StringUtils.split(keyValuePair, "=");
+          sonarProperties.add(new SonarProperty(keyValue[0], keyValue[1]));
+        }
+      } catch (Exception e) {
+        LOG.error("Error while loading sonar properties", e);
+      }
     }
+    sonarProject.setExtraProperties(sonarProperties);
     return sonarProject;
   }
 
@@ -133,11 +143,16 @@ public class SonarProjectManager {
     if (configuration.getLastAnalysisDate() != null) {
       projectNode.putLong(P_LAST_ANALYSIS_DATE, configuration.getLastAnalysisDate().getTime());
     }
-    if (configuration.getExtraArguments() != null) {
-      projectNode.put(P_EXTRA_ARGS, StringUtils.join(configuration.getExtraArguments(), "\r\n"));
+    if (configuration.getExtraProperties() != null) {
+      List<String> keyValuePairs = new ArrayList<String>(configuration.getExtraProperties().size());
+      for (SonarProperty prop : configuration.getExtraProperties()) {
+        keyValuePairs.add(prop.getName() + "=" + prop.getValue());
+      }
+      String props = StringUtils.join(keyValuePairs, "\r\n");
+      projectNode.put(P_EXTRA_PROPS, props);
     }
     else {
-      projectNode.remove(P_EXTRA_ARGS);
+      projectNode.remove(P_EXTRA_PROPS);
     }
     try {
       projectNode.flush();

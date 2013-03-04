@@ -36,7 +36,7 @@ public class SonarProject implements ISonarProject {
   private String key;
   private boolean analysedLocally;
   private Date lastAnalysisDate;
-  private List<String> extraArguments;
+  private List<SonarProperty> extraProperties;
 
   public SonarProject(IProject project) {
     this.project = project;
@@ -101,12 +101,12 @@ public class SonarProject implements ISonarProject {
     this.lastAnalysisDate = lastAnalysisDate;
   }
 
-  public List<String> getExtraArguments() {
-    return extraArguments;
+  public List<SonarProperty> getExtraProperties() {
+    return extraProperties;
   }
 
-  public void setExtraArguments(List<String> extraArguments) {
-    this.extraArguments = extraArguments;
+  public void setExtraProperties(List<SonarProperty> extraProperties) {
+    this.extraProperties = extraProperties;
   }
 
 }

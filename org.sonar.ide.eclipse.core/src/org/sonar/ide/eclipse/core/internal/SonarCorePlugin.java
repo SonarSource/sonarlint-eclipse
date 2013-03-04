@@ -25,7 +25,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
-import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarFile;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProjectManager;
@@ -105,7 +104,7 @@ public class SonarCorePlugin extends AbstractPlugin {
    * @return
    * @throws CoreException
    */
-  public static ISonarProject createSonarProject(IProject project, String url, String key, boolean analysedLocally) throws CoreException {
+  public static SonarProject createSonarProject(IProject project, String url, String key, boolean analysedLocally) throws CoreException {
     SonarProject sonarProject = SonarProject.getInstance(project);
     sonarProject.setUrl(url);
     sonarProject.setKey(key);
