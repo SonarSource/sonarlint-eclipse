@@ -65,7 +65,6 @@ public class SonarProperty {
     }
     SonarProperty rhs = (SonarProperty) obj;
     return new EqualsBuilder()
-        .appendSuper(super.equals(obj))
         .append(name, rhs.name)
         .append(value, rhs.value)
         .isEquals();

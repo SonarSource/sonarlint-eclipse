@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.m2e;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.eclipse.core.resources.IProject;
@@ -33,23 +34,44 @@ import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 public class SonarProjectConfigurator extends AbstractProjectConfigurator {
 
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) throws CoreException {
+    IProject project = request.getProject();
+    SonarMavenInfos infos = new SonarMavenInfos(request.getMavenProjectFacade(), monitor);
     if (!SonarNature.hasSonarNature(request.getProject())) {
-      SonarMavenInfos infos = new SonarMavenInfos(request.getMavenProjectFacade(), monitor);
       Collection<SonarServer> servers = SonarCorePlugin.getServersManager().getServers();
       if (!servers.isEmpty()) {
         // Take the first configured server
         String url = servers.iterator().next().getUrl();
-        SonarCorePlugin.createSonarProject(request.getProject(), url, infos.getKey(), false);
+        SonarProject sonarProject = SonarCorePlugin.createSonarProject(request.getProject(), url, infos.getKey(), false);
+        if (!infos.getSonarProperties().isEmpty()) {
+          sonarProject.setExtraProperties(toSonarProperty(infos.getSonarProperties()));
+          sonarProject.save();
+        }
       }
     }
+  }
+
+  private static List<SonarProperty> toSonarProperty(Map<String, String> properties) {
+    List<SonarProperty> extraArguments = new ArrayList<SonarProperty>();
+    for (Entry<String, String> property : properties.entrySet()) {
+      extraArguments.add(new SonarProperty(property.getKey(), property.getValue()));
+    }
+    return extraArguments;
   }
 
   @Override
@@ -67,23 +89,72 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
         sonarProject.setKey(newInfos.getKey());
         sonarProject.save();
       }
+      // Now check that Sonar project properties were in sync with old info to not override used defined properties
+      if (propertiesEqualsArgments(sonarProject.getExtraProperties(), oldInfos.getSonarProperties())) {
+        Map<String, String> diffs = diff(oldInfos.getSonarProperties(), newInfos.getSonarProperties());
+        update(sonarProject.getExtraProperties(), diffs);
+        sonarProject.save();
+      }
+
     }
+  }
+
+  private void update(List<SonarProperty> extraArguments, Map<String, String> diffs) {
+    for (Entry<String, String> diff : diffs.entrySet()) {
+      int position = removeIfPresent(extraArguments, diff.getKey());
+      if (diff.getValue() != null) {
+        if (position == -1) {
+          extraArguments.add(new SonarProperty(diff.getKey(), diff.getValue()));
+        }
+        else {
+          extraArguments.add(position, new SonarProperty(diff.getKey(), diff.getValue()));
+        }
+      }
+    }
+  }
+
+  private int removeIfPresent(List<SonarProperty> extraArguments, String key) {
+    Iterator<SonarProperty> i = extraArguments.iterator();
+    int position = -1;
+    while (i.hasNext()) {
+      SonarProperty arg = i.next();
+      position++;
+      if (arg.getName().equals(key)) {
+        i.remove();
+      }
+    }
+    return position;
   }
 
   private static class SonarMavenInfos {
     private String groupId;
     private String artifactId;
     private String branch;
+    private Map<String, String> sonarProperties;
 
     public SonarMavenInfos(IMavenProjectFacade facade, IProgressMonitor monitor) throws CoreException {
       groupId = facade.getArtifactKey().getGroupId();
       artifactId = facade.getArtifactKey().getArtifactId();
-      Object branchObj = facade.getMavenProject(monitor).getProperties().get(SonarProperties.PROJECT_BRANCH_PROPERTY);
+      Properties properties = facade.getMavenProject(monitor).getProperties();
+      Object branchObj = null;
+      sonarProperties = new HashMap<String, String>();
+      for (Entry<Object, Object> property : properties.entrySet()) {
+        if (property.getKey().equals(SonarProperties.PROJECT_BRANCH_PROPERTY)) {
+          branchObj = property.getValue();
+        }
+        else if (property.getKey().toString().startsWith("sonar.")) {
+          sonarProperties.put(property.getKey().toString(), ObjectUtils.toString(property.getValue()));
+        }
+      }
       branch = branchObj != null ? branchObj.toString() : null;
     }
 
     public String getKey() {
       return SonarKeyUtils.projectKey(groupId, artifactId, branch);
+    }
+
+    public Map<String, String> getSonarProperties() {
+      return sonarProperties;
     }
 
     @Override
@@ -94,7 +165,8 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
             .append(groupId, other.groupId)
             .append(artifactId, other.artifactId)
             .append(branch, other.branch)
-            .isEquals();
+            .isEquals()
+          && diff(sonarProperties, other.sonarProperties).isEmpty();
       }
       return false;
     }
@@ -107,5 +179,37 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
           .append(branch)
           .hashCode();
     }
+
+  }
+
+  private static Map<String, String> diff(Map<String, String> props1, Map<String, String> props2) {
+    Map<String, String> diff = new HashMap<String, String>(props2);
+    for (Entry<String, String> prop1 : props1.entrySet()) {
+      if (props2.containsKey(prop1.getKey())) {
+        if (props2.get(prop1.getKey()).equals(props1.get(prop1.getKey()))) {
+          diff.remove(prop1.getKey());
+        }
+      }
+      else {
+        // Null value means the property was removed
+        diff.put(prop1.getKey(), null);
+      }
+    }
+    return diff;
+  }
+
+  /**
+   * Verify that all properties are present in the SonarProperty list with same value
+   * @param args
+   * @param properties
+   * @return
+   */
+  private static boolean propertiesEqualsArgments(List<SonarProperty> args, Map<String, String> properties) {
+    for (Entry<String, String> prop : properties.entrySet()) {
+      if (!args.contains(new SonarProperty(prop.getKey(), prop.getValue()))) {
+        return false;
+      }
+    }
+    return true;
   }
 }
