@@ -14,23 +14,23 @@
 <location path="${M2_REPO}/org/slf4j/slf4j-api/1.6.6" type="Directory"/>
 <location path="${M2_REPO}/org/slf4j/jcl-over-slf4j/1.6.6" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.jdt.feature.group" version="3.8.1.v20120814-104540-8-8nFqpFNOfwKDRVz-tXOcL5d_83"/>
-<unit id="org.eclipse.cdt.feature.group" version="8.1.1.201209170703"/>
-<unit id="org.eclipse.platform.ide" version="4.2.1.M20120914-1800"/>
-<unit id="org.eclipse.mylyn.builds.feature.group" version="1.0.2.v20120916-1200"/>
-<unit id="org.eclipse.mylyn.commons.feature.group" version="3.8.2.v20120916-1200"/>
-<unit id="org.eclipse.mylyn.context.sdk.feature.group" version="3.8.2.v20120916-1200"/>
-<unit id="org.eclipse.mylyn.reviews.feature.feature.group" version="1.0.2.v20120916-1200"/>
-<unit id="org.eclipse.mylyn_feature.feature.group" version="3.8.2.v20120916-1200"/>
+<unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.platform.ide" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.builds.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.context.sdk.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.reviews.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn_feature.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/juno"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.m2e.sdk.feature.feature.group" version="1.2.0.20120903-1050"/>
-<unit id="org.eclipse.m2e.feature.feature.group" version="1.2.0.20120903-1050"/>
-<repository location="http://download.eclipse.org/technology/m2e/releases"/>
+<unit id="org.eclipse.m2e.sdk.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/technology/m2e/releases/1.2"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.python.pydev.feature.feature.group" version="2.7.1.2012100913"/>
+<unit id="org.python.pydev.feature.feature.group" version="0.0.0"/>
 <repository location="http://pydev.org/updates"/>
 </location>
 </locations>
