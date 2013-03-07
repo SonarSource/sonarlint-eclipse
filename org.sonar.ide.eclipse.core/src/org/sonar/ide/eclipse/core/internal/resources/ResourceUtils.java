@@ -68,7 +68,11 @@ public final class ResourceUtils {
     return AdapterUtils.adapt(eclipseObject, ISonarResource.class);
   }
 
-  public static IResource getResource(String resourceKey) {
+  /**
+   * @deprecated Can't find a resource by its key in the workspace because there could be duplicates. Use {@link #findResource(SonarProject, String)}
+   */
+  @Deprecated
+  public static IResource findResource(String resourceKey) {
     IWorkspace root = ResourcesPlugin.getWorkspace();
     for (IProject project : root.getRoot().getProjects()) {
       if (project.isAccessible() && SonarNature.hasSonarNature(project)) {
@@ -85,6 +89,24 @@ public final class ResourceUtils {
               return resource;
             }
           }
+        }
+      }
+    }
+    return null;
+  }
+
+  public static IResource findResource(SonarProject sonarProject, String resourceKey) {
+    IWorkspace root = ResourcesPlugin.getWorkspace();
+    if (sonarProject != null && resourceKey.startsWith(sonarProject.getKey())) {
+      String resourceKeyMinusProjectKey = resourceKey.substring(
+          // +1 because ":"
+          sonarProject.getKey().length() + 1);
+      String[] parts = StringUtils.split(resourceKeyMinusProjectKey, SonarKeyUtils.PROJECT_DELIMITER);
+      String partialResourceKey = parts.length > 0 ? parts[0] : "";
+      for (ResourceResolver resolver : getResolvers()) {
+        IResource resource = resolver.locate(sonarProject.getProject(), partialResourceKey);
+        if (resource != null) {
+          return resource;
         }
       }
     }

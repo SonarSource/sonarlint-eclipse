@@ -62,8 +62,8 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
         return false;
       }
 
-      SonarProject projectProperties = SonarProject.getInstance(project);
-      if (projectProperties.isAnalysedLocally()) {
+      SonarProject sonarProject = SonarProject.getInstance(project);
+      if (sonarProject.isAnalysedLocally()) {
         return false;
       }
 
@@ -71,9 +71,9 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
       EclipseSonar sonar = EclipseSonar.getInstance(project);
       SourceCode sourceCode = sonar.search(project);
       if (sourceCode != null) {
-        doRefreshViolation(sourceCode);
-        projectProperties.setLastAnalysisDate(sourceCode.getAnalysisDate());
-        projectProperties.save();
+        doRefreshViolation(sonarProject, sourceCode);
+        sonarProject.setLastAnalysisDate(sourceCode.getAnalysisDate());
+        sonarProject.save();
       }
       // do not visit members of this resource
       return false;
@@ -81,7 +81,7 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
     return true;
   }
 
-  private void doRefreshViolation(SourceCode sourceCode) throws CoreException {
+  private void doRefreshViolation(SonarProject sonarProject, SourceCode sourceCode) throws CoreException {
     List<Violation> violations = sourceCode.getViolations2();
     // Split violations by resource
     ArrayListMultimap<String, Violation> mm = ArrayListMultimap.create();
@@ -91,7 +91,7 @@ public class RefreshAllViolationsJob extends RefreshViolationsJob {
     // Associate violations with resources
     for (String resourceKey : mm.keySet()) {
       Resource sonarResource = new Resource().setKey(resourceKey);
-      IResource eclipseResource = ResourceUtils.getResource(sonarResource.getKey());
+      IResource eclipseResource = ResourceUtils.findResource(sonarProject, sonarResource.getKey());
       if (eclipseResource instanceof IFile) {
         for (Violation violation : mm.get(resourceKey)) {
           MarkerUtils.createMarkerForWSViolation(eclipseResource, violation, false);
