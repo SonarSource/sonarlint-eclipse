@@ -353,7 +353,7 @@
               textPreferenceKey="org.sonar.ide.eclipse.ui.violation.error.text"
               textPreferenceValue="true"
               textStylePreferenceKey="org.sonar.ide.eclipse.ui.violation.text.style"
-              textStylePreferenceValue="BOX"
+              textStylePreferenceValue="SQUIGGLES"
               verticalRulerPreferenceKey="org.sonar.ide.eclipse.ui.violation.verticalruler"
               verticalRulerPreferenceValue="true"/>
 
@@ -364,6 +364,7 @@
               colorPreferenceValue="255,246,191"
               highlightPreferenceKey="org.sonar.ide.eclipse.ui.newviolation.highlight"
               highlightPreferenceValue="true"
+              icon="icons/sonar.png"
               isGoToNextNavigationTarget="true"
               isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.newviolation.next"
               isGoToPreviousNavigationTarget="true"
