@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.jdt.internal;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -35,6 +36,7 @@ import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 
+import java.io.File;
 import java.util.Properties;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
@@ -55,7 +57,8 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     configureJavaProject(javaProject, request.getSonarProjectProperties());
   }
 
-  private void configureJavaProject(IJavaProject javaProject, Properties sonarProjectProperties) {
+  // Visible for testing
+  public void configureJavaProject(IJavaProject javaProject, Properties sonarProjectProperties) {
     String javaSource = javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
     String javaTarget = javaProject.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true);
 
@@ -93,8 +96,17 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
         case IClasspathEntry.CPE_LIBRARY:
           if (topProject || entry.isExported()) {
             final String libDir = resolveLibrary(javaProject, entry);
-            LOG.debug("Library: {}", libDir);
-            appendProperty(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, libDir);
+            if (libDir != null) {
+              File libEntry = new File(libDir);
+              if (libEntry.isDirectory()) {
+                // Should be a class folder
+                processClassesFolderIfNotEmpty(sonarProjectProperties, libDir);
+              }
+              else {
+                LOG.debug("Library: {}", libDir);
+                appendProperty(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, libDir);
+              }
+            }
           }
           break;
         case IClasspathEntry.CPE_PROJECT:
@@ -109,17 +121,35 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       }
     }
 
-    String binDir = getAbsolutePath(javaProject.getOutputLocation());
-    if (binDir != null) {
-      LOG.debug("Default binary directory: {}", binDir);
-      appendProperty(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, binDir);
+    processOutputDir(javaProject.getOutputLocation(), sonarProjectProperties, topProject);
+  }
+
+  private void processOutputDir(IPath outputDir, Properties sonarProjectProperties, boolean topProject) throws JavaModelException {
+    String outDir = getAbsolutePath(outputDir);
+    if (outDir != null) {
+      LOG.debug("Output directory: {}", outDir);
+      if (topProject) {
+        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, outDir);
+      }
+      else {
+        // Output dir of dependents projects should be considered as libraries
+        processClassesFolderIfNotEmpty(sonarProjectProperties, outDir);
+      }
     }
     else {
       LOG.warn("Binary directory was not added because it was not found. Maybe should you enable auto build of your project.");
     }
   }
 
-  private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, Properties sonarProjectProperties, boolean topProject) {
+  private void processClassesFolderIfNotEmpty(Properties sonarProjectProperties, String classFolder) {
+    // We simply need .class files
+    if (FileUtils.iterateFiles(new File(classFolder), new String[] {"class"}, true).hasNext()) {
+      LOG.debug("Class folder: {}", classFolder);
+      appendProperty(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, classFolder + (classFolder.endsWith("/") ? "" : "/") + "*.class");
+    }
+  }
+
+  private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, Properties sonarProjectProperties, boolean topProject) throws JavaModelException {
     String srcDir = getAbsolutePath(entry.getPath());
     if (srcDir == null) {
       LOG.warn("Skipping non existing source entry: {}", entry.getPath().toOSString());
@@ -138,9 +168,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
         appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, srcDir);
       }
       if (entry.getOutputLocation() != null) {
-        String binDir = getAbsolutePath(entry.getOutputLocation());
-        LOG.debug("Binary directory: {}", binDir);
-        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, binDir);
+        processOutputDir(entry.getOutputLocation(), sonarProjectProperties, topProject);
       }
     }
   }
@@ -153,6 +181,9 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       libDir = member.getLocation().toOSString();
     } else {
       libDir = entry.getPath().makeAbsolute().toOSString();
+      if (!new File(libDir).exists()) {
+        return null;
+      }
     }
     return libDir;
   }
