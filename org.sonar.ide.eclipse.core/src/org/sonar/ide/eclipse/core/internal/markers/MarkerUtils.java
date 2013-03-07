@@ -67,7 +67,7 @@ public final class MarkerUtils {
       violation.setSeverity(ObjectUtils.toString(jsonViolation.get("severity")));//$NON-NLS-1$
       violation.setRuleKey(ObjectUtils.toString(jsonViolation.get("rule_key")));//$NON-NLS-1$
       violation.setRuleName(ObjectUtils.toString(jsonViolation.get("rule_name"))); //$NON-NLS-1$
-      violation.setSwitchedOff("true".equals(jsonViolation.get("switched_off"))); //$NON-NLS-1$
+      violation.setSwitchedOff(Boolean.TRUE.equals(jsonViolation.get("switched_off"))); //$NON-NLS-1$
       boolean isNew = Boolean.TRUE.equals(jsonViolation.get("is_new")); //$NON-NLS-1$
       try {
         createMarkerForWSViolation(resource, violation, isNew);
