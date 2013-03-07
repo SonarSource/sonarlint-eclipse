@@ -121,6 +121,10 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
 
   private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, Properties sonarProjectProperties, boolean topProject) {
     String srcDir = getAbsolutePath(entry.getPath());
+    if (srcDir == null) {
+      LOG.warn("Skipping non existing source entry: {}", entry.getPath().toOSString());
+      return;
+    }
     String relativeDir = getRelativePath(javaProject, entry.getPath());
     if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
       if (topProject) {
