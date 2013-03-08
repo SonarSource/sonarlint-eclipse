@@ -35,7 +35,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Widget;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 
@@ -47,7 +46,8 @@ public class EditSonarPropertyDialog extends StatusDialog {
   private Text fValueText;
 
   private StatusInfo fValidationStatus;
-  private boolean fSuppressError = true; // https://bugs.eclipse.org/bugs/show_bug.cgi?id=4354
+  // https://bugs.eclipse.org/bugs/show_bug.cgi?id=4354
+  private boolean fSuppressError = true;
 
   private boolean fIsNameModifiable;
 
@@ -94,12 +94,6 @@ public class EditSonarPropertyDialog extends StatusDialog {
     parent.setLayout(layout);
     parent.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-    ModifyListener listener = new ModifyListener() {
-      public void modifyText(ModifyEvent e) {
-        doTextWidgetChanged(e.widget);
-      }
-    };
-
     createLabel(parent, "Name:");
 
     Composite composite = new Composite(parent, SWT.NONE);
@@ -133,25 +127,20 @@ public class EditSonarPropertyDialog extends StatusDialog {
     fValueText = new Text(parent, SWT.BORDER);
     fValueText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-    fValueText.addModifyListener(listener);
-
     fValueText.setText(sonarProperty.getValue());
     fNameText.setText(sonarProperty.getName());
     if (fIsNameModifiable) {
+      ModifyListener listener = new ModifyListener() {
+        public void modifyText(ModifyEvent e) {
+          fSuppressError = false;
+          updateStatusAndButtons();
+        }
+      };
       fNameText.addModifyListener(listener);
     }
 
     applyDialogFont(parent);
     return parent;
-  }
-
-  protected void doTextWidgetChanged(Widget w) {
-    if (w == fNameText) {
-      fSuppressError = false;
-      updateStatusAndButtons();
-    } else if (w == fValueText) {
-      // nothing
-    }
   }
 
   private static Label createLabel(Composite parent, String name) {
@@ -199,7 +188,7 @@ public class EditSonarPropertyDialog extends StatusDialog {
    * @return <code>true</code> if the name is valid
    */
   private boolean isValidPropertyName(String name) {
-    return true;
+    return !name.contains(" ");
   }
 
   /**
@@ -226,8 +215,9 @@ public class EditSonarPropertyDialog extends StatusDialog {
     String sectionName = getClass().getName() + "_dialogBounds"; //$NON-NLS-1$
     IDialogSettings settings = SonarUiPlugin.getDefault().getDialogSettings();
     IDialogSettings section = settings.getSection(sectionName);
-    if (section == null)
+    if (section == null) {
       section = settings.addNewSection(sectionName);
+    }
     return section;
   }
 }

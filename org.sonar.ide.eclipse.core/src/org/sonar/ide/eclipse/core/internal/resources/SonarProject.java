@@ -94,11 +94,11 @@ public class SonarProject implements ISonarProject {
   }
 
   public Date getLastAnalysisDate() {
-    return lastAnalysisDate;
+    return lastAnalysisDate == null ? null : new Date(lastAnalysisDate.getTime());
   }
 
   public void setLastAnalysisDate(Date lastAnalysisDate) {
-    this.lastAnalysisDate = lastAnalysisDate;
+    this.lastAnalysisDate = lastAnalysisDate == null ? null : new Date(lastAnalysisDate.getTime());
   }
 
   public List<SonarProperty> getExtraProperties() {

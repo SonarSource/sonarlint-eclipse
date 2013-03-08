@@ -47,12 +47,12 @@ public final class MarkerUtils {
   private static int markerSeverity = IMarker.SEVERITY_WARNING;
   private static int markerSeverityForNewViolations = IMarker.SEVERITY_ERROR;
 
-  public static String SONAR_MARKER_RULE_KEY_ATTR = "rulekey";
-  public static String SONAR_MARKER_RULE_NAME_ATTR = "rulename";
-  public static String SONAR_MARKER_RULE_PRIORITY_ATTR = "rulepriority";
-  public static String SONAR_MARKER_VIOLATION_ID_ATTR = "violationId";
-  public static String SONAR_MARKER_REVIEW_ID_ATTR = "reviewId";
-  public static String SONAR_MARKER_IS_NEW_ATTR = "is_new";
+  public static final String SONAR_MARKER_RULE_KEY_ATTR = "rulekey";
+  public static final String SONAR_MARKER_RULE_NAME_ATTR = "rulename";
+  public static final String SONAR_MARKER_RULE_PRIORITY_ATTR = "rulepriority";
+  public static final String SONAR_MARKER_VIOLATION_ID_ATTR = "violationId";
+  public static final String SONAR_MARKER_REVIEW_ID_ATTR = "reviewId";
+  public static final String SONAR_MARKER_IS_NEW_ATTR = "is_new";
 
   private MarkerUtils() {
   }
@@ -91,18 +91,7 @@ public final class MarkerUtils {
     markerAttributes.put(IMarker.MESSAGE, getMessage(violation));
     markerAttributes.put(SONAR_MARKER_IS_NEW_ATTR, isNew);
 
-    String source = "";
-    if (resource instanceof IFile) {
-      IFile file = (IFile) resource;
-      InputStream inputStream = file.getContents();
-      try {
-        source = IOUtils.toString(inputStream, file.getCharset());
-      } catch (IOException e) {
-        LOG.error("Unable to read source of " + resource.getLocation().toOSString(), e);
-      } finally {
-        IOUtils.closeQuietly(inputStream);
-      }
-    }
+    String source = readSource(resource);
 
     if (line != null) {
       addLine(markerAttributes, line, source);
@@ -115,6 +104,22 @@ public final class MarkerUtils {
     }
     final IMarker marker = resource.createMarker(isNew ? SonarCorePlugin.NEW_VIOLATION_MARKER_ID : SonarCorePlugin.MARKER_ID);
     marker.setAttributes(markerAttributes);
+  }
+
+  private static String readSource(final IResource resource) throws CoreException {
+    String source = "";
+    if (resource instanceof IFile) {
+      IFile file = (IFile) resource;
+      InputStream inputStream = file.getContents();
+      try {
+        source = IOUtils.toString(inputStream, file.getCharset());
+      } catch (IOException e) {
+        LOG.error("Unable to read source of " + resource.getLocation().toOSString(), e);
+      } finally {
+        IOUtils.closeQuietly(inputStream);
+      }
+    }
+    return source;
   }
 
   private static String getMessage(final Violation violation) {

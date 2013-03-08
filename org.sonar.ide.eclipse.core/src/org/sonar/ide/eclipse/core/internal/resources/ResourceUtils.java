@@ -96,7 +96,6 @@ public final class ResourceUtils {
   }
 
   public static IResource findResource(SonarProject sonarProject, String resourceKey) {
-    IWorkspace root = ResourcesPlugin.getWorkspace();
     if (sonarProject != null && resourceKey.startsWith(sonarProject.getKey())) {
       String resourceKeyMinusProjectKey = resourceKey.substring(
           // +1 because ":"

@@ -24,7 +24,6 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.junit.Before;
 import org.junit.Test;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.services.ReviewQuery;
@@ -37,14 +36,11 @@ public class SonarClientTest {
   private TaskRepository repository;
   private SonarClient client;
 
-  @Before
-  public void prepare() {
-    repository = new TaskRepository(SonarConnector.CONNECTOR_KIND, "http://localhost:9000");
-    client = new SonarClient(repository);
-  }
-
   @Test
   public void testGetSonarHost() {
+    repository = new TaskRepository(SonarConnector.CONNECTOR_KIND, "http://localhost:9000");
+    client = new SonarClient(repository);
+
     Host host = client.getSonarHost();
     assertThat(host.getHost(), is("http://localhost:9000"));
     assertThat(host.getUsername(), nullValue());
@@ -58,6 +54,10 @@ public class SonarClientTest {
 
   @Test
   public void testConvertQuery() {
+    // Use another port to prevent username caching
+    repository = new TaskRepository(SonarConnector.CONNECTOR_KIND, "http://localhost:9001");
+    client = new SonarClient(repository);
+
     repository.setCredentials(AuthenticationType.REPOSITORY, new AuthenticationCredentials("username", "password"), false);
 
     IRepositoryQuery repositoryQuery = new RepositoryQuery(SonarConnector.CONNECTOR_KIND, "");
@@ -73,4 +73,5 @@ public class SonarClientTest {
     assertThat(query.getStatuses(), is(new String[] {"OPEN", "REOPENED"}));
     assertThat(query.getSeverities(), is(new String[] {"BLOCKER"}));
   }
+
 }

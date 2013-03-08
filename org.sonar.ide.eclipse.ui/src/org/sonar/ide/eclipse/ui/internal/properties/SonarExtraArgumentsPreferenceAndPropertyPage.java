@@ -93,7 +93,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
   /**
    * Label provider for templates.
    */
-  private class SonarPropertiesLabelProvider extends LabelProvider implements ITableLabelProvider {
+  private static class SonarPropertiesLabelProvider extends LabelProvider implements ITableLabelProvider {
 
     public Image getColumnImage(Object element, int columnIndex) {
       return null;
@@ -118,7 +118,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
    *
    * @since 3.0
    */
-  private class SonarPropertiesContentProvider implements IStructuredContentProvider {
+  private static class SonarPropertiesContentProvider implements IStructuredContentProvider {
 
     private java.util.List<SonarProperty> sonarProperties;
 
@@ -313,8 +313,9 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     IStructuredSelection selection = (IStructuredSelection) fTableViewer.getSelection();
 
     Object[] objects = selection.toArray();
-    if ((objects == null) || (objects.length != 1))
+    if ((objects == null) || (objects.length != 1)) {
       return;
+    }
 
     SonarProperty data = (SonarProperty) selection.getFirstElement();
     edit(data);
@@ -388,7 +389,8 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
   }
 
   private int computeMinimumColumnWidth(GC gc, String string) {
-    return gc.stringExtent(string).x + 10; // pad 10 to accommodate table header trimmings
+    // pad 10 to accommodate table header trimmings
+    return gc.stringExtent(string).x + 10;
   }
 
   /**
@@ -408,8 +410,9 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     IStructuredSelection selection = (IStructuredSelection) fTableViewer.getSelection();
 
     Object[] objects = selection.toArray();
-    if ((objects == null) || (objects.length != 1))
+    if ((objects == null) || (objects.length != 1)) {
       return;
+    }
 
     SonarProperty data = (SonarProperty) selection.getFirstElement();
 
@@ -430,46 +433,6 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
    */
   private void upPressed() {
     swap(true);
-  }
-
-  /**
-   * Return the Add button.
-   *
-   * @return the button
-   * @since 3.5
-   */
-  protected Button getAddButton() {
-    return addButton;
-  }
-
-  /**
-   * Return the Remove button.
-   *
-   * @return the button
-   * @since 3.5
-   */
-  protected Button getRemoveButton() {
-    return removeButton;
-  }
-
-  /**
-   * Return the Up button.
-   *
-   * @return the button
-   * @since 3.5
-   */
-  protected Button getUpButton() {
-    return upButton;
-  }
-
-  /**
-   * Return the Down button.
-   *
-   * @return the button
-   * @since 3.5
-   */
-  protected Button getDownButton() {
-    return downButton;
   }
 
   public void init(IWorkbench workbench) {
@@ -534,20 +497,6 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
 
   private boolean isGlobal() {
     return getElement() == null;
-  }
-
-  /**
-   * Creates a new preferences page and opens it
-   */
-  protected void configureWorkspaceSettings() {
-    try {
-      // create a new instance of the current class
-      IPreferencePage page = new SonarExtraArgumentsPreferenceAndPropertyPage();
-      // and show it
-      showPreferencePage(PREFERENCE_ID, page);
-    } catch (Exception e) {
-      LOG.error("Unable to open workspace preference page", e);
-    }
   }
 
   /**

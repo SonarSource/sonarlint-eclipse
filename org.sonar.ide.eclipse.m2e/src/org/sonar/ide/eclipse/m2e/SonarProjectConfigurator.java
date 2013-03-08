@@ -50,7 +50,6 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
 
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) throws CoreException {
-    IProject project = request.getProject();
     SonarMavenInfos infos = new SonarMavenInfos(request.getMavenProjectFacade(), monitor);
     if (!SonarNature.hasSonarNature(request.getProject())) {
       Collection<SonarServer> servers = SonarCorePlugin.getServersManager().getServers();
