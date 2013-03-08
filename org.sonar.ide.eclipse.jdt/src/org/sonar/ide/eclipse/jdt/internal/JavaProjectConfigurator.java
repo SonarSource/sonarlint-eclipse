@@ -181,9 +181,9 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       libDir = member.getLocation().toOSString();
     } else {
       libDir = entry.getPath().makeAbsolute().toOSString();
-      if (!new File(libDir).exists()) {
-        return null;
-      }
+    }
+    if (!new File(libDir).exists()) {
+      return null;
     }
     return libDir;
   }
