@@ -21,6 +21,8 @@ package org.sonar.ide.eclipse.core.internal.resources;
 
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
+import java.util.List;
+
 /**
  * Represents a view of a project in terms of Sonar.
  *
@@ -32,4 +34,6 @@ public interface ISonarProject extends ISonarResource {
   String getKey();
 
   String getUrl();
+
+  List<SonarProperty> getExtraProperties();
 }
