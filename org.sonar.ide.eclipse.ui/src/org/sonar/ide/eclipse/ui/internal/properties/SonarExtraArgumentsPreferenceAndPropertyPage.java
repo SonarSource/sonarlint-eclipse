@@ -23,11 +23,6 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.TableColumnLayout;
-import org.eclipse.jface.preference.IPreferenceNode;
-import org.eclipse.jface.preference.IPreferencePage;
-import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.jface.preference.PreferenceManager;
-import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -43,7 +38,6 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.GC;
@@ -137,11 +131,6 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
   }
 
   private java.util.List<SonarProperty> sonarProperties;
-
-  /**
-   * The Add button.
-   */
-  private Button addButton;
 
   /**
    * The Remove button.
@@ -255,7 +244,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     layout.marginWidth = 0;
     buttons.setLayout(layout);
 
-    addButton = new Button(buttons, SWT.PUSH);
+    Button addButton = new Button(buttons, SWT.PUSH);
     addButton.setText("New...");
     addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     addButton.addListener(SWT.Selection, new Listener() {
@@ -497,28 +486,6 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
 
   private boolean isGlobal() {
     return getElement() == null;
-  }
-
-  /**
-   * Show a single preference pages
-   *
-   * @param id
-   *        - the preference page identification
-   * @param page
-   *        - the preference page
-   */
-  protected void showPreferencePage(String id, IPreferencePage page) {
-    final IPreferenceNode targetNode = new PreferenceNode(id, page);
-    PreferenceManager manager = new PreferenceManager();
-    manager.addToRoot(targetNode);
-    final PreferenceDialog dialog = new PreferenceDialog(getControl().getShell(), manager);
-    BusyIndicator.showWhile(getControl().getDisplay(), new Runnable() {
-      public void run() {
-        dialog.create();
-        dialog.setMessage(targetNode.getLabelText());
-        dialog.open();
-      }
-    });
   }
 
 }

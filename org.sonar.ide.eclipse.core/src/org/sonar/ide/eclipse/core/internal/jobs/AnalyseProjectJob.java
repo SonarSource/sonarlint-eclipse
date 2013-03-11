@@ -178,8 +178,6 @@ public class AnalyseProjectJob extends Job {
   public File configureAnalysis(final IProgressMonitor monitor, Properties properties, List<SonarProperty> extraProps) {
     File baseDir = project.getLocation().toFile();
     IPath projectSpecificWorkDir = project.getWorkingLocation(SonarCorePlugin.PLUGIN_ID);
-    // FIXME For now outputFile should be relative to work dir IPath pluginWorkDir = SonarCorePlugin.getDefault().getStateLocation();
-    IPath pluginWorkDir = projectSpecificWorkDir;
     File outputFile = new File(projectSpecificWorkDir.toFile(), "dryRun.json");
 
     // First start by appending workspace and project properties
@@ -198,7 +196,7 @@ public class AnalyseProjectJob extends Job {
       properties.setProperty(SonarProperties.SONAR_PASSWORD, host.getPassword());
     }
     properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
-    properties.setProperty(SonarProperties.WORK_DIR, pluginWorkDir.toString());
+    properties.setProperty(SonarProperties.WORK_DIR, projectSpecificWorkDir.toString());
     properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
     // Output file is relative to working dir
     properties.setProperty(SonarProperties.DRY_RUN_OUTPUT_PROPERTY, outputFile.getName());
