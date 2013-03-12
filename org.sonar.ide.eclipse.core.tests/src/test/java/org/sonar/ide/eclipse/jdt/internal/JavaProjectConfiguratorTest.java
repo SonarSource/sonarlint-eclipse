@@ -64,7 +64,7 @@ public class JavaProjectConfiguratorTest {
     when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
     when(project.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
     when(project.getResolvedClasspath(true)).thenReturn(new IClasspathEntry[] {});
-    when(project.getOutputLocation()).thenReturn(new Path(temp.newFolder().getAbsolutePath()));
+    when(project.getOutputLocation()).thenReturn(new Path(temp.newFolder("output").getAbsolutePath()));
 
     configurator.configureJavaProject(project, sonarProperties);
 
