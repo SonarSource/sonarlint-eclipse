@@ -166,7 +166,7 @@ public class SonarEclipseRunner {
     InputStream is = null;
     OutputStream os = null;
     try {
-      URL jarRunner = SonarRunnerPlugin.getDefault().getBundle().getEntry("/jars/sonar-runner-2.0.jar");
+      URL jarRunner = SonarRunnerPlugin.getDefault().getBundle().getEntry("/jars/sonar-runner-impl-2.1-RC2.jar");
 
       File tmpSonarRunnerJarPath = File.createTempFile("sonar-runner", ".jar");
       is = jarRunner.openStream();
