@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.jdt.internal;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -142,11 +141,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   }
 
   private void processClassesFolderIfNotEmpty(Properties sonarProjectProperties, String classFolder) {
-    // We simply need .class files
-    if (FileUtils.iterateFiles(new File(classFolder), new String[] {"class"}, true).hasNext()) {
-      LOG.debug("Class folder: {}", classFolder);
-      appendProperty(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, classFolder + (classFolder.endsWith("/") ? "" : "/") + "*.class");
-    }
+    // TODO SONARIDE-353 sonar.librairies doesn't support pattern like classfolder + "**/*.class"
   }
 
   private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, Properties sonarProjectProperties, boolean topProject) throws JavaModelException {
