@@ -134,7 +134,13 @@ public final class ResourceUtils {
     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
     IResource res = root.findMember(path);
     if (res != null) {
-      return res.getLocation().toString();
+      if (res.getLocation() != null) {
+        return res.getLocation().toString();
+      }
+      else {
+        LOG.error("Unable to resolve absolute path for " + res.getLocationURI());
+        return null;
+      }
     }
     else {
       File external = path.toFile();
