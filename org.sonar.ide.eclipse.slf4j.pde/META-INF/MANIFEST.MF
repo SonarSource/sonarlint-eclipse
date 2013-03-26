@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundle_name
 Bundle-SymbolicName: org.sonar.ide.eclipse.slf4j.pde;singleton:=true
-Bundle-Version: 3.1.0.20130326-0955-RELEASE
+Bundle-Version: 3.2.0.qualifier
 Bundle-Vendor: %bundle_vendor
 Bundle-Activator: org.slf4j.pde.SLF4jPlugin
 Eclipse-AutoStart: true

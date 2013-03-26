@@ -2,7 +2,7 @@
 <feature
       id="org.sonar.ide.eclipse.pydev.feature"
       label="%feature_name"
-      version="3.1.0.20130326-0955-RELEASE"
+      version="3.2.0.qualifier"
       provider-name="%provider_name"
       plugin="org.sonar.ide.eclipse.ui">
 
