@@ -25,6 +25,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
+import org.sonar.ide.eclipse.core.internal.jobs.SonarRunnerLogListener;
 import org.sonar.ide.eclipse.core.internal.resources.SonarFile;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProjectManager;
@@ -34,6 +35,9 @@ import org.sonar.ide.eclipse.core.internal.servers.ServersManager;
 import org.sonar.ide.eclipse.core.resources.ISonarFile;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 import org.sonar.ide.eclipse.wsclient.SonarConnectionTester;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SonarCorePlugin extends AbstractPlugin {
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.core";
@@ -61,6 +65,27 @@ public class SonarCorePlugin extends AbstractPlugin {
 
   private ServersManager serversManager;
   private SonarConnectionTester sonarConnectionTester;
+  private final List<SonarRunnerLogListener> sonarRunnerLogListeners = new ArrayList<SonarRunnerLogListener>();
+
+  public void addSonarRunnerLogListener(SonarRunnerLogListener listener) {
+    sonarRunnerLogListeners.add(listener);
+  }
+
+  public void removeSonarRunnerLogListener(SonarRunnerLogListener listener) {
+    sonarRunnerLogListeners.remove(listener);
+  }
+
+  public void error(String msg) {
+    for (SonarRunnerLogListener listener : sonarRunnerLogListeners) {
+      listener.error(msg);
+    }
+  }
+
+  public void info(String msg) {
+    for (SonarRunnerLogListener listener : sonarRunnerLogListeners) {
+      listener.info(msg);
+    }
+  }
 
   @Override
   public void start(BundleContext context) {

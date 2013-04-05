@@ -31,7 +31,7 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
-import org.sonar.ide.eclipse.runner.SonarRunnerLogListener;
+import org.sonar.ide.eclipse.core.internal.jobs.SonarRunnerLogListener;
 import org.sonar.ide.eclipse.ui.internal.ISonarConsole;
 import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.Messages;

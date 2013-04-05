@@ -57,7 +57,6 @@
   <modules>
     <module>org.sonar.ide.eclipse.slf4j.pde</module>
     <module>org.sonar.ide.eclipse.wsclient</module>
-    <module>org.sonar.ide.eclipse.runtime</module>
 
     <module>org.sonar.ide.eclipse.core</module>
     <module>org.sonar.ide.eclipse.deprecated</module>
@@ -148,7 +147,12 @@
     <dependency>
       <groupId>org.codehaus.sonar</groupId>
       <artifactId>sonar-ws-client</artifactId>
-      <version>3.5-RC2</version>
+      <version>3.5.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.sonar.runner</groupId>
+      <artifactId>sonar-runner-api</artifactId>
+      <version>2.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>

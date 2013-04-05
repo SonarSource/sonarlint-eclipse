@@ -49,15 +49,17 @@ import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
-import org.sonar.ide.eclipse.runner.SonarEclipseRunner;
 import org.sonar.ide.eclipse.wsclient.SonarVersionTester;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
+import org.sonar.runner.api.ForkedRunner;
+import org.sonar.runner.api.StreamConsumer;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.services.ServerQuery;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -110,7 +112,7 @@ public class AnalyseProjectJob extends Job {
     FileUtils.deleteQuietly(outputFile);
     IStatus result;
     try {
-      result = SonarEclipseRunner.run(project, properties, debugEnabled, monitor);
+      result = run(project, properties, debugEnabled, monitor);
     } catch (Exception e) {
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error when executing Sonar runner", e);
     }
@@ -204,6 +206,50 @@ public class AnalyseProjectJob extends Job {
       properties.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
     }
     return outputFile;
+  }
+
+  /** Run the action. Display the Hello World message
+   * @throws InterruptedException
+   * @throws CoreException
+   * @throws IOException
+   */
+  public IStatus run(IProject project, Properties props, boolean debugEnabled, final IProgressMonitor monitor) throws InterruptedException,
+      CoreException, IOException {
+
+    try {
+
+      if (debugEnabled) {
+        SonarCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props));
+      }
+
+      ForkedRunner.create()
+          .setApp("Eclipse", SonarCorePlugin.getDefault().getBundle().getVersion().toString())
+          .addProperties(props)
+          .setStdOut(new StreamConsumer() {
+            public void consumeLine(String text) {
+              SonarCorePlugin.getDefault().info(text + "\n");
+            }
+          })
+          .setStdErr(new StreamConsumer() {
+            public void consumeLine(String text) {
+              SonarCorePlugin.getDefault().error(text + "\n");
+            }
+          })
+          .execute();
+
+      return Status.OK_STATUS;
+    } catch (Exception e) {
+      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error during execution of Sonar", e);
+    }
+
+  }
+
+  private static String propsToString(Properties props) {
+    StringBuilder builder = new StringBuilder();
+    for (Object key : props.keySet()) {
+      builder.append(key).append("=").append(props.getProperty(key.toString())).append("\n");
+    }
+    return builder.toString();
   }
 
 }

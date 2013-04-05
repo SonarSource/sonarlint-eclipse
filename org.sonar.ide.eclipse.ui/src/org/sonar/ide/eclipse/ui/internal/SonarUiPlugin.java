@@ -31,11 +31,11 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.jobs.SonarRunnerLogListener;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
-import org.sonar.ide.eclipse.runner.SonarRunnerLogListener;
-import org.sonar.ide.eclipse.runner.SonarRunnerPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 import org.sonar.ide.eclipse.ui.internal.jobs.RefreshViolationsJob;
 
@@ -64,7 +64,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     super.start(context);
 
     if (getSonarConsole() != null) {
-      SonarRunnerPlugin.getDefault().addSonarLogListener((SonarRunnerLogListener) getSonarConsole());
+      SonarCorePlugin.getDefault().addSonarRunnerLogListener((SonarRunnerLogListener) getSonarConsole());
     }
 
     RefreshViolationsJob.setupViolationsUpdater();
@@ -91,7 +91,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   public void stop(final BundleContext context) throws Exception {
     try {
       if (getSonarConsole() != null) {
-        SonarRunnerPlugin.getDefault().removeSonarLogListener((SonarRunnerLogListener) getSonarConsole());
+        SonarCorePlugin.getDefault().removeSonarRunnerLogListener((SonarRunnerLogListener) getSonarConsole());
       }
       getPreferenceStore().removePropertyChangeListener(listener);
     } finally {
