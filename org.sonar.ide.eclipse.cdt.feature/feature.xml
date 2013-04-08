@@ -51,13 +51,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.sonar.ide.eclipse.runtime"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.sonar.ide.eclipse.deprecated"
          download-size="0"
          install-size="0"
@@ -71,13 +64,12 @@
          version="0.0.0"
          unpack="false"/>
 
-   <!-- SONARIDE-182 Ensure we have the launching on MacOSX -->
    <plugin
          id="org.eclipse.jdt.launching.macosx"
+         os="macosx"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"
-         os="macosx"/>
+         unpack="false"/>
 
 </feature>
