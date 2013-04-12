@@ -96,15 +96,8 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
           if (topProject || entry.isExported()) {
             final String libDir = resolveLibrary(javaProject, entry);
             if (libDir != null) {
-              File libEntry = new File(libDir);
-              if (libEntry.isDirectory()) {
-                // Should be a class folder
-                processClassesFolderIfNotEmpty(sonarProjectProperties, libDir);
-              }
-              else {
-                LOG.debug("Library: {}", libDir);
-                appendProperty(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, libDir);
-              }
+              LOG.debug("Library: {}", libDir);
+              appendProperty(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, libDir);
             }
           }
           break;
@@ -132,16 +125,12 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       }
       else {
         // Output dir of dependents projects should be considered as libraries
-        processClassesFolderIfNotEmpty(sonarProjectProperties, outDir);
+        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, outDir);
       }
     }
     else {
       LOG.warn("Binary directory was not added because it was not found. Maybe should you enable auto build of your project.");
     }
-  }
-
-  private void processClassesFolderIfNotEmpty(Properties sonarProjectProperties, String classFolder) {
-    // TODO SONARIDE-353 sonar.librairies doesn't support pattern like classfolder + "**/*.class"
   }
 
   private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, Properties sonarProjectProperties, boolean topProject) throws JavaModelException {
