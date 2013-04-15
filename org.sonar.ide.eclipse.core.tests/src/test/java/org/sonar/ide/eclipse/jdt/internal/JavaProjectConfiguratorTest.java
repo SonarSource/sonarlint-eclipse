@@ -77,7 +77,7 @@ public class JavaProjectConfiguratorTest {
   @Test
   public void shouldConfigureSimpleProject() throws JavaModelException, IOException {
     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-    File workspaceRoot = root.getFullPath().toFile();
+    File workspaceRoot = root.getLocation().toFile();
     File projectRoot = new File(workspaceRoot, "myProject");
     projectRoot.mkdir();
     File sourceFolder = new File(projectRoot, "src");
