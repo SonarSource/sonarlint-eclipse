@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class SonarProject implements ISonarProject {
   private String key;
   private boolean analysedLocally;
   private Date lastAnalysisDate;
-  private List<SonarProperty> extraProperties;
+  private List<SonarProperty> extraProperties = new ArrayList<SonarProperty>();
 
   public SonarProject(IProject project) {
     this.project = project;

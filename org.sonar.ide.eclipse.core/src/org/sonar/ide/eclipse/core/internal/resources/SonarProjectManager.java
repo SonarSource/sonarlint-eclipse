@@ -73,7 +73,7 @@ public class SonarProjectManager {
     IScopeContext projectScope = new ProjectScope(project);
     IEclipsePreferences projectNode = projectScope.getNode(SonarCorePlugin.PLUGIN_ID);
     if (projectNode == null) {
-      LOG.error("Unable to read configuration for project " + project.getName());
+      LOG.info("Unable to read configuration for project " + project.getName());
       return new SonarProject(project);
     }
 

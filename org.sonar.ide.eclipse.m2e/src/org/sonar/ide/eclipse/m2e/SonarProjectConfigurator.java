@@ -75,27 +75,54 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
 
   @Override
   public void mavenProjectChanged(MavenProjectChangedEvent event, IProgressMonitor monitor) throws CoreException {
-    IProject project = event.getMavenProject().getProject();
-    if (SonarNature.hasSonarNature(project)) {
-      SonarMavenInfos oldInfos = new SonarMavenInfos(event.getOldMavenProject(), monitor);
-      SonarMavenInfos newInfos = new SonarMavenInfos(event.getMavenProject(), monitor);
-      if (oldInfos.equals(newInfos)) {
-        return;
-      }
-      // Now check that Sonar configuration was in sync with old infos to not override user defined association
-      SonarProject sonarProject = SonarProject.getInstance(project);
-      if (sonarProject.getKey().equals(oldInfos.getKey())) {
-        sonarProject.setKey(newInfos.getKey());
-        sonarProject.save();
-      }
-      // Now check that Sonar project properties were in sync with old info to not override used defined properties
-      if (propertiesEqualsArgments(sonarProject.getExtraProperties(), oldInfos.getSonarProperties())) {
-        Map<String, String> diffs = diff(oldInfos.getSonarProperties(), newInfos.getSonarProperties());
-        update(sonarProject.getExtraProperties(), diffs);
-        sonarProject.save();
-      }
-
+    IMavenProjectFacade newProject = event.getMavenProject();
+    if (newProject == null) {
+      // project was removed, nothing to configure
+      return;
     }
+
+    IProject project = newProject.getProject();
+    if (SonarNature.hasSonarNature(project)) {
+      IMavenProjectFacade oldProject = event.getOldMavenProject();
+      // if old == null -> project was added
+      if (oldProject == null) {
+        mavenProjectAdded(project, newProject, monitor);
+      }
+      else {
+        mavenProjectUpdated(project, newProject, oldProject, monitor);
+      }
+    }
+  }
+
+  private void mavenProjectUpdated(IProject project, IMavenProjectFacade newProject, IMavenProjectFacade oldProject, IProgressMonitor monitor) throws CoreException {
+    SonarMavenInfos oldInfos = new SonarMavenInfos(oldProject, monitor);
+    SonarMavenInfos newInfos = new SonarMavenInfos(newProject, monitor);
+    if (oldInfos.equals(newInfos)) {
+      return;
+    }
+    // Now check that Sonar configuration was in sync with old infos to not override user defined association
+    SonarProject sonarProject = SonarProject.getInstance(project);
+    if (sonarProject.getKey().equals(oldInfos.getKey())) {
+      sonarProject.setKey(newInfos.getKey());
+      sonarProject.save();
+    }
+    // Now check that Sonar project properties were in sync with old info to not override used defined properties
+    if (propertiesEqualsArgments(sonarProject.getExtraProperties(), oldInfos.getSonarProperties())) {
+      Map<String, String> diffs = diff(oldInfos.getSonarProperties(), newInfos.getSonarProperties());
+      update(sonarProject.getExtraProperties(), diffs);
+      sonarProject.save();
+    }
+
+  }
+
+  private void mavenProjectAdded(IProject project, IMavenProjectFacade newProject, IProgressMonitor monitor) throws CoreException {
+    SonarMavenInfos newInfos = new SonarMavenInfos(newProject, monitor);
+    SonarProject sonarProject = SonarProject.getInstance(project);
+    sonarProject.setKey(newInfos.getKey());
+    sonarProject.getExtraProperties().clear();
+    update(sonarProject.getExtraProperties(), newInfos.getSonarProperties());
+
+    sonarProject.save();
   }
 
   private void update(List<SonarProperty> extraArguments, Map<String, String> diffs) {
