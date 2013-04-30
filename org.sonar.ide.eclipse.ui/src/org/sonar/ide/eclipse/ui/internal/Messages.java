@@ -69,6 +69,7 @@ public final class Messages extends NLS {
   public static String SonarPreferencePage_label_new_violations_marker_severity;
   public static String SonarPreferencePage_label_extra_args;
   public static String SonarProjectPropertyBlock_label_override_workspace_settings;
+  public static String SonarPreferencePage_label_jvm_args;
 
   public static String SonarDebugOutputAction_tooltip;
 

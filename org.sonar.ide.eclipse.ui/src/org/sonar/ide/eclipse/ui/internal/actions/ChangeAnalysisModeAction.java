@@ -52,7 +52,8 @@ public class ChangeAnalysisModeAction implements IObjectActionDelegate {
     projectProperties.save();
 
     if (isLocalAnalysis(action)) {
-      new AnalyseProjectJob(project, SonarConsole.isDebugEnabled(), SonarUiPlugin.getDefault().getExtraPropertiesForLocalAnalysis(project)).schedule();
+      new AnalyseProjectJob(project, SonarConsole.isDebugEnabled(),
+          SonarUiPlugin.getExtraPropertiesForLocalAnalysis(project), SonarUiPlugin.getSonarJvmArgs()).schedule();
     } else {
       RefreshAllViolationsJob.createAndSchedule(project);
     }

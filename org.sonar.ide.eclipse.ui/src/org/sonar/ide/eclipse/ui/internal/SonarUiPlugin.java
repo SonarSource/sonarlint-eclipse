@@ -50,6 +50,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
   public static final String PREF_NEW_VIOLATION_MARKER_SEVERITY = "newViolationMarkerSeverity"; //$NON-NLS-1$
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
+  public static final String PREF_JVM_ARGS = "jvmArgs"; //$NON-NLS-1$
 
   private final Logger logger = LoggerFactory.getLogger(SonarUiPlugin.class);
 
@@ -125,11 +126,12 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     store.setDefault(PREF_MARKER_SEVERITY, IMarker.SEVERITY_WARNING);
     store.setDefault(PREF_NEW_VIOLATION_MARKER_SEVERITY, IMarker.SEVERITY_ERROR);
     store.setDefault(PREF_EXTRA_ARGS, "");
+    store.setDefault(PREF_JVM_ARGS, "");
     MarkerUtils.setMarkerSeverity(store.getInt(PREF_MARKER_SEVERITY));
     MarkerUtils.setMarkerSeverityForNewViolations(store.getInt(PREF_NEW_VIOLATION_MARKER_SEVERITY));
   }
 
-  public List<SonarProperty> getExtraPropertiesForLocalAnalysis(IProject project) {
+  public static List<SonarProperty> getExtraPropertiesForLocalAnalysis(IProject project) {
     List<SonarProperty> props = new ArrayList<SonarProperty>();
     // First add all global properties
     String globalExtraArgs = SonarUiPlugin.getDefault().getPreferenceStore().getString(SonarUiPlugin.PREF_EXTRA_ARGS);
@@ -146,5 +148,9 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     }
 
     return props;
+  }
+
+  public static String getSonarJvmArgs() {
+    return SonarUiPlugin.getDefault().getPreferenceStore().getString(SonarUiPlugin.PREF_JVM_ARGS);
   }
 }

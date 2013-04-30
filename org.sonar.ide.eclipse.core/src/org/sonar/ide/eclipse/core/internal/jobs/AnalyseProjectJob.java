@@ -75,15 +75,18 @@ public class AnalyseProjectJob extends Job {
 
   private List<SonarProperty> extraProps;
 
+  private String jvmArgs;
+
   public AnalyseProjectJob(IProject project, boolean debugEnabled) {
-    this(project, debugEnabled, Collections.<SonarProperty> emptyList());
+    this(project, debugEnabled, Collections.<SonarProperty> emptyList(), null);
   }
 
-  public AnalyseProjectJob(IProject project, boolean debugEnabled, List<SonarProperty> extraProps) {
+  public AnalyseProjectJob(IProject project, boolean debugEnabled, List<SonarProperty> extraProps, String jvmArgs) {
     super(Messages.AnalyseProjectJob_title);
     this.project = project;
     this.debugEnabled = debugEnabled;
     this.extraProps = extraProps;
+    this.jvmArgs = jvmArgs;
     this.sonarProject = SonarProject.getInstance(project);
     // Prevent modifications of project during analysis
     setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
@@ -225,6 +228,7 @@ public class AnalyseProjectJob extends Job {
       ForkedRunner.create()
           .setApp("Eclipse", SonarCorePlugin.getDefault().getBundle().getVersion().toString())
           .addProperties(props)
+          .addJvmArguments(jvmArgs)
           .setStdOut(new StreamConsumer() {
             public void consumeLine(String text) {
               SonarCorePlugin.getDefault().info(text + "\n");
