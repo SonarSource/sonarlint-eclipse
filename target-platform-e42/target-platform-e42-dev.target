@@ -6,7 +6,7 @@
 <location path="${M2_REPO}/com/googlecode/json-simple/json-simple/1.1.1" type="Directory"/>
 <location path="${M2_REPO}/org/apache/httpcomponents/httpclient-osgi/4.2.2" type="Directory"/>
 <location path="${M2_REPO}/org/apache/httpcomponents/httpcore-osgi/4.2.2" type="Directory"/>
-<location path="${M2_REPO}/org/codehaus/sonar/sonar-ws-client/3.5-RC2" type="Directory"/>
+<location path="${M2_REPO}/org/codehaus/sonar/sonar-ws-client/3.5.1" type="Directory"/>
 <location path="${M2_REPO}/commons-io/commons-io/2.4" type="Directory"/>
 <location path="${M2_REPO}/commons-lang/commons-lang/2.6" type="Directory"/>
 <location path="${M2_REPO}/commons-codec/commons-codec/1.7" type="Directory"/>

@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.codehaus.sonar-plugins</groupId>
     <artifactId>parent</artifactId>
-    <version>16</version>
+    <version>17</version>
   </parent>
 
   <groupId>org.codehaus.sonar-ide.eclipse</groupId>
@@ -121,11 +121,9 @@
 
   <properties>
     <license.title>Sonar Eclipse</license.title>
-    <license.year>2010-2012</license.year>
+    <license.year>2010-2013</license.year>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jdk.min.version>1.5</jdk.min.version>
-
-    <tycho.version>0.16.0</tycho.version>
+    <tycho.version>0.17.0</tycho.version>
     <target.platform>e42</target.platform>
 
     <!-- disable accidental deployment -->
@@ -136,8 +134,8 @@
     <!-- ================== -->
     <!-- For Sonar analysis -->
     <!-- ================== -->
-    <sonar.java.source>1.5</sonar.java.source>
-    <sonar.java.target>1.5</sonar.java.target>
+    <sonar.java.source>1.6</sonar.java.source>
+    <sonar.java.target>1.6</sonar.java.target>
     <sonar.scm.ignoreLocalModifications>true</sonar.scm.ignoreLocalModifications>
     <sonar.skippedModules>org.sonar.ide.eclipse.tests.common,org.sonar.ide.eclipse.core.tests,org.sonar.ide.eclipse.mylyn.tests</sonar.skippedModules>
   </properties>
@@ -352,7 +350,7 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.6.0.201210061924</version>
+            <version>0.6.2.201302030002</version>
             <executions>
               <execution>
                 <goals>

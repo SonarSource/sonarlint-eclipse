@@ -1,6 +1,6 @@
 /*
  * Sonar Eclipse
- * Copyright (C) 2010-2012 SonarSource
+ * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
  * This program is free software; you can redistribute it and/or
