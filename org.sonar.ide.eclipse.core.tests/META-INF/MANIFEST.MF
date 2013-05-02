@@ -15,6 +15,7 @@ Require-Bundle: org.eclipse.ui,
  org.sonar.ide.eclipse.tests.common,
  org.sonar.ide.eclipse.ui,
  org.sonar.ide.eclipse.jdt,
- org.mockito.mockito-all
+ org.mockito.mockito-all,
+ org.sonar.ide.eclipse.common
 Bundle-RequiredExecutionEnvironment: J2SE-1.5,
  JavaSE-1.6

@@ -36,8 +36,8 @@ public final class Messages extends NLS {
 
   public static String SonarProjectPropertyPage_title;
 
-  public static String ViolationsView_action_refresh;
-  public static String ViolationsView_action_refresh_tooltip;
+  public static String IssuesView_action_refresh;
+  public static String IssuesView_action_refresh_tooltip;
 
   public static String ServerLocationWizardPage_label_host;
   public static String ServerLocationWizardPage_label_username;
@@ -80,6 +80,9 @@ public final class Messages extends NLS {
 
   public static String IgnoreMarkerResolver_label;
   public static String IgnoreMarkerResolver_description;
+
+  public static String EditIssueMarkerResolver_label;
+  public static String EditIssueMarkerResolver_description;
 
   public static String PropertyAndPreferencePage_useprojectsettings_label;
   public static String PropertyAndPreferencePage_useworkspacesettings_change;

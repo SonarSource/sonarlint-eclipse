@@ -39,18 +39,19 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
-import org.sonar.ide.eclipse.wsclient.SonarConnectionTester.ConnectionTestResult;
-import org.sonar.wsclient.Host;
+import org.sonar.ide.eclipse.wsclient.ISonarWSClientFacade.ConnectionTestResult;
+import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
 import java.lang.reflect.InvocationTargetException;
 
 public class ServerLocationWizardPage extends WizardPage {
-  private final Host host;
+  private final ISonarServer sonarServer;
 
   private Text serverUrlText;
   private Text serverUsernameText;
@@ -58,12 +59,12 @@ public class ServerLocationWizardPage extends WizardPage {
   private IStatus status;
 
   public ServerLocationWizardPage() {
-    this(new Host("http://localhost:9000"));
+    this(SonarCorePlugin.getServersManager().getDefault());
   }
 
-  public ServerLocationWizardPage(Host host) {
+  public ServerLocationWizardPage(ISonarServer sonarServer) {
     super("server_location_page", "Sonar Server Configuration", SonarImages.SONARWIZBAN_IMG);
-    this.host = host;
+    this.sonarServer = sonarServer;
   }
 
   /**
@@ -128,7 +129,8 @@ public class ServerLocationWizardPage extends WizardPage {
             public void run(IProgressMonitor monitor) {
               monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
               try {
-                ConnectionTestResult result = SonarCorePlugin.getServerConnectionTester().testSonar(serverUrl, username, password);
+                ISonarServer newServer = SonarCorePlugin.getServersManager().create(serverUrl, username, password);
+                ConnectionTestResult result = WSClientFactory.getSonarClient(newServer).testConnection();
                 switch (result) {
                   case OK:
                     status = new Status(IStatus.OK, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);
@@ -172,9 +174,9 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   private void initialize() {
-    serverUrlText.setText(StringUtils.defaultString(host.getHost()));
-    serverUsernameText.setText(StringUtils.defaultString(host.getUsername()));
-    serverPasswordText.setText(StringUtils.defaultString(host.getPassword()));
+    serverUrlText.setText(StringUtils.defaultString(sonarServer.getUrl()));
+    serverUsernameText.setText(StringUtils.defaultString(sonarServer.getUsername()));
+    serverPasswordText.setText(StringUtils.defaultString(sonarServer.getPassword()));
   }
 
   private void dialogChanged() {

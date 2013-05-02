@@ -29,13 +29,13 @@ import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
 import org.eclipse.m2e.core.project.configurator.AbstractProjectConfigurator;
 import org.eclipse.m2e.core.project.configurator.ProjectConfigurationRequest;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
-import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,7 +52,7 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) throws CoreException {
     SonarMavenInfos infos = new SonarMavenInfos(request.getMavenProjectFacade(), monitor);
     if (!SonarNature.hasSonarNature(request.getProject())) {
-      Collection<SonarServer> servers = SonarCorePlugin.getServersManager().getServers();
+      Collection<ISonarServer> servers = SonarCorePlugin.getServersManager().getServers();
       if (!servers.isEmpty()) {
         // Take the first configured server
         String url = servers.iterator().next().getUrl();

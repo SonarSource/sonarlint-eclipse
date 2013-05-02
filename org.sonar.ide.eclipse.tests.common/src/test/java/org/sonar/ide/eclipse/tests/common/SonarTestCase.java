@@ -35,8 +35,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.wsclient.Host;
 
 import java.io.File;
 import java.io.IOException;
@@ -114,10 +114,10 @@ public abstract class SonarTestCase {
   }
 
   private static void cleanWorkspace() throws Exception {
-    final List<Host> hosts = new ArrayList<Host>();
-    hosts.addAll(SonarCorePlugin.getServersManager().getHosts());
-    for (final Host host : hosts) {
-      SonarCorePlugin.getServersManager().removeServer(host.getHost());
+    final List<ISonarServer> hosts = new ArrayList<ISonarServer>();
+    hosts.addAll(SonarCorePlugin.getServersManager().getServers());
+    for (final ISonarServer host : hosts) {
+      SonarCorePlugin.getServersManager().removeServer(host.getUrl());
     }
     final IWorkspaceRoot root = workspace.getRoot();
     for (final IProject project : root.getProjects()) {

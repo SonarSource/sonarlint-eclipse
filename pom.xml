@@ -57,9 +57,9 @@
   <modules>
     <module>org.sonar.ide.eclipse.slf4j.pde</module>
     <module>org.sonar.ide.eclipse.wsclient</module>
+    <module>org.sonar.ide.eclipse.common</module>
 
     <module>org.sonar.ide.eclipse.core</module>
-    <module>org.sonar.ide.eclipse.deprecated</module>
     <module>org.sonar.ide.eclipse.ui</module>
 
     <module>org.sonar.ide.eclipse.jdt</module>
@@ -74,10 +74,6 @@
     <module>org.sonar.ide.eclipse.m2e</module>
     <module>org.sonar.ide.eclipse.m2e.feature</module>
 
-    <module>org.sonar.ide.eclipse.mylyn.core</module>
-    <module>org.sonar.ide.eclipse.mylyn.ui</module>
-    <module>org.sonar.ide.eclipse.mylyn.feature</module>
-
     <module>org.sonar.ide.eclipse.thirdparty.feature</module>
 
     <module>org.sonar.ide.eclipse.site</module>
@@ -88,7 +84,6 @@
 
     <module>org.sonar.ide.eclipse.tests.common</module>
     <module>org.sonar.ide.eclipse.core.tests</module>
-    <module>org.sonar.ide.eclipse.mylyn.tests</module>
   </modules>
 
   <scm>
@@ -145,12 +140,17 @@
     <dependency>
       <groupId>org.codehaus.sonar</groupId>
       <artifactId>sonar-ws-client</artifactId>
-      <version>3.5.1</version>
+      <version>3.6-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.sonar.runner</groupId>
       <artifactId>sonar-runner-api</artifactId>
       <version>2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>

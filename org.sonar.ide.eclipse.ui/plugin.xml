@@ -50,7 +50,7 @@
     </category>
     <view
         category="org.sonar.ide.eclipse"
-        class="org.sonar.ide.eclipse.ui.internal.views.ViolationsView"
+        class="org.sonar.ide.eclipse.ui.internal.views.IssuesView"
         icon="icons/sonar.png"
         id="org.sonar.ide.eclipse.ui.views.ViolationsView"
         name="%sonar.violation.view.name">
@@ -61,6 +61,13 @@
           icon="icons/sonar.png"
           id="org.sonar.ide.eclipse.ui.views.WebView"
           name="Web">
+    </view>
+    <view
+          category="org.sonar.ide.eclipse"
+          class="org.sonar.ide.eclipse.ui.internal.views.IssueEditorWebView"
+          icon="icons/sonar.png"
+          id="org.sonar.ide.eclipse.ui.views.IssueEditorWebView"
+          name="Issue">
     </view>
   </extension>
 
@@ -116,13 +123,20 @@
             </parameter>
          </command>
       </menuContribution>
+      <menuContribution
+            locationURI="popup:org.sonar.ide.eclipse.ui.views.ViolationsView">
+           <command
+                 commandId="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand"
+                 style="push">
+         </command>
+      </menuContribution>
   </extension>
 
   <extension
       point="org.eclipse.ui.ide.markerSupport">
     <markerContentGenerator
          id="org.sonar.ide.eclipse.ui.markers.violationMarkerGenerator"
-         name="Sonar Violation Marker Generator">
+         name="Sonar Issue Marker Generator">
         <markerTypeReference
               id="org.sonar.ide.eclipse.core.sonarProblem"/>
         <markerTypeReference
@@ -148,22 +162,22 @@
         <markerFieldConfiguration
               enabled="true"
               id="org.sonar.ide.eclipse.ui.violationsGrouping"
-              name="Violations"
+              name="Issues"
               scope="ON_SELECTED_AND_CHILDREN">
         </markerFieldConfiguration>
     </markerContentGenerator>
     <markerField
-        class="org.sonar.ide.eclipse.ui.internal.views.ViolationSeverityAndRuleNameField"
+        class="org.sonar.ide.eclipse.ui.internal.views.IssueSeverityAndRuleNameField"
         id="org.sonar.ide.eclipse.ui.views.violationSeverityAndRuleNameField"
         name="Rule">
     </markerField>
     <markerField
-        class="org.sonar.ide.eclipse.ui.internal.views.ViolationRuleKeyField"
+        class="org.sonar.ide.eclipse.ui.internal.views.IssueRuleKeyField"
         id="org.sonar.ide.eclipse.ui.views.violationRuleKeyField"
         name="%sonar.violation.view.rulekeyfield">
     </markerField>
     <markerField
-        class="org.sonar.ide.eclipse.ui.internal.views.ViolationIsNewField"
+        class="org.sonar.ide.eclipse.ui.internal.views.IssueIsNewField"
         id="org.sonar.ide.eclipse.ui.views.violationIsNewField"
         name="%sonar.violation.view.isnewfield">
     </markerField>
@@ -298,6 +312,11 @@
           id="org.sonar.ide.eclipse.ui.internal.command.ReConfigureProjectsCommand"
           name="Change project association...">
     </command>
+    <command
+          description="Edit Issue"
+          id="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand"
+          name="Edit Issue">
+    </command>
   </extension>
 
   <extension point="org.eclipse.ui.handlers">
@@ -308,6 +327,10 @@
     <handler
           class="org.sonar.ide.eclipse.ui.internal.command.ConfigureProjectsCommand"
           commandId="org.sonar.ide.eclipse.ui.internal.command.ReConfigureProjectsCommand">
+    </handler>
+    <handler
+          class="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand"
+          commandId="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand">
     </handler>
   </extension>
 
@@ -412,6 +435,9 @@
      <resolver
            class="org.sonar.ide.eclipse.ui.internal.markers.IgnoreMarkerResolver">
      </resolver>
+     <resolver
+           class="org.sonar.ide.eclipse.ui.internal.markers.EditIssueMarkerResolver">
+     </resolver>
   </extension>
 
   <!-- Quick diff -->
@@ -473,20 +499,20 @@
      <menuContribution
            locationURI="toolbar:org.sonar.ide.eclipse.ui.views.ViolationsView">
         <command
-              commandId="org.sonar.ide.eclipse.ui.RefreshViolationsCommand"
+              commandId="org.sonar.ide.eclipse.ui.RefreshIssuesCommand"
               icon="icons/refresh.gif"
               label="Refresh"
               style="push"
-              tooltip="Refresh violations for all configured projects.">
+              tooltip="Refresh remote issues for all configured projects.">
         </command>
      </menuContribution>
   </extension>
   <extension
         point="org.eclipse.ui.commands">
      <command
-           defaultHandler="org.sonar.ide.eclipse.ui.internal.command.RefreshViolationsCommand"
-           id="org.sonar.ide.eclipse.ui.RefreshViolationsCommand"
-           name="Refresh violations">
+           defaultHandler="org.sonar.ide.eclipse.ui.internal.command.RefreshIssuesCommand"
+           id="org.sonar.ide.eclipse.ui.RefreshIssuesCommand"
+           name="Refresh issues">
      </command>
   </extension>
 

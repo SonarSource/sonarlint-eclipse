@@ -38,7 +38,7 @@ import org.sonar.ide.eclipse.core.internal.jobs.AnalyseProjectJob;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
-import org.sonar.ide.eclipse.ui.internal.views.ViolationsView;
+import org.sonar.ide.eclipse.ui.internal.views.IssuesView;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -76,7 +76,7 @@ public class AnalyseProjectAction implements IObjectActionDelegate {
               public void run() {
                 IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
                 try {
-                  iw.getActivePage().showView(ViolationsView.ID);
+                  iw.getActivePage().showView(IssuesView.ID);
                 } catch (PartInitException e) {
                   LOG.error("Unable to open Violation View", e);
                 }

@@ -40,6 +40,7 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.internal.AbstractTableLabelProvider;
 import org.sonar.ide.eclipse.ui.internal.Messages;
@@ -47,10 +48,9 @@ import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.util.SelectionUtils;
 import org.sonar.ide.eclipse.ui.internal.wizards.EditServerLocationWizard;
 import org.sonar.ide.eclipse.ui.internal.wizards.NewServerLocationWizard;
-import org.sonar.wsclient.Host;
 
 import java.text.MessageFormat;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Preference page for the workspace.
@@ -59,7 +59,7 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
 
   private TableViewer serversViewer;
 
-  private List<Host> servers;
+  private Collection<ISonarServer> servers;
 
   public SonarServerPreferencePage() {
     super(Messages.SonarServerPreferencePage_title);
@@ -83,13 +83,13 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     return container;
   }
 
-  private Host getSelectedServer() {
-    return (Host) SelectionUtils.getSingleElement(serversViewer.getSelection());
+  private ISonarServer getSelectedServer() {
+    return (ISonarServer) SelectionUtils.getSingleElement(serversViewer.getSelection());
   }
 
   private void initTable() {
     // retrieve list of servers
-    servers = SonarCorePlugin.getServersManager().getHosts();
+    servers = SonarCorePlugin.getServersManager().getServers();
     serversViewer.setInput(servers);
   }
 
@@ -152,11 +152,11 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     removeButton.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        Host selected = getSelectedServer();
+        ISonarServer selected = getSelectedServer();
         if (MessageDialog.openConfirm(SonarServerPreferencePage.this.getShell(), "Remove sonar server connection",
             MessageFormat.format("Confirm removing {0}",
-                new Object[] {selected.getHost()}))) {
-          SonarCorePlugin.getServersManager().removeServer(selected.getHost());
+                new Object[] {selected.getUrl()}))) {
+          SonarCorePlugin.getServersManager().removeServer(selected.getUrl());
           servers.remove(selected);
           serversViewer.refresh();
           removeButton.setEnabled(false);
@@ -176,8 +176,8 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
   private static class ServersLabelProvider extends AbstractTableLabelProvider {
     @Override
     public String getColumnText(Object element, int columnIndex) {
-      Host host = (Host) element;
-      return host.getHost();
+      ISonarServer sonarServer = (ISonarServer) element;
+      return sonarServer.getUrl();
     }
   }
 

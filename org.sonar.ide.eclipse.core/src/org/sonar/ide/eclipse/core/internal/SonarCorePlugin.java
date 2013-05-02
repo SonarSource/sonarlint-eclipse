@@ -34,7 +34,6 @@ import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
 import org.sonar.ide.eclipse.core.internal.servers.ServersManager;
 import org.sonar.ide.eclipse.core.resources.ISonarFile;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
-import org.sonar.ide.eclipse.wsclient.SonarConnectionTester;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,7 @@ public class SonarCorePlugin extends AbstractPlugin {
   /**
    * Minimal supported version of Sonar server for local analysis.
    */
-  public static final String LOCAL_MODE_MINIMAL_SONAR_VERSION = "3.4"; //$NON-NLS-1$
+  public static final String LOCAL_MODE_MINIMAL_SONAR_VERSION = "3.6"; //$NON-NLS-1$
 
   private static SonarCorePlugin plugin;
 
@@ -64,7 +63,6 @@ public class SonarCorePlugin extends AbstractPlugin {
   }
 
   private ServersManager serversManager;
-  private SonarConnectionTester sonarConnectionTester;
   private final List<SonarRunnerLogListener> sonarRunnerLogListeners = new ArrayList<SonarRunnerLogListener>();
 
   public void addSonarRunnerLogListener(SonarRunnerLogListener listener) {
@@ -92,7 +90,6 @@ public class SonarCorePlugin extends AbstractPlugin {
     super.start(context);
 
     serversManager = new ServersManager();
-    sonarConnectionTester = new SonarConnectionTester();
   }
 
   private static SonarProjectManager projectManager;
@@ -106,10 +103,6 @@ public class SonarCorePlugin extends AbstractPlugin {
 
   public static ISonarServersManager getServersManager() {
     return getDefault().serversManager;
-  }
-
-  public static SonarConnectionTester getServerConnectionTester() {
-    return getDefault().sonarConnectionTester;
   }
 
   public static ISonarResource createSonarResource(IResource resource, String key, String name) {

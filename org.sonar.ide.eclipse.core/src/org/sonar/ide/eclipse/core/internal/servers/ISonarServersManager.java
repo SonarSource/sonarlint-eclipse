@@ -19,26 +19,33 @@
  */
 package org.sonar.ide.eclipse.core.internal.servers;
 
-import org.sonar.wsclient.Host;
-import org.sonar.wsclient.Sonar;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @noimplement This interface is not intended to be implemented by clients.
  * @noextend This interface is not intended to be extended by clients.
  */
 public interface ISonarServersManager {
-  Collection<SonarServer> getServers();
 
-  List<Host> getHosts();
+  Collection<ISonarServer> getServers();
 
   void removeServer(String host);
 
   void addServer(String location, String username, String password);
 
-  Host findServer(String host);
+  ISonarServer findServer(String host);
 
-  Sonar getSonar(String url);
+  ISonarServer getDefault();
+
+  /**
+   * Create a new ISonarServer without saving it in Eclipse preferences.
+   * @param location
+   * @param username
+   * @param password
+   * @return
+   */
+  ISonarServer create(String location, String username, String password);
+
 }

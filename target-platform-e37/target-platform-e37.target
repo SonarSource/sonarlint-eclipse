@@ -10,14 +10,6 @@
 <repository location="http://download.eclipse.org/releases/indigo"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
-<unit id="org.eclipse.mylyn.builds.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.mylyn.context.sdk.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.mylyn.reviews.feature.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.mylyn_feature.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/mylyn/releases/latest"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
 <unit id="org.python.pydev.feature.feature.group" version="0.0.0"/>
 <repository location="http://pydev.org/updates"/>
 </location>

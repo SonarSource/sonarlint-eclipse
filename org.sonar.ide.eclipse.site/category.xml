@@ -3,9 +3,6 @@
    <description url="http://sonar-ide.codehaus.org/">
       Sonar Integration for Eclipse
    </description>
-   <feature url="features/org.sonar.ide.eclipse.mylyn.feature_0.0.0.jar" id="org.sonar.ide.eclipse.mylyn.feature" version="0.0.0">
-      <category name="Sonar optional connectors"/>
-   </feature>
    <feature url="features/org.sonar.ide.eclipse.cdt.feature_0.0.0.jar" id="org.sonar.ide.eclipse.cdt.feature" version="0.0.0">
       <category name="Sonar C/C++"/>
    </feature>

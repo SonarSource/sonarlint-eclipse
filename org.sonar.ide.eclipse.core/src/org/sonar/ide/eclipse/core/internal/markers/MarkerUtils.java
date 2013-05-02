@@ -19,10 +19,8 @@
  */
 package org.sonar.ide.eclipse.core.internal.markers;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -32,155 +30,96 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.wsclient.services.Violation;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 public final class MarkerUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(MarkerUtils.class);
 
-  private static int markerSeverity = IMarker.SEVERITY_WARNING;
-  private static int markerSeverityForNewViolations = IMarker.SEVERITY_ERROR;
+  static int markerSeverity = IMarker.SEVERITY_WARNING;
+  static int markerSeverityForNewViolations = IMarker.SEVERITY_ERROR;
 
   public static final String SONAR_MARKER_RULE_KEY_ATTR = "rulekey";
   public static final String SONAR_MARKER_RULE_NAME_ATTR = "rulename";
   public static final String SONAR_MARKER_RULE_PRIORITY_ATTR = "rulepriority";
-  public static final String SONAR_MARKER_VIOLATION_ID_ATTR = "violationId";
-  public static final String SONAR_MARKER_REVIEW_ID_ATTR = "reviewId";
+  public static final String SONAR_MARKER_ISSUE_ID_ATTR = "issueId";
   public static final String SONAR_MARKER_IS_NEW_ATTR = "is_new";
 
   private MarkerUtils() {
   }
 
-  public static void createMarkersForJSONViolations(IResource resource, JSONArray violations) {
-    for (Object violationObj : violations) {
-      JSONObject jsonViolation = (JSONObject) violationObj;
-      Violation violation = new Violation();
-      Long line = (Long) jsonViolation.get("line");//$NON-NLS-1$
-      violation.setLine(line != null ? line.intValue() : null);
-      violation.setMessage(ObjectUtils.toString(jsonViolation.get("message")));//$NON-NLS-1$
-      violation.setSeverity(ObjectUtils.toString(jsonViolation.get("severity")));//$NON-NLS-1$
-      violation.setRuleKey(ObjectUtils.toString(jsonViolation.get("rule_key")));//$NON-NLS-1$
-      violation.setRuleName(ObjectUtils.toString(jsonViolation.get("rule_name"))); //$NON-NLS-1$
-      violation.setSwitchedOff(Boolean.TRUE.equals(jsonViolation.get("switched_off"))); //$NON-NLS-1$
-      boolean isNew = Boolean.TRUE.equals(jsonViolation.get("is_new")); //$NON-NLS-1$
-      try {
-        createMarkerForWSViolation(resource, violation, isNew);
-      } catch (CoreException e) {
-        LOG.error(e.getMessage(), e);
+  public static void createMarkersForJSONIssues(Map<String, IResource> resourcesByKey, Map<String, String> ruleByKey, JSONArray issues) {
+    for (Object issueObj : issues) {
+      JSONObject jsonIssue = (JSONObject) issueObj;
+      String componentKey = ObjectUtils.toString(jsonIssue.get("component"));
+      if (resourcesByKey.containsKey(componentKey)) {
+        boolean isNew = Boolean.TRUE.equals(jsonIssue.get("isNew")); //$NON-NLS-1$
+        try {
+          SonarMarker.create(resourcesByKey.get(componentKey), isNew, new SonarIssueFromJsonReport(jsonIssue, ruleByKey));
+        } catch (CoreException e) {
+          LOG.error(e.getMessage(), e);
+        }
       }
     }
   }
 
-  public static void createMarkerForWSViolation(final IResource resource, final Violation violation, final boolean isNew) throws CoreException {
-    if (violation.isSwitchedOff()) {
-      // SONARIDE-281
-      return;
-    }
-    final Map<String, Object> markerAttributes = new HashMap<String, Object>();
-    Integer line = violation.getLine();
-    markerAttributes.put(IMarker.PRIORITY, getPriority(violation));
-    markerAttributes.put(IMarker.SEVERITY, isNew ? markerSeverityForNewViolations : markerSeverity);
-    // File level violation (line == null) are displayed on line 1
-    markerAttributes.put(IMarker.LINE_NUMBER, line != null ? line : 1);
-    markerAttributes.put(IMarker.MESSAGE, getMessage(violation));
-    markerAttributes.put(SONAR_MARKER_IS_NEW_ATTR, isNew);
+  private static class SonarIssueFromJsonReport implements ISonarIssue {
 
-    String source = readSource(resource);
+    private JSONObject jsonIssue;
+    private Map<String, String> ruleByKey;
 
-    if (line != null) {
-      addLine(markerAttributes, line, source);
+    public SonarIssueFromJsonReport(JSONObject jsonIssue, Map<String, String> ruleByKey) {
+      this.jsonIssue = jsonIssue;
+      this.ruleByKey = ruleByKey;
     }
-    final Map<String, Object> extraInfos = getExtraInfos(violation);
-    if (extraInfos != null) {
-      for (Map.Entry<String, Object> entry : extraInfos.entrySet()) {
-        markerAttributes.put(entry.getKey(), entry.getValue());
-      }
+
+    @Override
+    public String key() {
+      return ObjectUtils.toString(jsonIssue.get("key")); //$NON-NLS-1$
     }
-    final IMarker marker = resource.createMarker(isNew ? SonarCorePlugin.NEW_VIOLATION_MARKER_ID : SonarCorePlugin.MARKER_ID);
-    marker.setAttributes(markerAttributes);
+
+    @Override
+    public String resourceKey() {
+      return ObjectUtils.toString(jsonIssue.get("component")); //$NON-NLS-1$
+    }
+
+    @Override
+    public boolean resolved() {
+      return StringUtils.isNotBlank(ObjectUtils.toString(jsonIssue.get("resolution"))); //$NON-NLS-1$
+    }
+
+    @Override
+    public Integer line() {
+      Long line = (Long) jsonIssue.get("line");//$NON-NLS-1$
+      return line != null ? line.intValue() : null;
+    }
+
+    @Override
+    public String severity() {
+      return ObjectUtils.toString(jsonIssue.get("severity"));//$NON-NLS-1$
+    }
+
+    @Override
+    public String description() {
+      return ObjectUtils.toString(jsonIssue.get("description"));//$NON-NLS-1$
+    }
+
+    @Override
+    public String ruleKey() {
+      return ObjectUtils.toString(jsonIssue.get("rule"));//$NON-NLS-1$
+    }
+
+    @Override
+    public String ruleName() {
+      return ObjectUtils.toString(ruleByKey.get(ruleKey()));//$NON-NLS-1$
+    }
+
   }
 
-  private static String readSource(final IResource resource) throws CoreException {
-    String source = "";
-    if (resource instanceof IFile) {
-      IFile file = (IFile) resource;
-      InputStream inputStream = file.getContents();
-      try {
-        source = IOUtils.toString(inputStream, file.getCharset());
-      } catch (IOException e) {
-        LOG.error("Unable to read source of " + resource.getLocation().toOSString(), e);
-      } finally {
-        IOUtils.closeQuietly(inputStream);
-      }
-    }
-    return source;
-  }
-
-  private static String getMessage(final Violation violation) {
-    return violation.getRuleName() + " : " + violation.getMessage();
-  }
-
-  /**
-   * @return Priority marker attribute. A number from the set of high, normal and low priorities defined by the platform.
-   *
-   * @see IMarker.PRIORITY_HIGH
-   * @see IMarker.PRIORITY_NORMAL
-   * @see IMarker.PRIORITY_LOW
-   */
-  private static Integer getPriority(final Violation violation) {
-    final int result;
-    if ("blocker".equalsIgnoreCase(violation.getSeverity())) {
-      result = Integer.valueOf(IMarker.PRIORITY_HIGH);
-    }
-    else if ("critical".equalsIgnoreCase(violation.getSeverity())) {
-      result = Integer.valueOf(IMarker.PRIORITY_HIGH);
-    }
-    else if ("major".equalsIgnoreCase(violation.getSeverity())) {
-      result = Integer.valueOf(IMarker.PRIORITY_NORMAL);
-    }
-    else if ("minor".equalsIgnoreCase(violation.getSeverity())) {
-      result = Integer.valueOf(IMarker.PRIORITY_LOW);
-    }
-    else if ("info".equalsIgnoreCase(violation.getSeverity())) {
-      result = Integer.valueOf(IMarker.PRIORITY_LOW);
-    }
-    else {
-      result = Integer.valueOf(IMarker.PRIORITY_LOW);
-    }
-    return result;
-  }
-
-  private static Map<String, Object> getExtraInfos(final Violation violation) {
-    final Map<String, Object> extraInfos = new HashMap<String, Object>();
-    extraInfos.put(SONAR_MARKER_RULE_KEY_ATTR, violation.getRuleKey());
-    extraInfos.put(SONAR_MARKER_RULE_NAME_ATTR, violation.getRuleName());
-    extraInfos.put(SONAR_MARKER_RULE_PRIORITY_ATTR, violation.getSeverity());
-    if (violation.getId() != null) {
-      extraInfos.put(SONAR_MARKER_VIOLATION_ID_ATTR, Long.toString(violation.getId()));
-    }
-    if (violation.getReview() != null) {
-      extraInfos.put(SONAR_MARKER_REVIEW_ID_ATTR, Long.toString(violation.getReview().getId()));
-    }
-    return extraInfos;
-  }
-
-  private static void addLine(final Map<String, Object> markerAttributes, final long line, final String text) {
-    int start = 0;
-    for (int i = 1; i < line; i++) {
-      start = StringUtils.indexOf(text, '\n', start) + 1;
-    }
-    final int end = StringUtils.indexOf(text, '\n', start);
-    markerAttributes.put(IMarker.CHAR_START, start);
-    markerAttributes.put(IMarker.CHAR_END, end);
-  }
-
-  public static void deleteViolationsMarkers(IResource resource) {
+  public static void deleteIssuesMarkers(IResource resource) {
     try {
       resource.deleteMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     } catch (CoreException e) {
@@ -203,7 +142,7 @@ public final class MarkerUtils {
     markerSeverity = severity;
   }
 
-  public static void setMarkerSeverityForNewViolations(int severity) {
+  public static void setMarkerSeverityForNewIssues(int severity) {
     markerSeverityForNewViolations = severity;
   }
 

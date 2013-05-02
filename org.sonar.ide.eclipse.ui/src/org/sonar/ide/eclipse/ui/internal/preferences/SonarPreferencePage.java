@@ -51,7 +51,7 @@ public class SonarPreferencePage extends FieldEditorPreferencePage implements IW
           {"Warning", String.valueOf(IMarker.SEVERITY_WARNING)},
           {"Error", String.valueOf(IMarker.SEVERITY_ERROR)}},
         getFieldEditorParent()));
-    addField(new ComboFieldEditor(SonarUiPlugin.PREF_NEW_VIOLATION_MARKER_SEVERITY,
+    addField(new ComboFieldEditor(SonarUiPlugin.PREF_NEW_ISSUE_MARKER_SEVERITY,
         Messages.SonarPreferencePage_label_new_violations_marker_severity,
         new String[][] {
           {"Info", String.valueOf(IMarker.SEVERITY_INFO)},

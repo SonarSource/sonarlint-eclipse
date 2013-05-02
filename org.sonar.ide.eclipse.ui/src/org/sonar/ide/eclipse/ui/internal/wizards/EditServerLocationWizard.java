@@ -20,21 +20,21 @@
 package org.sonar.ide.eclipse.ui.internal.wizards;
 
 import org.apache.commons.lang.StringUtils;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.wsclient.Host;
 
 public class EditServerLocationWizard extends AbstractServerLocationWizard {
 
-  private final Host host;
+  private final ISonarServer sonarServer;
 
-  public EditServerLocationWizard(Host server) {
-    super(new ServerLocationWizardPage(server), "Edit Sonar Server");
-    this.host = server;
+  public EditServerLocationWizard(ISonarServer sonarServer) {
+    super(new ServerLocationWizardPage(sonarServer), "Edit Sonar Server");
+    this.sonarServer = sonarServer;
   }
 
   @Override
   protected void doFinish(String serverUrl, String username, String password) {
-    String oldServerUrl = host.getHost();
+    String oldServerUrl = sonarServer.getUrl();
     if (StringUtils.isNotBlank(oldServerUrl) && (SonarCorePlugin.getServersManager().findServer(oldServerUrl) != null)) {
       SonarCorePlugin.getServersManager().removeServer(oldServerUrl);
     }

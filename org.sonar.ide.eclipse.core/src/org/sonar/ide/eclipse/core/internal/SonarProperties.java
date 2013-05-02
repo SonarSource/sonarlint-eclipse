@@ -30,6 +30,7 @@ public interface SonarProperties {
 
   String DRY_RUN_PROPERTY = "sonar.dryRun";
   String DRY_RUN_OUTPUT_PROPERTY = "sonar.dryRun.export.path";
+  String REPORT_OUTPUT_PROPERTY = "sonar.report.export.path";
 
   String SONAR_URL = "sonar.host.url";
   String SONAR_LOGIN = "sonar.login";

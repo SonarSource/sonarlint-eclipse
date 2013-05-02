@@ -24,30 +24,27 @@ import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.wsclient.Host;
-import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.services.Resource;
-import org.sonar.wsclient.services.ResourceSearchQuery;
-import org.sonar.wsclient.services.ResourceSearchResult;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
+import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
+import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * This provider will search for projects on all configured Sonar servers
  * then return a list of proposals. Because a proposal can only be a String
  * we will serialize {@link RemoteSonarProject} using {@link RemoteSonarProject#asString()}
- * @author julien
  *
  */
 public class SonarSearchEngineProvider implements IContentProposalProvider {
 
-  private final List<Host> hosts;
+  private final Collection<ISonarServer> sonarServers;
   private final WizardPage parentPage;
 
-  public SonarSearchEngineProvider(List<Host> hosts, WizardPage parentPage) {
-    this.hosts = hosts;
+  public SonarSearchEngineProvider(Collection<ISonarServer> sonarServers, WizardPage parentPage) {
+    this.sonarServers = sonarServers;
     this.parentPage = parentPage;
   }
 
@@ -57,16 +54,11 @@ public class SonarSearchEngineProvider implements IContentProposalProvider {
       return new IContentProposal[0];
     }
     ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
-    for (Host host : hosts) {
-      String url = host.getHost();
-      ResourceSearchQuery query = ResourceSearchQuery.create(contents).setQualifiers(Resource.QUALIFIER_PROJECT,
-          Resource.QUALIFIER_MODULE);
-      Sonar sonar = SonarCorePlugin.getServersManager().getSonar(url);
-      ResourceSearchResult result = sonar.find(query);
-
-      for (ResourceSearchResult.Resource resource : result.getResources()) {
-        RemoteSonarProject prj = new RemoteSonarProject(host.getHost(), resource.key(), resource.name());
-        list.add(new ContentProposal(prj.asString(), resource.name(), prj.getDescription()));
+    for (ISonarServer sonarServer : sonarServers) {
+      List<ISonarRemoteModule> remoteModules = WSClientFactory.getSonarClient(sonarServer).searchRemoteModules(contents);
+      for (ISonarRemoteModule resource : remoteModules) {
+        RemoteSonarProject prj = new RemoteSonarProject(sonarServer.getUrl(), resource.getKey(), resource.getName());
+        list.add(new ContentProposal(prj.asString(), resource.getName(), prj.getDescription()));
       }
     }
     if (!list.isEmpty()) {

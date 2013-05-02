@@ -53,19 +53,19 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
-import org.sonar.ide.eclipse.ui.internal.jobs.RefreshAllViolationsJob;
-import org.sonar.wsclient.Host;
-import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.connectors.ConnectionException;
-import org.sonar.wsclient.services.Resource;
-import org.sonar.wsclient.services.ResourceQuery;
+import org.sonar.ide.eclipse.ui.internal.jobs.RefreshAllIssuesJob;
+import org.sonar.ide.eclipse.wsclient.ConnectionException;
+import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
+import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,14 +76,14 @@ public class ConfigureProjectsPage extends WizardPage {
 
   private final List<IProject> projects;
   private TableViewer viewer;
-  private final List<Host> hosts;
+  private final Collection<ISonarServer> sonarServers;
   private boolean alreadyRun = false;
 
   public ConfigureProjectsPage(List<IProject> projects) {
     super("configureProjects", "Associate with Sonar", SonarImages.SONARWIZBAN_IMG);
     setDescription("Select projects to add Sonar capability.");
     this.projects = projects;
-    hosts = SonarCorePlugin.getServersManager().getHosts();
+    sonarServers = SonarCorePlugin.getServersManager().getServers();
   }
 
   public void createControl(Composite parent) {
@@ -162,11 +162,11 @@ public class ConfigureProjectsPage extends WizardPage {
         if (!alreadyRun) {
           alreadyRun = true;
           try {
-            if (hosts.isEmpty()) {
+            if (sonarServers.isEmpty()) {
               setMessage("Please configure a sonar server first", IMessageProvider.ERROR);
             } else {
               setMessage("", IMessageProvider.NONE);
-              getWizard().getContainer().run(true, false, new AssociateProjects(hosts, getProjects()));
+              getWizard().getContainer().run(true, false, new AssociateProjects(sonarServers, getProjects()));
             }
           } catch (InvocationTargetException ex) {
             LOG.error(ex.getMessage(), ex);
@@ -186,7 +186,7 @@ public class ConfigureProjectsPage extends WizardPage {
 
   private class ProjectAssociationModelEditingSupport extends EditingSupport {
 
-    SonarSearchEngineProvider contentProposalProvider = new SonarSearchEngineProvider(hosts, ConfigureProjectsPage.this);
+    SonarSearchEngineProvider contentProposalProvider = new SonarSearchEngineProvider(sonarServers, ConfigureProjectsPage.this);
 
     public ProjectAssociationModelEditingSupport(TableViewer viewer) {
       super(viewer);
@@ -247,7 +247,7 @@ public class ConfigureProjectsPage extends WizardPage {
             changed = true;
           }
           if (changed) {
-            RefreshAllViolationsJob.createAndSchedule(project);
+            RefreshAllIssuesJob.createAndSchedule(project);
           }
         } catch (CoreException e) {
           LOG.error(e.getMessage(), e);
@@ -265,20 +265,20 @@ public class ConfigureProjectsPage extends WizardPage {
 
   public static class AssociateProjects implements IRunnableWithProgress {
 
-    private final List<Host> hosts;
+    private final Collection<ISonarServer> sonarServers;
     private final ProjectAssociationModel[] projects;
 
-    public AssociateProjects(List<Host> hosts, ProjectAssociationModel[] projects) {
-      Assert.isNotNull(hosts);
+    public AssociateProjects(Collection<ISonarServer> sonarServers, ProjectAssociationModel[] projects) {
+      Assert.isNotNull(sonarServers);
       Assert.isNotNull(projects);
-      this.hosts = hosts;
+      this.sonarServers = sonarServers;
       this.projects = projects;
     }
 
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
       monitor.beginTask("Associating Sonar projects", IProgressMonitor.UNKNOWN);
       // Retrieve list of all remote projects
-      Map<String, List<Resource>> remoteSonarProjects = fetchAllRemoteSonarProjects();
+      Map<String, List<ISonarRemoteModule>> remoteSonarProjects = fetchAllRemoteSonarModules();
 
       // Verify that all projects already associated are found on remote. If not found projects are considered as unassociated.
       validateProjectAssociation(remoteSonarProjects);
@@ -311,18 +311,18 @@ public class ConfigureProjectsPage extends WizardPage {
       }
     }
 
-    private Map<ProjectAssociationModel, List<PotentialMatchForProject>> findAllPotentialMatches(Map<String, List<Resource>> remoteSonarProjects) {
+    private Map<ProjectAssociationModel, List<PotentialMatchForProject>> findAllPotentialMatches(Map<String, List<ISonarRemoteModule>> remoteSonarProjects) {
       Map<ProjectAssociationModel, List<PotentialMatchForProject>> potentialMatches = new HashMap<ProjectAssociationModel, List<PotentialMatchForProject>>();
-      for (Map.Entry<String, List<Resource>> entry : remoteSonarProjects.entrySet()) {
+      for (Map.Entry<String, List<ISonarRemoteModule>> entry : remoteSonarProjects.entrySet()) {
         String url = entry.getKey();
-        List<Resource> resources = entry.getValue();
+        List<ISonarRemoteModule> resources = entry.getValue();
         for (ProjectAssociationModel sonarProject : projects) {
           if (StringUtils.isBlank(sonarProject.getKey())) {
             // Not associated yet
             if (!potentialMatches.containsKey(sonarProject)) {
               potentialMatches.put(sonarProject, new ArrayList<PotentialMatchForProject>());
             }
-            for (Resource resource : resources) {
+            for (ISonarRemoteModule resource : resources) {
               // A resource is a potential match if resource key contains Eclipse name
               if (resource.getKey().contains(sonarProject.getEclipseName())) {
                 potentialMatches.get(sonarProject).add(new PotentialMatchForProject(resource, url));
@@ -334,7 +334,7 @@ public class ConfigureProjectsPage extends WizardPage {
       return potentialMatches;
     }
 
-    private void validateProjectAssociation(Map<String, List<Resource>> remoteSonarProjects) {
+    private void validateProjectAssociation(Map<String, List<ISonarRemoteModule>> remoteSonarProjects) {
       for (ProjectAssociationModel projectAssociation : projects) {
         if (SonarNature.hasSonarNature(projectAssociation.getProject())) {
           SonarProject sonarProject = SonarProject.getInstance(projectAssociation.getProject());
@@ -342,7 +342,7 @@ public class ConfigureProjectsPage extends WizardPage {
           String url = sonarProject.getUrl();
           boolean found = false;
           if (remoteSonarProjects.containsKey(url)) {
-            for (Resource remoteProject : remoteSonarProjects.get(url)) {
+            for (ISonarRemoteModule remoteProject : remoteSonarProjects.get(url)) {
               if (remoteProject.getKey().equals(key)) {
                 found = true;
                 // Call associate to have the name
@@ -359,30 +359,26 @@ public class ConfigureProjectsPage extends WizardPage {
       }
     }
 
-    private Map<String, List<Resource>> fetchAllRemoteSonarProjects() {
-      Map<String, List<Resource>> remoteSonarProjects = new HashMap<String, List<Resource>>();
-      for (Host host : hosts) {
-        String url = host.getHost();
-        ResourceQuery query = new ResourceQuery().setScopes(Resource.SCOPE_SET).setQualifiers(Resource.QUALIFIER_PROJECT,
-            Resource.QUALIFIER_MODULE);
-        Sonar sonar = SonarCorePlugin.getServersManager().getSonar(url);
-        List<Resource> resources = sonar.findAll(query);
-        remoteSonarProjects.put(url, resources);
+    private Map<String, List<ISonarRemoteModule>> fetchAllRemoteSonarModules() {
+      Map<String, List<ISonarRemoteModule>> remoteSonarModules = new HashMap<String, List<ISonarRemoteModule>>();
+      for (ISonarServer sonarServer : sonarServers) {
+        List<ISonarRemoteModule> remoteModules = WSClientFactory.getSonarClient(sonarServer).listAllRemoteModules();
+        remoteSonarModules.put(sonarServer.getUrl(), remoteModules);
       }
-      return remoteSonarProjects;
+      return remoteSonarModules;
     }
 
     private static class PotentialMatchForProject {
-      private Resource resource;
+      private ISonarRemoteModule resource;
       private String host;
 
-      public PotentialMatchForProject(Resource resource, String host) {
+      public PotentialMatchForProject(ISonarRemoteModule resource, String host) {
         super();
         this.resource = resource;
         this.host = host;
       }
 
-      public Resource getResource() {
+      public ISonarRemoteModule getResource() {
         return resource;
       }
 

@@ -25,8 +25,8 @@ import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.wsclient.Host;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -45,8 +45,8 @@ public class SonarServerManagerTest {
   @Test
   public void shouldNotCreateFakeServer() throws Exception {
     String url = "http://new";
-    Host host = serversManager.findServer(url);
-    assertThat(host, nullValue());
+    ISonarServer server = serversManager.findServer(url);
+    assertThat(server, nullValue());
     assertThat(serversManager.getServers().size(), is(0));
   }
 

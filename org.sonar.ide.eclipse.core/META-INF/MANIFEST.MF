@@ -35,12 +35,12 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.resources,
  org.apache.commons.lang;bundle-version="2.4.0";visibility:=reexport,
  org.apache.commons.io;bundle-version="1.4.0";visibility:=reexport,
- org.sonar.ide.eclipse.deprecated;visibility:=reexport,
  org.sonar.ide.eclipse.wsclient;visibility:=reexport,
  com.google.guava;bundle-version="10.0.1",
  com.googlecode.json-simple;bundle-version="1.1.1",
  slf4j.api;bundle-version="1.6.6";visibility:=reexport,
  org.sonar.ide.eclipse.slf4j.pde;visibility:=reexport,
- org.codehaus.sonar.runner.sonar-runner-api;bundle-version="2.2.0"
+ org.codehaus.sonar.runner.sonar-runner-api;bundle-version="2.2.0",
+ org.sonar.ide.eclipse.common
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

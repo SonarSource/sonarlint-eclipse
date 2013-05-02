@@ -20,12 +20,13 @@
 package org.sonar.ide.eclipse.ui.internal;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 public class SonarUrls {
   public String resourceUrl(ISonarResource resource) {
-    String urlTemplate = urlTemplate(resource);
+    String urlTemplate = resourcesUrlTemplate(resource);
 
     String serverUrl = properties(resource).getUrl();
     String key = resource.getKey();
@@ -33,7 +34,15 @@ public class SonarUrls {
     return String.format(urlTemplate, serverUrl, key);
   }
 
-  private String urlTemplate(ISonarResource resource) {
+  public String issueUrl(String issueId, IResource resource) {
+    String urlTemplate = "%s/issue/view/%s?layout=false";
+
+    String serverUrl = SonarProject.getInstance(resource.getProject()).getUrl();
+
+    return String.format(urlTemplate, serverUrl, issueId);
+  }
+
+  private String resourcesUrlTemplate(ISonarResource resource) {
     if (resource.getResource() instanceof IFile) {
       return "%s/resource/index/%s";
     }

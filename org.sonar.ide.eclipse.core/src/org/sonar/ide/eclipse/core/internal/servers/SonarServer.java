@@ -26,9 +26,9 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.slf4j.LoggerFactory;
-import org.sonar.wsclient.Host;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 
-public final class SonarServer {
+public final class SonarServer implements ISonarServer {
 
   private final String url;
   private final boolean auth;
@@ -83,13 +83,6 @@ public final class SonarServer {
     } catch (StorageException e) {
       LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
     }
-  }
-
-  /**
-   * For sonar-ws-client
-   */
-  public Host getHost() {
-    return new Host(getUrl(), getUsername(), getPassword());
   }
 
   @Override

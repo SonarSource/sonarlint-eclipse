@@ -86,9 +86,9 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   }
 
   @Test
-  public void shouldCreateMarkers() throws Exception {
+  public void shouldCreateMarkersFromIssuesReport() throws Exception {
     AnalyseProjectJob job = new AnalyseProjectJob(project, false);
-    job.createMarkers(MONITOR, new File("testdata/dryRun.json"));
+    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
 
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
     assertThat(markers.size(), is(6));

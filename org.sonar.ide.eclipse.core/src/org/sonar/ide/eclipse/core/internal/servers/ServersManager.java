@@ -23,16 +23,11 @@ import com.google.common.collect.Lists;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.EncodingUtils;
-import org.eclipse.osgi.util.NLS;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.SonarEclipseException;
-import org.sonar.ide.eclipse.core.internal.Messages;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.ide.eclipse.wsclient.WSClientFactory;
-import org.sonar.wsclient.Host;
-import org.sonar.wsclient.Sonar;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,9 +36,10 @@ import java.util.List;
 public class ServersManager implements ISonarServersManager {
   static final String PREF_SERVERS = "servers";
 
-  public Collection<SonarServer> getServers() {
+  @Override
+  public Collection<ISonarServer> getServers() {
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
-    List<SonarServer> servers = Lists.newArrayList();
+    List<ISonarServer> servers = Lists.newArrayList();
     try {
       rootNode.sync();
       if (rootNode.nodeExists(PREF_SERVERS)) {
@@ -56,7 +52,7 @@ public class ServersManager implements ISonarServersManager {
         }
       } else {
         // Defaults
-        return Arrays.asList(new SonarServer("http://localhost:9000"));
+        return Arrays.asList((ISonarServer) new SonarServer("http://localhost:9000"));
       }
     } catch (BackingStoreException e) {
       LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
@@ -64,6 +60,7 @@ public class ServersManager implements ISonarServersManager {
     return servers;
   }
 
+  @Override
   public void addServer(String url, String username, String password) {
     SonarServer server = new SonarServer(url, username, password);
     String encodedUrl = EncodingUtils.encodeSlashes(server.getUrl());
@@ -92,16 +89,7 @@ public class ServersManager implements ISonarServersManager {
     }
   }
 
-  // From old implementation
-
-  public List<Host> getHosts() {
-    List<Host> result = Lists.newArrayList();
-    for (SonarServer server : getServers()) {
-      result.add(server.getHost());
-    }
-    return result;
-  }
-
+  @Override
   public void removeServer(String url) {
     String encodedUrl = EncodingUtils.encodeSlashes(url);
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
@@ -114,20 +102,24 @@ public class ServersManager implements ISonarServersManager {
     }
   }
 
-  public Host findServer(String url) {
-    for (Host host : getHosts()) {
-      if (host.getHost().equals(url)) {
-        return host;
+  @Override
+  public ISonarServer findServer(String url) {
+    for (ISonarServer server : getServers()) {
+      if (server.getUrl().equals(url)) {
+        return server;
       }
     }
     return null;
   }
 
-  public Sonar getSonar(String url) {
-    Host server = findServer(url);
-    if (server == null) {
-      throw new SonarEclipseException(NLS.bind(Messages.No_matching_server_in_configuration, url));
-    }
-    return WSClientFactory.create(server);
+  @Override
+  public ISonarServer getDefault() {
+    return new SonarServer("http://localhost:9000");
   }
+
+  @Override
+  public ISonarServer create(String location, String username, String password) {
+    return new SonarServer(location, username, password);
+  }
+
 }

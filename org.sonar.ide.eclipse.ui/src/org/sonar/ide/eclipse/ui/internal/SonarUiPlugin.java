@@ -37,7 +37,7 @@ import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
-import org.sonar.ide.eclipse.ui.internal.jobs.RefreshViolationsJob;
+import org.sonar.ide.eclipse.ui.internal.jobs.RefreshIssuesJob;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   private static SonarUiPlugin plugin;
 
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
-  public static final String PREF_NEW_VIOLATION_MARKER_SEVERITY = "newViolationMarkerSeverity"; //$NON-NLS-1$
+  public static final String PREF_NEW_ISSUE_MARKER_SEVERITY = "newViolationMarkerSeverity"; //$NON-NLS-1$
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
   public static final String PREF_JVM_ARGS = "jvmArgs"; //$NON-NLS-1$
 
@@ -68,15 +68,15 @@ public class SonarUiPlugin extends AbstractUIPlugin {
       SonarCorePlugin.getDefault().addSonarRunnerLogListener((SonarRunnerLogListener) getSonarConsole());
     }
 
-    RefreshViolationsJob.setupViolationsUpdater();
+    RefreshIssuesJob.setupIssuesUpdater();
 
     listener = new IPropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent event) {
-        if (event.getProperty().equals(PREF_MARKER_SEVERITY) || event.getProperty().equals(PREF_NEW_VIOLATION_MARKER_SEVERITY)) {
+        if (event.getProperty().equals(PREF_MARKER_SEVERITY) || event.getProperty().equals(PREF_NEW_ISSUE_MARKER_SEVERITY)) {
           int newSeverity = getPreferenceStore().getInt(PREF_MARKER_SEVERITY);
           MarkerUtils.setMarkerSeverity(newSeverity);
-          int newSeverityForNewViolations = getPreferenceStore().getInt(PREF_NEW_VIOLATION_MARKER_SEVERITY);
-          MarkerUtils.setMarkerSeverityForNewViolations(newSeverityForNewViolations);
+          int newSeverityForNewIssues = getPreferenceStore().getInt(PREF_NEW_ISSUE_MARKER_SEVERITY);
+          MarkerUtils.setMarkerSeverityForNewIssues(newSeverityForNewIssues);
           try {
             MarkerUtils.updateAllSonarMarkerSeverity();
           } catch (CoreException e) {
@@ -124,11 +124,11 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   @Override
   protected void initializeDefaultPreferences(IPreferenceStore store) {
     store.setDefault(PREF_MARKER_SEVERITY, IMarker.SEVERITY_WARNING);
-    store.setDefault(PREF_NEW_VIOLATION_MARKER_SEVERITY, IMarker.SEVERITY_ERROR);
+    store.setDefault(PREF_NEW_ISSUE_MARKER_SEVERITY, IMarker.SEVERITY_ERROR);
     store.setDefault(PREF_EXTRA_ARGS, "");
     store.setDefault(PREF_JVM_ARGS, "");
     MarkerUtils.setMarkerSeverity(store.getInt(PREF_MARKER_SEVERITY));
-    MarkerUtils.setMarkerSeverityForNewViolations(store.getInt(PREF_NEW_VIOLATION_MARKER_SEVERITY));
+    MarkerUtils.setMarkerSeverityForNewIssues(store.getInt(PREF_NEW_ISSUE_MARKER_SEVERITY));
   }
 
   public static List<SonarProperty> getExtraPropertiesForLocalAnalysis(IProject project) {

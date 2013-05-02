@@ -27,9 +27,12 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
+import org.sonar.ide.eclipse.wsclient.internal.SonarWSClientFacade;
 import org.sonar.ide.eclipse.wsclient.internal.WSClientPlugin;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
+import org.sonar.wsclient.SonarClient;
 import org.sonar.wsclient.connectors.HttpClient4Connector;
 
 import java.net.URI;
@@ -42,12 +45,32 @@ public final class WSClientFactory {
   }
 
   /**
+   * Creates Sonar web service client facade, which uses proxy settings from Eclipse.
+   */
+  public static ISonarWSClientFacade getSonarClient(ISonarServer sonarServer) {
+    Host host = new Host(sonarServer.getUrl(), sonarServer.getUsername(), sonarServer.getPassword());
+    return new SonarWSClientFacade(create(host), createSonarClient(host));
+  }
+
+  /**
    * Creates Sonar web service client, which uses proxy settings from Eclipse.
    */
-  public static Sonar create(Host host) {
+  private static Sonar create(Host host) {
     HttpClient4Connector connector = new HttpClient4Connector(host);
     configureProxy(connector.getHttpClient(), host);
     return new Sonar(connector);
+  }
+
+  /**
+   * Creates Sonar web service client, which uses proxy settings from Eclipse.
+   */
+  private static SonarClient createSonarClient(Host host) {
+    // TODO Configure proxy
+    return SonarClient.builder()
+        .url(host.getHost())
+        .login(host.getUsername())
+        .password(host.getPassword())
+        .build();
   }
 
   /**

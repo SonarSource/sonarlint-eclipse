@@ -20,13 +20,13 @@
 package org.sonar.ide.eclipse.core.internal.jobs;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -40,6 +40,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
@@ -53,9 +54,6 @@ import org.sonar.ide.eclipse.wsclient.SonarVersionTester;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 import org.sonar.runner.api.ForkedRunner;
 import org.sonar.runner.api.StreamConsumer;
-import org.sonar.wsclient.Host;
-import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.services.ServerQuery;
 
 import java.io.File;
 import java.io.FileReader;
@@ -63,6 +61,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 public class AnalyseProjectJob extends Job {
@@ -77,6 +76,8 @@ public class AnalyseProjectJob extends Job {
 
   private String jvmArgs;
 
+  private ISonarServer sonarServer;
+
   public AnalyseProjectJob(IProject project, boolean debugEnabled) {
     this(project, debugEnabled, Collections.<SonarProperty> emptyList(), null);
   }
@@ -88,6 +89,7 @@ public class AnalyseProjectJob extends Job {
     this.extraProps = extraProps;
     this.jvmArgs = jvmArgs != null ? jvmArgs : "";
     this.sonarProject = SonarProject.getInstance(project);
+    this.sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     // Prevent modifications of project during analysis
     setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
   }
@@ -97,7 +99,7 @@ public class AnalyseProjectJob extends Job {
     monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analysing, project.getName()), IProgressMonitor.UNKNOWN);
 
     // Verify Host
-    if (getHost() == null) {
+    if (getSonarServer() == null) {
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
           NLS.bind(Messages.No_matching_server_in_configuration_for_project, project.getName(), sonarProject.getUrl()));
     }
@@ -123,8 +125,8 @@ public class AnalyseProjectJob extends Job {
       return result;
     }
 
-    // Create markers and save measures
-    createMarkers(monitor, outputFile);
+    MarkerUtils.deleteIssuesMarkers(project);
+    createMarkersFromReportOutput(monitor, outputFile);
 
     // Update analysis date
     sonarProject.setLastAnalysisDate(Calendar.getInstance().getTime());
@@ -134,37 +136,43 @@ public class AnalyseProjectJob extends Job {
     return Status.OK_STATUS;
   }
 
-  private Host getHost() {
-    return SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+  private String getServerVersion() {
+    return WSClientFactory.getSonarClient(sonarServer).getServerVersion();
   }
 
-  private Sonar create() {
-    return WSClientFactory.create(getHost());
-  }
-
-  public String getServerVersion() {
-    return create().find(new ServerQuery()).getVersion();
+  private ISonarServer getSonarServer() {
+    return sonarServer;
   }
 
   @VisibleForTesting
-  public void createMarkers(final IProgressMonitor monitor, File outputFile) {
+  public void createMarkersFromReportOutput(final IProgressMonitor monitor, File outputFile) {
     FileReader fileReader = null;
     try {
+
+      SonarProject sonarProject = SonarProject.getInstance(project);
       fileReader = new FileReader(outputFile);
       Object obj = JSONValue.parse(fileReader);
       JSONObject sonarResult = (JSONObject) obj;
-      final JSONObject violationByResources = (JSONObject) sonarResult.get("violations_per_resource");
-      MarkerUtils.deleteViolationsMarkers(project);
-      project.accept(new IResourceVisitor() {
-        public boolean visit(IResource resource) throws CoreException {
-          String sonarKey = ResourceUtils.getSonarResourcePartialKey(resource);
-          if (sonarKey != null && violationByResources.get(sonarKey) != null) {
-            MarkerUtils.createMarkersForJSONViolations(resource, (JSONArray) violationByResources.get(sonarKey));
-          }
-          // don't go deeper than file
-          return resource instanceof IFile ? false : true;
+      // Start by resolving all components in a cache
+      Map<String, IResource> resourcesByKey = Maps.newHashMap();
+      final JSONArray components = (JSONArray) sonarResult.get("components");
+      for (Object component : components) {
+        String key = ObjectUtils.toString(((JSONObject) component).get("key"));
+        IResource resource = ResourceUtils.findResource(sonarProject, key);
+        if (resource != null) {
+          resourcesByKey.put(key, resource);
         }
-      });
+      }
+      // Now read all rules nane in a cache
+      Map<String, String> ruleByKey = Maps.newHashMap();
+      final JSONArray rules = (JSONArray) sonarResult.get("rules");
+      for (Object rule : rules) {
+        String key = ObjectUtils.toString(((JSONObject) rule).get("key"));
+        String name = ObjectUtils.toString(((JSONObject) rule).get("name"));
+        ruleByKey.put(key, name);
+      }
+      // Now iterate over all issues and create markers
+      MarkerUtils.createMarkersForJSONIssues(resourcesByKey, ruleByKey, (JSONArray) sonarResult.get("issues"));
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
       throw new SonarEclipseException("Unable to create markers", e);
@@ -183,7 +191,7 @@ public class AnalyseProjectJob extends Job {
   public File configureAnalysis(final IProgressMonitor monitor, Properties properties, List<SonarProperty> extraProps) {
     File baseDir = project.getLocation().toFile();
     IPath projectSpecificWorkDir = project.getWorkingLocation(SonarCorePlugin.PLUGIN_ID);
-    File outputFile = new File(projectSpecificWorkDir.toFile(), "dryRun.json");
+    File outputFile = new File(projectSpecificWorkDir.toFile(), "sonar-report.json");
 
     // First start by appending workspace and project properties
     for (SonarProperty sonarProperty : extraProps) {
@@ -194,17 +202,17 @@ public class AnalyseProjectJob extends Job {
     ConfiguratorUtils.configure(project, properties, monitor);
 
     // Global configuration
-    Host host = getHost();
-    properties.setProperty(SonarProperties.SONAR_URL, host.getHost());
-    if (StringUtils.isNotBlank(host.getUsername())) {
-      properties.setProperty(SonarProperties.SONAR_LOGIN, host.getUsername());
-      properties.setProperty(SonarProperties.SONAR_PASSWORD, host.getPassword());
+    ISonarServer sonarServer = getSonarServer();
+    properties.setProperty(SonarProperties.SONAR_URL, sonarServer.getUrl());
+    if (StringUtils.isNotBlank(sonarServer.getUsername())) {
+      properties.setProperty(SonarProperties.SONAR_LOGIN, sonarServer.getUsername());
+      properties.setProperty(SonarProperties.SONAR_PASSWORD, sonarServer.getPassword());
     }
     properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
     properties.setProperty(SonarProperties.WORK_DIR, projectSpecificWorkDir.toString());
     properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
     // Output file is relative to working dir
-    properties.setProperty(SonarProperties.DRY_RUN_OUTPUT_PROPERTY, outputFile.getName());
+    properties.setProperty(SonarProperties.REPORT_OUTPUT_PROPERTY, outputFile.getName());
     if (debugEnabled) {
       properties.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
     }

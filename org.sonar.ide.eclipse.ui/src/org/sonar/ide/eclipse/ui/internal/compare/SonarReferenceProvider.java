@@ -19,6 +19,9 @@
  */
 package org.sonar.ide.eclipse.ui.internal.compare;
 
+import org.sonar.ide.eclipse.ui.internal.remote.SourceCode;
+
+import org.sonar.ide.eclipse.ui.internal.remote.EclipseSonar;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -26,8 +29,6 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.quickdiff.IQuickDiffReferenceProvider;
-import org.sonar.ide.api.SourceCode;
-import org.sonar.ide.eclipse.ui.internal.EclipseSonar;
 
 public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
 

@@ -1,12 +1,13 @@
 Manifest-Version: 1.0
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.net,
- org.codehaus.sonar.ws-client;bundle-version="3.4.0";visibility:=reexport,
+ org.codehaus.sonar.ws-client;bundle-version="3.6.0",
  org.apache.httpcomponents.httpclient;bundle-version="4.2.2",
  org.apache.httpcomponents.httpcore;bundle-version="4.2.2",
  slf4j.api;bundle-version="1.6.6",
  org.apache.commons.lang;bundle-version="2.6.0",
- org.sonar.ide.eclipse.slf4j.pde
+ org.sonar.ide.eclipse.slf4j.pde,
+ org.sonar.ide.eclipse.common
 Export-Package: org.sonar.ide.eclipse.wsclient
 Bundle-Vendor: SonarSource
 Bundle-ActivationPolicy: lazy
@@ -15,5 +16,5 @@ Bundle-Name: Sonar Web Service Client
 Bundle-Activator: org.sonar.ide.eclipse.wsclient.internal.WSClientPlugin
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.sonar.ide.eclipse.wsclient;singleton:=true
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 
