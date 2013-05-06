@@ -86,7 +86,7 @@ public class AnalyseProjectJob extends Job {
     this.project = project;
     this.debugEnabled = debugEnabled;
     this.extraProps = extraProps;
-    this.jvmArgs = jvmArgs;
+    this.jvmArgs = jvmArgs != null ? jvmArgs : "";
     this.sonarProject = SonarProject.getInstance(project);
     // Prevent modifications of project during analysis
     setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
@@ -228,7 +228,7 @@ public class AnalyseProjectJob extends Job {
       ForkedRunner.create()
           .setApp("Eclipse", SonarCorePlugin.getDefault().getBundle().getVersion().toString())
           .addProperties(props)
-          .addJvmArguments(jvmArgs)
+          .addJvmArguments(jvmArgs.trim().split("\\s+"))
           .setStdOut(new StreamConsumer() {
             public void consumeLine(String text) {
               SonarCorePlugin.getDefault().info(text + "\n");
