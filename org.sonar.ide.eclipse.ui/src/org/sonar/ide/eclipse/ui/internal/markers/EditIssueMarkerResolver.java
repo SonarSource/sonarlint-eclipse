@@ -49,7 +49,8 @@ public class EditIssueMarkerResolver implements ISonarResolver {
       label = MessageFormat.format(Messages.EditIssueMarkerResolver_label, ruleName);
       description = Messages.EditIssueMarkerResolver_description;
       final Object issueId = marker.getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR);
-      return issueId != null;
+      final boolean isNew = Boolean.TRUE.equals(marker.getAttribute(MarkerUtils.SONAR_MARKER_IS_NEW_ATTR));
+      return issueId != null && !isNew;
     } catch (final CoreException e) {
       return false;
     }

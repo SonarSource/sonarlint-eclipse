@@ -128,7 +128,19 @@
            <command
                  commandId="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand"
                  style="push">
+             <!-- Don't display Edit Issue button on new issues -->
+             <visibleWhen checkEnabled="false">
+               <with variable="selection">
+	                  	<iterate ifEmpty="false" operator="and">
+	                  		<adapt type="org.eclipse.core.resources.IMarker" >
+	                    			<test value="org.sonar.ide.eclipse.core.sonarProblem"
+	                  				property="org.eclipse.ui.ide.marker.type"/>
+	                  		</adapt>	
+	                  	</iterate>
+	            </with>
+            </visibleWhen>
          </command>
+         
       </menuContribution>
   </extension>
 
