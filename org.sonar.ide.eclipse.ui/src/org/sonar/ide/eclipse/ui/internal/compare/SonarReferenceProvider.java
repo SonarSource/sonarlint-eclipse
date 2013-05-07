@@ -19,9 +19,9 @@
  */
 package org.sonar.ide.eclipse.ui.internal.compare;
 
-import org.sonar.ide.eclipse.ui.internal.remote.SourceCode;
+import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
+import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 
-import org.sonar.ide.eclipse.ui.internal.remote.EclipseSonar;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;

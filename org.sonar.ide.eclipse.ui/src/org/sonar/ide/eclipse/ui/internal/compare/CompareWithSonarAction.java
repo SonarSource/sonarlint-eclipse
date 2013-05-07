@@ -19,9 +19,9 @@
  */
 package org.sonar.ide.eclipse.ui.internal.compare;
 
-import org.sonar.ide.eclipse.ui.internal.remote.SourceCode;
+import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
+import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 
-import org.sonar.ide.eclipse.ui.internal.remote.EclipseSonar;
 import org.eclipse.compare.CompareUI;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;

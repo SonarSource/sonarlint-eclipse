@@ -19,6 +19,9 @@
  */
 package org.sonar.ide.eclipse.ui.internal.jobs;
 
+import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
+import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
@@ -44,8 +47,6 @@ import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
-import org.sonar.ide.eclipse.ui.internal.remote.EclipseSonar;
-import org.sonar.ide.eclipse.ui.internal.remote.SourceCode;
 import org.sonar.ide.eclipse.wsclient.ConnectionException;
 
 import java.util.Collection;

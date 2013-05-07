@@ -19,9 +19,9 @@
  */
 package org.sonar.ide.eclipse.ui.internal.jobs;
 
-import org.sonar.ide.eclipse.ui.internal.remote.SourceCode;
+import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
+import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 
-import org.sonar.ide.eclipse.ui.internal.remote.EclipseSonar;
 import com.google.common.collect.ArrayListMultimap;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
