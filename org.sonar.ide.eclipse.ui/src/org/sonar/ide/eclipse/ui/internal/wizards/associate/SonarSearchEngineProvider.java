@@ -49,10 +49,6 @@ public class SonarSearchEngineProvider implements IContentProposalProvider {
   }
 
   public IContentProposal[] getProposals(String contents, int position) {
-    if (contents == null || contents.length() < 3) {
-      parentPage.setMessage("Please type at least 3 characters", IMessageProvider.INFORMATION);
-      return new IContentProposal[0];
-    }
     ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
     for (ISonarServer sonarServer : sonarServers) {
       List<ISonarRemoteModule> remoteModules = WSClientFactory.getSonarClient(sonarServer).searchRemoteModules(contents);

@@ -108,12 +108,27 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
 
   @Override
   public List<ISonarRemoteModule> searchRemoteModules(String text) {
-    ResourceSearchQuery query = ResourceSearchQuery.create(text).setQualifiers(Resource.QUALIFIER_PROJECT, Resource.QUALIFIER_MODULE);
-    ResourceSearchResult searchResult = find(query);
+    List<ISonarRemoteModule> result;
+    if (text.length() < 3) {
+      ResourceQuery query = new ResourceQuery()
+          .setScopes(Resource.SCOPE_SET)
+          .setQualifiers(Resource.QUALIFIER_PROJECT, Resource.QUALIFIER_MODULE)
+          .setResourceKeyOrId(text);
+      List<Resource> resources = findAll(query);
 
-    List<ISonarRemoteModule> result = new ArrayList<ISonarRemoteModule>(searchResult.getResources().size());
-    for (ResourceSearchResult.Resource resource : searchResult.getResources()) {
-      result.add(new SonarRemoteModule(resource));
+      result = new ArrayList<ISonarRemoteModule>(resources.size());
+      for (Resource resource : resources) {
+        result.add(new SonarRemoteModule(resource));
+      }
+    }
+    else {
+      ResourceSearchQuery query = ResourceSearchQuery.create(text).setQualifiers(Resource.QUALIFIER_PROJECT, Resource.QUALIFIER_MODULE);
+      ResourceSearchResult searchResult = find(query);
+
+      result = new ArrayList<ISonarRemoteModule>(searchResult.getResources().size());
+      for (ResourceSearchResult.Resource resource : searchResult.getResources()) {
+        result.add(new SonarRemoteModule(resource));
+      }
     }
 
     return result;
