@@ -53,7 +53,7 @@
         class="org.sonar.ide.eclipse.ui.internal.views.IssuesView"
         icon="icons/sonar.png"
         id="org.sonar.ide.eclipse.ui.views.ViolationsView"
-        name="%sonar.violation.view.name">
+        name="%sonar.issues.view.name">
     </view>
     <view
           category="org.sonar.ide.eclipse"
@@ -67,7 +67,7 @@
           class="org.sonar.ide.eclipse.ui.internal.views.IssueEditorWebView"
           icon="icons/sonar.png"
           id="org.sonar.ide.eclipse.ui.views.IssueEditorWebView"
-          name="Issue">
+          name="%sonar.issue.view.name">
     </view>
   </extension>
 
@@ -174,12 +174,12 @@
     <markerField
         class="org.sonar.ide.eclipse.ui.internal.views.IssueRuleKeyField"
         id="org.sonar.ide.eclipse.ui.views.violationRuleKeyField"
-        name="%sonar.violation.view.rulekeyfield">
+        name="%sonar.issues.view.rulekeyfield">
     </markerField>
     <markerField
         class="org.sonar.ide.eclipse.ui.internal.views.IssueIsNewField"
         id="org.sonar.ide.eclipse.ui.views.violationIsNewField"
-        name="%sonar.violation.view.isnewfield">
+        name="%sonar.issues.view.isnewfield">
     </markerField>
   </extension>
 
@@ -381,7 +381,7 @@
               verticalRulerPreferenceValue="true"/>
 
         <specification
-              annotationImageProvider="org.sonar.ide.eclipse.ui.internal.markers.SonarNewViolationMarkerImageProvider"
+              annotationImageProvider="org.sonar.ide.eclipse.ui.internal.markers.SonarNewIssueMarkerImageProvider"
               annotationType="org.sonar.ide.eclipse.newViolationAnnotationType"
               colorPreferenceKey="org.sonar.ide.eclipse.ui.newviolation.color"
               colorPreferenceValue="255,246,191"
@@ -501,9 +501,9 @@
         <command
               commandId="org.sonar.ide.eclipse.ui.RefreshIssuesCommand"
               icon="icons/refresh.gif"
-              label="Refresh"
+              label="%sonar.action.allrefreshissues.label"
               style="push"
-              tooltip="Refresh remote issues for all configured projects.">
+              tooltip="%sonar.action.allrefreshissues.tooltip">
         </command>
      </menuContribution>
   </extension>
@@ -512,7 +512,7 @@
      <command
            defaultHandler="org.sonar.ide.eclipse.ui.internal.command.RefreshIssuesCommand"
            id="org.sonar.ide.eclipse.ui.RefreshIssuesCommand"
-           name="Refresh issues">
+           name="%sonar.action.allrefreshissues.label">
      </command>
   </extension>
 

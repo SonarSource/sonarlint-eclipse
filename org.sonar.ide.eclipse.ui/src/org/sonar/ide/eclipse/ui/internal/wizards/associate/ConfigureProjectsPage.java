@@ -220,7 +220,7 @@ public class ConfigureProjectsPage extends WizardPage {
    * Update all Eclipse projects when an association was provided:
    *   - enable Sonar nature
    *   - update sonar URL / key
-   *   - refresh violations if necessary
+   *   - refresh issues if necessary
    * @return
    */
   public boolean finish() {

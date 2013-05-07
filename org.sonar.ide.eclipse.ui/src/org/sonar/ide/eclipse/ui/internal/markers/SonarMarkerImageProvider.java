@@ -36,7 +36,7 @@ public class SonarMarkerImageProvider implements IAnnotationImageProvider {
   }
 
   public Image getManagedImage(Annotation annotation) {
-    return SonarImages.IMG_VIOLATION;
+    return SonarImages.IMG_ISSUE;
   }
 
 }

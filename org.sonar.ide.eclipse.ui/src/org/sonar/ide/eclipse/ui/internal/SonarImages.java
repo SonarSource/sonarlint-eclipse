@@ -41,8 +41,8 @@ public final class SonarImages {
   public static final ImageDescriptor SONARREFRESH_IMG = createImageDescriptor("refresh.gif"); //$NON-NLS-1$
   public static final ImageDescriptor SONARCLOSE_IMG = createImageDescriptor("close.gif"); //$NON-NLS-1$
 
-  public static final Image IMG_VIOLATION = createImage("violation_annotation.png"); //$NON-NLS-1$
-  public static final Image IMG_NEW_VIOLATION = createImage("new_violation_annotation.png"); //$NON-NLS-1$
+  public static final Image IMG_ISSUE = createImage("issue_annotation.png"); //$NON-NLS-1$
+  public static final Image IMG_NEW_ISSUE = createImage("new_issue_annotation.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.gif"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_CRITICAL = createImage("severity/critical.gif"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_MAJOR = createImage("severity/major.gif"); //$NON-NLS-1$

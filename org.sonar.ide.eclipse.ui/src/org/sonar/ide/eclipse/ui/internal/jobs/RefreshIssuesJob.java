@@ -54,11 +54,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * This class load violations in background.
+ * This class load issues in background.
  *
- * @link http://jira.codehaus.org/browse/SONARIDE-27
- *
- * @author Jérémie Lagarde
  */
 public class RefreshIssuesJob extends AbstractRemoteSonarJob implements IResourceVisitor {
 

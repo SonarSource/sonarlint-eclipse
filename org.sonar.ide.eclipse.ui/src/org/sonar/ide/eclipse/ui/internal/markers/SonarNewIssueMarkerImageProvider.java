@@ -25,7 +25,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.texteditor.IAnnotationImageProvider;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
 
-public class SonarNewViolationMarkerImageProvider implements IAnnotationImageProvider {
+public class SonarNewIssueMarkerImageProvider implements IAnnotationImageProvider {
 
   public ImageDescriptor getImageDescriptor(String imageDescritporId) {
     return null;
@@ -36,7 +36,7 @@ public class SonarNewViolationMarkerImageProvider implements IAnnotationImagePro
   }
 
   public Image getManagedImage(Annotation annotation) {
-    return SonarImages.IMG_NEW_VIOLATION;
+    return SonarImages.IMG_NEW_ISSUE;
   }
 
 }

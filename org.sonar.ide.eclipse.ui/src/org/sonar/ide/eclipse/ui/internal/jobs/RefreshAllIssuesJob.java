@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.internal.jobs;
 
-import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
-import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
-
 import com.google.common.collect.ArrayListMultimap;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -32,6 +29,8 @@ import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.markers.SonarMarker;
+import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
+import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 
@@ -72,7 +71,7 @@ public class RefreshAllIssuesJob extends RefreshIssuesJob {
       EclipseSonar sonar = EclipseSonar.getInstance(project);
       SourceCode sourceCode = sonar.search(project);
       if (sourceCode != null) {
-        doRefreshViolation(sonarProject, sourceCode);
+        doRefreshIssues(sonarProject, sourceCode);
         sonarProject.setLastAnalysisDate(sourceCode.getAnalysisDate());
         sonarProject.save();
       }
@@ -82,7 +81,7 @@ public class RefreshAllIssuesJob extends RefreshIssuesJob {
     return true;
   }
 
-  private void doRefreshViolation(SonarProject sonarProject, SourceCode sourceCode) throws CoreException {
+  private void doRefreshIssues(SonarProject sonarProject, SourceCode sourceCode) throws CoreException {
     List<ISonarIssue> issues = sourceCode.getRemoteIssuesRecursively();
     // Split issues by resource
     ArrayListMultimap<String, ISonarIssue> mm = ArrayListMultimap.create();

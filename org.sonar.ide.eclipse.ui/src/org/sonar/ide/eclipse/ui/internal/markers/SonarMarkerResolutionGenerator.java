@@ -42,7 +42,7 @@ public class SonarMarkerResolutionGenerator implements IMarkerResolutionGenerato
 
   public boolean hasResolutions(final IMarker marker) {
     try {
-      return SonarCorePlugin.MARKER_ID.equals(marker.getType()) || SonarCorePlugin.NEW_VIOLATION_MARKER_ID.equals(marker.getType());
+      return SonarCorePlugin.MARKER_ID.equals(marker.getType()) || SonarCorePlugin.NEW_ISSUE_MARKER_ID.equals(marker.getType());
     } catch (final CoreException e) {
       return false;
     }

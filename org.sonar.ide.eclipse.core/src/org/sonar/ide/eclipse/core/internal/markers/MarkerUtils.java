@@ -40,7 +40,7 @@ public final class MarkerUtils {
   private static final Logger LOG = LoggerFactory.getLogger(MarkerUtils.class);
 
   static int markerSeverity = IMarker.SEVERITY_WARNING;
-  static int markerSeverityForNewViolations = IMarker.SEVERITY_ERROR;
+  static int markerSeverityForNewIssues = IMarker.SEVERITY_ERROR;
 
   public static final String SONAR_MARKER_RULE_KEY_ATTR = "rulekey";
   public static final String SONAR_MARKER_RULE_NAME_ATTR = "rulename";
@@ -132,7 +132,7 @@ public final class MarkerUtils {
       if (project.isAccessible()) {
         for (IMarker marker : project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE)) {
           boolean isNew = marker.getAttribute(SONAR_MARKER_IS_NEW_ATTR, false);
-          marker.setAttribute(IMarker.SEVERITY, isNew ? markerSeverityForNewViolations : markerSeverity);
+          marker.setAttribute(IMarker.SEVERITY, isNew ? markerSeverityForNewIssues : markerSeverity);
         }
       }
     }
@@ -143,7 +143,7 @@ public final class MarkerUtils {
   }
 
   public static void setMarkerSeverityForNewIssues(int severity) {
-    markerSeverityForNewViolations = severity;
+    markerSeverityForNewIssues = severity;
   }
 
 }

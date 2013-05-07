@@ -67,7 +67,7 @@ public class AnalyseProjectAction implements IObjectActionDelegate {
     for (IProject project : projects) {
       AnalyseProjectJob job = new AnalyseProjectJob(project, debugEnabled,
           SonarUiPlugin.getExtraPropertiesForLocalAnalysis(project), SonarUiPlugin.getSonarJvmArgs());
-      // Display violation view after analysis is completed
+      // Display issues view after analysis is completed
       job.addJobChangeListener(new JobChangeAdapter() {
         @Override
         public void done(IJobChangeEvent event) {
@@ -78,7 +78,7 @@ public class AnalyseProjectAction implements IObjectActionDelegate {
                 try {
                   iw.getActivePage().showView(IssuesView.ID);
                 } catch (PartInitException e) {
-                  LOG.error("Unable to open Violation View", e);
+                  LOG.error("Unable to open Issues View", e);
                 }
               }
             });

@@ -46,7 +46,7 @@ public class SonarMarker {
   private SonarMarker(final IResource resource, final boolean isNew) throws CoreException {
     this.resource = resource;
     this.isNew = isNew;
-    this.marker = resource.createMarker(isNew ? SonarCorePlugin.NEW_VIOLATION_MARKER_ID : SonarCorePlugin.MARKER_ID);
+    this.marker = resource.createMarker(isNew ? SonarCorePlugin.NEW_ISSUE_MARKER_ID : SonarCorePlugin.MARKER_ID);
   }
 
   public static void create(final IResource resource, final boolean isNew, final ISonarIssue issue) throws CoreException {
@@ -61,7 +61,7 @@ public class SonarMarker {
     final Map<String, Object> markerAttributes = new HashMap<String, Object>();
     Integer line = issue.line();
     markerAttributes.put(IMarker.PRIORITY, getPriority(issue.severity()));
-    markerAttributes.put(IMarker.SEVERITY, isNew ? MarkerUtils.markerSeverityForNewViolations : MarkerUtils.markerSeverity);
+    markerAttributes.put(IMarker.SEVERITY, isNew ? MarkerUtils.markerSeverityForNewIssues : MarkerUtils.markerSeverity);
     // File level issues (line == null) are displayed on line 1
     markerAttributes.put(IMarker.LINE_NUMBER, line != null ? line : 1);
     markerAttributes.put(IMarker.MESSAGE, getMessage(issue));

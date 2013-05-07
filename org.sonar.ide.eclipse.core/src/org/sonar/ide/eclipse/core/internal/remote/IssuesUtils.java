@@ -40,7 +40,7 @@ public final class IssuesUtils {
       }
 
       int newLine = diff.newLine(originalLine);
-      // skip violation, which doesn't match any line
+      // skip issue, which doesn't match any line
       if (newLine != -1) {
         result.add(new SonarIssueWithModifiedLine(issue, newLine));
       }

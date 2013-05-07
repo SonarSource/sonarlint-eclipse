@@ -40,7 +40,7 @@
 
    <extension
         id="sonarProblem"
-        name="Sonar Violation"
+        name="Sonar Issue"
         point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.problemmarker">
@@ -61,7 +61,7 @@
 
    <extension
         id="sonarProblemNewViolation"
-        name="New Sonar Violation"
+        name="New Sonar Issue"
         point="org.eclipse.core.resources.markers">
       <super
             type="org.sonar.ide.eclipse.core.sonarProblem">
