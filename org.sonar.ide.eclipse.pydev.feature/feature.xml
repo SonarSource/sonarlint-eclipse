@@ -44,13 +44,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.sonar.ide.eclipse.deprecated"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.sonar.ide.eclipse.pydev"
          download-size="0"
          install-size="0"
