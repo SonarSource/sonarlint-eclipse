@@ -96,10 +96,11 @@ public final class ResourceUtils {
   }
 
   public static IResource findResource(SonarProject sonarProject, String resourceKey) {
-    if (sonarProject != null && resourceKey.startsWith(sonarProject.getKey())) {
-      String resourceKeyMinusProjectKey = resourceKey.substring(
-          // +1 because ":"
-          sonarProject.getKey().length() + 1);
+    if (sonarProject != null && resourceKey.equals(sonarProject.getKey())) {
+      return sonarProject.getProject();
+    }
+    if (sonarProject != null && resourceKey.startsWith(sonarProject.getKey() + SonarKeyUtils.PROJECT_DELIMITER)) {
+      String resourceKeyMinusProjectKey = resourceKey.substring(sonarProject.getKey().length() + 1);
       String[] parts = StringUtils.split(resourceKeyMinusProjectKey, SonarKeyUtils.PROJECT_DELIMITER);
       String partialResourceKey = parts.length > 0 ? parts[0] : "";
       for (ResourceResolver resolver : getResolvers()) {
