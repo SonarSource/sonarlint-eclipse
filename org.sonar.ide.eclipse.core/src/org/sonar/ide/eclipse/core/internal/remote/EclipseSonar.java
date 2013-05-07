@@ -54,11 +54,13 @@ public final class EclipseSonar {
   }
 
   private final RemoteSonarIndex index;
+  private ISonarServer sonarServer;
 
   /**
    * It's better to use {@link #getInstance(IProject)} instead of it.
    */
   public EclipseSonar(ISonarServer sonarServer) {
+    this.sonarServer = sonarServer;
     index = new RemoteSonarIndex(sonarServer, new SimpleSourceCodeDiffEngine());
   }
 
@@ -103,5 +105,9 @@ public final class EclipseSonar {
       }
     }
     return code;
+  }
+
+  public ISonarServer getSonarServer() {
+    return sonarServer;
   }
 }

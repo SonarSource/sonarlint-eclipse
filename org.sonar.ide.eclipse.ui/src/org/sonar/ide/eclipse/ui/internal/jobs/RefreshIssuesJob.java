@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.internal.jobs;
 
-import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
-import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
@@ -42,6 +39,8 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.markers.SonarMarker;
+import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
+import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
@@ -112,17 +111,20 @@ public class RefreshIssuesJob extends AbstractRemoteSonarJob implements IResourc
     if ((resource == null) || !resource.exists() || monitor.isCanceled()) {
       return;
     }
+    SonarProject sonarProject = SonarProject.getInstance(resource.getProject());
+    EclipseSonar eclipseSonar = EclipseSonar.getInstance(resource.getProject());
+    if (!MarkerUtils.needRefresh(resource, sonarProject, eclipseSonar.getSonarServer())) {
+      return;
+    }
     try {
-      monitor.beginTask("Retrieve sonar informations for " + resource.getName(), 1);
-      final Collection<ISonarIssue> issues = retrieveIssues(EclipseSonar.getInstance(resource.getProject()), resource);
+      final Collection<ISonarIssue> issues = retrieveIssues(eclipseSonar, resource);
       MarkerUtils.deleteIssuesMarkers(resource);
       for (final ISonarIssue issue : issues) {
         SonarMarker.create(resource, false, issue);
       }
+      MarkerUtils.updatePersistentProperties(resource, sonarProject, eclipseSonar.getSonarServer());
     } catch (final Exception ex) {
       LoggerFactory.getLogger(getClass()).error(ex.getMessage(), ex);
-    } finally {
-      monitor.done();
     }
   }
 
