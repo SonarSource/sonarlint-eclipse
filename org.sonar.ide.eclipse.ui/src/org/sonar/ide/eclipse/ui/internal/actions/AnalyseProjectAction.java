@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.ui.internal.actions;
 
+import org.sonar.ide.eclipse.ui.internal.views.issues.IssuesView;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -38,7 +40,6 @@ import org.sonar.ide.eclipse.core.internal.jobs.AnalyseProjectJob;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
-import org.sonar.ide.eclipse.ui.internal.views.IssuesView;
 
 import java.util.ArrayList;
 import java.util.Iterator;

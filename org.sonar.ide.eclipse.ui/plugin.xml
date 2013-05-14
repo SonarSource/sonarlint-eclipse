@@ -50,9 +50,9 @@
     </category>
     <view
         category="org.sonar.ide.eclipse"
-        class="org.sonar.ide.eclipse.ui.internal.views.IssuesView"
+        class="org.sonar.ide.eclipse.ui.internal.views.issues.IssuesView"
         icon="icons/sonar.png"
-        id="org.sonar.ide.eclipse.ui.views.ViolationsView"
+        id="org.sonar.ide.eclipse.ui.views.issues.IssuesView"
         name="%sonar.issues.view.name">
     </view>
     <view
@@ -96,11 +96,18 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="menu:org.sonar.ide.eclipse.ui.views.ViolationsView">
+            locationURI="menu:org.sonar.ide.eclipse.ui.views.issues.IssuesView">
+         <menu 
+           id="org.eclipse.ui.ide.problems.filtersMenu"
+           label="Show">
+         </menu>
+		 <menu
+           id="problemsGroupByMenu"
+           label="Group by">
+         </menu>
          <menu
                id="org.eclipse.ui.ide.problems.markerSortMenu"
-               label="Sort"
-               mnemonic="%Menu.Sort.mnemonic">
+               label="Sort By">
          </menu>
          <command
                commandId="org.eclipse.ui.ide.configureFilters"
@@ -112,7 +119,7 @@
                mnemonic="%command.configureColumns.mnemonic"
                style="push">
          </command>
-         <command
+         <!--command
                commandId="org.eclipse.ui.window.preferences"
                label="Preferences"
                mnemonic="%command.preferences.mnemonic"
@@ -121,10 +128,10 @@
                   name="preferencePageId"
                   value="org.eclipse.ui.ide.markers">
             </parameter>
-         </command>
+         </command-->
       </menuContribution>
       <menuContribution
-            locationURI="popup:org.sonar.ide.eclipse.ui.views.ViolationsView">
+            locationURI="popup:org.sonar.ide.eclipse.ui.views.issues.IssuesView">
            <command
                  commandId="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand"
                  style="push">
@@ -147,52 +154,100 @@
   <extension
       point="org.eclipse.ui.ide.markerSupport">
     <markerContentGenerator
-         id="org.sonar.ide.eclipse.ui.markers.violationMarkerGenerator"
+         id="org.sonar.ide.eclipse.ui.views.issues.issueMarkerGenerator"
+         defaultMarkerGrouping="org.sonar.ide.eclipse.ui.issues.newGrouping"
          name="Sonar Issue Marker Generator">
         <markerTypeReference
               id="org.sonar.ide.eclipse.core.sonarProblem"/>
         <markerTypeReference
-              id="org.sonar.ide.eclipse.core.sonarProblemNewViolation"/>
+              id="org.sonar.ide.eclipse.core.sonarProblemNewIssue"/>
         <markerFieldReference
-              id="org.sonar.ide.eclipse.ui.views.violationRuleKeyField"
-              visible="false"/>
-        <markerFieldReference
-              id="org.sonar.ide.eclipse.ui.views.violationSeverityAndRuleNameField"
+              id="org.sonar.ide.eclipse.ui.views.issues.issueDescriptionField"
               visible="true"/>
         <markerFieldReference
-              id="org.sonar.ide.eclipse.ui.views.violationIsNewField"
+              id="org.sonar.ide.eclipse.ui.views.issues.issueRuleKeyField"
+              visible="false"/>
+        <markerFieldReference
+              id="org.sonar.ide.eclipse.ui.views.issues.issueRuleNameField"
+              visible="false"/>
+        <markerFieldReference
+              id="org.sonar.ide.eclipse.ui.views.issues.issueIsNewField"
               visible="true"/>
         <markerFieldReference
               id="org.eclipse.ui.ide.resourceField"
               visible="true"/>
         <markerFieldReference
-              id="org.eclipse.ui.ide.descriptionField"
-              visible="true"/>
-        <markerFieldReference
               id="org.eclipse.ui.ide.pathField"
-              visible="true"/>
+              visible="false"/>
+        <!-- Default Filtering -->      
         <markerFieldConfiguration
               enabled="true"
-              id="org.sonar.ide.eclipse.ui.violationsGrouping"
-              name="Issues"
+              id="org.sonar.ide.eclipse.ui.issues.allIssuesFiltering"
+              name="All Issues on Selection"
               scope="ON_SELECTED_AND_CHILDREN">
         </markerFieldConfiguration>
+        
+        <markerGrouping
+            id="org.sonar.ide.eclipse.ui.issues.newGrouping"
+            label="New issues">
+         <markerGroupingEntry
+               id="org.sonar.ide.eclipse.ui.issues.newGrouping.new"
+               label="New issues"
+               markerGrouping="org.sonar.ide.eclipse.ui.issues.newGrouping"
+               priority="2">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonar.ide.eclipse.ui.issues.newGrouping.other"
+               label="Other issues"
+               markerGrouping="org.sonar.ide.eclipse.ui.issues.newGrouping"
+               priority="1">
+         </markerGroupingEntry>
+         <markerAttributeGrouping
+               attribute="is_new"
+               markerType="org.sonar.ide.eclipse.core.sonarProblem">
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonar.ide.eclipse.ui.issues.newGrouping.new"
+                  value="true">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonar.ide.eclipse.ui.issues.newGrouping.other"
+                  value="false">
+            </markerAttributeMapping>
+         </markerAttributeGrouping>
+      </markerGrouping>
     </markerContentGenerator>
     <markerField
-        class="org.sonar.ide.eclipse.ui.internal.views.IssueSeverityAndRuleNameField"
-        id="org.sonar.ide.eclipse.ui.views.violationSeverityAndRuleNameField"
-        name="Rule">
+        class="org.sonar.ide.eclipse.ui.internal.views.issues.IssueDescriptionField"
+        filterClass="org.eclipse.ui.internal.views.markers.DescriptionFieldFilter"
+        filterConfigurationClass="org.eclipse.ui.internal.views.markers.DescriptionConfigurationArea"
+        id="org.sonar.ide.eclipse.ui.views.issues.issueDescriptionField"
+        name="Description">
     </markerField>
     <markerField
-        class="org.sonar.ide.eclipse.ui.internal.views.IssueRuleKeyField"
-        id="org.sonar.ide.eclipse.ui.views.violationRuleKeyField"
+        class="org.sonar.ide.eclipse.ui.internal.views.issues.IssueRuleNameField"
+        id="org.sonar.ide.eclipse.ui.views.issues.issueRuleNameField"
+        name="Rule name">
+    </markerField>
+    <markerField
+        class="org.sonar.ide.eclipse.ui.internal.views.issues.IssueRuleKeyField"
+        id="org.sonar.ide.eclipse.ui.views.issues.issueRuleKeyField"
         name="%sonar.issues.view.rulekeyfield">
     </markerField>
     <markerField
-        class="org.sonar.ide.eclipse.ui.internal.views.IssueIsNewField"
-        id="org.sonar.ide.eclipse.ui.views.violationIsNewField"
+        class="org.sonar.ide.eclipse.ui.internal.views.issues.IssueIsNewField"
+        id="org.sonar.ide.eclipse.ui.views.issues.issueIsNewField"
+        filterClass="org.sonar.ide.eclipse.ui.internal.views.issues.IsNewIssueFieldFilter"
+        filterConfigurationClass="org.sonar.ide.eclipse.ui.internal.views.issues.IsNewIssueConfigurationArea"
         name="%sonar.issues.view.isnewfield">
     </markerField>
+    
+    <markerTypeCategory
+          name="Sonar">
+       <markerTypeReference id="org.sonar.ide.eclipse.core.sonarProblemNewIssue">
+       </markerTypeReference>
+       <markerTypeReference id="org.sonar.ide.eclipse.core.sonarProblem">
+       </markerTypeReference>
+    </markerTypeCategory>
   </extension>
 
   <extension point="org.eclipse.ui.newWizards">
@@ -358,63 +413,63 @@
    <extension
         point="org.eclipse.ui.editors.annotationTypes">
         <type
-            name="org.sonar.ide.eclipse.violationAnnotationType"
+            name="org.sonar.ide.eclipse.issueAnnotationType"
             markerType="org.sonar.ide.eclipse.core.sonarProblem"/>
         <type
-            name="org.sonar.ide.eclipse.newViolationAnnotationType"
-            markerType="org.sonar.ide.eclipse.core.sonarProblemNewViolation"/>
+            name="org.sonar.ide.eclipse.newIssueAnnotationType"
+            markerType="org.sonar.ide.eclipse.core.sonarProblemNewIssue"/>
     </extension>
 
     <extension
         point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
               annotationImageProvider="org.sonar.ide.eclipse.ui.internal.markers.SonarMarkerImageProvider"
-              annotationType="org.sonar.ide.eclipse.violationAnnotationType"
-              colorPreferenceKey="org.sonar.ide.eclipse.ui.violation.color"
+              annotationType="org.sonar.ide.eclipse.issueAnnotationType"
+              colorPreferenceKey="org.sonar.ide.eclipse.ui.issue.color"
               colorPreferenceValue="255,246,191"
-              highlightPreferenceKey="org.sonar.ide.eclipse.ui.violation.highlight"
+              highlightPreferenceKey="org.sonar.ide.eclipse.ui.issue.highlight"
               highlightPreferenceValue="false"
               icon="icons/sonar.png"
               isGoToNextNavigationTarget="true"
-              isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.violation.next"
+              isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.issue.next"
               isGoToPreviousNavigationTarget="true"
-              isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.violation.previous"
+              isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.issue.previous"
               label="%sonar.marker.specification.label"
-              overviewRulerPreferenceKey="org.sonar.ide.eclipse.ui.violation.overviewruler"
+              overviewRulerPreferenceKey="org.sonar.ide.eclipse.ui.issue.overviewruler"
               overviewRulerPreferenceValue="true"
               presentationLayer="3"
               showInNextPrevDropdownToolbarAction="true"
-              showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.violation.dropdown"
-              textPreferenceKey="org.sonar.ide.eclipse.ui.violation.error.text"
+              showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.issue.dropdown"
+              textPreferenceKey="org.sonar.ide.eclipse.ui.issue.error.text"
               textPreferenceValue="true"
-              textStylePreferenceKey="org.sonar.ide.eclipse.ui.violation.text.style"
+              textStylePreferenceKey="org.sonar.ide.eclipse.ui.issue.text.style"
               textStylePreferenceValue="SQUIGGLES"
-              verticalRulerPreferenceKey="org.sonar.ide.eclipse.ui.violation.verticalruler"
+              verticalRulerPreferenceKey="org.sonar.ide.eclipse.ui.issue.verticalruler"
               verticalRulerPreferenceValue="true"/>
 
         <specification
               annotationImageProvider="org.sonar.ide.eclipse.ui.internal.markers.SonarNewIssueMarkerImageProvider"
-              annotationType="org.sonar.ide.eclipse.newViolationAnnotationType"
-              colorPreferenceKey="org.sonar.ide.eclipse.ui.newviolation.color"
+              annotationType="org.sonar.ide.eclipse.newIssueAnnotationType"
+              colorPreferenceKey="org.sonar.ide.eclipse.ui.newissue.color"
               colorPreferenceValue="255,246,191"
-              highlightPreferenceKey="org.sonar.ide.eclipse.ui.newviolation.highlight"
+              highlightPreferenceKey="org.sonar.ide.eclipse.ui.newissue.highlight"
               highlightPreferenceValue="true"
               icon="icons/sonar.png"
               isGoToNextNavigationTarget="true"
-              isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.newviolation.next"
+              isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.newissue.next"
               isGoToPreviousNavigationTarget="true"
-              isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.newviolation.previous"
-              label="%sonar.new.violation.marker.specification.label"
-              overviewRulerPreferenceKey="org.sonar.ide.eclipse.ui.newviolation.overviewruler"
+              isGoToPreviousNavigationTargetKey="org.sonar.ide.eclipse.newissue.previous"
+              label="%sonar.new.issue.marker.specification.label"
+              overviewRulerPreferenceKey="org.sonar.ide.eclipse.ui.newissue.overviewruler"
               overviewRulerPreferenceValue="true"
               presentationLayer="4"
               showInNextPrevDropdownToolbarAction="true"
-              showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.newviolation.dropdown"
-              textPreferenceKey="org.sonar.ide.eclipse.ui.newviolation.error.text"
+              showInNextPrevDropdownToolbarActionKey="org.sonar.ide.eclipse.newissue.dropdown"
+              textPreferenceKey="org.sonar.ide.eclipse.ui.newissue.error.text"
               textPreferenceValue="true"
-              textStylePreferenceKey="org.sonar.ide.eclipse.ui.newviolation.text.style"
+              textStylePreferenceKey="org.sonar.ide.eclipse.ui.newissue.text.style"
               textStylePreferenceValue="BOX"
-              verticalRulerPreferenceKey="org.sonar.ide.eclipse.ui.newviolation.verticalruler"
+              verticalRulerPreferenceKey="org.sonar.ide.eclipse.ui.newissue.verticalruler"
               verticalRulerPreferenceValue="true"/>
     </extension>
 
@@ -438,7 +493,7 @@
      </markerResolutionGenerator>
      <markerResolutionGenerator
            class="org.sonar.ide.eclipse.ui.internal.markers.SonarMarkerResolutionGenerator"
-           markerType="org.sonar.ide.eclipse.core.sonarProblemNewViolation">
+           markerType="org.sonar.ide.eclipse.core.sonarProblemNewIssue">
      </markerResolutionGenerator>
   </extension>
 
@@ -509,7 +564,7 @@
         </menu>
      </menuContribution>
      <menuContribution
-           locationURI="toolbar:org.sonar.ide.eclipse.ui.views.ViolationsView">
+           locationURI="toolbar:org.sonar.ide.eclipse.ui.views.IssuesView">
         <command
               commandId="org.sonar.ide.eclipse.ui.RefreshIssuesCommand"
               icon="icons/refresh.gif"

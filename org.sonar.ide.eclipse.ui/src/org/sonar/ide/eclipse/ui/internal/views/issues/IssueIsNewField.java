@@ -17,17 +17,20 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.ui.internal.views;
+package org.sonar.ide.eclipse.ui.internal.views.issues;
 
-import org.eclipse.ui.views.markers.MarkerSupportView;
-import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
+import org.eclipse.ui.views.markers.MarkerField;
+import org.eclipse.ui.views.markers.MarkerItem;
+import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 
-public class IssuesView extends MarkerSupportView {
+public class IssueIsNewField extends MarkerField {
 
-  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.ViolationsView";
-
-  public IssuesView() {
-    super(ISonarConstants.PLUGIN_ID + ".markers.violationMarkerGenerator");
+  @Override
+  public String getValue(MarkerItem item) {
+    if (item != null) {
+      return item.getAttributeValue(MarkerUtils.SONAR_MARKER_IS_NEW_ATTR, "");
+    }
+    return null;
   }
 
 }

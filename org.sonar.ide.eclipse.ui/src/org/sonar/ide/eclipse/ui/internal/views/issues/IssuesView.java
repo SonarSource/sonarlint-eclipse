@@ -17,20 +17,17 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.ui.internal.views;
+package org.sonar.ide.eclipse.ui.internal.views.issues;
 
-import org.eclipse.ui.views.markers.MarkerField;
-import org.eclipse.ui.views.markers.MarkerItem;
-import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
+import org.eclipse.ui.views.markers.MarkerSupportView;
+import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 
-/**
- * @author Jérémie Lagarde
- */
-public class IssueRuleKeyField extends MarkerField {
+public class IssuesView extends MarkerSupportView {
 
-  @Override
-  public String getValue(MarkerItem item) {
-    return item.getMarker().getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "");
+  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.issues.IssuesView";
+
+  public IssuesView() {
+    super(ISonarConstants.PLUGIN_ID + ".views.issues.issueMarkerGenerator");
   }
 
 }

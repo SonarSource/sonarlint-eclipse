@@ -17,10 +17,13 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.ui.internal.views;
+package org.sonar.ide.eclipse.ui.internal.views.issues;
 
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
@@ -29,20 +32,44 @@ import org.sonar.ide.eclipse.ui.internal.SonarImages;
 /**
  * Each rule in Sonar has severity, so it seems logical to combine rule name and severity in one field.
  */
-public class IssueSeverityAndRuleNameField extends MarkerField {
+public class IssueDescriptionField extends MarkerField {
+
+  /**
+   * Create a new instance of the receiver.
+   */
+  public IssueDescriptionField() {
+    super();
+  }
+
+  @Override
+  public int getDefaultColumnWidth(Control control) {
+    return 50 * getFontWidth(control);
+  }
+
+  public static final int getFontWidth(Control control) {
+    GC gc = new GC(control.getDisplay());
+    int width = gc.getFontMetrics().getAverageCharWidth();
+    gc.dispose();
+    return width;
+  }
+
+  @Override
+  public String getValue(MarkerItem item) {
+    return item.getAttributeValue(IMarker.MESSAGE, "Unknow");
+  }
 
   @Override
   public int compare(MarkerItem item1, MarkerItem item2) {
     int severity1 = getSeverity(item1);
     int severity2 = getSeverity(item2);
     if (severity1 == severity2) {
-      super.compare(item1, item2);
+      return super.compare(item1, item2);
     }
     return severity2 - severity1;
   }
 
   private int getSeverity(MarkerItem item) {
-    return convertSeverity(item.getMarker().getAttribute(MarkerUtils.SONAR_MARKER_RULE_PRIORITY_ATTR, ""));
+    return convertSeverity(item.getAttributeValue(MarkerUtils.SONAR_MARKER_RULE_PRIORITY_ATTR, ""));
   }
 
   public static int convertSeverity(String severity) {
@@ -63,17 +90,9 @@ public class IssueSeverityAndRuleNameField extends MarkerField {
       result = 4;
     }
     else {
-      result = 4;
+      result = -1;
     }
     return result;
-  }
-
-  @Override
-  public String getValue(MarkerItem item) {
-    if ((item == null) || (item.getMarker() == null)) {
-      return null;
-    }
-    return item.getMarker().getAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, "");
   }
 
   private Image getImage(MarkerItem item) {
@@ -83,6 +102,9 @@ public class IssueSeverityAndRuleNameField extends MarkerField {
   private Image getSeverityImage(int severity) {
     final Image result;
     switch (severity) {
+      case -1:
+        result = null;
+        break;
       case 0:
         result = SonarImages.IMG_SEVERITY_BLOCKER;
         break;
@@ -109,7 +131,9 @@ public class IssueSeverityAndRuleNameField extends MarkerField {
     super.update(cell);
 
     MarkerItem item = (MarkerItem) cell.getElement();
-    cell.setImage(getImage(item));
+    if (item != null) {
+      cell.setImage(getImage(item));
+    }
   }
 
 }
