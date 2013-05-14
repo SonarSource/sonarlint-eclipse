@@ -6,6 +6,8 @@ import org.eclipse.ui.views.markers.MarkerFieldFilter;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 
+import java.util.Map;
+
 public class IsNewIssueFieldFilter extends MarkerFieldFilter {
 
   public static final int NEW = 1;
@@ -14,7 +16,7 @@ public class IsNewIssueFieldFilter extends MarkerFieldFilter {
   final static int SHOW_NEW = 1 << NEW;
   final static int SHOW_OTHER = 1 << OTHER;
 
-  private static final String TAG_SELECTED_NEW = "selectedNewIssues"; //$NON-NLS-1$
+  static final String TAG_SELECTED_NEW = "selectedNewIssues"; //$NON-NLS-1$
 
   int selectedNewIssues = SHOW_NEW + SHOW_OTHER;
 
@@ -54,6 +56,13 @@ public class IsNewIssueFieldFilter extends MarkerFieldFilter {
         return true;
     }
 
+  }
+
+  @Override
+  public void initialize(Map values) {
+    if (values.containsKey(TAG_SELECTED_NEW)) {
+      selectedNewIssues = (Integer) values.get(TAG_SELECTED_NEW);
+    }
   }
 
   public void populateWorkingCopy(MarkerFieldFilter copy) {

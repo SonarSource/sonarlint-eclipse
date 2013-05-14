@@ -170,15 +170,15 @@
               visible="false"/>
         <markerFieldReference
               id="org.sonar.ide.eclipse.ui.views.issues.issueAssigneeField"
-              visible="false"/>
+              visible="true"/>
         <markerFieldReference
               id="org.sonar.ide.eclipse.ui.views.issues.issueRuleNameField"
               visible="false"/>
         <markerFieldReference
-              id="org.sonar.ide.eclipse.ui.views.issues.issueIsNewField"
+              id="org.eclipse.ui.ide.resourceField"
               visible="true"/>
         <markerFieldReference
-              id="org.eclipse.ui.ide.resourceField"
+              id="org.sonar.ide.eclipse.ui.views.issues.issueIsNewField"
               visible="true"/>
         <markerFieldReference
               id="org.eclipse.ui.ide.pathField"
@@ -186,14 +186,21 @@
         <!-- Default Filtering -->      
         <markerFieldConfiguration
               enabled="true"
-              id="org.sonar.ide.eclipse.ui.issues.allIssuesFiltering"
+              id="org.sonar.ide.eclipse.ui.issues.allIssuesOnSelectionFiltering"
               name="All Issues on Selection"
               scope="ON_SELECTED_AND_CHILDREN">
+        </markerFieldConfiguration>
+        <markerFieldConfiguration
+              enabled="false"
+              id="org.sonar.ide.eclipse.ui.issues.allNewIssuesOnSelectionFiltering"
+              name="All New Issues on Selection"
+              scope="ON_SELECTED_AND_CHILDREN"
+              values="org.sonar.ide.eclipse.ui.internal.views.issues.SelectedNewIssuesParameters">
         </markerFieldConfiguration>
         
         <markerGrouping
             id="org.sonar.ide.eclipse.ui.issues.newGrouping"
-            label="New issues">
+            label="Issue type (new/other)">
          <markerGroupingEntry
                id="org.sonar.ide.eclipse.ui.issues.newGrouping.new"
                label="New issues"
@@ -293,6 +300,8 @@
     <markerField
         class="org.sonar.ide.eclipse.ui.internal.views.issues.IssueAssigneeField"
         id="org.sonar.ide.eclipse.ui.views.issues.issueAssigneeField"
+        filterClass="org.sonar.ide.eclipse.ui.internal.views.issues.AssigneeFieldFilter"
+        filterConfigurationClass="org.sonar.ide.eclipse.ui.internal.views.issues.AssigneeConfigurationArea"
         name="Assignee">
     </markerField>
     <markerField

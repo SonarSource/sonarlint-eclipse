@@ -69,13 +69,7 @@ public class IssueDescriptionField extends MarkerField {
   }
 
   private int getSeverity(MarkerItem item) {
-    if (item.getMarker() != null) {
-      return convertSeverity(item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, ""));
-    }
-    else {
-      // If there is no marker maybe we have a groupBy severity item
-      return convertSeverity(item.getAttributeValue(IMarker.MESSAGE, ""));
-    }
+    return convertSeverity(item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, ""));
   }
 
   public static int convertSeverity(String severity) {
@@ -103,7 +97,22 @@ public class IssueDescriptionField extends MarkerField {
   }
 
   private Image getImage(MarkerItem item) {
-    return getSeverityImage(getSeverity(item));
+    if (item.getMarker() != null) {
+      return getSeverityImage(getSeverity(item));
+    }
+    else {
+      // If there is no marker maybe we have a groupBy item
+      // First try with groupBy is new issue
+      String msg = item.getAttributeValue(IMarker.MESSAGE, "");
+      if (msg.startsWith("New issues")) {
+        return SonarImages.IMG_NEW_ISSUE;
+      }
+      else if (msg.startsWith("Other issues")) {
+        return SonarImages.IMG_ISSUE;
+      }
+      // GroupBy severity
+      return getSeverityImage(convertSeverity(item.getAttributeValue(IMarker.MESSAGE, "")));
+    }
   }
 
   private Image getSeverityImage(int severity) {

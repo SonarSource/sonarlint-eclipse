@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.ui.internal.views.issues;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
@@ -28,9 +30,25 @@ public class IssueIsNewField extends MarkerField {
   @Override
   public String getValue(MarkerItem item) {
     if (item != null) {
-      return item.getAttributeValue(MarkerUtils.SONAR_MARKER_IS_NEW_ATTR, "");
+      if (item.getMarker() != null) {
+        return item.getAttributeValue(MarkerUtils.SONAR_MARKER_IS_NEW_ATTR, "");
+      }
+      else {
+        // Maybe we are in a groupBy new issue item
+        String message = item.getAttributeValue(IMarker.MESSAGE, "");
+        if (message.startsWith("New issues")) {
+          return "true";
+        } else if (message.startsWith("Other issues")) {
+          return "false";
+        }
+      }
     }
     return null;
+  }
+
+  @Override
+  public int getDefaultColumnWidth(Control control) {
+    return 70;
   }
 
 }
