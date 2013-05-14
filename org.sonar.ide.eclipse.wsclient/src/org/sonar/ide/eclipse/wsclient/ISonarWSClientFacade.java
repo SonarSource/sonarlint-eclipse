@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.wsclient;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 
 import java.util.Date;
@@ -44,9 +45,9 @@ public interface ISonarWSClientFacade {
 
   String[] getRemoteCode(String resourceKey);
 
-  List<ISonarIssue> getRemoteIssuesRecursively(String resourceKey);
+  List<ISonarIssue> getRemoteIssuesRecursively(String resourceKey, IProgressMonitor monitor);
 
-  List<ISonarIssue> getRemoteIssues(String resourceKey);
+  List<ISonarIssue> getRemoteIssues(String resourceKey, IProgressMonitor monitor);
 
   String[] getChildrenKeys(String resourceKey);
 

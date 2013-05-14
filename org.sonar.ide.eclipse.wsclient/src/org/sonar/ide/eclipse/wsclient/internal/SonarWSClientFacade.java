@@ -20,6 +20,7 @@
 package org.sonar.ide.eclipse.wsclient.internal;
 
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
@@ -162,17 +163,22 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
   }
 
   @Override
-  public List<ISonarIssue> getRemoteIssuesRecursively(String resourceKey) {
-    Issues issues = sonarClient.issueClient().find(IssueQuery.create().componentRoots(resourceKey));
-    List<ISonarIssue> result = new ArrayList<ISonarIssue>(issues.list().size());
-    for (Issue issue : issues.list()) {
-      result.add(new SonarRemoteIssue(issue, issues.rule(issue)));
-    }
+  public List<ISonarIssue> getRemoteIssuesRecursively(String resourceKey, IProgressMonitor monitor) {
+    int maxPageSize = 500; // TODO Use constant
+    List<ISonarIssue> result = new ArrayList<ISonarIssue>();
+    int pageIndex = 1;
+    Issues issues;
+    do {
+      issues = sonarClient.issueClient().find(IssueQuery.create().componentRoots(resourceKey).pageSize(maxPageSize).pageIndex(pageIndex));
+      for (Issue issue : issues.list()) {
+        result.add(new SonarRemoteIssue(issue, issues.rule(issue)));
+      }
+    } while (pageIndex++ < issues.paging().pages() && !monitor.isCanceled());
     return result;
   }
 
   @Override
-  public List<ISonarIssue> getRemoteIssues(String resourceKey) {
+  public List<ISonarIssue> getRemoteIssues(String resourceKey, IProgressMonitor monitor) {
     Issues issues = sonarClient.issueClient().find(IssueQuery.create().components(resourceKey));
     List<ISonarIssue> result = new ArrayList<ISonarIssue>(issues.list().size());
     for (Issue issue : issues.list()) {

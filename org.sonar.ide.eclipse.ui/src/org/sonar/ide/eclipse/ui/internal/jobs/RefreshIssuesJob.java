@@ -21,11 +21,13 @@ package org.sonar.ide.eclipse.ui.internal.jobs;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.IResourceProxy;
+import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -56,7 +58,7 @@ import java.util.List;
  * This class load issues in background.
  *
  */
-public class RefreshIssuesJob extends AbstractRemoteSonarJob implements IResourceVisitor {
+public class RefreshIssuesJob extends AbstractRemoteSonarJob implements IResourceProxyVisitor {
 
   private final List<IResource> resources;
   private IProgressMonitor monitor;
@@ -70,16 +72,26 @@ public class RefreshIssuesJob extends AbstractRemoteSonarJob implements IResourc
 
   @Override
   protected IStatus run(final IProgressMonitor monitor) {
-    this.monitor = monitor;
     try {
-      monitor.beginTask("Retrieve sonar data", resources.size());
+      int scale = 1000;
+      monitor.beginTask("Retrieve sonar data", resources.size() * scale);
 
       for (final IResource resource : resources) {
-        if (!monitor.isCanceled() && resource.isAccessible()) {
-          monitor.subTask("updating " + resource.getName());
-          resource.accept(this);
+        if (monitor.isCanceled()) {
+          break;
         }
-        monitor.worked(1);
+        if (resource.isAccessible()) {
+          this.monitor = new SubProgressMonitor(monitor, 1 * scale, SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK);
+          this.monitor.beginTask("Update " + resource.getName(), 1);
+          try {
+            resource.accept(this, IResource.NONE);
+          } finally {
+            monitor.done();
+          }
+        }
+        else {
+          monitor.worked(1 * scale);
+        }
       }
 
       if (!monitor.isCanceled()) {
@@ -97,10 +109,14 @@ public class RefreshIssuesJob extends AbstractRemoteSonarJob implements IResourc
     return status;
   }
 
-  public boolean visit(final IResource resource) throws CoreException {
-    if (resource instanceof IFile) {
-      IFile file = (IFile) resource;
-      retrieveMarkers(file, monitor);
+  public IProgressMonitor getMonitor() {
+    return monitor;
+  }
+
+  public boolean visit(final IResourceProxy proxy) throws CoreException {
+    if (proxy.getType() == IResource.FILE) {
+      IFile file = (IFile) proxy.requestResource();
+      retrieveMarkers(file, getMonitor());
       // do not visit members of this resource
       return false;
     }
@@ -117,7 +133,7 @@ public class RefreshIssuesJob extends AbstractRemoteSonarJob implements IResourc
       return;
     }
     try {
-      final Collection<ISonarIssue> issues = retrieveIssues(eclipseSonar, resource);
+      final Collection<ISonarIssue> issues = retrieveIssues(eclipseSonar, resource, monitor);
       MarkerUtils.deleteIssuesMarkers(resource);
       for (final ISonarIssue issue : issues) {
         SonarMarker.create(resource, false, issue);
@@ -128,12 +144,12 @@ public class RefreshIssuesJob extends AbstractRemoteSonarJob implements IResourc
     }
   }
 
-  protected Collection<ISonarIssue> retrieveIssues(EclipseSonar sonar, IResource resource) {
+  protected Collection<ISonarIssue> retrieveIssues(EclipseSonar sonar, IResource resource, IProgressMonitor monitor) {
     SourceCode sourceCode = sonar.search(resource);
     if (sourceCode == null) {
       return Collections.emptyList();
     }
-    return sourceCode.getRemoteIssuesWithLineCorrection();
+    return sourceCode.getRemoteIssuesWithLineCorrection(monitor);
   }
 
   public static void setupIssuesUpdater() {

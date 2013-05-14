@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
 
+   <extension point="org.sonar.ide.eclipse.slf4j.pde.loggers">
+      <loggerMapEntry regexp="^org\.sonar\.ide\.eclipse\.pydev.*"
+        symbolicName="org.sonar.ide.eclipse.pydev"/>
+   </extension>
+
    <extension point="org.eclipse.core.runtime.adapters">
       <factory adaptableType="org.python.pydev.navigator.elements.IWrappedResource"
                class="org.sonar.ide.eclipse.core.SonarElementsAdapterFactory">

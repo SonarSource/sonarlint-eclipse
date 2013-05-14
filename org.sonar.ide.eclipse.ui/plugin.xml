@@ -207,7 +207,7 @@
                priority="1">
          </markerGroupingEntry>
          <markerAttributeGrouping
-               attribute="is_new"
+               attribute="isnew"
                markerType="org.sonar.ide.eclipse.core.sonarProblem">
             <markerAttributeMapping
                   markerGroupingEntry="org.sonar.ide.eclipse.ui.issues.newGrouping.new"
@@ -216,6 +216,64 @@
             <markerAttributeMapping
                   markerGroupingEntry="org.sonar.ide.eclipse.ui.issues.newGrouping.other"
                   value="false">
+            </markerAttributeMapping>
+         </markerAttributeGrouping>
+      </markerGrouping>
+      <markerGrouping
+            id="org.sonar.ide.eclipse.ui.issues.severityGrouping"
+            label="Severity">
+         <markerGroupingEntry
+               id="org.sonar.ide.eclipse.ui.issues.severityGrouping.blocking"
+               label="Blocking"
+               markerGrouping="org.sonar.ide.eclipse.ui.issues.severityGrouping"
+               priority="5">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonar.ide.eclipse.ui.issues.severityGrouping.critical"
+               label="Critical"
+               markerGrouping="org.sonar.ide.eclipse.ui.issues.severityGrouping"
+               priority="4">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonar.ide.eclipse.ui.issues.severityGrouping.major"
+               label="Major"
+               markerGrouping="org.sonar.ide.eclipse.ui.issues.severityGrouping"
+               priority="3">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonar.ide.eclipse.ui.issues.severityGrouping.minor"
+               label="Minor"
+               markerGrouping="org.sonar.ide.eclipse.ui.issues.severityGrouping"
+               priority="2">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonar.ide.eclipse.ui.issues.severityGrouping.info"
+               label="Info"
+               markerGrouping="org.sonar.ide.eclipse.ui.issues.severityGrouping"
+               priority="1">
+         </markerGroupingEntry>
+         <markerAttributeGrouping
+               attribute="sonarseverity"
+               markerType="org.sonar.ide.eclipse.core.sonarProblem">
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonar.ide.eclipse.ui.issues.severityGrouping.blocking"
+                  value="BLOCKER">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonar.ide.eclipse.ui.issues.severityGrouping.critical"
+                  value="CRITICAL">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonar.ide.eclipse.ui.issues.severityGrouping.major"
+                  value="MAJOR">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonar.ide.eclipse.ui.issues.severityGrouping.minor"
+                  value="MINOR">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonar.ide.eclipse.ui.issues.severityGrouping.info"
+                  value="INFO">
             </markerAttributeMapping>
          </markerAttributeGrouping>
       </markerGrouping>

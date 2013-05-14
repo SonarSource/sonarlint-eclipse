@@ -44,6 +44,7 @@ public class SonarPreferencePage extends FieldEditorPreferencePage implements IW
 
   @Override
   protected void createFieldEditors() {
+
     addField(new ComboFieldEditor(SonarUiPlugin.PREF_MARKER_SEVERITY,
         Messages.SonarPreferencePage_label_marker_severity,
         new String[][] {

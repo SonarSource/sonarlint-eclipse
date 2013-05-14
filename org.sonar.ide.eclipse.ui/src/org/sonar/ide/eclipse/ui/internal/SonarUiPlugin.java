@@ -153,4 +153,5 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   public static String getSonarJvmArgs() {
     return SonarUiPlugin.getDefault().getPreferenceStore().getString(SonarUiPlugin.PREF_JVM_ARGS);
   }
+
 }

@@ -23,8 +23,10 @@ import com.google.common.collect.ArrayListMultimap;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceProxy;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
@@ -55,9 +57,9 @@ public class RefreshAllIssuesJob extends RefreshIssuesJob {
   }
 
   @Override
-  public boolean visit(final IResource resource) throws CoreException {
-    if (resource instanceof IProject) {
-      IProject project = (IProject) resource;
+  public boolean visit(final IResourceProxy proxy) throws CoreException {
+    if (proxy.getType() == IResource.PROJECT) {
+      IProject project = (IProject) proxy.requestResource();
       if (!SonarNature.hasSonarNature(project)) {
         return false;
       }
@@ -71,7 +73,7 @@ public class RefreshAllIssuesJob extends RefreshIssuesJob {
       EclipseSonar sonar = EclipseSonar.getInstance(project);
       SourceCode sourceCode = sonar.search(project);
       if (sourceCode != null) {
-        doRefreshIssues(sonarProject, sourceCode);
+        doRefreshIssues(sonarProject, sourceCode, getMonitor());
         sonarProject.setLastAnalysisDate(sourceCode.getAnalysisDate());
         sonarProject.save();
       }
@@ -81,8 +83,8 @@ public class RefreshAllIssuesJob extends RefreshIssuesJob {
     return true;
   }
 
-  private void doRefreshIssues(SonarProject sonarProject, SourceCode sourceCode) throws CoreException {
-    List<ISonarIssue> issues = sourceCode.getRemoteIssuesRecursively();
+  private void doRefreshIssues(SonarProject sonarProject, SourceCode sourceCode, IProgressMonitor monitor) throws CoreException {
+    List<ISonarIssue> issues = sourceCode.getRemoteIssuesRecursively(monitor);
     // Split issues by resource
     ArrayListMultimap<String, ISonarIssue> mm = ArrayListMultimap.create();
     for (ISonarIssue issue : issues) {

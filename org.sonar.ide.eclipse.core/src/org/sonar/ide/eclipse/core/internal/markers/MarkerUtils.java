@@ -25,7 +25,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.IResourceProxy;
+import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
@@ -51,9 +52,9 @@ public final class MarkerUtils {
 
   public static final String SONAR_MARKER_RULE_KEY_ATTR = "rulekey";
   public static final String SONAR_MARKER_RULE_NAME_ATTR = "rulename";
-  public static final String SONAR_MARKER_RULE_PRIORITY_ATTR = "rulepriority";
+  public static final String SONAR_MARKER_ISSUE_SEVERITY_ATTR = "sonarseverity";
   public static final String SONAR_MARKER_ISSUE_ID_ATTR = "issueId";
-  public static final String SONAR_MARKER_IS_NEW_ATTR = "is_new";
+  public static final String SONAR_MARKER_IS_NEW_ATTR = "isnew";
   public static final String SONAR_MARKER_ASSIGNEE = "assignee";
 
   public static final QualifiedName MODIFICATION_STAMP_PERSISTENT_PROP_KEY = new QualifiedName(SonarCorePlugin.PLUGIN_ID, "modificationStamp");
@@ -190,18 +191,19 @@ public final class MarkerUtils {
   }
 
   private static void deletePersistentProperties(IResource resource) throws CoreException {
-    resource.accept(new IResourceVisitor() {
+    resource.accept(new IResourceProxyVisitor() {
 
       @Override
-      public boolean visit(IResource resource) throws CoreException {
-        if (resource instanceof IFile) {
+      public boolean visit(IResourceProxy proxy) throws CoreException {
+        if (proxy.getType() == IResource.FILE) {
+          IResource resource = proxy.requestResource();
           resource.setPersistentProperty(MODIFICATION_STAMP_PERSISTENT_PROP_KEY, null);
           resource.setPersistentProperty(LAST_ANALYSIS_DATE_PERSISTENT_PROP_KEY, null);
           return false;
         }
         return true;
       }
-    });
+    }, IResource.NONE);
   }
 
   public static void updateAllSonarMarkerSeverity() throws CoreException {

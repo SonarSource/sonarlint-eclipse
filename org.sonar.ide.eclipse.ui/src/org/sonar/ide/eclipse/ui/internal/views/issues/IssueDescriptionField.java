@@ -69,24 +69,31 @@ public class IssueDescriptionField extends MarkerField {
   }
 
   private int getSeverity(MarkerItem item) {
-    return convertSeverity(item.getAttributeValue(MarkerUtils.SONAR_MARKER_RULE_PRIORITY_ATTR, ""));
+    if (item.getMarker() != null) {
+      return convertSeverity(item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, ""));
+    }
+    else {
+      // If there is no marker maybe we have a groupBy severity item
+      return convertSeverity(item.getAttributeValue(IMarker.MESSAGE, ""));
+    }
   }
 
   public static int convertSeverity(String severity) {
+    String severityLower = severity != null ? severity.toLowerCase() : "";
     final int result;
-    if ("blocker".equalsIgnoreCase(severity)) {
+    if (severityLower.startsWith("blocker")) {
       result = 0;
     }
-    else if ("critical".equalsIgnoreCase(severity)) {
+    else if (severityLower.startsWith("critical")) {
       result = 1;
     }
-    else if ("major".equalsIgnoreCase(severity)) {
+    else if (severityLower.startsWith("major")) {
       result = 2;
     }
-    else if ("minor".equalsIgnoreCase(severity)) {
+    else if (severityLower.startsWith("minor")) {
       result = 3;
     }
-    else if ("info".equalsIgnoreCase(severity)) {
+    else if (severityLower.startsWith("info")) {
       result = 4;
     }
     else {

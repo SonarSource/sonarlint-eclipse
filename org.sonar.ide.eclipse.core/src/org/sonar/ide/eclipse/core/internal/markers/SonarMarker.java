@@ -74,7 +74,7 @@ public class SonarMarker {
     }
     markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, issue.ruleKey());
     markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, issue.ruleName());
-    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_PRIORITY_ATTR, issue.severity());
+    markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, issue.severity());
     if (issue.key() != null) {
       markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR, issue.key());
     }
