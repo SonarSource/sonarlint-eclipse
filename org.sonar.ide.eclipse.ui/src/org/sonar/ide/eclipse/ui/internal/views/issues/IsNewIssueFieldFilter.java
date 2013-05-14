@@ -25,11 +25,6 @@ public class IsNewIssueFieldFilter extends MarkerFieldFilter {
     super();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.eclipse.ui.internal.provisional.views.markers.api.MarkerFieldFilter#loadSettings(org.eclipse.ui.IMemento)
-   */
   public void loadSettings(IMemento memento) {
     Integer showNew = memento.getInteger(TAG_SELECTED_NEW);
     if (showNew == null)
@@ -37,20 +32,10 @@ public class IsNewIssueFieldFilter extends MarkerFieldFilter {
     selectedNewIssues = showNew.intValue();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.eclipse.ui.views.markers.MarkerFieldFilter#saveSettings(org.eclipse.ui.IMemento)
-   */
   public void saveSettings(IMemento memento) {
     memento.putInteger(TAG_SELECTED_NEW, selectedNewIssues);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.eclipse.ui.views.markers.MarkerFieldFilter#select(org.eclipse.ui.views.markers.MarkerItem)
-   */
   public boolean select(MarkerItem item) {
 
     if (selectedNewIssues == 0)
@@ -71,11 +56,6 @@ public class IsNewIssueFieldFilter extends MarkerFieldFilter {
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.eclipse.ui.views.markers.MarkerFieldFilter#populateWorkingCopy(org.eclipse.ui.views.markers.MarkerFieldFilter)
-   */
   public void populateWorkingCopy(MarkerFieldFilter copy) {
     super.populateWorkingCopy(copy);
     ((IsNewIssueFieldFilter) copy).selectedNewIssues = selectedNewIssues;

@@ -163,7 +163,7 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
 
   @Override
   public List<ISonarIssue> getRemoteIssuesRecursively(String resourceKey) {
-    Issues issues = sonarClient.issueClient().find(IssueQuery.create().componentRoots(resourceKey).sort("severity").asc(false));
+    Issues issues = sonarClient.issueClient().find(IssueQuery.create().componentRoots(resourceKey));
     List<ISonarIssue> result = new ArrayList<ISonarIssue>(issues.list().size());
     for (Issue issue : issues.list()) {
       result.add(new SonarRemoteIssue(issue, issues.rule(issue)));
@@ -240,6 +240,11 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     @Override
     public String ruleName() {
       return rule.name();
+    }
+
+    @Override
+    public String assignee() {
+      return remoteIssue.assignee();
     }
 
   }

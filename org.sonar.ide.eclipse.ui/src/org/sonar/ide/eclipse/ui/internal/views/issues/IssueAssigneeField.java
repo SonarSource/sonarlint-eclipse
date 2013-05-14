@@ -17,26 +17,20 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.common.issues;
+package org.sonar.ide.eclipse.ui.internal.views.issues;
 
-public interface ISonarIssue {
+import org.eclipse.ui.views.markers.MarkerField;
+import org.eclipse.ui.views.markers.MarkerItem;
+import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 
-  String key();
+public class IssueAssigneeField extends MarkerField {
 
-  String resourceKey();
-
-  Integer line();
-
-  String severity();
-
-  String description();
-
-  String ruleKey();
-
-  String ruleName();
-
-  boolean resolved();
-
-  String assignee();
+  @Override
+  public String getValue(MarkerItem item) {
+    if (item == null) {
+      return null;
+    }
+    return item.getAttributeValue(MarkerUtils.SONAR_MARKER_ASSIGNEE, "");
+  }
 
 }

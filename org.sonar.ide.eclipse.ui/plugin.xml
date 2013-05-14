@@ -134,7 +134,8 @@
             locationURI="popup:org.sonar.ide.eclipse.ui.views.issues.IssuesView">
            <command
                  commandId="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand"
-                 style="push">
+                 style="push"
+                 mnemonic="E">
              <!-- Don't display Edit Issue button on new issues -->
              <visibleWhen checkEnabled="false">
                <with variable="selection">
@@ -166,6 +167,9 @@
               visible="true"/>
         <markerFieldReference
               id="org.sonar.ide.eclipse.ui.views.issues.issueRuleKeyField"
+              visible="false"/>
+        <markerFieldReference
+              id="org.sonar.ide.eclipse.ui.views.issues.issueAssigneeField"
               visible="false"/>
         <markerFieldReference
               id="org.sonar.ide.eclipse.ui.views.issues.issueRuleNameField"
@@ -227,6 +231,11 @@
         class="org.sonar.ide.eclipse.ui.internal.views.issues.IssueRuleNameField"
         id="org.sonar.ide.eclipse.ui.views.issues.issueRuleNameField"
         name="Rule name">
+    </markerField>
+    <markerField
+        class="org.sonar.ide.eclipse.ui.internal.views.issues.IssueAssigneeField"
+        id="org.sonar.ide.eclipse.ui.views.issues.issueAssigneeField"
+        name="Assignee">
     </markerField>
     <markerField
         class="org.sonar.ide.eclipse.ui.internal.views.issues.IssueRuleKeyField"
@@ -383,9 +392,10 @@
           description="Edit Issue"
           id="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand"
           name="Edit Issue">
+          
     </command>
   </extension>
-
+  
   <extension point="org.eclipse.ui.handlers">
     <handler
           class="org.sonar.ide.eclipse.ui.internal.command.ConfigureProjectsCommand"
@@ -564,7 +574,7 @@
         </menu>
      </menuContribution>
      <menuContribution
-           locationURI="toolbar:org.sonar.ide.eclipse.ui.views.IssuesView">
+           locationURI="toolbar:org.sonar.ide.eclipse.ui.views.issues.IssuesView">
         <command
               commandId="org.sonar.ide.eclipse.ui.RefreshIssuesCommand"
               icon="icons/refresh.gif"

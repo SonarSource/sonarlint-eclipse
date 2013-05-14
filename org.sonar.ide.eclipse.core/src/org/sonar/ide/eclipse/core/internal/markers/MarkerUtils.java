@@ -54,6 +54,7 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_RULE_PRIORITY_ATTR = "rulepriority";
   public static final String SONAR_MARKER_ISSUE_ID_ATTR = "issueId";
   public static final String SONAR_MARKER_IS_NEW_ATTR = "is_new";
+  public static final String SONAR_MARKER_ASSIGNEE = "assignee";
 
   public static final QualifiedName MODIFICATION_STAMP_PERSISTENT_PROP_KEY = new QualifiedName(SonarCorePlugin.PLUGIN_ID, "modificationStamp");
   public static final QualifiedName LAST_ANALYSIS_DATE_PERSISTENT_PROP_KEY = new QualifiedName(SonarCorePlugin.PLUGIN_ID, "lastAnalysisDate");
@@ -124,7 +125,12 @@ public final class MarkerUtils {
 
     @Override
     public String ruleName() {
-      return ObjectUtils.toString(ruleByKey.get(ruleKey()));//$NON-NLS-1$
+      return ObjectUtils.toString(ruleByKey.get(ruleKey()));
+    }
+
+    @Override
+    public String assignee() {
+      return ObjectUtils.toString(jsonIssue.get("assignee"));//$NON-NLS-1$
     }
 
   }

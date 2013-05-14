@@ -56,13 +56,14 @@ public class IsNewIssueConfigurationArea extends FilterConfigurationArea {
   }
 
   public void initialize(MarkerFieldFilter filter) {
-    newIssues = ((IsNewIssueFieldFilter) filter).selectedNewIssues;
+    if (filter != null) {
+      newIssues = ((IsNewIssueFieldFilter) filter).selectedNewIssues;
 
-    otherIssuesButton
-        .setSelection((IsNewIssueFieldFilter.SHOW_OTHER & newIssues) > 0);
-    newIssuesButton
-        .setSelection((IsNewIssueFieldFilter.SHOW_NEW & newIssues) > 0);
-
+      otherIssuesButton
+          .setSelection((IsNewIssueFieldFilter.SHOW_OTHER & newIssues) > 0);
+      newIssuesButton
+          .setSelection((IsNewIssueFieldFilter.SHOW_NEW & newIssues) > 0);
+    }
   }
 
   public String getTitle() {

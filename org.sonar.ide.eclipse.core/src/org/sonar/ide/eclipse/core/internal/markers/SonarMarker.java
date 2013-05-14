@@ -72,12 +72,16 @@ public class SonarMarker {
     if (line != null) {
       addLine(markerAttributes, line, source);
     }
-    final Map<String, Object> extraInfos = getExtraInfos(issue);
-    if (extraInfos != null) {
-      for (Map.Entry<String, Object> entry : extraInfos.entrySet()) {
-        markerAttributes.put(entry.getKey(), entry.getValue());
-      }
+    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, issue.ruleKey());
+    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, issue.ruleName());
+    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_PRIORITY_ATTR, issue.severity());
+    if (issue.key() != null) {
+      markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR, issue.key());
     }
+    if (issue.assignee() != null) {
+      markerAttributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE, issue.assignee());
+    }
+
     marker.setAttributes(markerAttributes);
     return this;
   }
@@ -130,17 +134,6 @@ public class SonarMarker {
       result = Integer.valueOf(IMarker.PRIORITY_LOW);
     }
     return result;
-  }
-
-  private static Map<String, Object> getExtraInfos(final ISonarIssue issue) {
-    final Map<String, Object> extraInfos = new HashMap<String, Object>();
-    extraInfos.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, issue.ruleKey());
-    extraInfos.put(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, issue.ruleName());
-    extraInfos.put(MarkerUtils.SONAR_MARKER_RULE_PRIORITY_ATTR, issue.severity());
-    if (issue.key() != null) {
-      extraInfos.put(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR, issue.key());
-    }
-    return extraInfos;
   }
 
   private static void addLine(final Map<String, Object> markerAttributes, final long line, final String text) {

@@ -98,6 +98,11 @@ public final class IssuesUtils {
       return original.ruleName();
     }
 
+    @Override
+    public String assignee() {
+      return original.assignee();
+    }
+
   }
 
   /**
