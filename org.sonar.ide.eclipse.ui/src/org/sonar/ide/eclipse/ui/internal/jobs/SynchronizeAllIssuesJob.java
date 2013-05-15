@@ -40,19 +40,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class RefreshAllIssuesJob extends RefreshIssuesJob {
+public class SynchronizeAllIssuesJob extends SynchronizeIssuesJob {
 
   public static void createAndSchedule() {
     List<IResource> resources = new ArrayList<IResource>();
     Collections.addAll(resources, ResourcesPlugin.getWorkspace().getRoot().getProjects());
-    new RefreshAllIssuesJob(resources).schedule();
+    new SynchronizeAllIssuesJob(resources).schedule();
   }
 
   public static void createAndSchedule(IResource resource) {
-    new RefreshAllIssuesJob(Collections.singletonList(resource)).schedule();
+    new SynchronizeAllIssuesJob(Collections.singletonList(resource)).schedule();
   }
 
-  protected RefreshAllIssuesJob(List<IResource> resources) {
+  public SynchronizeAllIssuesJob(List<? extends IResource> resources) {
     super(resources);
   }
 

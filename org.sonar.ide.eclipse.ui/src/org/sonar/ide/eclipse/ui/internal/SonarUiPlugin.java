@@ -37,7 +37,7 @@ import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
-import org.sonar.ide.eclipse.ui.internal.jobs.RefreshIssuesJob;
+import org.sonar.ide.eclipse.ui.internal.jobs.SynchronizeIssuesJob;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +68,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
       SonarCorePlugin.getDefault().addSonarRunnerLogListener((SonarRunnerLogListener) getSonarConsole());
     }
 
-    RefreshIssuesJob.setupIssuesUpdater();
+    SynchronizeIssuesJob.setupIssuesUpdater();
 
     listener = new IPropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent event) {

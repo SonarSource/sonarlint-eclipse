@@ -60,7 +60,7 @@
           class="org.sonar.ide.eclipse.ui.internal.views.WebView"
           icon="icons/sonar.png"
           id="org.sonar.ide.eclipse.ui.views.WebView"
-          name="Web">
+          name="Sonar Web Browser">
     </view>
     <view
           category="org.sonar.ide.eclipse"
@@ -363,6 +363,13 @@
               icon="icons/inspect.png"
               id="org.sonar.ide.eclipse.runtime.ui.analyseAction"
               label="Run Local Analysis"
+              menubarPath="sonar.menu/group2">
+        </action>
+        <action
+              class="org.sonar.ide.eclipse.ui.internal.actions.SynchronizeIssuesAction"
+              icon="icons/refresh.gif"
+              id="org.sonar.ide.eclipse.runtime.ui.synchronizeAction"
+              label="Synchronize with Sonar server"
               menubarPath="sonar.menu/group2">
         </action>
         <action

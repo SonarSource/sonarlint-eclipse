@@ -28,7 +28,7 @@ import org.sonar.ide.eclipse.core.internal.jobs.AnalyseProjectJob;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
-import org.sonar.ide.eclipse.ui.internal.jobs.RefreshAllIssuesJob;
+import org.sonar.ide.eclipse.ui.internal.jobs.SynchronizeAllIssuesJob;
 import org.sonar.ide.eclipse.ui.internal.util.SelectionUtils;
 
 public class ChangeAnalysisModeAction implements IObjectActionDelegate {
@@ -55,7 +55,7 @@ public class ChangeAnalysisModeAction implements IObjectActionDelegate {
       new AnalyseProjectJob(project, SonarConsole.isDebugEnabled(),
           SonarUiPlugin.getExtraPropertiesForLocalAnalysis(project), SonarUiPlugin.getSonarJvmArgs()).schedule();
     } else {
-      RefreshAllIssuesJob.createAndSchedule(project);
+      SynchronizeAllIssuesJob.createAndSchedule(project);
     }
   }
 

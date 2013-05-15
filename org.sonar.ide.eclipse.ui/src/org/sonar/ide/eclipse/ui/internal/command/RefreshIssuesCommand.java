@@ -22,12 +22,12 @@ package org.sonar.ide.eclipse.ui.internal.command;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.sonar.ide.eclipse.ui.internal.jobs.RefreshAllIssuesJob;
+import org.sonar.ide.eclipse.ui.internal.jobs.SynchronizeAllIssuesJob;
 
 public class RefreshIssuesCommand extends AbstractHandler {
 
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    RefreshAllIssuesJob.createAndSchedule();
+    SynchronizeAllIssuesJob.createAndSchedule();
     return null;
   }
 

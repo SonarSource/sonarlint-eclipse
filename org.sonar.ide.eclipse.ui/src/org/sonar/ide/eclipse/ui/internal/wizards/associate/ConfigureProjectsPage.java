@@ -58,7 +58,7 @@ import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
-import org.sonar.ide.eclipse.ui.internal.jobs.RefreshAllIssuesJob;
+import org.sonar.ide.eclipse.ui.internal.jobs.SynchronizeAllIssuesJob;
 import org.sonar.ide.eclipse.wsclient.ConnectionException;
 import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
@@ -247,7 +247,7 @@ public class ConfigureProjectsPage extends WizardPage {
             changed = true;
           }
           if (changed) {
-            RefreshAllIssuesJob.createAndSchedule(project);
+            SynchronizeAllIssuesJob.createAndSchedule(project);
           }
         } catch (CoreException e) {
           LOG.error(e.getMessage(), e);

@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -58,40 +57,33 @@ import java.util.List;
  * This class load issues in background.
  *
  */
-public class RefreshIssuesJob extends AbstractRemoteSonarJob implements IResourceProxyVisitor {
+public class SynchronizeIssuesJob extends AbstractRemoteSonarJob implements IResourceProxyVisitor {
 
-  private final List<IResource> resources;
+  private final List<? extends IResource> resources;
   private IProgressMonitor monitor;
   private IStatus status;
 
-  public RefreshIssuesJob(final List<IResource> resources) {
-    super("Refresh issues");
+  public SynchronizeIssuesJob(final List<? extends IResource> resources) {
+    super("Synchronize issues");
     setPriority(Job.LONG);
     this.resources = resources;
   }
 
   @Override
   protected IStatus run(final IProgressMonitor monitor) {
+    this.monitor = monitor;
     try {
-      int scale = 1000;
-      monitor.beginTask("Retrieve sonar data", resources.size() * scale);
+      monitor.beginTask("Synchronize", resources.size());
 
       for (final IResource resource : resources) {
         if (monitor.isCanceled()) {
           break;
         }
         if (resource.isAccessible()) {
-          this.monitor = new SubProgressMonitor(monitor, 1 * scale, SubProgressMonitor.PREPEND_MAIN_LABEL_TO_SUBTASK);
-          this.monitor.beginTask("Update " + resource.getName(), 1);
-          try {
-            resource.accept(this, IResource.NONE);
-          } finally {
-            monitor.done();
-          }
+          monitor.subTask(resource.getName());
+          resource.accept(this, IResource.NONE);
         }
-        else {
-          monitor.worked(1 * scale);
-        }
+        monitor.worked(1);
       }
 
       if (!monitor.isCanceled()) {
@@ -174,7 +166,7 @@ public class RefreshIssuesJob extends AbstractRemoteSonarJob implements IResourc
           if (sonarResource != null) {
             SonarProject projectProperties = SonarProject.getInstance(resource);
             if (!projectProperties.isAnalysedLocally()) {
-              new RefreshIssuesJob(Collections.singletonList(resource)).schedule();
+              new SynchronizeIssuesJob(Collections.singletonList(resource)).schedule();
             }
           }
         }
