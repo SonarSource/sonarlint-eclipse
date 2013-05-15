@@ -24,7 +24,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.sonar.ide.eclipse.ui.internal.jobs.SynchronizeAllIssuesJob;
 
-public class RefreshIssuesCommand extends AbstractHandler {
+public class SynchronizeIssuesCommand extends AbstractHandler {
 
   public Object execute(ExecutionEvent event) throws ExecutionException {
     SynchronizeAllIssuesJob.createAndSchedule();

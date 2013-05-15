@@ -640,20 +640,20 @@
      <menuContribution
            locationURI="toolbar:org.sonar.ide.eclipse.ui.views.issues.IssuesView">
         <command
-              commandId="org.sonar.ide.eclipse.ui.RefreshIssuesCommand"
+              commandId="org.sonar.ide.eclipse.ui.SynchronizeIssuesCommand"
               icon="icons/refresh.gif"
-              label="%sonar.action.allrefreshissues.label"
+              label="%sonar.action.allsyncissues.label"
               style="push"
-              tooltip="%sonar.action.allrefreshissues.tooltip">
+              tooltip="%sonar.action.allsyncissues.tooltip">
         </command>
      </menuContribution>
   </extension>
   <extension
         point="org.eclipse.ui.commands">
      <command
-           defaultHandler="org.sonar.ide.eclipse.ui.internal.command.RefreshIssuesCommand"
-           id="org.sonar.ide.eclipse.ui.RefreshIssuesCommand"
-           name="%sonar.action.allrefreshissues.label">
+           defaultHandler="org.sonar.ide.eclipse.ui.internal.command.SynchronizeIssuesCommand"
+           id="org.sonar.ide.eclipse.ui.SynchronizeIssuesCommand"
+           name="%sonar.action.allsyncissues.label">
      </command>
   </extension>
 
