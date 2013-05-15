@@ -119,16 +119,6 @@
                mnemonic="%command.configureColumns.mnemonic"
                style="push">
          </command>
-         <!--command
-               commandId="org.eclipse.ui.window.preferences"
-               label="Preferences"
-               mnemonic="%command.preferences.mnemonic"
-               style="push">
-            <parameter
-                  name="preferencePageId"
-                  value="org.eclipse.ui.ide.markers">
-            </parameter>
-         </command-->
       </menuContribution>
       <menuContribution
             locationURI="popup:org.sonar.ide.eclipse.ui.views.issues.IssuesView">
