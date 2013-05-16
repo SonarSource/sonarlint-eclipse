@@ -48,7 +48,13 @@ public final class WSClientFactory {
    * Creates Sonar web service client facade, which uses proxy settings from Eclipse.
    */
   public static ISonarWSClientFacade getSonarClient(ISonarServer sonarServer) {
-    Host host = new Host(sonarServer.getUrl(), sonarServer.getUsername(), sonarServer.getPassword());
+    Host host;
+    if (sonarServer.hasCredentials()) {
+      host = new Host(sonarServer.getUrl(), sonarServer.getUsername(), sonarServer.getPassword());
+    }
+    else {
+      host = new Host(sonarServer.getUrl());
+    }
     return new SonarWSClientFacade(create(host), createSonarClient(host));
   }
 
