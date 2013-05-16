@@ -99,15 +99,18 @@
             locationURI="menu:org.sonar.ide.eclipse.ui.views.issues.IssuesView">
          <menu 
            id="org.eclipse.ui.ide.problems.filtersMenu"
-           label="Show">
+           label="Show"
+           mnemonic="S">
          </menu>
 		 <menu
            id="problemsGroupByMenu"
-           label="Group by">
+           label="Group By"
+           mnemonic="G">
          </menu>
          <menu
                id="org.eclipse.ui.ide.problems.markerSortMenu"
-               label="Sort By">
+               label="Sort By"
+               mnemonic="S">
          </menu>
          <command
                commandId="org.eclipse.ui.ide.configureFilters"
@@ -146,7 +149,7 @@
       point="org.eclipse.ui.ide.markerSupport">
     <markerContentGenerator
          id="org.sonar.ide.eclipse.ui.views.issues.issueMarkerGenerator"
-         defaultMarkerGrouping="org.sonar.ide.eclipse.ui.issues.newGrouping"
+         defaultMarkerGrouping="org.sonar.ide.eclipse.ui.issues.severityGrouping"
          name="Sonar Issue Marker Generator">
         <markerTypeReference
               id="org.sonar.ide.eclipse.core.sonarProblem"/>
