@@ -62,9 +62,11 @@ public class SynchronizeIssuesJob extends AbstractRemoteSonarJob implements IRes
   private final List<? extends IResource> resources;
   private IProgressMonitor monitor;
   private IStatus status;
+  private boolean force;
 
-  public SynchronizeIssuesJob(final List<? extends IResource> resources) {
+  public SynchronizeIssuesJob(final List<? extends IResource> resources, boolean force) {
     super("Synchronize issues");
+    this.force = force;
     setPriority(Job.LONG);
     this.resources = resources;
   }
@@ -121,7 +123,7 @@ public class SynchronizeIssuesJob extends AbstractRemoteSonarJob implements IRes
     }
     SonarProject sonarProject = SonarProject.getInstance(resource.getProject());
     EclipseSonar eclipseSonar = EclipseSonar.getInstance(resource.getProject());
-    if (!MarkerUtils.needRefresh(resource, sonarProject, eclipseSonar.getSonarServer())) {
+    if (!force && !MarkerUtils.needRefresh(resource, sonarProject, eclipseSonar.getSonarServer())) {
       return;
     }
     try {
@@ -166,7 +168,7 @@ public class SynchronizeIssuesJob extends AbstractRemoteSonarJob implements IRes
           if (sonarResource != null) {
             SonarProject projectProperties = SonarProject.getInstance(resource);
             if (!projectProperties.isAnalysedLocally()) {
-              new SynchronizeIssuesJob(Collections.singletonList(resource)).schedule();
+              new SynchronizeIssuesJob(Collections.singletonList(resource), false).schedule();
             }
           }
         }

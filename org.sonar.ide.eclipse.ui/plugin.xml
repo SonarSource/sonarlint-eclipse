@@ -220,8 +220,8 @@
             id="org.sonar.ide.eclipse.ui.issues.severityGrouping"
             label="Severity">
          <markerGroupingEntry
-               id="org.sonar.ide.eclipse.ui.issues.severityGrouping.blocking"
-               label="Blocking"
+               id="org.sonar.ide.eclipse.ui.issues.severityGrouping.blocker"
+               label="Blocker"
                markerGrouping="org.sonar.ide.eclipse.ui.issues.severityGrouping"
                priority="5">
          </markerGroupingEntry>
@@ -253,7 +253,7 @@
                attribute="sonarseverity"
                markerType="org.sonar.ide.eclipse.core.sonarProblem">
             <markerAttributeMapping
-                  markerGroupingEntry="org.sonar.ide.eclipse.ui.issues.severityGrouping.blocking"
+                  markerGroupingEntry="org.sonar.ide.eclipse.ui.issues.severityGrouping.blocker"
                   value="BLOCKER">
             </markerAttributeMapping>
             <markerAttributeMapping

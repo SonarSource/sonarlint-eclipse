@@ -29,7 +29,7 @@ public interface ISonarIssue {
 
   String severity();
 
-  String description();
+  String message();
 
   String ruleKey();
 

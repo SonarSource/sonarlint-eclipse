@@ -84,8 +84,8 @@ public final class IssuesUtils {
     }
 
     @Override
-    public String description() {
-      return original.description();
+    public String message() {
+      return original.message();
     }
 
     @Override

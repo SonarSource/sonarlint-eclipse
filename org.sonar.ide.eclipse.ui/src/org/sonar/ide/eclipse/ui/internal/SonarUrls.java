@@ -35,7 +35,7 @@ public class SonarUrls {
   }
 
   public String issueUrl(String issueId, IResource resource) {
-    String urlTemplate = "%s/issue/view/%s?layout=false";
+    String urlTemplate = "%s/issue/show/%s";
 
     String serverUrl = SonarProject.getInstance(resource.getProject()).getUrl();
 

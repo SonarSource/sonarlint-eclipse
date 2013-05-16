@@ -53,7 +53,7 @@ public class SynchronizeAllIssuesJob extends SynchronizeIssuesJob {
   }
 
   public SynchronizeAllIssuesJob(List<? extends IResource> resources) {
-    super(resources);
+    super(resources, false);
   }
 
   @Override

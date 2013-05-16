@@ -20,10 +20,14 @@
 package org.sonar.ide.eclipse.ui.internal.views;
 
 import org.apache.commons.codec.binary.Base64;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.BrowserFunction;
+import org.eclipse.swt.browser.ProgressEvent;
+import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 import org.slf4j.Logger;
@@ -34,6 +38,9 @@ import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.SonarUrls;
+import org.sonar.ide.eclipse.ui.internal.jobs.SynchronizeIssuesJob;
+
+import java.util.Collections;
 
 /**
  * Display details of an issue in a web browser
@@ -46,9 +53,40 @@ public class IssueEditorWebView extends ViewPart {
 
   private Browser browser;
 
+  private IResource resource;
+
   @Override
   public final void createPartControl(Composite parent) {
     browser = new Browser(parent, SWT.NONE);
+    browser.addProgressListener(new ProgressListener() {
+
+      @Override
+      public void completed(ProgressEvent event) {
+        browser.execute("$j(document).on('sonar.issue.updated', function(event, issueId) {eclipseIssueCallback(issueId);})");
+      }
+
+      @Override
+      public void changed(ProgressEvent event) {
+      }
+    });
+    new CallbackFunction(browser, "eclipseIssueCallback");
+  }
+
+  private class CallbackFunction extends BrowserFunction {
+
+    public CallbackFunction(Browser browser, String name) {
+      super(browser, name);
+    }
+
+    @Override
+    public Object function(Object[] arguments) {
+      SonarProject sonarProject = SonarProject.getInstance(resource.getProject());
+      if (!sonarProject.isAnalysedLocally()) {
+        new SynchronizeIssuesJob(Collections.singletonList(resource), true).schedule();
+      }
+      return null;
+    }
+
   }
 
   @Override
@@ -56,7 +94,8 @@ public class IssueEditorWebView extends ViewPart {
     browser.setFocus();
   }
 
-  public void open(String issueId, IResource resource) {
+  public void open(String issueId, IResource resource, IMarker marker) {
+    this.resource = resource;
     SonarProject sonarProject = SonarProject.getInstance(resource.getProject());
     String url = new SonarUrls().issueUrl(issueId, resource);
     ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());

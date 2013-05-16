@@ -79,7 +79,7 @@ public class EditIssueCommand extends AbstractHandler {
 
         final String issueId = ObjectUtils.toString(marker.getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR));
         IssueEditorWebView view = (IssueEditorWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueEditorWebView.ID);
-        view.open(issueId, marker.getResource());
+        view.open(issueId, marker.getResource(), marker);
       } catch (Exception e) {
         LOG.error("Unable to open Issue Editor Web View", e);
       }

@@ -103,7 +103,7 @@ public class SonarMarker {
   }
 
   private static String getMessage(final ISonarIssue issue) {
-    return issue.ruleName() + " : " + issue.description();
+    return issue.ruleName() + " : " + issue.message();
   }
 
   /**

@@ -234,8 +234,8 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     }
 
     @Override
-    public String description() {
-      return remoteIssue.description();
+    public String message() {
+      return remoteIssue.message();
     }
 
     @Override

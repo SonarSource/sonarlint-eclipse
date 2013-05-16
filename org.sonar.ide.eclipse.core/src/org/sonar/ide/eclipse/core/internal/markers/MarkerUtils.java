@@ -115,8 +115,8 @@ public final class MarkerUtils {
     }
 
     @Override
-    public String description() {
-      return ObjectUtils.toString(jsonIssue.get("description"));//$NON-NLS-1$
+    public String message() {
+      return ObjectUtils.toString(jsonIssue.get("message"));//$NON-NLS-1$
     }
 
     @Override
