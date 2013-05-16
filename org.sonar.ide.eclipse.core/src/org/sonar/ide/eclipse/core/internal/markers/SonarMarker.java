@@ -114,24 +114,15 @@ public class SonarMarker {
    * @see IMarker.PRIORITY_LOW
    */
   private static Integer getPriority(final String severity) {
-    final int result;
-    if ("blocker".equalsIgnoreCase(severity)) {
-      result = Integer.valueOf(IMarker.PRIORITY_HIGH);
-    }
-    else if ("critical".equalsIgnoreCase(severity)) {
-      result = Integer.valueOf(IMarker.PRIORITY_HIGH);
+    int result = IMarker.PRIORITY_LOW;
+    if ("blocker".equalsIgnoreCase(severity) || "critical".equalsIgnoreCase(severity)) {
+      result = IMarker.PRIORITY_HIGH;
     }
     else if ("major".equalsIgnoreCase(severity)) {
-      result = Integer.valueOf(IMarker.PRIORITY_NORMAL);
+      result = IMarker.PRIORITY_NORMAL;
     }
-    else if ("minor".equalsIgnoreCase(severity)) {
-      result = Integer.valueOf(IMarker.PRIORITY_LOW);
-    }
-    else if ("info".equalsIgnoreCase(severity)) {
-      result = Integer.valueOf(IMarker.PRIORITY_LOW);
-    }
-    else {
-      result = Integer.valueOf(IMarker.PRIORITY_LOW);
+    else if ("minor".equalsIgnoreCase(severity) || "info".equalsIgnoreCase(severity)) {
+      result = IMarker.PRIORITY_LOW;
     }
     return result;
   }

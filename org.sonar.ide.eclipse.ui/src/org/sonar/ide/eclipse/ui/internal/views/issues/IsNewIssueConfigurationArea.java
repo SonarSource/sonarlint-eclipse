@@ -40,19 +40,16 @@ public class IsNewIssueConfigurationArea extends FilterConfigurationArea {
 
   public void apply(MarkerFieldFilter filter) {
     ((IsNewIssueFieldFilter) filter).selectedNewIssues = newIssues;
-
   }
 
   public void createContents(Composite parent) {
-
     parent.setLayout(new GridLayout(2, false));
 
     newIssuesButton = new Button(parent, SWT.CHECK);
     newIssuesButton.setText("New issues");
     newIssuesButton.addSelectionListener(new SelectionAdapter() {
       public void widgetSelected(SelectionEvent e) {
-        updateIssueType(IsNewIssueFieldFilter.SHOW_NEW,
-            newIssuesButton.getSelection());
+        updateIssueType(IsNewIssueFieldFilter.SHOW_NEW, newIssuesButton.getSelection());
       }
     });
 
@@ -60,28 +57,26 @@ public class IsNewIssueConfigurationArea extends FilterConfigurationArea {
     otherIssuesButton.setText("Other issues");
     otherIssuesButton.addSelectionListener(new SelectionAdapter() {
       public void widgetSelected(SelectionEvent e) {
-        updateIssueType(IsNewIssueFieldFilter.SHOW_OTHER,
-            otherIssuesButton.getSelection());
+        updateIssueType(IsNewIssueFieldFilter.SHOW_OTHER, otherIssuesButton.getSelection());
       }
     });
   }
 
   void updateIssueType(int constant, boolean enabled) {
-
-    if (enabled)
+    if (enabled) {
       newIssues = constant | newIssues;
-    else newIssues = constant ^ newIssues;
-
+    }
+    else {
+      newIssues = constant ^ newIssues;
+    }
   }
 
   public void initialize(MarkerFieldFilter filter) {
     if (filter != null) {
       newIssues = ((IsNewIssueFieldFilter) filter).selectedNewIssues;
 
-      otherIssuesButton
-          .setSelection((IsNewIssueFieldFilter.SHOW_OTHER & newIssues) > 0);
-      newIssuesButton
-          .setSelection((IsNewIssueFieldFilter.SHOW_NEW & newIssues) > 0);
+      otherIssuesButton.setSelection((IsNewIssueFieldFilter.SHOW_OTHER & newIssues) > 0);
+      newIssuesButton.setSelection((IsNewIssueFieldFilter.SHOW_NEW & newIssues) > 0);
     }
   }
 

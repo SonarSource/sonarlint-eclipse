@@ -48,8 +48,9 @@ public class IsNewIssueFieldFilter extends MarkerFieldFilter {
 
   public void loadSettings(IMemento memento) {
     Integer showNew = memento.getInteger(TAG_SELECTED_NEW);
-    if (showNew == null)
+    if (showNew == null) {
       return;
+    }
     selectedNewIssues = showNew.intValue();
   }
 
@@ -59,11 +60,13 @@ public class IsNewIssueFieldFilter extends MarkerFieldFilter {
 
   public boolean select(MarkerItem item) {
 
-    if (selectedNewIssues == 0)
+    if (selectedNewIssues == 0) {
       return true;
+    }
     IMarker marker = item.getMarker();
-    if (marker == null)
+    if (marker == null) {
       return false;
+    }
     int markerIsNew = 1 << (marker.getAttribute(MarkerUtils.SONAR_MARKER_IS_NEW_ATTR, false) ? NEW : OTHER);
 
     switch (markerIsNew) {

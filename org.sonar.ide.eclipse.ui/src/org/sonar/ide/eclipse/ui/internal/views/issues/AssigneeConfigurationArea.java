@@ -51,12 +51,13 @@ public class AssigneeConfigurationArea extends FilterConfigurationArea {
   @Override
   public void apply(MarkerFieldFilter filter) {
     AssigneeFieldFilter desc = (AssigneeFieldFilter) filter;
-    if (descriptionCombo.getSelectionIndex() == 0)
+    if (descriptionCombo.getSelectionIndex() == 0) {
       desc.setContainsModifier(MarkerSupportConstants.CONTAINS_KEY);
-    else desc
-        .setContainsModifier(MarkerSupportConstants.DOES_NOT_CONTAIN_KEY);
+    }
+    else {
+      desc.setContainsModifier(MarkerSupportConstants.DOES_NOT_CONTAIN_KEY);
+    }
     desc.setContainsText(descriptionText.getText());
-
   }
 
   @Override

@@ -46,11 +46,13 @@ public class AssigneeFieldFilter extends MarkerFieldFilter {
   @Override
   public void loadSettings(IMemento memento) {
     String modifier = memento.getString(TAG_CONTAINS_MODIFIER);
-    if (modifier == null)
+    if (modifier == null) {
       return;
+    }
     String contains = memento.getString(TAG_CONTAINS_TEXT);
-    if (contains == null)
+    if (contains == null) {
       return;
+    }
     containsText = contains;
     containsModifier = modifier;
 
