@@ -34,13 +34,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.ui.internal.views.IssueEditorWebView;
-import org.sonar.ide.eclipse.ui.internal.wizards.associate.ConfigureProjectsWizard;
 
 import java.util.List;
 
 /**
  *
- * @see ConfigureProjectsWizard
+ * @see org.sonar.ide.eclipse.ui.internal.wizards.associate.ConfigureProjectsWizard
  */
 public class EditIssueCommand extends AbstractHandler {
 
@@ -54,6 +53,7 @@ public class EditIssueCommand extends AbstractHandler {
     return display;
   }
 
+  @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
     IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
 
@@ -73,7 +73,7 @@ public class EditIssueCommand extends AbstractHandler {
       }
     }
 
-    if (selectedSonarMarkers.size() > 0) {
+    if (!selectedSonarMarkers.isEmpty()) {
       IMarker marker = selectedSonarMarkers.get(0);
       try {
 

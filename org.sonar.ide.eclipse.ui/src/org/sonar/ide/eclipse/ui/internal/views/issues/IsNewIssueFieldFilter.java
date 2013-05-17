@@ -32,8 +32,8 @@ public class IsNewIssueFieldFilter extends MarkerFieldFilter {
   public static final int NEW = 1;
   public static final int OTHER = 0;
 
-  final static int SHOW_NEW = 1 << NEW;
-  final static int SHOW_OTHER = 1 << OTHER;
+  static final int SHOW_NEW = 1 << NEW;
+  static final int SHOW_OTHER = 1 << OTHER;
 
   static final String TAG_SELECTED_NEW = "selectedNewIssues"; //$NON-NLS-1$
 

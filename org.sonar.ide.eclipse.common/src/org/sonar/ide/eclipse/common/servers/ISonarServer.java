@@ -19,15 +19,14 @@
  */
 package org.sonar.ide.eclipse.common.servers;
 
-
 public interface ISonarServer {
 
-  public String getUrl();
+  String getUrl();
 
-  public boolean hasCredentials();
+  boolean hasCredentials();
 
-  public String getUsername();
+  String getUsername();
 
-  public String getPassword();
+  String getPassword();
 
 }

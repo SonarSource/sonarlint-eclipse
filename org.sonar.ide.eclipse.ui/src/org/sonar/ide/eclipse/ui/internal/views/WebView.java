@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.internal.views;
 
-import org.apache.commons.codec.binary.Base64;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
@@ -29,7 +28,6 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPartListener2;
@@ -38,9 +36,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.EditorPart;
-import org.eclipse.ui.part.ViewPart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
@@ -57,9 +52,7 @@ import org.sonar.ide.eclipse.wsclient.WSClientFactory;
  * Display details of a project or Sonar resource in a web browser
  * @author Evgeny Mandrikov
  */
-public class WebView extends ViewPart implements ISelectionListener {
-
-  private static final Logger LOG = LoggerFactory.getLogger(WebView.class);
+public class WebView extends AbstractSonarWebView implements ISelectionListener {
 
   protected ISonarResource currentViewInput;
 
@@ -73,8 +66,6 @@ public class WebView extends ViewPart implements ISelectionListener {
   private ISonarResource lastSelection;
 
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.WebView";
-
-  private Browser browser;
 
   private final IPartListener2 partListener = new IPartListener2() {
     public void partVisible(IWorkbenchPartReference ref) {
@@ -112,8 +103,8 @@ public class WebView extends ViewPart implements ISelectionListener {
   };
 
   @Override
-  public final void createPartControl(Composite parent) {
-    browser = new Browser(parent, SWT.NONE);
+  public void createPartControl(Composite parent) {
+    super.createPartControl(parent);
     createActions();
     createToolbar();
 
@@ -168,11 +159,6 @@ public class WebView extends ViewPart implements ISelectionListener {
     return linking;
   }
 
-  @Override
-  public final void setFocus() {
-    browser.setFocus();
-  }
-
   protected void startListeningForSelectionChanges() {
     getSite().getPage().addPostSelectionListener(this);
   }
@@ -221,24 +207,14 @@ public class WebView extends ViewPart implements ISelectionListener {
     String url = new SonarUrls().resourceUrl(sonarResource);
     ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     if (sonarServer == null) {
-      browser.setText(NLS.bind(Messages.No_matching_server_in_configuration_for_project, sonarProject.getProject().getName(), url));
+      getBrowser().setText(NLS.bind(Messages.No_matching_server_in_configuration_for_project, sonarProject.getProject().getName(), url));
       return;
     }
-
     if (!WSClientFactory.getSonarClient(sonarServer).exists(sonarResource.getKey())) {
-      browser.setText("Not found.");
+      getBrowser().setText("Not found.");
       return;
     }
-    LOG.debug("Opening url {} in web view", url);
-
-    if (sonarServer.getUsername() != null) {
-      String userpwd = sonarServer.getUsername() + ":" + sonarServer.getPassword();
-      byte[] encodedBytes = Base64.encodeBase64(userpwd.getBytes());
-      browser.setUrl(url, null, new String[] {"Authorization: Basic " + new String(encodedBytes)});
-    }
-    else {
-      browser.setUrl(url);
-    }
+    super.open(sonarProject, url);
   }
 
   /**
@@ -254,13 +230,6 @@ public class WebView extends ViewPart implements ISelectionListener {
       return ResourceUtils.adapt(SelectionUtils.getSingleElement(selection));
     }
     return null;
-  }
-
-  /**
-   * @return input input of this view or <code>null</code> if no input is set
-   */
-  protected ISonarResource getInput() {
-    return currentViewInput;
   }
 
   protected boolean isIgnoringNewInput(ISonarResource sonarResource) {

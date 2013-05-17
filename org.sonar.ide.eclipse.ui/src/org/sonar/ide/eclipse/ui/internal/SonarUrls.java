@@ -20,7 +20,6 @@
 package org.sonar.ide.eclipse.ui.internal;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
@@ -34,10 +33,8 @@ public class SonarUrls {
     return String.format(urlTemplate, serverUrl, key);
   }
 
-  public String issueUrl(String issueId, IResource resource) {
+  public String issueUrl(String issueId, String serverUrl) {
     String urlTemplate = "%s/issue/show/%s";
-
-    String serverUrl = SonarProject.getInstance(resource.getProject()).getUrl();
 
     return String.format(urlTemplate, serverUrl, issueId);
   }

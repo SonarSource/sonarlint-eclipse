@@ -19,22 +19,13 @@
  */
 package org.sonar.ide.eclipse.ui.internal.views;
 
-import org.apache.commons.codec.binary.Base64;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
 import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.part.ViewPart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
-import org.sonar.ide.eclipse.core.internal.Messages;
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.SonarUrls;
@@ -45,31 +36,27 @@ import java.util.Collections;
 /**
  * Display details of an issue in a web browser
  */
-public class IssueEditorWebView extends ViewPart {
-
-  private static final Logger LOG = LoggerFactory.getLogger(IssueEditorWebView.class);
+public class IssueEditorWebView extends AbstractSonarWebView {
 
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.IssueEditorWebView";
-
-  private Browser browser;
 
   private IResource resource;
 
   @Override
-  public final void createPartControl(Composite parent) {
-    browser = new Browser(parent, SWT.NONE);
-    browser.addProgressListener(new ProgressListener() {
+  public void createPartControl(Composite parent) {
+    super.createPartControl(parent);
+    getBrowser().addProgressListener(new ProgressListener() {
 
       @Override
       public void completed(ProgressEvent event) {
-        browser.execute("$j(document).on('sonar.issue.updated', function(event, issueId) {eclipseIssueCallback(issueId);})");
+        getBrowser().execute("$j(document).on('sonar.issue.updated', function(event, issueId) {eclipseIssueCallback(issueId);})");
       }
 
       @Override
       public void changed(ProgressEvent event) {
       }
     });
-    new CallbackFunction(browser, "eclipseIssueCallback");
+    new CallbackFunction(getBrowser(), "eclipseIssueCallback");
   }
 
   private class CallbackFunction extends BrowserFunction {
@@ -89,31 +76,11 @@ public class IssueEditorWebView extends ViewPart {
 
   }
 
-  @Override
-  public final void setFocus() {
-    browser.setFocus();
-  }
-
   public void open(String issueId, IResource resource, IMarker marker) {
     this.resource = resource;
     SonarProject sonarProject = SonarProject.getInstance(resource.getProject());
-    String url = new SonarUrls().issueUrl(issueId, resource);
-    ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
-    if (sonarServer == null) {
-      browser.setText(NLS.bind(Messages.No_matching_server_in_configuration_for_project, sonarProject.getProject().getName(), url));
-      return;
-    }
-
-    LOG.debug("Opening url {} in web view", url);
-
-    if (sonarServer.getUsername() != null) {
-      String userpwd = sonarServer.getUsername() + ":" + sonarServer.getPassword();
-      byte[] encodedBytes = Base64.encodeBase64(userpwd.getBytes());
-      browser.setUrl(url, null, new String[] {"Authorization: Basic " + new String(encodedBytes)});
-    }
-    else {
-      browser.setUrl(url);
-    }
+    String url = new SonarUrls().issueUrl(issueId, sonarProject.getUrl());
+    super.open(sonarProject, url);
   }
 
 }

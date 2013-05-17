@@ -148,8 +148,6 @@ public class AnalyseProjectJob extends Job {
   public void createMarkersFromReportOutput(final IProgressMonitor monitor, File outputFile) {
     FileReader fileReader = null;
     try {
-
-      SonarProject sonarProject = SonarProject.getInstance(project);
       fileReader = new FileReader(outputFile);
       Object obj = JSONValue.parse(fileReader);
       JSONObject sonarResult = (JSONObject) obj;
@@ -202,11 +200,10 @@ public class AnalyseProjectJob extends Job {
     ConfiguratorUtils.configure(project, properties, monitor);
 
     // Global configuration
-    ISonarServer sonarServer = getSonarServer();
-    properties.setProperty(SonarProperties.SONAR_URL, sonarServer.getUrl());
-    if (StringUtils.isNotBlank(sonarServer.getUsername())) {
-      properties.setProperty(SonarProperties.SONAR_LOGIN, sonarServer.getUsername());
-      properties.setProperty(SonarProperties.SONAR_PASSWORD, sonarServer.getPassword());
+    properties.setProperty(SonarProperties.SONAR_URL, getSonarServer().getUrl());
+    if (StringUtils.isNotBlank(getSonarServer().getUsername())) {
+      properties.setProperty(SonarProperties.SONAR_LOGIN, getSonarServer().getUsername());
+      properties.setProperty(SonarProperties.SONAR_PASSWORD, getSonarServer().getPassword());
     }
     properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
     properties.setProperty(SonarProperties.WORK_DIR, projectSpecificWorkDir.toString());

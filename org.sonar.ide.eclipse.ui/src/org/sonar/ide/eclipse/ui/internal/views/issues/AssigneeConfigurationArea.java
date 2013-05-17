@@ -68,10 +68,12 @@ public class AssigneeConfigurationArea extends FilterConfigurationArea {
   @Override
   public void initialize(MarkerFieldFilter filter) {
     AssigneeFieldFilter desc = (AssigneeFieldFilter) filter;
-    if (desc.getContainsModifier().equals(
-        MarkerSupportConstants.CONTAINS_KEY))
+    if (desc.getContainsModifier().equals(MarkerSupportConstants.CONTAINS_KEY)) {
       descriptionCombo.select(0);
-    else descriptionCombo.select(1);
+    }
+    else {
+      descriptionCombo.select(1);
+    }
 
     descriptionText.setText(desc.getContainsText());
 
@@ -86,8 +88,7 @@ public class AssigneeConfigurationArea extends FilterConfigurationArea {
 
     Composite descriptionComposite = new Composite(parent, SWT.NONE);
     descriptionComposite.setLayout(new GridLayout(3, false));
-    descriptionComposite.setLayoutData(new GridData(
-        GridData.FILL_HORIZONTAL));
+    descriptionComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
     Label descriptionLabel = new Label(descriptionComposite, SWT.NONE);
     descriptionLabel.setText("Login:");
@@ -100,8 +101,7 @@ public class AssigneeConfigurationArea extends FilterConfigurationArea {
     // active.
     descriptionCombo.addTraverseListener(new TraverseListener() {
       public void keyTraversed(TraverseEvent e) {
-        if (e.detail == SWT.TRAVERSE_ESCAPE
-          || e.detail == SWT.TRAVERSE_RETURN) {
+        if (e.detail == SWT.TRAVERSE_ESCAPE || e.detail == SWT.TRAVERSE_RETURN) {
           e.doit = false;
         }
       }
@@ -112,10 +112,8 @@ public class AssigneeConfigurationArea extends FilterConfigurationArea {
     FontMetrics fontMetrics = gc.getFontMetrics();
     gc.dispose();
 
-    descriptionText = new Text(descriptionComposite, SWT.SINGLE
-      | SWT.BORDER);
-    GridData data = new GridData(GridData.FILL_HORIZONTAL
-      | GridData.GRAB_HORIZONTAL);
+    descriptionText = new Text(descriptionComposite, SWT.SINGLE | SWT.BORDER);
+    GridData data = new GridData(GridData.FILL_HORIZONTAL | GridData.GRAB_HORIZONTAL);
     data.widthHint = Dialog.convertWidthInCharsToPixels(fontMetrics, 25);
     descriptionText.setLayoutData(data);
   }
