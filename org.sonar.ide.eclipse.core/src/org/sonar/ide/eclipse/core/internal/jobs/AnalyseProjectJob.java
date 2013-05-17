@@ -112,6 +112,9 @@ public class AnalyseProjectJob extends Job {
     Properties properties = new Properties();
     File outputFile = configureAnalysis(monitor, properties, extraProps);
 
+    // Clean previous markers
+    MarkerUtils.deleteIssuesMarkers(project);
+
     // Analyse
     // To be sure to not reuse something from a previous analysis
     FileUtils.deleteQuietly(outputFile);
@@ -125,7 +128,7 @@ public class AnalyseProjectJob extends Job {
       return result;
     }
 
-    MarkerUtils.deleteIssuesMarkers(project);
+    // Create markers
     createMarkersFromReportOutput(monitor, outputFile);
 
     // Update analysis date
