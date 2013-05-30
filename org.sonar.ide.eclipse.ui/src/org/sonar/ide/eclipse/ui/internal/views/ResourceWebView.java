@@ -52,7 +52,7 @@ import org.sonar.ide.eclipse.wsclient.WSClientFactory;
  * Display details of a project or Sonar resource in a web browser
  * @author Evgeny Mandrikov
  */
-public class WebView extends AbstractSonarWebView implements ISelectionListener {
+public class ResourceWebView extends AbstractSonarWebView implements ISelectionListener {
 
   protected ISonarResource currentViewInput;
 
@@ -65,7 +65,7 @@ public class WebView extends AbstractSonarWebView implements ISelectionListener 
    */
   private ISonarResource lastSelection;
 
-  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.WebView";
+  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.ResourceWebView";
 
   private final IPartListener2 partListener = new IPartListener2() {
     public void partVisible(IWorkbenchPartReference ref) {

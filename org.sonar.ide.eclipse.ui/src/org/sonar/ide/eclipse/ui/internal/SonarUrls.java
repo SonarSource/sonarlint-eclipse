@@ -34,9 +34,15 @@ public class SonarUrls {
   }
 
   public String issueUrl(String issueId, String serverUrl) {
-    String urlTemplate = "%s/issue/show/%s";
+    String urlTemplate = "%s/issue/show/%s?layout=false&source=false";
 
     return String.format(urlTemplate, serverUrl, issueId);
+  }
+
+  public String ruleDescriptionUrl(String ruleKey, String serverUrl) {
+    String urlTemplate = "%s/rules/show/%s?layout=false";
+
+    return String.format(urlTemplate, serverUrl, ruleKey);
   }
 
   private String resourcesUrlTemplate(ISonarResource resource) {

@@ -41,9 +41,6 @@ import java.util.List;
 public class SonarCorePlugin extends AbstractPlugin {
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.core";
 
-  /**
-   * Godin: It would be better to use only one MARKER_ID at least at first time.
-   */
   public static final String MARKER_ID = PLUGIN_ID + ".sonarProblem";
   public static final String NEW_ISSUE_MARKER_ID = PLUGIN_ID + ".sonarProblemNewIssue";
 

@@ -20,70 +20,38 @@
 package org.sonar.ide.eclipse.ui.internal.views;
 
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.ObjectUtils;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.browser.BrowserFunction;
-import org.eclipse.swt.browser.ProgressEvent;
-import org.eclipse.swt.browser.ProgressListener;
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.SonarUrls;
-import org.sonar.ide.eclipse.ui.internal.jobs.SynchronizeIssuesJob;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
- * Display details of an issue in a web browser
+ * Display details of a rule in a web browser
  */
-public class IssueEditorWebView extends AbstractLinkedSonarWebView<IMarker> {
+public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> implements ISelectionListener {
 
-  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.IssueEditorWebView";
-
-  private IResource resource;
+  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.RuleDescriptionWebView";
 
   @Override
-  public void createPartControl(Composite parent) {
-    super.createPartControl(parent);
-    getBrowser().addProgressListener(new ProgressListener() {
-
-      @Override
-      public void completed(ProgressEvent event) {
-        getBrowser().execute("$j(document).on('sonar.issue.updated', function(event, issueId) {eclipseIssueCallback(issueId);})");
-      }
-
-      @Override
-      public void changed(ProgressEvent event) {
-      }
-    });
-    new CallbackFunction(getBrowser(), "eclipseIssueCallback");
-  }
-
-  private class CallbackFunction extends BrowserFunction {
-
-    public CallbackFunction(Browser browser, String name) {
-      super(browser, name);
+  protected void open(IMarker element) {
+    SonarProject sonarProject = SonarProject.getInstance(element.getResource());
+    String url;
+    try {
+      url = new SonarUrls().ruleDescriptionUrl("" + element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR), sonarProject.getUrl());
+    } catch (CoreException e) {
+      throw new RuntimeException(e);
     }
-
-    @Override
-    public Object function(Object[] arguments) {
-      SonarProject sonarProject = SonarProject.getInstance(resource.getProject());
-      if (!sonarProject.isAnalysedLocally()) {
-        new SynchronizeIssuesJob(Collections.singletonList(resource), true).schedule();
-      }
-      return null;
-    }
-
+    super.open(sonarProject, url);
   }
 
   @Override
@@ -117,24 +85,6 @@ public class IssueEditorWebView extends AbstractLinkedSonarWebView<IMarker> {
       return null;
     }
     return null;
-  }
-
-  @Override
-  protected void open(IMarker marker) {
-    String issueId;
-    try {
-      if (SonarCorePlugin.NEW_ISSUE_MARKER_ID.equals(marker.getType())) {
-        getBrowser().setText("Unable to edit new issues");
-        return;
-      }
-      issueId = ObjectUtils.toString(marker.getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR));
-    } catch (CoreException e) {
-      throw new RuntimeException(e);
-    }
-    resource = marker.getResource();
-    SonarProject sonarProject = SonarProject.getInstance(marker.getResource().getProject());
-    String url = new SonarUrls().issueUrl(issueId, sonarProject.getUrl());
-    super.open(sonarProject, url);
   }
 
 }

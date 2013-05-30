@@ -57,10 +57,17 @@
     </view>
     <view
           category="org.sonar.ide.eclipse"
-          class="org.sonar.ide.eclipse.ui.internal.views.WebView"
+          class="org.sonar.ide.eclipse.ui.internal.views.ResourceWebView"
           icon="icons/sonar.png"
-          id="org.sonar.ide.eclipse.ui.views.WebView"
+          id="org.sonar.ide.eclipse.ui.views.ResourceWebView"
           name="Sonar Web Browser">
+    </view>
+    <view
+          category="org.sonar.ide.eclipse"
+          class="org.sonar.ide.eclipse.ui.internal.views.RuleDescriptionWebView"
+          icon="icons/sonar.png"
+          id="org.sonar.ide.eclipse.ui.views.RuleDescriptionWebView"
+          name="Sonar Rule Description">
     </view>
     <view
           category="org.sonar.ide.eclipse"
@@ -141,7 +148,14 @@
 	            </with>
             </visibleWhen>
          </command>
-         
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.sonar.ide.eclipse.ui.views.issues.IssuesView">
+           <command
+                 commandId="org.sonar.ide.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
+                 style="push"
+                 mnemonic="R">
+         </command>
       </menuContribution>
   </extension>
 
@@ -459,7 +473,11 @@
           description="Edit Issue"
           id="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand"
           name="Edit Issue">
-          
+    </command>
+    <command
+          description="Show rule details"
+          id="org.sonar.ide.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
+          name="Rule description">
     </command>
   </extension>
   
@@ -475,6 +493,10 @@
     <handler
           class="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand"
           commandId="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand">
+    </handler>
+    <handler
+          class="org.sonar.ide.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
+          commandId="org.sonar.ide.eclipse.ui.internal.command.ShowRuleDescriptionCommand">
     </handler>
   </extension>
 

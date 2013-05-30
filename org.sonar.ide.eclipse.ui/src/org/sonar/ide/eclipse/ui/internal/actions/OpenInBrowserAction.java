@@ -29,7 +29,7 @@ import org.eclipse.ui.PlatformUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
-import org.sonar.ide.eclipse.ui.internal.views.WebView;
+import org.sonar.ide.eclipse.ui.internal.views.ResourceWebView;
 
 /**
  * Open the internal web browser to show the page of the sonar server corresponding to the selection.
@@ -62,7 +62,7 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
 
   protected void openBrowser(ISonarResource sonarResource) {
     try {
-      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(WebView.ID);
+      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ResourceWebView.ID);
     } catch (PartInitException e) {
       LOG.error("Unable to open Web View", e);
     }

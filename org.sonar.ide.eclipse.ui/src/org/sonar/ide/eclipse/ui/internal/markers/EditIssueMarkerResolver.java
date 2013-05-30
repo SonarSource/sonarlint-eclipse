@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.internal.markers;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -66,10 +65,8 @@ public class EditIssueMarkerResolver implements ISonarResolver {
 
   public boolean resolve(final IMarker marker, final IFile cu) {
     try {
-
-      final String issueId = ObjectUtils.toString(marker.getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR));
       IssueEditorWebView view = (IssueEditorWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueEditorWebView.ID);
-      view.open(issueId, marker.getResource(), marker);
+      view.setInput(marker);
     } catch (Exception e) {
       LOG.error("Unable to open Issue Editor Web View", e);
     }

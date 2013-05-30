@@ -31,13 +31,13 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.ui.internal.views.IssueEditorWebView;
+import org.sonar.ide.eclipse.ui.internal.views.RuleDescriptionWebView;
 
 import java.util.List;
 
-public class EditIssueCommand extends AbstractHandler {
+public class ShowRuleDescriptionCommand extends AbstractHandler {
 
-  private static final Logger LOG = LoggerFactory.getLogger(EditIssueCommand.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ShowRuleDescriptionCommand.class);
 
   public Display getDisplay() {
     Display display = Display.getCurrent();
@@ -70,10 +70,10 @@ public class EditIssueCommand extends AbstractHandler {
     if (!selectedSonarMarkers.isEmpty()) {
       IMarker marker = selectedSonarMarkers.get(0);
       try {
-        IssueEditorWebView view = (IssueEditorWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueEditorWebView.ID);
+        RuleDescriptionWebView view = (RuleDescriptionWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(RuleDescriptionWebView.ID);
         view.setInput(marker);
       } catch (Exception e) {
-        LOG.error("Unable to open Issue Editor Web View", e);
+        LOG.error("Unable to open Rule Description Web View", e);
       }
     }
 
