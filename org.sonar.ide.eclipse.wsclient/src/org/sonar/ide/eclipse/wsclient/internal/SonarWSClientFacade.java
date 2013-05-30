@@ -164,7 +164,7 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
 
   @Override
   public List<ISonarIssue> getRemoteIssuesRecursively(String resourceKey, IProgressMonitor monitor) {
-    int maxPageSize = 500; // TODO Use constant
+    int maxPageSize = -1;
     List<ISonarIssue> result = new ArrayList<ISonarIssue>();
     int pageIndex = 1;
     Issues issues;
