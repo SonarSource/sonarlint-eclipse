@@ -69,7 +69,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
   }
 
   protected void showMessage(String message) {
-    browser.setText("<p style=\"font: verdana\">" + message + "</p>");
+    browser.setText("<p style=\"font: 13px arial,helvetica,clean,sans-serif;\">" + message + "</p>");
   }
 
 }
