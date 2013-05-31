@@ -27,6 +27,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
@@ -40,18 +42,19 @@ import java.util.List;
  */
 public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> implements ISelectionListener {
 
+  private static final Logger LOG = LoggerFactory.getLogger(RuleDescriptionWebView.class);
+
   public static final String ID = ISonarConstants.PLUGIN_ID + ".views.RuleDescriptionWebView";
 
   @Override
   protected void open(IMarker element) {
     SonarProject sonarProject = SonarProject.getInstance(element.getResource());
-    String url;
     try {
-      url = new SonarUrls().ruleDescriptionUrl("" + element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR), sonarProject.getUrl());
+      String url = new SonarUrls().ruleDescriptionUrl("" + element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR), sonarProject.getUrl());
+      super.open(sonarProject, url);
     } catch (CoreException e) {
-      throw new RuntimeException(e);
+      LOG.error("Unable to open rule description", e);
     }
-    super.open(sonarProject, url);
   }
 
   @Override

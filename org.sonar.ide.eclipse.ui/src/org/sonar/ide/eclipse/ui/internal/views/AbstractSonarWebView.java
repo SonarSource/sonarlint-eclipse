@@ -54,7 +54,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
   protected void open(SonarProject sonarProject, String url) {
     ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     if (sonarServer == null) {
-      browser.setText(NLS.bind(Messages.No_matching_server_in_configuration_for_project, sonarProject.getProject().getName(), url));
+      showMessage(NLS.bind(Messages.No_matching_server_in_configuration_for_project, sonarProject.getProject().getName(), url));
       return;
     }
 
@@ -66,6 +66,10 @@ public abstract class AbstractSonarWebView extends ViewPart {
     else {
       browser.setUrl(url);
     }
+  }
+
+  protected void showMessage(String message) {
+    browser.setText("<p style=\"font: verdana\">" + message + "</p>");
   }
 
 }

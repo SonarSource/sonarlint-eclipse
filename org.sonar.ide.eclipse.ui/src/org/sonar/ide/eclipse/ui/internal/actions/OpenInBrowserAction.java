@@ -62,7 +62,8 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
 
   protected void openBrowser(ISonarResource sonarResource) {
     try {
-      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ResourceWebView.ID);
+      ResourceWebView view = (ResourceWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ResourceWebView.ID);
+      view.setInput(sonarResource);
     } catch (PartInitException e) {
       LOG.error("Unable to open Web View", e);
     }

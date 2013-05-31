@@ -124,7 +124,7 @@ public class IssueEditorWebView extends AbstractLinkedSonarWebView<IMarker> {
     String issueId;
     try {
       if (SonarCorePlugin.NEW_ISSUE_MARKER_ID.equals(marker.getType())) {
-        getBrowser().setText("Unable to edit new issues");
+        showMessage("Unable to edit new issue");
         return;
       }
       issueId = ObjectUtils.toString(marker.getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR));
