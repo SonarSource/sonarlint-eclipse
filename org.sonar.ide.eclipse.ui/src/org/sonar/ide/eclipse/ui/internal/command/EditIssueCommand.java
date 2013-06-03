@@ -19,65 +19,24 @@
  */
 package org.sonar.ide.eclipse.ui.internal.command;
 
-import com.google.common.collect.Lists;
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.ui.internal.views.IssueEditorWebView;
 
-import java.util.List;
-
-public class EditIssueCommand extends AbstractHandler {
+public class EditIssueCommand extends AbstractIssueCommand {
 
   private static final Logger LOG = LoggerFactory.getLogger(EditIssueCommand.class);
 
-  public Display getDisplay() {
-    Display display = Display.getCurrent();
-    if (display == null) {
-      display = Display.getDefault();
-    }
-    return display;
-  }
-
   @Override
-  public Object execute(ExecutionEvent event) throws ExecutionException {
-    IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
-
-    List<IMarker> selectedSonarMarkers = Lists.newArrayList();
-
-    @SuppressWarnings("rawtypes")
-    List elems = selection.toList();
-    for (Object elem : elems) {
-      if (elem instanceof IMarker) {
-        selectedSonarMarkers.add((IMarker) elem);
-      }
-      else if (elem instanceof IAdaptable) {
-        IMarker marker = (IMarker) ((IAdaptable) elem).getAdapter(IMarker.class);
-        if (marker != null) {
-          selectedSonarMarkers.add(marker);
-        }
-      }
+  protected void execute(IMarker selectedMarker) {
+    try {
+      IssueEditorWebView view = (IssueEditorWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueEditorWebView.ID);
+      view.setInput(selectedMarker);
+    } catch (Exception e) {
+      LOG.error("Unable to open Issue Editor Web View", e);
     }
-
-    if (!selectedSonarMarkers.isEmpty()) {
-      IMarker marker = selectedSonarMarkers.get(0);
-      try {
-        IssueEditorWebView view = (IssueEditorWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueEditorWebView.ID);
-        view.setInput(marker);
-      } catch (Exception e) {
-        LOG.error("Unable to open Issue Editor Web View", e);
-      }
-    }
-
-    return null;
   }
 
 }

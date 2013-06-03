@@ -19,23 +19,17 @@
  */
 package org.sonar.ide.eclipse.ui.internal.views;
 
-import com.google.common.collect.Lists;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.SonarUrls;
-
-import java.util.List;
 
 /**
  * Display details of a rule in a web browser
@@ -59,35 +53,7 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
 
   @Override
   protected IMarker findSelectedElement(IWorkbenchPart part, ISelection selection) {
-    try {
-      if (selection instanceof IStructuredSelection) {
-        List<IMarker> selectedSonarMarkers = Lists.newArrayList();
-
-        @SuppressWarnings("rawtypes")
-        List elems = ((IStructuredSelection) selection).toList();
-        for (Object elem : elems) {
-          if (elem instanceof IMarker) {
-            IMarker marker = (IMarker) elem;
-            if (SonarCorePlugin.MARKER_ID.equals(marker.getType()) || SonarCorePlugin.NEW_ISSUE_MARKER_ID.equals(marker.getType())) {
-              selectedSonarMarkers.add(marker);
-            }
-          }
-          else if (elem instanceof IAdaptable) {
-            IMarker marker = (IMarker) ((IAdaptable) elem).getAdapter(IMarker.class);
-            if (marker != null && (SonarCorePlugin.MARKER_ID.equals(marker.getType()) || SonarCorePlugin.NEW_ISSUE_MARKER_ID.equals(marker.getType()))) {
-              selectedSonarMarkers.add(marker);
-            }
-          }
-        }
-
-        if (!selectedSonarMarkers.isEmpty()) {
-          return selectedSonarMarkers.get(0);
-        }
-      }
-    } catch (Exception e) {
-      return null;
-    }
-    return null;
+    return findSelectedSonarIssue(part, selection);
   }
 
 }

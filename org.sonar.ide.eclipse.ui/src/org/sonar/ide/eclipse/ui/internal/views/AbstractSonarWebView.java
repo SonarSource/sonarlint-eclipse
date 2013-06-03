@@ -19,16 +19,25 @@
  */
 package org.sonar.ide.eclipse.ui.internal.views;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.codec.binary.Base64;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+
+import java.util.List;
 
 /**
  * Open Sonar server URL in an embedded browser
@@ -70,6 +79,42 @@ public abstract class AbstractSonarWebView extends ViewPart {
 
   protected void showMessage(String message) {
     browser.setText("<p style=\"font: 13px arial,helvetica,clean,sans-serif;\">" + message + "</p>");
+  }
+
+  protected IMarker findSelectedSonarIssue(IWorkbenchPart part, ISelection selection) {
+    try {
+      if (selection instanceof IStructuredSelection) {
+        List<IMarker> selectedSonarMarkers = Lists.newArrayList();
+
+        @SuppressWarnings("rawtypes")
+        List elems = ((IStructuredSelection) selection).toList();
+        for (Object elem : elems) {
+          processElement(selectedSonarMarkers, elem);
+        }
+
+        if (!selectedSonarMarkers.isEmpty()) {
+          return selectedSonarMarkers.get(0);
+        }
+      }
+    } catch (Exception e) {
+      return null;
+    }
+    return null;
+  }
+
+  private void processElement(List<IMarker> selectedSonarMarkers, Object elem) throws CoreException {
+    if (elem instanceof IMarker) {
+      IMarker marker = (IMarker) elem;
+      if (SonarCorePlugin.MARKER_ID.equals(marker.getType()) || SonarCorePlugin.NEW_ISSUE_MARKER_ID.equals(marker.getType())) {
+        selectedSonarMarkers.add(marker);
+      }
+    }
+    else if (elem instanceof IAdaptable) {
+      IMarker marker = (IMarker) ((IAdaptable) elem).getAdapter(IMarker.class);
+      if (marker != null && (SonarCorePlugin.MARKER_ID.equals(marker.getType()) || SonarCorePlugin.NEW_ISSUE_MARKER_ID.equals(marker.getType()))) {
+        selectedSonarMarkers.add(marker);
+      }
+    }
   }
 
 }
