@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e43-dev" sequenceNumber="41">
 <locations>
-<location path="${M2_REPO}/org/slf4j/slf4j-api/1.6.6" type="Directory"/>
+<location path="${M2_REPO}/org/slf4j/slf4j-api/1.7.2" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
@@ -10,7 +10,7 @@
 <repository location="http://download.eclipse.org/releases/kepler"/>
 </location>
 <location path="${M2_REPO}/commons-codec/commons-codec/1.7" type="Directory"/>
-<location path="${M2_REPO}/org/slf4j/jcl-over-slf4j/1.6.6" type="Directory"/>
+<location path="${M2_REPO}/org/slf4j/jcl-over-slf4j/1.7.2" type="Directory"/>
 <location path="${M2_REPO}/org/codehaus/sonar/runner/sonar-runner-api/2.2" type="Directory"/>
 <location path="${M2_REPO}/org/mockito/mockito-all/1.9.5" type="Directory"/>
 <location path="${M2_REPO}/org/codehaus/sonar/sonar-ws-client/3.6-SNAPSHOT" type="Directory"/>
