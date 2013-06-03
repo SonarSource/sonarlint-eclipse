@@ -169,7 +169,7 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     int pageIndex = 1;
     Issues issues;
     do {
-      issues = sonarClient.issueClient().find(IssueQuery.create().componentRoots(resourceKey).pageSize(maxPageSize).pageIndex(pageIndex));
+      issues = findIssues(IssueQuery.create().componentRoots(resourceKey).pageSize(maxPageSize).pageIndex(pageIndex));
       for (Issue issue : issues.list()) {
         result.add(new SonarRemoteIssue(issue, issues.rule(issue)));
       }
@@ -179,12 +179,22 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
 
   @Override
   public List<ISonarIssue> getRemoteIssues(String resourceKey, IProgressMonitor monitor) {
-    Issues issues = sonarClient.issueClient().find(IssueQuery.create().components(resourceKey));
+    Issues issues = findIssues(IssueQuery.create().components(resourceKey));
     List<ISonarIssue> result = new ArrayList<ISonarIssue>(issues.list().size());
     for (Issue issue : issues.list()) {
       result.add(new SonarRemoteIssue(issue, issues.rule(issue)));
     }
     return result;
+  }
+
+  private Issues findIssues(IssueQuery query) {
+    try {
+      return sonarClient.issueClient().find(query);
+    } catch (ConnectionException e) {
+      throw new org.sonar.ide.eclipse.wsclient.ConnectionException(e);
+    } catch (Exception e) {
+      throw new org.sonar.ide.eclipse.wsclient.SonarWSClientException("Error during issue query " + query.toString(), e);
+    }
   }
 
   @Override

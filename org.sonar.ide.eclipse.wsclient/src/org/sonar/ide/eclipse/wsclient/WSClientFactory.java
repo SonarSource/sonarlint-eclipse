@@ -33,9 +33,11 @@ import org.sonar.ide.eclipse.wsclient.internal.WSClientPlugin;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.SonarClient;
+import org.sonar.wsclient.SonarClient.Builder;
 import org.sonar.wsclient.connectors.HttpClient4Connector;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 public final class WSClientFactory {
 
@@ -68,15 +70,21 @@ public final class WSClientFactory {
   }
 
   /**
-   * Creates Sonar web service client, which uses proxy settings from Eclipse.
+   * Creates new Sonar web service client, which uses proxy settings from Eclipse.
    */
   private static SonarClient createSonarClient(Host host) {
-    // TODO Configure proxy
-    return SonarClient.builder()
+    Builder builder = SonarClient.builder()
         .url(host.getHost())
         .login(host.getUsername())
-        .password(host.getPassword())
-        .build();
+        .password(host.getPassword());
+    IProxyData proxyData = getEclipseProxyFor(host);
+    if (proxyData != null) {
+      builder.proxy(proxyData.getHost(), proxyData.getPort());
+      if (proxyData.isRequiresAuthentication()) {
+        builder.proxyLogin(proxyData.getUserId()).proxyPassword(proxyData.getPassword());
+      }
+    }
+    return builder.build();
   }
 
   /**
@@ -84,8 +92,8 @@ public final class WSClientFactory {
    */
   private static void configureProxy(DefaultHttpClient httpClient, Host server) {
     try {
-      IProxyData[] proxyDatas = WSClientPlugin.selectProxy(new URI(server.getHost()));
-      for (IProxyData proxyData : proxyDatas) {
+      IProxyData proxyData = getEclipseProxyFor(server);
+      if (proxyData != null) {
         LOG.debug("Proxy for [{}] - [{}]", server.getHost(), proxyData);
         HttpHost proxy = new HttpHost(proxyData.getHost(), proxyData.getPort());
         httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
@@ -94,12 +102,24 @@ public final class WSClientFactory {
               new AuthScope(proxyData.getHost(), proxyData.getPort()),
               new UsernamePasswordCredentials(proxyData.getUserId(), proxyData.getPassword()));
         }
-        return;
       }
-      LOG.debug("No proxy for [{}]", server.getHost());
+      else {
+        LOG.debug("No proxy for [{}]", server.getHost());
+      }
     } catch (Exception e) {
       LOG.error("Unable to configure proxy for sonar-ws-client", e);
     }
+  }
+
+  private static IProxyData getEclipseProxyFor(Host server) {
+    IProxyData[] proxyDatas;
+    try {
+      proxyDatas = WSClientPlugin.selectProxy(new URI(server.getHost()));
+    } catch (URISyntaxException e) {
+      LOG.error("Unable to configure proxy", e);
+      return null;
+    }
+    return proxyDatas != null && proxyDatas.length > 0 ? proxyDatas[0] : null;
   }
 
 }
