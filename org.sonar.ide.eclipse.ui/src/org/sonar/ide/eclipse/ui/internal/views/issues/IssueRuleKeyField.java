@@ -30,7 +30,10 @@ public class IssueRuleKeyField extends MarkerField {
 
   @Override
   public String getValue(MarkerItem item) {
-    return item.getMarker().getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "");
+    if (item == null) {
+      return null;
+    }
+    return item.getAttributeValue(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "");
   }
 
 }
