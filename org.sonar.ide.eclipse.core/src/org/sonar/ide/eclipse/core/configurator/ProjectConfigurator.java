@@ -26,6 +26,7 @@ import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 
 import java.util.Properties;
+import java.util.Set;
 
 public abstract class ProjectConfigurator {
 
@@ -58,6 +59,19 @@ public abstract class ProjectConfigurator {
       newValue = value;
     }
     properties.put(key, newValue);
+  }
+
+  protected String concatenate(Set<String> sonarLibraries) {
+  	StringBuilder sb = new StringBuilder();
+  	boolean first = true;
+  	for (String lib : sonarLibraries) {
+  		if(!first) {
+  			sb.append(SonarProperties.SEPARATOR);
+  		}
+  		first = false;
+  		sb.append(lib);
+  	}
+  	return sb.toString();
   }
 
 }
