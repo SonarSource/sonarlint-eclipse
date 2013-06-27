@@ -2,7 +2,7 @@
 <feature
       id="org.sonar.ide.eclipse.thirdparty.feature"
       label="Sonar Integration for Eclipse Third-Party feature"
-      version="3.2.0.20130627-1142-RELEASE"
+      version="3.3.0.qualifier"
       provider-name="SonarSource">
 
    <plugin
