@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundle_name
 Bundle-SymbolicName: org.sonar.ide.eclipse.core;singleton:=true
-Bundle-Version: 3.2.0.qualifier
+Bundle-Version: 3.2.0.20130627-1142-RELEASE
 Bundle-ClassPath: .
 Bundle-Activator: org.sonar.ide.eclipse.core.internal.SonarCorePlugin
 Bundle-Vendor: %bundle_vendor

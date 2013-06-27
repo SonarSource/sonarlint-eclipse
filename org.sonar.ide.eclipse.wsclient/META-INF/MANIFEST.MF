@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.core.runtime,
 Export-Package: org.sonar.ide.eclipse.wsclient
 Bundle-Vendor: SonarSource
 Bundle-ActivationPolicy: lazy
-Bundle-Version: 3.2.0.qualifier
+Bundle-Version: 3.2.0.20130627-1142-RELEASE
 Bundle-Name: Sonar Web Service Client
 Bundle-Activator: org.sonar.ide.eclipse.wsclient.internal.WSClientPlugin
 Bundle-ManifestVersion: 2
