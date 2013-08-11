@@ -20,6 +20,7 @@
 package org.sonar.ide.eclipse.ui.internal.jobs;
 
 import com.google.common.collect.ArrayListMultimap;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -32,6 +33,7 @@ import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.markers.SonarMarker;
 import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
+import org.sonar.ide.eclipse.core.internal.remote.IssuesUtils;
 import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
@@ -84,7 +86,7 @@ public class SynchronizeAllIssuesJob extends SynchronizeIssuesJob {
   }
 
   private void doRefreshIssues(SonarProject sonarProject, SourceCode sourceCode, IProgressMonitor monitor) throws CoreException {
-    List<ISonarIssue> issues = sourceCode.getRemoteIssuesRecursively(monitor);
+    List<ISonarIssue> issues = sourceCode.getRemoteIssuesRecursively(monitor, IssuesUtils.getMinSeverityIssuesFilter());
     // Split issues by resource
     ArrayListMultimap<String, ISonarIssue> mm = ArrayListMultimap.create();
     for (ISonarIssue issue : issues) {

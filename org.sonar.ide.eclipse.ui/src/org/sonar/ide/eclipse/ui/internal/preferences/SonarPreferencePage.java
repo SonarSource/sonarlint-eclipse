@@ -25,6 +25,7 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.sonar.ide.eclipse.common.issues.IssueSeverity;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 
@@ -45,6 +46,17 @@ public class SonarPreferencePage extends FieldEditorPreferencePage implements IW
   @Override
   protected void createFieldEditors() {
 
+	addField(new ComboFieldEditor(SonarUiPlugin.PREF_FILTER_ISSUES_MIN_SEVERITY,
+	            Messages.SonarPreferencePage_label_filter_issues_min_severity,
+	            new String[][] {
+	              //{"", ""},
+	              {"Info", IssueSeverity.INFO.name()},
+	              {"Minor", IssueSeverity.MINOR.name()},
+	              {"Major", IssueSeverity.MAJOR.name()},
+	              {"Critical", IssueSeverity.CRITICAL.name()},
+	              {"Blocker", IssueSeverity.BLOCKER.name()},
+	              },
+	            getFieldEditorParent()));
     addField(new ComboFieldEditor(SonarUiPlugin.PREF_MARKER_SEVERITY,
         Messages.SonarPreferencePage_label_marker_severity,
         new String[][] {

@@ -31,9 +31,11 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.common.issues.IssueSeverity;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.jobs.SonarRunnerLogListener;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
+import org.sonar.ide.eclipse.core.internal.remote.IssuesUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
@@ -47,6 +49,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   // The shared instance
   private static SonarUiPlugin plugin;
 
+  public static final String PREF_FILTER_ISSUES_MIN_SEVERITY = "filterIssuesMinSeverity"; //$NON-NLS-1$
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
   public static final String PREF_NEW_ISSUE_MARKER_SEVERITY = "newViolationMarkerSeverity"; //$NON-NLS-1$
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
@@ -72,6 +75,12 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
     listener = new IPropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent event) {
+		if (event.getProperty().equals(PREF_FILTER_ISSUES_MIN_SEVERITY)) {
+			IssuesUtils.setMinSeverityIssuesFilter(IssueSeverity
+					.valueOf(getPreferenceStore().getString(
+							PREF_FILTER_ISSUES_MIN_SEVERITY)));
+		}
+    	  
         if (event.getProperty().equals(PREF_MARKER_SEVERITY) || event.getProperty().equals(PREF_NEW_ISSUE_MARKER_SEVERITY)) {
           int newSeverity = getPreferenceStore().getInt(PREF_MARKER_SEVERITY);
           MarkerUtils.setMarkerSeverity(newSeverity);
@@ -123,12 +132,14 @@ public class SonarUiPlugin extends AbstractUIPlugin {
    */
   @Override
   protected void initializeDefaultPreferences(IPreferenceStore store) {
+	store.setDefault(PREF_FILTER_ISSUES_MIN_SEVERITY, IssueSeverity.INFO.name());
     store.setDefault(PREF_MARKER_SEVERITY, IMarker.SEVERITY_WARNING);
     store.setDefault(PREF_NEW_ISSUE_MARKER_SEVERITY, IMarker.SEVERITY_ERROR);
     store.setDefault(PREF_EXTRA_ARGS, "");
     store.setDefault(PREF_JVM_ARGS, "");
     MarkerUtils.setMarkerSeverity(store.getInt(PREF_MARKER_SEVERITY));
     MarkerUtils.setMarkerSeverityForNewIssues(store.getInt(PREF_NEW_ISSUE_MARKER_SEVERITY));
+    IssuesUtils.setMinSeverityIssuesFilter(IssueSeverity.valueOf(store.getString(PREF_FILTER_ISSUES_MIN_SEVERITY)));
   }
 
   public static List<SonarProperty> getExtraPropertiesForLocalAnalysis(IProject project) {

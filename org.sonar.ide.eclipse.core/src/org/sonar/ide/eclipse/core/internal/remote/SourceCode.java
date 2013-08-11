@@ -21,6 +21,7 @@ package org.sonar.ide.eclipse.core.internal.remote;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
+import org.sonar.ide.eclipse.common.issues.IssueSeverity;
 
 import java.util.Date;
 import java.util.List;
@@ -51,8 +52,8 @@ public interface SourceCode extends Comparable<SourceCode> {
 
   Date getAnalysisDate();
 
-  List<ISonarIssue> getRemoteIssuesWithLineCorrection(IProgressMonitor monitor);
+  List<ISonarIssue> getRemoteIssuesWithLineCorrection(IProgressMonitor monitor, IssueSeverity minSeverity);
 
-  List<ISonarIssue> getRemoteIssuesRecursively(IProgressMonitor monitor);
+  List<ISonarIssue> getRemoteIssuesRecursively(IProgressMonitor monitor, IssueSeverity minSeverity);
 
 }

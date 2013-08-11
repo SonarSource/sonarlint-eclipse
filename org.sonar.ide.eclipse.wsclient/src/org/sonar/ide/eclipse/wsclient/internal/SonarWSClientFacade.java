@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
+import org.sonar.ide.eclipse.common.issues.IssueSeverity;
 import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
 import org.sonar.ide.eclipse.wsclient.ISonarWSClientFacade;
 import org.sonar.wsclient.Sonar;
@@ -163,23 +164,28 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
   }
 
   @Override
-  public List<ISonarIssue> getRemoteIssuesRecursively(String resourceKey, IProgressMonitor monitor) {
+  public List<ISonarIssue> getRemoteIssuesRecursively(String resourceKey, IProgressMonitor monitor, IssueSeverity minSeverity) {
     int maxPageSize = -1;
     List<ISonarIssue> result = new ArrayList<ISonarIssue>();
     int pageIndex = 1;
     Issues issues;
     do {
-      issues = findIssues(IssueQuery.create().componentRoots(resourceKey).pageSize(maxPageSize).pageIndex(pageIndex));
+      IssueQuery query = IssueQuery.create().componentRoots(resourceKey).pageSize(maxPageSize).pageIndex(pageIndex);
+      query.severities(minSeverity.getEqualOrGreaterSeveritiesAsStringArray());
+      issues = findIssues(query
+    		  );
       for (Issue issue : issues.list()) {
         result.add(new SonarRemoteIssue(issue, issues.rule(issue)));
       }
     } while (pageIndex++ < issues.paging().pages() && !monitor.isCanceled());
     return result;
   }
-
+  
   @Override
-  public List<ISonarIssue> getRemoteIssues(String resourceKey, IProgressMonitor monitor) {
-    Issues issues = findIssues(IssueQuery.create().components(resourceKey));
+  public List<ISonarIssue> getRemoteIssues(String resourceKey, IProgressMonitor monitor, IssueSeverity minSeverity) {
+    IssueQuery query = IssueQuery.create().components(resourceKey);
+    query.severities(minSeverity.getEqualOrGreaterSeveritiesAsStringArray());
+	Issues issues = findIssues(query);
     List<ISonarIssue> result = new ArrayList<ISonarIssue>(issues.list().size());
     for (Issue issue : issues.list()) {
       result.add(new SonarRemoteIssue(issue, issues.rule(issue)));
