@@ -20,6 +20,7 @@
 package org.sonar.ide.eclipse.core.internal.remote;
 
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
+import org.sonar.ide.eclipse.common.issues.IssueSeverity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.List;
  * @author Evgeny Mandrikov
  */
 public final class IssuesUtils {
+	private static IssueSeverity minSeverityIssuesFilter = IssueSeverity.INFO;
 
   public static List<ISonarIssue> convertLines(List<ISonarIssue> issues, SourceCodeDiff diff) {
     List<ISonarIssue> result = new ArrayList<ISonarIssue>();
@@ -105,9 +107,18 @@ public final class IssuesUtils {
 
   }
 
+  public static IssueSeverity getMinSeverityIssuesFilter() {
+	  return minSeverityIssuesFilter;
+  }
+  
+  public static void setMinSeverityIssuesFilter(IssueSeverity filterIssues) {
+	  IssuesUtils.minSeverityIssuesFilter = filterIssues;
+  }
+
   /**
    * Hide utility-class constructor.
    */
   private IssuesUtils() {
   }
+
 }

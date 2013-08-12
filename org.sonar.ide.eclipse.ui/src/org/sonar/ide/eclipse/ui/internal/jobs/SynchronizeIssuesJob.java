@@ -41,6 +41,7 @@ import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.markers.SonarMarker;
 import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
+import org.sonar.ide.eclipse.core.internal.remote.IssuesUtils;
 import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
@@ -143,7 +144,7 @@ public class SynchronizeIssuesJob extends AbstractRemoteSonarJob implements IRes
     if (sourceCode == null) {
       return Collections.emptyList();
     }
-    return sourceCode.getRemoteIssuesWithLineCorrection(monitor);
+    return sourceCode.getRemoteIssuesWithLineCorrection(monitor, IssuesUtils.getMinSeverityIssuesFilter());
   }
 
   public static void setupIssuesUpdater() {
