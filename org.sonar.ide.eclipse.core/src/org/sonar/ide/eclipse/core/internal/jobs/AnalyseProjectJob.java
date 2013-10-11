@@ -53,6 +53,7 @@ import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.wsclient.SonarVersionTester;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 import org.sonar.runner.api.ForkedRunner;
+import org.sonar.runner.api.ProcessMonitor;
 import org.sonar.runner.api.StreamConsumer;
 
 import java.io.File;
@@ -101,11 +102,11 @@ public class AnalyseProjectJob extends Job {
     // Verify Host
     if (getSonarServer() == null) {
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
-          NLS.bind(Messages.No_matching_server_in_configuration_for_project, project.getName(), sonarProject.getUrl()));
+        NLS.bind(Messages.No_matching_server_in_configuration_for_project, project.getName(), sonarProject.getUrl()));
     }
     if (!SonarVersionTester.isServerVersionSupported(SonarCorePlugin.LOCAL_MODE_MINIMAL_SONAR_VERSION, getServerVersion())) {
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
-          NLS.bind(Messages.AnalyseProjectJob_unsupported_version, SonarCorePlugin.LOCAL_MODE_MINIMAL_SONAR_VERSION));
+        NLS.bind(Messages.AnalyseProjectJob_unsupported_version, SonarCorePlugin.LOCAL_MODE_MINIMAL_SONAR_VERSION));
     }
 
     // Configure
@@ -225,7 +226,7 @@ public class AnalyseProjectJob extends Job {
    * @throws IOException
    */
   public IStatus run(IProject project, Properties props, boolean debugEnabled, final IProgressMonitor monitor) throws InterruptedException,
-      CoreException, IOException {
+    CoreException, IOException {
 
     try {
 
@@ -233,22 +234,30 @@ public class AnalyseProjectJob extends Job {
         SonarCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props));
       }
 
-      ForkedRunner.create()
-          .setApp("Eclipse", SonarCorePlugin.getDefault().getBundle().getVersion().toString())
-          .addProperties(props)
-          .addJvmArguments(jvmArgs.trim().split("\\s+"))
-          .setStdOut(new StreamConsumer() {
-            public void consumeLine(String text) {
-              SonarCorePlugin.getDefault().info(text + "\n");
-            }
-          })
-          .setStdErr(new StreamConsumer() {
-            public void consumeLine(String text) {
-              SonarCorePlugin.getDefault().error(text + "\n");
-            }
-          })
-          .execute();
+      ForkedRunner.create(new ProcessMonitor() {
+        @Override
+        public boolean stop() {
+          return monitor.isCanceled();
+        }
+      })
+        .setApp("Eclipse", SonarCorePlugin.getDefault().getBundle().getVersion().toString())
+        .addProperties(props)
+        .addJvmArguments(jvmArgs.trim().split("\\s+"))
+        .setStdOut(new StreamConsumer() {
+          public void consumeLine(String text) {
+            SonarCorePlugin.getDefault().info(text + "\n");
+          }
+        })
+        .setStdErr(new StreamConsumer() {
+          public void consumeLine(String text) {
+            SonarCorePlugin.getDefault().error(text + "\n");
+          }
+        })
+        .execute();
 
+      if (monitor.isCanceled()) {
+        return Status.CANCEL_STATUS;
+      }
       return Status.OK_STATUS;
     } catch (Exception e) {
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error during execution of Sonar", e);
