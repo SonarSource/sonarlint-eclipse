@@ -111,6 +111,10 @@ public class AnalyseProjectJob extends Job {
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
         NLS.bind(Messages.AnalyseProjectJob_unsupported_version, SonarCorePlugin.LOCAL_MODE_MINIMAL_SONAR_VERSION));
     }
+    if (incremental && !SonarVersionTester.isServerVersionSupported(SonarCorePlugin.INCREMENTAL_MODE_MINIMAL_SONAR_VERSION, getServerVersion())) {
+      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
+        NLS.bind(Messages.AnalyseProjectJob_unsupported_version, SonarCorePlugin.INCREMENTAL_MODE_MINIMAL_SONAR_VERSION));
+    }
 
     // Configure
     Properties properties = new Properties();

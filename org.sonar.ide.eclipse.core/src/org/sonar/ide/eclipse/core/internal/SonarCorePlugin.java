@@ -48,6 +48,10 @@ public class SonarCorePlugin extends AbstractPlugin {
    * Minimal supported version of Sonar server for local analysis.
    */
   public static final String LOCAL_MODE_MINIMAL_SONAR_VERSION = "3.6"; //$NON-NLS-1$
+  /**
+   * Minimal supported version of Sonar server for incremental analysis.
+   */
+  public static final String INCREMENTAL_MODE_MINIMAL_SONAR_VERSION = "4.0"; //$NON-NLS-1$
 
   private static SonarCorePlugin plugin;
 

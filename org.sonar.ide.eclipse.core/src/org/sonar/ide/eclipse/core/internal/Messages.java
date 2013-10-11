@@ -37,6 +37,7 @@ public final class Messages extends NLS {
   public static String AnalyseProjectJob_sutask_sensor;
   public static String AnalyseProjectJob_sutask_decorator;
   public static String AnalyseProjectJob_unsupported_version;
+  public static String AnalyseProjectJob_unsupported_version_for_incremental;
 
   public static String No_matching_server_in_configuration_for_project;
   public static String No_matching_server_in_configuration;
