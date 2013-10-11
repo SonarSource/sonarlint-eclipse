@@ -26,9 +26,9 @@ import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 
-public class AnalyseProjectAction extends AbstractSonarProjectAction {
+public class IncrementalAnalyseProjectAction extends AbstractSonarProjectAction {
 
-  public AnalyseProjectAction() {
+  public IncrementalAnalyseProjectAction() {
     super();
   }
 
@@ -46,7 +46,7 @@ public class AnalyseProjectAction extends AbstractSonarProjectAction {
   }
 
   protected boolean isIncremental() {
-    return false;
+    return true;
   }
 
   @Override

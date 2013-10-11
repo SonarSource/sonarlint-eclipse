@@ -379,7 +379,14 @@
               class="org.sonar.ide.eclipse.ui.internal.actions.AnalyseProjectAction"
               icon="icons/inspect.png"
               id="org.sonar.ide.eclipse.runtime.ui.analyseAction"
-              label="Run Local Analysis"
+              label="Run Full Local Analysis"
+              menubarPath="sonar.menu/group2">
+        </action>
+        <action
+              class="org.sonar.ide.eclipse.ui.internal.actions.IncrementalAnalyseProjectAction"
+              icon="icons/inspect.png"
+              id="org.sonar.ide.eclipse.runtime.ui.incrementalAnalyseAction"
+              label="Run Incremental Local Analysis"
               menubarPath="sonar.menu/group2">
         </action>
         <action

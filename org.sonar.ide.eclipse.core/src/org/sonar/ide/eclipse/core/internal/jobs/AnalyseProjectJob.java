@@ -79,14 +79,17 @@ public class AnalyseProjectJob extends Job {
 
   private ISonarServer sonarServer;
 
-  public AnalyseProjectJob(IProject project, boolean debugEnabled) {
-    this(project, debugEnabled, Collections.<SonarProperty> emptyList(), null);
+  private final boolean incremental;
+
+  public AnalyseProjectJob(IProject project, boolean debugEnabled, boolean incremental) {
+    this(project, debugEnabled, incremental, Collections.<SonarProperty> emptyList(), null);
   }
 
-  public AnalyseProjectJob(IProject project, boolean debugEnabled, List<SonarProperty> extraProps, String jvmArgs) {
+  public AnalyseProjectJob(IProject project, boolean debugEnabled, boolean incremental, List<SonarProperty> extraProps, String jvmArgs) {
     super(Messages.AnalyseProjectJob_title);
     this.project = project;
     this.debugEnabled = debugEnabled;
+    this.incremental = incremental;
     this.extraProps = extraProps;
     this.jvmArgs = jvmArgs != null ? jvmArgs : "";
     this.sonarProject = SonarProject.getInstance(project);
@@ -113,8 +116,10 @@ public class AnalyseProjectJob extends Job {
     Properties properties = new Properties();
     File outputFile = configureAnalysis(monitor, properties, extraProps);
 
-    // Clean previous markers
-    MarkerUtils.deleteIssuesMarkers(project);
+    if (!incremental) {
+      // Clean previous markers
+      MarkerUtils.deleteIssuesMarkers(project);
+    }
 
     // Analyse
     // To be sure to not reuse something from a previous analysis
@@ -163,9 +168,12 @@ public class AnalyseProjectJob extends Job {
         IResource resource = ResourceUtils.findResource(sonarProject, key);
         if (resource != null) {
           resourcesByKey.put(key, resource);
+          if (incremental) {
+            MarkerUtils.deleteIssuesMarkers(resource);
+          }
         }
       }
-      // Now read all rules nane in a cache
+      // Now read all rules name in a cache
       Map<String, String> ruleByKey = Maps.newHashMap();
       final JSONArray rules = (JSONArray) sonarResult.get("rules");
       for (Object rule : rules) {
@@ -212,6 +220,9 @@ public class AnalyseProjectJob extends Job {
     properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
     properties.setProperty(SonarProperties.WORK_DIR, projectSpecificWorkDir.toString());
     properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
+    if (incremental) {
+      properties.setProperty(SonarProperties.INCREMENTAL_PREVIEW_PROPERTY, "true");
+    }
     // Output file is relative to working dir
     properties.setProperty(SonarProperties.REPORT_OUTPUT_PROPERTY, outputFile.getName());
     if (debugEnabled) {

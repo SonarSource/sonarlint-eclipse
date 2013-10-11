@@ -25,10 +25,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
+import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
@@ -57,19 +59,37 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     SonarCorePlugin.createSonarProject(project, "http://localhost:9000", "bar:foo", true);
   }
 
+  @Before
+  public void cleanup() {
+    MarkerUtils.deleteIssuesMarkers(project);
+  }
+
   @Test
   public void shouldConfigureAnalysis() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false);
+    AnalyseProjectJob job = new AnalyseProjectJob(project, false, false);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
 
     assertThat(props.get(SonarProperties.SONAR_URL).toString(), is("http://localhost:9000"));
     assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString(), is("bar:foo"));
+    assertThat(props.get(SonarProperties.DRY_RUN_PROPERTY).toString(), is("true"));
+  }
+
+  @Test
+  public void shouldConfigureIncrementalAnalysis() throws Exception {
+    AnalyseProjectJob job = new AnalyseProjectJob(project, false, true);
+    Properties props = new Properties();
+    job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
+
+    assertThat(props.get(SonarProperties.SONAR_URL).toString(), is("http://localhost:9000"));
+    assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString(), is("bar:foo"));
+    assertThat(props.get(SonarProperties.DRY_RUN_PROPERTY).toString(), is("true"));
+    assertThat(props.get(SonarProperties.INCREMENTAL_PREVIEW_PROPERTY).toString(), is("true"));
   }
 
   @Test
   public void shouldConfigureAnalysisWithExtraProps() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false);
+    AnalyseProjectJob job = new AnalyseProjectJob(project, false, false);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.foo", "value")));
 
@@ -78,7 +98,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void languageConfiguratorShouldOverrideExtraProps() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false);
+    AnalyseProjectJob job = new AnalyseProjectJob(project, false, false);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.language", "fake")));
 
@@ -87,7 +107,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldCreateMarkersFromIssuesReport() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false);
+    AnalyseProjectJob job = new AnalyseProjectJob(project, false, false);
     job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
 
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
@@ -96,6 +116,22 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     assertThat(markers, hasItem(new IsMarker("src/Findbugs.java", 5)));
     assertThat(markers, hasItem(new IsMarker("src/Pmd.java", 2)));
     assertThat(markers, hasItem(new IsMarker("src/Checkstyle.java", 1)));
+  }
+
+  @Test
+  public void shouldCleanAndCreateMarkersFromIncrementalAnalysis() throws Exception {
+    AnalyseProjectJob job = new AnalyseProjectJob(project, false, false);
+    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
+
+    // During incremental analysis PMD file was not modified, Findbugs has one remaing issue and Checkstyle has no remaining issues
+    job = new AnalyseProjectJob(project, false, true);
+    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report-incremental.json"));
+
+    List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
+    assertThat(markers.size(), is(3));
+
+    assertThat(markers, hasItem(new IsMarker("src/Findbugs.java", 5)));
+    assertThat(markers, hasItem(new IsMarker("src/Pmd.java", 2)));
   }
 
   static class IsMarker extends BaseMatcher<IMarker> {
