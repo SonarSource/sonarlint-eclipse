@@ -82,7 +82,7 @@ public class AnalyseProjectJob extends Job {
   private final boolean incremental;
 
   public AnalyseProjectJob(IProject project, boolean debugEnabled, boolean incremental) {
-    this(project, debugEnabled, incremental, Collections.<SonarProperty> emptyList(), null);
+    this(project, debugEnabled, incremental, Collections.<SonarProperty>emptyList(), null);
   }
 
   public AnalyseProjectJob(IProject project, boolean debugEnabled, boolean incremental, List<SonarProperty> extraProps, String jvmArgs) {
@@ -275,6 +275,10 @@ public class AnalyseProjectJob extends Job {
       }
       return Status.OK_STATUS;
     } catch (Exception e) {
+      if (monitor.isCanceled()) {
+        // On OSX it seems that cancelling produce an exception
+        return Status.CANCEL_STATUS;
+      }
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error during execution of Sonar", e);
     }
 
