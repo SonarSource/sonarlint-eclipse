@@ -59,6 +59,7 @@ public final class MarkerUtils {
 
   public static final QualifiedName MODIFICATION_STAMP_PERSISTENT_PROP_KEY = new QualifiedName(SonarCorePlugin.PLUGIN_ID, "modificationStamp");
   public static final QualifiedName LAST_ANALYSIS_DATE_PERSISTENT_PROP_KEY = new QualifiedName(SonarCorePlugin.PLUGIN_ID, "lastAnalysisDate");
+  public static final QualifiedName LOCALLY_ANALYSED_PROP_KEY = new QualifiedName(SonarCorePlugin.PLUGIN_ID, "locallyAnalysed");
 
   private MarkerUtils() {
   }
@@ -175,9 +176,26 @@ public final class MarkerUtils {
     try {
       resource.setPersistentProperty(MODIFICATION_STAMP_PERSISTENT_PROP_KEY, "" + resource.getModificationStamp());
       resource.setPersistentProperty(LAST_ANALYSIS_DATE_PERSISTENT_PROP_KEY, "" + WSClientFactory.getSonarClient(sonarServer)
-          .getLastAnalysisDate(sonarProject.getKey()).getTime());
+        .getLastAnalysisDate(sonarProject.getKey()).getTime());
     } catch (CoreException e) {
       LOG.error("Unable to update persistent properties", e);
+    }
+  }
+
+  public static void markResourceAsLocallyAnalysed(IResource resource) {
+    try {
+      resource.setPersistentProperty(LOCALLY_ANALYSED_PROP_KEY, "true");
+    } catch (CoreException e) {
+      LOG.error("Unable to update persistent properties", e);
+    }
+  }
+
+  public static boolean isResourceLocallyAnalysed(IResource resource) {
+    try {
+      return "true".equals(resource.getPersistentProperty(LOCALLY_ANALYSED_PROP_KEY));
+    } catch (CoreException e) {
+      LOG.error("Unable to update persistent properties", e);
+      return false;
     }
   }
 
@@ -199,6 +217,7 @@ public final class MarkerUtils {
           IResource resource = proxy.requestResource();
           resource.setPersistentProperty(MODIFICATION_STAMP_PERSISTENT_PROP_KEY, null);
           resource.setPersistentProperty(LAST_ANALYSIS_DATE_PERSISTENT_PROP_KEY, null);
+          resource.setPersistentProperty(LOCALLY_ANALYSED_PROP_KEY, null);
           return false;
         }
         return true;

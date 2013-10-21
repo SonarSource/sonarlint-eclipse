@@ -19,9 +19,16 @@
  */
 package org.sonar.ide.eclipse.ui.internal.actions;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.IAction;
+import org.sonar.ide.eclipse.core.internal.jobs.AnalyseProjectRequest;
+import org.sonar.ide.eclipse.core.internal.jobs.SynchronizeAllIssuesJob;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-import org.sonar.ide.eclipse.ui.internal.jobs.SynchronizeAllIssuesJob;
+import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
+import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SynchronizeIssuesAction extends AbstractSonarProjectAction {
 
@@ -33,13 +40,22 @@ public class SynchronizeIssuesAction extends AbstractSonarProjectAction {
    * @see org.eclipse.ui.IActionDelegate#run(IAction)
    */
   public void run(IAction action) {
-    SynchronizeAllIssuesJob job = new SynchronizeAllIssuesJob(getSelectedProjects());
+    boolean debugEnabled = SonarConsole.isDebugEnabled();
+    String sonarJvmArgs = SonarUiPlugin.getSonarJvmArgs();
+    List<AnalyseProjectRequest> requests = new ArrayList<AnalyseProjectRequest>();
+    for (IProject project : getSelectedProjects()) {
+      requests.add(new AnalyseProjectRequest(project)
+        .setDebugEnabled(debugEnabled)
+        .setExtraProps(SonarUiPlugin.getExtraPropertiesForLocalAnalysis(project))
+        .setJvmArgs(sonarJvmArgs));
+    }
+    SynchronizeAllIssuesJob job = new SynchronizeAllIssuesJob(requests);
     showIssuesViewAfterJobSuccess(job);
   }
 
   @Override
   protected boolean actionEnabled(SonarProject projectProperties) {
-    return !projectProperties.isAnalysedLocally();
+    return true;
   }
 
 }

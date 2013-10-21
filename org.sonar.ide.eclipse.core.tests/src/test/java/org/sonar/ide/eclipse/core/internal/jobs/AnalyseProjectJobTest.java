@@ -56,7 +56,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     project = importEclipseProject("reference");
 
     // Enable Sonar Nature
-    SonarCorePlugin.createSonarProject(project, "http://localhost:9000", "bar:foo", true);
+    SonarCorePlugin.createSonarProject(project, "http://localhost:9000", "bar:foo");
   }
 
   @Before
@@ -64,9 +64,14 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     MarkerUtils.deleteIssuesMarkers(project);
   }
 
+  private static AnalyseProjectJob job(IProject project) {
+    return new AnalyseProjectJob(new AnalyseProjectRequest(project));
+  }
+
   @Test
-  public void shouldConfigureAnalysis() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false, false);
+  public void shouldConfigureAnalysisBefore40() throws Exception {
+    AnalyseProjectJob job = job(project);
+    job.setIncremental(false);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
 
@@ -76,20 +81,20 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   }
 
   @Test
-  public void shouldConfigureIncrementalAnalysis() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false, true);
+  public void shouldConfigureAnalysisAfter40() throws Exception {
+    AnalyseProjectJob job = job(project);
+    job.setIncremental(true);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
 
     assertThat(props.get(SonarProperties.SONAR_URL).toString(), is("http://localhost:9000"));
     assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString(), is("bar:foo"));
-    assertThat(props.get(SonarProperties.DRY_RUN_PROPERTY).toString(), is("true"));
-    assertThat(props.get(SonarProperties.INCREMENTAL_PREVIEW_PROPERTY).toString(), is("true"));
+    assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString(), is("incremental"));
   }
 
   @Test
   public void shouldConfigureAnalysisWithExtraProps() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false, false);
+    AnalyseProjectJob job = job(project);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.foo", "value")));
 
@@ -98,7 +103,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void languageConfiguratorShouldOverrideExtraProps() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false, false);
+    AnalyseProjectJob job = job(project);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.language", "fake")));
 
@@ -107,7 +112,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldCreateMarkersFromIssuesReport() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false, false);
+    AnalyseProjectJob job = job(project);
     job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
 
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
@@ -120,11 +125,11 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldCleanAndCreateMarkersFromIncrementalAnalysis() throws Exception {
-    AnalyseProjectJob job = new AnalyseProjectJob(project, false, false);
+    AnalyseProjectJob job = job(project);
     job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
 
     // During incremental analysis PMD file was not modified, Findbugs has one remaing issue and Checkstyle has no remaining issues
-    job = new AnalyseProjectJob(project, false, true);
+    job = job(project);
     job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report-incremental.json"));
 
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));

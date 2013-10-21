@@ -60,7 +60,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -79,19 +78,15 @@ public class AnalyseProjectJob extends Job {
 
   private ISonarServer sonarServer;
 
-  private final boolean incremental;
+  private boolean incremental;
 
-  public AnalyseProjectJob(IProject project, boolean debugEnabled, boolean incremental) {
-    this(project, debugEnabled, incremental, Collections.<SonarProperty>emptyList(), null);
-  }
-
-  public AnalyseProjectJob(IProject project, boolean debugEnabled, boolean incremental, List<SonarProperty> extraProps, String jvmArgs) {
+  public AnalyseProjectJob(AnalyseProjectRequest request) {
     super(Messages.AnalyseProjectJob_title);
-    this.project = project;
-    this.debugEnabled = debugEnabled;
-    this.incremental = incremental;
-    this.extraProps = extraProps;
-    this.jvmArgs = jvmArgs != null ? jvmArgs : "";
+    this.project = request.getProject();
+    this.debugEnabled = request.isDebugEnabled();
+    this.incremental = true;
+    this.extraProps = request.getExtraProps();
+    this.jvmArgs = StringUtils.defaultIfBlank(request.getJvmArgs(), "");
     this.sonarProject = SonarProject.getInstance(project);
     this.sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     // Prevent modifications of project during analysis
@@ -112,18 +107,13 @@ public class AnalyseProjectJob extends Job {
         NLS.bind(Messages.AnalyseProjectJob_unsupported_version, SonarCorePlugin.LOCAL_MODE_MINIMAL_SONAR_VERSION));
     }
     if (incremental && !SonarVersionTester.isServerVersionSupported(SonarCorePlugin.INCREMENTAL_MODE_MINIMAL_SONAR_VERSION, getServerVersion())) {
-      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
-        NLS.bind(Messages.AnalyseProjectJob_unsupported_version, SonarCorePlugin.INCREMENTAL_MODE_MINIMAL_SONAR_VERSION));
+      SonarCorePlugin.getDefault().info(NLS.bind(Messages.AnalyseProjectJob_unsupported_version, SonarCorePlugin.INCREMENTAL_MODE_MINIMAL_SONAR_VERSION));
+      this.incremental = false;
     }
 
     // Configure
     Properties properties = new Properties();
     File outputFile = configureAnalysis(monitor, properties, extraProps);
-
-    if (!incremental) {
-      // Clean previous markers
-      MarkerUtils.deleteIssuesMarkers(project);
-    }
 
     // Analyse
     // To be sure to not reuse something from a previous analysis
@@ -147,6 +137,11 @@ public class AnalyseProjectJob extends Job {
 
     monitor.done();
     return Status.OK_STATUS;
+  }
+
+  @VisibleForTesting
+  public void setIncremental(boolean incremental) {
+    this.incremental = incremental;
   }
 
   private String getServerVersion() {
@@ -175,6 +170,7 @@ public class AnalyseProjectJob extends Job {
           if (incremental) {
             MarkerUtils.deleteIssuesMarkers(resource);
           }
+          MarkerUtils.markResourceAsLocallyAnalysed(resource);
         }
       }
       // Now read all rules name in a cache
@@ -223,9 +219,10 @@ public class AnalyseProjectJob extends Job {
     }
     properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
     properties.setProperty(SonarProperties.WORK_DIR, projectSpecificWorkDir.toString());
-    properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
     if (incremental) {
-      properties.setProperty(SonarProperties.INCREMENTAL_PREVIEW_PROPERTY, "true");
+      properties.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_INCREMENTAL);
+    } else {
+      properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
     }
     // Output file is relative to working dir
     properties.setProperty(SonarProperties.REPORT_OUTPUT_PROPERTY, outputFile.getName());

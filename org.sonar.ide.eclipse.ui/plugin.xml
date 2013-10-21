@@ -104,12 +104,12 @@
          point="org.eclipse.ui.menus">
       <menuContribution
             locationURI="menu:org.sonar.ide.eclipse.ui.views.issues.IssuesView">
-         <menu 
+         <menu
            id="org.eclipse.ui.ide.problems.filtersMenu"
            label="Show"
            mnemonic="S">
          </menu>
-		 <menu
+     <menu
            id="problemsGroupByMenu"
            label="Group By"
            mnemonic="G">
@@ -139,13 +139,13 @@
              <!-- Don't display Edit Issue button on new issues -->
              <visibleWhen checkEnabled="false">
                <with variable="selection">
-	                  	<iterate ifEmpty="false" operator="and">
-	                  		<adapt type="org.eclipse.core.resources.IMarker" >
-	                    			<test value="org.sonar.ide.eclipse.core.sonarProblem"
-	                  				property="org.eclipse.ui.ide.marker.type"/>
-	                  		</adapt>	
-	                  	</iterate>
-	            </with>
+                      <iterate ifEmpty="false" operator="and">
+                        <adapt type="org.eclipse.core.resources.IMarker" >
+                            <test value="org.sonar.ide.eclipse.core.sonarProblem"
+                            property="org.eclipse.ui.ide.marker.type"/>
+                        </adapt>
+                      </iterate>
+              </with>
             </visibleWhen>
          </command>
       </menuContribution>
@@ -190,7 +190,7 @@
         <markerFieldReference
               id="org.eclipse.ui.ide.pathField"
               visible="false"/>
-        <!-- Default Filtering -->      
+        <!-- Default Filtering -->
         <markerFieldConfiguration
               enabled="true"
               id="org.sonar.ide.eclipse.ui.issues.allIssuesOnSelectionFiltering"
@@ -204,7 +204,7 @@
               scope="ON_SELECTED_AND_CHILDREN"
               values="org.sonar.ide.eclipse.ui.internal.views.issues.SelectedNewIssuesParameters">
         </markerFieldConfiguration>
-        
+
         <markerGrouping
             id="org.sonar.ide.eclipse.ui.issues.newGrouping"
             label="Issue type (new/other)">
@@ -323,7 +323,7 @@
         filterConfigurationClass="org.sonar.ide.eclipse.ui.internal.views.issues.IsNewIssueConfigurationArea"
         name="%sonar.issues.view.isnewfield">
     </markerField>
-    
+
     <markerTypeCategory
           name="Sonar">
        <markerTypeReference id="org.sonar.ide.eclipse.core.sonarProblemNewIssue">
@@ -376,41 +376,11 @@
            <objectState name="nature" value="org.sonar.ide.eclipse.core.sonarNature"/>
         </visibility>
         <action
-              class="org.sonar.ide.eclipse.ui.internal.actions.AnalyseProjectAction"
-              icon="icons/inspect.png"
-              id="org.sonar.ide.eclipse.runtime.ui.analyseAction"
-              label="Run Full Local Analysis"
-              menubarPath="sonar.menu/group2">
-        </action>
-        <action
-              class="org.sonar.ide.eclipse.ui.internal.actions.IncrementalAnalyseProjectAction"
-              icon="icons/inspect.png"
-              id="org.sonar.ide.eclipse.runtime.ui.incrementalAnalyseAction"
-              label="Run Incremental Local Analysis"
-              menubarPath="sonar.menu/group2">
-        </action>
-        <action
               class="org.sonar.ide.eclipse.ui.internal.actions.SynchronizeIssuesAction"
               icon="icons/refresh.gif"
               id="org.sonar.ide.eclipse.runtime.ui.synchronizeAction"
-              label="Synchronize with Sonar server"
+              label="Analyse"
               menubarPath="sonar.menu/group2">
-        </action>
-        <action
-              class="org.sonar.ide.eclipse.ui.internal.actions.ChangeAnalysisModeAction"
-              enablesFor="1"
-              id="org.sonar.ide.eclipse.runtime.ui.enableLocalAnalysisAction"
-              label="Local"
-              menubarPath="sonar.menu/mode/group1"
-              style="radio">
-        </action>
-        <action
-              class="org.sonar.ide.eclipse.ui.internal.actions.ChangeAnalysisModeAction"
-              enablesFor="1"
-              id="org.sonar.ide.eclipse.runtime.ui.enableRemoteAnalysisAction"
-              label="Remote"
-              menubarPath="sonar.menu/mode/group1"
-              style="radio">
         </action>
         <action id="org.sonar.ide.eclipse.addRemoveNatureAction"
               class="org.sonar.ide.eclipse.ui.internal.actions.ToggleNatureAction"
@@ -487,7 +457,7 @@
           name="Rule description">
     </command>
   </extension>
-  
+
   <extension point="org.eclipse.ui.handlers">
     <handler
           class="org.sonar.ide.eclipse.ui.internal.command.ConfigureProjectsCommand"
@@ -669,24 +639,6 @@
            </separator>
         </menu>
      </menuContribution>
-     <menuContribution
-           locationURI="toolbar:org.sonar.ide.eclipse.ui.views.issues.IssuesView">
-        <command
-              commandId="org.sonar.ide.eclipse.ui.SynchronizeIssuesCommand"
-              icon="icons/refresh.gif"
-              label="%sonar.action.allsyncissues.label"
-              style="push"
-              tooltip="%sonar.action.allsyncissues.tooltip">
-        </command>
-     </menuContribution>
-  </extension>
-  <extension
-        point="org.eclipse.ui.commands">
-     <command
-           defaultHandler="org.sonar.ide.eclipse.ui.internal.command.SynchronizeIssuesCommand"
-           id="org.sonar.ide.eclipse.ui.SynchronizeIssuesCommand"
-           name="%sonar.action.allsyncissues.label">
-     </command>
   </extension>
 
   <!-- Label decorator -->

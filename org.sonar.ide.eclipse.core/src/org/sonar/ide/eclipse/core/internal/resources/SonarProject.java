@@ -35,7 +35,6 @@ public class SonarProject implements ISonarProject {
   private final IProject project;
   private String url;
   private String key;
-  private boolean analysedLocally;
   private Date lastAnalysisDate;
   private List<SonarProperty> extraProperties = new ArrayList<SonarProperty>();
 
@@ -84,14 +83,6 @@ public class SonarProject implements ISonarProject {
 
   public String getName() {
     return project.getName();
-  }
-
-  public boolean isAnalysedLocally() {
-    return analysedLocally;
-  }
-
-  public void setAnalysedLocally(boolean value) {
-    this.analysedLocally = value;
   }
 
   public Date getLastAnalysisDate() {

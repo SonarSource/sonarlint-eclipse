@@ -43,7 +43,7 @@ public class SonarElementsAdapterFactoryTest extends SonarTestCase {
   public static void importProject() throws Exception {
     project = importEclipseProject("SimpleProject");
     // Configure the project
-    SonarCorePlugin.createSonarProject(project, "http://localhost:9000", key, true);
+    SonarCorePlugin.createSonarProject(project, "http://localhost:9000", key);
   }
 
   private SonarElementsAdapterFactory factory;

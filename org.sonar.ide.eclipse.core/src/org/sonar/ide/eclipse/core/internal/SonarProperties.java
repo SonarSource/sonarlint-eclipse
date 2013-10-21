@@ -29,8 +29,8 @@ public interface SonarProperties {
   String ENCODING_PROPERTY = "sonar.sourceEncoding";
 
   String DRY_RUN_PROPERTY = "sonar.dryRun";
-  String INCREMENTAL_PREVIEW_PROPERTY = "sonar.incrementalPreview";
-  String DRY_RUN_OUTPUT_PROPERTY = "sonar.dryRun.export.path";
+  String ANALYSIS_MODE = "sonar.analysis.mode";
+  String ANALYSIS_MODE_INCREMENTAL = "incremental";
   String REPORT_OUTPUT_PROPERTY = "sonar.report.export.path";
 
   String SONAR_URL = "sonar.host.url";

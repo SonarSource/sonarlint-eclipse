@@ -163,7 +163,7 @@ public abstract class SonarTestCase {
 
   public static void configureProject(String name) throws Exception {
     IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(name);
-    SonarCorePlugin.createSonarProject(project, "http://localhost:9000", "org.sonar-ide.tests:name", false);
+    SonarCorePlugin.createSonarProject(project, "http://localhost:9000", "org.sonar-ide.tests:name");
   }
 
 }

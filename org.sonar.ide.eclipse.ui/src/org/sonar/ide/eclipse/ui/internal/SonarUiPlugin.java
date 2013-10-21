@@ -23,11 +23,16 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.progress.UIJob;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +42,6 @@ import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
-import org.sonar.ide.eclipse.ui.internal.jobs.SynchronizeIssuesJob;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +72,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
       SonarCorePlugin.getDefault().addSonarRunnerLogListener((SonarRunnerLogListener) getSonarConsole());
     }
 
-    SynchronizeIssuesJob.setupIssuesUpdater();
+    setupIssuesUpdater();
 
     listener = new IPropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent event) {
@@ -152,6 +156,17 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
   public static String getSonarJvmArgs() {
     return SonarUiPlugin.getDefault().getPreferenceStore().getString(SonarUiPlugin.PREF_JVM_ARGS);
+  }
+
+  public static void setupIssuesUpdater() {
+    new UIJob("Prepare issues updater") {
+      @Override
+      public IStatus runInUIThread(IProgressMonitor monitor) {
+        final IWorkbenchPage page = SonarUiPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        page.addPartListener(new IssuesUpdater());
+        return Status.OK_STATUS;
+      }
+    }.schedule();
   }
 
 }

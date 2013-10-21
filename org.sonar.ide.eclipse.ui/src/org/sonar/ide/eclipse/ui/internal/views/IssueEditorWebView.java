@@ -31,11 +31,11 @@ import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.jobs.SynchronizeIssuesJob;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.SonarUrls;
-import org.sonar.ide.eclipse.ui.internal.jobs.SynchronizeIssuesJob;
 
 import java.util.Collections;
 
@@ -73,10 +73,7 @@ public class IssueEditorWebView extends AbstractLinkedSonarWebView<IMarker> {
 
     @Override
     public Object function(Object[] arguments) {
-      SonarProject sonarProject = SonarProject.getInstance(resource.getProject());
-      if (!sonarProject.isAnalysedLocally()) {
-        new SynchronizeIssuesJob(Collections.singletonList(resource), true).schedule();
-      }
+      new SynchronizeIssuesJob(Collections.singletonList(resource), true).schedule();
       return null;
     }
 

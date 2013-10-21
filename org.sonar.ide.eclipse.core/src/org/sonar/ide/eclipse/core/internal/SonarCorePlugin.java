@@ -123,11 +123,10 @@ public class SonarCorePlugin extends AbstractPlugin {
    * @return
    * @throws CoreException
    */
-  public static SonarProject createSonarProject(IProject project, String url, String key, boolean analysedLocally) throws CoreException {
+  public static SonarProject createSonarProject(IProject project, String url, String key) throws CoreException {
     SonarProject sonarProject = SonarProject.getInstance(project);
     sonarProject.setUrl(url);
     sonarProject.setKey(key);
-    sonarProject.setAnalysedLocally(analysedLocally);
     sonarProject.save();
     SonarNature.enableNature(project);
     return sonarProject;

@@ -56,9 +56,11 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
+import org.sonar.ide.eclipse.core.internal.jobs.SynchronizeAllIssuesJob;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
-import org.sonar.ide.eclipse.ui.internal.jobs.SynchronizeAllIssuesJob;
+import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
+import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 import org.sonar.ide.eclipse.wsclient.ConnectionException;
 import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
@@ -130,10 +132,10 @@ public class ConfigureProjectsPage extends WizardPage {
       | ColumnViewerEditor.KEYBOARD_ACTIVATION);
 
     ViewerSupport.bind(
-        viewer,
-        new WritableList(list, ProjectAssociationModel.class),
-        new IValueProperty[] {BeanProperties.value(ProjectAssociationModel.class, ProjectAssociationModel.PROPERTY_PROJECT_ECLIPSE_NAME),
-          BeanProperties.value(ProjectAssociationModel.class, ProjectAssociationModel.PROPERTY_PROJECT_SONAR_FULLNAME)});
+      viewer,
+      new WritableList(list, ProjectAssociationModel.class),
+      new IValueProperty[] {BeanProperties.value(ProjectAssociationModel.class, ProjectAssociationModel.PROPERTY_PROJECT_ECLIPSE_NAME),
+        BeanProperties.value(ProjectAssociationModel.class, ProjectAssociationModel.PROPERTY_PROJECT_SONAR_FULLNAME)});
 
     scheduleAutomaticAssociation();
 
@@ -148,7 +150,7 @@ public class ConfigureProjectsPage extends WizardPage {
           || event.eventType == ColumnViewerEditorActivationEvent.MOUSE_CLICK_SELECTION
           || event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC
           || (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == KeyLookupFactory
-              .getDefault().formalKeyLookup(IKeyLookup.F2_NAME));
+            .getDefault().formalKeyLookup(IKeyLookup.F2_NAME));
       }
     };
     activationSupport.setEnableEditorActivationWithKeyboard(true);
@@ -247,7 +249,9 @@ public class ConfigureProjectsPage extends WizardPage {
             changed = true;
           }
           if (changed) {
-            SynchronizeAllIssuesJob.createAndSchedule(project);
+            boolean debugEnabled = SonarConsole.isDebugEnabled();
+            SynchronizeAllIssuesJob.createAndSchedule(project, debugEnabled,
+              SonarUiPlugin.getExtraPropertiesForLocalAnalysis(project), SonarUiPlugin.getSonarJvmArgs());
           }
         } catch (CoreException e) {
           LOG.error(e.getMessage(), e);

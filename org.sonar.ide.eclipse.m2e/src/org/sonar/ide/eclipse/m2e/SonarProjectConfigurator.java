@@ -56,7 +56,7 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
       if (!servers.isEmpty()) {
         // Take the first configured server
         String url = servers.iterator().next().getUrl();
-        SonarProject sonarProject = SonarCorePlugin.createSonarProject(request.getProject(), url, infos.getKey(), false);
+        SonarProject sonarProject = SonarCorePlugin.createSonarProject(request.getProject(), url, infos.getKey());
         if (!infos.getSonarProperties().isEmpty()) {
           sonarProject.setExtraProperties(toSonarProperty(infos.getSonarProperties()));
           sonarProject.save();
@@ -188,10 +188,10 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
       if (obj instanceof SonarMavenInfos) {
         SonarMavenInfos other = (SonarMavenInfos) obj;
         return new EqualsBuilder()
-            .append(groupId, other.groupId)
-            .append(artifactId, other.artifactId)
-            .append(branch, other.branch)
-            .isEquals()
+          .append(groupId, other.groupId)
+          .append(artifactId, other.artifactId)
+          .append(branch, other.branch)
+          .isEquals()
           && diff(sonarProperties, other.sonarProperties).isEmpty();
       }
       return false;
@@ -200,10 +200,10 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
     @Override
     public int hashCode() {
       return new HashCodeBuilder(7, 43)
-          .append(groupId)
-          .append(artifactId)
-          .append(branch)
-          .hashCode();
+        .append(groupId)
+        .append(artifactId)
+        .append(branch)
+        .hashCode();
     }
 
   }

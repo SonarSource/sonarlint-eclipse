@@ -17,7 +17,7 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.ui.internal.jobs;
+package org.sonar.ide.eclipse.core.internal.jobs;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -28,25 +28,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartReference;
-import org.eclipse.ui.progress.UIJob;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.markers.SonarMarker;
 import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
 import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
-import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-import org.sonar.ide.eclipse.core.resources.ISonarResource;
-import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
-import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.wsclient.ConnectionException;
 
 import java.util.Collection;
@@ -57,12 +46,13 @@ import java.util.List;
  * This class load issues in background.
  *
  */
-public class SynchronizeIssuesJob extends AbstractRemoteSonarJob implements IResourceProxyVisitor {
+public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
 
   private final List<? extends IResource> resources;
   private IProgressMonitor monitor;
-  private IStatus status;
+
   private boolean force;
+  Object REMOTE_SONAR_JOB_FAMILY = new Object();
 
   public SynchronizeIssuesJob(final List<? extends IResource> resources, boolean force) {
     super("Synchronize issues");
@@ -74,6 +64,7 @@ public class SynchronizeIssuesJob extends AbstractRemoteSonarJob implements IRes
   @Override
   protected IStatus run(final IProgressMonitor monitor) {
     this.monitor = monitor;
+    IStatus status;
     try {
       monitor.beginTask("Synchronize", resources.size());
 
@@ -81,7 +72,7 @@ public class SynchronizeIssuesJob extends AbstractRemoteSonarJob implements IRes
         if (monitor.isCanceled()) {
           break;
         }
-        if (resource.isAccessible()) {
+        if (resource.isAccessible() && !MarkerUtils.isResourceLocallyAnalysed(resource)) {
           monitor.subTask(resource.getName());
           resource.accept(this, IResource.NONE);
         }
@@ -94,9 +85,9 @@ public class SynchronizeIssuesJob extends AbstractRemoteSonarJob implements IRes
         status = Status.CANCEL_STATUS;
       }
     } catch (final ConnectionException e) {
-      status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, IStatus.ERROR, "Unable to contact Sonar server", e);
+      status = new Status(IStatus.ERROR, SonarCorePlugin.PLUGIN_ID, IStatus.ERROR, "Unable to contact Sonar server", e);
     } catch (final Exception e) {
-      status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, IStatus.ERROR, e.getLocalizedMessage(), e);
+      status = new Status(IStatus.ERROR, SonarCorePlugin.PLUGIN_ID, IStatus.ERROR, e.getLocalizedMessage(), e);
     } finally {
       monitor.done();
     }
@@ -146,55 +137,9 @@ public class SynchronizeIssuesJob extends AbstractRemoteSonarJob implements IRes
     return sourceCode.getRemoteIssuesWithLineCorrection(monitor);
   }
 
-  public static void setupIssuesUpdater() {
-    new UIJob("Prepare issues updater") {
-      @Override
-      public IStatus runInUIThread(IProgressMonitor monitor) {
-        final IWorkbenchPage page = SonarUiPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        page.addPartListener(new IssuesUpdater());
-        return Status.OK_STATUS;
-      }
-    }.schedule();
-  }
-
-  private static class IssuesUpdater implements IPartListener2 {
-    public void partOpened(IWorkbenchPartReference partRef) {
-      IWorkbenchPart part = partRef.getPart(true);
-      if (part instanceof IEditorPart) {
-        IEditorInput input = ((IEditorPart) part).getEditorInput();
-        if (input instanceof IFileEditorInput) {
-          IResource resource = ((IFileEditorInput) input).getFile();
-          ISonarResource sonarResource = ResourceUtils.adapt(resource);
-          if (sonarResource != null) {
-            SonarProject projectProperties = SonarProject.getInstance(resource);
-            if (!projectProperties.isAnalysedLocally()) {
-              new SynchronizeIssuesJob(Collections.singletonList(resource), false).schedule();
-            }
-          }
-        }
-      }
-    }
-
-    public void partVisible(IWorkbenchPartReference partRef) {
-    }
-
-    public void partInputChanged(IWorkbenchPartReference partRef) {
-    }
-
-    public void partHidden(IWorkbenchPartReference partRef) {
-    }
-
-    public void partDeactivated(IWorkbenchPartReference partRef) {
-    }
-
-    public void partClosed(IWorkbenchPartReference partRef) {
-    }
-
-    public void partBroughtToTop(IWorkbenchPartReference partRef) {
-    }
-
-    public void partActivated(IWorkbenchPartReference partRef) {
-    }
+  @Override
+  public boolean belongsTo(Object family) {
+    return family.equals(REMOTE_SONAR_JOB_FAMILY) ? true : super.belongsTo(family);
   }
 
 }
