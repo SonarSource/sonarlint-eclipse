@@ -19,11 +19,12 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
-
-public interface SonarRunnerLogListener {
+public interface LogListener {
 
   void info(String msg);
 
   void error(String msg);
+
+  void debug(String msg);
 
 }

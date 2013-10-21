@@ -25,7 +25,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
-import org.sonar.ide.eclipse.core.internal.jobs.SonarRunnerLogListener;
+import org.sonar.ide.eclipse.core.internal.jobs.LogListener;
 import org.sonar.ide.eclipse.core.internal.resources.SonarFile;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProjectManager;
@@ -64,25 +64,31 @@ public class SonarCorePlugin extends AbstractPlugin {
   }
 
   private ServersManager serversManager;
-  private final List<SonarRunnerLogListener> sonarRunnerLogListeners = new ArrayList<SonarRunnerLogListener>();
+  private final List<LogListener> logListeners = new ArrayList<LogListener>();
 
-  public void addSonarRunnerLogListener(SonarRunnerLogListener listener) {
-    sonarRunnerLogListeners.add(listener);
+  public void addLogListener(LogListener listener) {
+    logListeners.add(listener);
   }
 
-  public void removeSonarRunnerLogListener(SonarRunnerLogListener listener) {
-    sonarRunnerLogListeners.remove(listener);
+  public void removeLogListener(LogListener listener) {
+    logListeners.remove(listener);
   }
 
   public void error(String msg) {
-    for (SonarRunnerLogListener listener : sonarRunnerLogListeners) {
+    for (LogListener listener : logListeners) {
       listener.error(msg);
     }
   }
 
   public void info(String msg) {
-    for (SonarRunnerLogListener listener : sonarRunnerLogListeners) {
+    for (LogListener listener : logListeners) {
       listener.info(msg);
+    }
+  }
+
+  public void debug(String msg) {
+    for (LogListener listener : logListeners) {
+      listener.debug(msg);
     }
   }
 

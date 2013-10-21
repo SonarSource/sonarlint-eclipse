@@ -119,6 +119,8 @@ public class AnalyseProjectJob extends Job {
     // To be sure to not reuse something from a previous analysis
     FileUtils.deleteQuietly(outputFile);
     IStatus result;
+    long start = System.currentTimeMillis();
+    SonarCorePlugin.getDefault().info("Start SonarQube analysis on " + project.getName() + "...\n");
     try {
       result = run(project, properties, debugEnabled, monitor);
     } catch (Exception e) {
@@ -127,9 +129,13 @@ public class AnalyseProjectJob extends Job {
     if (result != Status.OK_STATUS) {
       return result;
     }
+    SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - start) + "ms\n");
 
     // Create markers
+    long startMarker = System.currentTimeMillis();
+    SonarCorePlugin.getDefault().debug("Create markers on project " + project.getName() + " resources...\n");
     createMarkersFromReportOutput(monitor, outputFile);
+    SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - startMarker) + "ms\n");
 
     // Update analysis date
     sonarProject.setLastAnalysisDate(Calendar.getInstance().getTime());

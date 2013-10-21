@@ -31,7 +31,7 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
-import org.sonar.ide.eclipse.core.internal.jobs.SonarRunnerLogListener;
+import org.sonar.ide.eclipse.core.internal.jobs.LogListener;
 import org.sonar.ide.eclipse.ui.internal.ISonarConsole;
 import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.Messages;
@@ -39,7 +39,7 @@ import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 
 import java.io.IOException;
 
-public class SonarConsole extends IOConsole implements SonarRunnerLogListener, ISonarConsole {
+public class SonarConsole extends IOConsole implements LogListener, ISonarConsole {
 
   static final String P_DEBUG_OUTPUT = "debugOutput"; //$NON-NLS-1$
   static final String P_SHOW_CONSOLE = "showConsole"; //$NON-NLS-1$
@@ -51,9 +51,11 @@ public class SonarConsole extends IOConsole implements SonarRunnerLogListener, I
 
   private IOConsoleOutputStream infoStream;
   private IOConsoleOutputStream warnStream;
+  private IOConsoleOutputStream debugStream;
 
   // Colors must be disposed
   private Color warnColor;
+  private Color debugColor;
 
   public SonarConsole(ImageDescriptor imageDescriptor) {
     super(TITLE, imageDescriptor);
@@ -63,11 +65,14 @@ public class SonarConsole extends IOConsole implements SonarRunnerLogListener, I
   private void initStreams(Display display) {
     this.infoStream = newOutputStream();
     this.warnStream = newOutputStream();
+    this.debugStream = newOutputStream();
 
     // TODO make colors configurable
     warnColor = new Color(display, new RGB(255, 0, 0));
+    debugColor = new Color(display, new RGB(0, 0, 255));
 
     getWarnStream().setColor(warnColor);
+    getDebugStream().setColor(debugColor);
   }
 
   @Override
@@ -89,6 +94,15 @@ public class SonarConsole extends IOConsole implements SonarRunnerLogListener, I
       bringConsoleToFront();
     }
     write(getWarnStream(), msg);
+  }
+
+  public void debug(String msg) {
+    if (isDebugEnabled()) {
+      if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
+        bringConsoleToFront();
+      }
+      write(getDebugStream(), msg);
+    }
   }
 
   private void write(IOConsoleOutputStream stream, String msg) {
@@ -126,6 +140,10 @@ public class SonarConsole extends IOConsole implements SonarRunnerLogListener, I
 
   private IOConsoleOutputStream getWarnStream() {
     return warnStream;
+  }
+
+  public IOConsoleOutputStream getDebugStream() {
+    return debugStream;
   }
 
   private String getShowConsolePreference() {

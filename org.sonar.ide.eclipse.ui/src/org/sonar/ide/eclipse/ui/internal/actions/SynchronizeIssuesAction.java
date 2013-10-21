@@ -43,6 +43,7 @@ public class SynchronizeIssuesAction extends AbstractSonarProjectAction {
     boolean debugEnabled = SonarConsole.isDebugEnabled();
     String sonarJvmArgs = SonarUiPlugin.getSonarJvmArgs();
     List<AnalyseProjectRequest> requests = new ArrayList<AnalyseProjectRequest>();
+    SonarUiPlugin.getDefault().getSonarConsole().clearConsole();
     for (IProject project : getSelectedProjects()) {
       requests.add(new AnalyseProjectRequest(project)
         .setDebugEnabled(debugEnabled)

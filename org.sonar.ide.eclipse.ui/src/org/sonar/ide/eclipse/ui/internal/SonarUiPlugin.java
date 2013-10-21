@@ -37,7 +37,7 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.ide.eclipse.core.internal.jobs.SonarRunnerLogListener;
+import org.sonar.ide.eclipse.core.internal.jobs.LogListener;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
@@ -69,7 +69,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     super.start(context);
 
     if (getSonarConsole() != null) {
-      SonarCorePlugin.getDefault().addSonarRunnerLogListener((SonarRunnerLogListener) getSonarConsole());
+      SonarCorePlugin.getDefault().addLogListener((LogListener) getSonarConsole());
     }
 
     setupIssuesUpdater();
@@ -96,7 +96,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   public void stop(final BundleContext context) throws Exception {
     try {
       if (getSonarConsole() != null) {
-        SonarCorePlugin.getDefault().removeSonarRunnerLogListener((SonarRunnerLogListener) getSonarConsole());
+        SonarCorePlugin.getDefault().removeLogListener((LogListener) getSonarConsole());
       }
       getPreferenceStore().removePropertyChangeListener(listener);
     } finally {

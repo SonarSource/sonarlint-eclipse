@@ -118,12 +118,18 @@ public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
       return;
     }
     try {
+      long start = System.currentTimeMillis();
+      SonarCorePlugin.getDefault().info("Retrieve issues of resource " + resource.getName() + "...\n");
       final Collection<ISonarIssue> issues = retrieveIssues(eclipseSonar, resource, monitor);
+      SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - start) + "ms\n");
+      long startMarker = System.currentTimeMillis();
+      SonarCorePlugin.getDefault().debug("Create markers on resource " + resource.getName() + "...\n");
       MarkerUtils.deleteIssuesMarkers(resource);
       for (final ISonarIssue issue : issues) {
         SonarMarker.create(resource, false, issue);
       }
       MarkerUtils.updatePersistentProperties(resource, sonarProject, eclipseSonar.getSonarServer());
+      SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - startMarker) + "ms\n");
     } catch (final Exception ex) {
       LoggerFactory.getLogger(getClass()).error(ex.getMessage(), ex);
     }

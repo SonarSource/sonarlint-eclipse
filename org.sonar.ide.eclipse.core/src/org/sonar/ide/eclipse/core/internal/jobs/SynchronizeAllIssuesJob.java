@@ -109,6 +109,9 @@ public class SynchronizeAllIssuesJob extends Job {
       return;
     }
 
+    long start = System.currentTimeMillis();
+    SonarCorePlugin.getDefault().info("Retrieve remote issues of project " + project.getName() + "...\n");
+
     SonarProject sonarProject = SonarProject.getInstance(project);
     MarkerUtils.deleteIssuesMarkers(project);
     if (monitor.isCanceled()) {
@@ -125,11 +128,16 @@ public class SynchronizeAllIssuesJob extends Job {
       doRefreshIssues(sonarProject, sourceCode, monitor);
       sonarProject.setLastAnalysisDate(sourceCode.getAnalysisDate());
       sonarProject.save();
+    } else {
+      SonarCorePlugin.getDefault().info("Project not found on remote SonarQube server [" + sonarProject.getKey() + "]\n");
     }
+    SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - start) + "ms\n");
   }
 
   private void doRefreshIssues(SonarProject sonarProject, SourceCode sourceCode, IProgressMonitor monitor) throws CoreException {
+    long start = System.currentTimeMillis();
     List<ISonarIssue> issues = sourceCode.getRemoteIssuesRecursively(monitor);
+    SonarCorePlugin.getDefault().debug("  WS call took " + (System.currentTimeMillis() - start) + "ms for " + issues.size() + " issues\n");
     // Split issues by resource
     ArrayListMultimap<String, ISonarIssue> mm = ArrayListMultimap.create();
     for (ISonarIssue issue : issues) {
