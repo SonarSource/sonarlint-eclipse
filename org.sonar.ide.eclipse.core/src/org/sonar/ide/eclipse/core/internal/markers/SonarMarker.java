@@ -20,7 +20,6 @@
 package org.sonar.ide.eclipse.core.internal.markers;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -30,8 +29,9 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,10 +67,8 @@ public class SonarMarker {
     markerAttributes.put(IMarker.MESSAGE, getMessage(issue));
     markerAttributes.put(MarkerUtils.SONAR_MARKER_IS_NEW_ATTR, isNew);
 
-    String source = readSource(resource);
-
     if (line != null) {
-      addLine(markerAttributes, line, source);
+      addLine(markerAttributes, line, resource);
     }
     markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, issue.ruleKey());
     markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, issue.ruleName());
@@ -84,22 +82,6 @@ public class SonarMarker {
 
     marker.setAttributes(markerAttributes);
     return this;
-  }
-
-  private static String readSource(final IResource resource) throws CoreException {
-    String source = "";
-    if (resource instanceof IFile) {
-      IFile file = (IFile) resource;
-      InputStream inputStream = file.getContents();
-      try {
-        source = IOUtils.toString(inputStream, file.getCharset());
-      } catch (IOException e) {
-        LOG.error("Unable to read source of " + resource.getLocation().toOSString(), e);
-      } finally {
-        IOUtils.closeQuietly(inputStream);
-      }
-    }
-    return source;
   }
 
   private static String getMessage(final ISonarIssue issue) {
@@ -127,14 +109,29 @@ public class SonarMarker {
     return result;
   }
 
-  private static void addLine(final Map<String, Object> markerAttributes, final long line, final String text) {
-    int start = 0;
-    for (int i = 1; i < line; i++) {
-      start = StringUtils.indexOf(text, '\n', start) + 1;
+  private static void addLine(final Map<String, Object> markerAttributes, final long line, final IResource resource) {
+    if (resource instanceof IFile) {
+      IFile file = (IFile) resource;
+      InputStream is = null;
+      LineNumberReader lnr = null;
+      try {
+        is = file.getContents();
+        lnr = new LineNumberReader(new InputStreamReader(is, file.getCharset()));
+        int pos = 0;
+        while (lnr.read() != -1) {
+          pos++;
+          if (lnr.getLineNumber() == (line - 1)) {
+            markerAttributes.put(IMarker.CHAR_START, pos);
+            String s = lnr.readLine();
+            markerAttributes.put(IMarker.CHAR_END, pos + s.length());
+            return;
+          }
+        }
+      } catch (Exception e) {
+        throw new IllegalStateException("Unable to compute position of SonarQube marker", e);
+      } finally {
+        IOUtils.closeQuietly(lnr);
+      }
     }
-    final int end = StringUtils.indexOf(text, '\n', start);
-    markerAttributes.put(IMarker.CHAR_START, start);
-    markerAttributes.put(IMarker.CHAR_END, end);
   }
-
 }
