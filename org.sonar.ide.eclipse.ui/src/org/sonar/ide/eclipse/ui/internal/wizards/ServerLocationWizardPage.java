@@ -42,9 +42,9 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
+import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.wsclient.ISonarWSClientFacade.ConnectionTestResult;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
@@ -133,13 +133,13 @@ public class ServerLocationWizardPage extends WizardPage {
                 ConnectionTestResult result = WSClientFactory.getSonarClient(newServer).testConnection();
                 switch (result) {
                   case OK:
-                    status = new Status(IStatus.OK, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);
+                    status = new Status(IStatus.OK, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);
                     break;
                   case AUTHENTICATION_ERROR:
-                    status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_authentication_error);
+                    status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_authentication_error);
                     break;
                   case CONNECT_ERROR:
-                    status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connection_error);
+                    status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connection_error);
                     break;
                   default:
                     throw new SonarEclipseException("Unknow status code: " + result);
@@ -151,10 +151,10 @@ public class ServerLocationWizardPage extends WizardPage {
           });
         } catch (InvocationTargetException e1) {
           LoggerFactory.getLogger(getClass()).error(e1.getMessage(), e1);
-          status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
+          status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
         } catch (InterruptedException e1) {
           LoggerFactory.getLogger(getClass()).error(e1.getMessage(), e1);
-          status = new Status(IStatus.ERROR, ISonarConstants.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
+          status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
         } catch (OperationCanceledException e1) {
           status = Status.CANCEL_STATUS;
         }

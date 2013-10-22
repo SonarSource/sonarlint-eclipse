@@ -20,14 +20,14 @@
 package org.sonar.ide.eclipse.ui.internal.views.issues;
 
 import org.eclipse.ui.views.markers.MarkerSupportView;
-import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
+import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 
 public class IssuesView extends MarkerSupportView {
 
-  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.issues.IssuesView";
+  public static final String ID = SonarUiPlugin.PLUGIN_ID + ".views.issues.IssuesView";
 
   public IssuesView() {
-    super(ISonarConstants.PLUGIN_ID + ".views.issues.issueMarkerGenerator");
+    super(SonarUiPlugin.PLUGIN_ID + ".views.issues.issueMarkerGenerator");
   }
 
 }

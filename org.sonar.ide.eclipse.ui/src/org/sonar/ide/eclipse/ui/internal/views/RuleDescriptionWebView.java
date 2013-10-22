@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
+import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.SonarUrls;
 
 /**
@@ -38,7 +38,7 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
 
   private static final Logger LOG = LoggerFactory.getLogger(RuleDescriptionWebView.class);
 
-  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.RuleDescriptionWebView";
+  public static final String ID = SonarUiPlugin.PLUGIN_ID + ".views.RuleDescriptionWebView";
 
   @Override
   protected void open(IMarker element) {

@@ -48,6 +48,8 @@ import java.util.List;
 
 public class SonarUiPlugin extends AbstractUIPlugin {
 
+  public static final String PLUGIN_ID = "org.sonar.ide.eclipse.ui";
+
   // The shared instance
   private static SonarUiPlugin plugin;
 

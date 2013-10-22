@@ -33,7 +33,6 @@ import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.jobs.LogListener;
 import org.sonar.ide.eclipse.ui.internal.ISonarConsole;
-import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 
@@ -147,7 +146,7 @@ public class SonarConsole extends IOConsole implements LogListener, ISonarConsol
   }
 
   private String getShowConsolePreference() {
-    return Platform.getPreferencesService().getString(ISonarConstants.PLUGIN_ID, P_SHOW_CONSOLE, P_SHOW_CONSOLE_ON_OUTPUT, null);
+    return Platform.getPreferencesService().getString(SonarUiPlugin.PLUGIN_ID, P_SHOW_CONSOLE, P_SHOW_CONSOLE_ON_OUTPUT, null);
   }
 
   private boolean isShowConsoleOnOutput() {

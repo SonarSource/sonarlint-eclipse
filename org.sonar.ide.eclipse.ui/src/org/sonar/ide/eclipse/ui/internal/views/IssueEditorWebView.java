@@ -34,7 +34,7 @@ import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.jobs.SynchronizeIssuesJob;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
+import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.SonarUrls;
 
 import java.util.Collections;
@@ -44,7 +44,7 @@ import java.util.Collections;
  */
 public class IssueEditorWebView extends AbstractLinkedSonarWebView<IMarker> {
 
-  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.IssueEditorWebView";
+  public static final String ID = SonarUiPlugin.PLUGIN_ID + ".views.IssueEditorWebView";
 
   private IResource resource;
 

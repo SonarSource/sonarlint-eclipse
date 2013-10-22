@@ -21,7 +21,7 @@ package org.sonar.ide.eclipse.ui.internal.properties;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IStatus;
-import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
+import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 
 /**
  * A settable IStatus.
@@ -162,7 +162,7 @@ class StatusInfo implements IStatus {
    * @see IStatus#getPlugin()
    */
   public String getPlugin() {
-    return ISonarConstants.PLUGIN_ID;
+    return SonarUiPlugin.PLUGIN_ID;
   }
 
   /**

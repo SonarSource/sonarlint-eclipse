@@ -34,7 +34,7 @@ import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
-import org.sonar.ide.eclipse.ui.internal.ISonarConstants;
+import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.SonarUrls;
 import org.sonar.ide.eclipse.ui.internal.util.SelectionUtils;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
@@ -45,7 +45,7 @@ import org.sonar.ide.eclipse.wsclient.WSClientFactory;
  */
 public class ResourceWebView extends AbstractLinkedSonarWebView<ISonarResource> implements ISelectionListener {
 
-  public static final String ID = ISonarConstants.PLUGIN_ID + ".views.ResourceWebView";
+  public static final String ID = SonarUiPlugin.PLUGIN_ID + ".views.ResourceWebView";
 
   @Override
   protected ISonarResource findSelectedElement(IWorkbenchPart part, ISelection selection) {
