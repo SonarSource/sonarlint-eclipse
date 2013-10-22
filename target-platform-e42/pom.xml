@@ -13,6 +13,6 @@
   <artifactId>target-platform-e42</artifactId>
   <packaging>eclipse-target-definition</packaging>
 
-  <name>Sonar Integration for Eclipse (target-platform for Juno)</name>
+  <name>SonarQube Integration for Eclipse (target-platform for Juno)</name>
 
 </project>

@@ -13,7 +13,7 @@
   <artifactId>org.sonar.ide.eclipse.slf4j.pde</artifactId>
   <packaging>eclipse-plugin</packaging>
 
-  <name>Sonar Integration for Eclipse Slf4j PDE Impl</name>
+  <name>SonarQube Integration for Eclipse Slf4j PDE Impl</name>
 
   <build>
     <sourceDirectory>src</sourceDirectory>

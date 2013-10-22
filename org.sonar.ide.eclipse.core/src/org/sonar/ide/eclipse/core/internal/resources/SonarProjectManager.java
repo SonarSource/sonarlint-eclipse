@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -115,7 +115,7 @@ public class SonarProjectManager {
           sonarProperties.add(new SonarProperty(keyValue[0], keyValue[1]));
         }
       } catch (Exception e) {
-        LOG.error("Error while loading sonar properties", e);
+        LOG.error("Error while loading SonarQube properties", e);
       }
     }
     sonarProject.setExtraProperties(sonarProperties);

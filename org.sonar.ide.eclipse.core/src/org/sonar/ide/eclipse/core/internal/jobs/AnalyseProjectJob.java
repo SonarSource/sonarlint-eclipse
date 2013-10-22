@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -124,7 +124,7 @@ public class AnalyseProjectJob extends Job {
     try {
       result = run(project, properties, debugEnabled, monitor);
     } catch (Exception e) {
-      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error when executing Sonar runner", e);
+      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error when executing SonarQube runner", e);
     }
     if (result != Status.OK_STATUS) {
       return result;
@@ -198,7 +198,7 @@ public class AnalyseProjectJob extends Job {
   }
 
   /**
-   * Populate properties with everything required for the Sonar analysis in dryRun mode.
+   * Populate properties with everything required for the SonarQube analysis in dryRun mode.
    * @param monitor
    * @param properties
    * @return

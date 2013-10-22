@@ -13,6 +13,6 @@
   <artifactId>org.sonar.ide.eclipse.pydev.feature</artifactId>
   <packaging>eclipse-feature</packaging>
 
-  <name>Sonar Integration for PyDev (feature)</name>
+  <name>SonarQube Integration for PyDev (feature)</name>
 
 </project>

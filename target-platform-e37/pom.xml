@@ -13,6 +13,6 @@
   <artifactId>target-platform-e37</artifactId>
   <packaging>eclipse-target-definition</packaging>
 
-  <name>Sonar Integration for Eclipse (target-platform for Indigo)</name>
+  <name>SonarQube Integration for Eclipse (target-platform for Indigo)</name>
 
 </project>

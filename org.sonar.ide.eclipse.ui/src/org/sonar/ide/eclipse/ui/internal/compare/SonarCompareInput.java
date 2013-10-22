@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -50,7 +50,7 @@ public class SonarCompareInput extends CompareEditorInput {
     config.setProperty(CompareConfiguration.IGNORE_WHITESPACE, true);
     config.setLeftLabel(left.getName());
     config.setLeftEditable(false);
-    config.setRightLabel(right.getName() + " (sonar server)");
+    config.setRightLabel(right.getName() + " (SonarQube server)");
     config.setRightEditable(false);
     config.setRightImage(SonarImages.SONAR16_IMG.createImage());
     return new DiffNode(left, right);

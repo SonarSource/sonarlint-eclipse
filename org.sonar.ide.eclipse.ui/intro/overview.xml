@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <introContent>
-  <extensionContent id="org.sonar.ide.eclipse" name="Sonar Integration for Eclipse"
+  <extensionContent id="org.sonar.ide.eclipse" name="SonarQube Integration for Eclipse"
     style="css/overview.css" alt-style="css/overview.properties" path="overview/@">
     <group id="content-group" style-id="content-group">
-      <link id="sonar" style-id="content-link" label="Sonar Integration for Eclipse"
-        url="http://docs.codehaus.org/display/SONAR/Sonar+Eclipse">
-        <text>See an overview of the features provided by Sonar
+      <link id="sonar" style-id="content-link" label="SonarQube Integration for Eclipse"
+        url="http://docs.codehaus.org/display/SONAR/SonarQube+in+Eclipse">
+        <text>See an overview of the features provided by SonarQube
           Integration for Eclipse.</text>
       </link>
     </group>

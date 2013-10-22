@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
    <description url="http://sonar-ide.codehaus.org/">
-      Sonar Integration for Eclipse
+      SonarQube Integration for Eclipse
    </description>
    <feature url="features/org.sonar.ide.eclipse.cdt.feature_0.0.0.jar" id="org.sonar.ide.eclipse.cdt.feature" version="0.0.0">
-      <category name="Sonar C/C++"/>
+      <category name="SonarQube C/C++"/>
    </feature>
    <feature url="features/org.sonar.ide.eclipse.jdt.feature_0.0.0.jar" id="org.sonar.ide.eclipse.jdt.feature" version="0.0.0">
-      <category name="Sonar Java"/>
+      <category name="SonarQube Java"/>
    </feature>
    <feature url="features/org.sonar.ide.eclipse.m2e.feature_0.0.0.jar" id="org.sonar.ide.eclipse.m2e.feature" version="0.0.0">
-      <category name="Sonar optional connectors"/>
+      <category name="SonarQube optional connectors"/>
    </feature>
    <feature url="features/org.sonar.ide.eclipse.pydev.feature_0.0.0.jar" id="org.sonar.ide.eclipse.pydev.feature" version="0.0.0">
-      <category name="Sonar Python"/>
+      <category name="SonarQube Python"/>
    </feature>
-   <category-def name="Sonar Java" label="Sonar Java">
+   <category-def name="SonarQube Java" label="SonarQube Java">
       <description>
-         Needed feature for analysing JDT projects with Sonar.
+         Needed feature for analysing JDT projects with SonarQube.
       </description>
    </category-def>
-   <category-def name="Sonar C/C++" label="Sonar C/C++ (requires Eclipse CDT and the SonarSource C++ plugin)">
+   <category-def name="SonarQube C/C++" label="SonarQube C/C++ (requires Eclipse CDT and the SonarSource C++ plugin)">
       <description>
-         Needed feature for analysing CDT projects with Sonar.
+         Needed feature for analysing CDT projects with SonarQube.
       </description>
    </category-def>
-   <category-def name="Sonar Python" label="Sonar Python (requires Eclipse PyDev and the Sonar Python plugin)">
+   <category-def name="SonarQube Python" label="SonarQube Python (requires Eclipse PyDev and the SonarQube Python plugin)">
       <description>
-         Needed feature for analysing PyDev projects with Sonar.
+         Needed feature for analysing PyDev projects with SonarQube.
       </description>
    </category-def>
-   <category-def name="Sonar optional connectors" label="Sonar optional connectors">
+   <category-def name="SonarQube optional connectors" label="SonarQube optional connectors">
       <description>
-         Sonar optional connectors
+         SonarQube optional connectors
       </description>
    </category-def>
 </site>

@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -153,7 +153,7 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
       @Override
       public void widgetSelected(SelectionEvent e) {
         ISonarServer selected = getSelectedServer();
-        if (MessageDialog.openConfirm(SonarServerPreferencePage.this.getShell(), "Remove sonar server connection",
+        if (MessageDialog.openConfirm(SonarServerPreferencePage.this.getShell(), "Remove SonarQube server connection",
             MessageFormat.format("Confirm removing {0}",
                 new Object[] {selected.getUrl()}))) {
           SonarCorePlugin.getServersManager().removeServer(selected.getUrl());

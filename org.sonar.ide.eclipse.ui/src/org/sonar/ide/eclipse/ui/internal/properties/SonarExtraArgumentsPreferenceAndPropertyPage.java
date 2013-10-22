@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -425,7 +425,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
   }
 
   public void init(IWorkbench workbench) {
-    setDescription("Edit properties passed to the Sonar Runner in local mode");
+    setDescription("Edit properties passed to the SonarQube Runner in preview mode");
     setPreferenceStore(SonarUiPlugin.getDefault().getPreferenceStore());
   }
 
@@ -440,7 +440,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
           sonarProperties.add(new SonarProperty(keyValue[0], keyValue[1]));
         }
       } catch (Exception e) {
-        LOG.error("Error while loading Sonar properties" + props, e);
+        LOG.error("Error while loading SonarQube properties" + props, e);
       }
     }
     else {

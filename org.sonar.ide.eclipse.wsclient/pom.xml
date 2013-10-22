@@ -12,7 +12,7 @@
 
   <artifactId>org.sonar.ide.eclipse.wsclient</artifactId>
   <packaging>eclipse-plugin</packaging>
-  <name>Sonar Integration for Eclipse WSClient Utils</name>
+  <name>SonarQube Integration for Eclipse WSClient Utils</name>
 
   <build>
     <sourceDirectory>src</sourceDirectory>

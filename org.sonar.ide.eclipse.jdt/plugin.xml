@@ -5,7 +5,7 @@
       <loggerMapEntry regexp="^org\.sonar\.ide\.eclipse\.jdt.*"
         symbolicName="org.sonar.ide.eclipse.jdt"/>
    </extension>
-   
+
    <extension point="org.eclipse.core.runtime.adapters">
       <factory adaptableType="org.eclipse.jdt.core.IJavaElement"
                class="org.sonar.ide.eclipse.core.SonarElementsAdapterFactory">
@@ -22,8 +22,8 @@
       <filter
             class="org.sonar.ide.eclipse.ui.NonSonarProjectsFilter"
             id="org.sonar.ide.eclipse.jdt.ui.filters.HideNonSonarProjects"
-            name="Non-Sonar projects"
-            description="Hides all projects without Sonar nature"
+            name="Non-SonarQube projects"
+            description="Hides all projects without SonarQube nature"
             enabled="false"
             targetId="org.eclipse.jdt.ui.PackageExplorer">
       </filter>

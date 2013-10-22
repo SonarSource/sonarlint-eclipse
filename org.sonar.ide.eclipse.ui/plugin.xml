@@ -39,7 +39,7 @@
   <extension
      point="org.eclipse.ui.keywords">
     <keyword
-            label="sonar"
+            label="sonar sonarqube"
             id="org.sonar.ide.eclipse.ui.SonarKeyword"/>
    </extension>
 
@@ -51,28 +51,28 @@
     <view
         category="org.sonar.ide.eclipse"
         class="org.sonar.ide.eclipse.ui.internal.views.issues.IssuesView"
-        icon="icons/sonar.png"
+        icon="icons/onde-sonar-16.png"
         id="org.sonar.ide.eclipse.ui.views.issues.IssuesView"
         name="%sonar.issues.view.name">
     </view>
     <view
           category="org.sonar.ide.eclipse"
           class="org.sonar.ide.eclipse.ui.internal.views.ResourceWebView"
-          icon="icons/sonar.png"
+          icon="icons/onde-sonar-16.png"
           id="org.sonar.ide.eclipse.ui.views.ResourceWebView"
-          name="Sonar Web Browser">
+          name="SonarQube Web Browser">
     </view>
     <view
           category="org.sonar.ide.eclipse"
           class="org.sonar.ide.eclipse.ui.internal.views.RuleDescriptionWebView"
-          icon="icons/sonar.png"
+          icon="icons/onde-sonar-16.png"
           id="org.sonar.ide.eclipse.ui.views.RuleDescriptionWebView"
-          name="Sonar Rule Description">
+          name="SonarQube Rule Description">
     </view>
     <view
           category="org.sonar.ide.eclipse"
           class="org.sonar.ide.eclipse.ui.internal.views.IssueEditorWebView"
-          icon="icons/sonar.png"
+          icon="icons/onde-sonar-16.png"
           id="org.sonar.ide.eclipse.ui.views.IssueEditorWebView"
           name="%sonar.issue.view.name">
     </view>
@@ -81,9 +81,9 @@
   <extension point="org.eclipse.ui.navigator.navigatorContent">
     <commonFilter
         class="org.sonar.ide.eclipse.ui.NonSonarProjectsFilter"
-        description="Hides all projects without Sonar nature"
+        description="Hides all projects without SonarQube nature"
         id="org.sonar.ide.eclipse.ui.filters.HideNonSonarProjects"
-        name="Non-Sonar projects"
+        name="Non-SonarQube projects"
         activeByDefault="false">
     </commonFilter>
   </extension>
@@ -164,7 +164,7 @@
     <markerContentGenerator
          id="org.sonar.ide.eclipse.ui.views.issues.issueMarkerGenerator"
          defaultMarkerGrouping="org.sonar.ide.eclipse.ui.issues.severityGrouping"
-         name="Sonar Issue Marker Generator">
+         name="SonarQube Issue Marker Generator">
         <markerTypeReference
               id="org.sonar.ide.eclipse.core.sonarProblem"/>
         <markerTypeReference
@@ -339,7 +339,7 @@
         canFinishEarly="true"
         category="org.sonar.ide.eclipse.wizcat"
         class="org.sonar.ide.eclipse.ui.internal.wizards.NewServerLocationWizard"
-        icon="icons/sonar.png"
+        icon="icons/onde-sonar-16.png"
         id="org.sonar.ide.eclipse.ui.wizards.newserverlocationwizard"
         name="%sonar.wizard.newserverlocation.name ">
     </wizard>
@@ -378,7 +378,7 @@
         <action id="org.sonar.ide.eclipse.addRemoveNatureAction"
               class="org.sonar.ide.eclipse.ui.internal.actions.ToggleNatureAction"
               enablesFor="+"
-              label="Remove Sonar Nature"
+              label="Remove SonarQube Nature"
               menubarPath="sonar.menu/group3">
         </action>
     </objectContribution>
@@ -400,12 +400,12 @@
            objectClass="org.sonar.ide.eclipse.core.resources.ISonarFile"
            adaptable="true">
         <action
-              label="Sonar server"
+              label="SonarQube server"
               enablesFor="1"
               class="org.sonar.ide.eclipse.ui.internal.compare.CompareWithSonarAction"
               menubarPath="compareWithMenu/compareWithGroup"
               id="org.sonar.ide.eclipse.compareWithSonar"
-              icon="icons/sonar.png">
+              icon="icons/onde-sonar-16.png">
         </action>
     </objectContribution>
   </extension>
@@ -448,15 +448,15 @@
           name="SonarQube">
     </category>
     <command
-          description="Open Sonar association wizard"
+          description="Open SonarQube association wizard"
           id="org.sonar.ide.eclipse.ui.command.ConfigureProjectsCommand"
           name="Associate with Sonar..."
           categoryId="org.sonar.ide.eclipse.ui.command.category">
     </command>
     <command
-          description="Open Sonar association wizard"
+          description="Open SonarQube association wizard"
           id="org.sonar.ide.eclipse.ui.internal.command.ReConfigureProjectsCommand"
-          name="Change project association..."
+          name="Change Project Association..."
           categoryId="org.sonar.ide.eclipse.ui.command.category">
     </command>
     <command
@@ -503,11 +503,11 @@
   </extension>
 
   <extension point="org.eclipse.ui.bindings">
-    <key sequence="Alt+Shift+Q"
+    <key sequence="Shift+Ctrl+Q"
       commandId="org.sonar.ide.eclipse.ui.internal.command.AnalyzeProjectsCommand"
       schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
       contextId="org.eclipse.ui.contexts.window"/>
-    <key sequence="Alt+Shift+Q"
+    <key sequence="Shift+Ctrl+Q"
       commandId="org.sonar.ide.eclipse.ui.internal.command.AnalyzeProjectsCommand"
       schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
       contextId="org.eclipse.ui.textEditorScope"/>
@@ -516,10 +516,10 @@
   <extension point="org.eclipse.ui.commandImages">
     <image
       commandId="org.sonar.ide.eclipse.ui.command.ConfigureProjectsCommand"
-      icon="icons/sonar.png" />
+      icon="icons/onde-sonar-16.png" />
     <image
       commandId="org.sonar.ide.eclipse.ui.internal.command.ReConfigureProjectsCommand"
-      icon="icons/sonar.png" />
+      icon="icons/onde-sonar-16.png" />
     <image
       commandId="org.sonar.ide.eclipse.ui.internal.command.AnalyzeProjectsCommand"
       icon="icons/refresh.gif" />
@@ -544,7 +544,7 @@
               colorPreferenceValue="255,246,191"
               highlightPreferenceKey="org.sonar.ide.eclipse.ui.issue.highlight"
               highlightPreferenceValue="false"
-              icon="icons/sonar.png"
+              icon="icons/onde-sonar-16.png"
               isGoToNextNavigationTarget="true"
               isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.issue.next"
               isGoToPreviousNavigationTarget="true"
@@ -569,7 +569,7 @@
               colorPreferenceValue="255,246,191"
               highlightPreferenceKey="org.sonar.ide.eclipse.ui.newissue.highlight"
               highlightPreferenceValue="true"
-              icon="icons/sonar.png"
+              icon="icons/onde-sonar-16.png"
               isGoToNextNavigationTarget="true"
               isGoToNextNavigationTargetKey="org.sonar.ide.eclipse.newissue.next"
               isGoToPreviousNavigationTarget="true"
@@ -626,7 +626,7 @@
   <extension
         point="org.eclipse.ui.workbench.texteditor.quickDiffReferenceProvider">
      <referenceprovider
-            label="Sonar source"
+            label="SonarQube source"
            class="org.sonar.ide.eclipse.ui.internal.compare.SonarReferenceProvider"
            id="org.sonar.ide.eclipse.referenceprovider">
      </referenceprovider>
@@ -636,7 +636,7 @@
         point="org.eclipse.ui.console.consoleFactories">
      <consoleFactory
            class="org.sonar.ide.eclipse.ui.internal.console.SonarConsoleFactory"
-           icon="icons/sonar.png"
+           icon="icons/onde-sonar-16.png"
            label="%consoleFactory.label">
      </consoleFactory>
   </extension>
@@ -656,7 +656,7 @@
      <menuContribution
            locationURI="popup:org.eclipse.ui.popup.any?after=additions">
         <menu
-              icon="icons/sonar.png"
+              icon="icons/onde-sonar-16.png"
               id="sonar.menu"
               label="%sonar.menu.label">
            <separator
@@ -715,8 +715,8 @@
       <commonFilter
             class="org.sonar.ide.eclipse.ui.NonSonarProjectsFilter"
             id="org.sonar.ide.eclipse.ui.HideNonSonarProjects"
-            name="Non-Sonar projects"
-            description="Hides all projects without Sonar nature"
+            name="Non-SonarQube projects"
+            description="Hides all projects without SonarQube nature"
             activeByDefault="false">
       </commonFilter>
    </extension>

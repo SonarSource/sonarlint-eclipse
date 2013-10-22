@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -22,7 +22,7 @@ package org.sonar.ide.eclipse.ui.internal.wizards;
 public class NewServerLocationWizard extends AbstractServerLocationWizard {
 
   public NewServerLocationWizard() {
-    super(new ServerLocationWizardPage(), "Add Sonar Server");
+    super(new ServerLocationWizardPage(), "Add SonarQube Server");
   }
 
 }

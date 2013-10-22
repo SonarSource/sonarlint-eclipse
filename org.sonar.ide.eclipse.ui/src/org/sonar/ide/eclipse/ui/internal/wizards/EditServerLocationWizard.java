@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -28,7 +28,7 @@ public class EditServerLocationWizard extends AbstractServerLocationWizard {
   private final ISonarServer sonarServer;
 
   public EditServerLocationWizard(ISonarServer sonarServer) {
-    super(new ServerLocationWizardPage(sonarServer), "Edit Sonar Server");
+    super(new ServerLocationWizardPage(sonarServer), "Edit SonarQube Server");
     this.sonarServer = sonarServer;
   }
 

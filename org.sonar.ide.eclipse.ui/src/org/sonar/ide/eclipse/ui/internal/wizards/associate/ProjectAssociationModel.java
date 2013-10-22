@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -58,7 +58,7 @@ public class ProjectAssociationModel extends AbstractModelObject {
 
   public String getSonarFullName() {
     if (key == null) {
-      return "<Click here to start searching for a remote Sonar project...>";
+      return "<Click here to start searching for a remote SonarQube project...>";
     }
     else {
       return sonarProjectName + " on " + url + " (" + key + ")";

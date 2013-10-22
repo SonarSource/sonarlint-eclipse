@@ -13,6 +13,6 @@
   <artifactId>org.sonar.ide.eclipse.m2e.feature</artifactId>
   <packaging>eclipse-feature</packaging>
 
-  <name>Sonar Integration for Eclipse m2e connector (feature)</name>
+  <name>SonarQube Integration for Eclipse m2e connector (feature)</name>
 
 </project>

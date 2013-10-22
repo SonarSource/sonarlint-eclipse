@@ -29,7 +29,7 @@
 
    <extension
          id="sonarNature"
-         name="Sonar Nature"
+         name="SonarQube Nature"
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
@@ -40,7 +40,7 @@
 
    <extension
         id="sonarProblem"
-        name="Sonar Issue"
+        name="SonarQube Issue"
         point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.problemmarker">
@@ -61,7 +61,7 @@
 
    <extension
         id="sonarProblemNewIssue"
-        name="New Sonar Issue"
+        name="New SonarQube Issue"
         point="org.eclipse.core.resources.markers">
       <super
             type="org.sonar.ide.eclipse.core.sonarProblem">

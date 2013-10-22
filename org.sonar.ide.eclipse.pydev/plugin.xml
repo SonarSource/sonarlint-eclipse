@@ -19,8 +19,8 @@
 
    <extension point="org.eclipse.ui.navigator.navigatorContent">
       <commonFilter activeByDefault="false"
-          name="Non-Sonar projects"
-          description="Hides all projects without Sonar nature"
+          name="Non-SonarQube projects"
+          description="Hides all projects without SonarQube nature"
           id="org.python.pydev.navigator.filters.HideNonSonarProjects"
           class="org.sonar.ide.eclipse.ui.NonSonarProjectsFilter">
       </commonFilter>

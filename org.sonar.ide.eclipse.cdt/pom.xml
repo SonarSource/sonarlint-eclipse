@@ -13,7 +13,7 @@
   <artifactId>org.sonar.ide.eclipse.cdt</artifactId>
   <packaging>eclipse-plugin</packaging>
 
-  <name>Sonar Integration for Eclipse CDT</name>
+  <name>SonarQube Integration for Eclipse CDT</name>
 
   <build>
     <sourceDirectory>src</sourceDirectory>

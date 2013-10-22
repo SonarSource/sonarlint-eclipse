@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -45,11 +45,11 @@ public class SonarCorePlugin extends AbstractPlugin {
   public static final String NEW_ISSUE_MARKER_ID = PLUGIN_ID + ".sonarProblemNewIssue";
 
   /**
-   * Minimal supported version of Sonar server for local analysis.
+   * Minimal supported version of SonarQube server for local analysis.
    */
   public static final String LOCAL_MODE_MINIMAL_SONAR_VERSION = "3.6"; //$NON-NLS-1$
   /**
-   * Minimal supported version of Sonar server for incremental analysis.
+   * Minimal supported version of SonarQube server for incremental analysis.
    */
   public static final String INCREMENTAL_MODE_MINIMAL_SONAR_VERSION = "4.0"; //$NON-NLS-1$
 
@@ -121,7 +121,7 @@ public class SonarCorePlugin extends AbstractPlugin {
   }
 
   /**
-   * Create a new Sonar project from the given project. Enable Sonar nature.
+   * Create a new SonarQube project from the given project. Enable SonarQube nature.
    * @param project
    * @param url
    * @param key

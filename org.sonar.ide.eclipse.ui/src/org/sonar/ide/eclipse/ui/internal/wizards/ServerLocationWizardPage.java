@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -63,7 +63,7 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   public ServerLocationWizardPage(ISonarServer sonarServer) {
-    super("server_location_page", "Sonar Server Configuration", SonarImages.SONARWIZBAN_IMG);
+    super("server_location_page", "SonarQube Server Configuration", SonarImages.SONARWIZBAN_IMG);
     this.sonarServer = sonarServer;
   }
 

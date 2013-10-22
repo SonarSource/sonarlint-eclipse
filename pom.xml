@@ -14,9 +14,9 @@
   <packaging>pom</packaging>
   <version>3.3.0-SNAPSHOT</version>
 
-  <name>Sonar Integration for Eclipse (parent)</name>
+  <name>SonarQube Integration for Eclipse (parent)</name>
   <description></description>
-  <url>http://sonar-ide.codehaus.org</url>
+  <url>http://docs.codehaus.org/display/SONAR/SonarQube+in+Eclipse</url>
   <inceptionYear>2010</inceptionYear>
   <organization>
     <name>SonarSource</name>
@@ -103,19 +103,19 @@
   <distributionManagement>
     <repository>
       <id>sonar-ide</id>
-      <name>Sonar IDEs repository</name>
+      <name>SonarQube Eclipse repository</name>
       <url>${sonar-ide.releases}</url>
     </repository>
     <snapshotRepository>
       <id>sonar-ide</id>
-      <name>Sonar IDEs snapshot repository</name>
+      <name>SonarQube Eclipse snapshot repository</name>
       <url>${sonar-ide.snapshots}</url>
       <uniqueVersion>false</uniqueVersion>
     </snapshotRepository>
   </distributionManagement>
 
   <properties>
-    <license.title>Sonar Eclipse</license.title>
+    <license.title>SonarQube Eclipse</license.title>
     <license.year>2010-2013</license.year>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho.version>0.18.1</tycho.version>
@@ -127,7 +127,7 @@
     <sonar-ide.releases>http://localhost</sonar-ide.releases>
 
     <!-- ================== -->
-    <!-- For Sonar analysis -->
+    <!-- For SonarQube analysis -->
     <!-- ================== -->
     <sonar.java.source>1.6</sonar.java.source>
     <sonar.java.target>1.6</sonar.java.target>
@@ -336,7 +336,7 @@
   </build>
 
   <profiles>
-    <!-- This profile is used to gather code coverage for Sonar -->
+    <!-- This profile is used to gather code coverage for SonarQube -->
     <profile>
       <id>jacoco</id>
       <properties>

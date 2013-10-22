@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -82,8 +82,8 @@ public class ConfigureProjectsPage extends WizardPage {
   private boolean alreadyRun = false;
 
   public ConfigureProjectsPage(List<IProject> projects) {
-    super("configureProjects", "Associate with Sonar", SonarImages.SONARWIZBAN_IMG);
-    setDescription("Select projects to add Sonar capability.");
+    super("configureProjects", "Associate with SonarQube", SonarImages.SONARWIZBAN_IMG);
+    setDescription("Select projects to add SonarQube capability.");
     this.projects = projects;
     sonarServers = SonarCorePlugin.getServersManager().getServers();
   }
@@ -108,7 +108,7 @@ public class ConfigureProjectsPage extends WizardPage {
     columnProject.getColumn().setWidth(200);
 
     TableViewerColumn columnSonarProject = new TableViewerColumn(viewer, SWT.LEFT);
-    columnSonarProject.getColumn().setText("Sonar project");
+    columnSonarProject.getColumn().setText("SonarQube project");
     columnSonarProject.getColumn().setWidth(600);
 
     columnSonarProject.setEditingSupport(new ProjectAssociationModelEditingSupport(viewer));
@@ -165,7 +165,7 @@ public class ConfigureProjectsPage extends WizardPage {
           alreadyRun = true;
           try {
             if (sonarServers.isEmpty()) {
-              setMessage("Please configure a sonar server first", IMessageProvider.ERROR);
+              setMessage("Please configure a SonarQube server first", IMessageProvider.ERROR);
             } else {
               setMessage("", IMessageProvider.NONE);
               getWizard().getContainer().run(true, false, new AssociateProjects(sonarServers, getProjects()));
@@ -173,7 +173,7 @@ public class ConfigureProjectsPage extends WizardPage {
           } catch (InvocationTargetException ex) {
             LOG.error(ex.getMessage(), ex);
             if (ex.getTargetException() instanceof ConnectionException) {
-              setMessage("One of your Sonar server cannot be reached. Please check your connection settings.", IMessageProvider.ERROR);
+              setMessage("One of your SonarQube server cannot be reached. Please check your connection settings.", IMessageProvider.ERROR);
             } else {
               setMessage("Error: " + ex.getMessage(), IMessageProvider.ERROR);
             }
@@ -280,7 +280,7 @@ public class ConfigureProjectsPage extends WizardPage {
     }
 
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-      monitor.beginTask("Associating Sonar projects", IProgressMonitor.UNKNOWN);
+      monitor.beginTask("Associating SonarQube projects", IProgressMonitor.UNKNOWN);
       // Retrieve list of all remote projects
       Map<String, List<ISonarRemoteModule>> remoteSonarProjects = fetchAllRemoteSonarModules();
 

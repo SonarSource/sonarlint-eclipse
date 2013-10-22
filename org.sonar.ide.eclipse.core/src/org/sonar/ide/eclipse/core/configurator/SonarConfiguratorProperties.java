@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -20,7 +20,7 @@
 package org.sonar.ide.eclipse.core.configurator;
 
 /**
- * Properties that configurator may want to set for the Sonar analysis.
+ * Properties that configurator may want to set for the SonarQube analysis.
  * @author Julien Henry
  *
  */

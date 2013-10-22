@@ -1,5 +1,5 @@
 /*
- * Sonar Eclipse
+ * SonarQube Eclipse
  * Copyright (C) 2010-2013 SonarSource
  * dev@sonar.codehaus.org
  *
@@ -31,12 +31,12 @@ public abstract class ProjectConfigurator {
 
   /**
    * Tell if this project configurator can configure the given project. It is already assumed
-   * that the project has the Sonar nature.
+   * that the project has the SonarQube nature.
    */
   public abstract boolean canConfigure(IProject project);
 
   /**
-   * Configures Sonar project, using information from Eclipse project.
+   * Configures SonarQube project, using information from Eclipse project.
    */
   public abstract void configure(ProjectConfigurationRequest request, IProgressMonitor monitor);
 
