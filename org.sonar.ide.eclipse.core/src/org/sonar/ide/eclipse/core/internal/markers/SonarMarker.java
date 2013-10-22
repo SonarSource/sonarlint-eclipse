@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.core.internal.markers;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -109,7 +110,8 @@ public class SonarMarker {
     return result;
   }
 
-  private static void addLine(final Map<String, Object> markerAttributes, final long line, final IResource resource) {
+  @VisibleForTesting
+  public static void addLine(final Map<String, Object> markerAttributes, final long line, final IResource resource) {
     if (resource instanceof IFile) {
       IFile file = (IFile) resource;
       InputStream is = null;
