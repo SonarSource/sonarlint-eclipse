@@ -57,6 +57,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   public static final String PREF_NEW_ISSUE_MARKER_SEVERITY = "newViolationMarkerSeverity"; //$NON-NLS-1$
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
   public static final String PREF_JVM_ARGS = "jvmArgs"; //$NON-NLS-1$
+  public static final String PREF_FORCE_FULL_PREVIEW = "fullPreview"; //$NON-NLS-1$
 
   private final Logger logger = LoggerFactory.getLogger(SonarUiPlugin.class);
 
@@ -133,6 +134,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     store.setDefault(PREF_NEW_ISSUE_MARKER_SEVERITY, IMarker.SEVERITY_ERROR);
     store.setDefault(PREF_EXTRA_ARGS, "");
     store.setDefault(PREF_JVM_ARGS, "");
+    store.setDefault(PREF_FORCE_FULL_PREVIEW, false);
     MarkerUtils.setMarkerSeverity(store.getInt(PREF_MARKER_SEVERITY));
     MarkerUtils.setMarkerSeverityForNewIssues(store.getInt(PREF_NEW_ISSUE_MARKER_SEVERITY));
   }
@@ -158,6 +160,10 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
   public static String getSonarJvmArgs() {
     return SonarUiPlugin.getDefault().getPreferenceStore().getString(SonarUiPlugin.PREF_JVM_ARGS);
+  }
+
+  public static boolean isForceFullPreview() {
+    return SonarUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarUiPlugin.PREF_FORCE_FULL_PREVIEW);
   }
 
   public static void setupIssuesUpdater() {

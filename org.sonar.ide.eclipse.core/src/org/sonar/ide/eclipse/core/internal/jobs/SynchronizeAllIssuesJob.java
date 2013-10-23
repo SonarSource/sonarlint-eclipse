@@ -48,11 +48,12 @@ public class SynchronizeAllIssuesJob extends Job {
   private IProgressMonitor monitor;
   private List<AnalyseProjectRequest> requests;
 
-  public static void createAndSchedule(IProject project, boolean debugEnabled, List<SonarProperty> extraProps, String jvmArgs) {
+  public static void createAndSchedule(IProject project, boolean debugEnabled, List<SonarProperty> extraProps, String jvmArgs, boolean forceFullPreview) {
     AnalyseProjectRequest request = new AnalyseProjectRequest(project)
       .setDebugEnabled(debugEnabled)
       .setExtraProps(extraProps)
-      .setJvmArgs(jvmArgs);
+      .setJvmArgs(jvmArgs)
+      .setForceFullPreview(forceFullPreview);
     new SynchronizeAllIssuesJob(Arrays.asList(request)).schedule();
   }
 

@@ -31,6 +31,7 @@ public interface SonarProperties {
   String DRY_RUN_PROPERTY = "sonar.dryRun";
   String ANALYSIS_MODE = "sonar.analysis.mode";
   String ANALYSIS_MODE_INCREMENTAL = "incremental";
+  String ANALYSIS_MODE_PREVIEW = "preview";
   String REPORT_OUTPUT_PROPERTY = "sonar.report.export.path";
 
   String SONAR_URL = "sonar.host.url";

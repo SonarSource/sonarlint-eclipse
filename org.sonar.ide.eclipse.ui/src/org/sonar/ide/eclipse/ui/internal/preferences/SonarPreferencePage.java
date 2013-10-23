@@ -20,6 +20,7 @@
 package org.sonar.ide.eclipse.ui.internal.preferences;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -46,21 +47,23 @@ public class SonarPreferencePage extends FieldEditorPreferencePage implements IW
   protected void createFieldEditors() {
 
     addField(new ComboFieldEditor(SonarUiPlugin.PREF_MARKER_SEVERITY,
-        Messages.SonarPreferencePage_label_marker_severity,
-        new String[][] {
-          {"Info", String.valueOf(IMarker.SEVERITY_INFO)},
-          {"Warning", String.valueOf(IMarker.SEVERITY_WARNING)},
-          {"Error", String.valueOf(IMarker.SEVERITY_ERROR)}},
-        getFieldEditorParent()));
+      Messages.SonarPreferencePage_label_marker_severity,
+      new String[][] {
+        {"Info", String.valueOf(IMarker.SEVERITY_INFO)},
+        {"Warning", String.valueOf(IMarker.SEVERITY_WARNING)},
+        {"Error", String.valueOf(IMarker.SEVERITY_ERROR)}},
+      getFieldEditorParent()));
     addField(new ComboFieldEditor(SonarUiPlugin.PREF_NEW_ISSUE_MARKER_SEVERITY,
-        Messages.SonarPreferencePage_label_new_issues_marker_severity,
-        new String[][] {
-          {"Info", String.valueOf(IMarker.SEVERITY_INFO)},
-          {"Warning", String.valueOf(IMarker.SEVERITY_WARNING)},
-          {"Error", String.valueOf(IMarker.SEVERITY_ERROR)}},
-        getFieldEditorParent()));
+      Messages.SonarPreferencePage_label_new_issues_marker_severity,
+      new String[][] {
+        {"Info", String.valueOf(IMarker.SEVERITY_INFO)},
+        {"Warning", String.valueOf(IMarker.SEVERITY_WARNING)},
+        {"Error", String.valueOf(IMarker.SEVERITY_ERROR)}},
+      getFieldEditorParent()));
     addField(new StringFieldEditor(SonarUiPlugin.PREF_JVM_ARGS,
-        Messages.SonarPreferencePage_label_jvm_args, getFieldEditorParent()));
+      Messages.SonarPreferencePage_label_jvm_args, getFieldEditorParent()));
+    addField(new BooleanFieldEditor(SonarUiPlugin.PREF_FORCE_FULL_PREVIEW,
+      Messages.SonarPreferencePage_label_force_full_preview, BooleanFieldEditor.SEPARATE_LABEL, getFieldEditorParent()));
   }
 
 }

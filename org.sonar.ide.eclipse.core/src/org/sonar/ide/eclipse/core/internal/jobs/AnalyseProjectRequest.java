@@ -31,6 +31,7 @@ public class AnalyseProjectRequest {
   private boolean debugEnabled;
   private List<SonarProperty> extraProps = Collections.emptyList();
   private String jvmArgs = "";
+  private boolean forceFullPreview;
 
   public AnalyseProjectRequest(IProject project) {
     this.project = project;
@@ -64,6 +65,15 @@ public class AnalyseProjectRequest {
 
   public AnalyseProjectRequest setJvmArgs(String jvmArgs) {
     this.jvmArgs = jvmArgs;
+    return this;
+  }
+
+  public boolean isForceFullPreview() {
+    return forceFullPreview;
+  }
+
+  public AnalyseProjectRequest setForceFullPreview(boolean forceFullPreview) {
+    this.forceFullPreview = forceFullPreview;
     return this;
   }
 

@@ -80,11 +80,13 @@ public class AnalyseProjectJob extends Job {
 
   private boolean incremental;
 
+  private String serverVersion;
+
   public AnalyseProjectJob(AnalyseProjectRequest request) {
     super(Messages.AnalyseProjectJob_title);
     this.project = request.getProject();
     this.debugEnabled = request.isDebugEnabled();
-    this.incremental = true;
+    this.incremental = !request.isForceFullPreview();
     this.extraProps = request.getExtraProps();
     this.jvmArgs = StringUtils.defaultIfBlank(request.getJvmArgs(), "");
     this.sonarProject = SonarProject.getInstance(project);
@@ -151,7 +153,10 @@ public class AnalyseProjectJob extends Job {
   }
 
   private String getServerVersion() {
-    return WSClientFactory.getSonarClient(sonarServer).getServerVersion();
+    if (serverVersion == null) {
+      serverVersion = WSClientFactory.getSonarClient(sonarServer).getServerVersion();
+    }
+    return serverVersion;
   }
 
   private ISonarServer getSonarServer() {
@@ -228,7 +233,11 @@ public class AnalyseProjectJob extends Job {
     if (incremental) {
       properties.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_INCREMENTAL);
     } else {
-      properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
+      if (SonarVersionTester.isServerVersionSupported(SonarCorePlugin.INCREMENTAL_MODE_MINIMAL_SONAR_VERSION, getServerVersion())) {
+        properties.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_PREVIEW);
+      } else {
+        properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
+      }
     }
     // Output file is relative to working dir
     properties.setProperty(SonarProperties.REPORT_OUTPUT_PROPERTY, outputFile.getName());
