@@ -159,6 +159,11 @@ public class AnalyseProjectJob extends Job {
     return serverVersion;
   }
 
+  @VisibleForTesting
+  public void setServerVersion(String serverVersion) {
+    this.serverVersion = serverVersion;
+  }
+
   private ISonarServer getSonarServer() {
     return sonarServer;
   }

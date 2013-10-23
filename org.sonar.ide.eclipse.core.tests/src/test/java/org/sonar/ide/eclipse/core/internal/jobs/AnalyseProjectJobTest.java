@@ -71,6 +71,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   @Test
   public void shouldConfigureAnalysisBefore40() throws Exception {
     AnalyseProjectJob job = job(project);
+    job.setServerVersion("3.7");
     job.setIncremental(false);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
@@ -83,6 +84,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   @Test
   public void shouldConfigureAnalysisAfter40() throws Exception {
     AnalyseProjectJob job = job(project);
+    job.setServerVersion("4.0");
     job.setIncremental(true);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
@@ -90,6 +92,19 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     assertThat(props.get(SonarProperties.SONAR_URL).toString(), is("http://localhost:9000"));
     assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString(), is("bar:foo"));
     assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString(), is("incremental"));
+  }
+
+  @Test
+  public void shouldForceFullPreview() throws Exception {
+    AnalyseProjectJob job = job(project);
+    job.setServerVersion("4.0");
+    job.setIncremental(false);
+    Properties props = new Properties();
+    job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
+
+    assertThat(props.get(SonarProperties.SONAR_URL).toString(), is("http://localhost:9000"));
+    assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString(), is("bar:foo"));
+    assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString(), is("preview"));
   }
 
   @Test
