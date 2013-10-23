@@ -54,14 +54,14 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
   public Object execute(ExecutionEvent event) throws ExecutionException {
     List<IProject> selectedProjects = Lists.newArrayList();
 
-    IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
-    if (activeEditor != null) {
-      findProjectOfSelectedEditor(selectedProjects, activeEditor);
-    } else {
-      findSelectedProjects(event, selectedProjects);
+    findSelectedProjects(event, selectedProjects);
+    if (selectedProjects.isEmpty()) {
+      findProjectOfSelectedEditor(event, selectedProjects);
     }
 
-    runAnalysisJob(selectedProjects);
+    if (!selectedProjects.isEmpty()) {
+      runAnalysisJob(selectedProjects);
+    }
 
     return null;
   }
@@ -101,7 +101,8 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
     }
   }
 
-  private void findProjectOfSelectedEditor(List<IProject> selectedProjects, IEditorPart activeEditor) {
+  private void findProjectOfSelectedEditor(ExecutionEvent event, List<IProject> selectedProjects) {
+    IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
     IEditorInput input = activeEditor.getEditorInput();
     if (input instanceof IFileEditorInput) {
       IFile currentFile = ((IFileEditorInput) input).getFile();
