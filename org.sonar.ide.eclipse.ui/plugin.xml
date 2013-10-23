@@ -503,11 +503,11 @@
   </extension>
 
   <extension point="org.eclipse.ui.bindings">
-    <key sequence="Shift+Ctrl+Q"
+    <key sequence="Ctrl+Alt+Q"
       commandId="org.sonar.ide.eclipse.ui.internal.command.AnalyzeProjectsCommand"
       schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
       contextId="org.eclipse.ui.contexts.window"/>
-    <key sequence="Shift+Ctrl+Q"
+    <key sequence="Ctrl+Alt+Q"
       commandId="org.sonar.ide.eclipse.ui.internal.command.AnalyzeProjectsCommand"
       schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
       contextId="org.eclipse.ui.textEditorScope"/>
