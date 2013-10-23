@@ -119,7 +119,7 @@ public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
     }
     try {
       long start = System.currentTimeMillis();
-      SonarCorePlugin.getDefault().info("Retrieve issues of resource " + resource.getName() + "...\n");
+      SonarCorePlugin.getDefault().debug("Retrieve issues of resource " + resource.getName() + "...\n");
       final Collection<ISonarIssue> issues = retrieveIssues(eclipseSonar, resource, monitor);
       SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - start) + "ms\n");
       long startMarker = System.currentTimeMillis();
