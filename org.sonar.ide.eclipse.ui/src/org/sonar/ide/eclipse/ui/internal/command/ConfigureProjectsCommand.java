@@ -71,7 +71,7 @@ public class ConfigureProjectsCommand extends AbstractHandler {
 
     final Display display = getDisplay();
     final WizardDialog dialog = new WizardDialog(display.getActiveShell(), wizard);
-    dialog.setHelpAvailable(false);
+    dialog.setHelpAvailable(true);
     BusyIndicator.showWhile(display, new Runnable() {
       public void run() {
         dialog.open();

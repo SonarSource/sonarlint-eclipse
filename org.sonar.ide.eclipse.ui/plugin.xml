@@ -720,4 +720,9 @@
             activeByDefault="false">
       </commonFilter>
    </extension>
+
+   <extension point="org.eclipse.help.contexts">
+         <contexts file="help/help_contexts.xml">
+         </contexts>
+   </extension>
 </plugin>

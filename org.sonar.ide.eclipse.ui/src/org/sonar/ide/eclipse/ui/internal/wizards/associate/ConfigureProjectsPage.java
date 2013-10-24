@@ -51,6 +51,7 @@ import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
@@ -89,6 +90,8 @@ public class ConfigureProjectsPage extends WizardPage {
   }
 
   public void createControl(Composite parent) {
+    PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, SonarUiPlugin.PLUGIN_ID + ".help_associate");
+
     Composite container = new Composite(parent, SWT.NONE);
 
     GridLayout layout = new GridLayout();
