@@ -123,7 +123,7 @@ public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
       final Collection<ISonarIssue> issues = retrieveIssues(eclipseSonar, resource, monitor);
       SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - start) + "ms\n");
       long startMarker = System.currentTimeMillis();
-      SonarCorePlugin.getDefault().debug("Create markers on resource " + resource.getName() + "...\n");
+      SonarCorePlugin.getDefault().debug("Update markers on resource " + resource.getName() + "...\n");
       MarkerUtils.deleteIssuesMarkers(resource);
       for (final ISonarIssue issue : issues) {
         SonarMarker.create(resource, false, issue);
@@ -135,9 +135,10 @@ public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
     }
   }
 
-  protected Collection<ISonarIssue> retrieveIssues(EclipseSonar sonar, IResource resource, IProgressMonitor monitor) {
+  private Collection<ISonarIssue> retrieveIssues(EclipseSonar sonar, IResource resource, IProgressMonitor monitor) {
     SourceCode sourceCode = sonar.search(resource);
     if (sourceCode == null) {
+      SonarCorePlugin.getDefault().debug("Unable to find remote resource " + resource.getName() + " on SonarQube server");
       return Collections.emptyList();
     }
     return sourceCode.getRemoteIssuesWithLineCorrection(monitor);

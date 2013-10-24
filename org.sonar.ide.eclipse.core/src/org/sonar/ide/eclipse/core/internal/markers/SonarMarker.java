@@ -130,7 +130,7 @@ public class SonarMarker {
           }
         }
       } catch (Exception e) {
-        throw new IllegalStateException("Unable to compute position of SonarQube marker", e);
+        SonarCorePlugin.getDefault().error("Unable to compute position of SonarQube marker on resource " + resource.getName() + ": " + e.getMessage());
       } finally {
         IOUtils.closeQuietly(lnr);
       }

@@ -74,11 +74,12 @@ public class SynchronizeAllIssuesJob extends Job {
         if (monitor.isCanceled()) {
           break;
         }
-        if (request.getProject().isAccessible() && !MarkerUtils.isResourceLocallyAnalysed(request.getProject())) {
+        if (request.getProject().isAccessible()) {
+          MarkerUtils.deleteIssuesMarkers(request.getProject());
           monitor.subTask(request.getProject().getName());
           fetchRemoteIssues(request.getProject(), monitor);
+          scheduleIncrementalAnalysis(request);
         }
-        scheduleIncrementalAnalysis(request);
         monitor.worked(1);
       }
 
@@ -130,7 +131,7 @@ public class SynchronizeAllIssuesJob extends Job {
       sonarProject.setLastAnalysisDate(sourceCode.getAnalysisDate());
       sonarProject.save();
     } else {
-      SonarCorePlugin.getDefault().info("Project not found on remote SonarQube server [" + sonarProject.getKey() + "]\n");
+      SonarCorePlugin.getDefault().error("Project not found on remote SonarQube server [" + sonarProject.getKey() + "]\n");
     }
     SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - start) + "ms\n");
   }
