@@ -41,6 +41,7 @@ import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
+import java.util.Date;
 import java.util.Map;
 
 public final class MarkerUtils {
@@ -162,8 +163,11 @@ public final class MarkerUtils {
     try {
       String previousAnalysisDateStr = resource.getPersistentProperty(LAST_ANALYSIS_DATE_PERSISTENT_PROP_KEY);
       long previousAnalysisDate = previousAnalysisDateStr != null ? Long.valueOf(previousAnalysisDateStr) : -1;
-      long lastAnalysisDate = WSClientFactory.getSonarClient(sonarServer).getLastAnalysisDate(sonarProject.getKey()).getTime();
-      if (previousAnalysisDate != lastAnalysisDate) {
+      Date lastAnalysisDateOnServer = WSClientFactory.getSonarClient(sonarServer).getLastAnalysisDate(sonarProject.getKey());
+      if (lastAnalysisDateOnServer == null) {
+        return false;
+      }
+      if (previousAnalysisDate != lastAnalysisDateOnServer.getTime()) {
         return true;
       }
     } catch (CoreException e) {
@@ -175,8 +179,11 @@ public final class MarkerUtils {
   public static void updatePersistentProperties(IFile resource, SonarProject sonarProject, ISonarServer sonarServer) {
     try {
       resource.setPersistentProperty(MODIFICATION_STAMP_PERSISTENT_PROP_KEY, "" + resource.getModificationStamp());
-      resource.setPersistentProperty(LAST_ANALYSIS_DATE_PERSISTENT_PROP_KEY, "" + WSClientFactory.getSonarClient(sonarServer)
-        .getLastAnalysisDate(sonarProject.getKey()).getTime());
+      Date lastAnalysisDate = WSClientFactory.getSonarClient(sonarServer)
+        .getLastAnalysisDate(sonarProject.getKey());
+      if (lastAnalysisDate != null) {
+        resource.setPersistentProperty(LAST_ANALYSIS_DATE_PERSISTENT_PROP_KEY, "" + lastAnalysisDate.getTime());
+      }
     } catch (CoreException e) {
       LOG.error("Unable to update persistent properties", e);
     }
