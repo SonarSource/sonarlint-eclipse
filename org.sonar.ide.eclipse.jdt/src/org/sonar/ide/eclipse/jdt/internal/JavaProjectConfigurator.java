@@ -36,7 +36,9 @@ import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
@@ -68,7 +70,10 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     LOG.info("Target Java version: {}", javaTarget);
 
     try {
-      addClassPathToSonarProject(javaProject, sonarProjectProperties, true);
+      JavaProjectContext context = new JavaProjectContext();
+      context.getProjects().add(javaProject);
+      addClassPathToSonarProject(javaProject, context, true);
+      putContextToProperties(sonarProjectProperties, context);
     } catch (JavaModelException e) {
       LOG.error(e.getMessage(), e);
     }
@@ -80,32 +85,37 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
    * are added, but no source folders.
    * @param javaProject the eclipse project to get the classpath from
    * @param sonarProjectProperties the sonar project properties to add the classpath to
+   * @param context
    * @param topProject indicate we are working on the project to be analysed and not on a dependent project
    * @throws JavaModelException see {@link IJavaProject#getResolvedClasspath(boolean)}
    */
-  private void addClassPathToSonarProject(IJavaProject javaProject, Properties sonarProjectProperties, boolean topProject) throws JavaModelException {
+  private void addClassPathToSonarProject(IJavaProject javaProject, JavaProjectContext context, boolean topProject) throws JavaModelException {
     IClasspathEntry[] classPath = javaProject.getResolvedClasspath(true);
+    Set<String> sonarLibraries = new HashSet<String>();
     for (IClasspathEntry entry : classPath) {
       switch (entry.getEntryKind()) {
         case IClasspathEntry.CPE_SOURCE:
           if (!isSourceExcluded(entry)) {
-            processSourceEntry(entry, javaProject, sonarProjectProperties, topProject);
+            processSourceEntry(entry, javaProject, context, topProject);
           }
           break;
         case IClasspathEntry.CPE_LIBRARY:
           if (topProject || entry.isExported()) {
             final String libDir = resolveLibrary(javaProject, entry);
-            if (libDir != null) {
+            if (libDir != null && !sonarLibraries.contains(libDir)) {
               LOG.debug("Library: {}", libDir);
-              appendProperty(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, libDir);
+              sonarLibraries.add(libDir);
             }
           }
           break;
         case IClasspathEntry.CPE_PROJECT:
           IJavaModel javaModel = javaProject.getJavaModel();
           IJavaProject referredProject = javaModel.getJavaProject(entry.getPath().segment(0));
-          LOG.debug("Adding project: {}", referredProject.getProject().getName());
-          addClassPathToSonarProject(referredProject, sonarProjectProperties, false);
+          if(!context.getProjects().contains(referredProject)) {
+	          LOG.debug("Adding project: {}", referredProject.getProject().getName());
+	          addClassPathToSonarProject(referredProject, context, false);
+	          context.getProjects().add(referredProject);
+          }
           break;
         default:
           LOG.warn("Unhandled ClassPathEntry : {}", entry);
@@ -113,19 +123,19 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       }
     }
 
-    processOutputDir(javaProject.getOutputLocation(), sonarProjectProperties, topProject);
+    processOutputDir(javaProject.getOutputLocation(), context, topProject);
   }
 
-  private void processOutputDir(IPath outputDir, Properties sonarProjectProperties, boolean topProject) throws JavaModelException {
+  private void processOutputDir(IPath outputDir, JavaProjectContext context, boolean topProject) throws JavaModelException {
     String outDir = getAbsolutePath(outputDir);
     if (outDir != null) {
       LOG.debug("Output directory: {}", outDir);
       if (topProject) {
-        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, outDir);
+        context.getBinaries().add(outDir);
       }
       else {
         // Output dir of dependents projects should be considered as libraries
-        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, outDir);
+        context.getLibraries().add(outDir);
       }
     }
     else {
@@ -133,7 +143,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     }
   }
 
-  private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, Properties sonarProjectProperties, boolean topProject) throws JavaModelException {
+  private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectContext context, boolean topProject) throws JavaModelException {
     String srcDir = getAbsolutePath(entry.getPath());
     if (srcDir == null) {
       LOG.warn("Skipping non existing source entry: {}", entry.getPath().toOSString());
@@ -143,16 +153,16 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
       if (topProject) {
         LOG.debug("Test directory: {}", srcDir);
-        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, srcDir);
+        context.getTestDirs().add(srcDir);
       }
     }
     else {
       if (topProject) {
         LOG.debug("Source directory: {}", srcDir);
-        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, srcDir);
+        context.getSourceDirs().add(srcDir);
       }
       if (entry.getOutputLocation() != null) {
-        processOutputDir(entry.getOutputLocation(), sonarProjectProperties, topProject);
+        processOutputDir(entry.getOutputLocation(), context, topProject);
       }
     }
   }
@@ -199,5 +209,12 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
 
   private String getRelativePath(IJavaProject javaProject, IPath path) {
     return path.makeRelativeTo(javaProject.getPath()).toOSString();
+  }
+
+  private void putContextToProperties(Properties sonarProjectProperties, JavaProjectContext context) {
+    appendProperty(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, concatenate(context.getLibraries()));
+    appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, concatenate(context.getTestDirs()));
+    appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, concatenate(context.getSourceDirs()));
+    appendProperty(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, concatenate(context.getBinaries()));
   }
 }
