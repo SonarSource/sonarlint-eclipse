@@ -19,12 +19,14 @@
  */
 package org.sonar.ide.eclipse.core.configurator;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 
+import java.util.Collection;
 import java.util.Properties;
 
 public abstract class ProjectConfigurator {
@@ -58,6 +60,10 @@ public abstract class ProjectConfigurator {
       newValue = value;
     }
     properties.put(key, newValue);
+  }
+
+  protected void setPropertyList(Properties properties, String key, Collection<String> values) {
+    properties.put(key, StringUtils.join(values, SonarProperties.SEPARATOR));
   }
 
 }
