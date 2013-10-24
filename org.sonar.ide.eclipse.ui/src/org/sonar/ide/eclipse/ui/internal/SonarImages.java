@@ -31,9 +31,6 @@ public final class SonarImages {
 
   private static final URL BASE_URL = SonarUiPlugin.getDefault().getBundle().getEntry("/icons/"); //$NON-NLS-1$
 
-  public static final ImageDescriptor STAR = createImageDescriptor("star.png"); //$NON-NLS-1$
-  public static final ImageDescriptor STAR_OFF = createImageDescriptor("star_off.png"); //$NON-NLS-1$
-
   public static final ImageDescriptor SONARWIZBAN_IMG = createImageDescriptor("sonarqube-48x200.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONAR16_IMG = createImageDescriptor("onde-sonar-16.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONAR32_IMG = createImageDescriptor("sonar32.png"); //$NON-NLS-1$
