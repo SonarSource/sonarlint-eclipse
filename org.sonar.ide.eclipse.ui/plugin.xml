@@ -450,7 +450,7 @@
     <command
           description="Open SonarQube association wizard"
           id="org.sonar.ide.eclipse.ui.command.ConfigureProjectsCommand"
-          name="Associate with Sonar..."
+          name="Associate with SonarQube..."
           categoryId="org.sonar.ide.eclipse.ui.command.category">
     </command>
     <command

@@ -35,7 +35,7 @@ public class ConfigureProjectsWizard extends Wizard {
   public ConfigureProjectsWizard(List<IProject> projects) {
     this.projects = projects;
     setNeedsProgressMonitor(true);
-    setWindowTitle("Associate with Sonar");
+    setWindowTitle("Associate with SonarQube");
     setHelpAvailable(false);
   }
 
