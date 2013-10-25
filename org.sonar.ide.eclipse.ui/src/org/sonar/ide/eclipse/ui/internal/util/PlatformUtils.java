@@ -29,8 +29,12 @@ import org.eclipse.ui.ide.IDE;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public final class PlatformUtils {
+
+  private PlatformUtils() {
+  }
 
   /**
    * Opens editor for given file.
@@ -55,7 +59,7 @@ public final class PlatformUtils {
 
     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     try {
-      HashMap<String, Object> map = new HashMap<String, Object>(1);
+      Map<String, Object> map = new HashMap<String, Object>(1);
       map.put(IMarker.LINE_NUMBER, Integer.valueOf(line));
       IMarker marker = file.createMarker(IMarker.TEXT);
       marker.setAttributes(map);
@@ -66,9 +70,6 @@ public final class PlatformUtils {
     } catch (CoreException e) {
       LoggerFactory.getLogger(PlatformUtils.class).error(e.getMessage(), e);
     }
-  }
-
-  private PlatformUtils() {
   }
 
 }

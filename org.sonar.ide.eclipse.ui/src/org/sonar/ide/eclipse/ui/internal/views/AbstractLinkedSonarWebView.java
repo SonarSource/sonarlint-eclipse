@@ -56,28 +56,41 @@ public abstract class AbstractLinkedSonarWebView<G> extends AbstractSonarWebView
       }
     }
 
+    @Override
     public void partHidden(IWorkbenchPartReference ref) {
+      // Nothing to do
     }
 
+    @Override
     public void partInputChanged(IWorkbenchPartReference ref) {
       if (!ref.getId().equals(getSite().getId())) {
         computeAndSetInput(ref.getPart(false));
       }
     }
 
+    @Override
     public void partActivated(IWorkbenchPartReference ref) {
+      // Nothing to do
     }
 
+    @Override
     public void partBroughtToTop(IWorkbenchPartReference ref) {
+      // Nothing to do
     }
 
+    @Override
     public void partClosed(IWorkbenchPartReference ref) {
+      // Nothing to do
     }
 
+    @Override
     public void partDeactivated(IWorkbenchPartReference ref) {
+      // Nothing to do
     }
 
+    @Override
     public void partOpened(IWorkbenchPartReference ref) {
+      // Nothing to do
     }
   };
 
@@ -103,20 +116,18 @@ public abstract class AbstractLinkedSonarWebView<G> extends AbstractSonarWebView
   }
 
   private class LinkAction extends Action {
+    private static final String LINK_WITH_SELECTION = "Link with Selection";
+
     public LinkAction() {
-      super("Link with Selection", SWT.TOGGLE);
-      setTitleToolTip("Link with Selection");
+      super(LINK_WITH_SELECTION, SWT.TOGGLE);
+      setTitleToolTip(LINK_WITH_SELECTION);
       setImageDescriptor(SonarImages.SONARSYNCHRO_IMG);
       setChecked(isLinkingEnabled());
     }
 
     @Override
     public void run() {
-      try {
-        setLinkingEnabled(!isLinkingEnabled());
-      } catch (CoreException e) {
-        throw new RuntimeException(e);
-      }
+      setLinkingEnabled(!isLinkingEnabled());
     }
   }
 
@@ -125,9 +136,9 @@ public abstract class AbstractLinkedSonarWebView<G> extends AbstractSonarWebView
    *
    * @param enabled
    *          if true then the input is set on selection changes
-   * @throws CoreException 
+   * @throws CoreException
    */
-  protected void setLinkingEnabled(boolean enabled) throws CoreException {
+  protected void setLinkingEnabled(boolean enabled) {
     linking = enabled;
     if (linking && (lastSelection != null)) {
       setInput(lastSelection);
@@ -151,6 +162,7 @@ public abstract class AbstractLinkedSonarWebView<G> extends AbstractSonarWebView
     getSite().getPage().removePostSelectionListener(this);
   }
 
+  @Override
   public void selectionChanged(IWorkbenchPart part, ISelection selection) {
     if (this.equals(part)) {
       return;
@@ -194,7 +206,7 @@ public abstract class AbstractLinkedSonarWebView<G> extends AbstractSonarWebView
 
   /**
    * Finds and returns the Sonar resource selected in the given part.
-   * @throws CoreException 
+   * @throws CoreException
    */
   protected abstract G findSelectedElement(IWorkbenchPart part, ISelection selection);
 

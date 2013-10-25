@@ -48,11 +48,12 @@ import java.util.List;
  */
 public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
 
+  public static final Object REMOTE_SONAR_JOB_FAMILY = new Object();
+
   private final List<? extends IResource> resources;
   private IProgressMonitor monitor;
 
   private boolean force;
-  Object REMOTE_SONAR_JOB_FAMILY = new Object();
 
   public SynchronizeIssuesJob(final List<? extends IResource> resources, boolean force) {
     super("Synchronize issues");

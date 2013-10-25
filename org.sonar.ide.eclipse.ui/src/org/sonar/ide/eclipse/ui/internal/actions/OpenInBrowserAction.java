@@ -46,9 +46,12 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
     super();
   }
 
+  @Override
   public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+    // Nothing to do
   }
 
+  @Override
   public void run(IAction action) {
     try {
       Object element = selection.getFirstElement();
@@ -69,6 +72,7 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
     }
   }
 
+  @Override
   public void selectionChanged(IAction action, ISelection selection) {
     if (selection instanceof IStructuredSelection) {
       this.selection = (IStructuredSelection) selection;

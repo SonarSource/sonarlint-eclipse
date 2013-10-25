@@ -19,9 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.internal.compare;
 
-import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
-import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
-
 import org.eclipse.compare.CompareUI;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -29,6 +26,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
+import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
+import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 import org.sonar.ide.eclipse.ui.internal.util.SelectionUtils;
 
@@ -36,13 +35,17 @@ public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
 
   private ISonarResource resource;
 
+  @Override
   public void dispose() {
     resource = null;
   }
 
+  @Override
   public void init(final IWorkbenchWindow window) {
+    // Nothing to do
   }
 
+  @Override
   public void selectionChanged(final IAction action, final ISelection selection) {
     resource = null;
     Object element = SelectionUtils.getSingleElement(selection);
@@ -51,6 +54,7 @@ public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
     }
   }
 
+  @Override
   public void run(final IAction action) {
     if (resource != null) {
       final SourceCode sourceCode = EclipseSonar.getInstance(resource.getProject()).search(resource);
@@ -58,9 +62,9 @@ public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
         CompareUI.openCompareEditor(new SonarCompareInput(resource.getResource(), sourceCode.getRemoteContent()));
       } else {
         MessageDialog.openInformation(
-            PlatformUI.getWorkbench().getDisplay().getActiveShell(),
-            "Not found",
-            resource.getKey() + " not found on server");
+          PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+          "Not found",
+          resource.getKey() + " not found on server");
       }
     }
   }

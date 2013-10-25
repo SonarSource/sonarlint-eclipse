@@ -60,6 +60,7 @@ public class IssueEditorWebView extends AbstractLinkedSonarWebView<IMarker> {
 
       @Override
       public void changed(ProgressEvent event) {
+        // Nothing to do
       }
     });
     new CallbackFunction(getBrowser(), "eclipseIssueCallback");
@@ -94,7 +95,7 @@ public class IssueEditorWebView extends AbstractLinkedSonarWebView<IMarker> {
       }
       issueId = ObjectUtils.toString(marker.getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR));
     } catch (CoreException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(e);
     }
     resource = marker.getResource();
     SonarProject sonarProject = SonarProject.getInstance(marker.getResource().getProject());

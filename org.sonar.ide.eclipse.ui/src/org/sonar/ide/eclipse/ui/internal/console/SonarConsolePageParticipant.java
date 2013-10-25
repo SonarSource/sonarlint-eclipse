@@ -43,6 +43,7 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
   private DebugAction debugAction;
   private ShowConsoleAction showOnOutputAction;
 
+  @Override
   public void init(IPageBookViewPage page, IConsole console) {
     debugAction = new DebugAction();
     showOnOutputAction = new ShowConsoleAction();
@@ -56,6 +57,7 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
     manager.appendToGroup(IConsoleConstants.OUTPUT_GROUP, showOnOutputAction);
   }
 
+  @Override
   public void dispose() {
     debugAction.dispose();
     debugAction = null;
@@ -64,10 +66,14 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
     showOnOutputAction = null;
   }
 
+  @Override
   public void activated() {
+    // Nothing to do
   }
 
+  @Override
   public void deactivated() {
+    // Nothing to do
   }
 
   public Object getAdapter(Class adapter) {
@@ -83,12 +89,14 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
       setMenuCreator(this);
     }
 
+    @Override
     public void dispose() {
       if (menu != null) {
         menu.dispose();
       }
     }
 
+    @Override
     public Menu getMenu(Control parent) {
       if (menu != null) {
         menu.dispose();
@@ -105,6 +113,7 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
       item.fill(parent, -1);
     }
 
+    @Override
     public Menu getMenu(Menu parent) {
       return null;
     }
@@ -135,6 +144,7 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
 
   static class DebugAction extends Action {
     private final IPropertyChangeListener listener = new IPropertyChangeListener() {
+      @Override
       public void propertyChange(PropertyChangeEvent event) {
         if (SonarConsole.P_DEBUG_OUTPUT.equals(event.getProperty())) {
           setChecked(SonarConsole.isDebugEnabled());

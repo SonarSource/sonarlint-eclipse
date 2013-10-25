@@ -48,23 +48,30 @@ public class IssuesUpdater implements IPartListener2 {
   }
 
   public void partVisible(IWorkbenchPartReference partRef) {
+    // Nothing to do
   }
 
   public void partInputChanged(IWorkbenchPartReference partRef) {
+    // Nothing to do
   }
 
   public void partHidden(IWorkbenchPartReference partRef) {
+    // Nothing to do
   }
 
   public void partDeactivated(IWorkbenchPartReference partRef) {
+    // Nothing to do
   }
 
   public void partClosed(IWorkbenchPartReference partRef) {
+    // Nothing to do
   }
 
   public void partBroughtToTop(IWorkbenchPartReference partRef) {
+    // Nothing to do
   }
 
   public void partActivated(IWorkbenchPartReference partRef) {
+    // Nothing to do
   }
 }

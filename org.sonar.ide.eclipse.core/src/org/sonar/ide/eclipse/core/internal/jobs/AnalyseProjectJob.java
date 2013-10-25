@@ -252,11 +252,6 @@ public class AnalyseProjectJob extends Job {
     return outputFile;
   }
 
-  /** Run the action. Display the Hello World message
-   * @throws InterruptedException
-   * @throws CoreException
-   * @throws IOException
-   */
   public IStatus run(IProject project, Properties props, boolean debugEnabled, final IProgressMonitor monitor) throws InterruptedException,
     CoreException, IOException {
 
@@ -287,18 +282,26 @@ public class AnalyseProjectJob extends Job {
         })
         .execute();
 
-      if (monitor.isCanceled()) {
-        return Status.CANCEL_STATUS;
-      }
-      return Status.OK_STATUS;
+      return checkCancel(monitor);
     } catch (Exception e) {
-      if (monitor.isCanceled()) {
-        // On OSX it seems that cancelling produce an exception
-        return Status.CANCEL_STATUS;
-      }
-      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error during execution of Sonar", e);
+      return handleException(monitor, e);
     }
 
+  }
+
+  private IStatus checkCancel(final IProgressMonitor monitor) {
+    if (monitor.isCanceled()) {
+      return Status.CANCEL_STATUS;
+    }
+    return Status.OK_STATUS;
+  }
+
+  private IStatus handleException(final IProgressMonitor monitor, Exception e) {
+    if (monitor.isCanceled()) {
+      // On OSX it seems that cancelling produce an exception
+      return Status.CANCEL_STATUS;
+    }
+    return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error during execution of Sonar", e);
   }
 
   private static String propsToString(Properties props) {

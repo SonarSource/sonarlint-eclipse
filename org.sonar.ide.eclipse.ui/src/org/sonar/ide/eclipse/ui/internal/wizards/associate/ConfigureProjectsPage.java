@@ -89,6 +89,7 @@ public class ConfigureProjectsPage extends WizardPage {
     sonarServers = SonarCorePlugin.getServersManager().getServers();
   }
 
+  @Override
   public void createControl(Composite parent) {
     PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, SonarUiPlugin.PLUGIN_ID + ".help_associate");
 
@@ -152,8 +153,8 @@ public class ConfigureProjectsPage extends WizardPage {
         return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
           || event.eventType == ColumnViewerEditorActivationEvent.MOUSE_CLICK_SELECTION
           || event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC
-          || (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == KeyLookupFactory
-            .getDefault().formalKeyLookup(IKeyLookup.F2_NAME));
+          || event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == KeyLookupFactory
+            .getDefault().formalKeyLookup(IKeyLookup.F2_NAME);
       }
     };
     activationSupport.setEnableEditorActivationWithKeyboard(true);
@@ -199,12 +200,12 @@ public class ConfigureProjectsPage extends WizardPage {
 
     @Override
     protected boolean canEdit(Object element) {
-      return (element instanceof ProjectAssociationModel);
+      return element instanceof ProjectAssociationModel;
     }
 
     @Override
     protected CellEditor getCellEditor(Object element) {
-      return new TextCellEditorWithContentProposal(viewer.getTable(), contentProposalProvider, ((ProjectAssociationModel) element));
+      return new TextCellEditorWithContentProposal(viewer.getTable(), contentProposalProvider, (ProjectAssociationModel) element);
     }
 
     @Override
@@ -218,8 +219,6 @@ public class ConfigureProjectsPage extends WizardPage {
     }
 
   }
-
-  String errorMessage;
 
   /**
    * Update all Eclipse projects when an association was provided:
@@ -266,20 +265,20 @@ public class ConfigureProjectsPage extends WizardPage {
   }
 
   private ProjectAssociationModel[] getProjects() {
-    WritableList projectAssociations = ((WritableList) viewer.getInput());
+    WritableList projectAssociations = (WritableList) viewer.getInput();
     return (ProjectAssociationModel[]) projectAssociations.toArray(new ProjectAssociationModel[projectAssociations.size()]);
   }
 
   public static class AssociateProjects implements IRunnableWithProgress {
 
     private final Collection<ISonarServer> sonarServers;
-    private final ProjectAssociationModel[] projects;
+    private final ProjectAssociationModel[] projectAssociations;
 
     public AssociateProjects(Collection<ISonarServer> sonarServers, ProjectAssociationModel[] projects) {
       Assert.isNotNull(sonarServers);
       Assert.isNotNull(projects);
       this.sonarServers = sonarServers;
-      this.projects = projects;
+      this.projectAssociations = projects;
     }
 
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
@@ -288,7 +287,7 @@ public class ConfigureProjectsPage extends WizardPage {
       Map<String, List<ISonarRemoteModule>> remoteSonarProjects = fetchAllRemoteSonarModules();
 
       // Verify that all projects already associated are found on remote. If not found projects are considered as unassociated.
-      validateProjectAssociation(remoteSonarProjects);
+      validateProjectAssociations(remoteSonarProjects);
 
       // Now check for all potential matches for a all non associated projects on all Sonar servers
       Map<ProjectAssociationModel, List<PotentialMatchForProject>> potentialMatches = findAllPotentialMatches(remoteSonarProjects);
@@ -323,7 +322,7 @@ public class ConfigureProjectsPage extends WizardPage {
       for (Map.Entry<String, List<ISonarRemoteModule>> entry : remoteSonarProjects.entrySet()) {
         String url = entry.getKey();
         List<ISonarRemoteModule> resources = entry.getValue();
-        for (ProjectAssociationModel sonarProject : projects) {
+        for (ProjectAssociationModel sonarProject : projectAssociations) {
           if (StringUtils.isBlank(sonarProject.getKey())) {
             // Not associated yet
             if (!potentialMatches.containsKey(sonarProject)) {
@@ -341,28 +340,32 @@ public class ConfigureProjectsPage extends WizardPage {
       return potentialMatches;
     }
 
-    private void validateProjectAssociation(Map<String, List<ISonarRemoteModule>> remoteSonarProjects) {
-      for (ProjectAssociationModel projectAssociation : projects) {
+    private void validateProjectAssociations(Map<String, List<ISonarRemoteModule>> remoteSonarProjects) {
+      for (ProjectAssociationModel projectAssociation : projectAssociations) {
         if (SonarNature.hasSonarNature(projectAssociation.getProject())) {
           SonarProject sonarProject = SonarProject.getInstance(projectAssociation.getProject());
           String key = sonarProject.getKey();
           String url = sonarProject.getUrl();
-          boolean found = false;
-          if (remoteSonarProjects.containsKey(url)) {
-            for (ISonarRemoteModule remoteProject : remoteSonarProjects.get(url)) {
-              if (remoteProject.getKey().equals(key)) {
-                found = true;
-                // Call associate to have the name
-                projectAssociation.associate(url, remoteProject.getName(), key);
-                break;
-              }
-            }
-          }
-          if (!found) {
-            // There is no Sonar server with the provided URL or not matching project so consider the project is not associated
-            projectAssociation.unassociate();
+          validateProjectAssociation(remoteSonarProjects, projectAssociation, key, url);
+        }
+      }
+    }
+
+    private void validateProjectAssociation(Map<String, List<ISonarRemoteModule>> remoteSonarProjects, ProjectAssociationModel projectAssociation, String key, String url) {
+      boolean found = false;
+      if (remoteSonarProjects.containsKey(url)) {
+        for (ISonarRemoteModule remoteProject : remoteSonarProjects.get(url)) {
+          if (remoteProject.getKey().equals(key)) {
+            found = true;
+            // Call associate to have the name
+            projectAssociation.associate(url, remoteProject.getName(), key);
+            break;
           }
         }
+      }
+      if (!found) {
+        // There is no Sonar server with the provided URL or not matching project so consider the project is not associated
+        projectAssociation.unassociate();
       }
     }
 

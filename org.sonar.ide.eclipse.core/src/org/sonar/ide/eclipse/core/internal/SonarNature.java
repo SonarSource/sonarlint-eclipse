@@ -35,16 +35,22 @@ public class SonarNature implements IProjectNature {
 
   private IProject project;
 
+  @Override
   public void configure() throws CoreException {
+    // Nothing to do
   }
 
+  @Override
   public void deconfigure() throws CoreException {
+    // Nothing to do
   }
 
+  @Override
   public IProject getProject() {
     return project;
   }
 
+  @Override
   public void setProject(IProject project) {
     this.project = project;
   }
