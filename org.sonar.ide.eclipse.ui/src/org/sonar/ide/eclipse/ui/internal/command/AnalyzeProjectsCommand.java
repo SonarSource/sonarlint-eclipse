@@ -37,9 +37,11 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyseProjectRequest;
 import org.sonar.ide.eclipse.core.internal.jobs.SynchronizeAllIssuesJob;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
@@ -73,6 +75,9 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
     List<AnalyseProjectRequest> requests = new ArrayList<AnalyseProjectRequest>();
     SonarUiPlugin.getDefault().getSonarConsole().clearConsole();
     for (IProject project : selectedProjects) {
+      if (!SonarNature.hasSonarNature(project)) {
+        break;
+      }
       requests.add(new AnalyseProjectRequest(project)
         .setDebugEnabled(debugEnabled)
         .setExtraProps(SonarUiPlugin.getExtraPropertiesForLocalAnalysis(project))
@@ -88,15 +93,22 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
 
     if (selection instanceof IStructuredSelection) {
       @SuppressWarnings("rawtypes")
-      List elems = ((IStructuredSelection) selection).toList();
-      for (Object elem : elems) {
-        if (elem instanceof IProject) {
-          selectedProjects.add((IProject) elem);
-        } else if (elem instanceof IAdaptable) {
-          IProject proj = (IProject) ((IAdaptable) elem).getAdapter(IProject.class);
-          if (proj != null) {
-            selectedProjects.add(proj);
-          }
+      Object[] elems = ((IStructuredSelection) selection).toArray();
+      collectProjects(selectedProjects, elems);
+    }
+  }
+
+  private void collectProjects(List<IProject> selectedProjects, Object[] elems) {
+    for (Object elem : elems) {
+      if (elem instanceof IProject) {
+        selectedProjects.add((IProject) elem);
+      } else if (elem instanceof IWorkingSet) {
+        IWorkingSet ws = (IWorkingSet) elem;
+        collectProjects(selectedProjects, ws.getElements());
+      } else if (elem instanceof IAdaptable) {
+        IProject proj = (IProject) ((IAdaptable) elem).getAdapter(IProject.class);
+        if (proj != null) {
+          selectedProjects.add(proj);
         }
       }
     }

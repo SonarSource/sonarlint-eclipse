@@ -30,7 +30,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.markers.SonarMarker;
 import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
@@ -106,11 +105,7 @@ public class SynchronizeAllIssuesJob extends Job {
     return monitor;
   }
 
-  public void fetchRemoteIssues(final IProject project, IProgressMonitor monitor) throws CoreException {
-    if (!SonarNature.hasSonarNature(project)) {
-      return;
-    }
-
+  private void fetchRemoteIssues(final IProject project, IProgressMonitor monitor) throws CoreException {
     long start = System.currentTimeMillis();
     SonarCorePlugin.getDefault().info("Retrieve remote issues of project " + project.getName() + "...\n");
 

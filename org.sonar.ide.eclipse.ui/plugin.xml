@@ -416,12 +416,15 @@
              commandId="org.sonar.ide.eclipse.ui.internal.command.AnalyzeProjectsCommand"
              style="push">
           <visibleWhen>
-              <with variable="activeMenuSelection">
-                 <iterate ifEmpty="false">
-                  <adapt type="org.eclipse.core.resources.IProject">
+             <with variable="activeMenuSelection">
+                <iterate ifEmpty="false">
+                  <or>
+                    <adapt type="org.eclipse.core.resources.IProject">
                       <test property="org.eclipse.core.resources.projectNature" value="org.sonar.ide.eclipse.core.sonarNature"/>
-                  </adapt>
-                 </iterate>
+                    </adapt>
+                    <adapt type="org.eclipse.ui.IWorkingSet" />
+                  </or>
+                </iterate>
              </with>
           </visibleWhen>
        </command>
