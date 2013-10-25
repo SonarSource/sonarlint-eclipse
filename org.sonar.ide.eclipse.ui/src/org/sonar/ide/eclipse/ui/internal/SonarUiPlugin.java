@@ -130,6 +130,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
    */
   @Override
   protected void initializeDefaultPreferences(IPreferenceStore store) {
+    store.setDefault(SonarConsole.P_SHOW_CONSOLE, SonarConsole.P_SHOW_CONSOLE_ON_ERROR);
     store.setDefault(PREF_MARKER_SEVERITY, IMarker.SEVERITY_WARNING);
     store.setDefault(PREF_NEW_ISSUE_MARKER_SEVERITY, IMarker.SEVERITY_ERROR);
     store.setDefault(PREF_EXTRA_ARGS, "");

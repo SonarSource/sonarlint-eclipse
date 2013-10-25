@@ -102,9 +102,9 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
         menu.dispose();
       }
       menu = new Menu(parent);
-      addActionToMenu(menu, new MyAction(Messages.SonarShowConsoleAction_never_text, "never")); //$NON-NLS-1$
-      addActionToMenu(menu, new MyAction(Messages.SonarShowConsoleAction_onOutput_text, "onOutput")); //$NON-NLS-1$
-      addActionToMenu(menu, new MyAction(Messages.SonarShowConsoleAction_onError_text, "onError")); //$NON-NLS-1$
+      addActionToMenu(menu, new MyAction(Messages.SonarShowConsoleAction_never_text, SonarConsole.P_SHOW_CONSOLE_NEVER)); //$NON-NLS-1$
+      addActionToMenu(menu, new MyAction(Messages.SonarShowConsoleAction_onOutput_text, SonarConsole.P_SHOW_CONSOLE_ON_OUTPUT)); //$NON-NLS-1$
+      addActionToMenu(menu, new MyAction(Messages.SonarShowConsoleAction_onError_text, SonarConsole.P_SHOW_CONSOLE_ON_ERROR)); //$NON-NLS-1$
       return menu;
     }
 

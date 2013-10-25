@@ -22,6 +22,9 @@ package org.sonar.ide.eclipse.ui.internal.console;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
@@ -38,13 +41,13 @@ import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 
 import java.io.IOException;
 
-public class SonarConsole extends IOConsole implements LogListener, ISonarConsole {
+public class SonarConsole extends IOConsole implements LogListener, ISonarConsole, IPropertyChangeListener {
 
-  static final String P_DEBUG_OUTPUT = "debugOutput"; //$NON-NLS-1$
-  static final String P_SHOW_CONSOLE = "showConsole"; //$NON-NLS-1$
-  static final String P_SHOW_CONSOLE_NEVER = "never"; //$NON-NLS-1$
-  static final String P_SHOW_CONSOLE_ON_OUTPUT = "onOutput"; //$NON-NLS-1$
-  static final String P_SHOW_CONSOLE_ON_ERROR = "onError"; //$NON-NLS-1$
+  public static final String P_DEBUG_OUTPUT = "debugOutput"; //$NON-NLS-1$
+  public static final String P_SHOW_CONSOLE = "showConsole"; //$NON-NLS-1$
+  public static final String P_SHOW_CONSOLE_NEVER = "never"; //$NON-NLS-1$
+  public static final String P_SHOW_CONSOLE_ON_OUTPUT = "onOutput"; //$NON-NLS-1$
+  public static final String P_SHOW_CONSOLE_ON_ERROR = "onError"; //$NON-NLS-1$
 
   private static final String TITLE = Messages.SonarConsole_title;
 
@@ -56,22 +59,31 @@ public class SonarConsole extends IOConsole implements LogListener, ISonarConsol
   private Color warnColor;
   private Color debugColor;
 
+  private boolean initialized = false;
+
   public SonarConsole(ImageDescriptor imageDescriptor) {
     super(TITLE, imageDescriptor);
     initStreams(Display.getDefault());
   }
 
   private void initStreams(Display display) {
-    this.infoStream = newOutputStream();
-    this.warnStream = newOutputStream();
-    this.debugStream = newOutputStream();
+    if (!initialized) {
+      this.infoStream = newOutputStream();
+      this.warnStream = newOutputStream();
+      this.debugStream = newOutputStream();
 
-    // TODO make colors configurable
-    warnColor = new Color(display, new RGB(255, 0, 0));
-    debugColor = new Color(display, new RGB(0, 0, 255));
+      // TODO make colors configurable
+      warnColor = new Color(display, new RGB(255, 0, 0));
+      debugColor = new Color(display, new RGB(0, 0, 255));
 
-    getWarnStream().setColor(warnColor);
-    getDebugStream().setColor(debugColor);
+      getWarnStream().setColor(warnColor);
+      getDebugStream().setColor(debugColor);
+
+      // install font
+      setFont(JFaceResources.getFontRegistry().get("pref_console_font")); //$NON-NLS-1$
+
+      initialized = true;
+    }
   }
 
   @Override
@@ -79,6 +91,7 @@ public class SonarConsole extends IOConsole implements LogListener, ISonarConsol
     super.dispose();
 
     warnColor.dispose();
+    debugColor.dispose();
   }
 
   public void info(String msg) {
@@ -159,6 +172,11 @@ public class SonarConsole extends IOConsole implements LogListener, ISonarConsol
 
   public static boolean isDebugEnabled() {
     return SonarUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarConsole.P_DEBUG_OUTPUT);
+  }
+
+  public void propertyChange(PropertyChangeEvent event) {
+    // font changed
+    setFont(JFaceResources.getFontRegistry().get("pref_console_font")); //$NON-NLS-1$
   }
 
 }
