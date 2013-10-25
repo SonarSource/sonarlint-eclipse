@@ -65,8 +65,7 @@ public class IsNewIssueConfigurationArea extends FilterConfigurationArea {
   void updateIssueType(int constant, boolean enabled) {
     if (enabled) {
       newIssues = constant | newIssues;
-    }
-    else {
+    } else {
       newIssues = constant ^ newIssues;
     }
   }

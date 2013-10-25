@@ -73,8 +73,7 @@ public class AssigneeFieldFilter extends MarkerFieldFilter {
         return true;
       }
       return value.indexOf(containsText) >= 0;
-    }
-    else {
+    } else {
       if (containsText.length() == 0) {
         return StringUtils.isNotBlank(value);
       }
@@ -92,7 +91,7 @@ public class AssigneeFieldFilter extends MarkerFieldFilter {
 
   /**
    * Return the contains modifier.
-   * 
+   *
    * @return One of {@link MarkerSupportConstants#CONTAINS_KEY} or
    *         {@link MarkerSupportConstants#DOES_NOT_CONTAIN_KEY}
    */
@@ -102,7 +101,7 @@ public class AssigneeFieldFilter extends MarkerFieldFilter {
 
   /**
    * Set the contains modifier.
-   * 
+   *
    * @param containsString
    *            One of {@link MarkerSupportConstants#CONTAINS_KEY} or
    *            {@link MarkerSupportConstants#DOES_NOT_CONTAIN_KEY}
@@ -113,7 +112,7 @@ public class AssigneeFieldFilter extends MarkerFieldFilter {
 
   /**
    * Return the text to apply the containsModifier to.
-   * 
+   *
    * @return String
    */
   String getContainsText() {
@@ -122,7 +121,7 @@ public class AssigneeFieldFilter extends MarkerFieldFilter {
 
   /**
    * Set the text to apply the containsModifier to.
-   * 
+   *
    * @param containsText
    *            String
    */
@@ -137,7 +136,7 @@ public class AssigneeFieldFilter extends MarkerFieldFilter {
       setContainsModifier((String) values.get(TAG_CONTAINS_MODIFIER));
     }
     if (values
-        .containsKey(TAG_CONTAINS_TEXT)) {
+      .containsKey(TAG_CONTAINS_TEXT)) {
       setContainsText((String) values.get(TAG_CONTAINS_TEXT));
     }
   }

@@ -71,8 +71,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
       String userpwd = sonarServer.getUsername() + ":" + sonarServer.getPassword();
       byte[] encodedBytes = Base64.encodeBase64(userpwd.getBytes());
       browser.setUrl(url, null, new String[] {"Authorization: Basic " + new String(encodedBytes)});
-    }
-    else {
+    } else {
       browser.setUrl(url);
     }
   }
@@ -108,8 +107,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
       if (SonarCorePlugin.MARKER_ID.equals(marker.getType()) || SonarCorePlugin.NEW_ISSUE_MARKER_ID.equals(marker.getType())) {
         selectedSonarMarkers.add(marker);
       }
-    }
-    else if (elem instanceof IAdaptable) {
+    } else if (elem instanceof IAdaptable) {
       IMarker marker = (IMarker) ((IAdaptable) elem).getAdapter(IMarker.class);
       if (marker != null && (SonarCorePlugin.MARKER_ID.equals(marker.getType()) || SonarCorePlugin.NEW_ISSUE_MARKER_ID.equals(marker.getType()))) {
         selectedSonarMarkers.add(marker);

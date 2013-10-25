@@ -77,20 +77,15 @@ public class IssueDescriptionField extends MarkerField {
     final int result;
     if (severityLower.startsWith("blocker")) {
       result = 0;
-    }
-    else if (severityLower.startsWith("critical")) {
+    } else if (severityLower.startsWith("critical")) {
       result = 1;
-    }
-    else if (severityLower.startsWith("major")) {
+    } else if (severityLower.startsWith("major")) {
       result = 2;
-    }
-    else if (severityLower.startsWith("minor")) {
+    } else if (severityLower.startsWith("minor")) {
       result = 3;
-    }
-    else if (severityLower.startsWith("info")) {
+    } else if (severityLower.startsWith("info")) {
       result = 4;
-    }
-    else {
+    } else {
       result = -1;
     }
     return result;
@@ -99,15 +94,13 @@ public class IssueDescriptionField extends MarkerField {
   private Image getImage(MarkerItem item) {
     if (item.getMarker() != null) {
       return getSeverityImage(getSeverity(item));
-    }
-    else {
+    } else {
       // If there is no marker maybe we have a groupBy item
       // First try with groupBy is new issue
       String msg = item.getAttributeValue(IMarker.MESSAGE, "");
       if (msg.startsWith("New issues")) {
         return SonarImages.IMG_NEW_ISSUE;
-      }
-      else if (msg.startsWith("Other issues")) {
+      } else if (msg.startsWith("Other issues")) {
         return SonarImages.IMG_ISSUE;
       }
       // GroupBy severity

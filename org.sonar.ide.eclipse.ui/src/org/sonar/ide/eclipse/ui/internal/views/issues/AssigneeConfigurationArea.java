@@ -53,8 +53,7 @@ public class AssigneeConfigurationArea extends FilterConfigurationArea {
     AssigneeFieldFilter desc = (AssigneeFieldFilter) filter;
     if (descriptionCombo.getSelectionIndex() == 0) {
       desc.setContainsModifier(MarkerSupportConstants.CONTAINS_KEY);
-    }
-    else {
+    } else {
       desc.setContainsModifier(MarkerSupportConstants.DOES_NOT_CONTAIN_KEY);
     }
     desc.setContainsText(descriptionText.getText());
@@ -70,8 +69,7 @@ public class AssigneeConfigurationArea extends FilterConfigurationArea {
     AssigneeFieldFilter desc = (AssigneeFieldFilter) filter;
     if (desc.getContainsModifier().equals(MarkerSupportConstants.CONTAINS_KEY)) {
       descriptionCombo.select(0);
-    }
-    else {
+    } else {
       descriptionCombo.select(1);
     }
 
@@ -81,7 +79,7 @@ public class AssigneeConfigurationArea extends FilterConfigurationArea {
 
   /**
    * Create the group for the description filter.
-   * 
+   *
    * @param parent
    */
   private void createDescriptionGroup(Composite parent) {

@@ -65,8 +65,7 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
       Authentication auth = sonar.find(new AuthenticationQuery());
       if (auth.isValid()) {
         return ConnectionTestResult.OK;
-      }
-      else {
+      } else {
         return ConnectionTestResult.AUTHENTICATION_ERROR;
       }
     } catch (ConnectionException e) {
@@ -112,17 +111,16 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     List<ISonarRemoteModule> result;
     if (text.length() < 3) {
       ResourceQuery query = new ResourceQuery()
-          .setScopes(Resource.SCOPE_SET)
-          .setQualifiers(Resource.QUALIFIER_PROJECT, Resource.QUALIFIER_MODULE)
-          .setResourceKeyOrId(text);
+        .setScopes(Resource.SCOPE_SET)
+        .setQualifiers(Resource.QUALIFIER_PROJECT, Resource.QUALIFIER_MODULE)
+        .setResourceKeyOrId(text);
       List<Resource> resources = findAll(query);
 
       result = new ArrayList<ISonarRemoteModule>(resources.size());
       for (Resource resource : resources) {
         result.add(new SonarRemoteModule(resource));
       }
-    }
-    else {
+    } else {
       ResourceSearchQuery query = ResourceSearchQuery.create(text).setQualifiers(Resource.QUALIFIER_PROJECT, Resource.QUALIFIER_MODULE);
       ResourceSearchResult searchResult = find(query);
 

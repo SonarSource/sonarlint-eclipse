@@ -132,13 +132,11 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       LOG.debug("Output directory: {}", outDir);
       if (topProject) {
         context.binaries().add(outDir);
-      }
-      else {
+      } else {
         // Output dir of dependents projects should be considered as libraries
         context.libraries().add(outDir);
       }
-    }
-    else {
+    } else {
       LOG.warn("Binary directory was not added because it was not found. Maybe should you enable auto build of your project.");
     }
   }
@@ -155,8 +153,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
         LOG.debug("Test directory: {}", srcDir);
         context.testDirs().add(srcDir);
       }
-    }
-    else {
+    } else {
       if (topProject) {
         LOG.debug("Source directory: {}", srcDir);
         context.sourceDirs().add(srcDir);

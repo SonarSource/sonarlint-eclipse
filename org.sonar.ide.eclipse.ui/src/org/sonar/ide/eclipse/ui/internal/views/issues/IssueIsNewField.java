@@ -32,8 +32,7 @@ public class IssueIsNewField extends MarkerField {
     if (item != null) {
       if (item.getMarker() != null) {
         return item.getAttributeValue(MarkerUtils.SONAR_MARKER_IS_NEW_ATTR, "");
-      }
-      else {
+      } else {
         // Maybe we are in a groupBy new issue item
         String message = item.getAttributeValue(IMarker.MESSAGE, "");
         if (message.startsWith("New issues")) {

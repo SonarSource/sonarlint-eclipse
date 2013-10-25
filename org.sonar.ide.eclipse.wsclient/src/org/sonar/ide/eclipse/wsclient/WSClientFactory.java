@@ -53,8 +53,7 @@ public final class WSClientFactory {
     Host host;
     if (sonarServer.hasCredentials()) {
       host = new Host(sonarServer.getUrl(), sonarServer.getUsername(), sonarServer.getPassword());
-    }
-    else {
+    } else {
       host = new Host(sonarServer.getUrl());
     }
     return new SonarWSClientFacade(create(host), createSonarClient(host));
@@ -74,9 +73,9 @@ public final class WSClientFactory {
    */
   private static SonarClient createSonarClient(Host host) {
     Builder builder = SonarClient.builder()
-        .url(host.getHost())
-        .login(host.getUsername())
-        .password(host.getPassword());
+      .url(host.getHost())
+      .login(host.getUsername())
+      .password(host.getPassword());
     IProxyData proxyData = getEclipseProxyFor(host);
     if (proxyData != null) {
       builder.proxy(proxyData.getHost(), proxyData.getPort());
@@ -99,11 +98,10 @@ public final class WSClientFactory {
         httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
         if (proxyData.isRequiresAuthentication()) {
           httpClient.getCredentialsProvider().setCredentials(
-              new AuthScope(proxyData.getHost(), proxyData.getPort()),
-              new UsernamePasswordCredentials(proxyData.getUserId(), proxyData.getPassword()));
+            new AuthScope(proxyData.getHost(), proxyData.getPort()),
+            new UsernamePasswordCredentials(proxyData.getUserId(), proxyData.getPassword()));
         }
-      }
-      else {
+      } else {
         LOG.debug("No proxy for [{}]", server.getHost());
       }
     } catch (Exception e) {

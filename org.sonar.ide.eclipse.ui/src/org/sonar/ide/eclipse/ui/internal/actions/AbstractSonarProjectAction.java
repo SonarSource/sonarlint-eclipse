@@ -102,8 +102,7 @@ public abstract class AbstractSonarProjectAction implements IObjectActionDelegat
         selectedProjects.add(project);
       }
       action.setEnabled(actionEnabled);
-    }
-    else {
+    } else {
       action.setEnabled(false);
     }
 

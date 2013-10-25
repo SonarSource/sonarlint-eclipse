@@ -63,8 +63,8 @@ public class EditSonarPropertyDialog extends StatusDialog {
     super(parent);
 
     String title = edit
-        ? "Edit property"
-        : "New property";
+      ? "Edit property"
+      : "New property";
     setTitle(title);
 
     sonarProperty = property;
@@ -108,6 +108,7 @@ public class EditSonarPropertyDialog extends StatusDialog {
     if (fIsNameModifiable) {
       fNameText.addFocusListener(new FocusListener() {
         public void focusGained(FocusEvent e) {
+          // Nothing to do
         }
 
         public void focusLost(FocusEvent e) {
@@ -117,8 +118,7 @@ public class EditSonarPropertyDialog extends StatusDialog {
           }
         }
       });
-    }
-    else {
+    } else {
       fNameText.setEditable(false);
     }
 

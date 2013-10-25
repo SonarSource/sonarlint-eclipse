@@ -59,8 +59,7 @@ public class ProjectAssociationModel extends AbstractModelObject {
   public String getSonarFullName() {
     if (key == null) {
       return "<Click here to start searching for a remote SonarQube project...>";
-    }
-    else {
+    } else {
       return sonarProjectName + " on " + url + " (" + key + ")";
     }
   }

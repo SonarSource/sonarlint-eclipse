@@ -50,8 +50,7 @@ public class SonarAnalysisDateDecorator implements ILabelDecorator {
           Date lastAnalysisDate = projectProperties.getLastAnalysisDate();
           if (DateUtils.isSameDay(lastAnalysisDate, Calendar.getInstance().getTime())) {
             return text + " " + sdfTime.format(lastAnalysisDate);
-          }
-          else {
+          } else {
             return text + " " + sdfDay.format(lastAnalysisDate);
           }
         }
@@ -65,12 +64,15 @@ public class SonarAnalysisDateDecorator implements ILabelDecorator {
   }
 
   public void addListener(final ILabelProviderListener listener) {
+    // Nothing to do
   }
 
   public void removeListener(ILabelProviderListener listener) {
+    // Nothing to do
   }
 
   public void dispose() {
+    // Nothing to do
   }
 
 }

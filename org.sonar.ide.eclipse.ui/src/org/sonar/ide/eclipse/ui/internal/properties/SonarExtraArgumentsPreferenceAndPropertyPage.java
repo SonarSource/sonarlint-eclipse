@@ -80,6 +80,8 @@ import java.util.List;
  */
 public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage implements IWorkbenchPreferencePage {
 
+  private static final String VALUE = "Value";
+
   private static final Logger LOG = LoggerFactory.getLogger(SonarExtraArgumentsPreferenceAndPropertyPage.class);
 
   private static final String PREFERENCE_ID = "org.sonar.ide.eclipse.ui.properties.SonarExtraArgumentsPreferenceAndPropertyPage";
@@ -169,16 +171,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     parent.setLayout(layout);
 
     if (!isGlobal()) {
-      Link fLink = new Link(parent, SWT.NONE);
-      fLink.setText("<A>Configure Workspace Settings...</A>");
-      fLink.setLayoutData(new GridData());
-      SelectionAdapter sl = new SelectionAdapter() {
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-          PreferencesUtil.createPreferenceDialogOn(ancestor.getShell(), PREFERENCE_ID, null, null).open();
-        }
-      };
-      fLink.addSelectionListener(sl);
+      createLinkToGlobal(ancestor, parent);
     }
 
     Composite innerParent = new Composite(parent, SWT.NONE);
@@ -213,8 +206,8 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     columnLayout.setColumnData(propertyNameColumn, new ColumnWeightData(1, minWidth, true));
 
     TableColumn propertyValueColumn = new TableColumn(table, SWT.NONE);
-    propertyValueColumn.setText("Value");
-    minWidth = computeMinimumColumnWidth(gc, "Value");
+    propertyValueColumn.setText(VALUE);
+    minWidth = computeMinimumColumnWidth(gc, VALUE);
     columnLayout.setColumnData(propertyValueColumn, new ColumnWeightData(1, minWidth, true));
 
     gc.dispose();
@@ -237,6 +230,19 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
       }
     });
 
+    createButtons(innerParent);
+
+    fTableViewer.setInput(sonarProperties);
+
+    updateButtons();
+    Dialog.applyDialogFont(parent);
+    innerParent.layout();
+
+    return parent;
+  }
+
+  private void createButtons(Composite innerParent) {
+    GridLayout layout;
     Composite buttons = new Composite(innerParent, SWT.NONE);
     buttons.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
     layout = new GridLayout();
@@ -288,14 +294,19 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
         downPressed();
       }
     });
+  }
 
-    fTableViewer.setInput(sonarProperties);
-
-    updateButtons();
-    Dialog.applyDialogFont(parent);
-    innerParent.layout();
-
-    return parent;
+  private void createLinkToGlobal(final Composite ancestor, Composite parent) {
+    Link fLink = new Link(parent, SWT.NONE);
+    fLink.setText("<A>Configure Workspace Settings...</A>");
+    fLink.setLayoutData(new GridData());
+    SelectionAdapter sl = new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        PreferencesUtil.createPreferenceDialogOn(ancestor.getShell(), PREFERENCE_ID, null, null).open();
+      }
+    };
+    fLink.addSelectionListener(sl);
   }
 
   private void edit() {
@@ -442,8 +453,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
       } catch (Exception e) {
         LOG.error("Error while loading SonarQube properties" + props, e);
       }
-    }
-    else {
+    } else {
       sonarProperties.addAll(getSonarProject().getExtraProperties());
     }
   }
@@ -457,8 +467,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     String props = StringUtils.join(keyValuePairs, "\r\n");
     if (isGlobal()) {
       getPreferenceStore().setValue(SonarUiPlugin.PREF_EXTRA_ARGS, props);
-    }
-    else {
+    } else {
       SonarProject sonarProject = getSonarProject();
       sonarProject.setExtraProperties(sonarProperties);
       sonarProject.save();

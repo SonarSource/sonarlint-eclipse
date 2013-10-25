@@ -87,8 +87,7 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
       // if old == null -> project was added
       if (oldProject == null) {
         mavenProjectAdded(project, newProject, monitor);
-      }
-      else {
+      } else {
         mavenProjectUpdated(project, newProject, oldProject, monitor);
       }
     }
@@ -131,8 +130,7 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
       if (diff.getValue() != null) {
         if (position == -1) {
           extraArguments.add(new SonarProperty(diff.getKey(), diff.getValue()));
-        }
-        else {
+        } else {
           extraArguments.add(position, new SonarProperty(diff.getKey(), diff.getValue()));
         }
       }
@@ -167,8 +165,7 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
       for (Entry<Object, Object> property : properties.entrySet()) {
         if (property.getKey().equals(SonarProperties.PROJECT_BRANCH_PROPERTY)) {
           branchObj = property.getValue();
-        }
-        else if (property.getKey().toString().startsWith("sonar.")) {
+        } else if (property.getKey().toString().startsWith("sonar.")) {
           sonarProperties.put(property.getKey().toString(), ObjectUtils.toString(property.getValue()));
         }
       }
@@ -215,8 +212,7 @@ public class SonarProjectConfigurator extends AbstractProjectConfigurator {
         if (props2.get(prop1.getKey()).equals(props1.get(prop1.getKey()))) {
           diff.remove(prop1.getKey());
         }
-      }
-      else {
+      } else {
         // Null value means the property was removed
         diff.put(prop1.getKey(), null);
       }

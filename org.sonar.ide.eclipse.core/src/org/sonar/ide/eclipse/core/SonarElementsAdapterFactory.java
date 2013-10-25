@@ -44,8 +44,7 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
   public Object getAdapter(Object adaptableObject, Class adapterType) {
     if (adapterType == ISonarResource.class) {
       return getSonarResource(adaptableObject);
-    }
-    else if (adapterType == ISonarFile.class) {
+    } else if (adapterType == ISonarFile.class) {
       ISonarResource res = getSonarResource(adaptableObject);
       return (res instanceof ISonarFile) ? res : null;
     }

@@ -46,10 +46,10 @@ public final class ResourceUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(ResourceUtils.class);
 
+  private static List<ResourceResolver> resolvers;
+
   private ResourceUtils() {
   }
-
-  private static List<ResourceResolver> resolvers;
 
   public static String getSonarResourcePartialKey(IResource resource) {
     for (ResourceResolver resolver : getResolvers()) {
@@ -79,8 +79,8 @@ public final class ResourceUtils {
         ISonarProject sonarProject = SonarProject.getInstance(project);
         if (sonarProject != null && resourceKey.startsWith(sonarProject.getKey())) {
           String resourceKeyMinusProjectKey = resourceKey.substring(
-              // +1 because ":"
-              sonarProject.getKey().length() + 1);
+            // +1 because ":"
+            sonarProject.getKey().length() + 1);
           String[] parts = StringUtils.split(resourceKeyMinusProjectKey, SonarKeyUtils.PROJECT_DELIMITER);
           String partialResourceKey = parts.length > 0 ? parts[0] : "";
           for (ResourceResolver resolver : getResolvers()) {
@@ -137,13 +137,11 @@ public final class ResourceUtils {
     if (res != null) {
       if (res.getLocation() != null) {
         return res.getLocation().toString();
-      }
-      else {
+      } else {
         LOG.error("Unable to resolve absolute path for " + res.getLocationURI());
         return null;
       }
-    }
-    else {
+    } else {
       File external = path.toFile();
       if (external.exists()) {
         return path.toString();

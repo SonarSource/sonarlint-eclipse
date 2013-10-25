@@ -93,8 +93,7 @@ public class SonarProjectManager {
       String groupId = projectNode.get(P_PROJECT_GROUPID, "");
       String branch = projectNode.get(P_PROJECT_BRANCH, "");
       key = SonarKeyUtils.projectKey(groupId, artifactId, branch);
-    }
-    else {
+    } else {
       key = projectNode.get(P_PROJECT_KEY, "");
     }
 
@@ -147,8 +146,7 @@ public class SonarProjectManager {
       }
       String props = StringUtils.join(keyValuePairs, "\r\n");
       projectNode.put(P_EXTRA_PROPS, props);
-    }
-    else {
+    } else {
       projectNode.remove(P_EXTRA_PROPS);
     }
     try {

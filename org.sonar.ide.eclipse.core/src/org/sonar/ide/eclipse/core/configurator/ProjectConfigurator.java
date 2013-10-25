@@ -55,8 +55,7 @@ public abstract class ProjectConfigurator {
     String newValue = properties.getProperty(key, null);
     if (newValue != null) {
       newValue += SonarProperties.SEPARATOR + value;
-    }
-    else {
+    } else {
       newValue = value;
     }
     properties.put(key, newValue);

@@ -58,8 +58,7 @@ public class ConfigureProjectsCommand extends AbstractHandler {
     for (Object elem : elems) {
       if (elem instanceof IProject) {
         selectedProjects.add((IProject) elem);
-      }
-      else if (elem instanceof IAdaptable) {
+      } else if (elem instanceof IAdaptable) {
         IProject proj = (IProject) ((IAdaptable) elem).getAdapter(IProject.class);
         if (proj != null) {
           selectedProjects.add(proj);

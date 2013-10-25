@@ -23,6 +23,8 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IStatus;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 
+import javax.annotation.Nullable;
+
 /**
  * A settable IStatus.
  * Can be an error, warning, info or OKk. For error, info and warning states,
@@ -47,7 +49,7 @@ class StatusInfo implements IStatus {
    * @param message The message of the status. Applies only for ERROR,
    * WARNING and INFO.
    */
-  public StatusInfo(int severity, String message) {
+  public StatusInfo(int severity, @Nullable String message) {
     fStatusMessage = message;
     fSeverity = severity;
   }

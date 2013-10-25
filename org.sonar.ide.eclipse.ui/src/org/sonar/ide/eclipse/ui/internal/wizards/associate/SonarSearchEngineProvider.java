@@ -49,7 +49,7 @@ public class SonarSearchEngineProvider implements IContentProposalProvider {
   }
 
   public IContentProposal[] getProposals(String contents, int position) {
-    ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
+    List<IContentProposal> list = new ArrayList<IContentProposal>();
     for (ISonarServer sonarServer : sonarServers) {
       List<ISonarRemoteModule> remoteModules = WSClientFactory.getSonarClient(sonarServer).searchRemoteModules(contents);
       for (ISonarRemoteModule resource : remoteModules) {
@@ -60,8 +60,7 @@ public class SonarSearchEngineProvider implements IContentProposalProvider {
     if (!list.isEmpty()) {
       parentPage.setMessage("", IMessageProvider.NONE);
       return list.toArray(new IContentProposal[list.size()]);
-    }
-    else {
+    } else {
       parentPage.setMessage("No result", IMessageProvider.INFORMATION);
       return new IContentProposal[0];
     }

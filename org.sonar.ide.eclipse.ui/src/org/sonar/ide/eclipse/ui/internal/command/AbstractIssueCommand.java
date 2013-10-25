@@ -55,8 +55,7 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
     for (Object elem : elems) {
       if (elem instanceof IMarker) {
         selectedSonarMarkers.add((IMarker) elem);
-      }
-      else if (elem instanceof IAdaptable) {
+      } else if (elem instanceof IAdaptable) {
         IMarker marker = (IMarker) ((IAdaptable) elem).getAdapter(IMarker.class);
         if (marker != null) {
           selectedSonarMarkers.add(marker);
