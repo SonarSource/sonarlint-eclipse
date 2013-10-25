@@ -25,8 +25,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
@@ -37,8 +35,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SonarMarker {
-
-  private static final Logger LOG = LoggerFactory.getLogger(SonarMarker.class);
 
   private final IResource resource;
   private final IMarker marker;
@@ -100,11 +96,9 @@ public class SonarMarker {
     int result = IMarker.PRIORITY_LOW;
     if ("blocker".equalsIgnoreCase(severity) || "critical".equalsIgnoreCase(severity)) {
       result = IMarker.PRIORITY_HIGH;
-    }
-    else if ("major".equalsIgnoreCase(severity)) {
+    } else if ("major".equalsIgnoreCase(severity)) {
       result = IMarker.PRIORITY_NORMAL;
-    }
-    else if ("minor".equalsIgnoreCase(severity) || "info".equalsIgnoreCase(severity)) {
+    } else if ("minor".equalsIgnoreCase(severity) || "info".equalsIgnoreCase(severity)) {
       result = IMarker.PRIORITY_LOW;
     }
     return result;
@@ -125,7 +119,9 @@ public class SonarMarker {
           if (lnr.getLineNumber() == (line - 1)) {
             markerAttributes.put(IMarker.CHAR_START, pos);
             String s = lnr.readLine();
-            markerAttributes.put(IMarker.CHAR_END, pos + s.length());
+            if (s != null) {
+              markerAttributes.put(IMarker.CHAR_END, pos + s.length());
+            }
             return;
           }
         }

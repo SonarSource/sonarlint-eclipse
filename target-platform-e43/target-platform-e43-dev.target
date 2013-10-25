@@ -18,6 +18,7 @@
 <location path="${M2_REPO}/commons-lang/commons-lang/2.6" type="Directory"/>
 <location path="${M2_REPO}/commons-io/commons-io/2.4" type="Directory"/>
 <location path="${M2_REPO}/com/google/guava/guava/13.0.1" type="Directory"/>
+<location path="${M2_REPO}/com/google/code/findbugs/annotations/2.0.1" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.python.pydev.feature.feature.group" version="0.0.0"/>
 <repository location="http://pydev.org/updates"/>

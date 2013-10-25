@@ -10,3 +10,4 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.sonar.ide.eclipse.common.issues,
  org.sonar.ide.eclipse.common.servers
+Require-Bundle: findbugsAnnotations;bundle-version="2.0.0";visibility:=reexport

@@ -20,12 +20,10 @@
 package org.sonar.ide.eclipse.ui.internal.wizards;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -40,13 +38,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
-import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
-import org.sonar.ide.eclipse.wsclient.ISonarWSClientFacade.ConnectionTestResult;
-import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -124,31 +119,9 @@ public class ServerLocationWizardPage extends WizardPage {
         final String username = getUsername();
         final String password = getPassword();
         try {
-          getWizard().getContainer().run(true, true, new IRunnableWithProgress() {
-
-            public void run(IProgressMonitor monitor) {
-              monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
-              try {
-                ISonarServer newServer = SonarCorePlugin.getServersManager().create(serverUrl, username, password);
-                ConnectionTestResult result = WSClientFactory.getSonarClient(newServer).testConnection();
-                switch (result) {
-                  case OK:
-                    status = new Status(IStatus.OK, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);
-                    break;
-                  case AUTHENTICATION_ERROR:
-                    status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_authentication_error);
-                    break;
-                  case CONNECT_ERROR:
-                    status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connection_error);
-                    break;
-                  default:
-                    throw new SonarEclipseException("Unknow status code: " + result);
-                }
-              } finally {
-                monitor.done();
-              }
-            }
-          });
+          ServerConnectionTestJob testJob = new ServerConnectionTestJob(username, password, serverUrl);
+          getWizard().getContainer().run(true, true, testJob);
+          status = testJob.getStatus();
         } catch (InvocationTargetException e1) {
           LoggerFactory.getLogger(getClass()).error(e1.getMessage(), e1);
           status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
