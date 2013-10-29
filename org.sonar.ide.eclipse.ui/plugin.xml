@@ -475,9 +475,9 @@
           categoryId="org.sonar.ide.eclipse.ui.command.category">
     </command>
     <command
-          description="Analyse project with SonarQube"
+          description="Analyze project with SonarQube"
           id="org.sonar.ide.eclipse.ui.internal.command.AnalyzeProjectsCommand"
-          name="Analyse"
+          name="Analyze"
           categoryId="org.sonar.ide.eclipse.ui.command.category">
     </command>
   </extension>
