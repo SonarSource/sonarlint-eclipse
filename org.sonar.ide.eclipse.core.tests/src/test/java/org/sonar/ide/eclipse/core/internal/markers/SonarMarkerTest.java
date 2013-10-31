@@ -19,14 +19,17 @@
  */
 package org.sonar.ide.eclipse.core.internal.markers;
 
+import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
+import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -51,6 +54,18 @@ public class SonarMarkerTest extends SonarTestCase {
     SonarMarker.addLine(markers, 2, file);
     assertThat((Integer) markers.get(IMarker.CHAR_START), is(31));
     assertThat((Integer) markers.get(IMarker.CHAR_END), is(63));
+  }
+
+  @Test
+  public void testLineStartEndCrLf() throws Exception {
+    IFile file = project.getFile("src/main/java/ViolationOnFileCrLf.java");
+    String content = IOUtils.toString(file.getContents(), file.getCharset());
+    content.replaceAll("\n", "\r\n");
+    file.setContents(new ByteArrayInputStream(content.getBytes()), 0, new NullProgressMonitor());
+    HashMap<String, Object> markers = new HashMap<String, Object>();
+    SonarMarker.addLine(markers, 2, file);
+    assertThat((Integer) markers.get(IMarker.CHAR_START), is(32));
+    assertThat((Integer) markers.get(IMarker.CHAR_END), is(64));
   }
 
 }

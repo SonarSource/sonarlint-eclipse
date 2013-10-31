@@ -28,9 +28,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -109,18 +112,16 @@ public class SonarMarker {
     if (resource instanceof IFile) {
       IFile file = (IFile) resource;
       InputStream is = null;
-      LineNumberReader lnr = null;
+      LineAndCharCountReader lnr = null;
       try {
         is = file.getContents();
-        lnr = new LineNumberReader(new InputStreamReader(is, file.getCharset()));
-        int pos = 0;
+        lnr = new LineAndCharCountReader(new InputStreamReader(is, file.getCharset()));
         while (lnr.read() != -1) {
-          pos++;
-          if (lnr.getLineNumber() == (line - 1)) {
-            markerAttributes.put(IMarker.CHAR_START, pos);
+          if (lnr.getLineNumber() == line) {
+            markerAttributes.put(IMarker.CHAR_START, lnr.getCharIndex());
             String s = lnr.readLine();
             if (s != null) {
-              markerAttributes.put(IMarker.CHAR_END, pos + s.length());
+              markerAttributes.put(IMarker.CHAR_END, lnr.getCharIndex() + s.length());
             }
             return;
           }
@@ -131,5 +132,58 @@ public class SonarMarker {
         IOUtils.closeQuietly(lnr);
       }
     }
+  }
+
+  /**
+   * This class is used to count lines in a stream and keep char index. Contrary to {@link LineNumberReader} it preserve
+   * \r\n as 2 characters.
+   */
+  private static class LineAndCharCountReader extends BufferedReader {
+
+    /** The current line number */
+    private int lineNumber = 1;
+
+    private int charIndex = 0;
+
+    /** If the previous character was a cariage return */
+    private boolean cr = false;
+
+    public LineAndCharCountReader(Reader in) {
+      super(in);
+    }
+
+    public int getLineNumber() {
+      return lineNumber;
+    }
+
+    public int getCharIndex() {
+      return charIndex;
+    }
+
+    @Override
+    public int read() throws IOException {
+      int val = super.read();
+      if (val == -1) {
+        if (cr) {
+          lineNumber++;
+          cr = false;
+        }
+      } else {
+        charIndex++;
+        if (val == '\r') {
+          if (cr) {
+            lineNumber++;
+          } else {
+            cr = true;
+          }
+        } else if (val == '\n' || cr) {
+          lineNumber++;
+          cr = false;
+        }
+      }
+
+      return val;
+    }
+
   }
 }
