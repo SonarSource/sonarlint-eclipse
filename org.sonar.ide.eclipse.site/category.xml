@@ -20,7 +20,7 @@
          Needed feature for analysing JDT projects with SonarQube.
       </description>
    </category-def>
-   <category-def name="SonarQube C/C++" label="SonarQube C/C++ (requires Eclipse CDT and the SonarSource C++ plugin)">
+   <category-def name="SonarQube C/C++" label="SonarQube C/C++ (requires Eclipse CDT and the SonarSource C/C++ plugin)">
       <description>
          Needed feature for analysing CDT projects with SonarQube.
       </description>

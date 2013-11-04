@@ -112,7 +112,7 @@ public class ConfigureProjectsPage extends WizardPage {
     columnProject.getColumn().setWidth(200);
 
     TableViewerColumn columnSonarProject = new TableViewerColumn(viewer, SWT.LEFT);
-    columnSonarProject.getColumn().setText("SonarQube project");
+    columnSonarProject.getColumn().setText("SonarQube Project");
     columnSonarProject.getColumn().setWidth(600);
 
     columnSonarProject.setEditingSupport(new ProjectAssociationModelEditingSupport(viewer));
