@@ -14,6 +14,7 @@
 <location path="${M2_REPO}/org/slf4j/slf4j-api/1.7.2" type="Directory"/>
 <location path="${M2_REPO}/org/slf4j/jcl-over-slf4j/1.7.2" type="Directory"/>
 <location path="${M2_REPO}/org/mockito/mockito-all/1.9.5" type="Directory"/>
+<location path="${M2_REPO}/org/assertj/assertj-core/1.5.0" type="Directory"/>
 <location path="${M2_REPO}/org/codehaus/sonar/runner/sonar-runner-api/2.3" type="Directory"/>
 <location path="${M2_REPO}/com/google/code/findbugs/annotations/2.0.1" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">

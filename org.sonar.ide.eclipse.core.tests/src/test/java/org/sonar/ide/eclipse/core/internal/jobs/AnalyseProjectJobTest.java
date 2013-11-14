@@ -25,9 +25,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.matchers.JUnitMatchers;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
@@ -41,10 +43,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import static org.hamcrest.CoreMatchers.endsWith;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class AnalyseProjectJobTest extends SonarTestCase {
 
@@ -78,9 +78,9 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
 
-    assertThat(props.get(SonarProperties.SONAR_URL).toString(), is("http://localhost:9000"));
-    assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString(), is("bar:foo"));
-    assertThat(props.get(SonarProperties.DRY_RUN_PROPERTY).toString(), is("true"));
+    assertThat(props.get(SonarProperties.SONAR_URL).toString()).isEqualTo("http://localhost:9000");
+    assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString()).isEqualTo("bar:foo");
+    assertThat(props.get(SonarProperties.DRY_RUN_PROPERTY).toString()).isEqualTo("true");
   }
 
   @Test
@@ -91,11 +91,22 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
 
-    assertThat(props.get(SonarProperties.SONAR_URL).toString(), is("http://localhost:9000"));
-    assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString(), is("bar:foo"));
-    assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString(), is("incremental"));
+    assertThat(props.get(SonarProperties.SONAR_URL).toString()).isEqualTo("http://localhost:9000");
+    assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString()).isEqualTo("bar:foo");
+    assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString()).isEqualTo("incremental");
     // SONARIDE-386 check that at least some JARs from the VM are appended
-    assertThat(Arrays.asList(props.get(SonarConfiguratorProperties.LIBRARIES_PROPERTY).toString().split(",")), hasItem(endsWith("rt.jar")));
+    List<String> libs = Arrays.asList(props.get(SonarConfiguratorProperties.LIBRARIES_PROPERTY).toString().split(","));
+    assertThat(libs).doesNotHaveDuplicates();
+    boolean foundRT = false;
+    for (String lib : libs) {
+      if (lib.endsWith("rt.jar")) {
+        foundRT = true;
+        break;
+      }
+    }
+    if (!foundRT) {
+      fail("rt.jar not found in sonar.libraries");
+    }
   }
 
   @Test
@@ -106,9 +117,9 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
 
-    assertThat(props.get(SonarProperties.SONAR_URL).toString(), is("http://localhost:9000"));
-    assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString(), is("bar:foo"));
-    assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString(), is("preview"));
+    assertThat(props.get(SonarProperties.SONAR_URL).toString()).isEqualTo("http://localhost:9000");
+    assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString()).isEqualTo("bar:foo");
+    assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString()).isEqualTo("preview");
   }
 
   @Test
@@ -117,7 +128,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.foo", "value")));
 
-    assertThat(props.get("sonar.foo").toString(), is("value"));
+    assertThat(props.get("sonar.foo").toString()).isEqualTo("value");
   }
 
   @Test
@@ -126,7 +137,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.language", "fake")));
 
-    assertThat(props.get("sonar.language").toString(), is("java"));
+    assertThat(props.get("sonar.language").toString()).isEqualTo("java");
   }
 
   @Test
@@ -135,11 +146,11 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
 
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size(), is(6));
+    assertThat(markers.size()).isEqualTo(6);
 
-    assertThat(markers, hasItem(new IsMarker("src/Findbugs.java", 5)));
-    assertThat(markers, hasItem(new IsMarker("src/Pmd.java", 2)));
-    assertThat(markers, hasItem(new IsMarker("src/Checkstyle.java", 1)));
+    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Findbugs.java", 5)));
+    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Pmd.java", 2)));
+    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Checkstyle.java", 1)));
   }
 
   @Test
@@ -152,10 +163,10 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report-incremental.json"));
 
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size(), is(3));
+    assertThat(markers.size()).isEqualTo(3);
 
-    assertThat(markers, hasItem(new IsMarker("src/Findbugs.java", 5)));
-    assertThat(markers, hasItem(new IsMarker("src/Pmd.java", 2)));
+    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Findbugs.java", 5)));
+    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Pmd.java", 2)));
   }
 
   static class IsMarker extends BaseMatcher<IMarker> {
