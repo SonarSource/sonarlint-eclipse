@@ -61,7 +61,7 @@ public class SonarMarkerTest extends SonarTestCase {
     IFile file = project.getFile("src/main/java/ViolationOnFileCrLf.java");
     String content = IOUtils.toString(file.getContents(), file.getCharset());
     content.replaceAll("\n", "\r\n");
-    file.setContents(new ByteArrayInputStream(content.getBytes()), 0, new NullProgressMonitor());
+    file.setContents(new ByteArrayInputStream(content.getBytes()), IFile.FORCE, new NullProgressMonitor());
     HashMap<String, Object> markers = new HashMap<String, Object>();
     SonarMarker.addLine(markers, 2, file);
     assertThat((Integer) markers.get(IMarker.CHAR_START), is(32));

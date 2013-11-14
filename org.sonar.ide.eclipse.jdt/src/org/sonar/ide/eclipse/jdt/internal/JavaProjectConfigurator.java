@@ -36,9 +36,7 @@ import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
@@ -91,7 +89,6 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
    */
   private void addClassPathToSonarProject(IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
     IClasspathEntry[] classPath = javaProject.getResolvedClasspath(true);
-    Set<String> sonarLibraries = new HashSet<String>();
     for (IClasspathEntry entry : classPath) {
       switch (entry.getEntryKind()) {
         case IClasspathEntry.CPE_SOURCE:
@@ -102,9 +99,9 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
         case IClasspathEntry.CPE_LIBRARY:
           if (topProject || entry.isExported()) {
             final String libDir = resolveLibrary(javaProject, entry);
-            if (libDir != null && !sonarLibraries.contains(libDir)) {
+            if (libDir != null) {
               LOG.debug("Library: {}", libDir);
-              sonarLibraries.add(libDir);
+              context.libraries().add(libDir);
             }
           }
           break;

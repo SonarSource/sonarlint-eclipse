@@ -28,6 +28,7 @@ import org.hamcrest.Description;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
@@ -40,9 +41,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import static org.hamcrest.CoreMatchers.endsWith;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.hasItem;
 
 public class AnalyseProjectJobTest extends SonarTestCase {
 
@@ -92,6 +94,8 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     assertThat(props.get(SonarProperties.SONAR_URL).toString(), is("http://localhost:9000"));
     assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString(), is("bar:foo"));
     assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString(), is("incremental"));
+    // SONARIDE-386 check that at least some JARs from the VM are appended
+    assertThat(Arrays.asList(props.get(SonarConfiguratorProperties.LIBRARIES_PROPERTY).toString().split(",")), hasItem(endsWith("rt.jar")));
   }
 
   @Test
