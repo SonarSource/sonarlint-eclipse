@@ -2,35 +2,27 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundle_name
 Bundle-SymbolicName: org.sonar.ide.eclipse.core;singleton:=true
-Bundle-Version: 3.3.0.qualifier
+Bundle-Version: 3.3.0.20131115-1016-RELEASE
 Bundle-ClassPath: .
 Bundle-Activator: org.sonar.ide.eclipse.core.internal.SonarCorePlugin
 Bundle-Vendor: %bundle_vendor
 Bundle-Localization: OSGI-INF/l10n/bundle
-Export-Package: org.sonar.ide.eclipse.core,
- org.sonar.ide.eclipse.core.configurator,
- org.sonar.ide.eclipse.core.internal;
-  x-friends:="org.sonar.ide.eclipse.ui,
-   org.sonar.ide.eclipse.m2e,
-   org.sonar.ide.eclipse.core.tests,
-   org.sonar.ide.eclipse.mylyn.ui,
-   org.sonar.ide.eclipse.tests.common",
- org.sonar.ide.eclipse.core.internal.configurator;x-friends:="org.sonar.ide.eclipse.ui",
- org.sonar.ide.eclipse.core.internal.jobs;x-friends:="org.sonar.ide.eclipse.ui,org.sonar.ide.eclipse.core.tests",
- org.sonar.ide.eclipse.core.internal.markers;x-friends:="org.sonar.ide.eclipse.ui",
- org.sonar.ide.eclipse.core.internal.remote;x-friends:="org.sonar.ide.eclipse.ui",
- org.sonar.ide.eclipse.core.internal.resources;
-  x-friends:="org.sonar.ide.eclipse.ui,
-   org.sonar.ide.eclipse.m2e,
-   org.sonar.ide.eclipse.mylyn.ui,
-   org.sonar.ide.eclipse.mylyn.core,
-   org.sonar.ide.eclipse.core.tests",
- org.sonar.ide.eclipse.core.internal.servers;
-  x-friends:="org.sonar.ide.eclipse.ui,
-   org.sonar.ide.eclipse.core.tests,
-   org.sonar.ide.eclipse.m2e,
-   org.sonar.ide.eclipse.tests.common",
- org.sonar.ide.eclipse.core.resources
+Export-Package: org.sonar.ide.eclipse.core,org.sonar.ide.eclipse.core.
+ configurator,org.sonar.ide.eclipse.core.internal; x-friends:="org.son
+ ar.ide.eclipse.ui,  org.sonar.ide.eclipse.m2e,  org.sonar.ide.eclipse
+ .core.tests,  org.sonar.ide.eclipse.mylyn.ui,  org.sonar.ide.eclipse.
+ tests.common",org.sonar.ide.eclipse.core.internal.configurator;x-frie
+ nds:="org.sonar.ide.eclipse.ui",org.sonar.ide.eclipse.core.internal.j
+ obs;x-friends:="org.sonar.ide.eclipse.ui,org.sonar.ide.eclipse.core.t
+ ests",org.sonar.ide.eclipse.core.internal.markers;x-friends:="org.son
+ ar.ide.eclipse.ui",org.sonar.ide.eclipse.core.internal.remote;x-frien
+ ds:="org.sonar.ide.eclipse.ui",org.sonar.ide.eclipse.core.internal.re
+ sources; x-friends:="org.sonar.ide.eclipse.ui,  org.sonar.ide.eclipse
+ .m2e,  org.sonar.ide.eclipse.mylyn.ui,  org.sonar.ide.eclipse.mylyn.c
+ ore,  org.sonar.ide.eclipse.core.tests",org.sonar.ide.eclipse.core.in
+ ternal.servers; x-friends:="org.sonar.ide.eclipse.ui,  org.sonar.ide.
+ eclipse.core.tests,  org.sonar.ide.eclipse.m2e,  org.sonar.ide.eclips
+ e.tests.common",org.sonar.ide.eclipse.core.resources
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
