@@ -12,7 +12,7 @@
   <groupId>org.codehaus.sonar-ide.eclipse</groupId>
   <artifactId>eclipse-parent</artifactId>
   <packaging>pom</packaging>
-  <version>3.3.0.20131115-1016-RELEASE</version>
+  <version>3.4.0-SNAPSHOT</version>
 
   <name>SonarQube Integration for Eclipse (parent)</name>
   <description></description>
