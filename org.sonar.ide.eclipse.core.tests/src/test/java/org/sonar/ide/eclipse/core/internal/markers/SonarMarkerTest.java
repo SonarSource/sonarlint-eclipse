@@ -30,6 +30,7 @@ import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -59,7 +60,13 @@ public class SonarMarkerTest extends SonarTestCase {
   @Test
   public void testLineStartEndCrLf() throws Exception {
     IFile file = project.getFile("src/main/java/ViolationOnFileCrLf.java");
-    String content = IOUtils.toString(file.getContents(), file.getCharset());
+    InputStream is = file.getContents();
+    String content;
+    try {
+      content = IOUtils.toString(file.getContents(), file.getCharset());
+    } finally {
+      IOUtils.closeQuietly(is);
+    }
     content.replaceAll("\n", "\r\n");
     file.setContents(new ByteArrayInputStream(content.getBytes()), IFile.FORCE, new NullProgressMonitor());
     HashMap<String, Object> markers = new HashMap<String, Object>();
@@ -67,5 +74,4 @@ public class SonarMarkerTest extends SonarTestCase {
     assertThat((Integer) markers.get(IMarker.CHAR_START), is(32));
     assertThat((Integer) markers.get(IMarker.CHAR_END), is(64));
   }
-
 }
