@@ -63,7 +63,7 @@ public class SonarMarkerTest extends SonarTestCase {
     InputStream is = file.getContents();
     String content;
     try {
-      content = IOUtils.toString(file.getContents(), file.getCharset());
+      content = IOUtils.toString(is, file.getCharset());
     } finally {
       IOUtils.closeQuietly(is);
     }
