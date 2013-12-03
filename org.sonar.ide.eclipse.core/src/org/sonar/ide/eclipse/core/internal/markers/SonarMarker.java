@@ -76,8 +76,11 @@ public class SonarMarker {
     if (issue.key() != null) {
       markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR, issue.key());
     }
-    if (issue.assignee() != null) {
-      markerAttributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE, issue.assignee());
+    if (issue.assigneeLogin() != null) {
+      markerAttributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE, issue.assigneeLogin());
+    }
+    if (issue.assigneeName() != null) {
+      markerAttributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE_NAME, issue.assigneeName());
     }
 
     marker.setAttributes(markerAttributes);

@@ -190,21 +190,41 @@ public class AnalyseProjectJob extends Job {
         }
       }
       // Now read all rules name in a cache
-      Map<String, String> ruleByKey = Maps.newHashMap();
-      final JSONArray rules = (JSONArray) sonarResult.get("rules");
-      for (Object rule : rules) {
-        String key = ObjectUtils.toString(((JSONObject) rule).get("key"));
-        String name = ObjectUtils.toString(((JSONObject) rule).get("name"));
-        ruleByKey.put(key, name);
-      }
+      Map<String, String> ruleByKey = readRules(sonarResult);
+      // Now read all users name in a cache
+      Map<String, String> userNameByLogin = readUserNameByLogin(sonarResult);
       // Now iterate over all issues and create markers
-      MarkerUtils.createMarkersForJSONIssues(resourcesByKey, ruleByKey, (JSONArray) sonarResult.get("issues"));
+      MarkerUtils.createMarkersForJSONIssues(resourcesByKey, ruleByKey, userNameByLogin, (JSONArray) sonarResult.get("issues"));
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
       throw new SonarEclipseException("Unable to create markers", e);
     } finally {
       IOUtils.closeQuietly(fileReader);
     }
+  }
+
+  private Map<String, String> readRules(JSONObject sonarResult) {
+    Map<String, String> ruleByKey = Maps.newHashMap();
+    final JSONArray rules = (JSONArray) sonarResult.get("rules");
+    for (Object rule : rules) {
+      String key = ObjectUtils.toString(((JSONObject) rule).get("key"));
+      String name = ObjectUtils.toString(((JSONObject) rule).get("name"));
+      ruleByKey.put(key, name);
+    }
+    return ruleByKey;
+  }
+
+  private Map<String, String> readUserNameByLogin(JSONObject sonarResult) {
+    Map<String, String> userNameByLogin = Maps.newHashMap();
+    final JSONArray users = (JSONArray) sonarResult.get("users");
+    if (users != null) {
+      for (Object user : users) {
+        String login = ObjectUtils.toString(((JSONObject) user).get("login"));
+        String name = ObjectUtils.toString(((JSONObject) user).get("name"));
+        userNameByLogin.put(login, name);
+      }
+    }
+    return userNameByLogin;
   }
 
   /**

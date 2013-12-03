@@ -43,6 +43,7 @@ import org.sonar.wsclient.services.ResourceSearchResult;
 import org.sonar.wsclient.services.ServerQuery;
 import org.sonar.wsclient.services.Source;
 import org.sonar.wsclient.services.SourceQuery;
+import org.sonar.wsclient.user.User;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -169,7 +170,7 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     do {
       issues = findIssues(IssueQuery.create().componentRoots(resourceKey).pageSize(maxPageSize).pageIndex(pageIndex));
       for (Issue issue : issues.list()) {
-        result.add(new SonarRemoteIssue(issue, issues.rule(issue)));
+        result.add(new SonarRemoteIssue(issue, issues.rule(issue), issues.user(issue.assignee())));
       }
     } while (pageIndex++ < issues.paging().pages() && !monitor.isCanceled());
     return result;
@@ -180,7 +181,7 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     Issues issues = findIssues(IssueQuery.create().components(resourceKey));
     List<ISonarIssue> result = new ArrayList<ISonarIssue>(issues.list().size());
     for (Issue issue : issues.list()) {
-      result.add(new SonarRemoteIssue(issue, issues.rule(issue)));
+      result.add(new SonarRemoteIssue(issue, issues.rule(issue), issues.user(issue.assignee())));
     }
     return result;
   }
@@ -210,10 +211,12 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
 
     private final Issue remoteIssue;
     private Rule rule;
+    private User assignee;
 
-    public SonarRemoteIssue(final Issue remoteIssue, final Rule rule) {
+    public SonarRemoteIssue(final Issue remoteIssue, final Rule rule, final User assignee) {
       this.remoteIssue = remoteIssue;
       this.rule = rule;
+      this.assignee = assignee;
     }
 
     @Override
@@ -257,8 +260,13 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     }
 
     @Override
-    public String assignee() {
+    public String assigneeLogin() {
       return remoteIssue.assignee();
+    }
+
+    @Override
+    public String assigneeName() {
+      return assignee != null ? assignee.name() : null;
     }
 
   }

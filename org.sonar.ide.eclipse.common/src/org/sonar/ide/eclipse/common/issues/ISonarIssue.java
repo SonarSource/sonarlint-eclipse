@@ -37,6 +37,8 @@ public interface ISonarIssue {
 
   boolean resolved();
 
-  String assignee();
+  String assigneeLogin();
+
+  String assigneeName();
 
 }

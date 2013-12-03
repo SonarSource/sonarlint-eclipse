@@ -99,8 +99,13 @@ public final class IssuesUtils {
     }
 
     @Override
-    public String assignee() {
-      return original.assignee();
+    public String assigneeLogin() {
+      return original.assigneeLogin();
+    }
+
+    @Override
+    public String assigneeName() {
+      return original.assigneeName();
     }
 
   }

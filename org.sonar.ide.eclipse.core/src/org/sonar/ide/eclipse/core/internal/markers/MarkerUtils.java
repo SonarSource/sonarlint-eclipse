@@ -57,6 +57,7 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_ISSUE_ID_ATTR = "issueId";
   public static final String SONAR_MARKER_IS_NEW_ATTR = "isnew";
   public static final String SONAR_MARKER_ASSIGNEE = "assignee";
+  public static final String SONAR_MARKER_ASSIGNEE_NAME = "assigneename";
 
   public static final QualifiedName MODIFICATION_STAMP_PERSISTENT_PROP_KEY = new QualifiedName(SonarCorePlugin.PLUGIN_ID, "modificationStamp");
   public static final QualifiedName LAST_ANALYSIS_DATE_PERSISTENT_PROP_KEY = new QualifiedName(SonarCorePlugin.PLUGIN_ID, "lastAnalysisDate");
@@ -65,14 +66,14 @@ public final class MarkerUtils {
   private MarkerUtils() {
   }
 
-  public static void createMarkersForJSONIssues(Map<String, IResource> resourcesByKey, Map<String, String> ruleByKey, JSONArray issues) {
+  public static void createMarkersForJSONIssues(Map<String, IResource> resourcesByKey, Map<String, String> ruleByKey, Map<String, String> userNameByLogin, JSONArray issues) {
     for (Object issueObj : issues) {
       JSONObject jsonIssue = (JSONObject) issueObj;
       String componentKey = ObjectUtils.toString(jsonIssue.get("component"));
       if (resourcesByKey.containsKey(componentKey)) {
         boolean isNew = Boolean.TRUE.equals(jsonIssue.get("isNew")); //$NON-NLS-1$
         try {
-          SonarMarker.create(resourcesByKey.get(componentKey), isNew, new SonarIssueFromJsonReport(jsonIssue, ruleByKey));
+          SonarMarker.create(resourcesByKey.get(componentKey), isNew, new SonarIssueFromJsonReport(jsonIssue, ruleByKey, userNameByLogin));
         } catch (CoreException e) {
           LOG.error(e.getMessage(), e);
         }
@@ -84,10 +85,12 @@ public final class MarkerUtils {
 
     private JSONObject jsonIssue;
     private Map<String, String> ruleByKey;
+    private Map<String, String> userNameByLogin;
 
-    public SonarIssueFromJsonReport(JSONObject jsonIssue, Map<String, String> ruleByKey) {
+    public SonarIssueFromJsonReport(JSONObject jsonIssue, Map<String, String> ruleByKey, Map<String, String> userNameByLogin) {
       this.jsonIssue = jsonIssue;
       this.ruleByKey = ruleByKey;
+      this.userNameByLogin = userNameByLogin;
     }
 
     @Override
@@ -132,8 +135,14 @@ public final class MarkerUtils {
     }
 
     @Override
-    public String assignee() {
+    public String assigneeLogin() {
       return ObjectUtils.toString(jsonIssue.get("assignee"));//$NON-NLS-1$
+    }
+
+    @Override
+    public String assigneeName() {
+      String login = ObjectUtils.toString(jsonIssue.get("assignee"));//$NON-NLS-1$
+      return userNameByLogin.get(login);
     }
 
   }

@@ -30,7 +30,7 @@ public class IssueAssigneeField extends MarkerField {
     if (item == null) {
       return null;
     }
-    return item.getAttributeValue(MarkerUtils.SONAR_MARKER_ASSIGNEE, "");
+    return item.getAttributeValue(MarkerUtils.SONAR_MARKER_ASSIGNEE_NAME, "");
   }
 
 }
