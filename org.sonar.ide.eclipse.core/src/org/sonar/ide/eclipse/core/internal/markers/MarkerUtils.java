@@ -142,7 +142,8 @@ public final class MarkerUtils {
     @Override
     public String assigneeName() {
       String login = ObjectUtils.toString(jsonIssue.get("assignee"));//$NON-NLS-1$
-      return userNameByLogin.get(login);
+      String name = userNameByLogin.get(login);
+      return name != null ? name : login;
     }
 
   }
