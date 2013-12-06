@@ -45,6 +45,8 @@ import org.sonar.wsclient.services.Source;
 import org.sonar.wsclient.services.SourceQuery;
 import org.sonar.wsclient.user.User;
 
+import javax.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -213,7 +215,7 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     private Rule rule;
     private User assignee;
 
-    public SonarRemoteIssue(final Issue remoteIssue, final Rule rule, final User assignee) {
+    public SonarRemoteIssue(final Issue remoteIssue, final Rule rule, @Nullable final User assignee) {
       this.remoteIssue = remoteIssue;
       this.rule = rule;
       this.assignee = assignee;
