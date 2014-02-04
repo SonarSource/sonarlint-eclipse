@@ -33,7 +33,7 @@ public interface ISonarServersManager {
 
   void removeServer(String host);
 
-  void addServer(String location, String username, String password);
+  ISonarServer addServer(String location, String username, String password);
 
   ISonarServer findServer(String host);
 
@@ -41,6 +41,7 @@ public interface ISonarServersManager {
 
   /**
    * Create a new ISonarServer without saving it in Eclipse preferences.
+   *
    * @param location
    * @param username
    * @param password

@@ -20,9 +20,15 @@
 package org.sonar.ide.eclipse.core.internal.servers;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.net.proxy.IProxyData;
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.EncodingUtils;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.slf4j.LoggerFactory;
@@ -34,7 +40,14 @@ import java.util.Collection;
 import java.util.List;
 
 public class ServersManager implements ISonarServersManager {
+  // Store node
   static final String PREF_SERVERS = "servers";
+
+  // Default preferences keys
+  static final String DEFAULT_PREF_SERVERS_PREFIX = "default.servers.";
+  static final String DEFAULT_PREF_SERVERS_SUFFIX_URL = ".url";
+  static final String DEFAULT_PREF_SERVERS_SUFFIX_AUTH_TYPE = ".authType";
+  static final String DEFAULT_PREF_SERVERS_AUTH_TYPE_PROXY = "proxy";
 
   @Override
   public Collection<ISonarServer> getServers() {
@@ -51,17 +64,67 @@ public class ServersManager implements ISonarServersManager {
           servers.add(new SonarServer(url, auth));
         }
       } else {
-        // Defaults
-        return Arrays.asList((ISonarServer) new SonarServer("http://localhost:9000"));
+        // Original thread : http://stackoverflow.com/questions/17975557/sonarqube-eclipse-plugin-change-default-server-configuration
+        // Some preferences could be defined in ini file, loaded by -pluginCustomization process
+        // The ScopedPreferenceStore service could get keys from this default 'scope', but not iterate on node 'servers'
+        // So specific default configuration keys should be defined with an incremental id
+        // This default(s) server(s) is/are used to initiate AND store preferences (so addServer is used)
+        //
+        // Exemple to put in ini file loaded by -pluginCustomization process :
+        // # SonarQube plugin configuration
+        // org.sonar.ide.eclipse.core/default.servers.0.url=http://sonarqube-auth.mycompany.com/
+        // org.sonar.ide.eclipse.core/default.servers.0.authType=proxy
+        // org.sonar.ide.eclipse.core/default.servers.1.url=http://sonarqube-anonymous.mycompany.com/
+        ScopedPreferenceStore sps = new ScopedPreferenceStore(InstanceScope.INSTANCE, SonarCorePlugin.PLUGIN_ID);
+        long index = 0;
+        while (true) {
+          String url = sps.getDefaultString(DEFAULT_PREF_SERVERS_PREFIX + index + DEFAULT_PREF_SERVERS_SUFFIX_URL);
+
+          // Default preferences not used, break to default server (localhost)
+          if (StringUtils.isBlank(url)) {
+            break;
+          }
+
+          String[] creds = new String[2];
+          if (DEFAULT_PREF_SERVERS_AUTH_TYPE_PROXY.equals(sps.getDefaultString(DEFAULT_PREF_SERVERS_PREFIX + index
+            + DEFAULT_PREF_SERVERS_SUFFIX_AUTH_TYPE))) {
+            creds = getProxyCreds();
+          }
+          servers.add(addServer(url, creds[0], creds[1]));
+          index++;
+        }
       }
     } catch (BackingStoreException e) {
       LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
     }
+    // Defaults
+    if (servers.isEmpty()) {
+      return Arrays.asList(getDefault());
+    }
     return servers;
   }
 
+  /**
+   * Get first login/password defined in eclipse proxy configuration
+   *
+   * @return login + pass in array
+   */
+  private String[] getProxyCreds() {
+    BundleContext bc = SonarCorePlugin.getDefault().getBundle().getBundleContext();
+    ServiceReference<?> serviceReference = bc.getServiceReference(IProxyService.class.getName());
+    IProxyService proxyService = (IProxyService) bc.getService(serviceReference);
+    if (proxyService.getProxyData() != null) {
+      for (IProxyData pd : proxyService.getProxyData()) {
+        if (StringUtils.isNotBlank(pd.getUserId()) && StringUtils.isNotBlank(pd.getPassword())) {
+          return new String[] {pd.getUserId(), pd.getPassword()};
+        }
+      }
+    }
+    return null;
+  }
+
   @Override
-  public void addServer(String url, String username, String password) {
+  public ISonarServer addServer(String url, String username, String password) {
     SonarServer server = new SonarServer(url, username, password);
     String encodedUrl = EncodingUtils.encodeSlashes(server.getUrl());
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
@@ -73,6 +136,7 @@ public class ServersManager implements ISonarServersManager {
     } catch (BackingStoreException e) {
       LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
     }
+    return server;
   }
 
   /**
