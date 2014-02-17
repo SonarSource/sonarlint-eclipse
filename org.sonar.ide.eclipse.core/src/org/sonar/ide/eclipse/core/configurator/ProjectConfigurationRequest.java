@@ -20,6 +20,7 @@
 package org.sonar.ide.eclipse.core.configurator;
 
 import org.eclipse.core.resources.IProject;
+import org.sonar.ide.eclipse.wsclient.SonarVersionTester;
 
 import java.util.Properties;
 
@@ -27,10 +28,12 @@ public class ProjectConfigurationRequest {
 
   private final IProject project;
   private final Properties sonarProjectProperties;
+  private final String serverVersion;
 
-  public ProjectConfigurationRequest(IProject eclipseProject, Properties sonarProjectProperties) {
+  public ProjectConfigurationRequest(IProject eclipseProject, Properties sonarProjectProperties, String serverVersion) {
     this.project = eclipseProject;
     this.sonarProjectProperties = sonarProjectProperties;
+    this.serverVersion = serverVersion;
   }
 
   public IProject getProject() {
@@ -39,6 +42,10 @@ public class ProjectConfigurationRequest {
 
   public Properties getSonarProjectProperties() {
     return sonarProjectProperties;
+  }
+
+  public boolean isServerVersionGreaterOrEquals(String version) {
+    return SonarVersionTester.isServerVersionSupported(version, serverVersion);
   }
 
 }

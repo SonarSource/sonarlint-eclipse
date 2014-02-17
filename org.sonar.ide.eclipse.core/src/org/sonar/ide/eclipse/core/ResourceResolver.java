@@ -24,6 +24,10 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 
+/**
+ * @deprecated no more used since SonarQube server 4.2
+ */
+@Deprecated
 public abstract class ResourceResolver {
 
   public static final String ATTR_CLASS = "class"; //$NON-NLS-1$

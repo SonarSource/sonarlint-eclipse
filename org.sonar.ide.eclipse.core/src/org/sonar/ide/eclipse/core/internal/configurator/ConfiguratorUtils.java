@@ -66,8 +66,8 @@ public class ConfiguratorUtils {
     return result;
   }
 
-  public static void configure(final IProject project, final Properties properties, final IProgressMonitor monitor) {
-    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, properties);
+  public static void configure(final IProject project, final Properties properties, final String serverVersion, final IProgressMonitor monitor) {
+    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, properties, serverVersion);
     for (ProjectConfigurator configurator : ConfiguratorUtils.getConfigurators()) {
       if (configurator.canConfigure(project)) {
         configurator.configure(request, monitor);

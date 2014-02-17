@@ -20,7 +20,6 @@
 package org.sonar.ide.eclipse.ui.internal.properties;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,13 +28,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
-import org.sonar.ide.eclipse.core.internal.configurator.ConfiguratorUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 
 import java.text.SimpleDateFormat;
-import java.util.Properties;
 
 /**
  * Property page for projects to view sonar server connection. It store in
@@ -74,9 +70,6 @@ public class SonarProjectPropertyPage extends PropertyPage {
 
     addText(Messages.SonarProjectPropertyBlock_label_host, sonarProject.getUrl(), container);
     addText(Messages.SonarProjectPropertyBlock_label_key, sonarProject.getKey(), container);
-    Properties props = new Properties();
-    ConfiguratorUtils.configure(sonarProject.getProject(), props, new NullProgressMonitor());
-    addText(Messages.SonarProjectPropertyBlock_label_language, props.getProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY), container);
     if (sonarProject.getLastAnalysisDate() != null) {
       addText(Messages.SonarProjectPropertyBlock_label_analysis_date, sdf.format(sonarProject.getLastAnalysisDate()), container);
     }

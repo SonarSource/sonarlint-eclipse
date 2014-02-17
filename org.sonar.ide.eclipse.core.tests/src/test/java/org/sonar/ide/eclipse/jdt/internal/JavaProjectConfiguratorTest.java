@@ -66,7 +66,7 @@ public class JavaProjectConfiguratorTest {
     when(project.getResolvedClasspath(true)).thenReturn(new IClasspathEntry[] {});
     when(project.getOutputLocation()).thenReturn(new Path(temp.newFolder("output").getAbsolutePath()));
 
-    configurator.configureJavaProject(project, sonarProperties);
+    configurator.configureJavaProject(project, sonarProperties, true);
 
     assertTrue(sonarProperties.containsKey("sonar.java.source"));
     assertThat(sonarProperties.getProperty("sonar.java.source"), is("1.6"));
@@ -102,7 +102,7 @@ public class JavaProjectConfiguratorTest {
     when(project.getResolvedClasspath(true)).thenReturn(cpes);
     when(project.getOutputLocation()).thenReturn(new Path(outputFolder.getAbsolutePath()));
 
-    configurator.configureJavaProject(project, sonarProperties);
+    configurator.configureJavaProject(project, sonarProperties, true);
 
     // TODO Find a way to mock a project inside Eclipse
 

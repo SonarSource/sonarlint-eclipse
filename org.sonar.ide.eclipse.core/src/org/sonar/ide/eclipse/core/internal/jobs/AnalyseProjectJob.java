@@ -136,7 +136,11 @@ public class AnalyseProjectJob extends Job {
     // Create markers
     long startMarker = System.currentTimeMillis();
     SonarCorePlugin.getDefault().debug("Create markers on project " + project.getName() + " resources...\n");
-    createMarkersFromReportOutput(monitor, outputFile);
+    if (SonarVersionTester.isServerVersionSupported(SonarCorePlugin.PATH_RESOURCE_MINIMAL_SONAR_VERSION, getServerVersion())) {
+      createMarkersFromReportOutput(monitor, outputFile);
+    } else {
+      createMarkersFromReportOutputBefore4_2(monitor, outputFile);
+    }
     SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - startMarker) + "ms\n");
 
     // Update analysis date
@@ -169,7 +173,7 @@ public class AnalyseProjectJob extends Job {
   }
 
   @VisibleForTesting
-  public void createMarkersFromReportOutput(final IProgressMonitor monitor, File outputFile) {
+  public void createMarkersFromReportOutputBefore4_2(final IProgressMonitor monitor, File outputFile) {
     FileReader fileReader = null;
     try {
       fileReader = new FileReader(outputFile);
@@ -184,6 +188,44 @@ public class AnalyseProjectJob extends Job {
         if (resource != null) {
           resourcesByKey.put(key, resource);
           if (incremental) {
+            MarkerUtils.deleteIssuesMarkers(resource);
+          }
+          MarkerUtils.markResourceAsLocallyAnalysed(resource);
+        }
+      }
+      // Now read all rules name in a cache
+      Map<String, String> ruleByKey = readRules(sonarResult);
+      // Now read all users name in a cache
+      Map<String, String> userNameByLogin = readUserNameByLogin(sonarResult);
+      // Now iterate over all issues and create markers
+      MarkerUtils.createMarkersForJSONIssues(resourcesByKey, ruleByKey, userNameByLogin, (JSONArray) sonarResult.get("issues"));
+    } catch (Exception e) {
+      LOG.error(e.getMessage(), e);
+      throw new SonarEclipseException("Unable to create markers", e);
+    } finally {
+      IOUtils.closeQuietly(fileReader);
+    }
+  }
+
+  @VisibleForTesting
+  public void createMarkersFromReportOutput(final IProgressMonitor monitor, File outputFile) {
+    FileReader fileReader = null;
+    try {
+      fileReader = new FileReader(outputFile);
+      Object obj = JSONValue.parse(fileReader);
+      JSONObject sonarResult = (JSONObject) obj;
+      // Start by resolving all components in a cache
+      Map<String, IResource> resourcesByKey = Maps.newHashMap();
+      final JSONArray components = (JSONArray) sonarResult.get("components");
+      for (Object component : components) {
+        String key = ObjectUtils.toString(((JSONObject) component).get("key"));
+        String path = ObjectUtils.toString(((JSONObject) component).get("path"));
+        String moduleKey = ObjectUtils.toString(((JSONObject) component).get("moduleKey"));
+        String status = ObjectUtils.toString(((JSONObject) component).get("status"));
+        IResource resource = ResourceUtils.findResource(sonarProject, key, moduleKey, path);
+        if (resource != null) {
+          resourcesByKey.put(key, resource);
+          if (incremental && !"SAME".equals(status)) {
             MarkerUtils.deleteIssuesMarkers(resource);
           }
           MarkerUtils.markResourceAsLocallyAnalysed(resource);
@@ -245,7 +287,7 @@ public class AnalyseProjectJob extends Job {
     }
 
     // Configuration by configurators (common and language specific)
-    ConfiguratorUtils.configure(project, properties, monitor);
+    ConfiguratorUtils.configure(project, properties, getServerVersion(), monitor);
 
     // Global configuration
     properties.setProperty(SonarProperties.SONAR_URL, getSonarServer().getUrl());

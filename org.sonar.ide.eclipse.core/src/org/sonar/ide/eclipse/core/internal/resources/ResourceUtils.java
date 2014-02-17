@@ -113,6 +113,16 @@ public final class ResourceUtils {
     return null;
   }
 
+  public static IResource findResource(SonarProject sonarProject, String resourceKey, String moduleKey, String path) {
+    if (sonarProject != null && resourceKey.equals(sonarProject.getKey())) {
+      return sonarProject.getProject();
+    }
+    if (sonarProject != null && moduleKey.equals(sonarProject.getKey())) {
+      return sonarProject.getProject().findMember(path);
+    }
+    return null;
+  }
+
   private static synchronized List<ResourceResolver> getResolvers() {
     if (resolvers == null) {
       resolvers = new ArrayList<ResourceResolver>();

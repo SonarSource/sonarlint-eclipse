@@ -3,7 +3,7 @@
     {
       "updatedAt": "2013-05-02T11:23:56+0200",
       "status": "OPEN",
-      "component": "bar:foo:src/Pmd.java",
+      "component": "bar:foo:[default].Pmd",
       "createdAt": "2013-04-29T15:26:46+0200",
       "isNew": false,
       "description": "Ne mélangez pas instructions Java et commentaires sur la même ligne.",
@@ -14,7 +14,7 @@
     }, {
       "updatedAt": "2013-05-02T11:23:56+0200",
       "status": "OPEN",
-      "component": "bar:foo:src/Pmd.java",
+      "component": "bar:foo:[default].Pmd",
       "createdAt": "2013-04-29T15:26:46+0200",
       "isNew": false,
       "description": "Empty static initializer was found",
@@ -25,7 +25,7 @@
     }, {
       "updatedAt": "2013-05-02T11:23:56+0200",
       "status": "OPEN",
-      "component": "bar:foo:src/Findbugs.java",
+      "component": "bar:foo:[default].Findbugs",
       "createdAt": "2013-04-29T15:26:46+0200",
       "isNew": false,
       "description": "Self assignment of field x in Findbugs.test()",
@@ -36,7 +36,7 @@
     }, {
       "updatedAt": "2013-05-02T11:23:56+0200",
       "status": "OPEN",
-      "component": "bar:foo:src/Findbugs.java",
+      "component": "bar:foo:[default].Findbugs",
       "createdAt": "2013-04-29T15:26:46+0200",
       "isNew": false,
       "description": "Ne mélangez pas instructions Java et commentaires sur la même ligne.",
@@ -47,7 +47,7 @@
     }, {
       "updatedAt": "2013-05-02T11:23:56+0200",
       "status": "OPEN",
-      "component": "bar:foo:src/Checkstyle.java",
+      "component": "bar:foo:[default].Checkstyle",
       "createdAt": "2013-04-29T15:26:46+0200",
       "isNew": false,
       "description": "Ne mélangez pas instructions Java et commentaires sur la même ligne.",
@@ -58,7 +58,7 @@
     }, {
       "updatedAt": "2013-05-02T11:23:56+0200",
       "status": "OPEN",
-      "component": "bar:foo:src/Checkstyle.java",
+      "component": "bar:foo:[default].Checkstyle",
       "createdAt": "2013-04-29T15:26:46+0200",
       "isNew": false,
       "description": "Les classes utilitaires ne doivent pas avoir de constructeur par défaut ou public.",
@@ -70,20 +70,11 @@
   ],
   "components": [
     {
-      "key": "bar:foo:src/Pmd.java",
-      "moduleKey": "bar:foo",
-      "path": "src/Pmd.java",
-      "status": "SAME"
+      "key": "bar:foo:[default].Pmd"
     }, {
-      "key": "bar:foo:src/Findbugs.java",
-      "moduleKey": "bar:foo",
-      "path": "src/Findbugs.java",
-      "status": "SAME"
+      "key": "bar:foo:[default].Findbugs"
     }, {
-      "key": "bar:foo:src/Checkstyle.java",
-      "moduleKey": "bar:foo",
-      "path": "src/Checkstyle.java",
-      "status": "SAME"
+      "key": "bar:foo:[default].Checkstyle"
     }
   ],
   "rules": [

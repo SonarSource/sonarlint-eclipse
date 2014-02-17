@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
+import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -114,11 +115,11 @@ class RemoteSourceCode implements SourceCode {
   }
 
   public List<ISonarIssue> getRemoteIssuesWithLineCorrection(IProgressMonitor monitor) {
-    final List<ISonarIssue> issues = getRemoteSonarIndex().getSonarClient().getRemoteIssuesRecursively(getKey(), monitor);
+    final List<ISonarIssueWithPath> issues = getRemoteSonarIndex().getSonarClient().getRemoteIssuesRecursively(getKey(), monitor);
     return IssuesUtils.convertLines(issues, getDiff());
   }
 
-  public List<ISonarIssue> getRemoteIssuesRecursively(IProgressMonitor monitor) {
+  public List<ISonarIssueWithPath> getRemoteIssuesRecursively(IProgressMonitor monitor) {
     return getRemoteSonarIndex().getSonarClient().getRemoteIssuesRecursively(getKey(), monitor);
   }
 

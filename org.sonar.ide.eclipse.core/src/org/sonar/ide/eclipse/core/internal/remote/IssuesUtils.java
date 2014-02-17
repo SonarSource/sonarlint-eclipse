@@ -29,7 +29,7 @@ import java.util.List;
  */
 public final class IssuesUtils {
 
-  public static List<ISonarIssue> convertLines(List<ISonarIssue> issues, SourceCodeDiff diff) {
+  public static List<ISonarIssue> convertLines(List<? extends ISonarIssue> issues, SourceCodeDiff diff) {
     List<ISonarIssue> result = new ArrayList<ISonarIssue>();
 
     for (ISonarIssue issue : issues) {

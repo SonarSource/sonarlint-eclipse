@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
-import com.google.common.collect.ArrayListMultimap;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -28,7 +27,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.sonar.ide.eclipse.common.issues.ISonarIssue;
+import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.markers.SonarMarker;
@@ -133,23 +132,17 @@ public class SynchronizeAllIssuesJob extends Job {
 
   private void doRefreshIssues(SonarProject sonarProject, SourceCode sourceCode, IProgressMonitor monitor) throws CoreException {
     long start = System.currentTimeMillis();
-    List<ISonarIssue> issues = sourceCode.getRemoteIssuesRecursively(monitor);
+    List<ISonarIssueWithPath> issues = sourceCode.getRemoteIssuesRecursively(monitor);
     SonarCorePlugin.getDefault().debug("  WS call took " + (System.currentTimeMillis() - start) + "ms for " + issues.size() + " issues\n");
-    // Split issues by resource
-    ArrayListMultimap<String, ISonarIssue> mm = ArrayListMultimap.create();
-    for (ISonarIssue issue : issues) {
-      mm.put(issue.resourceKey(), issue);
-    }
-    if (monitor.isCanceled()) {
-      return;
-    }
-    // Associate issues with resources
-    for (String resourceKey : mm.keySet()) {
-      IResource eclipseResource = ResourceUtils.findResource(sonarProject, resourceKey);
+    for (ISonarIssueWithPath issue : issues) {
+      // First try to use path if available
+      IResource eclipseResource = ResourceUtils.findResource(sonarProject, issue.resourceKey(), sonarProject.getKey(), issue.path());
+      if (eclipseResource == null) {
+        // Fallback to old method to support SonarQube prior to 4.2
+        eclipseResource = ResourceUtils.findResource(sonarProject, issue.resourceKey());
+      }
       if (eclipseResource instanceof IFile) {
-        for (ISonarIssue issue : mm.get(resourceKey)) {
-          SonarMarker.create(eclipseResource, false, issue);
-        }
+        SonarMarker.create(eclipseResource, false, issue);
       }
       if (monitor.isCanceled()) {
         return;

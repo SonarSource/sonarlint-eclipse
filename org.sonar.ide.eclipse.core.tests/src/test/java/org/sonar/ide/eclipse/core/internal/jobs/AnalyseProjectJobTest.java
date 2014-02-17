@@ -125,6 +125,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   @Test
   public void shouldConfigureAnalysisWithExtraProps() throws Exception {
     AnalyseProjectJob job = job(project);
+    job.setServerVersion("4.0");
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.foo", "value")));
 
@@ -134,10 +135,24 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   @Test
   public void languageConfiguratorShouldOverrideExtraProps() throws Exception {
     AnalyseProjectJob job = job(project);
+    job.setServerVersion("4.1");
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.language", "fake")));
 
     assertThat(props.get("sonar.language").toString()).isEqualTo("java");
+  }
+
+  @Test
+  public void shouldCreateMarkersFromIssuesReport_before_4_2() throws Exception {
+    AnalyseProjectJob job = job(project);
+    job.createMarkersFromReportOutputBefore4_2(MONITOR, new File("testdata/sonar-report_before_4_2.json"));
+
+    List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
+    assertThat(markers.size()).isEqualTo(6);
+
+    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Findbugs.java", 5)));
+    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Pmd.java", 2)));
+    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Checkstyle.java", 1)));
   }
 
   @Test
@@ -151,6 +166,22 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Findbugs.java", 5)));
     Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Pmd.java", 2)));
     Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Checkstyle.java", 1)));
+  }
+
+  @Test
+  public void shouldCleanAndCreateMarkersFromIncrementalAnalysis_before_4_2() throws Exception {
+    AnalyseProjectJob job = job(project);
+    job.createMarkersFromReportOutputBefore4_2(MONITOR, new File("testdata/sonar-report_before_4_2.json"));
+
+    // During incremental analysis PMD file was not modified, Findbugs has one remaing issue and Checkstyle has no remaining issues
+    job = job(project);
+    job.createMarkersFromReportOutputBefore4_2(MONITOR, new File("testdata/sonar-report-incremental_before_4_2.json"));
+
+    List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
+    assertThat(markers.size()).isEqualTo(3);
+
+    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Findbugs.java", 5)));
+    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Pmd.java", 2)));
   }
 
   @Test

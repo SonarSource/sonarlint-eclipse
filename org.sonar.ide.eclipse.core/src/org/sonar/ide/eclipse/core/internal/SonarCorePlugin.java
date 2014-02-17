@@ -52,6 +52,10 @@ public class SonarCorePlugin extends AbstractPlugin {
    * Minimal supported version of SonarQube server for incremental analysis.
    */
   public static final String INCREMENTAL_MODE_MINIMAL_SONAR_VERSION = "4.0"; //$NON-NLS-1$
+  /**
+   * Minimal supported version of SonarQube server for path based resources.
+   */
+  public static final String PATH_RESOURCE_MINIMAL_SONAR_VERSION = "4.2"; //$NON-NLS-1$
 
   private static SonarCorePlugin plugin;
 
