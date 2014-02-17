@@ -140,7 +140,7 @@
     <dependency>
       <groupId>org.codehaus.sonar</groupId>
       <artifactId>sonar-ws-client</artifactId>
-      <version>3.7</version>
+      <version>4.2-M12</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.sonar.runner</groupId>
