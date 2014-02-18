@@ -225,7 +225,10 @@ public class AnalyseProjectJob extends Job {
         IResource resource = ResourceUtils.findResource(sonarProject, key, moduleKey, path);
         if (resource != null) {
           resourcesByKey.put(key, resource);
-          if (incremental && !"SAME".equals(status)) {
+          if (incremental
+        		  // Status is blank for modules
+        		  && StringUtils.isNotBlank(status)
+        		  && !"SAME".equals(status)) {
             MarkerUtils.deleteIssuesMarkers(resource);
           }
           MarkerUtils.markResourceAsLocallyAnalysed(resource);
