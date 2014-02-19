@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.sonar.ide.eclipse.core.SonarElementsAdapterFactory;
 import org.sonar.ide.eclipse.core.resources.ISonarFile;
@@ -59,6 +60,7 @@ public class SonarElementsAdapterFactoryTest extends SonarTestCase {
   }
 
   @Test
+  @Ignore("Need a connection to server to know server version")
   public void shouldAdaptFolderToSonarResource() {
     IFolder folder = project.getFolder("src/main/java");
     ISonarResource sonarElement = (ISonarResource) factory.getAdapter(folder, ISonarResource.class);
@@ -67,6 +69,7 @@ public class SonarElementsAdapterFactoryTest extends SonarTestCase {
   }
 
   @Test
+  @Ignore("Need a connection to server to know server version")
   public void shouldAdaptFileToSonarFile() {
     IFile file = project.getFile("src/main/java/ViolationOnFile.java");
     ISonarFile sonarElement = (ISonarFile) factory.getAdapter(file, ISonarFile.class);

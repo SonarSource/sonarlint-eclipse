@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.AdapterUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
@@ -32,6 +33,7 @@ import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.resources.ISonarFile;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
+import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
 /**
  * Adapter factory for Sonar elements.
@@ -69,7 +71,9 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
         return null;
       }
       ISonarProject sonarProject = SonarProject.getInstance(parentProject);
-      String keyWithoutProject = ResourceUtils.getSonarResourcePartialKey(resource);
+      ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+      String serverVersion = WSClientFactory.getSonarClient(sonarServer).getServerVersion();
+      String keyWithoutProject = ResourceUtils.getSonarResourcePartialKey(resource, serverVersion);
       if (keyWithoutProject != null) {
         return createSonarResource(resource, sonarProject, keyWithoutProject);
       }

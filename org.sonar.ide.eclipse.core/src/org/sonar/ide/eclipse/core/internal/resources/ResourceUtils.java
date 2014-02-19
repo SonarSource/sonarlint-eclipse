@@ -34,9 +34,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.ResourceResolver;
 import org.sonar.ide.eclipse.core.internal.AdapterUtils;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
+import org.sonar.ide.eclipse.wsclient.SonarVersionTester;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -46,19 +51,45 @@ public final class ResourceUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(ResourceUtils.class);
 
+  private static final String PATH_SEPARATOR = "/";
+
   private static List<ResourceResolver> resolvers;
 
   private ResourceUtils() {
   }
 
-  public static String getSonarResourcePartialKey(IResource resource) {
-    for (ResourceResolver resolver : getResolvers()) {
-      String sonarKey = resolver.getSonarPartialKey(resource);
-      if (sonarKey != null) {
-        return sonarKey;
+  @CheckForNull
+  public static String getSonarResourcePartialKey(IResource resource, String serverVersion) {
+    if (SonarVersionTester.isServerVersionSupported(SonarCorePlugin.PATH_RESOURCE_MINIMAL_SONAR_VERSION, serverVersion)) {
+      String path = resource.getProjectRelativePath().toString();
+      if (StringUtils.isNotBlank(path)) {
+        return normalize(path);
+      }
+    } else {
+      for (ResourceResolver resolver : getResolvers()) {
+        String sonarKey = resolver.getSonarPartialKey(resource);
+        if (sonarKey != null) {
+          return sonarKey;
+        }
       }
     }
     return null;
+  }
+
+  @CheckForNull
+  private static String normalize(@Nullable String path) {
+    if (StringUtils.isBlank(path)) {
+      return null;
+    }
+    String normalizedPath = path;
+    normalizedPath = normalizedPath.replace('\\', '/');
+    normalizedPath = StringUtils.trim(normalizedPath);
+    if (PATH_SEPARATOR.equals(normalizedPath)) {
+      return PATH_SEPARATOR;
+    }
+    normalizedPath = StringUtils.removeStart(normalizedPath, PATH_SEPARATOR);
+    normalizedPath = StringUtils.removeEnd(normalizedPath, PATH_SEPARATOR);
+    return normalizedPath;
   }
 
   public static ISonarResource adapt(Object eclipseObject) {
