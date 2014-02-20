@@ -144,11 +144,11 @@ public final class ResourceUtils {
     return null;
   }
 
-  public static IResource findResource(SonarProject sonarProject, String resourceKey, String moduleKey, String path) {
+  public static IResource findResource(SonarProject sonarProject, String resourceKey, String moduleKey, @Nullable String path) {
     if (sonarProject != null && resourceKey.equals(sonarProject.getKey())) {
       return sonarProject.getProject();
     }
-    if (sonarProject != null && moduleKey.equals(sonarProject.getKey())) {
+    if (sonarProject != null && moduleKey.equals(sonarProject.getKey()) && path != null) {
       return sonarProject.getProject().findMember(path);
     }
     return null;
