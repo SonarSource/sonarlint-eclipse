@@ -50,7 +50,6 @@ import org.sonar.wsclient.user.User;
 import javax.annotation.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -199,17 +198,6 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     } catch (Exception e) {
       throw new org.sonar.ide.eclipse.wsclient.SonarWSClientException("Error during issue query " + query.toString(), e);
     }
-  }
-
-  @Override
-  public String[] getChildrenKeys(String resourceKey) {
-    ResourceQuery query = new ResourceQuery().setDepth(1).setResourceKeyOrId(resourceKey);
-    Collection<Resource> resources = findAll(query);
-    List<String> result = new ArrayList<String>();
-    for (Resource resource : resources) {
-      result.add(resource.getKey());
-    }
-    return result.toArray(new String[result.size()]);
   }
 
   private static class SonarRemoteIssue implements ISonarIssueWithPath {

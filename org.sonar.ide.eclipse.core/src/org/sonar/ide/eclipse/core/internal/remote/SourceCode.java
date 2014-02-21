@@ -25,7 +25,6 @@ import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Evgeny Mandrikov
@@ -34,8 +33,6 @@ import java.util.Set;
 public interface SourceCode extends Comparable<SourceCode> {
 
   String getKey();
-
-  Set<SourceCode> getChildren();
 
   /**
    * @return content, which was analyzed by Sonar

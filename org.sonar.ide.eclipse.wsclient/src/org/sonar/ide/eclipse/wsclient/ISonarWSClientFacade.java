@@ -50,6 +50,4 @@ public interface ISonarWSClientFacade {
 
   List<ISonarIssue> getRemoteIssues(String resourceKey, IProgressMonitor monitor);
 
-  String[] getChildrenKeys(String resourceKey);
-
 }

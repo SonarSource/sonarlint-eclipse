@@ -26,9 +26,7 @@ import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Evgeny Mandrikov
@@ -51,11 +49,6 @@ class RemoteSourceCode implements SourceCode {
    */
   private String[] remoteContent;
 
-  /**
-   * Lazy initialization - see {@link #getChildren()}.
-   */
-  private Set<SourceCode> children;
-
   public RemoteSourceCode(String key) {
     this.key = key;
   }
@@ -65,20 +58,6 @@ class RemoteSourceCode implements SourceCode {
    */
   public String getKey() {
     return key;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public Set<SourceCode> getChildren() {
-    if (children == null) {
-      String[] childrenKeys = index.getSonarClient().getChildrenKeys(getKey());
-      children = new HashSet<SourceCode>();
-      for (String childKey : childrenKeys) {
-        children.add(new RemoteSourceCode(childKey).setRemoteSonarIndex(index));
-      }
-    }
-    return children;
   }
 
   /**
