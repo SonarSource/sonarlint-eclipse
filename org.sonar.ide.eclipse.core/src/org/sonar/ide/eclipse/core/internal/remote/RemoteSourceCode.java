@@ -94,12 +94,12 @@ class RemoteSourceCode implements SourceCode {
   }
 
   public List<ISonarIssue> getRemoteIssuesWithLineCorrection(IProgressMonitor monitor) {
-    final List<ISonarIssueWithPath> issues = getRemoteSonarIndex().getSonarClient().getRemoteIssuesRecursively(getKey(), monitor);
+    final List<ISonarIssueWithPath> issues = getRemoteSonarIndex().getSonarClient().getUnresolvedRemoteIssuesRecursively(getKey(), monitor);
     return IssuesUtils.convertLines(issues, getDiff());
   }
 
   public List<ISonarIssueWithPath> getRemoteIssuesRecursively(IProgressMonitor monitor) {
-    return getRemoteSonarIndex().getSonarClient().getRemoteIssuesRecursively(getKey(), monitor);
+    return getRemoteSonarIndex().getSonarClient().getUnresolvedRemoteIssuesRecursively(getKey(), monitor);
   }
 
   /**

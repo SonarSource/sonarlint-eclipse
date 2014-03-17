@@ -165,13 +165,13 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
   }
 
   @Override
-  public List<ISonarIssueWithPath> getRemoteIssuesRecursively(String resourceKey, IProgressMonitor monitor) {
+  public List<ISonarIssueWithPath> getUnresolvedRemoteIssuesRecursively(String resourceKey, IProgressMonitor monitor) {
     int maxPageSize = -1;
     List<ISonarIssueWithPath> result = new ArrayList<ISonarIssueWithPath>();
     int pageIndex = 1;
     Issues issues;
     do {
-      issues = findIssues(IssueQuery.create().componentRoots(resourceKey).pageSize(maxPageSize).pageIndex(pageIndex));
+      issues = findIssues(IssueQuery.create().componentRoots(resourceKey).resolved(false).pageSize(maxPageSize).pageIndex(pageIndex));
       for (Issue issue : issues.list()) {
         Component comp = issues.component(issue);
         result.add(new SonarRemoteIssue(issue, issues.rule(issue), issues.user(issue.assignee()), comp != null ? comp.path() : null));
@@ -181,8 +181,8 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
   }
 
   @Override
-  public List<ISonarIssue> getRemoteIssues(String resourceKey, IProgressMonitor monitor) {
-    Issues issues = findIssues(IssueQuery.create().components(resourceKey));
+  public List<ISonarIssue> getUnresolvedRemoteIssues(String resourceKey, IProgressMonitor monitor) {
+    Issues issues = findIssues(IssueQuery.create().components(resourceKey).resolved(false));
     List<ISonarIssue> result = new ArrayList<ISonarIssue>(issues.list().size());
     for (Issue issue : issues.list()) {
       result.add(new SonarRemoteIssue(issue, issues.rule(issue), issues.user(issue.assignee()), null));

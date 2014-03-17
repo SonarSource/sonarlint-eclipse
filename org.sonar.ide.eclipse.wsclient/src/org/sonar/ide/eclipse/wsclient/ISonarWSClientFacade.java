@@ -46,8 +46,8 @@ public interface ISonarWSClientFacade {
 
   String[] getRemoteCode(String resourceKey);
 
-  List<ISonarIssueWithPath> getRemoteIssuesRecursively(String resourceKey, IProgressMonitor monitor);
+  List<ISonarIssueWithPath> getUnresolvedRemoteIssuesRecursively(String resourceKey, IProgressMonitor monitor);
 
-  List<ISonarIssue> getRemoteIssues(String resourceKey, IProgressMonitor monitor);
+  List<ISonarIssue> getUnresolvedRemoteIssues(String resourceKey, IProgressMonitor monitor);
 
 }
