@@ -81,6 +81,7 @@
     <module>target-platform-e37</module>
     <module>target-platform-e42</module>
     <module>target-platform-e43</module>
+    <module>target-platform-e44</module>
 
     <module>org.sonar.ide.eclipse.tests.common</module>
     <module>org.sonar.ide.eclipse.core.tests</module>
@@ -140,7 +141,7 @@
     <dependency>
       <groupId>org.codehaus.sonar</groupId>
       <artifactId>sonar-ws-client</artifactId>
-      <version>4.2-M12</version>
+      <version>4.2-RC3</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.sonar.runner</groupId>
