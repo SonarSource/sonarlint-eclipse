@@ -40,11 +40,11 @@ public final class SonarImages {
 
   public static final Image IMG_ISSUE = createImage("issue_annotation.png"); //$NON-NLS-1$
   public static final Image IMG_NEW_ISSUE = createImage("new_issue_annotation.png"); //$NON-NLS-1$
-  public static final Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.gif"); //$NON-NLS-1$
-  public static final Image IMG_SEVERITY_CRITICAL = createImage("severity/critical.gif"); //$NON-NLS-1$
-  public static final Image IMG_SEVERITY_MAJOR = createImage("severity/major.gif"); //$NON-NLS-1$
-  public static final Image IMG_SEVERITY_MINOR = createImage("severity/minor.gif"); //$NON-NLS-1$
-  public static final Image IMG_SEVERITY_INFO = createImage("severity/info.gif"); //$NON-NLS-1$
+  public static final Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.png"); //$NON-NLS-1$
+  public static final Image IMG_SEVERITY_CRITICAL = createImage("severity/critical.png"); //$NON-NLS-1$
+  public static final Image IMG_SEVERITY_MAJOR = createImage("severity/major.png"); //$NON-NLS-1$
+  public static final Image IMG_SEVERITY_MINOR = createImage("severity/minor.png"); //$NON-NLS-1$
+  public static final Image IMG_SEVERITY_INFO = createImage("severity/info.png"); //$NON-NLS-1$
 
   public static final ImageDescriptor DEBUG = createImageDescriptor("debug.gif"); //$NON-NLS-1$
   public static final ImageDescriptor SHOW_CONSOLE = createImageDescriptor("showConsole.gif"); //$NON-NLS-1$
