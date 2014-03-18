@@ -109,7 +109,7 @@ public class AnalyseProjectJob extends Job {
         NLS.bind(Messages.AnalyseProjectJob_unsupported_version, SonarCorePlugin.LOCAL_MODE_MINIMAL_SONAR_VERSION));
     }
     if (incremental && !SonarVersionTester.isServerVersionSupported(SonarCorePlugin.INCREMENTAL_MODE_MINIMAL_SONAR_VERSION, getServerVersion())) {
-      SonarCorePlugin.getDefault().info(NLS.bind(Messages.AnalyseProjectJob_unsupported_version, SonarCorePlugin.INCREMENTAL_MODE_MINIMAL_SONAR_VERSION));
+      SonarCorePlugin.getDefault().info(NLS.bind(Messages.AnalyseProjectJob_unsupported_version_for_incremental, SonarCorePlugin.INCREMENTAL_MODE_MINIMAL_SONAR_VERSION));
       this.incremental = false;
     }
 
@@ -226,9 +226,9 @@ public class AnalyseProjectJob extends Job {
         if (resource != null) {
           resourcesByKey.put(key, resource);
           if (incremental
-        		  // Status is blank for modules
-        		  && StringUtils.isNotBlank(status)
-        		  && !"SAME".equals(status)) {
+            // Status is blank for modules
+            && StringUtils.isNotBlank(status)
+            && !"SAME".equals(status)) {
             MarkerUtils.deleteIssuesMarkers(resource);
           }
           MarkerUtils.markResourceAsLocallyAnalysed(resource);
