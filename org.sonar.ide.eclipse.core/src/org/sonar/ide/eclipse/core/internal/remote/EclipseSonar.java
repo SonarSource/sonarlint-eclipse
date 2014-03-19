@@ -27,12 +27,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.osgi.util.NLS;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
-import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
+
+import javax.annotation.CheckForNull;
 
 import java.io.IOException;
 
@@ -43,12 +44,14 @@ import java.io.IOException;
  */
 public final class EclipseSonar {
 
+  @CheckForNull
   public static EclipseSonar getInstance(IProject project) {
     SonarProject sonarProject = SonarProject.getInstance(project);
     ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     if (sonarServer == null) {
-      throw new SonarEclipseException(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
-          sonarProject.getProject().getName(), sonarProject.getUrl()));
+      SonarCorePlugin.getDefault().info(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
+        sonarProject.getProject().getName(), sonarProject.getUrl()) + "\n");
+      return null;
     }
     return new EclipseSonar(sonarServer);
   }

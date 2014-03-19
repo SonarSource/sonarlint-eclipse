@@ -19,9 +19,7 @@
  */
 package org.sonar.ide.eclipse.ui.internal.compare;
 
-import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
-import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
-
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -29,6 +27,9 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.quickdiff.IQuickDiffReferenceProvider;
+import org.sonar.ide.eclipse.core.internal.SonarNature;
+import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
+import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 
 public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
 
@@ -54,7 +55,15 @@ public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
       return sonarSource;
     }
     if (resource != null) {
-      SourceCode sourceCode = EclipseSonar.getInstance(resource.getProject()).search(resource);
+      IProject project = resource.getProject();
+      if (!SonarNature.hasSonarNature(project)) {
+        return null;
+      }
+      EclipseSonar eclipseSonar = EclipseSonar.getInstance(project);
+      if (eclipseSonar == null) {
+        return null;
+      }
+      SourceCode sourceCode = eclipseSonar.search(resource);
       if (sourceCode != null) {
         sonarSource = new Document(sourceCode.getRemoteContent());
       }

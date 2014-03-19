@@ -114,6 +114,9 @@ public class SynchronizeAllIssuesJob extends Job {
       return;
     }
     EclipseSonar sonar = EclipseSonar.getInstance(project);
+    if (sonar == null) {
+      return;
+    }
     SourceCode sourceCode = sonar.search(project);
 
     if (monitor.isCanceled()) {

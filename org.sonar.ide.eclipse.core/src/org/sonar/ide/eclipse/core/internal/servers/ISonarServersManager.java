@@ -21,6 +21,8 @@ package org.sonar.ide.eclipse.core.internal.servers;
 
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 
+import javax.annotation.CheckForNull;
+
 import java.util.Collection;
 
 /**
@@ -35,6 +37,7 @@ public interface ISonarServersManager {
 
   void addServer(String location, String username, String password);
 
+  @CheckForNull
   ISonarServer findServer(String host);
 
   ISonarServer getDefault();

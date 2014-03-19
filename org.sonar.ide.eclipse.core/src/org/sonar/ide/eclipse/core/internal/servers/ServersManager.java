@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
+import javax.annotation.CheckForNull;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -102,6 +104,7 @@ public class ServersManager implements ISonarServersManager {
     }
   }
 
+  @CheckForNull
   @Override
   public ISonarServer findServer(String url) {
     for (ISonarServer server : getServers()) {

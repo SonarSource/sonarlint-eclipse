@@ -23,6 +23,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
+import javax.annotation.CheckForNull;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -42,6 +44,7 @@ public class SonarProject implements ISonarProject {
     this.project = project;
   }
 
+  @CheckForNull
   public static SonarProject getInstance(IResource resource) {
     if (resource == null) {
       return null;

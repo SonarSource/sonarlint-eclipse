@@ -23,8 +23,10 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.eclipse.osgi.util.NLS;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.AdapterUtils;
+import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
@@ -72,6 +74,11 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
       }
       ISonarProject sonarProject = SonarProject.getInstance(parentProject);
       ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+      if (sonarServer == null) {
+        SonarCorePlugin.getDefault().info(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
+          sonarProject.getProject().getName(), sonarProject.getUrl()) + "\n");
+        return null;
+      }
       String serverVersion = WSClientFactory.getSonarClient(sonarServer).getServerVersion();
       String keyWithoutProject = ResourceUtils.getSonarResourcePartialKey(resource, serverVersion);
       if (keyWithoutProject != null) {
