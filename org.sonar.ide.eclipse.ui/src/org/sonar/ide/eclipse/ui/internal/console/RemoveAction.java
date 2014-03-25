@@ -17,30 +17,23 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.wsclient;
+package org.sonar.ide.eclipse.ui.internal.console;
 
-import org.osgi.framework.Version;
+import org.eclipse.jface.action.Action;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
+import org.sonar.ide.eclipse.ui.internal.Messages;
+import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 
-public class SonarVersionTester {
+public class RemoveAction extends Action {
 
-  private SonarVersionTester() {
-    // Utility class
+  public RemoveAction() {
+    setToolTipText(Messages.SonarConsoleRemoveAction_tooltip);
+    setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE));
   }
 
-  public static boolean isServerVersionSupported(String minimalVersion, String serverCurrentVersion) {
-    return parseServerVersion(minimalVersion).compareTo(parseServerVersion(serverCurrentVersion)) <= 0;
-  }
-
-  private static Version parseServerVersion(String version) {
-    if ("unknown".equals(version)) {
-      throw new IllegalStateException("Version is unknown. Server may be not reachable.");
-    }
-    int i = version.indexOf('-');
-    if (i != -1) {
-      version = version.substring(0, i);
-    }
-    version += ".0"; //$NON-NLS-1$
-    return Version.parseVersion(version);
+  public void run() {
+    SonarUiPlugin.getDefault().getSonarConsole().closeConsole();
   }
 
 }

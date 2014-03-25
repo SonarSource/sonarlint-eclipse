@@ -117,7 +117,7 @@ public abstract class SonarTestCase {
     final List<ISonarServer> hosts = new ArrayList<ISonarServer>();
     hosts.addAll(SonarCorePlugin.getServersManager().getServers());
     for (final ISonarServer host : hosts) {
-      SonarCorePlugin.getServersManager().removeServer(host.getUrl());
+      SonarCorePlugin.getServersManager().removeServer(host);
     }
     final IWorkspaceRoot root = workspace.getRoot();
     for (final IProject project : root.getProjects()) {

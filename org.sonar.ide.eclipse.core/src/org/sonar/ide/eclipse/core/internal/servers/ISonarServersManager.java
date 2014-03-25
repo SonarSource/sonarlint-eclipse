@@ -33,9 +33,9 @@ public interface ISonarServersManager {
 
   Collection<ISonarServer> getServers();
 
-  void removeServer(String host);
+  void removeServer(ISonarServer server);
 
-  void addServer(String location, String username, String password);
+  void addServer(ISonarServer server);
 
   @CheckForNull
   ISonarServer findServer(String host);

@@ -81,6 +81,6 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
   }
 
   protected void doFinish(String serverUrl, String username, String password) {
-    SonarCorePlugin.getServersManager().addServer(serverUrl, username, password);
+    SonarCorePlugin.getServersManager().addServer(SonarCorePlugin.getServersManager().create(serverUrl, username, password));
   }
 }

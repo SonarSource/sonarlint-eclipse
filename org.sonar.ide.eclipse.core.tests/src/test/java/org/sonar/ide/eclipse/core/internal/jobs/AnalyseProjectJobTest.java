@@ -30,11 +30,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.matchers.JUnitMatchers;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
+import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
+import org.sonar.ide.eclipse.core.internal.servers.ServersManager;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
 import java.io.File;
@@ -50,10 +53,14 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   public org.junit.rules.ExternalResource test = null;
   private static IProject project;
+  private static ISonarServer server;
+  private static ISonarServersManager serversManager;
 
   @BeforeClass
   public static void prepare() throws Exception {
-    SonarCorePlugin.getServersManager().addServer("http://localhost:9000", null, null);
+    serversManager = SonarCorePlugin.getServersManager();
+    server = serversManager.create("http://localhost:9000", null, null);
+    SonarCorePlugin.getServersManager().addServer(server);
 
     project = importEclipseProject("reference");
 
@@ -72,8 +79,8 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldConfigureAnalysisBefore40() throws Exception {
+    ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "3.7");
     AnalyseProjectJob job = job(project);
-    job.setServerVersion("3.7");
     job.setIncremental(false);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
@@ -85,8 +92,8 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldConfigureAnalysisAfter40() throws Exception {
+    ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.0");
     AnalyseProjectJob job = job(project);
-    job.setServerVersion("4.0");
     job.setIncremental(true);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
@@ -111,8 +118,8 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldForceFullPreview() throws Exception {
+    ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.0");
     AnalyseProjectJob job = job(project);
-    job.setServerVersion("4.0");
     job.setIncremental(false);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
@@ -124,8 +131,8 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldConfigureAnalysisWithExtraProps() throws Exception {
+    ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.0");
     AnalyseProjectJob job = job(project);
-    job.setServerVersion("4.0");
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.foo", "value")));
 
@@ -134,8 +141,8 @@ public class AnalyseProjectJobTest extends SonarTestCase {
 
   @Test
   public void languageConfiguratorShouldOverrideExtraProps() throws Exception {
+    ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.1");
     AnalyseProjectJob job = job(project);
-    job.setServerVersion("4.1");
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.language", "fake")));
 

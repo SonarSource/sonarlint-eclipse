@@ -51,7 +51,6 @@ import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.wsclient.SonarVersionTester;
-import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 import org.sonar.runner.api.ForkedRunner;
 import org.sonar.runner.api.ProcessMonitor;
 import org.sonar.runner.api.StreamConsumer;
@@ -79,8 +78,6 @@ public class AnalyseProjectJob extends Job {
   private ISonarServer sonarServer;
 
   private boolean incremental;
-
-  private String serverVersion;
 
   public AnalyseProjectJob(AnalyseProjectRequest request) {
     super(Messages.AnalyseProjectJob_title);
@@ -157,15 +154,7 @@ public class AnalyseProjectJob extends Job {
   }
 
   private String getServerVersion() {
-    if (serverVersion == null) {
-      serverVersion = WSClientFactory.getSonarClient(sonarServer).getServerVersion();
-    }
-    return serverVersion;
-  }
-
-  @VisibleForTesting
-  public void setServerVersion(String serverVersion) {
-    this.serverVersion = serverVersion;
+    return sonarServer.getVersion();
   }
 
   private ISonarServer getSonarServer() {

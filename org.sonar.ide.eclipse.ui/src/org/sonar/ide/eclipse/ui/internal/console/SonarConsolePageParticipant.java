@@ -42,17 +42,20 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
 
   private DebugAction debugAction;
   private ShowConsoleAction showOnOutputAction;
+  private IAction consoleRemoveAction;
 
   @Override
   public void init(IPageBookViewPage page, IConsole console) {
-    debugAction = new DebugAction();
-    showOnOutputAction = new ShowConsoleAction();
+    this.consoleRemoveAction = new RemoveAction();
+    this.debugAction = new DebugAction();
+    this.showOnOutputAction = new ShowConsoleAction();
 
     IActionBars actionBars = page.getSite().getActionBars();
     configureToolBar(actionBars.getToolBarManager());
   }
 
   private void configureToolBar(IToolBarManager manager) {
+    manager.prependToGroup(IConsoleConstants.LAUNCH_GROUP, consoleRemoveAction);
     manager.prependToGroup(IConsoleConstants.OUTPUT_GROUP, debugAction);
     manager.appendToGroup(IConsoleConstants.OUTPUT_GROUP, showOnOutputAction);
   }

@@ -154,9 +154,9 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
       public void widgetSelected(SelectionEvent e) {
         ISonarServer selected = getSelectedServer();
         if (MessageDialog.openConfirm(SonarServerPreferencePage.this.getShell(), "Remove SonarQube server connection",
-            MessageFormat.format("Confirm removing {0}",
-                new Object[] {selected.getUrl()}))) {
-          SonarCorePlugin.getServersManager().removeServer(selected.getUrl());
+          MessageFormat.format("Confirm removing {0}",
+            new Object[] {selected.getUrl()}))) {
+          SonarCorePlugin.getServersManager().removeServer(selected);
           servers.remove(selected);
           serversViewer.refresh();
           removeButton.setEnabled(false);

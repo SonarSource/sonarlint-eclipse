@@ -53,7 +53,8 @@ public class SonarServerManagerTest {
   @Test
   public void shouldUseSecureStorage() throws Exception {
     String url = "http://secure";
-    serversManager.addServer(url, "tester", "secret");
+    ISonarServer server = serversManager.create(url, "tester", "secret");
+    serversManager.addServer(server);
 
     ISecurePreferences securePreferences = SecurePreferencesFactory.getDefault().node(ServersManager.PREF_SERVERS);
     securePreferences = securePreferences.node(EncodingUtils.encodeSlashes(url));

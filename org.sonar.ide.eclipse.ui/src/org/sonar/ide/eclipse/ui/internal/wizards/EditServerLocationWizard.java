@@ -36,7 +36,7 @@ public class EditServerLocationWizard extends AbstractServerLocationWizard {
   protected void doFinish(String serverUrl, String username, String password) {
     String oldServerUrl = sonarServer.getUrl();
     if (StringUtils.isNotBlank(oldServerUrl) && (SonarCorePlugin.getServersManager().findServer(oldServerUrl) != null)) {
-      SonarCorePlugin.getServersManager().removeServer(oldServerUrl);
+      SonarCorePlugin.getServersManager().removeServer(sonarServer);
     }
     super.doFinish(serverUrl, username, password);
   }

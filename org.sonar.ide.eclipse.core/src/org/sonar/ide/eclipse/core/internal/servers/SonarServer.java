@@ -32,6 +32,7 @@ public final class SonarServer implements ISonarServer {
 
   private final String url;
   private final boolean auth;
+  private String version;
 
   public SonarServer(String url, String username, String password) {
     this(url, StringUtils.isNotBlank(password) && StringUtils.isNotBlank(username));
@@ -67,6 +68,15 @@ public final class SonarServer implements ISonarServer {
     return auth ? getKeyFromServerNode("password") : "";
   }
 
+  @Override
+  public String getVersion() {
+    return version;
+  }
+
+  public void setVersion(String version) {
+    this.version = version;
+  }
+
   private String getKeyFromServerNode(String key) {
     try {
       return SecurePreferencesFactory.getDefault().node(ServersManager.PREF_SERVERS).node(EncodingUtils.encodeSlashes(getUrl())).get(key, "");
@@ -78,7 +88,7 @@ public final class SonarServer implements ISonarServer {
   private void setKeyForServerNode(String key, String value, boolean encrypt) {
     try {
       ISecurePreferences serverNode = SecurePreferencesFactory.getDefault().node(ServersManager.PREF_SERVERS)
-          .node(EncodingUtils.encodeSlashes(getUrl()));
+        .node(EncodingUtils.encodeSlashes(getUrl()));
       serverNode.put(key, value, encrypt);
     } catch (StorageException e) {
       LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);

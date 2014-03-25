@@ -29,4 +29,6 @@ public interface ISonarServer {
 
   String getPassword();
 
+  String getVersion();
+
 }
