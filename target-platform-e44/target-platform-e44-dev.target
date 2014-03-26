@@ -6,7 +6,7 @@
 <location path="${M2_REPO}/org/codehaus/sonar/runner/sonar-runner-api/2.3" type="Directory"/>
 <location path="${M2_REPO}/org/mockito/mockito-all/1.9.5" type="Directory"/>
 <location path="${M2_REPO}/org/assertj/assertj-core/1.5.0" type="Directory"/>
-<location path="${M2_REPO}/org/codehaus/sonar/sonar-ws-client/4.2-RC3" type="Directory"/>
+<location path="${M2_REPO}/org/codehaus/sonar/sonar-ws-client/4.2" type="Directory"/>
 <location path="${M2_REPO}/org/apache/httpcomponents/httpclient-osgi/4.2.2" type="Directory"/>
 <location path="${M2_REPO}/commons-lang/commons-lang/2.6" type="Directory"/>
 <location path="${M2_REPO}/commons-io/commons-io/2.4" type="Directory"/>
