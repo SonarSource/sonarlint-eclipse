@@ -63,7 +63,10 @@ public class ServersManager implements ISonarServersManager {
           boolean auth = serverNode.getBoolean("auth", false);
           SonarServer sonarServer = new SonarServer(url, auth);
           if (!serverVersionCache.containsKey(sonarServer.getUrl())) {
-            serverVersionCache.put(sonarServer.getUrl(), getServerVersion(sonarServer));
+            String serverVersion = getServerVersion(sonarServer);
+            if (serverVersion != null) {
+              serverVersionCache.put(sonarServer.getUrl(), serverVersion);
+            }
           }
           sonarServer.setVersion(serverVersionCache.get(sonarServer.getUrl()));
           servers.add(sonarServer);
@@ -142,13 +145,14 @@ public class ServersManager implements ISonarServersManager {
     return new SonarServer(location, username, password);
   }
 
+  @CheckForNull
   private String getServerVersion(ISonarServer server) {
     try {
       return WSClientFactory.getSonarClient(server).getServerVersion();
     } catch (Exception e) {
-      SonarCorePlugin.getDefault().error("Unable to get version of server " + server.getUrl() + ": " + e.getMessage());
+      SonarCorePlugin.getDefault().error("Unable to get version of server " + server.getUrl() + ": " + e.getMessage() + "\n");
     }
-    return "unknown";
+    return null;
   }
 
 }

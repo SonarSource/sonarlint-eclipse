@@ -40,5 +40,6 @@ public final class Messages extends NLS {
   public static String AnalyseProjectJob_unsupported_version_for_incremental;
 
   public static String No_matching_server_in_configuration_for_project;
+  public static String Unable_to_detect_server_version;
   public static String No_matching_server_in_configuration;
 }

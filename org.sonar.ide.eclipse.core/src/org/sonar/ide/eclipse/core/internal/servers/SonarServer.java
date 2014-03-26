@@ -28,6 +28,9 @@ import org.eclipse.equinox.security.storage.StorageException;
 import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+
 public final class SonarServer implements ISonarServer {
 
   private final String url;
@@ -68,12 +71,13 @@ public final class SonarServer implements ISonarServer {
     return auth ? getKeyFromServerNode("password") : "";
   }
 
+  @CheckForNull
   @Override
   public String getVersion() {
     return version;
   }
 
-  public void setVersion(String version) {
+  public void setVersion(@Nullable String version) {
     this.version = version;
   }
 

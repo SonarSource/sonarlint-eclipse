@@ -79,9 +79,11 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
         return null;
       }
       String serverVersion = sonarServer.getVersion();
-      String keyWithoutProject = ResourceUtils.getSonarResourcePartialKey(resource, serverVersion);
-      if (keyWithoutProject != null) {
-        return createSonarResource(resource, sonarProject, keyWithoutProject);
+      if (serverVersion != null) {
+        String keyWithoutProject = ResourceUtils.getSonarResourcePartialKey(resource, serverVersion);
+        if (keyWithoutProject != null) {
+          return createSonarResource(resource, sonarProject, keyWithoutProject);
+        }
       }
     }
     return null;
