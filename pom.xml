@@ -117,7 +117,7 @@
 
   <properties>
     <license.title>SonarQube Eclipse</license.title>
-    <license.year>2010-2013</license.year>
+    <license.year>2010-2014</license.year>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho.version>0.20.0</tycho.version>
     <target.platform>e42</target.platform>
