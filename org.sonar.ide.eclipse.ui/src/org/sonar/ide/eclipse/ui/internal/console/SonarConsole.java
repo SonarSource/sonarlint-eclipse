@@ -34,6 +34,7 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.jobs.LogListener;
 import org.sonar.ide.eclipse.ui.internal.ISonarConsole;
 import org.sonar.ide.eclipse.ui.internal.Messages;
@@ -142,6 +143,7 @@ public class SonarConsole extends IOConsole implements LogListener, ISonarConsol
   }
 
   public void closeConsole() {
+    SonarCorePlugin.getDefault().removeLogListener(this);
     IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
     manager.removeConsoles(new IConsole[] {this});
   }
