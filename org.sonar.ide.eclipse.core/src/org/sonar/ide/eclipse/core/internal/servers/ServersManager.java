@@ -51,7 +51,7 @@ public class ServersManager implements ISonarServersManager {
 
   @Override
   public Collection<ISonarServer> getServers() {
-    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
+    IEclipsePreferences rootNode = new InstanceScope().getNode(SonarCorePlugin.PLUGIN_ID);
     List<ISonarServer> servers = Lists.newArrayList();
     try {
       rootNode.sync();
@@ -84,7 +84,7 @@ public class ServersManager implements ISonarServersManager {
   @Override
   public void addServer(ISonarServer server) {
     String encodedUrl = EncodingUtils.encodeSlashes(server.getUrl());
-    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
+    IEclipsePreferences rootNode = new InstanceScope().getNode(SonarCorePlugin.PLUGIN_ID);
     try {
       Preferences serversNode = rootNode.node(PREF_SERVERS);
       serversNode.put("initialized", "true");
@@ -99,7 +99,7 @@ public class ServersManager implements ISonarServersManager {
    * For tests.
    */
   public void clean() {
-    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
+    IEclipsePreferences rootNode = new InstanceScope().getNode(SonarCorePlugin.PLUGIN_ID);
     try {
       rootNode.node(PREF_SERVERS).removeNode();
       rootNode.node(PREF_SERVERS).put("initialized", "true");
@@ -113,7 +113,7 @@ public class ServersManager implements ISonarServersManager {
   @Override
   public void removeServer(ISonarServer server) {
     String encodedUrl = EncodingUtils.encodeSlashes(server.getUrl());
-    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
+    IEclipsePreferences rootNode = new InstanceScope().getNode(SonarCorePlugin.PLUGIN_ID);
     try {
       Preferences serversNode = rootNode.node(PREF_SERVERS);
       serversNode.node(encodedUrl).removeNode();
