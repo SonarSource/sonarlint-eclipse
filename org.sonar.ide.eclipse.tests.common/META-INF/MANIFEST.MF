@@ -7,7 +7,7 @@ Require-Bundle: org.eclipse.core.resources,
  org.sonar.ide.eclipse.common
 Bundle-Vendor: SonarSource
 Bundle-ClassPath: .
-Bundle-Version: 3.4.0.20140404-0949-RELEASE
+Bundle-Version: 3.5.0.qualifier
 Bundle-Name: Sonar Integration for Eclipse Tests Common
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.sonar.ide.eclipse.tests.common;singleton:=tru

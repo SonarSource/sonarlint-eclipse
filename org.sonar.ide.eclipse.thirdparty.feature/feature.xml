@@ -2,7 +2,7 @@
 <feature
       id="org.sonar.ide.eclipse.thirdparty.feature"
       label="SonarQube Integration for Eclipse Third-Party feature"
-      version="3.4.0.20140404-0949-RELEASE"
+      version="3.5.0.qualifier"
       provider-name="SonarSource">
 
    <plugin
