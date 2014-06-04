@@ -4,13 +4,13 @@
 <target name="sonar-eclipse-e42-dev" sequenceNumber="35">
 <locations>
 <location path="${M2_REPO}/com/googlecode/json-simple/json-simple/1.1.1" type="Directory"/>
-<location path="${M2_REPO}/org/apache/httpcomponents/httpclient-osgi/4.2.2" type="Directory"/>
-<location path="${M2_REPO}/org/apache/httpcomponents/httpcore-osgi/4.2.2" type="Directory"/>
+<location path="${M2_REPO}/org/apache/httpcomponents/httpclient-osgi/4.3.2" type="Directory"/>
+<location path="${M2_REPO}/org/apache/httpcomponents/httpcore-osgi/4.3.2" type="Directory"/>
 <location path="${M2_REPO}/org/codehaus/sonar/sonar-ws-client/4.2" type="Directory"/>
 <location path="${M2_REPO}/commons-io/commons-io/2.4" type="Directory"/>
 <location path="${M2_REPO}/commons-lang/commons-lang/2.6" type="Directory"/>
 <location path="${M2_REPO}/commons-codec/commons-codec/1.7" type="Directory"/>
-<location path="${M2_REPO}/com/google/guava/guava/13.0.1" type="Directory"/>
+<location path="${M2_REPO}/com/google/guava/guava/15.0" type="Directory"/>
 <location path="${M2_REPO}/org/slf4j/slf4j-api/1.7.2" type="Directory"/>
 <location path="${M2_REPO}/org/slf4j/jcl-over-slf4j/1.7.2" type="Directory"/>
 <location path="${M2_REPO}/org/mockito/mockito-all/1.9.5" type="Directory"/>

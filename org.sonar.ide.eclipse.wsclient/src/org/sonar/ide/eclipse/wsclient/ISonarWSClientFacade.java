@@ -23,6 +23,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
 
+import javax.annotation.CheckForNull;
+
 import java.util.Date;
 import java.util.List;
 
@@ -42,6 +44,7 @@ public interface ISonarWSClientFacade {
 
   boolean exists(String resourceKey);
 
+  @CheckForNull
   Date getLastAnalysisDate(String resourceKey);
 
   String[] getRemoteCode(String resourceKey);

@@ -47,6 +47,7 @@ import org.sonar.wsclient.services.Source;
 import org.sonar.wsclient.services.SourceQuery;
 import org.sonar.wsclient.user.User;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -151,6 +152,7 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     return null;
   }
 
+  @CheckForNull
   @Override
   public String[] getRemoteCode(String resourceKey) {
     Source source = find(SourceQuery.create(resourceKey));

@@ -7,13 +7,13 @@
 <location path="${M2_REPO}/org/mockito/mockito-all/1.9.5" type="Directory"/>
 <location path="${M2_REPO}/org/assertj/assertj-core/1.5.0" type="Directory"/>
 <location path="${M2_REPO}/org/codehaus/sonar/sonar-ws-client/4.2" type="Directory"/>
-<location path="${M2_REPO}/org/apache/httpcomponents/httpclient-osgi/4.2.2" type="Directory"/>
+<location path="${M2_REPO}/org/apache/httpcomponents/httpclient-osgi/4.3.2" type="Directory"/>
 <location path="${M2_REPO}/commons-lang/commons-lang/2.6" type="Directory"/>
 <location path="${M2_REPO}/commons-io/commons-io/2.4" type="Directory"/>
-<location path="${M2_REPO}/com/google/guava/guava/13.0.1" type="Directory"/>
+<location path="${M2_REPO}/com/google/guava/guava/15.0" type="Directory"/>
 <location path="${M2_REPO}/com/google/code/findbugs/annotations/2.0.1" type="Directory"/>
 <location path="${M2_REPO}/com/googlecode/json-simple/json-simple/1.1.1" type="Directory"/>
-<location path="${M2_REPO}/org/apache/httpcomponents/httpcore-osgi/4.2.2" type="Directory"/>
+<location path="${M2_REPO}/org/apache/httpcomponents/httpcore-osgi/4.3.2" type="Directory"/>
 <location path="${M2_REPO}/org/slf4j/slf4j-api/1.7.2" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.platform.ide" version="0.0.0"/>

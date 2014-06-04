@@ -47,7 +47,7 @@ public class WSClientPlugin extends Plugin {
 
     BundleContext context = plugin.getBundle().getBundleContext();
 
-    ServiceReference proxyServiceReference = context.getServiceReference(IProxyService.class.getName());
+    ServiceReference<?> proxyServiceReference = context.getServiceReference(IProxyService.class.getName());
     if (proxyServiceReference == null) {
       return new IProxyData[0];
     }

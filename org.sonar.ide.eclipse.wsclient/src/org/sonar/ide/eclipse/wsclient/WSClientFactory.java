@@ -77,7 +77,7 @@ public final class WSClientFactory {
       .login(host.getUsername())
       .password(host.getPassword());
     IProxyData proxyData = getEclipseProxyFor(host);
-    if (proxyData != null) {
+    if (proxyData != null && !IProxyData.SOCKS_PROXY_TYPE.equals(proxyData.getType())) {
       builder.proxy(proxyData.getHost(), proxyData.getPort());
       if (proxyData.isRequiresAuthentication()) {
         builder.proxyLogin(proxyData.getUserId()).proxyPassword(proxyData.getPassword());
@@ -92,7 +92,7 @@ public final class WSClientFactory {
   private static void configureProxy(DefaultHttpClient httpClient, Host server) {
     try {
       IProxyData proxyData = getEclipseProxyFor(server);
-      if (proxyData != null) {
+      if (proxyData != null && !IProxyData.SOCKS_PROXY_TYPE.equals(proxyData.getType())) {
         LOG.debug("Proxy for [{}] - [{}]", server.getHost(), proxyData);
         HttpHost proxy = new HttpHost(proxyData.getHost(), proxyData.getPort());
         httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
