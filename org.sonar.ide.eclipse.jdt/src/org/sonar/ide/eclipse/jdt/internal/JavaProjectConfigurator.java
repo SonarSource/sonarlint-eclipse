@@ -37,6 +37,7 @@ import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.Set;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
@@ -156,7 +157,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     } else {
       if (topProject) {
         LOG.debug("Source directory: {}", srcDir);
-        context.sourceDirs().add(srcDir);
+       // context.sourceDirs().add(srcDir);
       }
       if (entry.getOutputLocation() != null) {
         processOutputDir(entry.getOutputLocation(), context, topProject);
@@ -209,9 +210,19 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   }
 
   private void configurationToProperties(Properties sonarProjectProperties, JavaProjectConfiguration context) {
-    setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, context.libraries());
-    setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, context.testDirs());
-    setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, context.sourceDirs());
-    setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, context.binaries());
+    setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, context.libraries());
+    setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, context.testDirs());   
+    setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, context.sourceDirs()); 
+    setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, context.binaries());
   }
+
+  private void setOrAppendProperties(Properties sonarProjectProperties, String key, Set<String> eclipseBuildPathPropertyValue) {
+	if (!sonarProjectProperties.containsKey(key)) {
+    	setPropertyList(sonarProjectProperties, key, eclipseBuildPathPropertyValue);
+    } else {
+    	for (String property: eclipseBuildPathPropertyValue) {
+    		appendProperty(sonarProjectProperties, key, property);
+    	}
+    }
+}
 }
