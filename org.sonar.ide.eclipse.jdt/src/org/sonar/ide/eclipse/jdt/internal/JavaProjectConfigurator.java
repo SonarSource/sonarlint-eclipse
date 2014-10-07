@@ -217,12 +217,13 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   }
 
   private void setOrAppendProperties(Properties sonarProjectProperties, String key, Set<String> eclipseBuildPathPropertyValue) {
-	if (!sonarProjectProperties.containsKey(key)) {
-    	setPropertyList(sonarProjectProperties, key, eclipseBuildPathPropertyValue);
+    if (!sonarProjectProperties.containsKey(key)) {
+      setPropertyList(sonarProjectProperties, key, eclipseBuildPathPropertyValue);
     } else {
-    	for (String property: eclipseBuildPathPropertyValue) {
-    		appendProperty(sonarProjectProperties, key, property);
-    	}
+      for (String property: eclipseBuildPathPropertyValue) {
+        appendProperty(sonarProjectProperties, key, property);
+      }
     }
-}
+  }
+  
 }
