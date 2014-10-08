@@ -23,6 +23,18 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class SonarProperty {
+	
+  private static final String TRUE = String.valueOf(Boolean.TRUE);	
+  public static final String PROP_BUILD_PATH_LIBS_CHECKBOX = "buildPathLibsCheckbox"; //$NON-NLS-1$ 7
+  public static final String PROP_BUILD_PATH_LIBS_CHECKBOX_DEFAULT_VALUE = TRUE; //$NON-NLS-1$
+  public static final String PROP_BUILD_PATH_TESTS_CHECKBOX = "buildPathTestCheckbox"; //$NON-NLS-1$
+  public static final String PROP_BUILD_PATH_TESTS_CHECKBOX_DEFAULT_VALUE = TRUE; //$NON-NLS-1$
+  public static final String PROP_BUILD_PATH_SOURCES_CHECKBOX = "buildPathSourcesCheckbox"; //$NON-NLS-1$
+  public static final String PROP_BUILD_PATH_SOURCES_CHECKBOX_DEFAULT_VALUE = TRUE; //$NON-NLS-1$
+  public static final String PROP_BUILD_PATH_BINARIES_CHECKBOX_DEFAULT_VALUE = "buildPathBinsCheckbox"; //$NON-NLS-1$
+  public static final String PROP_BUILD_PATH_BINARIES_CHECKBOX = TRUE; //$NON-NLS-1$	
+  
+	
   private String name;
   private String value;
 

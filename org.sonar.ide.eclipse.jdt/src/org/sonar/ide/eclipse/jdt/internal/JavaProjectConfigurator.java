@@ -19,11 +19,16 @@
  */
 package org.sonar.ide.eclipse.jdt.internal;
 
+import java.io.File;
+import java.util.Properties;
+import java.util.Set;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
@@ -34,10 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
-
-import java.io.File;
-import java.util.Properties;
-import java.util.Set;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
@@ -55,11 +57,11 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     IProject project = request.getProject();
     IJavaProject javaProject = JavaCore.create(project);
     boolean isGreaterThan4_2 = request.isServerVersionGreaterOrEquals("4.2");
-    configureJavaProject(javaProject, request.getSonarProjectProperties(), isGreaterThan4_2);
+    configureJavaProject(javaProject, request.getSonarProjectProperties(), request.getProjectNode(), isGreaterThan4_2);
   }
 
   // Visible for testing
-  public void configureJavaProject(IJavaProject javaProject, Properties sonarProjectProperties, boolean isGreaterThan4_2) {
+  public void configureJavaProject(IJavaProject javaProject, Properties sonarProjectProperties, IEclipsePreferences projectNode, boolean isGreaterThan4_2) {
     String javaSource = javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
     String javaTarget = javaProject.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true);
 
@@ -75,7 +77,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       JavaProjectConfiguration configuration = new JavaProjectConfiguration();
       configuration.dependentProjects().add(javaProject);
       addClassPathToSonarProject(javaProject, configuration, true);
-      configurationToProperties(sonarProjectProperties, configuration);
+      configurationToProperties(sonarProjectProperties, projectNode, configuration);
     } catch (JavaModelException e) {
       LOG.error(e.getMessage(), e);
     }
@@ -157,7 +159,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     } else {
       if (topProject) {
         LOG.debug("Source directory: {}", srcDir);
-       // context.sourceDirs().add(srcDir);
+        context.sourceDirs().add(srcDir);
       }
       if (entry.getOutputLocation() != null) {
         processOutputDir(entry.getOutputLocation(), context, topProject);
@@ -209,11 +211,25 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     return path.makeRelativeTo(javaProject.getPath()).toOSString();
   }
 
-  private void configurationToProperties(Properties sonarProjectProperties, JavaProjectConfiguration context) {
-    setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, context.libraries());
-    setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, context.testDirs());   
-    setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, context.sourceDirs()); 
-    setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, context.binaries());
+  /** If the "ignore X checkbox" is true, don't append the X directories from the context
+   * 
+   * @param sonarProjectProperties
+   * @param projectNode
+   * @param context
+   */
+  private void configurationToProperties(Properties sonarProjectProperties, IEclipsePreferences projectNode, JavaProjectConfiguration context) {
+    if (Boolean.valueOf(projectNode.get(SonarProperty.PROP_BUILD_PATH_LIBS_CHECKBOX, ""))) { 
+	  setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, context.libraries());
+    }
+    if (Boolean.valueOf(projectNode.get(SonarProperty.PROP_BUILD_PATH_TESTS_CHECKBOX, ""))) { 
+      setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, context.testDirs());   
+    }
+    if (Boolean.valueOf(projectNode.get(SonarProperty.PROP_BUILD_PATH_SOURCES_CHECKBOX, ""))) { 
+      setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, context.sourceDirs()); 
+    }
+    if (Boolean.valueOf(projectNode.get(SonarProperty.PROP_BUILD_PATH_BINARIES_CHECKBOX, ""))) { 
+      setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, context.binaries());
+    }
   }
 
   private void setOrAppendProperties(Properties sonarProjectProperties, String key, Set<String> eclipseBuildPathPropertyValue) {

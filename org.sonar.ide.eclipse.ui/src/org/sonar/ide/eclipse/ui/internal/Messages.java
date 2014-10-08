@@ -71,6 +71,10 @@ public final class Messages extends NLS {
   public static String SonarProjectPropertyBlock_label_override_workspace_settings;
   public static String SonarPreferencePage_label_jvm_args;
   public static String SonarPreferencePage_label_force_full_preview;
+  public static String SonarPreferencePage_label_include_build_path_libs;
+  public static String SonarPreferencePage_label_include_build_path_tests;
+  public static String SonarPreferencePage_label_include_build_path_sources;
+  public static String SonarPreferencePage_label_include_build_path_binaries;
 
   public static String SonarConsoleRemoveAction_tooltip;
 
