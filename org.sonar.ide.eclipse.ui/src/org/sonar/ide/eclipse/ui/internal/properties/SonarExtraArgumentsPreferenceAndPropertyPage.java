@@ -135,7 +135,8 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
   }
 
   private java.util.List<SonarProperty> sonarProperties;
-  private Map<String, Boolean> checkBoxValues;
+  private Map<String, Boolean> loadedCheckBoxValues;
+  private Map<String, Button> checkboxes;
 
   /**
    * The Remove button.
@@ -158,6 +159,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
   private Button downButton;
 
   private TableViewer fTableViewer;
+  
 
   public SonarExtraArgumentsPreferenceAndPropertyPage() {
     setTitle(Messages.SonarPreferencePage_label_extra_args);
@@ -238,7 +240,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     fTableViewer.setInput(sonarProperties);
     
     if (!isGlobal()) {
-    	createCheckboxes(innerParent);
+      createCheckboxes(innerParent);
     }
 
     updateButtons();
@@ -279,13 +281,11 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
    * @param mapKey
    */
   private void addCheckboxListener(Button button, final String mapKey) {
-	  button.setSelection(checkBoxValues.get(mapKey));
-	button.addSelectionListener(new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent e){
-        checkBoxValues.put(mapKey, ((Button) e.widget).getSelection());
-      }
-    });
+    button.setSelection(loadedCheckBoxValues.get(mapKey));
+	if (checkboxes == null) {
+		checkboxes = new HashMap<String, Button>();
+	}
+	checkboxes.put(mapKey, button);
   }
 
   private void createButtons(Composite innerParent) {
@@ -502,8 +502,8 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
       }
     } else {
       sonarProperties.addAll(getSonarProject().getExtraProperties());
-      checkBoxValues = new HashMap<String, Boolean>();
-      checkBoxValues.putAll(getSonarProject().getBuildPathCheckboxes());
+      loadedCheckBoxValues = new HashMap<String, Boolean>();
+      loadedCheckBoxValues.putAll(getSonarProject().getBuildPathCheckboxes());
     }
   }
 
@@ -519,23 +519,29 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     } else {
       SonarProject sonarProject = getSonarProject();
       sonarProject.setExtraProperties(sonarProperties);
-      sonarProject.setBuildPathCheckboxes(checkBoxValues);
+      sonarProject.setBuildPathCheckboxes(getCheckBoxValues());
       sonarProject.save();
     }
     return true;
   }
-
+  
+  private Map<String, Boolean> getCheckBoxValues() {
+	  Map<String, Boolean> values = new HashMap<String, Boolean>();
+	  for (Map.Entry<String, Button> entry: checkboxes.entrySet()) {
+		  values.put(entry.getKey(), entry.getValue().getSelection());
+	  }
+	  return values;
+  }
+	  
   @Override
   protected void performDefaults() {
     sonarProperties.clear();
-  /*
-   * TODO - this is wrong, need to change the checkboxes themselves so that display updates and cancel will undo the restore of defaults
-   * 
-   *   checkBoxValues.put(SonarProperty.PROP_BUILD_PATH_LIBS_CHECKBOX, Boolean.valueOf(SonarProperty.PROP_BUILD_PATH_LIBS_CHECKBOX_DEFAULT_VALUE));
-    checkBoxValues.put(SonarProperty.PROP_BUILD_PATH_TESTS_CHECKBOX, Boolean.valueOf(SonarProperty.PROP_BUILD_PATH_TESTS_CHECKBOX_DEFAULT_VALUE));
-    checkBoxValues.put(SonarProperty.PROP_BUILD_PATH_SOURCES_CHECKBOX, Boolean.valueOf(SonarProperty.PROP_BUILD_PATH_SOURCES_CHECKBOX_DEFAULT_VALUE));
-    checkBoxValues.put(SonarProperty.PROP_BUILD_PATH_BINARIES_CHECKBOX, Boolean.valueOf(SonarProperty.PROP_BUILD_PATH_BINARIES_CHECKBOX));
-    */
+    if (!isGlobal()) {
+      checkboxes.get(SonarProperty.PROP_BUILD_PATH_LIBS_CHECKBOX).setSelection(Boolean.valueOf(SonarProperty.PROP_BUILD_PATH_LIBS_CHECKBOX_DEFAULT_VALUE));
+      checkboxes.get(SonarProperty.PROP_BUILD_PATH_TESTS_CHECKBOX).setSelection(Boolean.valueOf(SonarProperty.PROP_BUILD_PATH_TESTS_CHECKBOX_DEFAULT_VALUE));
+      checkboxes.get(SonarProperty.PROP_BUILD_PATH_SOURCES_CHECKBOX).setSelection(Boolean.valueOf(SonarProperty.PROP_BUILD_PATH_SOURCES_CHECKBOX_DEFAULT_VALUE));
+      checkboxes.get(SonarProperty.PROP_BUILD_PATH_BINARIES_CHECKBOX).setSelection(Boolean.valueOf(SonarProperty.PROP_BUILD_PATH_BINARIES_CHECKBOX));
+    }
     fTableViewer.refresh();
   }
 
