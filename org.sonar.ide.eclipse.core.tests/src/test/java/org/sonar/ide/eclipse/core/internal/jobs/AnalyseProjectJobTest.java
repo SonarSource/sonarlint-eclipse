@@ -106,7 +106,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     assertThat(libs).doesNotHaveDuplicates();
     boolean foundRT = false;
     for (String lib : libs) {
-      if (lib.endsWith("rt.jar")) {
+      if (lib.endsWith("rt.jar") || lib.endsWith("classes.jar") /* For Mac JDK 1.6 */) {
         foundRT = true;
         break;
       }
