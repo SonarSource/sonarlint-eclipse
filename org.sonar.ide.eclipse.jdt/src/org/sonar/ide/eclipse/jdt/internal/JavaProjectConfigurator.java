@@ -210,7 +210,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     return path.makeRelativeTo(javaProject.getPath()).toOSString();
   }
 
-  /** If the "ignore X checkbox" is true, don't append the X directories from the context
+  /** If the "include X checkbox" is true, append the X directories from the context
    * 
    * @param sonarProjectProperties
    * @param projectNode
