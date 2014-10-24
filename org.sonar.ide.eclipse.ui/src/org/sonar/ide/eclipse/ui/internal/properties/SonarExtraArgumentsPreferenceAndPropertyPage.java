@@ -64,6 +64,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.ui.internal.Messages;
@@ -260,19 +261,19 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
 	
 	Button librariesCheckbox = new Button(checkboxes, SWT.CHECK);
 	librariesCheckbox.setText(Messages.SonarPreferencePage_label_include_build_path_libs);
-	addCheckboxListener(librariesCheckbox, SonarProperty.PROP_BUILD_PATH_LIBS_CHECKBOX);
+	addCheckboxListener(librariesCheckbox, SonarConfiguratorProperties.PROP_BUILD_PATH_LIBS_CHECKBOX);
 
 	Button testsCheckbox = new Button(checkboxes, SWT.CHECK);
 	testsCheckbox.setText(Messages.SonarPreferencePage_label_include_build_path_tests);
-	addCheckboxListener(testsCheckbox, SonarProperty.PROP_BUILD_PATH_TESTS_CHECKBOX);
+	addCheckboxListener(testsCheckbox, SonarConfiguratorProperties.PROP_BUILD_PATH_TESTS_CHECKBOX);
 
 	Button sourcesCheckbox = new Button(checkboxes, SWT.CHECK);
 	sourcesCheckbox.setText(Messages.SonarPreferencePage_label_include_build_path_sources);
-	addCheckboxListener(sourcesCheckbox, SonarProperty.PROP_BUILD_PATH_SOURCES_CHECKBOX);
+	addCheckboxListener(sourcesCheckbox, SonarConfiguratorProperties.PROP_BUILD_PATH_SOURCES_CHECKBOX);
 
 	Button binariesCheckbox = new Button(checkboxes, SWT.CHECK);
 	binariesCheckbox.setText(Messages.SonarPreferencePage_label_include_build_path_binaries);
-	addCheckboxListener(binariesCheckbox, SonarProperty.PROP_BUILD_PATH_BINARIES_CHECKBOX);
+	addCheckboxListener(binariesCheckbox, SonarConfiguratorProperties.PROP_BUILD_PATH_BINARIES_CHECKBOX);
   }
 
   /** Sets current value and adds listener for changes 
@@ -537,10 +538,10 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
   protected void performDefaults() {
     sonarProperties.clear();
     if (!isGlobal()) {
-      checkboxes.get(SonarProperty.PROP_BUILD_PATH_LIBS_CHECKBOX).setSelection(Boolean.valueOf(SonarProperty.PROP_BUILD_PATH_LIBS_CHECKBOX_DEFAULT_VALUE));
-      checkboxes.get(SonarProperty.PROP_BUILD_PATH_TESTS_CHECKBOX).setSelection(Boolean.valueOf(SonarProperty.PROP_BUILD_PATH_TESTS_CHECKBOX_DEFAULT_VALUE));
-      checkboxes.get(SonarProperty.PROP_BUILD_PATH_SOURCES_CHECKBOX).setSelection(Boolean.valueOf(SonarProperty.PROP_BUILD_PATH_SOURCES_CHECKBOX_DEFAULT_VALUE));
-      checkboxes.get(SonarProperty.PROP_BUILD_PATH_BINARIES_CHECKBOX).setSelection(Boolean.valueOf(SonarProperty.PROP_BUILD_PATH_BINARIES_CHECKBOX));
+      checkboxes.get(SonarConfiguratorProperties.PROP_BUILD_PATH_LIBS_CHECKBOX).setSelection(Boolean.valueOf(SonarConfiguratorProperties.PROP_BUILD_PATH_LIBS_CHECKBOX_DEFAULT_VALUE));
+      checkboxes.get(SonarConfiguratorProperties.PROP_BUILD_PATH_TESTS_CHECKBOX).setSelection(Boolean.valueOf(SonarConfiguratorProperties.PROP_BUILD_PATH_TESTS_CHECKBOX_DEFAULT_VALUE));
+      checkboxes.get(SonarConfiguratorProperties.PROP_BUILD_PATH_SOURCES_CHECKBOX).setSelection(Boolean.valueOf(SonarConfiguratorProperties.PROP_BUILD_PATH_SOURCES_CHECKBOX_DEFAULT_VALUE));
+      checkboxes.get(SonarConfiguratorProperties.PROP_BUILD_PATH_BINARIES_CHECKBOX).setSelection(Boolean.valueOf(SonarConfiguratorProperties.PROP_BUILD_PATH_BINARIES_CHECKBOX));
     }
     fTableViewer.refresh();
   }

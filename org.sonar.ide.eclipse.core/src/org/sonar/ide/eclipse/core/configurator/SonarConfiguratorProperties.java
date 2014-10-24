@@ -33,4 +33,15 @@ public interface SonarConfiguratorProperties {
   String BINARIES_PROPERTY = "sonar.binaries";
   String LIBRARIES_PROPERTY = "sonar.libraries";
 
+  String TRUE = String.valueOf(Boolean.TRUE);
+
+  String PROP_BUILD_PATH_LIBS_CHECKBOX = "buildPathLibsCheckbox";
+  String PROP_BUILD_PATH_LIBS_CHECKBOX_DEFAULT_VALUE = TRUE;
+  String PROP_BUILD_PATH_TESTS_CHECKBOX = "buildPathTestCheckbox";
+  String PROP_BUILD_PATH_TESTS_CHECKBOX_DEFAULT_VALUE = TRUE;
+  String PROP_BUILD_PATH_SOURCES_CHECKBOX = "buildPathSourcesCheckbox";
+  String PROP_BUILD_PATH_SOURCES_CHECKBOX_DEFAULT_VALUE = TRUE;
+  String PROP_BUILD_PATH_BINARIES_CHECKBOX_DEFAULT_VALUE = "buildPathBinsCheckbox";
+  String PROP_BUILD_PATH_BINARIES_CHECKBOX = TRUE;
+
 }

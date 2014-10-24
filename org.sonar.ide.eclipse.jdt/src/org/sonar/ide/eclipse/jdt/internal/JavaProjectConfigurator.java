@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
@@ -218,16 +217,16 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
    * @param context
    */
   private void configurationToProperties(Properties sonarProjectProperties, IEclipsePreferences projectNode, JavaProjectConfiguration context) {
-    if (Boolean.valueOf(projectNode.get(SonarProperty.PROP_BUILD_PATH_LIBS_CHECKBOX, ""))) { 
+    if (Boolean.valueOf(projectNode.get(SonarConfiguratorProperties.PROP_BUILD_PATH_LIBS_CHECKBOX, ""))) { 
 	  setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, context.libraries());
     }
-    if (Boolean.valueOf(projectNode.get(SonarProperty.PROP_BUILD_PATH_TESTS_CHECKBOX, ""))) { 
+    if (Boolean.valueOf(projectNode.get(SonarConfiguratorProperties.PROP_BUILD_PATH_TESTS_CHECKBOX, ""))) { 
       setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, context.testDirs());   
     }
-    if (Boolean.valueOf(projectNode.get(SonarProperty.PROP_BUILD_PATH_SOURCES_CHECKBOX, ""))) { 
+    if (Boolean.valueOf(projectNode.get(SonarConfiguratorProperties.PROP_BUILD_PATH_SOURCES_CHECKBOX, ""))) { 
       setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, context.sourceDirs()); 
     }
-    if (Boolean.valueOf(projectNode.get(SonarProperty.PROP_BUILD_PATH_BINARIES_CHECKBOX, ""))) { 
+    if (Boolean.valueOf(projectNode.get(SonarConfiguratorProperties.PROP_BUILD_PATH_BINARIES_CHECKBOX, ""))) { 
       setOrAppendProperties(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, context.binaries());
     }
   }
