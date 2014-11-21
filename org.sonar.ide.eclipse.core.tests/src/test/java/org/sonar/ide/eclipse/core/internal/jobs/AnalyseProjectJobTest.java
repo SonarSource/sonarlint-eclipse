@@ -112,7 +112,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
       }
     }
     if (!foundRT) {
-      fail("rt.jar not found in sonar.libraries");
+      fail("rt.jar/classes.jar not found in sonar.libraries: " + props.get(SonarConfiguratorProperties.LIBRARIES_PROPERTY).toString());
     }
   }
 
