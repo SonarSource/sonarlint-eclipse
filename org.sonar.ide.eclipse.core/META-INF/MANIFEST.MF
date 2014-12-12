@@ -31,7 +31,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.sonar.ide.eclipse.wsclient;visibility:=reexport,
  com.google.guava;bundle-version="10.0.1",
  com.googlecode.json-simple;bundle-version="1.1.1",
- slf4j.api;bundle-version="1.6.6";visibility:=reexport,
+ org.slf4j.api;bundle-version="1.6.2";visibility:=reexport,
  org.sonar.ide.eclipse.slf4j.pde;visibility:=reexport,
  org.codehaus.sonar.runner.sonar-runner-api;bundle-version="2.3.0",
  org.sonar.ide.eclipse.common

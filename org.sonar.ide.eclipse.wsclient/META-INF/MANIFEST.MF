@@ -4,7 +4,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.codehaus.sonar.ws-client;bundle-version="4.2.0",
  org.apache.httpcomponents.httpclient;bundle-version="4.2.2",
  org.apache.httpcomponents.httpcore;bundle-version="4.2.2",
- slf4j.api;bundle-version="1.6.6",
+ org.slf4j.api;bundle-version="1.6.2",
  org.apache.commons.lang;bundle-version="2.6.0",
  org.sonar.ide.eclipse.slf4j.pde,
  org.sonar.ide.eclipse.common
