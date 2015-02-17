@@ -279,10 +279,6 @@ public class AnalyseProjectJob extends Job {
     IPath projectSpecificWorkDir = project.getWorkingLocation(SonarCorePlugin.PLUGIN_ID);
     File outputFile = new File(projectSpecificWorkDir.toFile(), "sonar-report.json");
 
-    // First start by appending workspace and project properties
-    for (SonarProperty sonarProperty : extraProps) {
-      properties.put(sonarProperty.getName(), sonarProperty.getValue());
-    }
 
     // Configuration by configurators (common and language specific)
     ConfiguratorUtils.configure(project, properties, getServerVersion(), monitor);
@@ -308,6 +304,11 @@ public class AnalyseProjectJob extends Job {
     properties.setProperty(SonarProperties.REPORT_OUTPUT_PROPERTY, outputFile.getName());
     if (debugEnabled) {
       properties.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
+    }
+
+    // Let user override properties by adding extra properties at the end
+    for (SonarProperty sonarProperty : extraProps) {
+      properties.put(sonarProperty.getName(), sonarProperty.getValue());
     }
     return outputFile;
   }
