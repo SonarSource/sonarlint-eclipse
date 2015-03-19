@@ -32,5 +32,6 @@ public interface SonarConfiguratorProperties {
   String TEST_DIRS_PROPERTY = "sonar.tests";
   String BINARIES_PROPERTY = "sonar.binaries";
   String LIBRARIES_PROPERTY = "sonar.libraries";
+  String TEST_DIRS_REGEXP_PROPERTY = "sonar.tests.regexp";
 
 }
