@@ -111,7 +111,9 @@ public class SonarProjectManager {
         String[] props = StringUtils.split(extraArgsAsString, "\r\n");
         for (String keyValuePair : props) {
           String[] keyValue = StringUtils.split(keyValuePair, "=");
-          sonarProperties.add(new SonarProperty(keyValue[0], keyValue[1]));
+          if (keyValue.length == 2) {
+            sonarProperties.add(new SonarProperty(keyValue[0], keyValue[1]));
+          }
         }
       } catch (Exception e) {
         LOG.error("Error while loading SonarQube properties", e);
