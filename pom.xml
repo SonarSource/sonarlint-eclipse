@@ -120,8 +120,8 @@
     <license.title>SonarQube Eclipse</license.title>
     <license.year>2010-2014</license.year>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>0.20.0</tycho.version>
-    <target.platform>e42</target.platform>
+    <tycho.version>0.22.0</tycho.version>
+    <target.platform>e43</target.platform>
 
     <!-- disable accidental deployment -->
     <sonar-ide.site>dav:http://localhost</sonar-ide.site>
