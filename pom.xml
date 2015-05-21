@@ -121,7 +121,6 @@
     <license.year>2010-2014</license.year>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho.version>0.22.0</tycho.version>
-    <tycho.disableP2Mirrors>true</tycho.disableP2Mirrors>
     <target.platform>e43</target.platform>
 
     <!-- disable accidental deployment -->
