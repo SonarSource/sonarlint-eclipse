@@ -6,7 +6,7 @@ jdk:
   - oraclejdk7
 
 script:
-  - mvn verify -B -e -V
+  - mvn verify -B -e -V -Dtycho.disableP2Mirrors=true
 
 cache:
   directories:
