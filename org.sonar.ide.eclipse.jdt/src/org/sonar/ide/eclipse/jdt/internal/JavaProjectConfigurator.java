@@ -41,9 +41,11 @@ import java.util.Properties;
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
   private static final Logger LOG = LoggerFactory.getLogger(JavaProjectConfigurator.class);
-  // TODO Allow to configure this pattern in Sonar Eclipse preferences
-  private static final String TEST_PATTERN = ".*test.*";
 
+  private static final String DEFAULT_TEST_PATTERN = ".*test.*";
+  
+  private String test_pattern;
+  
   @Override
   public boolean canConfigure(IProject project) {
     return SonarJdtPlugin.hasJavaNature(project);
@@ -69,6 +71,8 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     LOG.info("Source Java version: {}", javaSource);
     sonarProjectProperties.setProperty("sonar.java.target", javaTarget);
     LOG.info("Target Java version: {}", javaTarget);
+    
+    test_pattern = sonarProjectProperties.getProperty(SonarConfiguratorProperties.TEST_DIRS_REGEXP_PROPERTY, DEFAULT_TEST_PATTERN); 
 
     try {
       JavaProjectConfiguration configuration = new JavaProjectConfiguration();
@@ -148,7 +152,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       return;
     }
     String relativeDir = getRelativePath(javaProject, entry.getPath());
-    if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
+    if (relativeDir.toLowerCase().matches(test_pattern)) {
       if (topProject) {
         LOG.debug("Test directory: {}", srcDir);
         context.testDirs().add(srcDir);
