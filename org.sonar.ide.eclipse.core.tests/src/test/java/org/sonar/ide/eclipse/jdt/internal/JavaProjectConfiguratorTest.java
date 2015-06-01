@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -59,6 +60,7 @@ public class JavaProjectConfiguratorTest {
   @Test
   public void shouldConfigureJavaSourceAndTarget() throws JavaModelException, IOException {
     IJavaProject project = mock(IJavaProject.class);
+    IEclipsePreferences projectNode = mock(IEclipsePreferences.class);
     Properties sonarProperties = new Properties();
 
     when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
@@ -66,7 +68,7 @@ public class JavaProjectConfiguratorTest {
     when(project.getResolvedClasspath(true)).thenReturn(new IClasspathEntry[] {});
     when(project.getOutputLocation()).thenReturn(new Path(temp.newFolder("output").getAbsolutePath()));
 
-    configurator.configureJavaProject(project, sonarProperties, true);
+    configurator.configureJavaProject(project, sonarProperties, projectNode, true);
 
     assertTrue(sonarProperties.containsKey("sonar.java.source"));
     assertThat(sonarProperties.getProperty("sonar.java.source"), is("1.6"));
@@ -88,6 +90,7 @@ public class JavaProjectConfiguratorTest {
     outputFolder.mkdir();
 
     IJavaProject project = mock(IJavaProject.class);
+    IEclipsePreferences projectNode = mock(IEclipsePreferences.class);
     Properties sonarProperties = new Properties();
 
     when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
@@ -102,7 +105,7 @@ public class JavaProjectConfiguratorTest {
     when(project.getResolvedClasspath(true)).thenReturn(cpes);
     when(project.getOutputLocation()).thenReturn(new Path(outputFolder.getAbsolutePath()));
 
-    configurator.configureJavaProject(project, sonarProperties, true);
+    configurator.configureJavaProject(project, sonarProperties, projectNode, true);
 
     // TODO Find a way to mock a project inside Eclipse
 

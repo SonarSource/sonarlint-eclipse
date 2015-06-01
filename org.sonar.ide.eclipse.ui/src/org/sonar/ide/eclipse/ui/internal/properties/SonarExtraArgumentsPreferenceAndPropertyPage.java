@@ -19,6 +19,12 @@
  */
 package org.sonar.ide.eclipse.ui.internal.properties;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.Dialog;
@@ -58,14 +64,11 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * An abstract field editor that manages a list of input values.
@@ -133,6 +136,8 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
   }
 
   private java.util.List<SonarProperty> sonarProperties;
+  private Map<String, Boolean> loadedCheckBoxValues;
+  private Map<String, Button> checkboxes;
 
   /**
    * The Remove button.
@@ -155,6 +160,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
   private Button downButton;
 
   private TableViewer fTableViewer;
+  
 
   public SonarExtraArgumentsPreferenceAndPropertyPage() {
     setTitle(Messages.SonarPreferencePage_label_extra_args);
@@ -233,12 +239,54 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     createButtons(innerParent);
 
     fTableViewer.setInput(sonarProperties);
+    
+    if (!isGlobal()) {
+      createCheckboxes(innerParent);
+    }
 
     updateButtons();
     Dialog.applyDialogFont(parent);
     innerParent.layout();
 
     return parent;
+  }
+  
+  private void createCheckboxes(Composite innerParent) {
+	final Composite checkboxes = new Composite(innerParent, SWT.NONE);
+	checkboxes.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+	GridLayout layout = new GridLayout();
+    layout.marginHeight = 0;
+    layout.marginWidth = 0;
+	checkboxes.setLayout(layout);
+	
+	Button librariesCheckbox = new Button(checkboxes, SWT.CHECK);
+	librariesCheckbox.setText(Messages.SonarPreferencePage_label_include_build_path_libs);
+	addCheckboxListener(librariesCheckbox, SonarConfiguratorProperties.PROP_BUILD_PATH_LIBS_CHECKBOX);
+
+	Button testsCheckbox = new Button(checkboxes, SWT.CHECK);
+	testsCheckbox.setText(Messages.SonarPreferencePage_label_include_build_path_tests);
+	addCheckboxListener(testsCheckbox, SonarConfiguratorProperties.PROP_BUILD_PATH_TESTS_CHECKBOX);
+
+	Button sourcesCheckbox = new Button(checkboxes, SWT.CHECK);
+	sourcesCheckbox.setText(Messages.SonarPreferencePage_label_include_build_path_sources);
+	addCheckboxListener(sourcesCheckbox, SonarConfiguratorProperties.PROP_BUILD_PATH_SOURCES_CHECKBOX);
+
+	Button binariesCheckbox = new Button(checkboxes, SWT.CHECK);
+	binariesCheckbox.setText(Messages.SonarPreferencePage_label_include_build_path_binaries);
+	addCheckboxListener(binariesCheckbox, SonarConfiguratorProperties.PROP_BUILD_PATH_BINARIES_CHECKBOX);
+  }
+
+  /** Sets current value and adds listener for changes 
+   * 
+   * @param button
+   * @param mapKey
+   */
+  private void addCheckboxListener(Button button, final String mapKey) {
+    button.setSelection(loadedCheckBoxValues.get(mapKey));
+	if (checkboxes == null) {
+		checkboxes = new HashMap<String, Button>();
+	}
+	checkboxes.put(mapKey, button);
   }
 
   private void createButtons(Composite innerParent) {
@@ -455,6 +503,8 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
       }
     } else {
       sonarProperties.addAll(getSonarProject().getExtraProperties());
+      loadedCheckBoxValues = new HashMap<String, Boolean>();
+      loadedCheckBoxValues.putAll(getSonarProject().getBuildPathCheckboxes());
     }
   }
 
@@ -470,14 +520,29 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     } else {
       SonarProject sonarProject = getSonarProject();
       sonarProject.setExtraProperties(sonarProperties);
+      sonarProject.setBuildPathCheckboxes(getCheckBoxValues());
       sonarProject.save();
     }
     return true;
   }
-
+  
+  private Map<String, Boolean> getCheckBoxValues() {
+	  Map<String, Boolean> values = new HashMap<String, Boolean>();
+	  for (Map.Entry<String, Button> entry: checkboxes.entrySet()) {
+		  values.put(entry.getKey(), entry.getValue().getSelection());
+	  }
+	  return values;
+  }
+	  
   @Override
   protected void performDefaults() {
     sonarProperties.clear();
+    if (!isGlobal()) {
+      checkboxes.get(SonarConfiguratorProperties.PROP_BUILD_PATH_LIBS_CHECKBOX).setSelection(Boolean.valueOf(SonarConfiguratorProperties.PROP_BUILD_PATH_LIBS_CHECKBOX_DEFAULT_VALUE));
+      checkboxes.get(SonarConfiguratorProperties.PROP_BUILD_PATH_TESTS_CHECKBOX).setSelection(Boolean.valueOf(SonarConfiguratorProperties.PROP_BUILD_PATH_TESTS_CHECKBOX_DEFAULT_VALUE));
+      checkboxes.get(SonarConfiguratorProperties.PROP_BUILD_PATH_SOURCES_CHECKBOX).setSelection(Boolean.valueOf(SonarConfiguratorProperties.PROP_BUILD_PATH_SOURCES_CHECKBOX_DEFAULT_VALUE));
+      checkboxes.get(SonarConfiguratorProperties.PROP_BUILD_PATH_BINARIES_CHECKBOX).setSelection(Boolean.valueOf(SonarConfiguratorProperties.PROP_BUILD_PATH_BINARIES_CHECKBOX));
+    }
     fTableViewer.refresh();
   }
 

@@ -20,6 +20,10 @@
 package org.sonar.ide.eclipse.core.configurator;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.IScopeContext;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.wsclient.SonarVersionTester;
 
 import java.util.Properties;
@@ -27,17 +31,24 @@ import java.util.Properties;
 public class ProjectConfigurationRequest {
 
   private final IProject project;
+  private final IEclipsePreferences projectNode;
   private final Properties sonarProjectProperties;
   private final String serverVersion;
 
   public ProjectConfigurationRequest(IProject eclipseProject, Properties sonarProjectProperties, String serverVersion) {
     this.project = eclipseProject;
+    IScopeContext projectScope = new ProjectScope(project);
+	projectNode = projectScope.getNode(SonarCorePlugin.PLUGIN_ID);
     this.sonarProjectProperties = sonarProjectProperties;
     this.serverVersion = serverVersion;
   }
 
   public IProject getProject() {
     return project;
+  }
+  
+  public IEclipsePreferences getProjectNode() {
+    return projectNode;
   }
 
   public Properties getSonarProjectProperties() {

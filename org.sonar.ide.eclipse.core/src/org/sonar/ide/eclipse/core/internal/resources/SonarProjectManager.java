@@ -19,6 +19,12 @@
  */
 package org.sonar.ide.eclipse.core.internal.resources;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
@@ -27,12 +33,9 @@ import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 /**
  * @author Evgeny Mandrikov
@@ -118,6 +121,21 @@ public class SonarProjectManager {
       }
     }
     sonarProject.setExtraProperties(sonarProperties);
+    
+    Map<String, Boolean> buildPathCheckboxes = new HashMap<String, Boolean>();
+    buildPathCheckboxes.put(
+    	SonarConfiguratorProperties.PROP_BUILD_PATH_LIBS_CHECKBOX, 
+        Boolean.valueOf(projectNode.get(SonarConfiguratorProperties.PROP_BUILD_PATH_LIBS_CHECKBOX, SonarConfiguratorProperties.PROP_BUILD_PATH_LIBS_CHECKBOX_DEFAULT_VALUE)));
+    buildPathCheckboxes.put(
+        SonarConfiguratorProperties.PROP_BUILD_PATH_TESTS_CHECKBOX, 
+        Boolean.valueOf(projectNode.get(SonarConfiguratorProperties.PROP_BUILD_PATH_TESTS_CHECKBOX, SonarConfiguratorProperties.PROP_BUILD_PATH_TESTS_CHECKBOX_DEFAULT_VALUE)));
+    buildPathCheckboxes.put(
+        SonarConfiguratorProperties.PROP_BUILD_PATH_SOURCES_CHECKBOX, 
+        Boolean.valueOf(projectNode.get(SonarConfiguratorProperties.PROP_BUILD_PATH_SOURCES_CHECKBOX, SonarConfiguratorProperties.PROP_BUILD_PATH_SOURCES_CHECKBOX_DEFAULT_VALUE)));
+    buildPathCheckboxes.put(
+        SonarConfiguratorProperties.PROP_BUILD_PATH_BINARIES_CHECKBOX, 
+        Boolean.valueOf(projectNode.get(SonarConfiguratorProperties.PROP_BUILD_PATH_BINARIES_CHECKBOX, SonarConfiguratorProperties.PROP_BUILD_PATH_BINARIES_CHECKBOX_DEFAULT_VALUE)));
+    sonarProject.setBuildPathCheckboxes(buildPathCheckboxes);
     return sonarProject;
   }
 
@@ -149,6 +167,20 @@ public class SonarProjectManager {
     } else {
       projectNode.remove(P_EXTRA_PROPS);
     }
+    Map<String, Boolean> buildPathCheckboxes = configuration.getBuildPathCheckboxes();
+    projectNode.put(
+        SonarConfiguratorProperties.PROP_BUILD_PATH_LIBS_CHECKBOX, 
+        String.valueOf(buildPathCheckboxes.get(SonarConfiguratorProperties.PROP_BUILD_PATH_LIBS_CHECKBOX)));
+    projectNode.put(
+        SonarConfiguratorProperties.PROP_BUILD_PATH_TESTS_CHECKBOX,
+        String.valueOf(buildPathCheckboxes.get(SonarConfiguratorProperties.PROP_BUILD_PATH_TESTS_CHECKBOX)));
+    projectNode.put(
+        SonarConfiguratorProperties.PROP_BUILD_PATH_SOURCES_CHECKBOX, 
+        String.valueOf(buildPathCheckboxes.get(SonarConfiguratorProperties.PROP_BUILD_PATH_SOURCES_CHECKBOX)));
+    projectNode.put(
+        SonarConfiguratorProperties.PROP_BUILD_PATH_BINARIES_CHECKBOX, 
+        String.valueOf(buildPathCheckboxes.get(SonarConfiguratorProperties.PROP_BUILD_PATH_BINARIES_CHECKBOX)));
+    
     try {
       projectNode.flush();
       return true;

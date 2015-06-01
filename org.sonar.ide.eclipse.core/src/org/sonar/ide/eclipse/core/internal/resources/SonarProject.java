@@ -27,7 +27,9 @@ import javax.annotation.CheckForNull;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Evgeny Mandrikov
@@ -39,6 +41,7 @@ public class SonarProject implements ISonarProject {
   private String key;
   private Date lastAnalysisDate;
   private List<SonarProperty> extraProperties = new ArrayList<SonarProperty>();
+  private Map<String, Boolean> buildPathCheckboxes = new HashMap<String, Boolean>();
 
   public SonarProject(IProject project) {
     this.project = project;
@@ -102,6 +105,14 @@ public class SonarProject implements ISonarProject {
 
   public void setExtraProperties(List<SonarProperty> extraProperties) {
     this.extraProperties = extraProperties;
+  }
+  
+  public Map<String, Boolean> getBuildPathCheckboxes() {
+    return buildPathCheckboxes;
+  }
+
+  public void setBuildPathCheckboxes(Map<String, Boolean> buildPathCheckboxes) {
+    this.buildPathCheckboxes = buildPathCheckboxes;
   }
 
 }
