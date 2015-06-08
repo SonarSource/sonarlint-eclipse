@@ -27,8 +27,6 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.sonar.ide.eclipse.core.internal.jobs.SynchronizeIssuesJob;
-import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
-import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 import java.util.Collections;
 
@@ -39,10 +37,7 @@ public class IssuesUpdater implements IPartListener2 {
       IEditorInput input = ((IEditorPart) part).getEditorInput();
       if (input instanceof IFileEditorInput) {
         IResource resource = ((IFileEditorInput) input).getFile();
-        ISonarResource sonarResource = ResourceUtils.adapt(resource);
-        if (sonarResource != null) {
-          new SynchronizeIssuesJob(Collections.singletonList(resource), false).schedule();
-        }
+        new SynchronizeIssuesJob(Collections.singletonList(resource), false).schedule();
       }
     }
   }

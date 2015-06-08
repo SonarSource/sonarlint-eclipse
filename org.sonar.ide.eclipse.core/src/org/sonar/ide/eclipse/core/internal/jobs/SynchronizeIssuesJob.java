@@ -35,6 +35,7 @@ import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.markers.SonarMarker;
 import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
 import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.wsclient.ConnectionException;
 
@@ -70,6 +71,9 @@ public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
       monitor.beginTask("Synchronize", resources.size());
 
       for (final IResource resource : resources) {
+        if (ResourceUtils.adapt(resource) == null) {
+          break;
+        }
         if (monitor.isCanceled()) {
           break;
         }
