@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e44-dev" sequenceNumber="53">
+<?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e45-dev" sequenceNumber="1">
 <locations>
 <location path="${M2_REPO}/org/slf4j/slf4j-api/1.7.2" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
@@ -7,7 +7,7 @@
 <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.platform.ide" version="0.0.0"/>
 <unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/releases/luna"/>
+<repository location="http://download.eclipse.org/releases/mars"/>
 </location>
 <location path="${M2_REPO}/commons-codec/commons-codec/1.7" type="Directory"/>
 <location path="${M2_REPO}/org/slf4j/jcl-over-slf4j/1.7.2" type="Directory"/>

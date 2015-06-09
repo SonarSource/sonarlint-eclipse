@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.codehaus.sonar-plugins</groupId>
     <artifactId>parent</artifactId>
-    <version>17</version>
+    <version>19</version>
     <relativePath/>
   </parent>
 
@@ -17,7 +17,7 @@
 
   <name>SonarQube Integration for Eclipse (parent)</name>
   <description></description>
-  <url>http://docs.codehaus.org/display/SONAR/SonarQube+in+Eclipse</url>
+  <url>http://docs.sonarqube.org/display/SONAR/SonarQube+in+Eclipse</url>
   <inceptionYear>2010</inceptionYear>
   <organization>
     <name>SonarSource</name>
@@ -83,6 +83,7 @@
     <module>target-platform-e42</module>
     <module>target-platform-e43</module>
     <module>target-platform-e44</module>
+    <module>target-platform-e45</module>
 
     <module>org.sonar.ide.eclipse.tests.common</module>
     <module>org.sonar.ide.eclipse.core.tests</module>
@@ -118,10 +119,10 @@
 
   <properties>
     <license.title>SonarQube Eclipse</license.title>
-    <license.year>2010-2014</license.year>
+    <license.year>2010-2015</license.year>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho.version>0.22.0</tycho.version>
-    <target.platform>e43</target.platform>
+    <target.platform>e44</target.platform>
 
     <!-- disable accidental deployment -->
     <sonar-ide.site>dav:http://localhost</sonar-ide.site>
@@ -131,8 +132,8 @@
     <!-- ================== -->
     <!-- For SonarQube analysis -->
     <!-- ================== -->
-    <sonar.java.source>1.6</sonar.java.source>
-    <sonar.java.target>1.6</sonar.java.target>
+    <sonar.java.source>1.7</sonar.java.source>
+    <sonar.java.target>1.7</sonar.java.target>
     <sonar.scm.ignoreLocalModifications>true</sonar.scm.ignoreLocalModifications>
     <sonar.skippedModules>org.sonar.ide.eclipse.tests.common,org.sonar.ide.eclipse.core.tests,org.sonar.ide.eclipse.mylyn.tests</sonar.skippedModules>
   </properties>
@@ -330,11 +331,6 @@
                   <os>win32</os>
                   <ws>win32</ws>
                   <arch>x86_64</arch>
-                </environment>
-                <environment>
-                  <os>macosx</os>
-                  <ws>cocoa</ws>
-                  <arch>x86</arch>
                 </environment>
                 <environment>
                   <os>macosx</os>

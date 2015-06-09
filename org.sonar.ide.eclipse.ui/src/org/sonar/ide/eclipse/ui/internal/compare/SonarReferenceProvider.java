@@ -1,6 +1,6 @@
 /*
  * SonarQube Eclipse
- * Copyright (C) 2010-2014 SonarSource
+ * Copyright (C) 2010-2015 SonarSource
  * dev@sonar.codehaus.org
  *
  * This program is free software; you can redistribute it and/or
