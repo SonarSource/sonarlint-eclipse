@@ -19,5 +19,4 @@ Require-Bundle: org.eclipse.ui,
  org.sonar.ide.eclipse.common,
  org.assertj.core,
  org.apache.commons.io;bundle-version="2.4.0"
-Bundle-RequiredExecutionEnvironment: J2SE-1.5,
- JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
