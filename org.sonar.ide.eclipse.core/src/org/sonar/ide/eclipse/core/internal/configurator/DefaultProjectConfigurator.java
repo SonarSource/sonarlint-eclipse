@@ -19,16 +19,16 @@
  */
 package org.sonar.ide.eclipse.core.internal.configurator;
 
+import java.util.Properties;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
+import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-
-import java.util.Properties;
 
 public class DefaultProjectConfigurator extends ProjectConfigurator {
 
@@ -55,5 +55,6 @@ public class DefaultProjectConfigurator extends ProjectConfigurator {
     properties.setProperty(SonarProperties.PROJECT_NAME_PROPERTY, projectName);
     properties.setProperty(SonarProperties.PROJECT_VERSION_PROPERTY, "0.1-SNAPSHOT");
     properties.setProperty(SonarProperties.ENCODING_PROPERTY, encoding);
+    properties.setProperty(SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, ".");
   }
 }

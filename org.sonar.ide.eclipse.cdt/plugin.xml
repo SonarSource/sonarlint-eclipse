@@ -1,18 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
-
-
-   <extension point="org.eclipse.core.runtime.adapters">
-      <factory adaptableType="org.eclipse.cdt.core.model.ICElement"
-               class="org.sonar.ide.eclipse.core.SonarElementsAdapterFactory">
-         <adapter type="org.sonar.ide.eclipse.core.resources.ISonarResource"/>
-      </factory>
-      <factory adaptableType="org.eclipse.cdt.core.model.ICElement"
-               class="org.sonar.ide.eclipse.core.SonarElementsAdapterFactory">
-         <adapter type="org.sonar.ide.eclipse.core.resources.ISonarFile"/>
-      </factory>
-   </extension>
-
    <extension
          point="org.eclipse.cdt.ui.CElementFilters">
       <filter
@@ -31,25 +18,4 @@
             class="org.sonar.ide.eclipse.cdt.internal.CProjectConfigurator">
       </configurator>
    </extension>
-
-   <extension point="org.eclipse.ui.menus">
-    <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
-       <command
-             commandId="org.sonar.ide.eclipse.ui.command.ConfigureProjectsCommand"
-             style="push">
-          <visibleWhen>
-              <with variable="activeMenuSelection">
-                 <iterate ifEmpty="false">
-                  <adapt type="org.eclipse.core.resources.IProject">
-                      <not>
-                          <test property="org.eclipse.core.resources.projectNature" value="org.sonar.ide.eclipse.core.sonarNature"/>
-                      </not>
-                      <test property="org.eclipse.core.resources.projectNature" value="org.eclipse.cdt.core.cnature"/>
-                  </adapt>
-                 </iterate>
-             </with>
-          </visibleWhen>
-       </command>
-    </menuContribution>
-  </extension>
 </plugin>

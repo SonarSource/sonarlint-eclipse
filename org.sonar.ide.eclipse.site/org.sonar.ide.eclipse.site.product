@@ -7,16 +7,17 @@
    </configIni>
 
    <launcherArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
    </launcherArgs>
 
    <plugins>
    </plugins>
 
    <features>
-      <feature id="org.sonar.ide.eclipse.thirdparty.feature"/>
-      <feature id="org.sonar.ide.eclipse.cdt.feature"/>
+      <feature id="org.sonar.ide.eclipse.feature"/>
       <feature id="org.sonar.ide.eclipse.jdt.feature"/>
+      <feature id="org.sonar.ide.eclipse.cdt.feature"/>
       <feature id="org.sonar.ide.eclipse.m2e.feature"/>
       <feature id="org.sonar.ide.eclipse.pydev.feature"/>
    </features>

@@ -17,7 +17,7 @@
 
   <name>SonarQube Integration for Eclipse (parent)</name>
   <description></description>
-  <url>http://docs.sonarqube.org/display/SONAR/SonarQube+in+Eclipse</url>
+  <url>http://redirect.sonarsource.com/doc/sonar-eclipse.html</url>
   <inceptionYear>2010</inceptionYear>
   <organization>
     <name>SonarSource</name>
@@ -61,6 +61,7 @@
 
     <module>org.sonar.ide.eclipse.core</module>
     <module>org.sonar.ide.eclipse.ui</module>
+    <module>org.sonar.ide.eclipse.feature</module>
 
     <module>org.sonar.ide.eclipse.jdt</module>
     <module>org.sonar.ide.eclipse.jdt.feature</module>
@@ -73,8 +74,6 @@
 
     <module>org.sonar.ide.eclipse.m2e</module>
     <module>org.sonar.ide.eclipse.m2e.feature</module>
-
-    <module>org.sonar.ide.eclipse.thirdparty.feature</module>
 
     <module>org.sonar.ide.eclipse.site</module>
 

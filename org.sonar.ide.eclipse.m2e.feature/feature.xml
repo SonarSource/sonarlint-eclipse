@@ -6,7 +6,7 @@
       provider-name="%provider_name"
       plugin="org.sonar.ide.eclipse.ui">
 
-   <description url="http://sonar-ide.codehaus.org/">
+   <description url="http://redirect.sonarsource.com/doc/sonar-eclipse.html">
       %description
    </description>
 
@@ -20,6 +20,7 @@
 
    <requires>
       <import feature="org.eclipse.platform" version="3.6.0" match="greaterOrEqual"/>
+      <import feature="org.sonar.ide.eclipse.feature" version="3.5.0.qualifier"/>
    </requires>
 
    <plugin

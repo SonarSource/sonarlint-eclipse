@@ -10,9 +10,9 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>org.sonar.ide.eclipse.thirdparty.feature</artifactId>
+  <artifactId>org.sonar.ide.eclipse.feature</artifactId>
   <packaging>eclipse-feature</packaging>
 
-  <name>SonarQube Integration for Eclipse Third-Party (feature)</name>
+  <name>SonarQube Integration for Eclipse (feature)</name>
 
 </project>

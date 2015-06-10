@@ -222,15 +222,14 @@ public class AnalyzeProjectJob extends Job {
     IPath projectSpecificWorkDir = project.getWorkingLocation(SonarCorePlugin.PLUGIN_ID);
     File outputFile = new File(projectSpecificWorkDir.toFile(), "sonar-report.json");
 
-    // First start by appending workspace and project properties
-    for (SonarProperty sonarProperty : extraProps) {
-      properties.put(sonarProperty.getName(), sonarProperty.getValue());
-    }
-
     // Configuration by configurators (common and language specific)
     ConfiguratorUtils.configure(project, properties, getServerVersion(), monitor);
 
-    // Global configuration
+    // Append workspace and project properties
+    for (SonarProperty sonarProperty : extraProps) {
+      properties.put(sonarProperty.getName(), sonarProperty.getValue());
+    }
+    // Server configuration can't be overriden by user
     properties.setProperty(SonarProperties.SONAR_URL, getSonarServer().getUrl());
     if (StringUtils.isNotBlank(getSonarServer().getUsername())) {
       properties.setProperty(SonarProperties.SONAR_LOGIN, getSonarServer().getUsername());

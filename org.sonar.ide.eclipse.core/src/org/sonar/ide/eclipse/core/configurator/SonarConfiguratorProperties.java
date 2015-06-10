@@ -26,8 +26,6 @@ package org.sonar.ide.eclipse.core.configurator;
  */
 public interface SonarConfiguratorProperties {
 
-  String PROJECT_LANGUAGE_PROPERTY = "sonar.language";
-
   String SOURCE_DIRS_PROPERTY = "sonar.sources";
   String TEST_DIRS_PROPERTY = "sonar.tests";
   String BINARIES_PROPERTY = "sonar.binaries";

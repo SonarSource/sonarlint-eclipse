@@ -126,13 +126,18 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   }
 
   @Test
-  public void languageConfiguratorShouldOverrideExtraProps() throws Exception {
+  public void userConfiguratorShouldOverrideConfiguratorHelperProps() throws Exception {
     ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.1");
     AnalyzeProjectJob job = job(project);
     Properties props = new Properties();
-    job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.language", "fake")));
+    job.configureAnalysis(MONITOR, props, Arrays.<SonarProperty>asList());
 
-    assertThat(props.get("sonar.language").toString()).isEqualTo("java");
+    assertThat(props.get("sonar.java.source").toString()).isEqualTo("1.3");
+
+    props = new Properties();
+    job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.java.source", "fake")));
+
+    assertThat(props.get("sonar.java.source").toString()).isEqualTo("fake");
   }
 
   @Test

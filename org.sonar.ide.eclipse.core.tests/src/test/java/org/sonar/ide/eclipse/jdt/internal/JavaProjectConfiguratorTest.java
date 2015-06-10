@@ -19,6 +19,9 @@
  */
 package org.sonar.ide.eclipse.jdt.internal;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -31,10 +34,6 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
 
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
@@ -66,7 +65,7 @@ public class JavaProjectConfiguratorTest {
     when(project.getResolvedClasspath(true)).thenReturn(new IClasspathEntry[] {});
     when(project.getOutputLocation()).thenReturn(new Path(temp.newFolder("output").getAbsolutePath()));
 
-    configurator.configureJavaProject(project, sonarProperties, true);
+    configurator.configureJavaProject(project, sonarProperties);
 
     assertTrue(sonarProperties.containsKey("sonar.java.source"));
     assertThat(sonarProperties.getProperty("sonar.java.source"), is("1.6"));
@@ -102,7 +101,7 @@ public class JavaProjectConfiguratorTest {
     when(project.getResolvedClasspath(true)).thenReturn(cpes);
     when(project.getOutputLocation()).thenReturn(new Path(outputFolder.getAbsolutePath()));
 
-    configurator.configureJavaProject(project, sonarProperties, true);
+    configurator.configureJavaProject(project, sonarProperties);
 
     // TODO Find a way to mock a project inside Eclipse
 

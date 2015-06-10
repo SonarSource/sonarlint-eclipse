@@ -50,18 +50,14 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
     IProject project = request.getProject();
     IJavaProject javaProject = JavaCore.create(project);
-    boolean isGreaterThan4_2 = request.isServerVersionGreaterOrEquals("4.2");
-    configureJavaProject(javaProject, request.getSonarProjectProperties(), isGreaterThan4_2);
+    configureJavaProject(javaProject, request.getSonarProjectProperties());
   }
 
   // Visible for testing
-  public void configureJavaProject(IJavaProject javaProject, Properties sonarProjectProperties, boolean isGreaterThan4_2) {
+  public void configureJavaProject(IJavaProject javaProject, Properties sonarProjectProperties) {
     String javaSource = javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
     String javaTarget = javaProject.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true);
 
-    if (!isGreaterThan4_2) {
-      sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "java");
-    }
     sonarProjectProperties.setProperty("sonar.java.source", javaSource);
     sonarProjectProperties.setProperty("sonar.java.target", javaTarget);
 
