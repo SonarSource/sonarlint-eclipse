@@ -44,19 +44,6 @@ public class SonarCorePlugin extends AbstractPlugin {
   public static final String MARKER_ID = PLUGIN_ID + ".sonarProblem";
   public static final String NEW_ISSUE_MARKER_ID = PLUGIN_ID + ".sonarProblemNewIssue";
 
-  /**
-   * Minimal supported version of SonarQube server for local analysis.
-   */
-  public static final String LOCAL_MODE_MINIMAL_SONAR_VERSION = "3.6"; //$NON-NLS-1$
-  /**
-   * Minimal supported version of SonarQube server for incremental analysis.
-   */
-  public static final String INCREMENTAL_MODE_MINIMAL_SONAR_VERSION = "4.0"; //$NON-NLS-1$
-  /**
-   * Minimal supported version of SonarQube server for path based resources.
-   */
-  public static final String PATH_RESOURCE_MINIMAL_SONAR_VERSION = "4.2"; //$NON-NLS-1$
-
   private static SonarCorePlugin plugin;
 
   public SonarCorePlugin() {

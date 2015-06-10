@@ -35,12 +35,6 @@
             class="org.sonar.ide.eclipse.jdt.internal.JavaProjectConfigurator">
       </configurator>
    </extension>
-   <extension
-         point="org.sonar.ide.eclipse.core.resourceResolvers">
-      <resolver
-            class="org.sonar.ide.eclipse.jdt.internal.JavaResourceResolver">
-      </resolver>
-   </extension>
 
   <extension point="org.eclipse.ui.menus">
     <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">

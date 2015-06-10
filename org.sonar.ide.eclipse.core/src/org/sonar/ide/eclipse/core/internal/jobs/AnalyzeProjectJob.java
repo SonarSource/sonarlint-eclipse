@@ -21,6 +21,13 @@ package org.sonar.ide.eclipse.core.internal.jobs;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -50,22 +57,13 @@ import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
-import org.sonar.ide.eclipse.wsclient.SonarVersionTester;
 import org.sonar.runner.api.ForkedRunner;
 import org.sonar.runner.api.ProcessMonitor;
 import org.sonar.runner.api.StreamConsumer;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+public class AnalyzeProjectJob extends Job {
 
-public class AnalyseProjectJob extends Job {
-
-  private static final Logger LOG = LoggerFactory.getLogger(AnalyseProjectJob.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AnalyzeProjectJob.class);
 
   private final IProject project;
   private final boolean debugEnabled;
@@ -79,7 +77,7 @@ public class AnalyseProjectJob extends Job {
 
   private boolean incremental;
 
-  public AnalyseProjectJob(AnalyseProjectRequest request) {
+  public AnalyzeProjectJob(AnalyseProjectRequest request) {
     super(Messages.AnalyseProjectJob_title);
     this.project = request.getProject();
     this.debugEnabled = request.isDebugEnabled();
@@ -94,7 +92,7 @@ public class AnalyseProjectJob extends Job {
 
   @Override
   protected IStatus run(final IProgressMonitor monitor) {
-    monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analysing, project.getName()), IProgressMonitor.UNKNOWN);
+    monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analyzing, project.getName()), IProgressMonitor.UNKNOWN);
 
     // Verify Host
     if (getSonarServer() == null) {
@@ -107,20 +105,11 @@ public class AnalyseProjectJob extends Job {
         NLS.bind(Messages.Unable_to_detect_server_version, sonarProject.getUrl()));
     }
 
-    if (!SonarVersionTester.isServerVersionSupported(SonarCorePlugin.LOCAL_MODE_MINIMAL_SONAR_VERSION, getServerVersion())) {
-      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
-        NLS.bind(Messages.AnalyseProjectJob_unsupported_version, SonarCorePlugin.LOCAL_MODE_MINIMAL_SONAR_VERSION));
-    }
-    if (incremental && !SonarVersionTester.isServerVersionSupported(SonarCorePlugin.INCREMENTAL_MODE_MINIMAL_SONAR_VERSION, getServerVersion())) {
-      SonarCorePlugin.getDefault().info(NLS.bind(Messages.AnalyseProjectJob_unsupported_version_for_incremental, SonarCorePlugin.INCREMENTAL_MODE_MINIMAL_SONAR_VERSION));
-      this.incremental = false;
-    }
-
     // Configure
     Properties properties = new Properties();
     File outputFile = configureAnalysis(monitor, properties, extraProps);
 
-    // Analyse
+    // Analyze
     // To be sure to not reuse something from a previous analysis
     FileUtils.deleteQuietly(outputFile);
     IStatus result;
@@ -139,11 +128,7 @@ public class AnalyseProjectJob extends Job {
     // Create markers
     long startMarker = System.currentTimeMillis();
     SonarCorePlugin.getDefault().debug("Create markers on project " + project.getName() + " resources...\n");
-    if (SonarVersionTester.isServerVersionSupported(SonarCorePlugin.PATH_RESOURCE_MINIMAL_SONAR_VERSION, getServerVersion())) {
-      createMarkersFromReportOutput(monitor, outputFile);
-    } else {
-      createMarkersFromReportOutputBefore4_2(monitor, outputFile);
-    }
+    createMarkersFromReportOutput(monitor, outputFile);
     SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - startMarker) + "ms\n");
 
     // Update analysis date
@@ -168,41 +153,6 @@ public class AnalyseProjectJob extends Job {
   }
 
   @VisibleForTesting
-  public void createMarkersFromReportOutputBefore4_2(final IProgressMonitor monitor, File outputFile) {
-    FileReader fileReader = null;
-    try {
-      fileReader = new FileReader(outputFile);
-      Object obj = JSONValue.parse(fileReader);
-      JSONObject sonarResult = (JSONObject) obj;
-      // Start by resolving all components in a cache
-      Map<String, IResource> resourcesByKey = Maps.newHashMap();
-      final JSONArray components = (JSONArray) sonarResult.get("components");
-      for (Object component : components) {
-        String key = ObjectUtils.toString(((JSONObject) component).get("key"));
-        IResource resource = ResourceUtils.findResource(sonarProject, key);
-        if (resource != null) {
-          resourcesByKey.put(key, resource);
-          if (incremental) {
-            MarkerUtils.deleteIssuesMarkers(resource);
-          }
-          MarkerUtils.markResourceAsLocallyAnalysed(resource);
-        }
-      }
-      // Now read all rules name in a cache
-      Map<String, String> ruleByKey = readRules(sonarResult);
-      // Now read all users name in a cache
-      Map<String, String> userNameByLogin = readUserNameByLogin(sonarResult);
-      // Now iterate over all issues and create markers
-      MarkerUtils.createMarkersForJSONIssues(resourcesByKey, ruleByKey, userNameByLogin, (JSONArray) sonarResult.get("issues"));
-    } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
-      throw new SonarEclipseException("Unable to create markers", e);
-    } finally {
-      IOUtils.closeQuietly(fileReader);
-    }
-  }
-
-  @VisibleForTesting
   public void createMarkersFromReportOutput(final IProgressMonitor monitor, File outputFile) {
     FileReader fileReader = null;
     try {
@@ -214,10 +164,8 @@ public class AnalyseProjectJob extends Job {
       final JSONArray components = (JSONArray) sonarResult.get("components");
       for (Object component : components) {
         String key = ObjectUtils.toString(((JSONObject) component).get("key"));
-        String path = ObjectUtils.toString(((JSONObject) component).get("path"));
-        String moduleKey = ObjectUtils.toString(((JSONObject) component).get("moduleKey"));
         String status = ObjectUtils.toString(((JSONObject) component).get("status"));
-        IResource resource = ResourceUtils.findResource(sonarProject, key, moduleKey, path);
+        IResource resource = ResourceUtils.findResource(sonarProject, key);
         if (resource != null) {
           resourcesByKey.put(key, resource);
           if (incremental
@@ -298,11 +246,7 @@ public class AnalyseProjectJob extends Job {
     if (incremental) {
       properties.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_INCREMENTAL);
     } else {
-      if (SonarVersionTester.isServerVersionSupported(SonarCorePlugin.INCREMENTAL_MODE_MINIMAL_SONAR_VERSION, getServerVersion())) {
-        properties.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_PREVIEW);
-      } else {
-        properties.setProperty(SonarProperties.DRY_RUN_PROPERTY, "true");
-      }
+      properties.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_PREVIEW);
     }
     // Output file is relative to working dir
     properties.setProperty(SonarProperties.REPORT_OUTPUT_PROPERTY, outputFile.getName());
@@ -331,11 +275,13 @@ public class AnalyseProjectJob extends Job {
         .addProperties(props)
         .addJvmArguments(jvmArgs.trim().split("\\s+"))
         .setStdOut(new StreamConsumer() {
+          @Override
           public void consumeLine(String text) {
             SonarCorePlugin.getDefault().info(text + "\n");
           }
         })
         .setStdErr(new StreamConsumer() {
+          @Override
           public void consumeLine(String text) {
             SonarCorePlugin.getDefault().error(text + "\n");
           }

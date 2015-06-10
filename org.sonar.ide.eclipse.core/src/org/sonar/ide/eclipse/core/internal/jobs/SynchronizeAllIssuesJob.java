@@ -97,7 +97,7 @@ public class SynchronizeAllIssuesJob extends Job {
   }
 
   private void scheduleIncrementalAnalysis(AnalyseProjectRequest request) {
-    new AnalyseProjectJob(request).schedule();
+    new AnalyzeProjectJob(request).schedule();
   }
 
   public IProgressMonitor getMonitor() {
@@ -138,12 +138,7 @@ public class SynchronizeAllIssuesJob extends Job {
     List<ISonarIssueWithPath> issues = sourceCode.getRemoteIssuesRecursively(monitor);
     SonarCorePlugin.getDefault().debug("  WS call took " + (System.currentTimeMillis() - start) + "ms for " + issues.size() + " issues\n");
     for (ISonarIssueWithPath issue : issues) {
-      // First try to use path if available
-      IResource eclipseResource = ResourceUtils.findResource(sonarProject, issue.resourceKey(), sonarProject.getKey(), issue.path());
-      if (eclipseResource == null) {
-        // Fallback to old method to support SonarQube prior to 4.2
-        eclipseResource = ResourceUtils.findResource(sonarProject, issue.resourceKey());
-      }
+      IResource eclipseResource = ResourceUtils.findResource(sonarProject, issue.resourceKey());
       if (eclipseResource instanceof IFile) {
         SonarMarker.create(eclipseResource, false, issue);
       }

@@ -19,6 +19,11 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -40,16 +45,10 @@ import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
 import org.sonar.ide.eclipse.core.internal.servers.ServersManager;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-public class AnalyseProjectJobTest extends SonarTestCase {
+public class AnalyzeProjectJobTest extends SonarTestCase {
 
   public org.junit.rules.ExternalResource test = null;
   private static IProject project;
@@ -73,27 +72,14 @@ public class AnalyseProjectJobTest extends SonarTestCase {
     MarkerUtils.deleteIssuesMarkers(project);
   }
 
-  private static AnalyseProjectJob job(IProject project) {
-    return new AnalyseProjectJob(new AnalyseProjectRequest(project));
+  private static AnalyzeProjectJob job(IProject project) {
+    return new AnalyzeProjectJob(new AnalyseProjectRequest(project));
   }
 
   @Test
-  public void shouldConfigureAnalysisBefore40() throws Exception {
-    ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "3.7");
-    AnalyseProjectJob job = job(project);
-    job.setIncremental(false);
-    Properties props = new Properties();
-    job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
-
-    assertThat(props.get(SonarProperties.SONAR_URL).toString()).isEqualTo("http://localhost:9000");
-    assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString()).isEqualTo("bar:foo");
-    assertThat(props.get(SonarProperties.DRY_RUN_PROPERTY).toString()).isEqualTo("true");
-  }
-
-  @Test
-  public void shouldConfigureAnalysisAfter40() throws Exception {
+  public void shouldConfigureAnalysis() throws Exception {
     ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.0");
-    AnalyseProjectJob job = job(project);
+    AnalyzeProjectJob job = job(project);
     job.setIncremental(true);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
@@ -119,7 +105,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   @Test
   public void shouldForceFullPreview() throws Exception {
     ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.0");
-    AnalyseProjectJob job = job(project);
+    AnalyzeProjectJob job = job(project);
     job.setIncremental(false);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
@@ -132,7 +118,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   @Test
   public void shouldConfigureAnalysisWithExtraProps() throws Exception {
     ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.0");
-    AnalyseProjectJob job = job(project);
+    AnalyzeProjectJob job = job(project);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.foo", "value")));
 
@@ -142,7 +128,7 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   @Test
   public void languageConfiguratorShouldOverrideExtraProps() throws Exception {
     ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.1");
-    AnalyseProjectJob job = job(project);
+    AnalyzeProjectJob job = job(project);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.language", "fake")));
 
@@ -150,21 +136,8 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   }
 
   @Test
-  public void shouldCreateMarkersFromIssuesReport_before_4_2() throws Exception {
-    AnalyseProjectJob job = job(project);
-    job.createMarkersFromReportOutputBefore4_2(MONITOR, new File("testdata/sonar-report_before_4_2.json"));
-
-    List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size()).isEqualTo(6);
-
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Findbugs.java", 5)));
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Pmd.java", 2)));
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Checkstyle.java", 1)));
-  }
-
-  @Test
   public void shouldCreateMarkersFromIssuesReport() throws Exception {
-    AnalyseProjectJob job = job(project);
+    AnalyzeProjectJob job = job(project);
     job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
 
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
@@ -176,24 +149,8 @@ public class AnalyseProjectJobTest extends SonarTestCase {
   }
 
   @Test
-  public void shouldCleanAndCreateMarkersFromIncrementalAnalysis_before_4_2() throws Exception {
-    AnalyseProjectJob job = job(project);
-    job.createMarkersFromReportOutputBefore4_2(MONITOR, new File("testdata/sonar-report_before_4_2.json"));
-
-    // During incremental analysis PMD file was not modified, Findbugs has one remaing issue and Checkstyle has no remaining issues
-    job = job(project);
-    job.createMarkersFromReportOutputBefore4_2(MONITOR, new File("testdata/sonar-report-incremental_before_4_2.json"));
-
-    List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size()).isEqualTo(3);
-
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Findbugs.java", 5)));
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Pmd.java", 2)));
-  }
-
-  @Test
   public void shouldCleanAndCreateMarkersFromIncrementalAnalysis() throws Exception {
-    AnalyseProjectJob job = job(project);
+    AnalyzeProjectJob job = job(project);
     job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
 
     // During incremental analysis PMD file was not modified, Findbugs has one remaing issue and Checkstyle has no remaining issues

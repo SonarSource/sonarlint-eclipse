@@ -32,12 +32,6 @@
             class="org.sonar.ide.eclipse.pydev.internal.PythonProjectConfigurator">
       </configurator>
    </extension>
-   <extension
-         point="org.sonar.ide.eclipse.core.resourceResolvers">
-      <resolver
-            class="org.sonar.ide.eclipse.pydev.internal.PythonResourceResolver">
-      </resolver>
-   </extension>
 
    <extension point="org.eclipse.ui.menus">
     <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
