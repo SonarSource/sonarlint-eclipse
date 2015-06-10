@@ -132,7 +132,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.<SonarProperty>asList());
 
-    assertThat(props.get("sonar.java.source").toString()).isEqualTo("1.3");
+    assertThat(props.get("sonar.java.source").toString()).isNotEqualTo("fake");
 
     props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.java.source", "fake")));
