@@ -24,12 +24,11 @@ import com.google.common.collect.Maps;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
@@ -107,7 +106,11 @@ public class AnalyzeProjectJob extends Job {
 
     // Analyze
     // To be sure to not reuse something from a previous analysis
-    FileUtils.deleteQuietly(outputFile);
+    try {
+      Files.delete(outputFile.toPath());
+    } catch (IOException e) {
+      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Unable to delete", e);
+    }
     IStatus result;
     long start = System.currentTimeMillis();
     SonarCorePlugin.getDefault().info("Start SonarQube analysis on " + project.getName() + "...\n");
@@ -150,9 +153,7 @@ public class AnalyzeProjectJob extends Job {
 
   @VisibleForTesting
   public void createMarkersFromReportOutput(final IProgressMonitor monitor, File outputFile) {
-    FileReader fileReader = null;
-    try {
-      fileReader = new FileReader(outputFile);
+    try (FileReader fileReader = new FileReader(outputFile)) {
       Object obj = JSONValue.parse(fileReader);
       JSONObject sonarResult = (JSONObject) obj;
       // Start by resolving all components in a cache
@@ -181,8 +182,6 @@ public class AnalyzeProjectJob extends Job {
       MarkerUtils.createMarkersForJSONIssues(resourcesByKey, ruleByKey, userNameByLogin, (JSONArray) sonarResult.get("issues"));
     } catch (Exception e) {
       throw new SonarEclipseException("Unable to create markers", e);
-    } finally {
-      IOUtils.closeQuietly(fileReader);
     }
   }
 

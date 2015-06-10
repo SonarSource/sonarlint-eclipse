@@ -19,12 +19,12 @@
  */
 package org.sonar.ide.eclipse.wsclient.internal;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
@@ -229,7 +229,7 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
 
     @Override
     public boolean resolved() {
-      return StringUtils.isNotBlank(remoteIssue.resolution());
+      return !Strings.isNullOrEmpty(remoteIssue.resolution());
     }
 
     @Override

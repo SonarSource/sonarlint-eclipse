@@ -51,14 +51,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.apache.commons.io"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
          id="org.apache.commons.lang"
          download-size="0"
          install-size="0"

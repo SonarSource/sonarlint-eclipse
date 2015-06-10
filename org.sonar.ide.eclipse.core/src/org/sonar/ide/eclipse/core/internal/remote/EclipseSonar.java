@@ -19,9 +19,11 @@
  */
 package org.sonar.ide.eclipse.core.internal.remote;
 
+import com.google.common.io.CharStreams;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import javax.annotation.CheckForNull;
-import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -94,12 +96,10 @@ public final class EclipseSonar {
 
     if (resource instanceof IFile) {
       IFile file = (IFile) resource;
-      try {
-        String content = IOUtils.toString(file.getContents(), file.getCharset());
+      try (InputStream fis = file.getContents(); InputStreamReader reader = new InputStreamReader(fis, file.getCharset())) {
+        String content = CharStreams.toString(reader);
         code.setLocalContent(content);
-      } catch (CoreException e) {
-        displayError(e);
-      } catch (IOException e) {
+      } catch (CoreException | IOException e) {
         displayError(e);
       }
     }

@@ -20,14 +20,6 @@
 package org.sonar.ide.eclipse.core.internal.markers;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.io.IOUtils;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.sonar.ide.eclipse.common.issues.ISonarIssue;
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +28,12 @@ import java.io.LineNumberReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.sonar.ide.eclipse.common.issues.ISonarIssue;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 public class SonarMarker {
 
@@ -114,11 +112,7 @@ public class SonarMarker {
   public static void addLine(final Map<String, Object> markerAttributes, final long line, final IResource resource) {
     if (resource instanceof IFile) {
       IFile file = (IFile) resource;
-      InputStream is = null;
-      LineAndCharCountReader lnr = null;
-      try {
-        is = file.getContents();
-        lnr = new LineAndCharCountReader(new InputStreamReader(is, file.getCharset()));
+      try (InputStream is = file.getContents(); LineAndCharCountReader lnr = new LineAndCharCountReader(new InputStreamReader(is, file.getCharset()))) {
         while (lnr.read() != -1) {
           if (lnr.getLineNumber() == line) {
             markerAttributes.put(IMarker.CHAR_START, lnr.getCharIndex());
@@ -131,8 +125,6 @@ public class SonarMarker {
         }
       } catch (Exception e) {
         SonarCorePlugin.getDefault().error("Unable to compute position of SonarQube marker on resource " + resource.getName() + ": " + e.getMessage());
-      } finally {
-        IOUtils.closeQuietly(lnr);
       }
     }
   }
