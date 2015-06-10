@@ -19,18 +19,14 @@
  */
 package org.sonar.ide.eclipse.wsclient.internal;
 
+import java.net.URI;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URI;
 
 public class WSClientPlugin extends Plugin {
-  private static final Logger LOG = LoggerFactory.getLogger(WSClientPlugin.class);
 
   private static WSClientPlugin plugin;
 
@@ -38,9 +34,11 @@ public class WSClientPlugin extends Plugin {
     plugin = this;
   }
 
-  public static IProxyData[] selectProxy(URI uri) {
-    LOG.debug("Searching proxy for uri [" + uri + "]");
+  public static WSClientPlugin getInstance() {
+    return plugin;
+  }
 
+  public static IProxyData[] selectProxy(URI uri) {
     if ((null == uri) || ("".equals(uri.toString()))) {
       return new IProxyData[0];
     }
@@ -52,7 +50,6 @@ public class WSClientPlugin extends Plugin {
       return new IProxyData[0];
     }
 
-    @SuppressWarnings("unchecked")
     IProxyService service = (IProxyService) context.getService(proxyServiceReference);
     return service.select(uri);
   }

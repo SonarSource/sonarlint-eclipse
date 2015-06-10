@@ -56,7 +56,6 @@
   </prerequisites>
 
   <modules>
-    <module>org.sonar.ide.eclipse.slf4j.pde</module>
     <module>org.sonar.ide.eclipse.wsclient</module>
     <module>org.sonar.ide.eclipse.common</module>
 
@@ -174,21 +173,6 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>15.0</version>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.0.7</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.7.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>1.7.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>

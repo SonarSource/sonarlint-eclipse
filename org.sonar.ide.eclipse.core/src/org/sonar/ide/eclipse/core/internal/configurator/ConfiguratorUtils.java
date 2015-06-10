@@ -19,21 +19,19 @@
  */
 package org.sonar.ide.eclipse.core.internal.configurator;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 /**
  * Utility class to deal with configurator extension point.
@@ -41,8 +39,6 @@ import java.util.Properties;
  *
  */
 public class ConfiguratorUtils {
-
-  private static final Logger LOG = LoggerFactory.getLogger(ConfiguratorUtils.class);
 
   public static final String ATTR_CLASS = "class"; //$NON-NLS-1$
 
@@ -60,7 +56,7 @@ public class ConfiguratorUtils {
         ProjectConfigurator configurator = (ProjectConfigurator) obj;
         result.add(configurator);
       } catch (CoreException e) {
-        LOG.error(e.getMessage(), e);
+        SonarCorePlugin.getDefault().error(e.getMessage(), e);
       }
     }
     return result;

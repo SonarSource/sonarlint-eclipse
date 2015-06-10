@@ -45,12 +45,13 @@ final class ServerConnectionTestJob implements IRunnableWithProgress {
     this.serverUrl = serverUrl;
   }
 
+  @Override
   public void run(IProgressMonitor monitor) {
     monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
     try {
       ISonarServer newServer = SonarCorePlugin.getServersManager().create(serverUrl, username, password);
       ConnectionTestResult result = WSClientFactory.getSonarClient(newServer).testConnection();
-      switch (result) {
+      switch (result.status) {
         case OK:
           status = new Status(IStatus.OK, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);
           break;
@@ -58,7 +59,7 @@ final class ServerConnectionTestJob implements IRunnableWithProgress {
           status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_authentication_error);
           break;
         case CONNECT_ERROR:
-          status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connection_error);
+          status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connection_error + result.message);
           break;
         default:
           throw new SonarEclipseException("Unknow status code: " + result);

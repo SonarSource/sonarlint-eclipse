@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<plugin>
-   <extension-point id="loggers" name="Slf4j PDE Loggers" schema="schema/org.slf4j.pde.loggers.exsd"/>
-</plugin>

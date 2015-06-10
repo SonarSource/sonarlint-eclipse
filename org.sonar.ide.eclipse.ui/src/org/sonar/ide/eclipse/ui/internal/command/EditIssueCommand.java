@@ -21,13 +21,10 @@ package org.sonar.ide.eclipse.ui.internal.command;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.ui.PlatformUI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.internal.views.IssueEditorWebView;
 
 public class EditIssueCommand extends AbstractIssueCommand {
-
-  private static final Logger LOG = LoggerFactory.getLogger(EditIssueCommand.class);
 
   @Override
   protected void execute(IMarker selectedMarker) {
@@ -35,7 +32,7 @@ public class EditIssueCommand extends AbstractIssueCommand {
       IssueEditorWebView view = (IssueEditorWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueEditorWebView.ID);
       view.setInput(selectedMarker);
     } catch (Exception e) {
-      LOG.error("Unable to open Issue Editor Web View", e);
+      SonarCorePlugin.getDefault().error("Unable to open Issue Editor Web View", e);
     }
   }
 

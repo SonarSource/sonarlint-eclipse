@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.cdt.internal;
 
+import java.util.Properties;
 import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.model.ICProject;
@@ -26,17 +27,12 @@ import org.eclipse.cdt.core.model.IIncludeReference;
 import org.eclipse.cdt.core.model.ISourceRoot;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
-
-import java.util.Properties;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 public class CProjectConfigurator extends ProjectConfigurator {
-
-  private static final Logger LOG = LoggerFactory.getLogger(CProjectConfigurator.class);
 
   @Override
   public boolean canConfigure(IProject project) {
@@ -62,7 +58,7 @@ public class CProjectConfigurator extends ProjectConfigurator {
         appendProperty(sonarProjectProperties, "sonar.cpp.library.directories", getAbsolutePath(include.getPath()));
       }
     } catch (CModelException e) {
-      LOG.error(e.getMessage(), e);
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
   }
 }

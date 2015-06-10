@@ -18,6 +18,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.python.pydev,
  org.python.pydev.core,
  findbugsAnnotations;bundle-version="2.0.0"
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle

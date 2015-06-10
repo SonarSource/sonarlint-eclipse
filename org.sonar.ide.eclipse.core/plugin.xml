@@ -3,10 +3,6 @@
 <plugin>
    <extension-point id="projectConfigurators" name="Project Configurators" schema="schema/projectConfigurators.exsd"/>
 
-   <extension point="org.sonar.ide.eclipse.slf4j.pde.loggers">
-      <loggerMapEntry regexp="^org\.sonar\.ide\.eclipse\.core.*"
-        symbolicName="org.sonar.ide.eclipse.core"/>
-   </extension>
 
    <extension point="org.eclipse.core.runtime.adapters">
       <factory adaptableType="org.eclipse.core.resources.IResource"

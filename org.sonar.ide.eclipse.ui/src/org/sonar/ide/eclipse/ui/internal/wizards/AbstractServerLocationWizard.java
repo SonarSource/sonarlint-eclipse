@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.ui.internal.wizards;
 
+import java.lang.reflect.InvocationTargetException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -26,10 +27,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-import java.lang.reflect.InvocationTargetException;
 
 public abstract class AbstractServerLocationWizard extends Wizard implements INewWizard {
 
@@ -42,6 +40,7 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
     this.page = page;
   }
 
+  @Override
   public void init(IWorkbench workbench, IStructuredSelection selection) {
   }
 
@@ -57,12 +56,13 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
     final String password = page.getPassword();
 
     IRunnableWithProgress op = new IRunnableWithProgress() {
+      @Override
       public void run(IProgressMonitor monitor) throws InvocationTargetException {
         monitor.beginTask("Saving " + serverUrl, 1);
         try {
           doFinish(serverUrl, username, password);
         } catch (Exception e) {
-          LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
+          SonarCorePlugin.getDefault().error(e.getMessage(), e);
         } finally {
           monitor.done();
         }

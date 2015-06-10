@@ -27,15 +27,12 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.AdapterUtils;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 public final class ResourceUtils {
-
-  private static final Logger LOG = LoggerFactory.getLogger(ResourceUtils.class);
 
   private static final String PATH_SEPARATOR = "/";
 
@@ -93,7 +90,7 @@ public final class ResourceUtils {
       if (res.getLocation() != null) {
         return res.getLocation().toString();
       } else {
-        LOG.error("Unable to resolve absolute path for " + res.getLocationURI());
+        SonarCorePlugin.getDefault().error("Unable to resolve absolute path for " + res.getLocationURI());
         return null;
       }
     } else {

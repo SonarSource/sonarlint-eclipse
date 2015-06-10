@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.ui.internal.util;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -26,10 +28,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 public final class PlatformUtils {
 
@@ -44,7 +43,7 @@ public final class PlatformUtils {
     try {
       IDE.openEditor(page, file);
     } catch (PartInitException e) {
-      LoggerFactory.getLogger(PlatformUtils.class).error(e.getMessage(), e);
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
   }
 
@@ -65,10 +64,8 @@ public final class PlatformUtils {
       marker.setAttributes(map);
       IDE.openEditor(page, marker);
       marker.delete();
-    } catch (PartInitException e) {
-      LoggerFactory.getLogger(PlatformUtils.class).error(e.getMessage(), e);
     } catch (CoreException e) {
-      LoggerFactory.getLogger(PlatformUtils.class).error(e.getMessage(), e);
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
   }
 

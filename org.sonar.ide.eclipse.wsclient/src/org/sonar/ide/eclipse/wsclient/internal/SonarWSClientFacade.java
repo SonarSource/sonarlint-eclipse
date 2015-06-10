@@ -19,9 +19,13 @@
  */
 package org.sonar.ide.eclipse.wsclient.internal;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
 import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
@@ -47,13 +51,6 @@ import org.sonar.wsclient.services.Source;
 import org.sonar.wsclient.services.SourceQuery;
 import org.sonar.wsclient.user.User;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 public class SonarWSClientFacade implements ISonarWSClientFacade {
 
   private final Sonar sonar;
@@ -69,13 +66,12 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     try {
       Authentication auth = sonar.find(new AuthenticationQuery());
       if (auth.isValid()) {
-        return ConnectionTestResult.OK;
+        return new ConnectionTestResult(ConnectionTestStatus.OK);
       } else {
-        return ConnectionTestResult.AUTHENTICATION_ERROR;
+        return new ConnectionTestResult(ConnectionTestStatus.AUTHENTICATION_ERROR);
       }
-    } catch (ConnectionException e) {
-      LoggerFactory.getLogger(getClass()).error("Unable to connect", e);
-      return ConnectionTestResult.CONNECT_ERROR;
+    } catch (Exception e) {
+      return new ConnectionTestResult(ConnectionTestStatus.CONNECT_ERROR, e.getMessage());
     }
   }
 

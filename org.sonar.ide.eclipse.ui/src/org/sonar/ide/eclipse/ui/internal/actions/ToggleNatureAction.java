@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.ui.internal.actions;
 
+import java.util.Iterator;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -27,10 +28,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
-import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
-
-import java.util.Iterator;
 
 public class ToggleNatureAction implements IObjectActionDelegate {
 
@@ -51,7 +50,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
           try {
             toggleNature(project);
           } catch (CoreException e) {
-            LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
+            SonarCorePlugin.getDefault().error(e.getMessage(), e);
           }
         }
       }

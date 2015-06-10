@@ -20,14 +20,12 @@
 package org.sonar.ide.eclipse.core.internal;
 
 import com.google.common.collect.Lists;
+import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class SonarNature implements IProjectNature {
 
@@ -59,7 +57,7 @@ public class SonarNature implements IProjectNature {
     try {
       return project.hasNature(NATURE_ID);
     } catch (CoreException e) {
-      LoggerFactory.getLogger(SonarCorePlugin.class).error(e.getMessage(), e);
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
       return false;
     }
   }

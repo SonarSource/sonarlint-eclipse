@@ -19,26 +19,22 @@
  */
 package org.sonar.ide.eclipse.core.internal.resources;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 /**
  * @author Evgeny Mandrikov
  */
 public class SonarProjectManager {
-  private static final Logger LOG = LoggerFactory.getLogger(SonarProjectManager.class);
 
   private static final String VERSION = "2";
   private static final String P_VERSION = "version";
@@ -67,12 +63,10 @@ public class SonarProjectManager {
   private static final String P_EXTRA_PROPS = "extraProperties";
 
   public SonarProject readSonarConfiguration(IProject project) {
-    LOG.debug("Reading configuration for project " + project.getName());
 
     IScopeContext projectScope = new ProjectScope(project);
     IEclipsePreferences projectNode = projectScope.getNode(SonarCorePlugin.PLUGIN_ID);
     if (projectNode == null) {
-      LOG.info("Unable to read configuration for project " + project.getName());
       return new SonarProject(project);
     }
 
@@ -114,7 +108,7 @@ public class SonarProjectManager {
           sonarProperties.add(new SonarProperty(keyValue[0], keyValue[1]));
         }
       } catch (Exception e) {
-        LOG.error("Error while loading SonarQube properties", e);
+        SonarCorePlugin.getDefault().error("Error while loading SonarQube properties", e);
       }
     }
     sonarProject.setExtraProperties(sonarProperties);
@@ -131,7 +125,6 @@ public class SonarProjectManager {
       return false;
     }
 
-    LOG.debug("Saving configuration for project " + project.getName());
     projectNode.put(P_VERSION, VERSION);
 
     projectNode.put(P_SONAR_SERVER_URL, configuration.getUrl());
@@ -153,7 +146,7 @@ public class SonarProjectManager {
       projectNode.flush();
       return true;
     } catch (BackingStoreException e) {
-      LOG.error("Failed to save project configuration", e);
+      SonarCorePlugin.getDefault().error("Failed to save project configuration", e);
       return false;
     }
   }

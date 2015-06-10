@@ -19,6 +19,10 @@
  */
 package org.sonar.ide.eclipse.core.internal;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -34,9 +38,6 @@ import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
 import org.sonar.ide.eclipse.core.internal.servers.ServersManager;
 import org.sonar.ide.eclipse.core.resources.ISonarFile;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SonarCorePlugin extends AbstractPlugin {
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.core";
@@ -68,6 +69,15 @@ public class SonarCorePlugin extends AbstractPlugin {
   public void error(String msg) {
     for (LogListener listener : logListeners) {
       listener.error(msg);
+    }
+  }
+
+  public void error(String msg, Throwable t) {
+    for (LogListener listener : logListeners) {
+      listener.error(msg);
+      StringWriter errors = new StringWriter();
+      t.printStackTrace(new PrintWriter(errors));
+      listener.error(errors.toString());
     }
   }
 

@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.core.internal.markers;
 
+import java.util.Date;
+import java.util.Map;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
@@ -32,8 +34,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
@@ -41,12 +41,7 @@ import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
-import java.util.Date;
-import java.util.Map;
-
 public final class MarkerUtils {
-
-  private static final Logger LOG = LoggerFactory.getLogger(MarkerUtils.class);
 
   static int markerSeverity = IMarker.SEVERITY_WARNING;
   static int markerSeverityForNewIssues = IMarker.SEVERITY_ERROR;
@@ -75,7 +70,7 @@ public final class MarkerUtils {
         try {
           SonarMarker.create(resourcesByKey.get(componentKey), isNew, new SonarIssueFromJsonReport(jsonIssue, ruleByKey, userNameByLogin));
         } catch (CoreException e) {
-          LOG.error(e.getMessage(), e);
+          SonarCorePlugin.getDefault().error(e.getMessage(), e);
         }
       }
     }
@@ -195,7 +190,7 @@ public final class MarkerUtils {
         resource.setPersistentProperty(LAST_ANALYSIS_DATE_PERSISTENT_PROP_KEY, "" + lastAnalysisDate.getTime());
       }
     } catch (CoreException e) {
-      LOG.error("Unable to update persistent properties", e);
+      SonarCorePlugin.getDefault().error("Unable to update persistent properties", e);
     }
   }
 
@@ -203,7 +198,7 @@ public final class MarkerUtils {
     try {
       resource.setPersistentProperty(LOCALLY_ANALYSED_PROP_KEY, "true");
     } catch (CoreException e) {
-      LOG.error("Unable to update persistent properties", e);
+      SonarCorePlugin.getDefault().error("Unable to update persistent properties", e);
     }
   }
 
@@ -211,7 +206,7 @@ public final class MarkerUtils {
     try {
       return "true".equals(resource.getPersistentProperty(LOCALLY_ANALYSED_PROP_KEY));
     } catch (CoreException e) {
-      LOG.error("Unable to update persistent properties", e);
+      SonarCorePlugin.getDefault().error("Unable to update persistent properties", e);
       return false;
     }
   }
@@ -221,7 +216,7 @@ public final class MarkerUtils {
       resource.deleteMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
       deletePersistentProperties(resource);
     } catch (CoreException e) {
-      LOG.error(e.getMessage(), e);
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
   }
 

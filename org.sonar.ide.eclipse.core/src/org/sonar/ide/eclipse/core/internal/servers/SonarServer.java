@@ -19,17 +19,16 @@
  */
 package org.sonar.ide.eclipse.core.internal.servers;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 public final class SonarServer implements ISonarServer {
 
@@ -55,18 +54,22 @@ public final class SonarServer implements ISonarServer {
     this.auth = auth;
   }
 
+  @Override
   public String getUrl() {
     return url;
   }
 
+  @Override
   public boolean hasCredentials() {
     return StringUtils.isNotBlank(getPassword()) && StringUtils.isNotBlank(getUsername());
   }
 
+  @Override
   public String getUsername() {
     return auth ? getKeyFromServerNode("username") : "";
   }
 
+  @Override
   public String getPassword() {
     return auth ? getKeyFromServerNode("password") : "";
   }
@@ -95,7 +98,7 @@ public final class SonarServer implements ISonarServer {
         .node(EncodingUtils.encodeSlashes(getUrl()));
       serverNode.put(key, value, encrypt);
     } catch (StorageException e) {
-      LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
   }
 

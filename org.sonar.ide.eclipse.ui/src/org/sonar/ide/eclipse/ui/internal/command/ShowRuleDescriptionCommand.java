@@ -21,13 +21,10 @@ package org.sonar.ide.eclipse.ui.internal.command;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.ui.PlatformUI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.internal.views.RuleDescriptionWebView;
 
 public class ShowRuleDescriptionCommand extends AbstractIssueCommand {
-
-  private static final Logger LOG = LoggerFactory.getLogger(ShowRuleDescriptionCommand.class);
 
   @Override
   protected void execute(IMarker selectedMarker) {
@@ -35,7 +32,7 @@ public class ShowRuleDescriptionCommand extends AbstractIssueCommand {
       RuleDescriptionWebView view = (RuleDescriptionWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(RuleDescriptionWebView.ID);
       view.setInput(selectedMarker);
     } catch (Exception e) {
-      LOG.error("Unable to open Rule Description Web View", e);
+      SonarCorePlugin.getDefault().error("Unable to open Rule Description Web View", e);
     }
   }
 

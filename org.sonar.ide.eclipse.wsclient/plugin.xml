@@ -4,8 +4,4 @@
 
 <!-- Extensions -->
 
-   <extension point="org.sonar.ide.eclipse.slf4j.pde.loggers">
-      <loggerMapEntry regexp="^org\.sonar\.ide\.eclipse\.wsclient.*"
-        symbolicName="org.sonar.ide.eclipse.wsclient"/>
-   </extension>
 </plugin>

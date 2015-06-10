@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.ui.internal.wizards;
 
+import java.lang.reflect.InvocationTargetException;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -36,14 +37,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
-
-import java.lang.reflect.InvocationTargetException;
 
 public class ServerLocationWizardPage extends WizardPage {
   private final ISonarServer sonarServer;
@@ -65,6 +63,7 @@ public class ServerLocationWizardPage extends WizardPage {
   /**
    * @see org.eclipse.jface.dialogs.IDialogPage#createControl(Composite)
    */
+  @Override
   public void createControl(Composite parent) {
     Composite container = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout();
@@ -79,6 +78,7 @@ public class ServerLocationWizardPage extends WizardPage {
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     serverUrlText.setLayoutData(gd);
     serverUrlText.addModifyListener(new ModifyListener() {
+      @Override
       public void modifyText(ModifyEvent e) {
         dialogChanged();
       }
@@ -122,11 +122,8 @@ public class ServerLocationWizardPage extends WizardPage {
           ServerConnectionTestJob testJob = new ServerConnectionTestJob(username, password, serverUrl);
           getWizard().getContainer().run(true, true, testJob);
           status = testJob.getStatus();
-        } catch (InvocationTargetException e1) {
-          LoggerFactory.getLogger(getClass()).error(e1.getMessage(), e1);
-          status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
-        } catch (InterruptedException e1) {
-          LoggerFactory.getLogger(getClass()).error(e1.getMessage(), e1);
+        } catch (InvocationTargetException | InterruptedException e1) {
+          SonarCorePlugin.getDefault().error(e1.getMessage(), e1);
           status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
         } catch (OperationCanceledException e1) {
           status = Status.CANCEL_STATUS;

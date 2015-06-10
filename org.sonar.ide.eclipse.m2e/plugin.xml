@@ -11,10 +11,6 @@
       </configurator>
    </extension>
    
-   <extension point="org.sonar.ide.eclipse.slf4j.pde.loggers">
-      <loggerMapEntry regexp="^org\.sonar\.ide\.eclipse\.m2e.*"
-        symbolicName="org.sonar.ide.eclipse.m2e"/>
-   </extension>
 
 
 

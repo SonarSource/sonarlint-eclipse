@@ -19,6 +19,12 @@
  */
 package org.sonar.ide.eclipse.tests.common;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -33,17 +39,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.assertTrue;
 
@@ -51,8 +48,6 @@ import static org.junit.Assert.assertTrue;
  * Common test case for sonar-ide/eclipse projects.
  */
 public abstract class SonarTestCase {
-
-  private static final Logger LOG = LoggerFactory.getLogger(SonarTestCase.class);
 
   protected static final IProgressMonitor MONITOR = new NullProgressMonitor();
   protected static IWorkspace workspace;
@@ -83,7 +78,7 @@ public abstract class SonarTestCase {
       File projectFolder = new File(projectsSource, projectName);
       assertTrue("Project " + projectName + " folder not found.\n" + projectFolder.getAbsolutePath(), projectFolder.isDirectory());
       if (destDir.isDirectory()) {
-        LoggerFactory.getLogger(SonarTestCase.class).warn("Directory for project already exists: {}", destDir);
+        System.out.println("Directory for project already exists: " + destDir);
       }
       FileUtils.copyDirectory(projectFolder, destDir);
       return destDir;
@@ -131,7 +126,6 @@ public abstract class SonarTestCase {
    * @return created projects
    */
   public static IProject importEclipseProject(final String projectdir) throws IOException, CoreException {
-    LOG.info("Importing Eclipse project : " + projectdir);
     final IWorkspaceRoot root = workspace.getRoot();
 
     final String projectName = projectdir;
@@ -157,7 +151,6 @@ public abstract class SonarTestCase {
       }
     }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, MONITOR);
     JobHelpers.waitForJobsToComplete();
-    LOG.info("Eclipse project imported");
     return addedProjectList.get(0);
   }
 

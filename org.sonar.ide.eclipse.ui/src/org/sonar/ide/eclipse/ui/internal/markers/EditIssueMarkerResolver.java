@@ -19,29 +19,26 @@
  */
 package org.sonar.ide.eclipse.ui.internal.markers;
 
+import java.text.MessageFormat;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.PlatformUI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.ui.ISonarResolver;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.views.IssueEditorWebView;
-
-import java.text.MessageFormat;
 
 /**
  * @author Jérémie Lagarde
  */
 public class EditIssueMarkerResolver implements ISonarResolver {
 
-  private static final Logger LOG = LoggerFactory.getLogger(EditIssueMarkerResolver.class);
-
   private String label;
   private String description;
 
+  @Override
   public boolean canResolve(final IMarker marker) {
     try {
       final Object ruleName = marker.getAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR);
@@ -55,20 +52,23 @@ public class EditIssueMarkerResolver implements ISonarResolver {
     }
   }
 
+  @Override
   public String getDescription() {
     return description;
   }
 
+  @Override
   public String getLabel() {
     return label;
   }
 
+  @Override
   public boolean resolve(final IMarker marker, final IFile cu) {
     try {
       IssueEditorWebView view = (IssueEditorWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueEditorWebView.ID);
       view.setInput(marker);
     } catch (Exception e) {
-      LOG.error("Unable to open Issue Editor Web View", e);
+      SonarCorePlugin.getDefault().error("Unable to open Issue Editor Web View", e);
     }
     return false;
   }

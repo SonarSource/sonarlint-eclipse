@@ -25,7 +25,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMarkerResolution2;
-import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.ISonarResolver;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
 
@@ -40,25 +40,29 @@ public class SonarMarkerResolution implements IMarkerResolution2 {
     resolver = sonarResolver;
   }
 
+  @Override
   public String getDescription() {
     return resolver.getDescription();
   }
 
+  @Override
   public Image getImage() {
     return SonarImages.SONAR16_IMG.createImage();
   }
 
+  @Override
   public String getLabel() {
     return resolver.getLabel();
   }
 
+  @Override
   public void run(final IMarker marker) {
     final IResource resource = marker.getResource();
     if ((resource instanceof IFile) && resource.isAccessible() && resolver.resolve(marker, (IFile) resource)) {
       try {
         marker.delete();
       } catch (final CoreException e) {
-        LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
+        SonarCorePlugin.getDefault().error("Unable to delete marker", e);
       }
     }
   }

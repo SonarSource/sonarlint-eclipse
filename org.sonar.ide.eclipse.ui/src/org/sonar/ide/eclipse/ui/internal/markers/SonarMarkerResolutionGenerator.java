@@ -19,18 +19,16 @@
  */
 package org.sonar.ide.eclipse.ui.internal.markers;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.ui.ISonarResolver;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Jérémie Lagarde
@@ -40,6 +38,7 @@ public class SonarMarkerResolutionGenerator implements IMarkerResolutionGenerato
   // ID from resolver extension point
   private static final String RESOLVER_ID = "org.sonar.ide.eclipse.ui.resolver";
 
+  @Override
   public boolean hasResolutions(final IMarker marker) {
     try {
       return SonarCorePlugin.MARKER_ID.equals(marker.getType()) || SonarCorePlugin.NEW_ISSUE_MARKER_ID.equals(marker.getType());
@@ -48,6 +47,7 @@ public class SonarMarkerResolutionGenerator implements IMarkerResolutionGenerato
     }
   }
 
+  @Override
   public IMarkerResolution[] getResolutions(final IMarker marker) {
     final List<IMarkerResolution> resolutions = new ArrayList<IMarkerResolution>();
     final IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(RESOLVER_ID);
@@ -60,7 +60,7 @@ public class SonarMarkerResolutionGenerator implements IMarkerResolutionGenerato
         }
       }
     } catch (final CoreException ex) {
-      LoggerFactory.getLogger(getClass()).error(ex.getMessage(), ex);
+      SonarCorePlugin.getDefault().error(ex.getMessage(), ex);
     }
     return resolutions.toArray(new IMarkerResolution[resolutions.size()]);
   }

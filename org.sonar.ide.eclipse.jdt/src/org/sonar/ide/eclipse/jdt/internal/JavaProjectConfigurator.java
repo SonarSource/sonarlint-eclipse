@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.jdt.internal;
 
+import java.io.File;
+import java.util.Properties;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -29,18 +31,13 @@ import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
-
-import java.io.File;
-import java.util.Properties;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JavaProjectConfigurator.class);
   // TODO Allow to configure this pattern in Sonar Eclipse preferences
   private static final String TEST_PATTERN = ".*test.*";
 
@@ -66,9 +63,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       sonarProjectProperties.setProperty(SonarConfiguratorProperties.PROJECT_LANGUAGE_PROPERTY, "java");
     }
     sonarProjectProperties.setProperty("sonar.java.source", javaSource);
-    LOG.info("Source Java version: {}", javaSource);
     sonarProjectProperties.setProperty("sonar.java.target", javaTarget);
-    LOG.info("Target Java version: {}", javaTarget);
 
     try {
       JavaProjectConfiguration configuration = new JavaProjectConfiguration();
@@ -76,7 +71,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       addClassPathToSonarProject(javaProject, configuration, true);
       configurationToProperties(sonarProjectProperties, configuration);
     } catch (JavaModelException e) {
-      LOG.error(e.getMessage(), e);
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
   }
 
@@ -103,7 +98,6 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
           if (topProject || entry.isExported()) {
             final String libDir = resolveLibrary(javaProject, entry);
             if (libDir != null) {
-              LOG.debug("Library: {}", libDir);
               context.libraries().add(libDir);
             }
           }
@@ -112,13 +106,12 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
           IJavaModel javaModel = javaProject.getJavaModel();
           IJavaProject referredProject = javaModel.getJavaProject(entry.getPath().segment(0));
           if (!context.dependentProjects().contains(referredProject)) {
-            LOG.debug("Adding project: {}", referredProject.getProject().getName());
             addClassPathToSonarProject(referredProject, context, false);
             context.dependentProjects().add(referredProject);
           }
           break;
         default:
-          LOG.warn("Unhandled ClassPathEntry : {}", entry);
+          SonarCorePlugin.getDefault().info("Unhandled ClassPathEntry : " + entry);
           break;
       }
     }
@@ -129,7 +122,6 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   private void processOutputDir(IPath outputDir, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
     String outDir = getAbsolutePath(outputDir);
     if (outDir != null) {
-      LOG.debug("Output directory: {}", outDir);
       if (topProject) {
         context.binaries().add(outDir);
       } else {
@@ -137,25 +129,23 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
         context.libraries().add(outDir);
       }
     } else {
-      LOG.warn("Binary directory was not added because it was not found. Maybe should you enable auto build of your project.");
+      SonarCorePlugin.getDefault().info("Binary directory was not added because it was not found. Maybe should you enable auto build of your project.");
     }
   }
 
   private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
     String srcDir = getAbsolutePath(entry.getPath());
     if (srcDir == null) {
-      LOG.warn("Skipping non existing source entry: {}", entry.getPath().toOSString());
+      SonarCorePlugin.getDefault().info("Skipping non existing source entry: " + entry.getPath().toOSString());
       return;
     }
     String relativeDir = getRelativePath(javaProject, entry.getPath());
     if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
       if (topProject) {
-        LOG.debug("Test directory: {}", srcDir);
         context.testDirs().add(srcDir);
       }
     } else {
       if (topProject) {
-        LOG.debug("Source directory: {}", srcDir);
         context.sourceDirs().add(srcDir);
       }
       if (entry.getOutputLocation() != null) {
@@ -168,7 +158,6 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     final String libDir;
     IResource member = findPath(javaProject.getProject(), entry.getPath());
     if (member != null) {
-      LOG.debug("Found member: {}", member.getLocation().toOSString());
       libDir = member.getLocation().toOSString();
     } else {
       libDir = entry.getPath().makeAbsolute().toOSString();

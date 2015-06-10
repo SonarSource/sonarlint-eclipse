@@ -19,19 +19,32 @@
  */
 package org.sonar.ide.eclipse.wsclient;
 
+import java.util.Date;
+import java.util.List;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
 
-import javax.annotation.CheckForNull;
-
-import java.util.Date;
-import java.util.List;
-
 public interface ISonarWSClientFacade {
 
-  public static enum ConnectionTestResult {
+  public static enum ConnectionTestStatus {
     OK, CONNECT_ERROR, AUTHENTICATION_ERROR;
+  }
+
+  public static class ConnectionTestResult {
+    public final ConnectionTestStatus status;
+    public final String message;
+
+    public ConnectionTestResult(ConnectionTestStatus status) {
+      this.status = status;
+      this.message = "";
+    }
+
+    public ConnectionTestResult(ConnectionTestStatus status, String message) {
+      this.status = status;
+      this.message = message;
+    }
   }
 
   ConnectionTestResult testConnection();

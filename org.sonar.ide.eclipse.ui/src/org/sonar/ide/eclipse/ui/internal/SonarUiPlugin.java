@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.ui.internal;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -34,17 +36,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.UIJob;
 import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.ide.eclipse.core.internal.jobs.LogListener;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SonarUiPlugin extends AbstractUIPlugin {
 
@@ -59,8 +55,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   public static final String PREF_JVM_ARGS = "jvmArgs"; //$NON-NLS-1$
   public static final String PREF_FORCE_FULL_PREVIEW = "fullPreview"; //$NON-NLS-1$
 
-  private final Logger logger = LoggerFactory.getLogger(SonarUiPlugin.class);
-
   private IPropertyChangeListener listener;
 
   public SonarUiPlugin() {
@@ -72,12 +66,13 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     super.start(context);
 
     if (getSonarConsole() != null) {
-      SonarCorePlugin.getDefault().addLogListener((LogListener) getSonarConsole());
+      SonarCorePlugin.getDefault().addLogListener(getSonarConsole());
     }
 
     setupIssuesUpdater();
 
     listener = new IPropertyChangeListener() {
+      @Override
       public void propertyChange(PropertyChangeEvent event) {
         if (event.getProperty().equals(PREF_MARKER_SEVERITY) || event.getProperty().equals(PREF_NEW_ISSUE_MARKER_SEVERITY)) {
           int newSeverity = getPreferenceStore().getInt(PREF_MARKER_SEVERITY);
@@ -87,7 +82,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
           try {
             MarkerUtils.updateAllSonarMarkerSeverity();
           } catch (CoreException e) {
-            logger.error("Unable to update marker severity", e);
+            SonarCorePlugin.getDefault().error("Unable to update marker severity", e);
           }
         }
       }
@@ -99,7 +94,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   public void stop(final BundleContext context) throws Exception {
     try {
       if (getSonarConsole() != null) {
-        SonarCorePlugin.getDefault().removeLogListener((LogListener) getSonarConsole());
+        SonarCorePlugin.getDefault().removeLogListener(getSonarConsole());
       }
       getPreferenceStore().removePropertyChangeListener(listener);
     } finally {

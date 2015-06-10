@@ -22,8 +22,8 @@ package org.sonar.ide.eclipse.jdt.internal;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaCore;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 public class SonarJdtPlugin extends AbstractPlugin {
 
@@ -46,7 +46,7 @@ public class SonarJdtPlugin extends AbstractPlugin {
     try {
       return project.hasNature(JavaCore.NATURE_ID);
     } catch (CoreException e) {
-      LoggerFactory.getLogger(SonarJdtPlugin.class).error(e.getMessage(), e);
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
       return false;
     }
   }

@@ -20,6 +20,12 @@
 package org.sonar.ide.eclipse.ui.internal.wizards.associate;
 
 import com.google.common.collect.Lists;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.list.WritableList;
@@ -52,8 +58,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
@@ -66,16 +70,7 @@ import org.sonar.ide.eclipse.wsclient.ConnectionException;
 import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class ConfigureProjectsPage extends WizardPage {
-
-  private static final Logger LOG = LoggerFactory.getLogger(ConfigureProjectsPage.class);
 
   private final List<IProject> projects;
   private TableViewer viewer;
@@ -175,14 +170,14 @@ public class ConfigureProjectsPage extends WizardPage {
               getWizard().getContainer().run(true, false, new AssociateProjects(sonarServers, getProjects()));
             }
           } catch (InvocationTargetException ex) {
-            LOG.error(ex.getMessage(), ex);
+            SonarCorePlugin.getDefault().error(ex.getMessage(), ex);
             if (ex.getTargetException() instanceof ConnectionException) {
               setMessage("One of your SonarQube server cannot be reached. Please check your connection settings.", IMessageProvider.ERROR);
             } else {
               setMessage("Error: " + ex.getMessage(), IMessageProvider.ERROR);
             }
           } catch (Exception ex) {
-            LOG.error(ex.getMessage(), ex);
+            SonarCorePlugin.getDefault().error(ex.getMessage(), ex);
             setMessage("Error: " + ex.getMessage(), IMessageProvider.ERROR);
           }
         }
@@ -256,7 +251,7 @@ public class ConfigureProjectsPage extends WizardPage {
               SonarUiPlugin.getExtraPropertiesForLocalAnalysis(project), SonarUiPlugin.getSonarJvmArgs(), SonarUiPlugin.isForceFullPreview());
           }
         } catch (CoreException e) {
-          LOG.error(e.getMessage(), e);
+          SonarCorePlugin.getDefault().error(e.getMessage(), e);
           return false;
         }
       }
@@ -281,6 +276,7 @@ public class ConfigureProjectsPage extends WizardPage {
       this.projectAssociations = projects;
     }
 
+    @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
       monitor.beginTask("Associating SonarQube projects", IProgressMonitor.UNKNOWN);
       // Retrieve list of all remote projects

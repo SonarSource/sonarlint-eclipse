@@ -19,6 +19,9 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceProxy;
@@ -28,7 +31,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
@@ -38,10 +40,6 @@ import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.wsclient.ConnectionException;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * This class load issues in background.
@@ -103,6 +101,7 @@ public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
     return monitor;
   }
 
+  @Override
   public boolean visit(final IResourceProxy proxy) throws CoreException {
     if (proxy.getType() == IResource.FILE) {
       IFile file = (IFile) proxy.requestResource();
@@ -136,7 +135,7 @@ public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
       MarkerUtils.updatePersistentProperties(resource, sonarProject, eclipseSonar.getSonarServer());
       SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - startMarker) + "ms\n");
     } catch (final Exception ex) {
-      LoggerFactory.getLogger(getClass()).error(ex.getMessage(), ex);
+      SonarCorePlugin.getDefault().error(ex.getMessage(), ex);
     }
   }
 

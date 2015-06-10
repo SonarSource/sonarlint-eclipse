@@ -19,6 +19,9 @@
  */
 package org.sonar.ide.eclipse.ui.internal.actions;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -33,18 +36,11 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.views.issues.IssuesView;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 public abstract class AbstractSonarProjectAction implements IObjectActionDelegate {
-
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractSonarProjectAction.class);
 
   private List<IProject> selectedProjects = new ArrayList<IProject>();
 
@@ -59,6 +55,7 @@ public abstract class AbstractSonarProjectAction implements IObjectActionDelegat
   /**
    * @see IObjectActionDelegate#setActivePart(IAction, IWorkbenchPart)
    */
+  @Override
   public void setActivePart(IAction action, IWorkbenchPart targetPart) {
   }
 
@@ -69,12 +66,13 @@ public abstract class AbstractSonarProjectAction implements IObjectActionDelegat
       public void done(IJobChangeEvent event) {
         if (Status.OK_STATUS == event.getResult()) {
           Display.getDefault().asyncExec(new Runnable() {
+            @Override
             public void run() {
               IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
               try {
                 iw.getActivePage().showView(IssuesView.ID);
               } catch (PartInitException e) {
-                LOG.error("Unable to open Issues View", e);
+                SonarCorePlugin.getDefault().error("Unable to open Issues View", e);
               }
             }
           });
@@ -87,6 +85,7 @@ public abstract class AbstractSonarProjectAction implements IObjectActionDelegat
   /**
    * @see org.eclipse.ui.IActionDelegate#selectionChanged(IAction, ISelection)
    */
+  @Override
   public void selectionChanged(IAction action, ISelection selection) {
     selectedProjects.clear();
     boolean actionEnabled = true;

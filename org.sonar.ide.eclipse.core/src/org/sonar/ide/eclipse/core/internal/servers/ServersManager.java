@@ -21,23 +21,20 @@ package org.sonar.ide.eclipse.core.internal.servers;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.equinox.security.storage.EncodingUtils;
-import org.osgi.service.prefs.BackingStoreException;
-import org.osgi.service.prefs.Preferences;
-import org.slf4j.LoggerFactory;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.ide.eclipse.wsclient.WSClientFactory;
-
-import javax.annotation.CheckForNull;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.CheckForNull;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.equinox.security.storage.EncodingUtils;
+import org.osgi.service.prefs.BackingStoreException;
+import org.osgi.service.prefs.Preferences;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
 public class ServersManager implements ISonarServersManager {
   static final String PREF_SERVERS = "servers";
@@ -76,7 +73,7 @@ public class ServersManager implements ISonarServersManager {
         return Arrays.asList((ISonarServer) new SonarServer("http://localhost:9000"));
       }
     } catch (BackingStoreException e) {
-      LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
     return servers;
   }
@@ -91,7 +88,7 @@ public class ServersManager implements ISonarServersManager {
       serversNode.node(encodedUrl).putBoolean("auth", server.hasCredentials());
       serversNode.flush();
     } catch (BackingStoreException e) {
-      LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
   }
 
@@ -105,7 +102,7 @@ public class ServersManager implements ISonarServersManager {
       rootNode.node(PREF_SERVERS).put("initialized", "true");
       rootNode.flush();
     } catch (BackingStoreException e) {
-      LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
     serverVersionCache.clear();
   }
@@ -119,7 +116,7 @@ public class ServersManager implements ISonarServersManager {
       serversNode.node(encodedUrl).removeNode();
       serversNode.flush();
     } catch (BackingStoreException e) {
-      LoggerFactory.getLogger(SecurityManager.class).error(e.getMessage(), e);
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
     serverVersionCache.remove(server.getUrl());
   }

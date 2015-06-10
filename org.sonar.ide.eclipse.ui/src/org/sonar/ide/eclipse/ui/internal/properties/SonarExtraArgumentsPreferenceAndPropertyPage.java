@@ -19,6 +19,9 @@
  */
 package org.sonar.ide.eclipse.ui.internal.properties;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.Dialog;
@@ -56,16 +59,11 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * An abstract field editor that manages a list of input values.
@@ -82,8 +80,6 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
 
   private static final String VALUE = "Value";
 
-  private static final Logger LOG = LoggerFactory.getLogger(SonarExtraArgumentsPreferenceAndPropertyPage.class);
-
   private static final String PREFERENCE_ID = "org.sonar.ide.eclipse.ui.properties.SonarExtraArgumentsPreferenceAndPropertyPage";
 
   /**
@@ -91,10 +87,12 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
    */
   private static class SonarPropertiesLabelProvider extends LabelProvider implements ITableLabelProvider {
 
+    @Override
     public Image getColumnImage(Object element, int columnIndex) {
       return null;
     }
 
+    @Override
     public String getColumnText(Object element, int columnIndex) {
       SonarProperty data = (SonarProperty) element;
 
@@ -118,14 +116,17 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
 
     private java.util.List<SonarProperty> sonarProperties;
 
+    @Override
     public Object[] getElements(Object input) {
       return sonarProperties.toArray();
     }
 
+    @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
       sonarProperties = (List<SonarProperty>) newInput;
     }
 
+    @Override
     public void dispose() {
       sonarProperties = null;
     }
@@ -160,6 +161,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     setTitle(Messages.SonarPreferencePage_label_extra_args);
   }
 
+  @Override
   protected Control createContents(final Composite ancestor) {
     loadProperties();
 
@@ -219,12 +221,14 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     fTableViewer.setComparator(null);
 
     fTableViewer.addDoubleClickListener(new IDoubleClickListener() {
+      @Override
       public void doubleClick(DoubleClickEvent e) {
         edit();
       }
     });
 
     fTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+      @Override
       public void selectionChanged(SelectionChangedEvent e) {
         updateButtons();
       }
@@ -254,6 +258,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     addButton.setText("New...");
     addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     addButton.addListener(SWT.Selection, new Listener() {
+      @Override
       public void handleEvent(Event e) {
         add();
       }
@@ -263,6 +268,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     editButton.setText("Edit...");
     editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     editButton.addListener(SWT.Selection, new Listener() {
+      @Override
       public void handleEvent(Event e) {
         edit();
       }
@@ -272,6 +278,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     removeButton.setText("Remove");
     removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     removeButton.addListener(SWT.Selection, new Listener() {
+      @Override
       public void handleEvent(Event e) {
         remove();
       }
@@ -281,6 +288,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     upButton.setText("Up");
     upButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     upButton.addListener(SWT.Selection, new Listener() {
+      @Override
       public void handleEvent(Event e) {
         upPressed();
       }
@@ -290,6 +298,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     downButton.setText("Down");
     downButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     downButton.addListener(SWT.Selection, new Listener() {
+      @Override
       public void handleEvent(Event e) {
         downPressed();
       }
@@ -435,6 +444,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     swap(true);
   }
 
+  @Override
   public void init(IWorkbench workbench) {
     setDescription("Edit properties passed to the SonarQube Runner in preview mode");
     setPreferenceStore(SonarUiPlugin.getDefault().getPreferenceStore());
@@ -451,7 +461,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
           sonarProperties.add(new SonarProperty(keyValue[0], keyValue[1]));
         }
       } catch (Exception e) {
-        LOG.error("Error while loading SonarQube properties" + props, e);
+        SonarCorePlugin.getDefault().error("Error while loading SonarQube properties" + props, e);
       }
     } else {
       sonarProperties.addAll(getSonarProject().getExtraProperties());

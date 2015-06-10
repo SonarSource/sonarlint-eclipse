@@ -26,8 +26,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 import org.sonar.ide.eclipse.ui.internal.views.ResourceWebView;
 
@@ -37,8 +36,6 @@ import org.sonar.ide.eclipse.ui.internal.views.ResourceWebView;
  * @author Jérémie Lagarde
  */
 public class OpenInBrowserAction implements IObjectActionDelegate {
-
-  private static final Logger LOG = LoggerFactory.getLogger(OpenInBrowserAction.class);
 
   private IStructuredSelection selection;
 
@@ -53,13 +50,9 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
 
   @Override
   public void run(IAction action) {
-    try {
-      Object element = selection.getFirstElement();
-      if (element instanceof ISonarResource) {
-        openBrowser((ISonarResource) element);
-      }
-    } catch (Exception e) {
-      LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
+    Object element = selection.getFirstElement();
+    if (element instanceof ISonarResource) {
+      openBrowser((ISonarResource) element);
     }
   }
 
@@ -68,7 +61,7 @@ public class OpenInBrowserAction implements IObjectActionDelegate {
       ResourceWebView view = (ResourceWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ResourceWebView.ID);
       view.setInput(sonarResource);
     } catch (PartInitException e) {
-      LOG.error("Unable to open Web View", e);
+      SonarCorePlugin.getDefault().error("Unable to open Web View", e);
     }
   }
 

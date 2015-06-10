@@ -45,8 +45,6 @@ import org.eclipse.osgi.util.NLS;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.Messages;
@@ -62,8 +60,6 @@ import org.sonar.runner.api.ProcessMonitor;
 import org.sonar.runner.api.StreamConsumer;
 
 public class AnalyzeProjectJob extends Job {
-
-  private static final Logger LOG = LoggerFactory.getLogger(AnalyzeProjectJob.class);
 
   private final IProject project;
   private final boolean debugEnabled;
@@ -184,7 +180,6 @@ public class AnalyzeProjectJob extends Job {
       // Now iterate over all issues and create markers
       MarkerUtils.createMarkersForJSONIssues(resourcesByKey, ruleByKey, userNameByLogin, (JSONArray) sonarResult.get("issues"));
     } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
       throw new SonarEclipseException("Unable to create markers", e);
     } finally {
       IOUtils.closeQuietly(fileReader);

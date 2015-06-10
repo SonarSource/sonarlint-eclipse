@@ -24,8 +24,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
@@ -34,9 +33,7 @@ import org.sonar.ide.eclipse.ui.internal.SonarUrls;
 /**
  * Display details of a rule in a web browser
  */
-public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> implements ISelectionListener {
-
-  private static final Logger LOG = LoggerFactory.getLogger(RuleDescriptionWebView.class);
+public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker>implements ISelectionListener {
 
   public static final String ID = SonarUiPlugin.PLUGIN_ID + ".views.RuleDescriptionWebView";
 
@@ -47,7 +44,7 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
       String url = new SonarUrls().ruleDescriptionUrl("" + element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR), sonarProject.getUrl());
       super.open(sonarProject, url);
     } catch (CoreException e) {
-      LOG.error("Unable to open rule description", e);
+      SonarCorePlugin.getDefault().error("Unable to open rule description", e);
     }
   }
 

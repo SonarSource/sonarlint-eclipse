@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.ui.internal.console;
 
+import java.io.IOException;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -39,8 +40,6 @@ import org.sonar.ide.eclipse.core.internal.jobs.LogListener;
 import org.sonar.ide.eclipse.ui.internal.ISonarConsole;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
-
-import java.io.IOException;
 
 public class SonarConsole extends IOConsole implements LogListener, ISonarConsole, IPropertyChangeListener {
 
@@ -95,6 +94,7 @@ public class SonarConsole extends IOConsole implements LogListener, ISonarConsol
     debugColor.dispose();
   }
 
+  @Override
   public void info(String msg) {
     if (isShowConsoleOnOutput()) {
       bringConsoleToFront();
@@ -102,6 +102,7 @@ public class SonarConsole extends IOConsole implements LogListener, ISonarConsol
     write(getInfoStream(), msg);
   }
 
+  @Override
   public void error(String msg) {
     if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
       bringConsoleToFront();
@@ -109,6 +110,7 @@ public class SonarConsole extends IOConsole implements LogListener, ISonarConsol
     write(getWarnStream(), msg);
   }
 
+  @Override
   public void debug(String msg) {
     if (isDebugEnabled()) {
       if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
@@ -119,6 +121,9 @@ public class SonarConsole extends IOConsole implements LogListener, ISonarConsol
   }
 
   private void write(IOConsoleOutputStream stream, String msg) {
+    if (msg == null) {
+      return;
+    }
     try {
       stream.write(msg);
     } catch (IOException e) {
@@ -176,6 +181,7 @@ public class SonarConsole extends IOConsole implements LogListener, ISonarConsol
     return SonarUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarConsole.P_DEBUG_OUTPUT);
   }
 
+  @Override
   public void propertyChange(PropertyChangeEvent event) {
     // font changed
     setFont(JFaceResources.getFontRegistry().get("pref_console_font")); //$NON-NLS-1$

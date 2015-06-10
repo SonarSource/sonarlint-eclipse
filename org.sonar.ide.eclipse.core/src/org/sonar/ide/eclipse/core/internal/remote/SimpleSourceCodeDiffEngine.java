@@ -20,8 +20,6 @@
 package org.sonar.ide.eclipse.core.internal.remote;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Actually this is an implementation of heuristic algorithm - magic happens here.
@@ -29,7 +27,6 @@ import org.slf4j.LoggerFactory;
  * @author Evgeny Mandrikov
  */
 public class SimpleSourceCodeDiffEngine {
-  private static final Logger LOG = LoggerFactory.getLogger(SimpleSourceCodeDiffEngine.class);
 
   public SourceCodeDiff diff(String local, String remote) {
     return diff(split(local), split(remote));
@@ -71,7 +68,6 @@ public class SimpleSourceCodeDiffEngine {
       if (hashCodes[i] == originalHashCode) {
         if ((newLine != -1) && (newLine != originalLine)) {
           // may be more than one match, but we take into account only first
-          LOG.debug("Found more than one match for line '{}'", originalSourceLine);
           break;
         }
         newLine = i + 1;

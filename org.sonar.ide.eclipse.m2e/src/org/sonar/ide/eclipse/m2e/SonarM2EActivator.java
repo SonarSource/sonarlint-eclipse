@@ -20,7 +20,6 @@
 package org.sonar.ide.eclipse.m2e;
 
 import org.osgi.framework.BundleContext;
-import org.slf4j.LoggerFactory;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
 
 public class SonarM2EActivator extends AbstractPlugin {
@@ -43,13 +42,11 @@ public class SonarM2EActivator extends AbstractPlugin {
   @Override
   public void start(BundleContext context) {
     super.start(context);
-    LoggerFactory.getLogger(getClass()).debug("SonarM2EPlugin started");
   }
 
   @Override
   public void stop(BundleContext context) {
     super.stop(context);
-    LoggerFactory.getLogger(getClass()).debug("SonarM2EPlugin stopped");
   }
 
 }
