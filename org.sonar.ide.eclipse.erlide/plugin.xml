@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+
+   <extension
+         point="org.sonar.ide.eclipse.core.projectConfigurators">
+      <configurator
+            class="org.sonar.ide.eclipse.erlide.internal.ErlangProjectConfigurator">
+      </configurator>
+   </extension>
+
+</plugin>

@@ -135,7 +135,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       SonarCorePlugin.getDefault().info("Skipping non existing source entry: " + entry.getPath().toOSString());
       return;
     }
-    String relativeDir = getRelativePath(javaProject, entry.getPath());
+    String relativeDir = getRelativePath(javaProject.getPath(), entry.getPath());
     if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
       if (topProject) {
         context.testDirs().add(srcDir);
@@ -187,10 +187,6 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       }
     }
     return false;
-  }
-
-  private String getRelativePath(IJavaProject javaProject, IPath path) {
-    return path.makeRelativeTo(javaProject.getPath()).toOSString();
   }
 
   private void configurationToProperties(Properties sonarProjectProperties, JavaProjectConfiguration context) {
