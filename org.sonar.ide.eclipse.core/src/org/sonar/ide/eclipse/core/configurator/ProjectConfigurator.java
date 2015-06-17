@@ -19,15 +19,14 @@
  */
 package org.sonar.ide.eclipse.core.configurator;
 
+import java.util.Collection;
+import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
-
-import java.util.Collection;
-import java.util.Properties;
 
 public abstract class ProjectConfigurator {
 
@@ -47,11 +46,11 @@ public abstract class ProjectConfigurator {
     return getClass().getName();
   }
 
-  protected String getAbsolutePath(IPath path) {
+  protected static String getAbsolutePath(IPath path) {
     return ResourceUtils.getAbsolutePath(path);
   }
 
-  protected void appendProperty(Properties properties, String key, String value) {
+  public static void appendProperty(Properties properties, String key, String value) {
     String newValue = properties.getProperty(key, null);
     if (newValue != null) {
       newValue += SonarProperties.SEPARATOR + value;
@@ -61,8 +60,11 @@ public abstract class ProjectConfigurator {
     properties.put(key, newValue);
   }
 
-  protected void setPropertyList(Properties properties, String key, Collection<String> values) {
+  protected static void setPropertyList(Properties properties, String key, Collection<String> values) {
     properties.put(key, StringUtils.join(values, SonarProperties.SEPARATOR));
   }
 
+  public static void appendPropertyList(Properties properties, String key, Collection<String> values) {
+    appendProperty(properties, key, StringUtils.join(values, SonarProperties.SEPARATOR));
+  }
 }

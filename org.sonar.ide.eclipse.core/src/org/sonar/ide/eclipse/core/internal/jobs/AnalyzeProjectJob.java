@@ -107,7 +107,7 @@ public class AnalyzeProjectJob extends Job {
     // Analyze
     // To be sure to not reuse something from a previous analysis
     try {
-      Files.delete(outputFile.toPath());
+      Files.deleteIfExists(outputFile.toPath());
     } catch (IOException e) {
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Unable to delete", e);
     }

@@ -195,8 +195,8 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
 
   private void configurationToProperties(Properties sonarProjectProperties, JavaProjectConfiguration context) {
     setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, context.libraries());
-    setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, context.testDirs());
-    setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, context.sourceDirs());
+    appendPropertyList(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, context.testDirs());
+    appendPropertyList(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, context.sourceDirs());
     setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, context.binaries());
   }
 }
