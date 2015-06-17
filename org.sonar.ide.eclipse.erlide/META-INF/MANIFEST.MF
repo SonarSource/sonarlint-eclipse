@@ -12,12 +12,11 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.navigator,
  org.eclipse.jface.text,
  org.eclipse.core.filebuffers,
- org.sonar.ide.eclipse.ui,
  org.sonar.ide.eclipse.core,
- org.sonar.ide.eclipse.wsclient,
  org.erlide.core,
  org.erlide.model.api;bundle-version="0.24.11",
  org.erlide.util;bundle-version="0.24.12"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
+Export-Package: org.sonar.ide.eclipse.erlide.internal
