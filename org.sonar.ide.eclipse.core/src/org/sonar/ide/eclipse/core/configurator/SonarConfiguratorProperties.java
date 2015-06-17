@@ -30,7 +30,5 @@ public interface SonarConfiguratorProperties {
   String SOURCE_EXCLUSIONS_PROPERTY = "sonar.exclusions";
   String TEST_DIRS_PROPERTY = "sonar.tests";
   String TEST_EXCLUSIONS_PROPERTY = "sonar.tests.exclusions";
-  String BINARIES_PROPERTY = "sonar.binaries";
-  String LIBRARIES_PROPERTY = "sonar.libraries";
 
 }

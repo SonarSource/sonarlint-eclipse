@@ -92,9 +92,9 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
           break;
         case IClasspathEntry.CPE_LIBRARY:
           if (topProject || entry.isExported()) {
-            final String libDir = resolveLibrary(javaProject, entry);
-            if (libDir != null) {
-              context.libraries().add(libDir);
+            final String libPath = resolveLibrary(javaProject, entry);
+            if (libPath != null) {
+              context.libraries().add(libPath);
             }
           }
           break;
@@ -151,17 +151,17 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   }
 
   private String resolveLibrary(IJavaProject javaProject, IClasspathEntry entry) {
-    final String libDir;
+    final String libPath;
     IResource member = findPath(javaProject.getProject(), entry.getPath());
     if (member != null) {
-      libDir = member.getLocation().toOSString();
+      libPath = member.getLocation().toOSString();
     } else {
-      libDir = entry.getPath().makeAbsolute().toOSString();
+      libPath = entry.getPath().makeAbsolute().toOSString();
     }
-    if (!new File(libDir).exists()) {
+    if (!new File(libPath).exists()) {
       return null;
     }
-    return libDir;
+    return libPath.endsWith(File.separator) ? libPath.substring(0, libPath.length() - 1) : libPath;
   }
 
   private IResource findPath(IProject project, IPath path) {
@@ -194,9 +194,11 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   }
 
   private void configurationToProperties(Properties sonarProjectProperties, JavaProjectConfiguration context) {
-    setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, context.libraries());
+    setPropertyList(sonarProjectProperties, "sonar.libraries", context.libraries());
+    setPropertyList(sonarProjectProperties, "sonar.java.libraries", context.libraries());
     appendPropertyList(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, context.testDirs());
     appendPropertyList(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, context.sourceDirs());
-    setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, context.binaries());
+    setPropertyList(sonarProjectProperties, "sonar.binaries", context.binaries());
+    setPropertyList(sonarProjectProperties, "sonar.java.binaries", context.binaries());
   }
 }

@@ -36,7 +36,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.matchers.JUnitMatchers;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
-import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
@@ -88,7 +87,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString()).isEqualTo("bar:foo");
     assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString()).isEqualTo("incremental");
     // SONARIDE-386 check that at least some JARs from the VM are appended
-    List<String> libs = Arrays.asList(props.get(SonarConfiguratorProperties.LIBRARIES_PROPERTY).toString().split(","));
+    List<String> libs = Arrays.asList(props.get("sonar.libraries").toString().split(","));
     assertThat(libs).doesNotHaveDuplicates();
     boolean foundRT = false;
     for (String lib : libs) {
@@ -98,7 +97,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
       }
     }
     if (!foundRT) {
-      fail("rt.jar/classes.jar not found in sonar.libraries: " + props.get(SonarConfiguratorProperties.LIBRARIES_PROPERTY).toString());
+      fail("rt.jar/classes.jar not found in sonar.libraries: " + props.get("sonar.libraries").toString());
     }
   }
 
