@@ -102,8 +102,8 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
           IJavaModel javaModel = javaProject.getJavaModel();
           IJavaProject referredProject = javaModel.getJavaProject(entry.getPath().segment(0));
           if (!context.dependentProjects().contains(referredProject)) {
-            addClassPathToSonarProject(referredProject, context, false);
             context.dependentProjects().add(referredProject);
+            addClassPathToSonarProject(referredProject, context, false);
           }
           break;
         default:
