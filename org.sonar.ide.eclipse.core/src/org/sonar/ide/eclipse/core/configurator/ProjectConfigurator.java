@@ -60,6 +60,10 @@ public abstract class ProjectConfigurator {
     properties.put(key, newValue);
   }
 
+  protected String getRelativePath(IPath root, IPath path) {
+    return path.makeRelativeTo(root).toOSString();
+  }
+
   protected static void setPropertyList(Properties properties, String key, Collection<String> values) {
     properties.put(key, StringUtils.join(values, SonarProperties.SEPARATOR));
   }
