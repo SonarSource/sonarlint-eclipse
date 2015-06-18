@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.sonar.ide.eclipse.core,
  org.erlide.core,
  org.erlide.model.api;bundle-version="0.24.11",
- org.erlide.util;bundle-version="0.24.12"
+ org.erlide.util;bundle-version="0.24.12",
+ org.sonar.ide.eclipse.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle

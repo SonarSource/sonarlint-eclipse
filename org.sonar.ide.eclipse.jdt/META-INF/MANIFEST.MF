@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.core,
  org.eclipse.jdt.ui,
  org.sonar.ide.eclipse.core,
- findbugsAnnotations;bundle-version="2.0.0"
+ findbugsAnnotations;bundle-version="2.0.0",
+ org.sonar.ide.eclipse.ui
 Export-Package: org.sonar.ide.eclipse.jdt.internal;x-friends:="org.son
  ar.ide.eclipse.core.tests"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

@@ -19,7 +19,6 @@
    </license>
 
    <requires>
-      <import feature="org.eclipse.platform" version="3.6.0" match="greaterOrEqual"/>
       <import feature="org.sonar.ide.eclipse.feature" version="3.5.0.qualifier"/>
    </requires>
 
