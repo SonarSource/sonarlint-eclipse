@@ -25,7 +25,7 @@ import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import java.util.Collections;
 import java.util.List;
 
-public class AnalyseProjectRequest {
+public class AnalyzeProjectRequest {
 
   private IProject project;
   private boolean debugEnabled;
@@ -33,7 +33,7 @@ public class AnalyseProjectRequest {
   private String jvmArgs = "";
   private boolean forceFullPreview;
 
-  public AnalyseProjectRequest(IProject project) {
+  public AnalyzeProjectRequest(IProject project) {
     this.project = project;
   }
 
@@ -45,7 +45,7 @@ public class AnalyseProjectRequest {
     return debugEnabled;
   }
 
-  public AnalyseProjectRequest setDebugEnabled(boolean debugEnabled) {
+  public AnalyzeProjectRequest setDebugEnabled(boolean debugEnabled) {
     this.debugEnabled = debugEnabled;
     return this;
   }
@@ -54,7 +54,7 @@ public class AnalyseProjectRequest {
     return extraProps;
   }
 
-  public AnalyseProjectRequest setExtraProps(List<SonarProperty> extraProps) {
+  public AnalyzeProjectRequest setExtraProps(List<SonarProperty> extraProps) {
     this.extraProps = extraProps;
     return this;
   }
@@ -63,7 +63,7 @@ public class AnalyseProjectRequest {
     return jvmArgs;
   }
 
-  public AnalyseProjectRequest setJvmArgs(String jvmArgs) {
+  public AnalyzeProjectRequest setJvmArgs(String jvmArgs) {
     this.jvmArgs = jvmArgs;
     return this;
   }
@@ -72,7 +72,7 @@ public class AnalyseProjectRequest {
     return forceFullPreview;
   }
 
-  public AnalyseProjectRequest setForceFullPreview(boolean forceFullPreview) {
+  public AnalyzeProjectRequest setForceFullPreview(boolean forceFullPreview) {
     this.forceFullPreview = forceFullPreview;
     return this;
   }

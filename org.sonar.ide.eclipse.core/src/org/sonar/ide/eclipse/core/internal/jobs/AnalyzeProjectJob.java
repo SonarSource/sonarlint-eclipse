@@ -72,7 +72,7 @@ public class AnalyzeProjectJob extends Job {
 
   private boolean incremental;
 
-  public AnalyzeProjectJob(AnalyseProjectRequest request) {
+  public AnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(Messages.AnalyseProjectJob_title);
     this.project = request.getProject();
     this.debugEnabled = request.isDebugEnabled();

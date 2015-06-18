@@ -45,7 +45,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
-import org.sonar.ide.eclipse.core.internal.jobs.AnalyseProjectRequest;
+import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonar.ide.eclipse.core.internal.jobs.SynchronizeAllIssuesJob;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
@@ -72,13 +72,13 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
     boolean debugEnabled = SonarConsole.isDebugEnabled();
     String sonarJvmArgs = SonarUiPlugin.getSonarJvmArgs();
     boolean forceFullPreview = SonarUiPlugin.isForceFullPreview();
-    List<AnalyseProjectRequest> requests = new ArrayList<AnalyseProjectRequest>();
+    List<AnalyzeProjectRequest> requests = new ArrayList<AnalyzeProjectRequest>();
     SonarUiPlugin.getDefault().getSonarConsole().clearConsole();
     for (IProject project : selectedProjects) {
       if (!SonarNature.hasSonarNature(project)) {
         break;
       }
-      requests.add(new AnalyseProjectRequest(project)
+      requests.add(new AnalyzeProjectRequest(project)
         .setDebugEnabled(debugEnabled)
         .setExtraProps(SonarUiPlugin.getExtraPropertiesForLocalAnalysis(project))
         .setJvmArgs(sonarJvmArgs)

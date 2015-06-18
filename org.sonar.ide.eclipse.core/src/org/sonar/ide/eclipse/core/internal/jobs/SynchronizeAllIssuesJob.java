@@ -43,10 +43,10 @@ import org.sonar.ide.eclipse.wsclient.ConnectionException;
 public class SynchronizeAllIssuesJob extends Job {
 
   private IProgressMonitor monitor;
-  private List<AnalyseProjectRequest> requests;
+  private List<AnalyzeProjectRequest> requests;
 
   public static void createAndSchedule(IProject project, boolean debugEnabled, List<SonarProperty> extraProps, String jvmArgs, boolean forceFullPreview) {
-    AnalyseProjectRequest request = new AnalyseProjectRequest(project)
+    AnalyzeProjectRequest request = new AnalyzeProjectRequest(project)
       .setDebugEnabled(debugEnabled)
       .setExtraProps(extraProps)
       .setJvmArgs(jvmArgs)
@@ -54,7 +54,7 @@ public class SynchronizeAllIssuesJob extends Job {
     new SynchronizeAllIssuesJob(Arrays.asList(request)).schedule();
   }
 
-  public SynchronizeAllIssuesJob(List<AnalyseProjectRequest> requests) {
+  public SynchronizeAllIssuesJob(List<AnalyzeProjectRequest> requests) {
     super("Synchronize issues");
     this.requests = requests;
     setPriority(Job.LONG);
@@ -67,7 +67,7 @@ public class SynchronizeAllIssuesJob extends Job {
     try {
       monitor.beginTask("Synchronize", requests.size());
 
-      for (final AnalyseProjectRequest request : requests) {
+      for (final AnalyzeProjectRequest request : requests) {
         if (monitor.isCanceled()) {
           break;
         }
@@ -98,7 +98,7 @@ public class SynchronizeAllIssuesJob extends Job {
     return status;
   }
 
-  private void scheduleAnalysis(AnalyseProjectRequest request) throws InterruptedException {
+  private void scheduleAnalysis(AnalyzeProjectRequest request) throws InterruptedException {
     AnalyzeProjectJob analyzeProjectJob = new AnalyzeProjectJob(request);
     analyzeProjectJob.schedule();
     analyzeProjectJob.join();
