@@ -15,7 +15,10 @@
    <feature url="features/org.sonar.ide.eclipse.pydev.feature_0.0.0.jar" id="org.sonar.ide.eclipse.pydev.feature" version="0.0.0">
       <category name="SonarQube Eclipse Optional Configuration Helpers"/>
    </feature>
-   <feature url="features/org.sonar.ide.eclipse.feature_3.5.0.qualifier.jar" id="org.sonar.ide.eclipse.feature" version="3.5.0.qualifier">
+   <feature url="features/org.sonar.ide.eclipse.erlide.feature_0.0.0.jar" id="org.sonar.ide.eclipse.erlide.feature" version="0.0.0">
+      <category name="SonarQube Eclipse Optional Configuration Helpers"/>
+   </feature>
+   <feature url="features/org.sonar.ide.eclipse.feature_0.0.0.qualifier.jar" id="org.sonar.ide.eclipse.feature" version="0.0.0">
       <category name="SonarQube Eclipse Integration"/>
    </feature>
    <category-def name="SonarQube Eclipse Integration" label="SonarQube Eclipse Integration">
