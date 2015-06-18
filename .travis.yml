@@ -3,7 +3,6 @@ sudo: false
 install: true
 
 env:
-  - TARGET_PLATFORM=e37
   - TARGET_PLATFORM=e42
   - TARGET_PLATFORM=e43
   - TARGET_PLATFORM=e44

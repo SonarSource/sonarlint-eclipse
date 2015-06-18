@@ -88,7 +88,6 @@
 
     <module>org.sonar.ide.eclipse.site</module>
 
-    <module>target-platform-e37</module>
     <module>target-platform-e42</module>
     <module>target-platform-e43</module>
     <module>target-platform-e44</module>
