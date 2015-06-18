@@ -20,6 +20,8 @@
 package org.sonar.ide.eclipse.ui.internal.command;
 
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -36,6 +38,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PartInitException;
@@ -47,9 +50,6 @@ import org.sonar.ide.eclipse.core.internal.jobs.SynchronizeAllIssuesJob;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 import org.sonar.ide.eclipse.ui.internal.views.issues.IssuesView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AnalyzeProjectsCommand extends AbstractHandler {
 
@@ -133,7 +133,7 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
             public void run() {
               IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
               try {
-                iw.getActivePage().showView(IssuesView.ID);
+                iw.getActivePage().showView(IssuesView.ID, null, IWorkbenchPage.VIEW_VISIBLE);
               } catch (PartInitException e) {
                 SonarUiPlugin.getDefault().getLog().log(new Status(Status.ERROR, SonarUiPlugin.PLUGIN_ID, Status.OK, "Unable to open Issues View", e));
               }

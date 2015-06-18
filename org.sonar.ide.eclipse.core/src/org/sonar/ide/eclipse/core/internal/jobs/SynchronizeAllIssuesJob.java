@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
+import java.util.Arrays;
+import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -37,9 +39,6 @@ import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.wsclient.ConnectionException;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class SynchronizeAllIssuesJob extends Job {
 
@@ -75,8 +74,11 @@ public class SynchronizeAllIssuesJob extends Job {
         if (request.getProject().isAccessible()) {
           MarkerUtils.deleteIssuesMarkers(request.getProject());
           monitor.subTask(request.getProject().getName());
-          fetchRemoteIssues(request.getProject(), monitor);
-          scheduleIncrementalAnalysis(request);
+          if (!request.isForceFullPreview()) {
+            // Only get remote issues in incremental mode
+            fetchRemoteIssues(request.getProject(), monitor);
+          }
+          scheduleAnalysis(request);
         }
         monitor.worked(1);
       }
@@ -96,8 +98,10 @@ public class SynchronizeAllIssuesJob extends Job {
     return status;
   }
 
-  private void scheduleIncrementalAnalysis(AnalyseProjectRequest request) {
-    new AnalyzeProjectJob(request).schedule();
+  private void scheduleAnalysis(AnalyseProjectRequest request) throws InterruptedException {
+    AnalyzeProjectJob analyzeProjectJob = new AnalyzeProjectJob(request);
+    analyzeProjectJob.schedule();
+    analyzeProjectJob.join();
   }
 
   public IProgressMonitor getMonitor() {
