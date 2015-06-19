@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.ui.internal.properties;
 
+import java.text.SimpleDateFormat;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -30,8 +31,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.Messages;
-
-import java.text.SimpleDateFormat;
 
 /**
  * Property page for projects to view sonar server connection. It store in
@@ -77,7 +76,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
     return container;
   }
 
-  private Text addText(String label, String text, Composite container) {
+  private static Text addText(String label, String text, Composite container) {
     Label labelField = new Label(container, SWT.NONE);
     labelField.setText(label);
 

@@ -137,6 +137,7 @@ public abstract class SonarTestCase {
 
     workspace.run(new IWorkspaceRunnable() {
 
+      @Override
       public void run(final IProgressMonitor monitor) throws CoreException {
         // create project as java project
         if (!project.exists()) {

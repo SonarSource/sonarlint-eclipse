@@ -36,6 +36,7 @@ public class SelectedNewIssuesParameters extends FiltersContributionParameters {
     super();
   }
 
+  @Override
   public Map getParameterValues() {
     return isNewMap;
   }

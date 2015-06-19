@@ -44,6 +44,7 @@ public final class WorkspaceHelpers {
     final IWorkspace workspace = ResourcesPlugin.getWorkspace();
     workspace.run(new IWorkspaceRunnable() {
 
+      @Override
       public void run(IProgressMonitor monitor) throws CoreException {
         IProject[] projects = workspace.getRoot().getProjects();
         for (IProject project : projects) {

@@ -305,7 +305,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     });
   }
 
-  private void createLinkToGlobal(final Composite ancestor, Composite parent) {
+  private static void createLinkToGlobal(final Composite ancestor, Composite parent) {
     Link fLink = new Link(parent, SWT.NONE);
     fLink.setText("<A>Configure Workspace Settings...</A>");
     fLink.setLayoutData(new GridData());
@@ -397,7 +397,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     return null;
   }
 
-  private int computeMinimumColumnWidth(GC gc, String string) {
+  private static int computeMinimumColumnWidth(GC gc, String string) {
     // pad 10 to accommodate table header trimmings
     return gc.stringExtent(string).x + 10;
   }

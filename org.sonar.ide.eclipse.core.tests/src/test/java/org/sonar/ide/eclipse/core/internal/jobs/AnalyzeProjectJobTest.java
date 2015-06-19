@@ -178,6 +178,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
       this.line = line;
     }
 
+    @Override
     public boolean matches(Object item) {
       IMarker marker = (IMarker) item;
       String actualPath = marker.getResource().getProjectRelativePath().toString();
@@ -185,6 +186,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
       return StringUtils.equals(actualPath, path) && (actualLine == line);
     }
 
+    @Override
     public void describeTo(Description description) {
       // TODO Auto-generated method stub
     }

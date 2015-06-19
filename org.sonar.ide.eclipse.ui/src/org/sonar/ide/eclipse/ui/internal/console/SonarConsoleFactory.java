@@ -30,6 +30,7 @@ import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
  */
 public class SonarConsoleFactory implements IConsoleFactory {
 
+  @Override
   public void openConsole() {
     ISonarConsole console = SonarUiPlugin.getDefault().getSonarConsole();
     ((SonarConsole) console).showConsole();

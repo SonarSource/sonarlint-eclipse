@@ -164,7 +164,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     return libPath.endsWith(File.separator) ? libPath.substring(0, libPath.length() - 1) : libPath;
   }
 
-  private IResource findPath(IProject project, IPath path) {
+  private static IResource findPath(IProject project, IPath path) {
     IResource member = project.findMember(path);
     if (member == null) {
       IWorkspaceRoot workSpaceRoot = project.getWorkspace().getRoot();
@@ -177,7 +177,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
    * Allows to determine directories with resources to exclude them from analysis, otherwise analysis might fail due to SONAR-791.
    * This is a kind of workaround, which is based on the fact that M2Eclipse configures exclusion pattern "**" for directories with resources.
    */
-  private boolean isSourceExcluded(IClasspathEntry entry) {
+  private static boolean isSourceExcluded(IClasspathEntry entry) {
     IPath[] exclusionPatterns = entry.getExclusionPatterns();
     if (exclusionPatterns != null) {
       for (IPath exclusionPattern : exclusionPatterns) {

@@ -38,6 +38,7 @@ public class SonarPreferencePage extends FieldEditorPreferencePage implements IW
     super(Messages.SonarPreferencePage_title, GRID);
   }
 
+  @Override
   public void init(IWorkbench workbench) {
     setDescription(Messages.SonarPreferencePage_description);
     setPreferenceStore(SonarUiPlugin.getDefault().getPreferenceStore());

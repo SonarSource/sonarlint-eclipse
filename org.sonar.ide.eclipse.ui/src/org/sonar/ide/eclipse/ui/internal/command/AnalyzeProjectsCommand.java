@@ -53,6 +53,7 @@ import org.sonar.ide.eclipse.ui.internal.views.issues.IssuesView;
 
 public class AnalyzeProjectsCommand extends AbstractHandler {
 
+  @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
     List<IProject> selectedProjects = Lists.newArrayList();
 
@@ -114,7 +115,7 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
     }
   }
 
-  private void findProjectOfSelectedEditor(ExecutionEvent event, List<IProject> selectedProjects) {
+  private static void findProjectOfSelectedEditor(ExecutionEvent event, List<IProject> selectedProjects) {
     IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
     IEditorInput input = activeEditor.getEditorInput();
     if (input instanceof IFileEditorInput) {
@@ -130,6 +131,7 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
       public void done(IJobChangeEvent event) {
         if (Status.OK_STATUS == event.getResult()) {
           Display.getDefault().asyncExec(new Runnable() {
+            @Override
             public void run() {
               IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
               try {

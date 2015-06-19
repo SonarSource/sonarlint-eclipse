@@ -47,6 +47,7 @@ public abstract class AbstractLinkedSonarWebView<G> extends AbstractSonarWebView
   private G lastSelection;
 
   private final IPartListener2 partListener = new IPartListener2() {
+    @Override
     public void partVisible(IWorkbenchPartReference ref) {
       if (ref.getId().equals(getSite().getId())) {
         IWorkbenchPart activePart = ref.getPage().getActivePart();

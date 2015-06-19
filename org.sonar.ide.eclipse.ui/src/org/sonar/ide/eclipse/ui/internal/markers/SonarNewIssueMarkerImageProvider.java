@@ -27,14 +27,17 @@ import org.sonar.ide.eclipse.ui.internal.SonarImages;
 
 public class SonarNewIssueMarkerImageProvider implements IAnnotationImageProvider {
 
+  @Override
   public ImageDescriptor getImageDescriptor(String imageDescritporId) {
     return null;
   }
 
+  @Override
   public String getImageDescriptorId(Annotation annotation) {
     return null;
   }
 
+  @Override
   public Image getManagedImage(Annotation annotation) {
     return SonarImages.IMG_NEW_ISSUE;
   }

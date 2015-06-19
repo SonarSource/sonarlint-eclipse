@@ -40,18 +40,22 @@ public class SonarResource implements ISonarResource {
     this.name = name;
   }
 
+  @Override
   public String getKey() {
     return key;
   }
 
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public IProject getProject() {
     return resource.getProject();
   }
 
+  @Override
   public IResource getResource() {
     return resource;
   }

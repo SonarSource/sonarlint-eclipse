@@ -46,6 +46,7 @@ public class IsNewIssueFieldFilter extends MarkerFieldFilter {
     super();
   }
 
+  @Override
   public void loadSettings(IMemento memento) {
     Integer showNew = memento.getInteger(TAG_SELECTED_NEW);
     if (showNew == null) {
@@ -54,10 +55,12 @@ public class IsNewIssueFieldFilter extends MarkerFieldFilter {
     selectedNewIssues = showNew.intValue();
   }
 
+  @Override
   public void saveSettings(IMemento memento) {
     memento.putInteger(TAG_SELECTED_NEW, selectedNewIssues);
   }
 
+  @Override
   public boolean select(MarkerItem item) {
 
     if (selectedNewIssues == 0) {
@@ -87,6 +90,7 @@ public class IsNewIssueFieldFilter extends MarkerFieldFilter {
     }
   }
 
+  @Override
   public void populateWorkingCopy(MarkerFieldFilter copy) {
     super.populateWorkingCopy(copy);
     ((IsNewIssueFieldFilter) copy).selectedNewIssues = selectedNewIssues;

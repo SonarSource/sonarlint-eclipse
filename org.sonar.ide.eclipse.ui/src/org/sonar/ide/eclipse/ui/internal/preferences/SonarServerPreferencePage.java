@@ -66,6 +66,7 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     noDefaultAndApplyButton();
   }
 
+  @Override
   public void init(IWorkbench workbench) {
     setDescription(Messages.SonarServerPreferencePage_description);
   }
@@ -166,6 +167,7 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     });
 
     serversViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+      @Override
       public void selectionChanged(SelectionChangedEvent event) {
         removeButton.setEnabled(!servers.isEmpty());
         editButton.setEnabled(true);

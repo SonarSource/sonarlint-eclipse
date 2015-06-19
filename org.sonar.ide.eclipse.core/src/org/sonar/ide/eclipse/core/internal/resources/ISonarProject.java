@@ -31,6 +31,7 @@ import java.util.List;
  */
 public interface ISonarProject extends ISonarResource {
 
+  @Override
   String getKey();
 
   String getUrl();

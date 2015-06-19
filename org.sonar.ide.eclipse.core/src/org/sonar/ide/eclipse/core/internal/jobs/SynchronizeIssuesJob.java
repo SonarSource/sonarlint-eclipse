@@ -139,7 +139,7 @@ public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
     }
   }
 
-  private Collection<ISonarIssue> retrieveIssues(EclipseSonar sonar, IResource resource, IProgressMonitor monitor) {
+  private static Collection<ISonarIssue> retrieveIssues(EclipseSonar sonar, IResource resource, IProgressMonitor monitor) {
     SourceCode sourceCode = sonar.search(resource);
     if (sourceCode == null) {
       SonarCorePlugin.getDefault().debug("Unable to find remote resource " + resource.getName() + " on SonarQube server");

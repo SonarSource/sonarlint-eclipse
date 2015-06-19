@@ -48,6 +48,7 @@ public class ConfigureProjectsCommand extends AbstractHandler {
     return display;
   }
 
+  @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
     IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
 
@@ -72,6 +73,7 @@ public class ConfigureProjectsCommand extends AbstractHandler {
     final WizardDialog dialog = new WizardDialog(display.getActiveShell(), wizard);
     dialog.setHelpAvailable(true);
     BusyIndicator.showWhile(display, new Runnable() {
+      @Override
       public void run() {
         dialog.open();
       }

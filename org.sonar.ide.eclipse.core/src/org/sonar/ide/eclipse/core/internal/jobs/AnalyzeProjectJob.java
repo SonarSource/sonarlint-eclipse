@@ -185,7 +185,7 @@ public class AnalyzeProjectJob extends Job {
     }
   }
 
-  private Map<String, String> readRules(JSONObject sonarResult) {
+  private static Map<String, String> readRules(JSONObject sonarResult) {
     Map<String, String> ruleByKey = Maps.newHashMap();
     final JSONArray rules = (JSONArray) sonarResult.get("rules");
     for (Object rule : rules) {
@@ -196,7 +196,7 @@ public class AnalyzeProjectJob extends Job {
     return ruleByKey;
   }
 
-  private Map<String, String> readUserNameByLogin(JSONObject sonarResult) {
+  private static Map<String, String> readUserNameByLogin(JSONObject sonarResult) {
     Map<String, String> userNameByLogin = Maps.newHashMap();
     final JSONArray users = (JSONArray) sonarResult.get("users");
     if (users != null) {
@@ -288,14 +288,14 @@ public class AnalyzeProjectJob extends Job {
 
   }
 
-  private IStatus checkCancel(final IProgressMonitor monitor) {
+  private static IStatus checkCancel(final IProgressMonitor monitor) {
     if (monitor.isCanceled()) {
       return Status.CANCEL_STATUS;
     }
     return Status.OK_STATUS;
   }
 
-  private IStatus handleException(final IProgressMonitor monitor, Exception e) {
+  private static IStatus handleException(final IProgressMonitor monitor, Exception e) {
     if (monitor.isCanceled()) {
       // On OSX it seems that cancelling produce an exception
       return Status.CANCEL_STATUS;

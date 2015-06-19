@@ -48,6 +48,7 @@ public class SonarSearchEngineProvider implements IContentProposalProvider {
     this.parentPage = parentPage;
   }
 
+  @Override
   public IContentProposal[] getProposals(String contents, int position) {
     List<IContentProposal> list = new ArrayList<IContentProposal>();
     for (ISonarServer sonarServer : sonarServers) {
