@@ -59,6 +59,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
@@ -453,7 +454,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
   private void loadProperties() {
     sonarProperties = new ArrayList<SonarProperty>();
     if (isGlobal()) {
-      String props = getPreferenceStore().getString(SonarUiPlugin.PREF_EXTRA_ARGS);
+      String props = getPreferenceStore().getString(PreferencesUtils.PREF_EXTRA_ARGS);
       try {
         String[] keyValuePairs = StringUtils.split(props, "\n\r");
         for (String keyValuePair : keyValuePairs) {
@@ -476,7 +477,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     }
     String props = StringUtils.join(keyValuePairs, "\r\n");
     if (isGlobal()) {
-      getPreferenceStore().setValue(SonarUiPlugin.PREF_EXTRA_ARGS, props);
+      getPreferenceStore().setValue(PreferencesUtils.PREF_EXTRA_ARGS, props);
     } else {
       SonarProject sonarProject = getSonarProject();
       sonarProject.setExtraProperties(sonarProperties);

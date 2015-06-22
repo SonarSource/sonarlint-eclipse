@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
+import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.markers.SonarMarker;
@@ -37,7 +38,6 @@ import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
 import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.wsclient.ConnectionException;
 
 public class SynchronizeAllIssuesJob extends Job {
@@ -45,12 +45,9 @@ public class SynchronizeAllIssuesJob extends Job {
   private IProgressMonitor monitor;
   private List<AnalyzeProjectRequest> requests;
 
-  public static void createAndSchedule(IProject project, boolean debugEnabled, List<SonarProperty> extraProps, String jvmArgs, boolean forceFullPreview) {
+  public static void createAndSchedule(IProject project, boolean debugEnabled) {
     AnalyzeProjectRequest request = new AnalyzeProjectRequest(project)
-      .setDebugEnabled(debugEnabled)
-      .setExtraProps(extraProps)
-      .setJvmArgs(jvmArgs)
-      .setForceFullPreview(forceFullPreview);
+      .setDebugEnabled(debugEnabled);
     new SynchronizeAllIssuesJob(Arrays.asList(request)).schedule();
   }
 
@@ -74,7 +71,7 @@ public class SynchronizeAllIssuesJob extends Job {
         if (request.getProject().isAccessible()) {
           MarkerUtils.deleteIssuesMarkers(request.getProject());
           monitor.subTask(request.getProject().getName());
-          if (!request.isForceFullPreview()) {
+          if (!PreferencesUtils.isForceFullPreview()) {
             // Only get remote issues in incremental mode
             fetchRemoteIssues(request.getProject(), monitor);
           }

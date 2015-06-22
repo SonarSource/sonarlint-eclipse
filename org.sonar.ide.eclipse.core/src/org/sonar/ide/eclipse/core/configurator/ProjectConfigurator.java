@@ -47,7 +47,7 @@ public abstract class ProjectConfigurator {
   }
 
   protected static String getAbsolutePath(IPath path) {
-    return ResourceUtils.getAbsolutePath(path);
+    return ResourceUtils.getAbsolutePath(path).toString();
   }
 
   public static void appendProperty(Properties properties, String key, String value) {
@@ -61,7 +61,7 @@ public abstract class ProjectConfigurator {
   }
 
   protected String getRelativePath(IPath root, IPath path) {
-    return path.makeRelativeTo(root).toOSString();
+    return ResourceUtils.getAbsolutePath(path).makeRelativeTo(root).toOSString();
   }
 
   protected static void setPropertyList(Properties properties, String key, Collection<String> values) {

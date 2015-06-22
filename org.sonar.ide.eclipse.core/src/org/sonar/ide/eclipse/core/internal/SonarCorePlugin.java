@@ -41,6 +41,7 @@ import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 public class SonarCorePlugin extends AbstractPlugin {
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.core";
+  public static final String UI_PLUGIN_ID = "org.sonar.ide.eclipse.ui";
 
   public static final String MARKER_ID = PLUGIN_ID + ".sonarProblem";
   public static final String NEW_ISSUE_MARKER_ID = PLUGIN_ID + ".sonarProblemNewIssue";

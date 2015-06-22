@@ -20,18 +20,11 @@
 package org.sonar.ide.eclipse.core.internal.jobs;
 
 import org.eclipse.core.resources.IProject;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
-
-import java.util.Collections;
-import java.util.List;
 
 public class AnalyzeProjectRequest {
 
   private IProject project;
   private boolean debugEnabled;
-  private List<SonarProperty> extraProps = Collections.emptyList();
-  private String jvmArgs = "";
-  private boolean forceFullPreview;
 
   public AnalyzeProjectRequest(IProject project) {
     this.project = project;
@@ -47,33 +40,6 @@ public class AnalyzeProjectRequest {
 
   public AnalyzeProjectRequest setDebugEnabled(boolean debugEnabled) {
     this.debugEnabled = debugEnabled;
-    return this;
-  }
-
-  public List<SonarProperty> getExtraProps() {
-    return extraProps;
-  }
-
-  public AnalyzeProjectRequest setExtraProps(List<SonarProperty> extraProps) {
-    this.extraProps = extraProps;
-    return this;
-  }
-
-  public String getJvmArgs() {
-    return jvmArgs;
-  }
-
-  public AnalyzeProjectRequest setJvmArgs(String jvmArgs) {
-    this.jvmArgs = jvmArgs;
-    return this;
-  }
-
-  public boolean isForceFullPreview() {
-    return forceFullPreview;
-  }
-
-  public AnalyzeProjectRequest setForceFullPreview(boolean forceFullPreview) {
-    this.forceFullPreview = forceFullPreview;
     return this;
   }
 

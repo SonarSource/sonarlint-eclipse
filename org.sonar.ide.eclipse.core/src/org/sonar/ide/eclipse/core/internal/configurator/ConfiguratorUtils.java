@@ -34,6 +34,7 @@ import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
+import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
@@ -91,9 +92,12 @@ public class ConfiguratorUtils {
       }
     }
 
+    ProjectConfigurator.appendProperty(properties, SonarConfiguratorProperties.SOURCE_EXCLUSIONS_PROPERTY, PreferencesUtils.getTestFileRegexps());
+    ProjectConfigurator.appendProperty(properties, SonarConfiguratorProperties.TEST_INCLUSIONS_PROPERTY, PreferencesUtils.getTestFileRegexps());
     if (!properties.containsKey(SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY) && !properties.containsKey(SonarConfiguratorProperties.TEST_DIRS_PROPERTY)) {
       // Try to analyze all files
       properties.setProperty(SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, ".");
+      properties.setProperty(SonarConfiguratorProperties.TEST_DIRS_PROPERTY, ".");
       // Try to exclude derived folders
       try {
         for (IResource member : project.members()) {

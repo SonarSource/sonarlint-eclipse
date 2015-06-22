@@ -71,8 +71,6 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
 
   private void runAnalysisJob(List<IProject> selectedProjects) {
     boolean debugEnabled = SonarConsole.isDebugEnabled();
-    String sonarJvmArgs = SonarUiPlugin.getSonarJvmArgs();
-    boolean forceFullPreview = SonarUiPlugin.isForceFullPreview();
     List<AnalyzeProjectRequest> requests = new ArrayList<AnalyzeProjectRequest>();
     SonarUiPlugin.getDefault().getSonarConsole().clearConsole();
     for (IProject project : selectedProjects) {
@@ -80,10 +78,7 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
         break;
       }
       requests.add(new AnalyzeProjectRequest(project)
-        .setDebugEnabled(debugEnabled)
-        .setExtraProps(SonarUiPlugin.getExtraPropertiesForLocalAnalysis(project))
-        .setJvmArgs(sonarJvmArgs)
-        .setForceFullPreview(forceFullPreview));
+        .setDebugEnabled(debugEnabled));
     }
     SynchronizeAllIssuesJob job = new SynchronizeAllIssuesJob(requests);
     showIssuesViewAfterJobSuccess(job);

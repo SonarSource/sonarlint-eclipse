@@ -247,8 +247,7 @@ public class ConfigureProjectsPage extends WizardPage {
           }
           if (changed) {
             boolean debugEnabled = SonarConsole.isDebugEnabled();
-            SynchronizeAllIssuesJob.createAndSchedule(project, debugEnabled,
-              SonarUiPlugin.getExtraPropertiesForLocalAnalysis(project), SonarUiPlugin.getSonarJvmArgs(), SonarUiPlugin.isForceFullPreview());
+            SynchronizeAllIssuesJob.createAndSchedule(project, debugEnabled);
           }
         } catch (CoreException e) {
           SonarCorePlugin.getDefault().error(e.getMessage(), e);

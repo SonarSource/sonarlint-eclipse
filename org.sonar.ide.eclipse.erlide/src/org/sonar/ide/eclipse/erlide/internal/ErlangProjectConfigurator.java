@@ -33,10 +33,6 @@ import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
 
 public class ErlangProjectConfigurator extends ProjectConfigurator {
 
-  // TODO: dirty hack, there is no test property in erlide so every test directory is in the src paths, we add all path as
-  // test path if it ends with test or tests
-  private final static String TEST_PATTERN = ".*tests?[/\\\\]*$";
-
   @Override
   public boolean canConfigure(IProject project) {
     return NatureUtil.hasErlangNature(project);
@@ -53,11 +49,8 @@ public class ErlangProjectConfigurator extends ProjectConfigurator {
   private void configureErlangProject(IProject project, IErlProject erlProject, Properties sonarProjectProperties) {
     for (IPath source : erlProject.getProperties().getSourceDirs()) {
       String relativeDir = getRelativePath(project.getLocation(), source);
-      if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
-        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, relativeDir);
-      } else {
-        appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, relativeDir);
-      }
+      appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, relativeDir);
+      appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, relativeDir);
     }
   }
 }

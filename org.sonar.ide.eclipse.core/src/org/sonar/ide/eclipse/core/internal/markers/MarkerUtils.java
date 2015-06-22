@@ -36,15 +36,13 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
+import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
 public final class MarkerUtils {
-
-  static int markerSeverity = IMarker.SEVERITY_WARNING;
-  static int markerSeverityForNewIssues = IMarker.SEVERITY_ERROR;
 
   public static final String SONAR_MARKER_RULE_KEY_ATTR = "rulekey";
   public static final String SONAR_MARKER_RULE_NAME_ATTR = "rulename";
@@ -247,18 +245,10 @@ public final class MarkerUtils {
       if (project.isAccessible()) {
         for (IMarker marker : project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE)) {
           boolean isNew = marker.getAttribute(SONAR_MARKER_IS_NEW_ATTR, false);
-          marker.setAttribute(IMarker.SEVERITY, isNew ? markerSeverityForNewIssues : markerSeverity);
+          marker.setAttribute(IMarker.SEVERITY, isNew ? PreferencesUtils.getMarkerSeverityNewIssues() : PreferencesUtils.getMarkerSeverity());
         }
       }
     }
-  }
-
-  public static void setMarkerSeverity(int severity) {
-    markerSeverity = severity;
-  }
-
-  public static void setMarkerSeverityForNewIssues(int severity) {
-    markerSeverityForNewIssues = severity;
   }
 
 }

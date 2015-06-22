@@ -47,6 +47,7 @@ import org.json.simple.JSONValue;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.Messages;
+import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.configurator.ConfiguratorUtils;
@@ -76,9 +77,9 @@ public class AnalyzeProjectJob extends Job {
     super(Messages.AnalyseProjectJob_title);
     this.project = request.getProject();
     this.debugEnabled = request.isDebugEnabled();
-    this.incremental = !request.isForceFullPreview();
-    this.extraProps = request.getExtraProps();
-    this.jvmArgs = StringUtils.defaultIfBlank(request.getJvmArgs(), "");
+    this.incremental = !PreferencesUtils.isForceFullPreview();
+    this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(project);
+    this.jvmArgs = PreferencesUtils.getSonarJvmArgs();
     this.sonarProject = SonarProject.getInstance(project);
     this.sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     // Prevent modifications of project during analysis

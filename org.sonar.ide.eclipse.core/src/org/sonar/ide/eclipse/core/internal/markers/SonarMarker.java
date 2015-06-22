@@ -33,6 +33,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.sonar.ide.eclipse.common.issues.ISonarIssue;
+import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 public class SonarMarker {
@@ -59,7 +60,7 @@ public class SonarMarker {
     final Map<String, Object> markerAttributes = new HashMap<String, Object>();
     Integer line = issue.line();
     markerAttributes.put(IMarker.PRIORITY, getPriority(issue.severity()));
-    markerAttributes.put(IMarker.SEVERITY, isNew ? MarkerUtils.markerSeverityForNewIssues : MarkerUtils.markerSeverity);
+    markerAttributes.put(IMarker.SEVERITY, isNew ? PreferencesUtils.getMarkerSeverityNewIssues() : PreferencesUtils.getMarkerSeverity());
     // File level issues (line == null) are displayed on line 1
     markerAttributes.put(IMarker.LINE_NUMBER, line != null ? line : 1);
     markerAttributes.put(IMarker.MESSAGE, getMessage(issue));

@@ -82,13 +82,13 @@ public final class ResourceUtils {
     return null;
   }
 
-  public static String getAbsolutePath(IPath path) {
+  public static IPath getAbsolutePath(IPath path) {
     // IPath should be resolved this way in order to handle linked resources (SONARIDE-271)
     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
     IResource res = root.findMember(path);
     if (res != null) {
       if (res.getLocation() != null) {
-        return res.getLocation().toString();
+        return res.getLocation();
       } else {
         SonarCorePlugin.getDefault().error("Unable to resolve absolute path for " + res.getLocationURI());
         return null;
@@ -96,7 +96,7 @@ public final class ResourceUtils {
     } else {
       File external = path.toFile();
       if (external.exists()) {
-        return path.toString();
+        return path;
       }
       return null;
     }

@@ -38,9 +38,6 @@ import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
-  // TODO Allow to configure this pattern in Sonar Eclipse preferences
-  private static final String TEST_PATTERN = ".*test.*";
-
   @Override
   public boolean canConfigure(IProject project) {
     return SonarJdtPlugin.hasJavaNature(project);
@@ -130,23 +127,18 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   }
 
   private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
-    String srcDir = getAbsolutePath(entry.getPath());
+    String srcDir = getRelativePath(javaProject.getProject().getLocation(), entry.getPath());
     if (srcDir == null) {
       SonarCorePlugin.getDefault().info("Skipping non existing source entry: " + entry.getPath().toOSString());
       return;
     }
-    String relativeDir = getRelativePath(javaProject.getPath(), entry.getPath());
-    if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
-      if (topProject) {
-        context.testDirs().add(srcDir);
-      }
-    } else {
-      if (topProject) {
-        context.sourceDirs().add(srcDir);
-      }
-      if (entry.getOutputLocation() != null) {
-        processOutputDir(entry.getOutputLocation(), context, topProject);
-      }
+    // Eclipse doesn't make a difference between main and test code/classpath
+    if (topProject) {
+      context.testDirs().add(srcDir);
+      context.sourceDirs().add(srcDir);
+    }
+    if (entry.getOutputLocation() != null) {
+      processOutputDir(entry.getOutputLocation(), context, topProject);
     }
   }
 

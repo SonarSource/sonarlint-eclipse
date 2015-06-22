@@ -29,6 +29,7 @@ public interface SonarConfiguratorProperties {
   String SOURCE_DIRS_PROPERTY = "sonar.sources";
   String SOURCE_EXCLUSIONS_PROPERTY = "sonar.exclusions";
   String TEST_DIRS_PROPERTY = "sonar.tests";
-  String TEST_EXCLUSIONS_PROPERTY = "sonar.tests.exclusions";
+  String TEST_INCLUSIONS_PROPERTY = "sonar.test.inclusions";
+  String TEST_EXCLUSIONS_PROPERTY = "sonar.test.exclusions";
 
 }
