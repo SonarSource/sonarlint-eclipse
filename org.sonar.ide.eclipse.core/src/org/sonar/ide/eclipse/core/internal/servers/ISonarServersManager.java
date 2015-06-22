@@ -38,8 +38,6 @@ public interface ISonarServersManager {
   @CheckForNull
   ISonarServer findServer(String idOrUrl);
 
-  ISonarServer getDefault();
-
   /**
    * Create a new ISonarServer without saving it in Eclipse preferences.
    * @param location
