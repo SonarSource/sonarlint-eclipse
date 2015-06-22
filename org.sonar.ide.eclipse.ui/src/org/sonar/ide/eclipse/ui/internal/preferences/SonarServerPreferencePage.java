@@ -19,12 +19,16 @@
  */
 package org.sonar.ide.eclipse.ui.internal.preferences;
 
+import java.text.MessageFormat;
+import java.util.Collection;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -42,15 +46,12 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.ide.eclipse.ui.internal.AbstractTableLabelProvider;
+import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.util.SelectionUtils;
 import org.sonar.ide.eclipse.ui.internal.wizards.EditServerLocationWizard;
 import org.sonar.ide.eclipse.ui.internal.wizards.NewServerLocationWizard;
-
-import java.text.MessageFormat;
-import java.util.Collection;
 
 /**
  * Preference page for the workspace.
@@ -90,16 +91,25 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
 
   private void initTable() {
     // retrieve list of servers
-    servers = SonarCorePlugin.getServersManager().getServers();
+    ISonarServersManager serversManager = SonarCorePlugin.getServersManager();
+    servers = serversManager.getServers();
     serversViewer.setInput(servers);
+    for (int i = 0, n = serversViewer.getTable().getColumnCount(); i < n; i++) {
+      serversViewer.getTable().getColumn(i).pack();
+    }
   }
 
   private void createTable(Composite composite) {
-    serversViewer = new TableViewer(composite, SWT.BORDER | SWT.FULL_SELECTION);
+    serversViewer = new TableViewer(composite, SWT.MULTI | SWT.H_SCROLL
+      | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+
+    createColumns();
+
     serversViewer.setContentProvider(ArrayContentProvider.getInstance());
-    serversViewer.setLabelProvider(new ServersLabelProvider());
 
     final Table table = serversViewer.getTable();
+    table.setLinesVisible(true);
+    table.setHeaderVisible(true);
     GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 2, 3);
     gridData.heightHint = 300;
     table.setLayoutData(gridData);
@@ -175,12 +185,56 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     });
   }
 
-  private static class ServersLabelProvider extends AbstractTableLabelProvider {
-    @Override
-    public String getColumnText(Object element, int columnIndex) {
-      ISonarServer sonarServer = (ISonarServer) element;
-      return sonarServer.getUrl();
-    }
+  private void createColumns() {
+    TableViewerColumn colId = new TableViewerColumn(serversViewer, SWT.NONE);
+    colId.getColumn().setText("ID");
+    colId.getColumn().setWidth(100);
+    colId.getColumn().setResizable(true);
+    colId.setLabelProvider(new ColumnLabelProvider() {
+      @Override
+      public String getText(Object element) {
+        ISonarServer sonarServer = (ISonarServer) element;
+        return sonarServer.getId();
+      }
+    });
+
+    TableViewerColumn colUrl = new TableViewerColumn(serversViewer, SWT.NONE);
+    colUrl.getColumn().setText("URL");
+    colUrl.getColumn().setWidth(100);
+    colUrl.getColumn().setResizable(true);
+    colUrl.setLabelProvider(new ColumnLabelProvider() {
+      @Override
+      public String getText(Object element) {
+        ISonarServer sonarServer = (ISonarServer) element;
+        return sonarServer.getUrl();
+      }
+    });
+
+    TableViewerColumn colVersion = new TableViewerColumn(serversViewer, SWT.NONE);
+    colVersion.getColumn().setText("Version");
+    colVersion.getColumn().setWidth(30);
+    colVersion.getColumn().setResizable(true);
+    colVersion.setLabelProvider(new ColumnLabelProvider() {
+      @Override
+      public String getText(Object element) {
+        ISonarServer sonarServer = (ISonarServer) element;
+        return sonarServer.getVersion();
+      }
+    });
+
+    TableViewerColumn colEnabled = new TableViewerColumn(serversViewer, SWT.NONE);
+    colEnabled.getColumn().setText("Disabled");
+    colEnabled.getColumn().setWidth(30);
+    colEnabled.getColumn().setResizable(true);
+    colEnabled.setLabelProvider(new ColumnLabelProvider() {
+      @Override
+      public String getText(Object element) {
+        ISonarServer sonarServer = (ISonarServer) element;
+        return "" + sonarServer.disabled();
+      }
+
+    });
+
   }
 
 }

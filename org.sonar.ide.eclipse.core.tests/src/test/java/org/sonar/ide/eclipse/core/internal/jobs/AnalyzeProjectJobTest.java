@@ -41,7 +41,6 @@ import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
-import org.sonar.ide.eclipse.core.internal.servers.ServersManager;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,7 +56,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   @BeforeClass
   public static void prepare() throws Exception {
     serversManager = SonarCorePlugin.getServersManager();
-    server = serversManager.create("http://localhost:9000", null, null);
+    server = serversManager.create("localhost", "http://localhost:9000", null, null);
     SonarCorePlugin.getServersManager().addServer(server);
 
     project = importEclipseProject("reference");
@@ -77,7 +76,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldConfigureAnalysis() throws Exception {
-    ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.0");
     AnalyzeProjectJob job = job(project);
     job.setIncremental(true);
     Properties props = new Properties();
@@ -103,7 +101,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldForceFullPreview() throws Exception {
-    ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.0");
     AnalyzeProjectJob job = job(project);
     job.setIncremental(false);
     Properties props = new Properties();
@@ -116,7 +113,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
 
   @Test
   public void shouldConfigureAnalysisWithExtraProps() throws Exception {
-    ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.0");
     AnalyzeProjectJob job = job(project);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.foo", "value")));
@@ -126,7 +122,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
 
   @Test
   public void userConfiguratorShouldOverrideConfiguratorHelperProps() throws Exception {
-    ((ServersManager) serversManager).getServerVersionCache().put("http://localhost:9000", "4.1");
     AnalyzeProjectJob job = job(project);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, Arrays.<SonarProperty>asList());

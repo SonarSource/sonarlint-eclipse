@@ -21,6 +21,8 @@ package org.sonar.ide.eclipse.common.servers;
 
 public interface ISonarServer {
 
+  String getId();
+
   String getUrl();
 
   boolean hasCredentials();
@@ -30,5 +32,7 @@ public interface ISonarServer {
   String getPassword();
 
   String getVersion();
+
+  boolean disabled();
 
 }

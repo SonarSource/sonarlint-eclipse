@@ -43,7 +43,7 @@ import org.sonar.ide.eclipse.wsclient.WSClientFactory;
  * Display details of a project or Sonar resource in a web browser
  * @author Evgeny Mandrikov
  */
-public class ResourceWebView extends AbstractLinkedSonarWebView<ISonarResource> implements ISelectionListener {
+public class ResourceWebView extends AbstractLinkedSonarWebView<ISonarResource>implements ISelectionListener {
 
   public static final String ID = SonarUiPlugin.PLUGIN_ID + ".views.ResourceWebView";
 
@@ -67,6 +67,10 @@ public class ResourceWebView extends AbstractLinkedSonarWebView<ISonarResource> 
     ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     if (sonarServer == null) {
       showMessage(NLS.bind(Messages.No_matching_server_in_configuration_for_project, sonarProject.getProject().getName(), url));
+      return;
+    }
+    if (sonarServer.disabled()) {
+      showMessage("Server is disabled.");
       return;
     }
     if (!WSClientFactory.getSonarClient(sonarServer).exists(sonarResource.getKey())) {

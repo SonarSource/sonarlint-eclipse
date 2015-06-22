@@ -20,6 +20,9 @@
 package org.sonar.ide.eclipse.ui.internal.wizards;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -46,17 +49,23 @@ import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 public class ServerLocationWizardPage extends WizardPage {
   private final ISonarServer sonarServer;
 
+  private Text serverIdText;
   private Text serverUrlText;
   private Text serverUsernameText;
   private Text serverPasswordText;
   private IStatus status;
+  private final boolean edit;
+  private boolean serverIdManuallyChanged;
+
+  private ModifyListener idModifyListener;
 
   public ServerLocationWizardPage() {
-    this(SonarCorePlugin.getServersManager().getDefault());
+    this(null);
   }
 
-  public ServerLocationWizardPage(ISonarServer sonarServer) {
+  public ServerLocationWizardPage(@Nullable ISonarServer sonarServer) {
     super("server_location_page", "SonarQube Server Configuration", SonarImages.SONARWIZBAN_IMG);
+    this.edit = sonarServer != null;
     this.sonarServer = sonarServer;
   }
 
@@ -71,15 +80,43 @@ public class ServerLocationWizardPage extends WizardPage {
     layout.numColumns = 2;
     layout.verticalSpacing = 9;
 
+    // Sonar Server ID
+    boolean isEditable = !edit;
+    Label labelId = new Label(container, SWT.NULL);
+    labelId.setText(Messages.ServerLocationWizardPage_label_id);
+    serverIdText = new Text(container, isEditable ? (SWT.BORDER | SWT.SINGLE) : (SWT.BORDER | SWT.READ_ONLY));
+    GridData gdId = new GridData(GridData.FILL_HORIZONTAL);
+    serverIdText.setLayoutData(gdId);
+    serverIdText.setEnabled(isEditable);
+    serverIdText.setEditable(isEditable);
+    idModifyListener = new ModifyListener() {
+      @Override
+      public void modifyText(ModifyEvent e) {
+        serverIdManuallyChanged = true;
+        dialogChanged();
+      }
+    };
+    serverIdText.addModifyListener(idModifyListener);
+
     // Sonar Server URL
-    Label label = new Label(container, SWT.NULL);
-    label.setText(Messages.ServerLocationWizardPage_label_host);
+    Label labelUrl = new Label(container, SWT.NULL);
+    labelUrl.setText(Messages.ServerLocationWizardPage_label_host);
     serverUrlText = new Text(container, SWT.BORDER | SWT.SINGLE);
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     serverUrlText.setLayoutData(gd);
     serverUrlText.addModifyListener(new ModifyListener() {
       @Override
       public void modifyText(ModifyEvent e) {
+        if (!edit && !serverIdManuallyChanged) {
+          try {
+            URL url = new URL(serverUrlText.getText());
+            serverIdText.removeModifyListener(idModifyListener);
+            serverIdText.setText(url.getHost());
+            serverIdText.addModifyListener(idModifyListener);
+          } catch (MalformedURLException e1) {
+            // Ignore
+          }
+        }
         dialogChanged();
       }
     });
@@ -144,14 +181,30 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   private void initialize() {
-    serverUrlText.setText(StringUtils.defaultString(sonarServer.getUrl()));
-    serverUsernameText.setText(StringUtils.defaultString(sonarServer.getUsername()));
-    serverPasswordText.setText(StringUtils.defaultString(sonarServer.getPassword()));
+    if (edit) {
+      serverIdText.setText(StringUtils.defaultString(sonarServer.getId()));
+      serverUrlText.setText(StringUtils.defaultString(sonarServer.getUrl()));
+      serverUsernameText.setText(StringUtils.defaultString(sonarServer.getUsername()));
+      serverPasswordText.setText(StringUtils.defaultString(sonarServer.getPassword()));
+    } else {
+      serverIdManuallyChanged = false;
+      serverUrlText.setText("http://");
+    }
+    serverUrlText.setFocus();
+    serverUrlText.setSelection(serverUrlText.getText().length());
   }
 
   private void dialogChanged() {
     if (StringUtils.isBlank(getServerUrl())) {
       updateStatus("Server url must be specified");
+      return;
+    }
+    if (StringUtils.isBlank(getServerId())) {
+      updateStatus("Server id must be specified");
+      return;
+    }
+    if (!edit && SonarCorePlugin.getServersManager().findServer(getServerId()) != null) {
+      updateStatus("Server id already exists");
       return;
     }
     updateStatus(null);
@@ -160,6 +213,10 @@ public class ServerLocationWizardPage extends WizardPage {
   private void updateStatus(String message) {
     setErrorMessage(message);
     setPageComplete(message == null);
+  }
+
+  public String getServerId() {
+    return serverIdText.getText();
   }
 
   public String getServerUrl() {

@@ -21,6 +21,7 @@ package org.sonar.ide.eclipse.wsclient;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import javax.annotation.Nullable;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -44,7 +45,11 @@ public final class WSClientFactory {
   /**
    * Creates Sonar web service client facade, which uses proxy settings from Eclipse.
    */
+  @Nullable
   public static ISonarWSClientFacade getSonarClient(ISonarServer sonarServer) {
+    if (sonarServer.disabled()) {
+      return null;
+    }
     Host host;
     if (sonarServer.hasCredentials()) {
       host = new Host(sonarServer.getUrl(), sonarServer.getUsername(), sonarServer.getPassword());

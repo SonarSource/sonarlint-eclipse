@@ -39,6 +39,7 @@ public final class Messages extends NLS {
   public static String IssuesView_action_refresh;
   public static String IssuesView_action_refresh_tooltip;
 
+  public static String ServerLocationWizardPage_label_id;
   public static String ServerLocationWizardPage_label_host;
   public static String ServerLocationWizardPage_label_username;
   public static String ServerLocationWizardPage_label_password;

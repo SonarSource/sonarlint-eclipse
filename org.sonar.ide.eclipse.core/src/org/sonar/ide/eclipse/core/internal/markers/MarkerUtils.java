@@ -168,6 +168,9 @@ public final class MarkerUtils {
     try {
       String previousAnalysisDateStr = resource.getPersistentProperty(LAST_ANALYSIS_DATE_PERSISTENT_PROP_KEY);
       long previousAnalysisDate = previousAnalysisDateStr != null ? Long.valueOf(previousAnalysisDateStr) : -1;
+      if (sonarServer.disabled()) {
+        return false;
+      }
       Date lastAnalysisDateOnServer = WSClientFactory.getSonarClient(sonarServer).getLastAnalysisDate(sonarProject.getKey());
       if (lastAnalysisDateOnServer == null) {
         return false;
@@ -184,8 +187,10 @@ public final class MarkerUtils {
   public static void updatePersistentProperties(IFile resource, SonarProject sonarProject, ISonarServer sonarServer) {
     try {
       resource.setPersistentProperty(MODIFICATION_STAMP_PERSISTENT_PROP_KEY, "" + resource.getModificationStamp());
-      Date lastAnalysisDate = WSClientFactory.getSonarClient(sonarServer)
-        .getLastAnalysisDate(sonarProject.getKey());
+      if (sonarServer.disabled()) {
+        return;
+      }
+      Date lastAnalysisDate = WSClientFactory.getSonarClient(sonarServer).getLastAnalysisDate(sonarProject.getKey());
       if (lastAnalysisDate != null) {
         resource.setPersistentProperty(LAST_ANALYSIS_DATE_PERSISTENT_PROP_KEY, "" + lastAnalysisDate.getTime());
       }

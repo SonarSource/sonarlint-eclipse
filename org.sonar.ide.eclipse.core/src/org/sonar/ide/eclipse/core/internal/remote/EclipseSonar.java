@@ -52,6 +52,10 @@ public final class EclipseSonar {
         sonarProject.getProject().getName(), sonarProject.getUrl()) + "\n");
       return null;
     }
+    if (sonarServer.disabled()) {
+      SonarCorePlugin.getDefault().info("SonarQube server is disabled for project " + sonarProject.getProject().getName() + " \n");
+      return null;
+    }
     return new EclipseSonar(sonarServer);
   }
 
