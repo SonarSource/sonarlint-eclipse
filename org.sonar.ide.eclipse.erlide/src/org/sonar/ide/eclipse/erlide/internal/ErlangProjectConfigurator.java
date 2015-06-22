@@ -30,6 +30,7 @@ import org.erlide.engine.util.NatureUtil;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.configurator.SonarConfiguratorProperties;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 public class ErlangProjectConfigurator extends ProjectConfigurator {
 
@@ -49,6 +50,10 @@ public class ErlangProjectConfigurator extends ProjectConfigurator {
   private void configureErlangProject(IProject project, IErlProject erlProject, Properties sonarProjectProperties) {
     for (IPath source : erlProject.getProperties().getSourceDirs()) {
       String relativeDir = getRelativePath(project.getLocation(), source);
+      if (relativeDir == null) {
+        SonarCorePlugin.getDefault().info("Skipping non existing source entry: " + source.toOSString());
+        continue;
+      }
       appendProperty(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, relativeDir);
       appendProperty(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, relativeDir);
     }

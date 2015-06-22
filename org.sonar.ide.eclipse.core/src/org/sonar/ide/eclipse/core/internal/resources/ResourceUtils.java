@@ -82,6 +82,7 @@ public final class ResourceUtils {
     return null;
   }
 
+  @CheckForNull
   public static IPath getAbsolutePath(IPath path) {
     // IPath should be resolved this way in order to handle linked resources (SONARIDE-271)
     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();

@@ -21,6 +21,8 @@ package org.sonar.ide.eclipse.core.configurator;
 
 import java.util.Collection;
 import java.util.Properties;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
@@ -46,11 +48,16 @@ public abstract class ProjectConfigurator {
     return getClass().getName();
   }
 
+  @CheckForNull
   protected static String getAbsolutePath(IPath path) {
-    return ResourceUtils.getAbsolutePath(path).toString();
+    IPath absolutePath = ResourceUtils.getAbsolutePath(path);
+    return absolutePath != null ? absolutePath.toString() : null;
   }
 
-  public static void appendProperty(Properties properties, String key, String value) {
+  public static void appendProperty(Properties properties, String key, @Nullable String value) {
+    if (value == null) {
+      return;
+    }
     String newValue = properties.getProperty(key, null);
     if (newValue != null) {
       newValue += SonarProperties.SEPARATOR + value;
@@ -60,8 +67,10 @@ public abstract class ProjectConfigurator {
     properties.put(key, newValue);
   }
 
+  @CheckForNull
   protected String getRelativePath(IPath root, IPath path) {
-    return ResourceUtils.getAbsolutePath(path).makeRelativeTo(root).toOSString();
+    IPath absolutePath = ResourceUtils.getAbsolutePath(path);
+    return absolutePath != null ? absolutePath.makeRelativeTo(root).toOSString() : null;
   }
 
   protected static void setPropertyList(Properties properties, String key, Collection<String> values) {

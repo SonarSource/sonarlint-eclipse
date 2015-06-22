@@ -127,7 +127,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   }
 
   private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
-    String srcDir = getRelativePath(javaProject.getProject().getLocation(), entry.getPath());
+    String srcDir = getRelativePath(javaProject.getPath(), entry.getPath());
     if (srcDir == null) {
       SonarCorePlugin.getDefault().info("Skipping non existing source entry: " + entry.getPath().toOSString());
       return;
@@ -183,10 +183,14 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
 
   private void configurationToProperties(Properties sonarProjectProperties, JavaProjectConfiguration context) {
     setPropertyList(sonarProjectProperties, "sonar.libraries", context.libraries());
+    // Eclipse doesn't separate main and test classpath
     setPropertyList(sonarProjectProperties, "sonar.java.libraries", context.libraries());
+    setPropertyList(sonarProjectProperties, "sonar.java.test.libraries", context.libraries());
     appendPropertyList(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, context.testDirs());
     appendPropertyList(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, context.sourceDirs());
     setPropertyList(sonarProjectProperties, "sonar.binaries", context.binaries());
+    // Eclipse doesn't separate main and test classpath
     setPropertyList(sonarProjectProperties, "sonar.java.binaries", context.binaries());
+    setPropertyList(sonarProjectProperties, "sonar.java.test.binaries", context.binaries());
   }
 }
