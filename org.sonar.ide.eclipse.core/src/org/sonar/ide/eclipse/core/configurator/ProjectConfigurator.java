@@ -69,8 +69,9 @@ public abstract class ProjectConfigurator {
 
   @CheckForNull
   protected String getRelativePath(IPath root, IPath path) {
+    IPath absoluteRoot = ResourceUtils.getAbsolutePath(root);
     IPath absolutePath = ResourceUtils.getAbsolutePath(path);
-    return absolutePath != null ? absolutePath.makeRelativeTo(root).toOSString() : null;
+    return absolutePath != null ? absolutePath.makeRelativeTo(absoluteRoot).toOSString() : null;
   }
 
   protected static void setPropertyList(Properties properties, String key, Collection<String> values) {
