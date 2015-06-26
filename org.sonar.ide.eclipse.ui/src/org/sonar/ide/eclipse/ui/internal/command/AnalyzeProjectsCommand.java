@@ -46,7 +46,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectRequest;
-import org.sonar.ide.eclipse.core.internal.jobs.SynchronizeAllIssuesJob;
+import org.sonar.ide.eclipse.core.internal.jobs.SonarQubeAnalysisJob;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 import org.sonar.ide.eclipse.ui.internal.views.issues.IssuesView;
@@ -78,9 +78,10 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
         break;
       }
       requests.add(new AnalyzeProjectRequest(project)
-        .setDebugEnabled(debugEnabled));
+        .setDebugEnabled(debugEnabled)
+        .useHttpWsCache(false));
     }
-    SynchronizeAllIssuesJob job = new SynchronizeAllIssuesJob(requests);
+    SonarQubeAnalysisJob job = new SonarQubeAnalysisJob(requests);
     showIssuesViewAfterJobSuccess(job);
   }
 
@@ -88,7 +89,6 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
     ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
 
     if (selection instanceof IStructuredSelection) {
-      @SuppressWarnings("rawtypes")
       Object[] elems = ((IStructuredSelection) selection).toArray();
       collectProjects(selectedProjects, elems);
     }

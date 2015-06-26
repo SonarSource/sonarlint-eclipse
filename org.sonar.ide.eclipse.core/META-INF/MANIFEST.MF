@@ -30,7 +30,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.sonar.ide.eclipse.wsclient;visibility:=reexport,
  com.google.guava;bundle-version="10.0.1",
  com.googlecode.json-simple;bundle-version="1.1.1",
- org.codehaus.sonar.runner.sonar-runner-api;bundle-version="[2.4.0,2.5.0)",
+ org.codehaus.sonar.runner.sonar-runner-api;bundle-version="[2.5.0,2.6.0)",
  org.sonar.ide.eclipse.common
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

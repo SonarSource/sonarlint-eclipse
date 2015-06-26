@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.common.servers;
 
+import java.util.Properties;
+
 public interface ISonarServer {
 
   String getId();
@@ -34,5 +36,7 @@ public interface ISonarServer {
   String getVersion();
 
   boolean disabled();
+
+  void startAnalysis(Properties props, boolean debugEnabled);
 
 }

@@ -61,11 +61,9 @@ import org.eclipse.ui.PlatformUI;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
-import org.sonar.ide.eclipse.core.internal.jobs.SynchronizeAllIssuesJob;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
-import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 import org.sonar.ide.eclipse.wsclient.ConnectionException;
 import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
@@ -243,11 +241,6 @@ public class ConfigureProjectsPage extends WizardPage {
           }
           if (!SonarNature.hasSonarNature(project)) {
             SonarNature.enableNature(project);
-            changed = true;
-          }
-          if (changed) {
-            boolean debugEnabled = SonarConsole.isDebugEnabled();
-            SynchronizeAllIssuesJob.createAndSchedule(project, debugEnabled);
           }
         } catch (CoreException e) {
           SonarCorePlugin.getDefault().error(e.getMessage(), e);

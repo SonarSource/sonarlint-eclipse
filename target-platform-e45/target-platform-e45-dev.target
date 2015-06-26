@@ -9,7 +9,7 @@
 <repository location="http://download.eclipse.org/releases/mars"/>
 </location>
 <location path="${M2_REPO}/commons-codec/commons-codec/1.7" type="Directory"/>
-<location path="${M2_REPO}/org/codehaus/sonar/runner/sonar-runner-api/2.4" type="Directory"/>
+<location path="${M2_REPO}/org/codehaus/sonar/runner/sonar-runner-api/2.5-SNAPSHOT" type="Directory"/>
 <location path="${M2_REPO}/org/mockito/mockito-all/1.9.5" type="Directory"/>
 <location path="${M2_REPO}/org/assertj/assertj-core/2.1.0" type="Directory"/>
 <location path="${M2_REPO}/org/codehaus/sonar/sonar-ws-client/4.5.1" type="Directory"/>

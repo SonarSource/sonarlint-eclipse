@@ -20,6 +20,7 @@
 package org.sonar.ide.eclipse.ui.internal.views;
 
 import com.google.common.collect.Lists;
+import java.util.List;
 import org.apache.commons.codec.binary.Base64;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -36,8 +37,6 @@ import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-
-import java.util.List;
 
 /**
  * Open Sonar server URL in an embedded browser

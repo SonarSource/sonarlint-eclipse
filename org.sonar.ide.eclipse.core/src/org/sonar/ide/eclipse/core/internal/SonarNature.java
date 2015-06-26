@@ -20,7 +20,10 @@
 package org.sonar.ide.eclipse.core.internal;
 
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
@@ -30,17 +33,50 @@ import org.eclipse.core.runtime.CoreException;
 public class SonarNature implements IProjectNature {
 
   public static final String NATURE_ID = SonarCorePlugin.PLUGIN_ID + ".sonarNature";
+  private static final String BUILDER_ID = SonarCorePlugin.PLUGIN_ID + ".sonarQubeBuilder";
 
   private IProject project;
 
   @Override
   public void configure() throws CoreException {
-    // Nothing to do
+    IProjectDescription desc = project.getDescription();
+    ICommand[] commands = desc.getBuildSpec();
+    boolean found = false;
+
+    for (int i = 0; i < commands.length; ++i) {
+      if (commands[i].getBuilderName().equals(BUILDER_ID)) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      // add builder to project
+      ICommand command = desc.newCommand();
+      command.setBuilderName(BUILDER_ID);
+      ICommand[] newCommands = new ICommand[commands.length + 1];
+
+      // Add it after other builders.
+      System.arraycopy(commands, 0, newCommands, 0, commands.length);
+      newCommands[commands.length] = command;
+      desc.setBuildSpec(newCommands);
+      project.setDescription(desc, null);
+    }
   }
 
   @Override
   public void deconfigure() throws CoreException {
-    // Nothing to do
+    IProjectDescription desc = project.getDescription();
+    List<ICommand> commands = new ArrayList<>();
+    commands.addAll(Arrays.asList(desc.getBuildSpec()));
+
+    for (ICommand command : commands) {
+      if (command.getBuilderName().equals(BUILDER_ID)) {
+        commands.remove(command);
+        break;
+      }
+    }
+    desc.setBuildSpec(commands.toArray(new ICommand[commands.size()]));
+    project.setDescription(desc, null);
   }
 
   @Override

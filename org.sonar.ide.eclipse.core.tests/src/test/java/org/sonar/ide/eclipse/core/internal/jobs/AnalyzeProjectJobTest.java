@@ -35,12 +35,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.matchers.JUnitMatchers;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,13 +50,13 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
 
   public org.junit.rules.ExternalResource test = null;
   private static IProject project;
-  private static ISonarServer server;
+  private static SonarServer server;
   private static ISonarServersManager serversManager;
 
   @BeforeClass
   public static void prepare() throws Exception {
     serversManager = SonarCorePlugin.getServersManager();
-    server = serversManager.create("localhost", "http://localhost:9000", null, null);
+    server = (SonarServer) serversManager.create("localhost", "http://localhost:9000", null, null);
     SonarCorePlugin.getServersManager().addServer(server);
 
     project = importEclipseProject("reference");
@@ -77,13 +77,10 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   @Test
   public void shouldConfigureAnalysis() throws Exception {
     AnalyzeProjectJob job = job(project);
-    job.setIncremental(true);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
 
-    assertThat(props.get(SonarProperties.SONAR_URL).toString()).isEqualTo("http://localhost:9000");
     assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString()).isEqualTo("bar:foo");
-    assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString()).isEqualTo("incremental");
     // SONARIDE-386 check that at least some JARs from the VM are appended
     List<String> libs = Arrays.asList(props.get("sonar.libraries").toString().split(","));
     assertThat(libs).doesNotHaveDuplicates();
@@ -97,18 +94,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     if (!foundRT) {
       fail("rt.jar/classes.jar not found in sonar.libraries: " + props.get("sonar.libraries").toString());
     }
-  }
-
-  @Test
-  public void shouldForceFullPreview() throws Exception {
-    AnalyzeProjectJob job = job(project);
-    job.setIncremental(false);
-    Properties props = new Properties();
-    job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
-
-    assertThat(props.get(SonarProperties.SONAR_URL).toString()).isEqualTo("http://localhost:9000");
-    assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString()).isEqualTo("bar:foo");
-    assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString()).isEqualTo("preview");
   }
 
   @Test
@@ -148,19 +133,20 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   }
 
   @Test
-  public void shouldCleanAndCreateMarkersFromIncrementalAnalysis() throws Exception {
+  public void shouldCleanAndCreateMarkersForSingleFile() throws Exception {
     AnalyzeProjectJob job = job(project);
     job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
-
-    // During incremental analysis PMD file was not modified, Findbugs has one remaing issue and Checkstyle has no remaining issues
-    job = job(project);
-    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report-incremental.json"));
-
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size()).isEqualTo(3);
+    assertThat(markers.size()).isEqualTo(6);
+
+    // During single file analysis, Findbugs has one remaing issue
+    job = job(project);
+    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report-single.json"));
+
+    markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
+    assertThat(markers.size()).isEqualTo(5);
 
     Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Findbugs.java", 5)));
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Pmd.java", 2)));
   }
 
   static class IsMarker extends BaseMatcher<IMarker> {

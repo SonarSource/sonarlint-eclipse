@@ -19,9 +19,11 @@
  */
 package org.sonar.ide.eclipse.core.internal.servers;
 
+import java.util.Properties;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
@@ -29,6 +31,9 @@ import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.SonarProperties;
+import org.sonar.runner.api.EmbeddedRunner;
+import org.sonar.runner.api.LogOutput;
 
 public final class SonarServer implements ISonarServer {
 
@@ -37,6 +42,7 @@ public final class SonarServer implements ISonarServer {
   private boolean hasCredentials;
   private String version;
   private boolean disabled;
+  private EmbeddedRunner runner;
 
   public SonarServer(String id, String url, String username, String password) {
     this(id, url, StringUtils.isNotBlank(password) && StringUtils.isNotBlank(username));
@@ -147,6 +153,61 @@ public final class SonarServer implements ISonarServer {
 
   public void setDisabled(boolean disabled) {
     this.disabled = disabled;
+  }
+
+  @Override
+  public synchronized void startAnalysis(Properties props, boolean debugEnabled) {
+    if (runner == null) {
+      Properties globalProps = new Properties();
+      globalProps.setProperty(SonarProperties.SONAR_URL, getUrl());
+      if (StringUtils.isNotBlank(getUsername())) {
+        globalProps.setProperty(SonarProperties.SONAR_LOGIN, getUsername());
+        globalProps.setProperty(SonarProperties.SONAR_PASSWORD, getPassword());
+      }
+      globalProps.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_PREVIEW);
+      globalProps.setProperty(SonarProperties.USE_HTTP_CACHE, "" + disabled);
+      if (debugEnabled) {
+        globalProps.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
+      }
+      globalProps.setProperty(SonarProperties.WORK_DIR, ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonar").toString());
+      runner = EmbeddedRunner.create(new LogOutput() {
+
+        @Override
+        public void log(String msg, Level level) {
+          switch (level) {
+            case TRACE:
+              SonarCorePlugin.getDefault().debug(msg + System.lineSeparator());
+              break;
+            case DEBUG:
+              SonarCorePlugin.getDefault().debug(msg + System.lineSeparator());
+              break;
+            case INFO:
+              SonarCorePlugin.getDefault().info(msg + System.lineSeparator());
+              break;
+            case WARN:
+              SonarCorePlugin.getDefault().info(msg + System.lineSeparator());
+              break;
+            case ERROR:
+              SonarCorePlugin.getDefault().error(msg + System.lineSeparator());
+              break;
+            default:
+              SonarCorePlugin.getDefault().info(msg + System.lineSeparator());
+          }
+
+        }
+      })
+        .setApp("Eclipse", SonarCorePlugin.getDefault().getBundle().getVersion().toString())
+        .addGlobalProperties(globalProps);
+      runner.start();
+    }
+    runner.runAnalysis(props);
+  }
+
+  public void stop() {
+    if (runner != null) {
+      runner.stop();
+      runner = null;
+    }
   }
 
 }

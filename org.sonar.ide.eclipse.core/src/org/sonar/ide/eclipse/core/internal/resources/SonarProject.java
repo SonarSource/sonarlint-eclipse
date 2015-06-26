@@ -20,7 +20,6 @@
 package org.sonar.ide.eclipse.core.internal.resources;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -34,7 +33,6 @@ public class SonarProject implements ISonarProject {
   private final IProject project;
   private String url;
   private String key;
-  private Date lastAnalysisDate;
   private List<SonarProperty> extraProperties = new ArrayList<SonarProperty>();
 
   public SonarProject(IProject project) {
@@ -84,14 +82,6 @@ public class SonarProject implements ISonarProject {
   @Override
   public String getName() {
     return project.getName();
-  }
-
-  public Date getLastAnalysisDate() {
-    return lastAnalysisDate == null ? null : new Date(lastAnalysisDate.getTime());
-  }
-
-  public void setLastAnalysisDate(Date lastAnalysisDate) {
-    this.lastAnalysisDate = lastAnalysisDate == null ? null : new Date(lastAnalysisDate.getTime());
   }
 
   @Override

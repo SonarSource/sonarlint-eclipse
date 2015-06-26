@@ -21,12 +21,6 @@ package org.sonar.ide.eclipse.core.internal.remote;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonar.ide.eclipse.common.issues.ISonarIssue;
-import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  * @author Evgeny Mandrikov
@@ -96,17 +90,6 @@ class RemoteSourceCode implements SourceCode {
     return diff;
   }
 
-  @Override
-  public List<ISonarIssue> getRemoteIssuesWithLineCorrection(IProgressMonitor monitor) {
-    final List<ISonarIssueWithPath> issues = getRemoteSonarIndex().getSonarClient().getUnresolvedRemoteIssuesRecursively(getKey(), monitor);
-    return IssuesUtils.convertLines(issues, getDiff());
-  }
-
-  @Override
-  public List<ISonarIssueWithPath> getRemoteIssuesRecursively(IProgressMonitor monitor) {
-    return getRemoteSonarIndex().getSonarClient().getUnresolvedRemoteIssuesRecursively(getKey(), monitor);
-  }
-
   /**
    * {@inheritDoc}
    */
@@ -139,8 +122,4 @@ class RemoteSourceCode implements SourceCode {
     return index;
   }
 
-  @Override
-  public Date getAnalysisDate() {
-    return index.getSonarClient().getLastAnalysisDate(key);
-  }
 }

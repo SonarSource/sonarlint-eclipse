@@ -20,7 +20,6 @@
 package org.sonar.ide.eclipse.ui.internal.preferences;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -62,10 +61,6 @@ public class SonarPreferencePage extends FieldEditorPreferencePage implements IW
         {"Warning", String.valueOf(IMarker.SEVERITY_WARNING)},
         {"Error", String.valueOf(IMarker.SEVERITY_ERROR)}},
       getFieldEditorParent()));
-    addField(new StringFieldEditor(PreferencesUtils.PREF_JVM_ARGS,
-      Messages.SonarPreferencePage_label_jvm_args, getFieldEditorParent()));
-    addField(new BooleanFieldEditor(PreferencesUtils.PREF_FORCE_FULL_PREVIEW,
-      Messages.SonarPreferencePage_label_force_full_preview, BooleanFieldEditor.SEPARATE_LABEL, getFieldEditorParent()));
     addField(new StringFieldEditor(PreferencesUtils.PREF_TEST_FILE_REGEXPS,
       Messages.SonarPreferencePage_label_test_file_regexps, getFieldEditorParent()));
   }

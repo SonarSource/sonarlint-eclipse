@@ -25,12 +25,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -55,54 +55,49 @@ import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
-import org.sonar.runner.api.ForkedRunner;
-import org.sonar.runner.api.ProcessMonitor;
-import org.sonar.runner.api.StreamConsumer;
 
 public class AnalyzeProjectJob extends Job {
 
   private final IProject project;
   private final boolean debugEnabled;
   private final SonarProject sonarProject;
+  private final IFile singleFile;
+  private final boolean useHttpCache;
 
   private List<SonarProperty> extraProps;
 
-  private String jvmArgs;
-
   private ISonarServer sonarServer;
-
-  private boolean incremental;
 
   public AnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(Messages.AnalyseProjectJob_title);
-    this.project = request.getProject();
+    this.singleFile = (IFile) request.getResource().getAdapter(IFile.class);
+    this.project = request.getResource().getProject();
     this.debugEnabled = request.isDebugEnabled();
-    this.incremental = !PreferencesUtils.isForceFullPreview();
     this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(project);
-    this.jvmArgs = PreferencesUtils.getSonarJvmArgs();
     this.sonarProject = SonarProject.getInstance(project);
     this.sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+    this.useHttpCache = request.useHttpWsCache();
     // Prevent modifications of project during analysis
     setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
   }
 
   @Override
   protected IStatus run(final IProgressMonitor monitor) {
-    monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analyzing, project.getName()), IProgressMonitor.UNKNOWN);
+    if (singleFile != null) {
+      monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analyzing, project.getName()), IProgressMonitor.UNKNOWN);
+    } else {
+      monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analyzing_file, singleFile.getName()), IProgressMonitor.UNKNOWN);
+    }
 
     // Verify Host
     if (getSonarServer() == null) {
-      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
-        NLS.bind(Messages.No_matching_server_in_configuration_for_project, project.getName(), sonarProject.getUrl()));
+      SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project, project.getName(), sonarProject.getUrl()));
+      return Status.OK_STATUS;
     }
     // Verify version and server is reachable
     if (getSonarServer().disabled()) {
-      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
-        "SonarQube server " + sonarProject.getUrl() + " is disabled");
-    }
-    if (getServerVersion() == null) {
-      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
-        NLS.bind(Messages.Unable_to_detect_server_version, sonarProject.getUrl()));
+      SonarCorePlugin.getDefault().info("SonarQube server " + sonarProject.getUrl() + " is disabled");
+      return Status.OK_STATUS;
     }
 
     // Configure
@@ -135,17 +130,8 @@ public class AnalyzeProjectJob extends Job {
     createMarkersFromReportOutput(monitor, outputFile);
     SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - startMarker) + "ms\n");
 
-    // Update analysis date
-    sonarProject.setLastAnalysisDate(Calendar.getInstance().getTime());
-    sonarProject.save();
-
     monitor.done();
     return Status.OK_STATUS;
-  }
-
-  @VisibleForTesting
-  public void setIncremental(boolean incremental) {
-    this.incremental = incremental;
   }
 
   private String getServerVersion() {
@@ -170,13 +156,10 @@ public class AnalyzeProjectJob extends Job {
         IResource resource = ResourceUtils.findResource(sonarProject, key);
         if (resource != null) {
           resourcesByKey.put(key, resource);
-          if (incremental
-            // Status is blank for modules
-            && StringUtils.isNotBlank(status)
-            && !"SAME".equals(status)) {
+          // Status is blank for modules
+          if (StringUtils.isNotBlank(status)) {
             MarkerUtils.deleteIssuesMarkers(resource);
           }
-          MarkerUtils.markResourceAsLocallyAnalysed(resource);
         }
       }
       // Now read all rules name in a cache
@@ -226,6 +209,9 @@ public class AnalyzeProjectJob extends Job {
     IPath projectSpecificWorkDir = project.getWorkingLocation(SonarCorePlugin.PLUGIN_ID);
     File outputFile = new File(projectSpecificWorkDir.toFile(), "sonar-report.json");
 
+    // Preview mode by default
+    properties.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_PREVIEW);
+
     // Configuration by configurators (common and language specific)
     ConfiguratorUtils.configure(project, properties, getServerVersion(), monitor);
 
@@ -233,19 +219,16 @@ public class AnalyzeProjectJob extends Job {
     for (SonarProperty sonarProperty : extraProps) {
       properties.put(sonarProperty.getName(), sonarProperty.getValue());
     }
-    // Server configuration can't be overridden by user
-    properties.setProperty(SonarProperties.SONAR_URL, getSonarServer().getUrl());
-    if (StringUtils.isNotBlank(getSonarServer().getUsername())) {
-      properties.setProperty(SonarProperties.SONAR_LOGIN, getSonarServer().getUsername());
-      properties.setProperty(SonarProperties.SONAR_PASSWORD, getSonarServer().getPassword());
+
+    if (this.singleFile != null) {
+      properties.setProperty("sonar.tests", singleFile.getProjectRelativePath().toString());
+      properties.setProperty("sonar.sources", singleFile.getProjectRelativePath().toString());
     }
+
     properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
     properties.setProperty(SonarProperties.WORK_DIR, projectSpecificWorkDir.toString());
-    if (incremental) {
-      properties.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_INCREMENTAL);
-    } else {
-      properties.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_PREVIEW);
-    }
+    properties.setProperty(SonarProperties.USE_HTTP_CACHE, "" + useHttpCache);
+
     // Output file is relative to working dir
     properties.setProperty(SonarProperties.REPORT_OUTPUT_PROPERTY, outputFile.getName());
     if (debugEnabled) {
@@ -263,28 +246,7 @@ public class AnalyzeProjectJob extends Job {
         SonarCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props));
       }
 
-      ForkedRunner.create(new ProcessMonitor() {
-        @Override
-        public boolean stop() {
-          return monitor.isCanceled();
-        }
-      })
-        .setApp("Eclipse", SonarCorePlugin.getDefault().getBundle().getVersion().toString())
-        .addProperties(props)
-        .addJvmArguments(jvmArgs.trim().split("\\s+"))
-        .setStdOut(new StreamConsumer() {
-          @Override
-          public void consumeLine(String text) {
-            SonarCorePlugin.getDefault().info(text + "\n");
-          }
-        })
-        .setStdErr(new StreamConsumer() {
-          @Override
-          public void consumeLine(String text) {
-            SonarCorePlugin.getDefault().error(text + "\n");
-          }
-        })
-        .execute();
+      sonarServer.startAnalysis(props, debugEnabled);
 
       return checkCancel(monitor);
     } catch (Exception e) {

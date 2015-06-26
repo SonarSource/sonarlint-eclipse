@@ -28,6 +28,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.osgi.framework.BundleContext;
+import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
 import org.sonar.ide.eclipse.core.internal.jobs.LogListener;
 import org.sonar.ide.eclipse.core.internal.resources.SonarFile;
@@ -35,6 +36,7 @@ import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProjectManager;
 import org.sonar.ide.eclipse.core.internal.resources.SonarResource;
 import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 import org.sonar.ide.eclipse.core.internal.servers.SonarServersManager;
 import org.sonar.ide.eclipse.core.resources.ISonarFile;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
@@ -138,6 +140,15 @@ public class SonarCorePlugin extends AbstractPlugin {
     sonarProject.save();
     SonarNature.enableNature(project);
     return sonarProject;
+  }
+
+  @Override
+  public void stop(BundleContext context) {
+    for (ISonarServer sonarServer : getServersManager().getServers()) {
+      ((SonarServer) sonarServer).stop();
+    }
+
+    super.stop(context);
   }
 
 }

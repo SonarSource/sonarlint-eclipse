@@ -19,26 +19,15 @@
  */
 package org.sonar.ide.eclipse.wsclient.internal;
 
-import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonar.ide.eclipse.common.issues.ISonarIssue;
-import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
 import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
 import org.sonar.ide.eclipse.wsclient.ISonarWSClientFacade;
 import org.sonar.wsclient.Sonar;
 import org.sonar.wsclient.SonarClient;
-import org.sonar.wsclient.component.Component;
 import org.sonar.wsclient.connectors.ConnectionException;
-import org.sonar.wsclient.issue.Issue;
-import org.sonar.wsclient.issue.IssueQuery;
-import org.sonar.wsclient.issue.Issues;
-import org.sonar.wsclient.rule.Rule;
 import org.sonar.wsclient.services.Authentication;
 import org.sonar.wsclient.services.AuthenticationQuery;
 import org.sonar.wsclient.services.Model;
@@ -50,7 +39,6 @@ import org.sonar.wsclient.services.ResourceSearchResult;
 import org.sonar.wsclient.services.ServerQuery;
 import org.sonar.wsclient.services.Source;
 import org.sonar.wsclient.services.SourceQuery;
-import org.sonar.wsclient.user.User;
 
 public class SonarWSClientFacade implements ISonarWSClientFacade {
 
@@ -130,15 +118,6 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     return find(new ResourceQuery().setResourceKeyOrId(resourceKey)) != null;
   }
 
-  @Override
-  public Date getLastAnalysisDate(String resourceKey) {
-    Resource remoteResource = find(ResourceQuery.createForMetrics(resourceKey));
-    if (remoteResource != null) {
-      return remoteResource.getDate();
-    }
-    return null;
-  }
-
   @CheckForNull
   @Override
   public String[] getRemoteCode(String resourceKey) {
@@ -151,113 +130,6 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
       }
     }
     return remote;
-  }
-
-  @Override
-  public List<ISonarIssueWithPath> getUnresolvedRemoteIssuesRecursively(String resourceKey, IProgressMonitor monitor) {
-    int maxPageSize = -1;
-    List<ISonarIssueWithPath> result = new ArrayList<ISonarIssueWithPath>();
-    int pageIndex = 1;
-    Issues issues;
-    do {
-      issues = findIssues(IssueQuery.create().componentRoots(resourceKey).resolved(false).pageSize(maxPageSize).pageIndex(pageIndex));
-      for (Issue issue : issues.list()) {
-        Component comp = issues.component(issue);
-        result.add(new SonarRemoteIssue(issue, issues.rule(issue), issues.user(issue.assignee()), comp != null ? comp.path() : null));
-      }
-    } while (pageIndex++ < issues.paging().pages() && !monitor.isCanceled());
-    return result;
-  }
-
-  @Override
-  public List<ISonarIssue> getUnresolvedRemoteIssues(String resourceKey, IProgressMonitor monitor) {
-    Issues issues = findIssues(IssueQuery.create().components(resourceKey).resolved(false));
-    List<ISonarIssue> result = new ArrayList<ISonarIssue>(issues.list().size());
-    for (Issue issue : issues.list()) {
-      result.add(new SonarRemoteIssue(issue, issues.rule(issue), issues.user(issue.assignee()), null));
-    }
-    return result;
-  }
-
-  private Issues findIssues(IssueQuery query) {
-    try {
-      return sonarClient.issueClient().find(query);
-    } catch (ConnectionException e) {
-      throw new org.sonar.ide.eclipse.wsclient.ConnectionException(e);
-    } catch (Exception e) {
-      throw new org.sonar.ide.eclipse.wsclient.SonarWSClientException("Error during issue query " + query.toString(), e);
-    }
-  }
-
-  private static class SonarRemoteIssue implements ISonarIssueWithPath {
-
-    private final Issue remoteIssue;
-    private final Rule rule;
-    private final User assignee;
-    private final String path;
-
-    public SonarRemoteIssue(final Issue remoteIssue, final Rule rule, @Nullable final User assignee, @Nullable final String path) {
-      this.remoteIssue = remoteIssue;
-      this.rule = rule;
-      this.assignee = assignee;
-      this.path = path;
-    }
-
-    @Override
-    public String key() {
-      return remoteIssue.key();
-    }
-
-    @Override
-    public String resourceKey() {
-      return remoteIssue.componentKey();
-    }
-
-    @Override
-    public String path() {
-      return path;
-    }
-
-    @Override
-    public boolean resolved() {
-      return !Strings.isNullOrEmpty(remoteIssue.resolution());
-    }
-
-    @Override
-    public Integer line() {
-      return remoteIssue.line();
-    }
-
-    @Override
-    public String severity() {
-      return remoteIssue.severity();
-    }
-
-    @Override
-    public String message() {
-      return remoteIssue.message();
-    }
-
-    @Override
-    public String ruleKey() {
-      return rule.key();
-    }
-
-    @Override
-    public String ruleName() {
-      return rule.name();
-    }
-
-    @Override
-    public String assigneeLogin() {
-      return remoteIssue.assignee();
-    }
-
-    @Override
-    public String assigneeName() {
-      return assignee != null ? assignee.name() : null;
-    }
-
   }
 
   private static class SonarRemoteModule implements ISonarRemoteModule {

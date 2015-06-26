@@ -19,12 +19,7 @@
  */
 package org.sonar.ide.eclipse.wsclient;
 
-import java.util.Date;
 import java.util.List;
-import javax.annotation.CheckForNull;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonar.ide.eclipse.common.issues.ISonarIssue;
-import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
 
 public interface ISonarWSClientFacade {
 
@@ -56,14 +51,7 @@ public interface ISonarWSClientFacade {
   List<ISonarRemoteModule> searchRemoteModules(String partialName);
 
   boolean exists(String resourceKey);
-
-  @CheckForNull
-  Date getLastAnalysisDate(String resourceKey);
-
+  
   String[] getRemoteCode(String resourceKey);
-
-  List<ISonarIssueWithPath> getUnresolvedRemoteIssuesRecursively(String resourceKey, IProgressMonitor monitor);
-
-  List<ISonarIssue> getUnresolvedRemoteIssues(String resourceKey, IProgressMonitor monitor);
 
 }

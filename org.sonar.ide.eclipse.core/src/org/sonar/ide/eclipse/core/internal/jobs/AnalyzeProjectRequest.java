@@ -19,19 +19,20 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
-import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 
 public class AnalyzeProjectRequest {
 
-  private IProject project;
+  private IResource resource;
   private boolean debugEnabled;
+  private boolean useHttpWsCache = true;
 
-  public AnalyzeProjectRequest(IProject project) {
-    this.project = project;
+  public AnalyzeProjectRequest(IResource resource) {
+    this.resource = resource;
   }
 
-  public IProject getProject() {
-    return project;
+  public IResource getResource() {
+    return resource;
   }
 
   public boolean isDebugEnabled() {
@@ -43,4 +44,12 @@ public class AnalyzeProjectRequest {
     return this;
   }
 
+  public boolean useHttpWsCache() {
+    return useHttpWsCache;
+  }
+
+  public AnalyzeProjectRequest useHttpWsCache(boolean useHttpWsCache) {
+    this.useHttpWsCache = useHttpWsCache;
+    return this;
+  }
 }

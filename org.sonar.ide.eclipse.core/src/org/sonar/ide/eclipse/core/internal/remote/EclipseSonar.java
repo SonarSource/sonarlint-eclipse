@@ -49,7 +49,7 @@ public final class EclipseSonar {
     SonarProject sonarProject = SonarProject.getInstance(project);
     SonarServer sonarServer = (SonarServer) SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     if (sonarServer == null) {
-      SonarCorePlugin.getDefault().info(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
+      SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
         sonarProject.getProject().getName(), sonarProject.getUrl()) + "\n");
       return null;
     }

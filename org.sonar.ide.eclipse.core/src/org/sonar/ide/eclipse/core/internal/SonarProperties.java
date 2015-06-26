@@ -28,11 +28,11 @@ public interface SonarProperties {
   String PROJECT_LANGUAGE_PROPERTY = "sonar.language";
   String ENCODING_PROPERTY = "sonar.sourceEncoding";
 
-  String DRY_RUN_PROPERTY = "sonar.dryRun";
   String ANALYSIS_MODE = "sonar.analysis.mode";
   String ANALYSIS_MODE_INCREMENTAL = "incremental";
   String ANALYSIS_MODE_PREVIEW = "preview";
   String REPORT_OUTPUT_PROPERTY = "sonar.report.export.path";
+  String USE_HTTP_CACHE = "sonar.enableHttpCache";
 
   String SONAR_URL = "sonar.host.url";
   String SONAR_LOGIN = "sonar.login";

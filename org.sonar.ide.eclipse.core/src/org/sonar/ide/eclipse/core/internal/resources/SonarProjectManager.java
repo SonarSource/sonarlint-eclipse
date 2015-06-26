@@ -20,7 +20,6 @@
 package org.sonar.ide.eclipse.core.internal.resources;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
@@ -59,7 +58,6 @@ public class SonarProjectManager {
   private static final String P_PROJECT_BRANCH = "projectBranch";
 
   private static final String P_PROJECT_KEY = "projectKey";
-  private static final String P_LAST_ANALYSIS_DATE = "lastAnalysisDate";
   private static final String P_EXTRA_PROPS = "extraProperties";
 
   public SonarProject readSonarConfiguration(IProject project) {
@@ -94,10 +92,6 @@ public class SonarProjectManager {
     SonarProject sonarProject = new SonarProject(project);
     sonarProject.setUrl(projectNode.get(P_SONAR_SERVER_URL, ""));
     sonarProject.setKey(key);
-    Long analysisTimestamp = projectNode.getLong(P_LAST_ANALYSIS_DATE, 0);
-    if (analysisTimestamp > 0) {
-      sonarProject.setLastAnalysisDate(new Date(analysisTimestamp));
-    }
     String extraArgsAsString = projectNode.get(P_EXTRA_PROPS, null);
     List<SonarProperty> sonarProperties = new ArrayList<SonarProperty>();
     if (extraArgsAsString != null) {
@@ -129,9 +123,6 @@ public class SonarProjectManager {
 
     projectNode.put(P_SONAR_SERVER_URL, configuration.getUrl());
     projectNode.put(P_PROJECT_KEY, configuration.getKey());
-    if (configuration.getLastAnalysisDate() != null) {
-      projectNode.putLong(P_LAST_ANALYSIS_DATE, configuration.getLastAnalysisDate().getTime());
-    }
     if (configuration.getExtraProperties() != null) {
       List<String> keyValuePairs = new ArrayList<String>(configuration.getExtraProperties().size());
       for (SonarProperty prop : configuration.getExtraProperties()) {

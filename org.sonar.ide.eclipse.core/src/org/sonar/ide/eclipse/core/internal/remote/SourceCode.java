@@ -19,13 +19,6 @@
  */
 package org.sonar.ide.eclipse.core.internal.remote;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonar.ide.eclipse.common.issues.ISonarIssue;
-import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
-
-import java.util.Date;
-import java.util.List;
-
 /**
  * @author Evgeny Mandrikov
  * @since 0.2
@@ -46,11 +39,5 @@ public interface SourceCode extends Comparable<SourceCode> {
    * @return this (for method chaining)
    */
   SourceCode setLocalContent(String content);
-
-  Date getAnalysisDate();
-
-  List<ISonarIssue> getRemoteIssuesWithLineCorrection(IProgressMonitor monitor);
-
-  List<ISonarIssueWithPath> getRemoteIssuesRecursively(IProgressMonitor monitor);
 
 }

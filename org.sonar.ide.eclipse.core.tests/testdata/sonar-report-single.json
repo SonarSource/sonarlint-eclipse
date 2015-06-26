@@ -15,19 +15,9 @@
   ],
   "components": [
     {
-      "key": "bar:foo:src/Pmd.java",
-      "moduleKey": "bar:foo",
-      "path": "src/Pmd.java",
-      "status": "SAME"
-    }, {
       "key": "bar:foo:src/Findbugs.java",
       "moduleKey": "bar:foo",
       "path": "src/Findbugs.java",
-      "status": "CHANGED"
-    }, {
-      "key": "bar:foo:src/Checkstyle.java",
-      "moduleKey": "bar:foo",
-      "path": "src/Checkstyle.java",
       "status": "CHANGED"
     }
   ],
