@@ -104,10 +104,10 @@ public final class SonarServer implements ISonarServer {
       String encodedUrl = EncodingUtils.encodeSlashes(getUrl());
       if (serversNode.nodeExists(encodedUrl)) {
         // Migration
-        serversNode.node(getId()).put(key, serversNode.node(encodedUrl).get(key, ""), encrypted);
+        serversNode.node(EncodingUtils.encodeSlashes(getId())).put(key, serversNode.node(encodedUrl).get(key, ""), encrypted);
         serversNode.remove(encodedUrl);
       }
-      return serversNode.node(getId()).get(key, "");
+      return serversNode.node(EncodingUtils.encodeSlashes(getId())).get(key, "");
     } catch (StorageException e) {
       return "";
     }
@@ -116,7 +116,7 @@ public final class SonarServer implements ISonarServer {
   private void setKeyForServerNode(String key, String value, boolean encrypt) {
     try {
       ISecurePreferences serverNode = SecurePreferencesFactory.getDefault().node(SonarServersManager.PREF_SERVERS)
-        .node(getId());
+        .node(EncodingUtils.encodeSlashes(getId()));
       serverNode.put(key, value, encrypt);
     } catch (StorageException e) {
       SonarCorePlugin.getDefault().error(e.getMessage(), e);
