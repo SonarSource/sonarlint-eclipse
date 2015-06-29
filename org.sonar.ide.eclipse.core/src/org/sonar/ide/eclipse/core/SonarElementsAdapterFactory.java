@@ -75,7 +75,7 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
       ISonarProject sonarProject = SonarProject.getInstance(parentProject);
       ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
       if (sonarServer == null) {
-        SonarCorePlugin.getDefault().info(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
+        SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
           sonarProject.getProject().getName(), sonarProject.getUrl()) + "\n");
         return null;
       }

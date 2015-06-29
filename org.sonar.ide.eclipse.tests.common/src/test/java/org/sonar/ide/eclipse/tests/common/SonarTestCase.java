@@ -39,8 +39,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServersManager;
 
 import static org.junit.Assert.assertTrue;
 
@@ -109,11 +109,7 @@ public abstract class SonarTestCase {
   }
 
   private static void cleanWorkspace() throws Exception {
-    final List<ISonarServer> hosts = new ArrayList<ISonarServer>();
-    hosts.addAll(SonarCorePlugin.getServersManager().getServers());
-    for (final ISonarServer host : hosts) {
-      SonarCorePlugin.getServersManager().removeServer(host);
-    }
+    ((SonarServersManager) (SonarCorePlugin.getServersManager())).clean();
     final IWorkspaceRoot root = workspace.getRoot();
     for (final IProject project : root.getProjects()) {
       project.delete(true, true, MONITOR);

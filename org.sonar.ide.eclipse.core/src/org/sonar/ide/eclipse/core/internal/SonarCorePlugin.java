@@ -99,7 +99,6 @@ public class SonarCorePlugin extends AbstractPlugin {
     super.start(context);
 
     serversManager = new SonarServersManager();
-    serversManager.reloadFromEclipsePreferences();
   }
 
   private static SonarProjectManager projectManager;

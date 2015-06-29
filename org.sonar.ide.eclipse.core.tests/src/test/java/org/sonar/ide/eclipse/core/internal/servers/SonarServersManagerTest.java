@@ -46,7 +46,7 @@ public class SonarServersManagerTest {
     String url = "http://new";
     ISonarServer server = serversManager.findServer(url);
     assertThat(server, nullValue());
-    assertThat(serversManager.getServers().size(), is(0));
+    assertThat(serversManager.reloadServers().size(), is(0));
   }
 
   @Test
