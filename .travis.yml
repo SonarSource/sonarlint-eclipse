@@ -12,7 +12,7 @@ jdk:
   - oraclejdk7
 
 script:
-  - mvn verify -B -e -V -Dtycho.disableP2Mirrors=true -Dtarget.platform=$TARGET_PLATFORM
+  - ./travis.sh
 
 cache:
   directories:
