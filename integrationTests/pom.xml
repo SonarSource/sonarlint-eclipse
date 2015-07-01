@@ -173,7 +173,7 @@
       <repositories>
         <repository>
           <id>sonar-eclipse</id>
-          <url>http://eclipse-uc-snapshot.internal.sonarsource.com/e42/</url>
+          <url>${sonar-eclipse.p2.url}</url>
           <layout>p2</layout>
         </repository>
       </repositories>
