@@ -44,13 +44,23 @@ public class SonarServersManager implements ISonarServersManager {
 
   private List<ISonarServer> servers = Lists.newArrayList();
 
+  private boolean loadedOnce = false;
+
   @Override
-  public Collection<ISonarServer> getServers() {
-    reloadFromEclipsePreferences();
+  public synchronized Collection<ISonarServer> reloadServers() {
+    reloadFromEclipsePreferencesAndCheckStatus();
     return servers;
   }
 
-  public void reloadFromEclipsePreferences() {
+  @Override
+  public synchronized Collection<ISonarServer> getServers() {
+    if (!loadedOnce) {
+      reloadFromEclipsePreferencesAndCheckStatus();
+    }
+    return servers;
+  }
+
+  private void reloadFromEclipsePreferencesAndCheckStatus() {
     servers.clear();
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     try {
@@ -76,10 +86,11 @@ public class SonarServersManager implements ISonarServersManager {
     } catch (BackingStoreException e) {
       SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
+    loadedOnce = true;
   }
 
   @Override
-  public void addServer(ISonarServer server) {
+  public synchronized void addServer(ISonarServer server) {
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     try {
       Preferences serversNode = rootNode.node(PREF_SERVERS);
@@ -91,13 +102,13 @@ public class SonarServersManager implements ISonarServersManager {
     } catch (BackingStoreException e) {
       SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
-    reloadFromEclipsePreferences();
+    reloadFromEclipsePreferencesAndCheckStatus();
   }
 
   /**
    * For tests.
    */
-  public void clean() {
+  public synchronized void clean() {
     servers.clear();
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     try {
@@ -110,7 +121,7 @@ public class SonarServersManager implements ISonarServersManager {
   }
 
   @Override
-  public void removeServer(ISonarServer server) {
+  public synchronized void removeServer(ISonarServer server) {
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     try {
       Preferences serversNode = rootNode.node(PREF_SERVERS);
@@ -120,12 +131,12 @@ public class SonarServersManager implements ISonarServersManager {
     } catch (BackingStoreException e) {
       SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
-    reloadFromEclipsePreferences();
+    reloadFromEclipsePreferencesAndCheckStatus();
   }
 
   @CheckForNull
   @Override
-  public ISonarServer findServer(String idOrUrl) {
+  public synchronized ISonarServer findServer(String idOrUrl) {
     for (ISonarServer server : servers) {
       if (server.getId().equals(idOrUrl) || server.getUrl().equals(idOrUrl)) {
         return server;

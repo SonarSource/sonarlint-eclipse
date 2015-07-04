@@ -31,6 +31,8 @@ public interface ISonarServersManager {
 
   Collection<ISonarServer> getServers();
 
+  Collection<ISonarServer> reloadServers();
+
   void removeServer(ISonarServer server);
 
   void addServer(ISonarServer server);
