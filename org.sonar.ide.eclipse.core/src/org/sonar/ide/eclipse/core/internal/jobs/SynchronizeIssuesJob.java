@@ -88,8 +88,21 @@ public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
         status = Status.CANCEL_STATUS;
       }
     } catch (final ConnectionException e) {
-      status = new Status(IStatus.ERROR, SonarCorePlugin.PLUGIN_ID, IStatus.ERROR, "Unable to contact SonarQube server", e);
-    } catch (final Exception e) {
+
+        if (force)
+        {
+          // Forced client might need more info to known what happened here.
+          status = new Status(IStatus.ERROR, SonarCorePlugin.PLUGIN_ID, IStatus.ERROR, "Unable to contact SonarQube server", e);
+        }
+        else
+        {
+          // Helpful for offline server error debug.
+          // http:// jira.sonarsource.com/browse/SONARCLIPS-403
+          SonarCorePlugin.getDefault().debug(e.getMessage());
+          status = Status.OK_STATUS;
+        }
+
+      } catch (final Exception e) {
       status = new Status(IStatus.ERROR, SonarCorePlugin.PLUGIN_ID, IStatus.ERROR, e.getLocalizedMessage(), e);
     } finally {
       monitor.done();
@@ -113,31 +126,47 @@ public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
   }
 
   private void retrieveMarkers(final IFile resource, final IProgressMonitor monitor) {
-    if ((resource == null) || !resource.exists() || monitor.isCanceled()) {
-      return;
-    }
-    SonarProject sonarProject = SonarProject.getInstance(resource.getProject());
-    EclipseSonar eclipseSonar = EclipseSonar.getInstance(resource.getProject());
-    if (!force && !MarkerUtils.needRefresh(resource, sonarProject, eclipseSonar.getSonarServer())) {
-      return;
-    }
-    try {
-      long start = System.currentTimeMillis();
-      SonarCorePlugin.getDefault().debug("Retrieve issues of resource " + resource.getName() + "...\n");
-      final Collection<ISonarIssue> issues = retrieveIssues(eclipseSonar, resource, monitor);
-      SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - start) + "ms\n");
-      long startMarker = System.currentTimeMillis();
-      SonarCorePlugin.getDefault().debug("Update markers on resource " + resource.getName() + "...\n");
-      MarkerUtils.deleteIssuesMarkers(resource);
-      for (final ISonarIssue issue : issues) {
-        SonarMarker.create(resource, false, issue);
-      }
-      MarkerUtils.updatePersistentProperties(resource, sonarProject, eclipseSonar.getSonarServer());
-      SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - startMarker) + "ms\n");
-    } catch (final Exception ex) {
-      SonarCorePlugin.getDefault().error(ex.getMessage(), ex);
-    }
-  }
+	    if (resource == null || !resource.exists() || monitor.isCanceled()) {
+	        return;
+	      }
+	      // Handle exceptions other than ConnectionException to avoid recursive delay due to connection failure when offline.
+	      try
+	      {
+	        final SonarProject sonarProject = SonarProject.getInstance(resource.getProject());
+	        final EclipseSonar eclipseSonar = EclipseSonar.getInstance(resource.getProject());
+	        if (force || MarkerUtils.needRefresh(resource, sonarProject, eclipseSonar.getSonarServer()))
+	        {
+	          final long start = System.currentTimeMillis();
+	          final SonarCorePlugin sonarCoreDefault = SonarCorePlugin.getDefault();
+	          sonarCoreDefault.debug("Retrieve issues of resource " + resource.getName() + "...\n");
+	          final Collection<ISonarIssue> issues = retrieveIssues(eclipseSonar, resource, monitor);
+	          sonarCoreDefault.debug("Done in " + (System.currentTimeMillis() - start) + "ms\n");
+	          final long startMarker = System.currentTimeMillis();
+	          sonarCoreDefault.debug("Update markers on resource " + resource.getName() + "...\n");
+	          MarkerUtils.deleteIssuesMarkers(resource);
+	          for (final ISonarIssue issue : issues)
+	          {
+	            SonarMarker.create(resource, false, issue);
+	          }
+	          MarkerUtils.updatePersistentProperties(resource, sonarProject, eclipseSonar.getSonarServer());
+
+	          SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - startMarker) + "ms\n");
+	        }
+	      } catch (final CoreException coreExp)
+	      {
+	        if (force)
+	        {
+	          // Forced client might need more info to known what happened here.
+	          SonarCorePlugin.getDefault().error(coreExp.getMessage(), coreExp);
+	        }
+	        else
+	        {
+	          // Helpful for offline server error debug.
+	          // http:// jira.sonarsource.com/browse/SONARCLIPS-403
+	          SonarCorePlugin.getDefault().debug(coreExp.getMessage());
+	        }
+	      }
+	    }
 
   private Collection<ISonarIssue> retrieveIssues(EclipseSonar sonar, IResource resource, IProgressMonitor monitor) {
     SourceCode sourceCode = sonar.search(resource);

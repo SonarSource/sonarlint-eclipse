@@ -107,7 +107,7 @@ public class AnalyzeProjectJob extends Job {
     // Analyze
     // To be sure to not reuse something from a previous analysis
     try {
-      Files.delete(outputFile.toPath());
+      Files.deleteIfExists(outputFile.toPath());
     } catch (IOException e) {
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Unable to delete", e);
     }
@@ -228,7 +228,7 @@ public class AnalyzeProjectJob extends Job {
     for (SonarProperty sonarProperty : extraProps) {
       properties.put(sonarProperty.getName(), sonarProperty.getValue());
     }
-    // Server configuration can't be overriden by user
+    // Server configuration can't be overridden by user
     properties.setProperty(SonarProperties.SONAR_URL, getSonarServer().getUrl());
     if (StringUtils.isNotBlank(getSonarServer().getUsername())) {
       properties.setProperty(SonarProperties.SONAR_LOGIN, getSonarServer().getUsername());

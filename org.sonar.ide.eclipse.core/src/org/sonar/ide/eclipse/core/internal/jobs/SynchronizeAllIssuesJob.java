@@ -73,8 +73,10 @@ public class SynchronizeAllIssuesJob extends Job {
           break;
         }
         if (request.getProject().isAccessible()) {
-          MarkerUtils.deleteIssuesMarkers(request.getProject());
           monitor.subTask(request.getProject().getName());
+          // http://jira.sonarsource.com/browse/SONARCLIPS-403
+          // Delete markers and persistence properties for a given resource as and then resource is analysed, not at project level.
+          // User may loss existing markers cache if server is offline.
           fetchRemoteIssues(request.getProject(), monitor);
           scheduleIncrementalAnalysis(request);
         }
@@ -140,6 +142,9 @@ public class SynchronizeAllIssuesJob extends Job {
     for (ISonarIssueWithPath issue : issues) {
       IResource eclipseResource = ResourceUtils.findResource(sonarProject, issue.resourceKey());
       if (eclipseResource instanceof IFile) {
+    	  // Delete markers on current resource now.
+          MarkerUtils.deleteIssuesMarkers(eclipseResource);
+          // Fetch new remote markers
         SonarMarker.create(eclipseResource, false, issue);
       }
       if (monitor.isCanceled()) {
