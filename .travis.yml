@@ -5,10 +5,8 @@ install: true
 env:
   - TARGET_PLATFORM=e42
   - TARGET_PLATFORM=e43
- 
-# temporarily disabled as integration tests fail  
-#  - TARGET_PLATFORM=e44
-#  - TARGET_PLATFORM=e45
+  - TARGET_PLATFORM=e44
+  - TARGET_PLATFORM=e45
 
 jdk:
   - oraclejdk7
