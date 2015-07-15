@@ -19,18 +19,23 @@
  */
 package org.sonar.ide.eclipse.core.internal.servers;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
+
+import java.util.Collection;
+
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.osgi.service.prefs.BackingStoreException;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 public class SonarServerManagerTest {
 
@@ -39,24 +44,43 @@ public class SonarServerManagerTest {
   @Before
   public void setUp() {
     serversManager = (ServersManager) SonarCorePlugin.getServersManager();
-    serversManager.clean();
+    clean(serversManager);
+  }
+
+  /**
+   * For tests.
+   * @param sonarServersManager
+   */
+  private void clean(final ServersManager sonarServersManager) {
+    final IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
+    try {
+      rootNode.node(ISonarServerPreferenceConstansts.PREF_SERVERS).removeNode();
+      rootNode.node(ISonarServerPreferenceConstansts.PREF_SERVERS).put(ISonarServerPreferenceConstansts.INITIALIZED, Boolean.TRUE.toString());
+      rootNode.flush();
+    } catch (final BackingStoreException e) {
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
+    }
+    final Collection<ISonarServer> servers = serversManager.getServers();
+    for (final ISonarServer iSonarServer : servers) {
+      Version.remove(iSonarServer);
+    }
   }
 
   @Test
   public void shouldNotCreateFakeServer() throws Exception {
-    String url = "http://new";
-    ISonarServer server = serversManager.findServer(url);
+    final String url = "http://new";
+    final ISonarServer server = serversManager.findServer(url);
     assertThat(server, nullValue());
     assertThat(serversManager.getServers().size(), is(0));
   }
 
   @Test
   public void shouldUseSecureStorage() throws Exception {
-    String url = "http://secure";
-    ISonarServer server = serversManager.create(url, "tester", "secret");
+    final String url = "http://secure";
+    final ISonarServer server = serversManager.create(url, "tester", "secret");
     serversManager.addServer(server);
 
-    ISecurePreferences securePreferences = SecurePreferencesFactory.getDefault().node(ServersManager.PREF_SERVERS);
+    ISecurePreferences securePreferences = SecurePreferencesFactory.getDefault().node(ISonarServerPreferenceConstansts.PREF_SERVERS);
     securePreferences = securePreferences.node(EncodingUtils.encodeSlashes(url));
     assertThat(securePreferences.get("username", null), is("tester"));
     assertThat(securePreferences.get("password", null), is("secret"));
@@ -64,7 +88,7 @@ public class SonarServerManagerTest {
 
   @After
   public void tearDown() {
-    serversManager.clean();
+    clean(serversManager);
   }
 
 }

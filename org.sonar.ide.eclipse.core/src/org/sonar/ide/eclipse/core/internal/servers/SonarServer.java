@@ -20,7 +20,6 @@
 package org.sonar.ide.eclipse.core.internal.servers;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.equinox.security.storage.EncodingUtils;
@@ -30,13 +29,14 @@ import org.eclipse.equinox.security.storage.StorageException;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
-public final class SonarServer implements ISonarServer {
+@SuppressWarnings("nls")
+final class SonarServer implements ISonarServer {
 
   private final String url;
   private final boolean auth;
-  private String version;
+  private Version version;
 
-  public SonarServer(String url, String username, String password) {
+  SonarServer(final String url, final String username, final String password) {
     this(url, StringUtils.isNotBlank(password) && StringUtils.isNotBlank(username));
     if (auth) {
       setKeyForServerNode("username", username, false);
@@ -44,14 +44,24 @@ public final class SonarServer implements ISonarServer {
     }
   }
 
-  public SonarServer(String url) {
+  SonarServer(final String url) {
     this(url, false);
   }
 
-  public SonarServer(String url, boolean auth) {
+  SonarServer(final String url, final boolean auth) {
     Assert.isNotNull(url);
     this.url = url;
     this.auth = auth;
+  }
+
+  /**
+   * @param url
+   * @param auth
+   * @param version
+   */
+  public SonarServer(final String url, final boolean auth, final Version version) {
+    this(url, auth);
+    this.version = version;
   }
 
   @Override
@@ -77,27 +87,24 @@ public final class SonarServer implements ISonarServer {
   @CheckForNull
   @Override
   public String getVersion() {
-    return version;
+    return version.get(this);
   }
 
-  public void setVersion(@Nullable String version) {
-    this.version = version;
-  }
 
-  private String getKeyFromServerNode(String key) {
+  private String getKeyFromServerNode(final String key) {
     try {
-      return SecurePreferencesFactory.getDefault().node(ServersManager.PREF_SERVERS).node(EncodingUtils.encodeSlashes(getUrl())).get(key, "");
-    } catch (StorageException e) {
+      return SecurePreferencesFactory.getDefault().node(ISonarServerPreferenceConstansts.PREF_SERVERS).node(EncodingUtils.encodeSlashes(getUrl())).get(key, "");
+    } catch (final StorageException e) {
       return "";
     }
   }
 
-  private void setKeyForServerNode(String key, String value, boolean encrypt) {
+  private void setKeyForServerNode(final String key, final String value, final boolean encrypt) {
     try {
-      ISecurePreferences serverNode = SecurePreferencesFactory.getDefault().node(ServersManager.PREF_SERVERS)
+      final ISecurePreferences serverNode = SecurePreferencesFactory.getDefault().node(ISonarServerPreferenceConstansts.PREF_SERVERS)
         .node(EncodingUtils.encodeSlashes(getUrl()));
       serverNode.put(key, value, encrypt);
-    } catch (StorageException e) {
+    } catch (final StorageException e) {
       SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
   }
@@ -113,12 +120,12 @@ public final class SonarServer implements ISonarServer {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(final Object obj) {
     if (obj == this) {
       return true;
     }
     if (obj instanceof SonarServer) {
-      SonarServer sonarServer = (SonarServer) obj;
+      final SonarServer sonarServer = (SonarServer) obj;
       return getUrl().equals(sonarServer.getUrl());
     }
     return false;

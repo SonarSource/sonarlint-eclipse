@@ -19,13 +19,10 @@
  */
 package org.sonar.ide.eclipse.core.internal.servers;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
@@ -34,122 +31,90 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
 public class ServersManager implements ISonarServersManager {
-  static final String PREF_SERVERS = "servers";
-
-  private Map<String, String> serverVersionCache = new HashMap<String, String>();
-
-  @VisibleForTesting
-  public Map<String, String> getServerVersionCache() {
-    return serverVersionCache;
-  }
 
   @Override
   public Collection<ISonarServer> getServers() {
-    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
-    List<ISonarServer> servers = Lists.newArrayList();
+    final IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
+    final List<ISonarServer> servers = Lists.newArrayList();
     try {
       rootNode.sync();
-      if (rootNode.nodeExists(PREF_SERVERS)) {
-        Preferences serversNode = rootNode.node(PREF_SERVERS);
-        for (String encodedUrl : serversNode.childrenNames()) {
-          Preferences serverNode = serversNode.node(encodedUrl);
-          String url = EncodingUtils.decodeSlashes(encodedUrl);
-          boolean auth = serverNode.getBoolean("auth", false);
-          SonarServer sonarServer = new SonarServer(url, auth);
-          if (!serverVersionCache.containsKey(sonarServer.getUrl())) {
-            String serverVersion = getServerVersion(sonarServer);
-            if (serverVersion != null) {
-              serverVersionCache.put(sonarServer.getUrl(), serverVersion);
-            }
-          }
-          sonarServer.setVersion(serverVersionCache.get(sonarServer.getUrl()));
+      if (rootNode.nodeExists(ISonarServerPreferenceConstansts.PREF_SERVERS)) {
+        final Preferences serversNode = rootNode.node(ISonarServerPreferenceConstansts.PREF_SERVERS);
+        for (final String encodedUrl : serversNode.childrenNames()) {
+          final Preferences serverNode = serversNode.node(encodedUrl);
+          final String url = EncodingUtils.decodeSlashes(encodedUrl);
+          final boolean auth = serverNode.getBoolean(ISonarServerPreferenceConstansts.AUTH, false);
+          final Version version = Version.getVersion(url);
+          final SonarServer sonarServer = new SonarServer(url, auth, version);
           servers.add(sonarServer);
         }
       } else {
         // Defaults
-        return Arrays.asList((ISonarServer) new SonarServer("http://localhost:9000"));
+        return Arrays.<ISonarServer>asList(getDefault());
       }
-    } catch (BackingStoreException e) {
+    } catch (final BackingStoreException e) {
       SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
     return servers;
   }
 
   @Override
-  public void addServer(ISonarServer server) {
-    String encodedUrl = EncodingUtils.encodeSlashes(server.getUrl());
-    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
+  public void addServer(final ISonarServer server) {
+    final String encodedUrl = EncodingUtils.encodeSlashes(server.getUrl());
+    final IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     try {
-      Preferences serversNode = rootNode.node(PREF_SERVERS);
-      serversNode.put("initialized", "true");
-      serversNode.node(encodedUrl).putBoolean("auth", server.hasCredentials());
+      final Preferences serversNode = rootNode.node(ISonarServerPreferenceConstansts.PREF_SERVERS);
+      serversNode.put(ISonarServerPreferenceConstansts.INITIALIZED, Boolean.TRUE.toString());
+      serversNode.node(encodedUrl).putBoolean(ISonarServerPreferenceConstansts.AUTH, server.hasCredentials());
       serversNode.flush();
-    } catch (BackingStoreException e) {
+    } catch (final BackingStoreException e) {
       SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
   }
 
-  /**
-   * For tests.
-   */
-  public void clean() {
-    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
-    try {
-      rootNode.node(PREF_SERVERS).removeNode();
-      rootNode.node(PREF_SERVERS).put("initialized", "true");
-      rootNode.flush();
-    } catch (BackingStoreException e) {
-      SonarCorePlugin.getDefault().error(e.getMessage(), e);
-    }
-    serverVersionCache.clear();
-  }
+
 
   @Override
-  public void removeServer(ISonarServer server) {
-    String encodedUrl = EncodingUtils.encodeSlashes(server.getUrl());
-    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
+  public void removeServer(final ISonarServer server) {
+    final String encodedUrl = EncodingUtils.encodeSlashes(server.getUrl());
+    final IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     try {
-      Preferences serversNode = rootNode.node(PREF_SERVERS);
+      final Preferences serversNode = rootNode.node(ISonarServerPreferenceConstansts.PREF_SERVERS);
       serversNode.node(encodedUrl).removeNode();
       serversNode.flush();
-    } catch (BackingStoreException e) {
+    } catch (final BackingStoreException e) {
       SonarCorePlugin.getDefault().error(e.getMessage(), e);
     }
-    serverVersionCache.remove(server.getUrl());
+    Version.remove(server);
   }
 
   @CheckForNull
   @Override
-  public ISonarServer findServer(String url) {
-    for (ISonarServer server : getServers()) {
-      if (server.getUrl().equals(url)) {
+  public ISonarServer findServer(final String url)
+  {
+    final Collection<ISonarServer> servers = getServers();
+    for (final ISonarServer server : servers)
+    {
+      final String serverUrl = server.getUrl();
+      if (serverUrl.equals(url))
+      {
         return server;
       }
     }
     return null;
   }
 
+  @SuppressWarnings("nls")
   @Override
   public ISonarServer getDefault() {
     return new SonarServer("http://localhost:9000");
   }
 
   @Override
-  public ISonarServer create(String location, String username, String password) {
+  public ISonarServer create(final String location, final String username, final String password) {
     return new SonarServer(location, username, password);
-  }
-
-  @CheckForNull
-  private String getServerVersion(ISonarServer server) {
-    try {
-      return WSClientFactory.getSonarClient(server).getServerVersion();
-    } catch (Exception e) {
-      SonarCorePlugin.getDefault().error("Unable to get version of server " + server.getUrl() + ": " + e.getMessage() + "\n");
-    }
-    return null;
   }
 
 }

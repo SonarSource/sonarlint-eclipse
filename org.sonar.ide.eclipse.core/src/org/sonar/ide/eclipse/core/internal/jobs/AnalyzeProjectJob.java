@@ -127,7 +127,7 @@ public class AnalyzeProjectJob extends Job {
     // Create markers
     long startMarker = System.currentTimeMillis();
     SonarCorePlugin.getDefault().debug("Create markers on project " + project.getName() + " resources...\n");
-    createMarkersFromReportOutput(monitor, outputFile);
+    createMarkersFromReportOutput(outputFile);
     SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - startMarker) + "ms\n");
 
     // Update analysis date
@@ -152,7 +152,7 @@ public class AnalyzeProjectJob extends Job {
   }
 
   @VisibleForTesting
-  public void createMarkersFromReportOutput(final IProgressMonitor monitor, File outputFile) {
+  public void createMarkersFromReportOutput(File outputFile) {
     try (FileReader fileReader = new FileReader(outputFile)) {
       Object obj = JSONValue.parse(fileReader);
       JSONObject sonarResult = (JSONObject) obj;
