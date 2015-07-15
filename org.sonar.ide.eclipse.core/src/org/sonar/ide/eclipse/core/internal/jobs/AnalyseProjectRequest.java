@@ -19,21 +19,20 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
+import java.util.Collections;
+import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 
-import java.util.Collections;
-import java.util.List;
-
 public class AnalyseProjectRequest {
 
-  private IProject project;
+  private final IProject project;
   private boolean debugEnabled;
   private List<SonarProperty> extraProps = Collections.emptyList();
   private String jvmArgs = "";
   private boolean forceFullPreview;
 
-  public AnalyseProjectRequest(IProject project) {
+  public AnalyseProjectRequest(final IProject project) {
     this.project = project;
   }
 
@@ -45,7 +44,7 @@ public class AnalyseProjectRequest {
     return debugEnabled;
   }
 
-  public AnalyseProjectRequest setDebugEnabled(boolean debugEnabled) {
+  public AnalyseProjectRequest setDebugEnabled(final boolean debugEnabled) {
     this.debugEnabled = debugEnabled;
     return this;
   }
@@ -54,7 +53,7 @@ public class AnalyseProjectRequest {
     return extraProps;
   }
 
-  public AnalyseProjectRequest setExtraProps(List<SonarProperty> extraProps) {
+  public AnalyseProjectRequest setExtraProps(final List<SonarProperty> extraProps) {
     this.extraProps = extraProps;
     return this;
   }
@@ -63,7 +62,7 @@ public class AnalyseProjectRequest {
     return jvmArgs;
   }
 
-  public AnalyseProjectRequest setJvmArgs(String jvmArgs) {
+  public AnalyseProjectRequest setJvmArgs(final String jvmArgs) {
     this.jvmArgs = jvmArgs;
     return this;
   }
@@ -72,9 +71,78 @@ public class AnalyseProjectRequest {
     return forceFullPreview;
   }
 
-  public AnalyseProjectRequest setForceFullPreview(boolean forceFullPreview) {
+  public AnalyseProjectRequest setForceFullPreview(final boolean forceFullPreview) {
     this.forceFullPreview = forceFullPreview;
     return this;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (debugEnabled ? 1231 : 1237);
+    result = prime * result + (extraProps == null ? 0 : extraProps.hashCode());
+    result = prime * result + (forceFullPreview ? 1231 : 1237);
+    result = prime * result + (jvmArgs == null ? 0 : jvmArgs.hashCode());
+    result = prime * result + (project == null ? 0 : project.hashCode());
+    return result;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean equals(final Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (!(obj instanceof AnalyseProjectRequest)) {
+      return false;
+    }
+    final AnalyseProjectRequest other = (AnalyseProjectRequest) obj;
+    if (debugEnabled != other.debugEnabled) {
+      return false;
+    }
+    if (extraProps == null) {
+      if (other.extraProps != null) {
+        return false;
+      }
+    } else if (!extraProps.equals(other.extraProps)) {
+      return false;
+    }
+    if (forceFullPreview != other.forceFullPreview) {
+      return false;
+    }
+    if (jvmArgs == null) {
+      if (other.jvmArgs != null) {
+        return false;
+      }
+    } else if (!jvmArgs.equals(other.jvmArgs)) {
+      return false;
+    }
+    if (project == null) {
+      if (other.project != null) {
+        return false;
+      }
+    } else if (!project.getName().equals(other.project.getName())) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @SuppressWarnings("nls")
+  @Override
+  public String toString() {
+    return "AnalyseProjectRequest [project=" + project + ", debugEnabled=" + debugEnabled + ", forceFullPreview=" + forceFullPreview + "]";
   }
 
 }

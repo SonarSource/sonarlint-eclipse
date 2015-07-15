@@ -22,9 +22,10 @@ package org.sonar.ide.eclipse.wsclient;
 /**
  * Wrapped exception to not expose class from sonar WS Client
  */
+// TODO This is should be typed exception so that client code know the possibility of happening and handle the error.
 public class ConnectionException extends RuntimeException {
 
-  public ConnectionException(org.sonar.wsclient.connectors.ConnectionException wrappedException) {
+  public ConnectionException(final org.sonar.wsclient.connectors.ConnectionException wrappedException) {
     super(wrappedException.getMessage(), wrappedException.getCause());
   }
 

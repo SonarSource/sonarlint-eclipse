@@ -23,6 +23,9 @@
                class="org.sonar.ide.eclipse.core.internal.SonarNature">
          </run>
       </runtime>
+      <builder
+            id="org.sonar.ide.eclipse.core.sonarBuilder">
+      </builder>
    </extension>
 
    <extension
@@ -66,7 +69,20 @@
             name="is_new">
       </attribute>
    </extension>
-
+        <extension
+              id="sonarBuilder"
+              name="Sonar Builder"
+              point="org.eclipse.core.resources.builders">
+           <builder
+                 callOnEmptyDelta="false"
+                 hasNature="true"
+                 isConfigurable="true"
+                 supportsConfigurations="true">
+              <run
+                    class="org.sonar.ide.eclipse.core.internal.builder.SonarBuilder">
+              </run>
+           </builder>
+        </extension>
   <extension point="org.eclipse.ui.menus">
     <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
        <command

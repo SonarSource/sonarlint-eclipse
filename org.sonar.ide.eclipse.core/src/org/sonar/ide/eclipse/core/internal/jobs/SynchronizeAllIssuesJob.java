@@ -19,35 +19,24 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
-import org.sonar.ide.eclipse.core.internal.markers.SonarMarker;
-import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
-import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
-import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
-import org.sonar.ide.eclipse.wsclient.ConnectionException;
-
 import java.util.Arrays;
 import java.util.List;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.jobs.Job;
+import org.sonar.ide.eclipse.core.internal.jobs.functions.SynchronizeAllIssuesJobFuction;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 
 public class SynchronizeAllIssuesJob extends Job {
 
   private IProgressMonitor monitor;
-  private List<AnalyseProjectRequest> requests;
 
-  public static void createAndSchedule(IProject project, boolean debugEnabled, List<SonarProperty> extraProps, String jvmArgs, boolean forceFullPreview) {
-    AnalyseProjectRequest request = new AnalyseProjectRequest(project)
+  private final SynchronizeAllIssuesJobFuction synchronizeAllIssuesJobFuction;
+
+  public static void createAndSchedule(final IProject project, final boolean debugEnabled, final List<SonarProperty> extraProps, final String jvmArgs,
+    final boolean forceFullPreview) {
+    final AnalyseProjectRequest request = new AnalyseProjectRequest(project)
       .setDebugEnabled(debugEnabled)
       .setExtraProps(extraProps)
       .setJvmArgs(jvmArgs)
@@ -55,96 +44,27 @@ public class SynchronizeAllIssuesJob extends Job {
     new SynchronizeAllIssuesJob(Arrays.asList(request)).schedule();
   }
 
-  public SynchronizeAllIssuesJob(List<AnalyseProjectRequest> requests) {
-    super("Synchronize issues");
-    this.requests = requests;
+  public SynchronizeAllIssuesJob(final List<AnalyseProjectRequest> requests) {
+    super("Synchronize all issues");
+
+    synchronizeAllIssuesJobFuction = new SynchronizeAllIssuesJobFuction(requests) {
+
+      @Override
+      public void scheduleIncrementalAnalysis(final AnalyseProjectRequest request) {
+        new AnalyzeProjectJob(request).schedule();
+      }
+    };
     setPriority(Job.LONG);
   }
 
   @Override
   protected IStatus run(final IProgressMonitor monitor) {
     this.monitor = monitor;
-    IStatus status;
-    try {
-      monitor.beginTask("Synchronize", requests.size());
-
-      for (final AnalyseProjectRequest request : requests) {
-        if (monitor.isCanceled()) {
-          break;
-        }
-        if (request.getProject().isAccessible()) {
-          MarkerUtils.deleteIssuesMarkers(request.getProject());
-          monitor.subTask(request.getProject().getName());
-          fetchRemoteIssues(request.getProject(), monitor);
-          scheduleIncrementalAnalysis(request);
-        }
-        monitor.worked(1);
-      }
-
-      if (!monitor.isCanceled()) {
-        status = Status.OK_STATUS;
-      } else {
-        status = Status.CANCEL_STATUS;
-      }
-    } catch (final ConnectionException e) {
-      status = new Status(IStatus.ERROR, SonarCorePlugin.PLUGIN_ID, IStatus.ERROR, "Unable to contact SonarQube server", e);
-    } catch (final Exception e) {
-      status = new Status(IStatus.ERROR, SonarCorePlugin.PLUGIN_ID, IStatus.ERROR, e.getLocalizedMessage(), e);
-    } finally {
-      monitor.done();
-    }
-    return status;
-  }
-
-  private void scheduleIncrementalAnalysis(AnalyseProjectRequest request) {
-    new AnalyzeProjectJob(request).schedule();
+    return synchronizeAllIssuesJobFuction.run(monitor);
   }
 
   public IProgressMonitor getMonitor() {
     return monitor;
   }
 
-  private void fetchRemoteIssues(final IProject project, IProgressMonitor monitor) throws CoreException {
-    long start = System.currentTimeMillis();
-    SonarCorePlugin.getDefault().info("Retrieve remote issues of project " + project.getName() + "...\n");
-
-    SonarProject sonarProject = SonarProject.getInstance(project);
-    MarkerUtils.deleteIssuesMarkers(project);
-    if (monitor.isCanceled()) {
-      return;
-    }
-    EclipseSonar sonar = EclipseSonar.getInstance(project);
-    if (sonar == null) {
-      return;
-    }
-    SourceCode sourceCode = sonar.search(project);
-
-    if (monitor.isCanceled()) {
-      return;
-    }
-
-    if (sourceCode != null) {
-      doRefreshIssues(sonarProject, sourceCode, monitor);
-      sonarProject.setLastAnalysisDate(sourceCode.getAnalysisDate());
-      sonarProject.save();
-    } else {
-      SonarCorePlugin.getDefault().error("Project not found on remote SonarQube server [" + sonarProject.getKey() + "]\n");
-    }
-    SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - start) + "ms\n");
-  }
-
-  private void doRefreshIssues(SonarProject sonarProject, SourceCode sourceCode, IProgressMonitor monitor) throws CoreException {
-    long start = System.currentTimeMillis();
-    List<ISonarIssueWithPath> issues = sourceCode.getRemoteIssuesRecursively(monitor);
-    SonarCorePlugin.getDefault().debug("  WS call took " + (System.currentTimeMillis() - start) + "ms for " + issues.size() + " issues\n");
-    for (ISonarIssueWithPath issue : issues) {
-      IResource eclipseResource = ResourceUtils.findResource(sonarProject, issue.resourceKey());
-      if (eclipseResource instanceof IFile) {
-        SonarMarker.create(eclipseResource, false, issue);
-      }
-      if (monitor.isCanceled()) {
-        return;
-      }
-    }
-  }
 }

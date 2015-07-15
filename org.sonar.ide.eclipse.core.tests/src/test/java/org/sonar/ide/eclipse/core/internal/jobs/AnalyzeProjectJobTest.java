@@ -143,7 +143,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   @Test
   public void shouldCreateMarkersFromIssuesReport() throws Exception {
     AnalyzeProjectJob job = job(project);
-    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
+    job.createMarkersFromReportOutput( new File("testdata/sonar-report.json"));
 
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
     assertThat(markers.size()).isEqualTo(6);
@@ -156,11 +156,11 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   @Test
   public void shouldCleanAndCreateMarkersFromIncrementalAnalysis() throws Exception {
     AnalyzeProjectJob job = job(project);
-    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
+    job.createMarkersFromReportOutput(new File("testdata/sonar-report.json"));
 
     // During incremental analysis PMD file was not modified, Findbugs has one remaing issue and Checkstyle has no remaining issues
     job = job(project);
-    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report-incremental.json"));
+    job.createMarkersFromReportOutput( new File("testdata/sonar-report-incremental.json"));
 
     List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
     assertThat(markers.size()).isEqualTo(3);

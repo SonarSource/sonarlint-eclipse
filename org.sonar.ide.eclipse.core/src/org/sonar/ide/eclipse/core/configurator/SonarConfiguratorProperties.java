@@ -19,6 +19,9 @@
  */
 package org.sonar.ide.eclipse.core.configurator;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Properties that configurator may want to set for the SonarQube analysis.
  * @author Julien Henry
@@ -30,5 +33,10 @@ public interface SonarConfiguratorProperties {
   String TEST_DIRS_PROPERTY = "sonar.tests";
   String BINARIES_PROPERTY = "sonar.binaries";
   String LIBRARIES_PROPERTY = "sonar.libraries";
+
+   List< String > PROPERTIES_LIST = Arrays.asList(SOURCE_DIRS_PROPERTY,
+                                                  TEST_DIRS_PROPERTY,
+                                                  BINARIES_PROPERTY,
+                                                  LIBRARIES_PROPERTY );
 
 }

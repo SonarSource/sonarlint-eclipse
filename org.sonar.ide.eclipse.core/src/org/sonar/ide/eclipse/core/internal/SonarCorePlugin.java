@@ -23,10 +23,20 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang.ArrayUtils;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
 import org.sonar.ide.eclipse.core.internal.jobs.LogListener;
@@ -55,49 +65,102 @@ public class SonarCorePlugin extends AbstractPlugin {
     return plugin;
   }
 
-  private ServersManager serversManager;
+  private ISonarServersManager serversManager;
   private final List<LogListener> logListeners = new ArrayList<LogListener>();
 
-  public void addLogListener(LogListener listener) {
+  public void addLogListener(final LogListener listener) {
     logListeners.add(listener);
   }
 
-  public void removeLogListener(LogListener listener) {
+  public void removeLogListener(final LogListener listener) {
     logListeners.remove(listener);
   }
 
-  public void error(String msg) {
-    for (LogListener listener : logListeners) {
+  public void error(final String msg) {
+    for (final LogListener listener : logListeners) {
       listener.error(msg);
     }
   }
 
-  public void error(String msg, Throwable t) {
-    for (LogListener listener : logListeners) {
+  public void error(final String msg, final Throwable t) {
+    for (final LogListener listener : logListeners) {
       listener.error(msg);
-      StringWriter errors = new StringWriter();
+      final StringWriter errors = new StringWriter();
       t.printStackTrace(new PrintWriter(errors));
       listener.error(errors.toString());
     }
   }
 
-  public void info(String msg) {
-    for (LogListener listener : logListeners) {
+  public void info(final String msg) {
+    for (final LogListener listener : logListeners) {
       listener.info(msg);
     }
   }
 
-  public void debug(String msg) {
-    for (LogListener listener : logListeners) {
+  public void debug(final String msg) {
+    for (final LogListener listener : logListeners) {
       listener.debug(msg);
     }
   }
 
+  @SuppressWarnings("nls")
   @Override
-  public void start(BundleContext context) {
+  public void start(final BundleContext context) {
     super.start(context);
 
     serversManager = new ServersManager();
+    scheduleStartupJobs();
+
+  }
+
+  public void scheduleStartupJobs() {
+
+    // 1) Server-manager builder back group task.
+    final Job cacheBuilder = new Job("Sonar server cache builder")
+    {
+      @Override
+      protected IStatus run(final IProgressMonitor monitor)
+      {
+        serversManager.getServers();
+        return Status.OK_STATUS;
+      }
+    };
+    cacheBuilder.schedule();
+
+    // 2) Backward compatibility project with Sonar nature to make use of SonarBuilder.
+    final Job job = new Job("Sonar projects builder set-up") {
+
+      @Override
+      protected IStatus run(final IProgressMonitor monitor) {
+
+        final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        if (workspace != null) {
+          final IWorkspaceRoot root = workspace.getRoot();
+          if (root != null) {
+            final IProject[] projects = root.getProjects(IContainer.INCLUDE_HIDDEN);
+            if (ArrayUtils.isNotEmpty(projects)) {
+              monitor.beginTask("Configuring Sonar builder for Sonar projects...  ", projects.length);
+              for (final IProject iProject : projects) {
+                if (SonarNature.hasSonarNature(iProject)) {
+                  monitor.subTask(iProject.getName());
+                  try {
+                    final IProjectDescription description = iProject.getDescription();
+                    SonarNature.addSonarBuilder(description);
+                    SonarNature.setDescription(iProject, description);
+
+                  } catch (final CoreException exception) {
+                    getDefault().debug(exception.getMessage());
+                  }
+                }
+              }
+            }
+          }
+        }
+        return Status.OK_STATUS;
+      }
+    };
+    job.setPriority(Job.LONG);
+    job.schedule();
   }
 
   private static SonarProjectManager projectManager;
@@ -113,11 +176,11 @@ public class SonarCorePlugin extends AbstractPlugin {
     return getDefault().serversManager;
   }
 
-  public static ISonarResource createSonarResource(IResource resource, String key, String name) {
+  public static ISonarResource createSonarResource(final IResource resource, final String key, final String name) {
     return new SonarResource(resource, key, name);
   }
 
-  public static ISonarFile createSonarFile(IFile file, String key, String name) {
+  public static ISonarFile createSonarFile(final IFile file, final String key, final String name) {
     return new SonarFile(file, key, name);
   }
 
@@ -130,8 +193,8 @@ public class SonarCorePlugin extends AbstractPlugin {
    * @return
    * @throws CoreException
    */
-  public static SonarProject createSonarProject(IProject project, String url, String key) throws CoreException {
-    SonarProject sonarProject = SonarProject.getInstance(project);
+  public static SonarProject createSonarProject(final IProject project, final String url, final String key) throws CoreException {
+    final SonarProject sonarProject = SonarProject.getInstance(project);
     sonarProject.setUrl(url);
     sonarProject.setKey(key);
     sonarProject.save();
