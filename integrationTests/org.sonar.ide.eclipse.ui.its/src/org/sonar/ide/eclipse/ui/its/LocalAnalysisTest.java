@@ -13,7 +13,6 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.cdt.ui.CUIPlugin;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -34,7 +33,6 @@ import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.ui.its.bots.ConfigureProjectsWizardBot;
 import org.sonar.ide.eclipse.ui.its.bots.ImportProjectBot;
 import org.sonar.ide.eclipse.ui.its.bots.JavaPackageExplorerBot;
-import org.sonar.ide.eclipse.ui.its.bots.ProjectExplorerBot;
 import org.sonar.ide.eclipse.ui.its.bots.PydevPackageExplorerBot;
 import org.sonar.ide.eclipse.ui.its.bots.SonarPreferencesBot;
 import org.sonar.ide.eclipse.ui.its.utils.JobHelpers;
@@ -333,34 +331,6 @@ public class LocalAnalysisTest extends AbstractSQEclipseUITest {
 
     assertThat(markers, hasItem(new IsMarker("src/root/nested/exemple.py", 9)));
     assertThat(markers, hasItem(new IsMarker("src/root/nested/exemple.py", 10)));
-  }
-
-  @Test
-  public void shouldAnalyseCpp() throws Exception {
-    SwtBotUtils.openPerspective(bot, CUIPlugin.ID_CPERSPECTIVE);
-    SonarCorePlugin.getServersManager().addServer(SonarCorePlugin.getServersManager().create("for-its", getSonarServerUrl(), "", ""));
-    IProject project = importEclipseProject("cpp", "cpp");
-    JobHelpers.waitForJobsToComplete(bot);
-
-    // Enable Sonar Nature
-    SonarProject sonarProject = SonarCorePlugin.createSonarProject(project, getSonarServerUrl(), "cpp");
-    // Force default profile to ensure analysis is correctly done
-    sonarProject.getExtraProperties().add(new SonarProperty("sonar.profile", "it-profile"));
-    sonarProject.save();
-
-    new ProjectExplorerBot(bot)
-      .expandAndSelect("cpp")
-      .clickContextMenu("SonarQube", "Analyze");
-
-    JobHelpers.waitForJobsToComplete(bot);
-
-    List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size(), is(4));
-
-    assertThat(markers, hasItem(new IsMarker("src/foo/test-cpp.cpp", 10)));
-    assertThat(markers, hasItem(new IsMarker("src/foo/test-cpp.cpp", 12)));
-    assertThat(markers, hasItem(new IsMarker("src/foo/test-cpp.cpp", 13)));
-    assertThat(markers, hasItem(new IsMarker("src/foo/test-cpp.cpp", 14)));
   }
 
   static class IsMarker extends BaseMatcher<IMarker> {

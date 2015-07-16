@@ -9,12 +9,14 @@ function installTravisTools {
 
 mvn verify -B -e -V -Dtycho.disableP2Mirrors=true -Dtarget.platform=$TARGET_PLATFORM
 
-if [ "${TARGET_PLATFORM}" == "e44" ] || [ "${TARGET_PLATFORM}" == "e45" ]
+if [ "${RUN_ITS}" == "true" ]
 then
   installTravisTools
+  travis_build_green "SonarSource/sonarqube" "master"
+
   travis_start_xvfb
+  metacity --sm-disable --replace &
 
   cd integrationTests
-  mvn verify -Dsonar-eclipse.p2.url=file:///home/travis/build/SonarSource/sonar-eclipse/org.sonar.ide.eclipse.site/target/repository/ -Dsonar.runtimeVersion=DEV -DjavaVersion=LATEST_RELEASE -DcppVersion=LATEST_RELEASE -DpythonVersion=LATEST_RELEASE
-  cat org.sonar.ide.eclipse.ui.its/target/work/data/.metadata/.log
+  mvn verify -Dsonar-eclipse.p2.url=file:///home/travis/build/SonarSource/sonar-eclipse/org.sonar.ide.eclipse.site/target/repository/ -Dsonar.runtimeVersion=DEV -DjavaVersion=LATEST_RELEASE -DpythonVersion=LATEST_RELEASE
 fi
