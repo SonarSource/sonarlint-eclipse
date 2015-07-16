@@ -22,7 +22,7 @@ import org.osgi.framework.Bundle;
  */
 @RunWith(Suite.class)
 @SuiteClasses({CompareWithSonarActionTest.class, ConfigurationTest.class, ConfigureProjectTest.class, IssuesViewTest.class,
-  LocalAnalysisTest.class, M2eConnectorTest.class, NonSonarProjectsFilterTest.class, OpenInBrowserActionTest.class})
+  LocalAnalysisTest.class, M2eConnectorTest.class, NonSonarProjectsFilterTest.class})
 public class SQEclipseTestSuite {
 
   private static File javaProfile = null;
