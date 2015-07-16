@@ -229,7 +229,7 @@ public class AnalyzeProjectJob extends Job {
     for (SonarProperty sonarProperty : extraProps) {
       properties.put(sonarProperty.getName(), sonarProperty.getValue());
     }
-    // Server configuration can't be overriden by user
+    // Server configuration can't be overridden by user
     properties.setProperty(SonarProperties.SONAR_URL, getSonarServer().getUrl());
     if (StringUtils.isNotBlank(getSonarServer().getUsername())) {
       properties.setProperty(SonarProperties.SONAR_LOGIN, getSonarServer().getUsername());
