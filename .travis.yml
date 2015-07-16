@@ -6,10 +6,10 @@ env:
   global:
     - DISPLAY=:99.0
   matrix:
-    - TARGET_PLATFORM=e42
-    - TARGET_PLATFORM=e43
-    - TARGET_PLATFORM=e44
-    - TARGET_PLATFORM=e45
+    - TARGET_PLATFORM=e42 RUN_ITS=false
+    - TARGET_PLATFORM=e43 RUN_ITS=false
+    - TARGET_PLATFORM=e44 RUN_ITS=true
+    - TARGET_PLATFORM=e45 RUN_ITS=true
 
 jdk:
   - oraclejdk7
@@ -17,9 +17,7 @@ jdk:
 addons:
   apt:
     packages:
-    - gnome-themes-standard
-    - metacity
-    - libwebkit-dev
+    - metacity # metacity is required by swtbot
 
 script:
   - ./travis.sh

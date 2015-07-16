@@ -9,7 +9,7 @@ function installTravisTools {
 
 mvn verify -B -e -V -Dtycho.disableP2Mirrors=true -Dtarget.platform=$TARGET_PLATFORM
 
-if [ "${TARGET_PLATFORM}" == "e44" ] || [ "${TARGET_PLATFORM}" == "e45" ]
+if [ "${RUN_ITS}" == "true" ]
 then
   installTravisTools
   travis_build_green "SonarSource/sonarqube" "master"
