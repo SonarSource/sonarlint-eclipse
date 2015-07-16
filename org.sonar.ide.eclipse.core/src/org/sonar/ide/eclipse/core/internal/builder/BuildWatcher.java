@@ -43,7 +43,7 @@ import org.sonar.ide.eclipse.core.internal.jobs.functions.SynchronizeIssuesJobFu
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 
 /**
- * This class is abstraction between builder background worker job {@link SilenceJobWrapper} and build requests {@link AnalyseProjectRequest}s.
+ * This class is abstraction between builder background worker job {@link SilentJobWrapper} and build requests {@link AnalyseProjectRequest}s.
  * <br>
  * This maintains a single background worker per builder {@link SonarBuilder} which helps in keeping Sonar building process simple without
  * blocking the user while editing the source code. Build requests for a given project are be queued if more than one requests are made at 
@@ -100,10 +100,10 @@ final class BuildWatcher {
 
             @Override
             public void scheduleIncrementalAnalysis(final AnalyseProjectRequest req) {
-              new SilenceJobWrapper(new AnalyzeProjectJobFunction(pollRequ)).schedule();
+              new SilentJobWrapper(new AnalyzeProjectJobFunction(pollRequ)).schedule();
             }
           };
-          worker = new SilenceJobWrapper(synchronizeAllIssuesJobFunction);
+          worker = new SilentJobWrapper(synchronizeAllIssuesJobFunction);
 
         } else {
           // Use the same delta changes for both ,to fetch remote issues and to analyse issue locally.
@@ -111,7 +111,7 @@ final class BuildWatcher {
           // Remote Sonar server issues fetcher job.
           final SynchronizeIssuesJobFunction synchronizeIssuesJobFunct = new SynchronizeIssuesJobFunction(getResources(pollRequ), false);
           synchronizeIssuesJobFunct.setRecursiveVisit(false);
-          worker = new SilenceJobWrapper(synchronizeIssuesJobFunct, analyzeProjectJobFunct);
+          worker = new SilentJobWrapper(synchronizeIssuesJobFunct, analyzeProjectJobFunct);
 
         }
         worker.addJobChangeListener(new JobChangeAdapter() {
@@ -120,7 +120,7 @@ final class BuildWatcher {
            */
           @Override
           public void done(final IJobChangeEvent event) {
-            final SilenceJobWrapper job = (SilenceJobWrapper) event.getJob();
+            final SilentJobWrapper job = (SilentJobWrapper) event.getJob();
             if (!job.isRescheduled()) {
               super.done(event);
               SonarCorePlugin.getDefault().debug("Completed build request fro queue: " + pollRequ + "\n");

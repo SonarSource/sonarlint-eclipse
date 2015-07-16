@@ -30,19 +30,21 @@ import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.jobs.functions.IJobFunction;
 
 /**
- * This wraps given job functions and errors if any are logged to debug level. <br>
+ * This is a {@link Job} worker and it is executed  in background silently.
+ * This {@link Job} wraps job functions {@link IJobFunction}, any errors during execution of the functions are silently logged to
+ * debug level without use facing warning or error pop-ups.<br>
  *
- * <p>This job wrapper logs {@link Status} with severities {@link IStatus#ERROR} & {@link IStatus#INFO} for the given function and
- *  {@link Exception} thrown by the given function if any. The errors and exception are logged to debug level.</p>
+ * <p>This job wrapper logs {@link Status} with severities {@link IStatus#ERROR} & {@link IStatus#INFO} for the given functions and
+ *  {@link Exception} thrown by the given functions if any. The errors and exception are logged to debug level.</p>
  *
  * @author Hemantkumar Chigadani
  */
 @SuppressWarnings("nls")
-final class SilenceJobWrapper extends Job {
+final class SilentJobWrapper extends Job {
 
   private static final int LIMIT = 2;
 
-  private static final Object JOB_FAMILY = SilenceJobWrapper.class.getName();
+  private static final Object JOB_FAMILY = SilentJobWrapper.class.getName();
 
   private final IJobFunction[] iJobFunctions;
 
@@ -51,7 +53,7 @@ final class SilenceJobWrapper extends Job {
   /**
    * @param functions , can not be <code>null</code> but it's element can be null
    */
-  SilenceJobWrapper(final IJobFunction... functions) {
+  SilentJobWrapper(final IJobFunction... functions) {
     super("Building Sonar projects");
     this.iJobFunctions = functions;
     setPriority(Job.BUILD);
@@ -64,12 +66,12 @@ final class SilenceJobWrapper extends Job {
       public void aboutToRun(IJobChangeEvent event) {
         super.aboutToRun(event);
         if (isConflicting()) {
-          SilenceJobWrapper.this.rescheduled = true;
-          SilenceJobWrapper.this.cancel();
-          SilenceJobWrapper.this.schedule(3000);
+          SilentJobWrapper.this.rescheduled = true;
+          SilentJobWrapper.this.cancel();
+          SilentJobWrapper.this.schedule(3000);
         } else {
-          SilenceJobWrapper.this.rescheduled = false;
-          SilenceJobWrapper.this.removeJobChangeListener(this);
+          SilentJobWrapper.this.rescheduled = false;
+          SilentJobWrapper.this.removeJobChangeListener(this);
         }
 
       }
