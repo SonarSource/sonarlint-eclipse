@@ -28,7 +28,6 @@ public class SQEclipseTestSuite {
 
   private static File javaProfile = null;
   private static File pythonProfile = null;
-  private static File cppProfile = null;
 
   static {
     try {
@@ -37,11 +36,8 @@ public class SQEclipseTestSuite {
       javaProfile.deleteOnExit();
       pythonProfile = File.createTempFile("profile", ".xml");
       pythonProfile.deleteOnExit();
-      cppProfile = File.createTempFile("profile", ".xml");
-      cppProfile.deleteOnExit();
       FileUtils.copyURLToFile(bundle.getEntry("it-profile_java.xml"), javaProfile);
       FileUtils.copyURLToFile(bundle.getEntry("it-profile_py.xml"), pythonProfile);
-      FileUtils.copyURLToFile(bundle.getEntry("it-profile_cpp.xml"), cppProfile);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -49,14 +45,11 @@ public class SQEclipseTestSuite {
 
   @ClassRule
   public static final Orchestrator ORCHESTRATOR = Orchestrator.builderEnv()
-    .activateLicense("cpp")
     .addPlugin("java")
-    .addPlugin("cpp")
     .addPlugin("python")
     .addPlugin(MavenLocation.of("org.codehaus.sonar-plugins.java", "sonar-pmd-plugin", "2.3"))
     .restoreProfileAtStartup(FileLocation.of(javaProfile))
     .restoreProfileAtStartup(FileLocation.of(pythonProfile))
-    .restoreProfileAtStartup(FileLocation.of(cppProfile))
     .build();
 
 }
