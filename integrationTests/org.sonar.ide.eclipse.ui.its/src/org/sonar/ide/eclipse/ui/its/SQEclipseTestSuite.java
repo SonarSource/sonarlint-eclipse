@@ -8,7 +8,6 @@ package org.sonar.ide.eclipse.ui.its;
 
 import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.locator.FileLocation;
-import com.sonar.orchestrator.locator.MavenLocation;
 import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.Platform;
@@ -47,7 +46,8 @@ public class SQEclipseTestSuite {
   public static final Orchestrator ORCHESTRATOR = Orchestrator.builderEnv()
     .addPlugin("java")
     .addPlugin("python")
-    .addPlugin(MavenLocation.of("org.codehaus.sonar-plugins.java", "sonar-pmd-plugin", "2.3"))
+    .setOrchestratorProperty("pmdVersion", "2.3")
+    .addPlugin("pmd")
     .restoreProfileAtStartup(FileLocation.of(javaProfile))
     .restoreProfileAtStartup(FileLocation.of(pythonProfile))
     .build();
