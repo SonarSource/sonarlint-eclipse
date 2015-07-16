@@ -19,10 +19,9 @@
  */
 package org.sonar.ide.eclipse.jdt.internal;
 
-import org.sonar.ide.eclipse.core.configurator.ProjectConfiguration;
-
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.sonar.ide.eclipse.core.configurator.ProjectConfiguration;
 
 public class JavaProjectConfiguration extends ProjectConfiguration {
 

@@ -49,7 +49,7 @@ final class ServerConnectionTestJob implements IRunnableWithProgress {
   public void run(IProgressMonitor monitor) {
     monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
     try {
-      ISonarServer newServer = SonarCorePlugin.getServersManager().create(serverUrl, username, password);
+      ISonarServer newServer = SonarCorePlugin.getServersManager().create("test", serverUrl, username, password);
       ConnectionTestResult result = WSClientFactory.getSonarClient(newServer).testConnection();
       switch (result.status) {
         case OK:

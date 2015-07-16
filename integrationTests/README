@@ -1,0 +1,7 @@
+# Create a dedicated display
+Xephyr -screen 1024x768 :51&
+export DISPLAY=:51
+metacity --sm-disable --replace &
+
+# Run ITs
+mvn clean verify -Dsonar-eclipse.p2.url=file:///home/julien/Prog/Projects/sonar-eclipse/org.sonar.ide.eclipse.site/target/repository/ -Dsonar.runtimeVersion=DEV -DjavaVersion=LATEST_RELEASE -DcppVersion=LATEST_RELEASE -DpythonVersion=LATEST_RELEASE -Dorchestrator.configUrl=file:///home/julien/Prog/Tests/orchestrator.properties -Dtest=LocalAnalysisTest -DdebugPort=8000

@@ -32,6 +32,7 @@ public class RemoveAction extends Action {
     setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE));
   }
 
+  @Override
   public void run() {
     SonarUiPlugin.getDefault().getSonarConsole().closeConsole();
   }

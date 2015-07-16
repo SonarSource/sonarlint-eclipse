@@ -49,6 +49,14 @@
         <role>Developer</role>
       </roles>
     </developer>
+    <developer>
+      <id>kalidasya</id>
+      <name>Tamas Kende</name>
+      <timezone>+1</timezone>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>	
   </developers>
 
   <prerequisites>
@@ -72,12 +80,14 @@
     <module>org.sonar.ide.eclipse.pydev</module>
     <module>org.sonar.ide.eclipse.pydev.feature</module>
 
+    <module>org.sonar.ide.eclipse.erlide</module>
+    <module>org.sonar.ide.eclipse.erlide.feature</module>
+	
     <module>org.sonar.ide.eclipse.m2e</module>
     <module>org.sonar.ide.eclipse.m2e.feature</module>
 
     <module>org.sonar.ide.eclipse.site</module>
 
-    <module>target-platform-e37</module>
     <module>target-platform-e42</module>
     <module>target-platform-e43</module>
     <module>target-platform-e44</module>
@@ -119,7 +129,7 @@
     <license.title>SonarQube Eclipse</license.title>
     <license.year>2010-2015</license.year>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>0.22.0</tycho.version>
+    <tycho.version>0.23.0</tycho.version>
     <target.platform>e44</target.platform>
 
     <!-- disable accidental deployment -->
@@ -256,6 +266,31 @@
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-p2-repository-plugin</artifactId>
           <version>${tycho.version}</version>
+        </plugin>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>com.mycila.maven-license-plugin</groupId>
+                    <artifactId>maven-license-plugin</artifactId>
+                    <versionRange>[1.9.0,)</versionRange>
+                    <goals>
+                      <goal>check</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>

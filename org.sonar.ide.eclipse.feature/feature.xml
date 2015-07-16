@@ -18,10 +18,6 @@
       %license
    </license>
 
-   <requires>
-      <import feature="org.eclipse.platform" version="3.6.0" match="greaterOrEqual"/>
-   </requires>
-
    <plugin
          id="org.sonar.ide.eclipse.core"
          download-size="0"
@@ -48,14 +44,6 @@
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.commons.lang"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
          unpack="false"/>
 
    <plugin

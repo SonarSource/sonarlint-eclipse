@@ -32,31 +32,45 @@ import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 public final class SonarServer implements ISonarServer {
 
-  private final String url;
-  private final boolean auth;
+  private final String id;
+  private String url;
+  private boolean hasCredentials;
   private String version;
+  private boolean disabled;
 
-  public SonarServer(String url, String username, String password) {
-    this(url, StringUtils.isNotBlank(password) && StringUtils.isNotBlank(username));
-    if (auth) {
+  public SonarServer(String id, String url, String username, String password) {
+    this(id, url, StringUtils.isNotBlank(password) && StringUtils.isNotBlank(username));
+    if (hasCredentials) {
       setKeyForServerNode("username", username, false);
       setKeyForServerNode("password", password, true);
     }
   }
 
-  public SonarServer(String url) {
-    this(url, false);
+  public SonarServer(String id, String url) {
+    this(id, url, false);
   }
 
-  public SonarServer(String url, boolean auth) {
+  public SonarServer(String id, String url, boolean auth) {
+    Assert.isNotNull(id);
     Assert.isNotNull(url);
+    this.id = id;
     this.url = url;
-    this.auth = auth;
+    this.hasCredentials = auth;
+  }
+
+  @Override
+  public String getId() {
+    return id;
   }
 
   @Override
   public String getUrl() {
     return url;
+  }
+
+  @Override
+  public boolean disabled() {
+    return disabled;
   }
 
   @Override
@@ -66,12 +80,12 @@ public final class SonarServer implements ISonarServer {
 
   @Override
   public String getUsername() {
-    return auth ? getKeyFromServerNode("username") : "";
+    return hasCredentials ? getKeyFromServerNode("username", false) : "";
   }
 
   @Override
   public String getPassword() {
-    return auth ? getKeyFromServerNode("password") : "";
+    return hasCredentials ? getKeyFromServerNode("password", true) : "";
   }
 
   @CheckForNull
@@ -84,9 +98,16 @@ public final class SonarServer implements ISonarServer {
     this.version = version;
   }
 
-  private String getKeyFromServerNode(String key) {
+  private String getKeyFromServerNode(String key, boolean encrypted) {
     try {
-      return SecurePreferencesFactory.getDefault().node(ServersManager.PREF_SERVERS).node(EncodingUtils.encodeSlashes(getUrl())).get(key, "");
+      ISecurePreferences serversNode = SecurePreferencesFactory.getDefault().node(SonarServersManager.PREF_SERVERS);
+      String encodedUrl = EncodingUtils.encodeSlashes(getUrl());
+      if (serversNode.nodeExists(encodedUrl)) {
+        // Migration
+        serversNode.node(EncodingUtils.encodeSlashes(getId())).put(key, serversNode.node(encodedUrl).get(key, ""), encrypted);
+        serversNode.remove(encodedUrl);
+      }
+      return serversNode.node(EncodingUtils.encodeSlashes(getId())).get(key, "");
     } catch (StorageException e) {
       return "";
     }
@@ -94,8 +115,8 @@ public final class SonarServer implements ISonarServer {
 
   private void setKeyForServerNode(String key, String value, boolean encrypt) {
     try {
-      ISecurePreferences serverNode = SecurePreferencesFactory.getDefault().node(ServersManager.PREF_SERVERS)
-        .node(EncodingUtils.encodeSlashes(getUrl()));
+      ISecurePreferences serverNode = SecurePreferencesFactory.getDefault().node(SonarServersManager.PREF_SERVERS)
+        .node(EncodingUtils.encodeSlashes(getId()));
       serverNode.put(key, value, encrypt);
     } catch (StorageException e) {
       SonarCorePlugin.getDefault().error(e.getMessage(), e);
@@ -104,7 +125,7 @@ public final class SonarServer implements ISonarServer {
 
   @Override
   public String toString() {
-    return "SonarServer [url=" + url + ", auth=" + auth + "]";
+    return "SonarServer [id=" + id + ", url=" + url + ", auth=" + hasCredentials + "]";
   }
 
   @Override
@@ -122,6 +143,10 @@ public final class SonarServer implements ISonarServer {
       return getUrl().equals(sonarServer.getUrl());
     }
     return false;
+  }
+
+  public void setDisabled(boolean disabled) {
+    this.disabled = disabled;
   }
 
 }

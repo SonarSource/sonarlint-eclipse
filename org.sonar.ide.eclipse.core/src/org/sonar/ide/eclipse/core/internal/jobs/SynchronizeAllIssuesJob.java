@@ -19,6 +19,8 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
+import java.util.Arrays;
+import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -28,6 +30,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonar.ide.eclipse.common.issues.ISonarIssueWithPath;
+import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.markers.SonarMarker;
@@ -35,27 +38,20 @@ import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
 import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.wsclient.ConnectionException;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class SynchronizeAllIssuesJob extends Job {
 
   private IProgressMonitor monitor;
-  private List<AnalyseProjectRequest> requests;
+  private List<AnalyzeProjectRequest> requests;
 
-  public static void createAndSchedule(IProject project, boolean debugEnabled, List<SonarProperty> extraProps, String jvmArgs, boolean forceFullPreview) {
-    AnalyseProjectRequest request = new AnalyseProjectRequest(project)
-      .setDebugEnabled(debugEnabled)
-      .setExtraProps(extraProps)
-      .setJvmArgs(jvmArgs)
-      .setForceFullPreview(forceFullPreview);
+  public static void createAndSchedule(IProject project, boolean debugEnabled) {
+    AnalyzeProjectRequest request = new AnalyzeProjectRequest(project)
+      .setDebugEnabled(debugEnabled);
     new SynchronizeAllIssuesJob(Arrays.asList(request)).schedule();
   }
 
-  public SynchronizeAllIssuesJob(List<AnalyseProjectRequest> requests) {
+  public SynchronizeAllIssuesJob(List<AnalyzeProjectRequest> requests) {
     super("Synchronize issues");
     this.requests = requests;
     setPriority(Job.LONG);
@@ -68,15 +64,18 @@ public class SynchronizeAllIssuesJob extends Job {
     try {
       monitor.beginTask("Synchronize", requests.size());
 
-      for (final AnalyseProjectRequest request : requests) {
+      for (final AnalyzeProjectRequest request : requests) {
         if (monitor.isCanceled()) {
           break;
         }
         if (request.getProject().isAccessible()) {
           MarkerUtils.deleteIssuesMarkers(request.getProject());
           monitor.subTask(request.getProject().getName());
-          fetchRemoteIssues(request.getProject(), monitor);
-          scheduleIncrementalAnalysis(request);
+          if (!PreferencesUtils.isForceFullPreview()) {
+            // Only get remote issues in incremental mode
+            fetchRemoteIssues(request.getProject(), monitor);
+          }
+          scheduleAnalysis(request);
         }
         monitor.worked(1);
       }
@@ -96,8 +95,10 @@ public class SynchronizeAllIssuesJob extends Job {
     return status;
   }
 
-  private void scheduleIncrementalAnalysis(AnalyseProjectRequest request) {
-    new AnalyzeProjectJob(request).schedule();
+  private void scheduleAnalysis(AnalyzeProjectRequest request) throws InterruptedException {
+    AnalyzeProjectJob analyzeProjectJob = new AnalyzeProjectJob(request);
+    analyzeProjectJob.schedule();
+    analyzeProjectJob.join();
   }
 
   public IProgressMonitor getMonitor() {

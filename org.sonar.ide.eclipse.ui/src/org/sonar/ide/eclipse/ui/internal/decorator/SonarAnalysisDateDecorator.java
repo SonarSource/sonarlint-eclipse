@@ -36,10 +36,12 @@ public class SonarAnalysisDateDecorator implements ILabelDecorator {
   private SimpleDateFormat sdfDay = new SimpleDateFormat("dd/MM/yyyy");
   private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm");
 
+  @Override
   public Image decorateImage(Image image, Object element) {
     return null;
   }
 
+  @Override
   public String decorateText(String text, Object element) {
     if (element instanceof IResource) {
       IResource resource = (IResource) element;
@@ -59,18 +61,22 @@ public class SonarAnalysisDateDecorator implements ILabelDecorator {
     return null;
   }
 
+  @Override
   public boolean isLabelProperty(Object element, String property) {
     return false;
   }
 
+  @Override
   public void addListener(final ILabelProviderListener listener) {
     // Nothing to do
   }
 
+  @Override
   public void removeListener(ILabelProviderListener listener) {
     // Nothing to do
   }
 
+  @Override
   public void dispose() {
     // Nothing to do
   }

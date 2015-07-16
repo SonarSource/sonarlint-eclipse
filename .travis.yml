@@ -3,7 +3,6 @@ sudo: false
 install: true
 
 env:
-  - TARGET_PLATFORM=e37
   - TARGET_PLATFORM=e42
   - TARGET_PLATFORM=e43
   - TARGET_PLATFORM=e44
@@ -13,7 +12,7 @@ jdk:
   - oraclejdk7
 
 script:
-  - mvn verify -B -e -V -Dtycho.disableP2Mirrors=true -Dtarget.platform=$TARGET_PLATFORM
+  - ./travis.sh
 
 cache:
   directories:

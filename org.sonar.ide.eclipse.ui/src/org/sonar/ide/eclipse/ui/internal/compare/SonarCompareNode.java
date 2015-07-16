@@ -40,22 +40,27 @@ public class SonarCompareNode implements IStreamContentAccessor, ITypedElement, 
     this.contents = contents;
   }
 
+  @Override
   public InputStream getContents() throws CoreException {
     return new ByteArrayInputStream(contents.getBytes());
   }
 
+  @Override
   public Image getImage() {
     return null;
   }
 
+  @Override
   public long getModificationDate() {
     return System.currentTimeMillis();
   }
 
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public String getType() {
     return ITypedElement.TEXT_TYPE;
   }

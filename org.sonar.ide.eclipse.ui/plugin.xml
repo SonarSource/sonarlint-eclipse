@@ -52,24 +52,10 @@
     </view>
     <view
           category="org.sonar.ide.eclipse"
-          class="org.sonar.ide.eclipse.ui.internal.views.ResourceWebView"
-          icon="icons/onde-sonar-16.png"
-          id="org.sonar.ide.eclipse.ui.views.ResourceWebView"
-          name="SonarQube Web Browser">
-    </view>
-    <view
-          category="org.sonar.ide.eclipse"
           class="org.sonar.ide.eclipse.ui.internal.views.RuleDescriptionWebView"
           icon="icons/onde-sonar-16.png"
           id="org.sonar.ide.eclipse.ui.views.RuleDescriptionWebView"
           name="SonarQube Rule Description">
-    </view>
-    <view
-          category="org.sonar.ide.eclipse"
-          class="org.sonar.ide.eclipse.ui.internal.views.IssueEditorWebView"
-          icon="icons/onde-sonar-16.png"
-          id="org.sonar.ide.eclipse.ui.views.IssueEditorWebView"
-          name="%sonar.issue.view.name">
     </view>
   </extension>
 
@@ -123,25 +109,6 @@
                commandId="org.eclipse.ui.ide.configureColumns"
                mnemonic="%command.configureColumns.mnemonic"
                style="push">
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:org.sonar.ide.eclipse.ui.views.issues.IssuesView">
-           <command
-                 commandId="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand"
-                 style="push"
-                 mnemonic="E">
-             <!-- Don't display Edit Issue button on new issues -->
-             <visibleWhen checkEnabled="false">
-               <with variable="selection">
-                      <iterate ifEmpty="false" operator="and">
-                        <adapt type="org.eclipse.core.resources.IMarker" >
-                            <test value="org.sonar.ide.eclipse.core.sonarProblem"
-                            property="org.eclipse.ui.ide.marker.type"/>
-                        </adapt>
-                      </iterate>
-              </with>
-            </visibleWhen>
          </command>
       </menuContribution>
       <menuContribution
@@ -378,19 +345,6 @@
         </action>
     </objectContribution>
     <objectContribution
-           id="org.sonar.ide.eclipse.ui.resourceContributions"
-           objectClass="org.sonar.ide.eclipse.core.resources.ISonarResource"
-           adaptable="true">
-        <action
-              class="org.sonar.ide.eclipse.ui.internal.actions.OpenInBrowserAction"
-              enablesFor="1"
-              id="org.sonar.ide.eclipse.openInBrowserAction"
-              label="%sonar.action.openinbrowser.label"
-              menubarPath="sonar.menu/group1"
-              icon="icons/web.gif">
-        </action>
-    </objectContribution>
-    <objectContribution
            id="org.sonar.ide.eclipse.ui.fileContributions"
            objectClass="org.sonar.ide.eclipse.core.resources.ISonarFile"
            adaptable="true">
@@ -458,12 +412,6 @@
           categoryId="org.sonar.ide.eclipse.ui.command.category">
     </command>
     <command
-          description="Edit Issue"
-          id="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand"
-          name="Edit Issue"
-          categoryId="org.sonar.ide.eclipse.ui.command.category">
-    </command>
-    <command
           description="Show rule details"
           id="org.sonar.ide.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
           name="Rule description"
@@ -487,10 +435,6 @@
           commandId="org.sonar.ide.eclipse.ui.internal.command.ReConfigureProjectsCommand">
     </handler>
     <handler
-          class="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand"
-          commandId="org.sonar.ide.eclipse.ui.internal.command.EditIssueCommand">
-    </handler>
-    <handler
           class="org.sonar.ide.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
           commandId="org.sonar.ide.eclipse.ui.internal.command.ShowRuleDescriptionCommand">
     </handler>
@@ -498,17 +442,6 @@
           class="org.sonar.ide.eclipse.ui.internal.command.AnalyzeProjectsCommand"
           commandId="org.sonar.ide.eclipse.ui.internal.command.AnalyzeProjectsCommand">
     </handler>
-  </extension>
-
-  <extension point="org.eclipse.ui.bindings">
-    <key sequence="Ctrl+Alt+Q"
-      commandId="org.sonar.ide.eclipse.ui.internal.command.AnalyzeProjectsCommand"
-      schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-      contextId="org.eclipse.ui.contexts.window"/>
-    <key sequence="Ctrl+Alt+Q"
-      commandId="org.sonar.ide.eclipse.ui.internal.command.AnalyzeProjectsCommand"
-      schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-      contextId="org.eclipse.ui.textEditorScope"/>
   </extension>
 
   <extension point="org.eclipse.ui.commandImages">
@@ -614,9 +547,6 @@
         point="org.sonar.ide.eclipse.ui.resolver">
      <resolver
            class="org.sonar.ide.eclipse.ui.internal.markers.IgnoreMarkerResolver">
-     </resolver>
-     <resolver
-           class="org.sonar.ide.eclipse.ui.internal.markers.EditIssueMarkerResolver">
      </resolver>
   </extension>
 

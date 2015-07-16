@@ -38,9 +38,6 @@ import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
-  // TODO Allow to configure this pattern in Sonar Eclipse preferences
-  private static final String TEST_PATTERN = ".*test.*";
-
   @Override
   public boolean canConfigure(IProject project) {
     return SonarJdtPlugin.hasJavaNature(project);
@@ -92,9 +89,9 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
           break;
         case IClasspathEntry.CPE_LIBRARY:
           if (topProject || entry.isExported()) {
-            final String libDir = resolveLibrary(javaProject, entry);
-            if (libDir != null) {
-              context.libraries().add(libDir);
+            final String libPath = resolveLibrary(javaProject, entry);
+            if (libPath != null) {
+              context.libraries().add(libPath);
             }
           }
           break;
@@ -102,8 +99,8 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
           IJavaModel javaModel = javaProject.getJavaModel();
           IJavaProject referredProject = javaModel.getJavaProject(entry.getPath().segment(0));
           if (!context.dependentProjects().contains(referredProject)) {
-            addClassPathToSonarProject(referredProject, context, false);
             context.dependentProjects().add(referredProject);
+            addClassPathToSonarProject(referredProject, context, false);
           }
           break;
         default:
@@ -130,41 +127,36 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   }
 
   private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
-    String srcDir = getAbsolutePath(entry.getPath());
+    String srcDir = getRelativePath(javaProject.getPath(), entry.getPath());
     if (srcDir == null) {
       SonarCorePlugin.getDefault().info("Skipping non existing source entry: " + entry.getPath().toOSString());
       return;
     }
-    String relativeDir = getRelativePath(javaProject, entry.getPath());
-    if (relativeDir.toLowerCase().matches(TEST_PATTERN)) {
-      if (topProject) {
-        context.testDirs().add(srcDir);
-      }
-    } else {
-      if (topProject) {
-        context.sourceDirs().add(srcDir);
-      }
-      if (entry.getOutputLocation() != null) {
-        processOutputDir(entry.getOutputLocation(), context, topProject);
-      }
+    // Eclipse doesn't make a difference between main and test code/classpath
+    if (topProject) {
+      context.testDirs().add(srcDir);
+      context.sourceDirs().add(srcDir);
+    }
+    if (entry.getOutputLocation() != null) {
+      processOutputDir(entry.getOutputLocation(), context, topProject);
     }
   }
 
   private String resolveLibrary(IJavaProject javaProject, IClasspathEntry entry) {
-    final String libDir;
+    final String libPath;
     IResource member = findPath(javaProject.getProject(), entry.getPath());
     if (member != null) {
-      libDir = member.getLocation().toOSString();
+      libPath = member.getLocation().toOSString();
     } else {
-      libDir = entry.getPath().makeAbsolute().toOSString();
+      libPath = entry.getPath().makeAbsolute().toOSString();
     }
-    if (!new File(libDir).exists()) {
+    if (!new File(libPath).exists()) {
       return null;
     }
-    return libDir;
+    return libPath.endsWith(File.separator) ? libPath.substring(0, libPath.length() - 1) : libPath;
   }
 
-  private IResource findPath(IProject project, IPath path) {
+  private static IResource findPath(IProject project, IPath path) {
     IResource member = project.findMember(path);
     if (member == null) {
       IWorkspaceRoot workSpaceRoot = project.getWorkspace().getRoot();
@@ -177,7 +169,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
    * Allows to determine directories with resources to exclude them from analysis, otherwise analysis might fail due to SONAR-791.
    * This is a kind of workaround, which is based on the fact that M2Eclipse configures exclusion pattern "**" for directories with resources.
    */
-  private boolean isSourceExcluded(IClasspathEntry entry) {
+  private static boolean isSourceExcluded(IClasspathEntry entry) {
     IPath[] exclusionPatterns = entry.getExclusionPatterns();
     if (exclusionPatterns != null) {
       for (IPath exclusionPattern : exclusionPatterns) {
@@ -189,14 +181,16 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     return false;
   }
 
-  private String getRelativePath(IJavaProject javaProject, IPath path) {
-    return path.makeRelativeTo(javaProject.getPath()).toOSString();
-  }
-
   private void configurationToProperties(Properties sonarProjectProperties, JavaProjectConfiguration context) {
-    setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.LIBRARIES_PROPERTY, context.libraries());
-    setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, context.testDirs());
-    setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, context.sourceDirs());
-    setPropertyList(sonarProjectProperties, SonarConfiguratorProperties.BINARIES_PROPERTY, context.binaries());
+    setPropertyList(sonarProjectProperties, "sonar.libraries", context.libraries());
+    // Eclipse doesn't separate main and test classpath
+    setPropertyList(sonarProjectProperties, "sonar.java.libraries", context.libraries());
+    setPropertyList(sonarProjectProperties, "sonar.java.test.libraries", context.libraries());
+    appendPropertyList(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, context.testDirs());
+    appendPropertyList(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, context.sourceDirs());
+    setPropertyList(sonarProjectProperties, "sonar.binaries", context.binaries());
+    // Eclipse doesn't separate main and test classpath
+    setPropertyList(sonarProjectProperties, "sonar.java.binaries", context.binaries());
+    setPropertyList(sonarProjectProperties, "sonar.java.test.binaries", context.binaries());
   }
 }

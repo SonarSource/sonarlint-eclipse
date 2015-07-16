@@ -165,15 +165,15 @@ public class SonarConsole extends IOConsole implements LogListener, ISonarConsol
     return debugStream;
   }
 
-  private String getShowConsolePreference() {
+  private static String getShowConsolePreference() {
     return Platform.getPreferencesService().getString(SonarUiPlugin.PLUGIN_ID, P_SHOW_CONSOLE, P_SHOW_CONSOLE_ON_OUTPUT, null);
   }
 
-  private boolean isShowConsoleOnOutput() {
+  private static boolean isShowConsoleOnOutput() {
     return StringUtils.equals(getShowConsolePreference(), P_SHOW_CONSOLE_ON_OUTPUT);
   }
 
-  private boolean isShowConsoleOnError() {
+  private static boolean isShowConsoleOnError() {
     return StringUtils.equals(getShowConsolePreference(), P_SHOW_CONSOLE_ON_ERROR);
   }
 

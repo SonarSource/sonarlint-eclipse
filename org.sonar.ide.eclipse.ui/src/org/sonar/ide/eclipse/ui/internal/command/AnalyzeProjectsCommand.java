@@ -20,6 +20,8 @@
 package org.sonar.ide.eclipse.ui.internal.command;
 
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -36,23 +38,22 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
-import org.sonar.ide.eclipse.core.internal.jobs.AnalyseProjectRequest;
+import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonar.ide.eclipse.core.internal.jobs.SynchronizeAllIssuesJob;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 import org.sonar.ide.eclipse.ui.internal.views.issues.IssuesView;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class AnalyzeProjectsCommand extends AbstractHandler {
 
+  @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
     List<IProject> selectedProjects = Lists.newArrayList();
 
@@ -70,19 +71,14 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
 
   private void runAnalysisJob(List<IProject> selectedProjects) {
     boolean debugEnabled = SonarConsole.isDebugEnabled();
-    String sonarJvmArgs = SonarUiPlugin.getSonarJvmArgs();
-    boolean forceFullPreview = SonarUiPlugin.isForceFullPreview();
-    List<AnalyseProjectRequest> requests = new ArrayList<AnalyseProjectRequest>();
+    List<AnalyzeProjectRequest> requests = new ArrayList<AnalyzeProjectRequest>();
     SonarUiPlugin.getDefault().getSonarConsole().clearConsole();
     for (IProject project : selectedProjects) {
       if (!SonarNature.hasSonarNature(project)) {
         break;
       }
-      requests.add(new AnalyseProjectRequest(project)
-        .setDebugEnabled(debugEnabled)
-        .setExtraProps(SonarUiPlugin.getExtraPropertiesForLocalAnalysis(project))
-        .setJvmArgs(sonarJvmArgs)
-        .setForceFullPreview(forceFullPreview));
+      requests.add(new AnalyzeProjectRequest(project)
+        .setDebugEnabled(debugEnabled));
     }
     SynchronizeAllIssuesJob job = new SynchronizeAllIssuesJob(requests);
     showIssuesViewAfterJobSuccess(job);
@@ -114,7 +110,7 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
     }
   }
 
-  private void findProjectOfSelectedEditor(ExecutionEvent event, List<IProject> selectedProjects) {
+  private static void findProjectOfSelectedEditor(ExecutionEvent event, List<IProject> selectedProjects) {
     IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
     IEditorInput input = activeEditor.getEditorInput();
     if (input instanceof IFileEditorInput) {
@@ -130,10 +126,11 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
       public void done(IJobChangeEvent event) {
         if (Status.OK_STATUS == event.getResult()) {
           Display.getDefault().asyncExec(new Runnable() {
+            @Override
             public void run() {
               IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
               try {
-                iw.getActivePage().showView(IssuesView.ID);
+                iw.getActivePage().showView(IssuesView.ID, null, IWorkbenchPage.VIEW_VISIBLE);
               } catch (PartInitException e) {
                 SonarUiPlugin.getDefault().getLog().log(new Status(Status.ERROR, SonarUiPlugin.PLUGIN_ID, Status.OK, "Unable to open Issues View", e));
               }

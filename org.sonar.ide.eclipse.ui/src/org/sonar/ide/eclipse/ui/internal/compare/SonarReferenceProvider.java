@@ -37,19 +37,23 @@ public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
   private IDocument sonarSource;
   private IResource resource;
 
+  @Override
   public void dispose() {
     sonarSource = null;
     resource = null;
   }
 
+  @Override
   public String getId() {
     return id;
   }
 
+  @Override
   public void setId(final String id) {
     this.id = id;
   }
 
+  @Override
   public IDocument getReference(final IProgressMonitor monitor) throws CoreException {
     if (sonarSource != null) {
       return sonarSource;
@@ -71,6 +75,7 @@ public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
     return sonarSource;
   }
 
+  @Override
   public void setActiveEditor(final ITextEditor targetEditor) {
     sonarSource = null;
     resource = null;
@@ -79,6 +84,7 @@ public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
     }
   }
 
+  @Override
   public boolean isEnabled() {
     return resource != null;
   }

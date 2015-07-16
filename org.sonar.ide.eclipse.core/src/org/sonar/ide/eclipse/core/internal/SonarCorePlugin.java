@@ -35,12 +35,13 @@ import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProjectManager;
 import org.sonar.ide.eclipse.core.internal.resources.SonarResource;
 import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
-import org.sonar.ide.eclipse.core.internal.servers.ServersManager;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServersManager;
 import org.sonar.ide.eclipse.core.resources.ISonarFile;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 public class SonarCorePlugin extends AbstractPlugin {
   public static final String PLUGIN_ID = "org.sonar.ide.eclipse.core";
+  public static final String UI_PLUGIN_ID = "org.sonar.ide.eclipse.ui";
 
   public static final String MARKER_ID = PLUGIN_ID + ".sonarProblem";
   public static final String NEW_ISSUE_MARKER_ID = PLUGIN_ID + ".sonarProblemNewIssue";
@@ -55,7 +56,7 @@ public class SonarCorePlugin extends AbstractPlugin {
     return plugin;
   }
 
-  private ServersManager serversManager;
+  private SonarServersManager serversManager;
   private final List<LogListener> logListeners = new ArrayList<LogListener>();
 
   public void addLogListener(LogListener listener) {
@@ -97,7 +98,7 @@ public class SonarCorePlugin extends AbstractPlugin {
   public void start(BundleContext context) {
     super.start(context);
 
-    serversManager = new ServersManager();
+    serversManager = new SonarServersManager();
   }
 
   private static SonarProjectManager projectManager;
