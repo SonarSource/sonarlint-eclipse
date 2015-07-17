@@ -39,6 +39,8 @@ public abstract class AbstractSQEclipseUITest extends AbstractSQEclipseTest {
     SonarServersManager serversManager = ((SonarServersManager) SonarCorePlugin.getServersManager());
     serversManager.clean();
     serversManager.addServer(SonarCorePlugin.getServersManager().create("for-its", getSonarServerUrl(), "", ""));
+    // SONARCLIPS-396 Add a fake server to test that it will not prevent association
+    serversManager.addServer(SonarCorePlugin.getServersManager().create("offline", "http://offline.localhost", "", ""));
 
     // Trick to force activation of the Shell on xvfb
     UIThreadRunnable.syncExec(new VoidResult() {
