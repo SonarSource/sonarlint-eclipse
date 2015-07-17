@@ -34,6 +34,11 @@ import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
 public class SonarServersManager implements ISonarServersManager {
+
+  private static final String MINIMAL_VERSION = "4.2";
+
+  private final static String[] UNSUPPORTED_VERSION_PREFIX = {"1.", "2.", "3.", "4.0", "4.1"};
+
   private static final String INITIALIZED_ATTRIBUTE = "initialized";
 
   private static final String AUTH_ATTRIBUTE = "auth";
@@ -80,7 +85,20 @@ public class SonarServersManager implements ISonarServersManager {
         SonarServer sonarServer = new SonarServer(id, url, auth);
         String serverVersion = getServerVersion(sonarServer);
         sonarServer.setVersion(serverVersion != null ? serverVersion : "<unknown>");
-        sonarServer.setDisabled(serverVersion == null);
+        boolean disabled = false;
+        if (serverVersion != null) {
+          for (String prefix : UNSUPPORTED_VERSION_PREFIX) {
+            if (serverVersion.startsWith(prefix)) {
+              SonarCorePlugin.getDefault()
+                .error("SonarQube server " + serverVersion + " at " + url + " is not supported. Minimal supported version is " + MINIMAL_VERSION);
+              disabled = true;
+              break;
+            }
+          }
+        } else {
+          disabled = true;
+        }
+        sonarServer.setDisabled(disabled);
         servers.add(sonarServer);
       }
     } catch (BackingStoreException e) {
