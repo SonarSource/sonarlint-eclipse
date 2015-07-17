@@ -92,7 +92,6 @@ public class ConfiguratorUtils {
       }
     }
 
-    ProjectConfigurator.appendProperty(properties, SonarConfiguratorProperties.SOURCE_EXCLUSIONS_PROPERTY, PreferencesUtils.getTestFileRegexps());
     ProjectConfigurator.appendProperty(properties, SonarConfiguratorProperties.TEST_INCLUSIONS_PROPERTY, PreferencesUtils.getTestFileRegexps());
     if (!properties.containsKey(SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY) && !properties.containsKey(SonarConfiguratorProperties.TEST_DIRS_PROPERTY)) {
       // Try to analyze all files
