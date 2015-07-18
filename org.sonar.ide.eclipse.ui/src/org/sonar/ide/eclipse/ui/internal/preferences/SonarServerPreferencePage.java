@@ -92,6 +92,7 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
   private void initTable() {
     // retrieve list of servers
     ISonarServersManager serversManager = SonarCorePlugin.getServersManager();
+    serversManager.reloadServers();
     servers = serversManager.getServers();
     serversViewer.setInput(servers);
     for (int i = 0, n = serversViewer.getTable().getColumnCount(); i < n; i++) {
