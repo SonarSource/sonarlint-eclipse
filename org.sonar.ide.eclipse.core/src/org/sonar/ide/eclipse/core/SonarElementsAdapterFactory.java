@@ -23,6 +23,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.AdapterUtils;
@@ -75,8 +77,13 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
       ISonarProject sonarProject = SonarProject.getInstance(parentProject);
       ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
       if (sonarServer == null) {
-        SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
-          sonarProject.getProject().getName(), sonarProject.getUrl()) + "\n");
+    	// when a server is not reachable, we use an implicit log because current error could have been thrown on an implicit action (not a user action) like the job to synchronize issues.
+      	IStatus status = new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
+    		        NLS.bind(Messages.No_matching_server_in_configuration_for_project, parentProject.getName(), sonarProject.getUrl()));
+    	  SonarCorePlugin.getDefault().getLog().log(status);
+    	  // disable explicit log (TODO remove this dead code if new behaviour has been accepted).
+//    	  SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
+//          sonarProject.getProject().getName(), sonarProject.getUrl()) + "\n");
         return null;
       }
       String serverVersion = sonarServer.getVersion();
