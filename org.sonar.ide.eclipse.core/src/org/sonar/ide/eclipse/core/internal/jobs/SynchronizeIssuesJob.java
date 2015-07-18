@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -118,7 +118,7 @@ public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
     }
     SonarProject sonarProject = SonarProject.getInstance(resource.getProject());
     EclipseSonar eclipseSonar = EclipseSonar.getInstance(resource.getProject());
-    if (!force && !MarkerUtils.needRefresh(resource, sonarProject, eclipseSonar.getSonarServer())) {
+    if (eclipseSonar == null || !force && !MarkerUtils.needRefresh(resource, sonarProject, eclipseSonar.getSonarServer())) {
       return;
     }
     try {

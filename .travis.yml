@@ -3,18 +3,28 @@ sudo: false
 install: true
 
 env:
-  - TARGET_PLATFORM=e42
-  - TARGET_PLATFORM=e43
- 
-# temporarily disabled as integration tests fail  
-#  - TARGET_PLATFORM=e44
-#  - TARGET_PLATFORM=e45
+  global:
+    - DISPLAY=:99.0
+  matrix:
+    - TARGET_PLATFORM=e42 RUN_ITS=false
+    - TARGET_PLATFORM=e43 RUN_ITS=false
+    - TARGET_PLATFORM=e44 RUN_ITS=true
+    - TARGET_PLATFORM=e45 RUN_ITS=true
 
 jdk:
   - oraclejdk7
 
+addons:
+  apt:
+    packages:
+    - metacity # metacity is required by swtbot
+
 script:
   - ./travis.sh
+
+after_failure:
+ - cat /home/travis/build/SonarSource/sonar-eclipse/integrationTests/org.sonar.ide.eclipse.ui.its/target/work/data/.metadata/.log
+ - cat /home/travis/build/SonarSource/sonar-eclipse/integrationTests/org.sonar.ide.eclipse.ui.its/target/surefire-reports/*
 
 cache:
   directories:
