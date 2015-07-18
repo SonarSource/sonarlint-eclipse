@@ -68,12 +68,15 @@ public class SynchronizeAllIssuesJob extends Job {
         if (monitor.isCanceled()) {
           break;
         }
-        if (request.getProject().isAccessible()) {
-          MarkerUtils.deleteIssuesMarkers(request.getProject());
-          monitor.subTask(request.getProject().getName());
+        IProject project = request.getProject();
+        EclipseSonar sonar = EclipseSonar.getInstance(project);
+        // Is server reachable?
+        if (project.isAccessible() && sonar != null) {
+          MarkerUtils.deleteIssuesMarkers(project);
+          monitor.subTask(project.getName());
           if (!PreferencesUtils.isForceFullPreview()) {
             // Only get remote issues in incremental mode
-            fetchRemoteIssues(request.getProject(), monitor);
+            fetchRemoteIssues(project, monitor);
           }
           scheduleAnalysis(request);
         }
@@ -110,7 +113,6 @@ public class SynchronizeAllIssuesJob extends Job {
     SonarCorePlugin.getDefault().info("Retrieve remote issues of project " + project.getName() + "...\n");
 
     SonarProject sonarProject = SonarProject.getInstance(project);
-    MarkerUtils.deleteIssuesMarkers(project);
     if (monitor.isCanceled()) {
       return;
     }
