@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,22 +40,27 @@ public class SonarCompareNode implements IStreamContentAccessor, ITypedElement, 
     this.contents = contents;
   }
 
+  @Override
   public InputStream getContents() throws CoreException {
     return new ByteArrayInputStream(contents.getBytes());
   }
 
+  @Override
   public Image getImage() {
     return null;
   }
 
+  @Override
   public long getModificationDate() {
     return System.currentTimeMillis();
   }
 
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public String getType() {
     return ITypedElement.TEXT_TYPE;
   }

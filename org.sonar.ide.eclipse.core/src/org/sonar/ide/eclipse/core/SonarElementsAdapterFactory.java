@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,7 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
 
   private static final Class<?>[] ADAPTER_LIST = {ISonarResource.class, ISonarFile.class};
 
+  @Override
   public Object getAdapter(Object adaptableObject, Class adapterType) {
     if (adapterType == ISonarResource.class) {
       return getSonarResource(adaptableObject);
@@ -54,7 +55,7 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
     return null;
   }
 
-  private ISonarResource getSonarResource(Object adaptableObject) {
+  private static ISonarResource getSonarResource(Object adaptableObject) {
     // Projects
     IProject project = AdapterUtils.adapt(adaptableObject, IProject.class);
     if (project != null && isConfigured(project)) {
@@ -74,7 +75,7 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
       ISonarProject sonarProject = SonarProject.getInstance(parentProject);
       ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
       if (sonarServer == null) {
-        SonarCorePlugin.getDefault().info(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
+        SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
           sonarProject.getProject().getName(), sonarProject.getUrl()) + "\n");
         return null;
       }
@@ -89,17 +90,18 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
     return null;
   }
 
-  private ISonarResource createSonarResource(IResource resource, ISonarProject sonarProject, String keyWithoutProject) {
+  private static ISonarResource createSonarResource(IResource resource, ISonarProject sonarProject, String keyWithoutProject) {
     if (resource instanceof IFile) {
       return SonarCorePlugin.createSonarFile((IFile) resource, SonarKeyUtils.resourceKey(sonarProject, keyWithoutProject), resource.getName());
     }
     return SonarCorePlugin.createSonarResource(resource, SonarKeyUtils.resourceKey(sonarProject, keyWithoutProject), resource.getName());
   }
 
-  private boolean isConfigured(IProject project) {
+  private static boolean isConfigured(IProject project) {
     return project.isAccessible() && SonarNature.hasSonarNature(project);
   }
 
+  @Override
   public Class[] getAdapterList() {
     return ADAPTER_LIST;
   }

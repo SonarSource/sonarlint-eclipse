@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,6 +47,7 @@ import org.json.simple.JSONValue;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.Messages;
+import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.configurator.ConfiguratorUtils;
@@ -72,13 +73,13 @@ public class AnalyzeProjectJob extends Job {
 
   private boolean incremental;
 
-  public AnalyzeProjectJob(AnalyseProjectRequest request) {
+  public AnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(Messages.AnalyseProjectJob_title);
     this.project = request.getProject();
     this.debugEnabled = request.isDebugEnabled();
-    this.incremental = !request.isForceFullPreview();
-    this.extraProps = request.getExtraProps();
-    this.jvmArgs = StringUtils.defaultIfBlank(request.getJvmArgs(), "");
+    this.incremental = !PreferencesUtils.isForceFullPreview();
+    this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(project);
+    this.jvmArgs = PreferencesUtils.getSonarJvmArgs();
     this.sonarProject = SonarProject.getInstance(project);
     this.sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     // Prevent modifications of project during analysis
@@ -185,7 +186,7 @@ public class AnalyzeProjectJob extends Job {
     }
   }
 
-  private Map<String, String> readRules(JSONObject sonarResult) {
+  private static Map<String, String> readRules(JSONObject sonarResult) {
     Map<String, String> ruleByKey = Maps.newHashMap();
     final JSONArray rules = (JSONArray) sonarResult.get("rules");
     for (Object rule : rules) {
@@ -196,7 +197,7 @@ public class AnalyzeProjectJob extends Job {
     return ruleByKey;
   }
 
-  private Map<String, String> readUserNameByLogin(JSONObject sonarResult) {
+  private static Map<String, String> readUserNameByLogin(JSONObject sonarResult) {
     Map<String, String> userNameByLogin = Maps.newHashMap();
     final JSONArray users = (JSONArray) sonarResult.get("users");
     if (users != null) {
@@ -288,14 +289,14 @@ public class AnalyzeProjectJob extends Job {
 
   }
 
-  private IStatus checkCancel(final IProgressMonitor monitor) {
+  private static IStatus checkCancel(final IProgressMonitor monitor) {
     if (monitor.isCanceled()) {
       return Status.CANCEL_STATUS;
     }
     return Status.OK_STATUS;
   }
 
-  private IStatus handleException(final IProgressMonitor monitor, Exception e) {
+  private static IStatus handleException(final IProgressMonitor monitor, Exception e) {
     if (monitor.isCanceled()) {
       // On OSX it seems that cancelling produce an exception
       return Status.CANCEL_STATUS;

@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +19,7 @@
  */
 package org.sonar.ide.eclipse.ui.internal;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -36,10 +32,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.UIJob;
 import org.osgi.framework.BundleContext;
+import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 
 public class SonarUiPlugin extends AbstractUIPlugin {
@@ -48,12 +43,6 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
   // The shared instance
   private static SonarUiPlugin plugin;
-
-  public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
-  public static final String PREF_NEW_ISSUE_MARKER_SEVERITY = "newViolationMarkerSeverity"; //$NON-NLS-1$
-  public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
-  public static final String PREF_JVM_ARGS = "jvmArgs"; //$NON-NLS-1$
-  public static final String PREF_FORCE_FULL_PREVIEW = "fullPreview"; //$NON-NLS-1$
 
   private IPropertyChangeListener listener;
 
@@ -74,11 +63,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
     listener = new IPropertyChangeListener() {
       @Override
       public void propertyChange(PropertyChangeEvent event) {
-        if (event.getProperty().equals(PREF_MARKER_SEVERITY) || event.getProperty().equals(PREF_NEW_ISSUE_MARKER_SEVERITY)) {
-          int newSeverity = getPreferenceStore().getInt(PREF_MARKER_SEVERITY);
-          MarkerUtils.setMarkerSeverity(newSeverity);
-          int newSeverityForNewIssues = getPreferenceStore().getInt(PREF_NEW_ISSUE_MARKER_SEVERITY);
-          MarkerUtils.setMarkerSeverityForNewIssues(newSeverityForNewIssues);
+        if (event.getProperty().equals(PreferencesUtils.PREF_MARKER_SEVERITY) || event.getProperty().equals(PreferencesUtils.PREF_NEW_ISSUE_MARKER_SEVERITY)) {
           try {
             MarkerUtils.updateAllSonarMarkerSeverity();
           } catch (CoreException e) {
@@ -126,40 +111,12 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   @Override
   protected void initializeDefaultPreferences(IPreferenceStore store) {
     store.setDefault(SonarConsole.P_SHOW_CONSOLE, SonarConsole.P_SHOW_CONSOLE_ON_ERROR);
-    store.setDefault(PREF_MARKER_SEVERITY, IMarker.SEVERITY_WARNING);
-    store.setDefault(PREF_NEW_ISSUE_MARKER_SEVERITY, IMarker.SEVERITY_ERROR);
-    store.setDefault(PREF_EXTRA_ARGS, "");
-    store.setDefault(PREF_JVM_ARGS, "");
-    store.setDefault(PREF_FORCE_FULL_PREVIEW, false);
-    MarkerUtils.setMarkerSeverity(store.getInt(PREF_MARKER_SEVERITY));
-    MarkerUtils.setMarkerSeverityForNewIssues(store.getInt(PREF_NEW_ISSUE_MARKER_SEVERITY));
-  }
-
-  public static List<SonarProperty> getExtraPropertiesForLocalAnalysis(IProject project) {
-    List<SonarProperty> props = new ArrayList<SonarProperty>();
-    // First add all global properties
-    String globalExtraArgs = SonarUiPlugin.getDefault().getPreferenceStore().getString(SonarUiPlugin.PREF_EXTRA_ARGS);
-    String[] keyValuePairs = StringUtils.split(globalExtraArgs, "\n\r");
-    for (String keyValuePair : keyValuePairs) {
-      String[] keyValue = keyValuePair.split("=");
-      props.add(new SonarProperty(keyValue[0], keyValue[1]));
-    }
-
-    // Then add project properties
-    SonarProject sonarProject = SonarProject.getInstance(project);
-    if (sonarProject.getExtraProperties() != null) {
-      props.addAll(sonarProject.getExtraProperties());
-    }
-
-    return props;
-  }
-
-  public static String getSonarJvmArgs() {
-    return SonarUiPlugin.getDefault().getPreferenceStore().getString(SonarUiPlugin.PREF_JVM_ARGS);
-  }
-
-  public static boolean isForceFullPreview() {
-    return SonarUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarUiPlugin.PREF_FORCE_FULL_PREVIEW);
+    store.setDefault(PreferencesUtils.PREF_MARKER_SEVERITY, IMarker.SEVERITY_WARNING);
+    store.setDefault(PreferencesUtils.PREF_NEW_ISSUE_MARKER_SEVERITY, IMarker.SEVERITY_ERROR);
+    store.setDefault(PreferencesUtils.PREF_EXTRA_ARGS, PreferencesUtils.PREF_EXTRA_ARGS_DEFAULT);
+    store.setDefault(PreferencesUtils.PREF_JVM_ARGS, PreferencesUtils.PREF_JVM_ARGS_DEFAULT);
+    store.setDefault(PreferencesUtils.PREF_FORCE_FULL_PREVIEW, PreferencesUtils.PREF_FORCE_FULL_PREVIEW_DEFAULT);
+    store.setDefault(PreferencesUtils.PREF_TEST_FILE_REGEXPS, PreferencesUtils.PREF_TEST_FILE_REGEXPS_DEFAULT);
   }
 
   public static void setupIssuesUpdater() {

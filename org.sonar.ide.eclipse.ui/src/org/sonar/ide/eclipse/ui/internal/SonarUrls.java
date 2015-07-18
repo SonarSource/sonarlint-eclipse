@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,40 +19,11 @@
  */
 package org.sonar.ide.eclipse.ui.internal;
 
-import org.eclipse.core.resources.IFile;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-import org.sonar.ide.eclipse.core.resources.ISonarResource;
-
 public class SonarUrls {
-  public String resourceUrl(ISonarResource resource) {
-    String urlTemplate = resourcesUrlTemplate(resource);
-
-    String serverUrl = properties(resource).getUrl();
-    String key = resource.getKey();
-
-    return String.format(urlTemplate, serverUrl, key);
-  }
-
-  public String issueUrl(String issueId, String serverUrl) {
-    String urlTemplate = "%s/issue/show/%s?layout=false&source=false";
-
-    return String.format(urlTemplate, serverUrl, issueId);
-  }
 
   public String ruleDescriptionUrl(String ruleKey, String serverUrl) {
     String urlTemplate = "%s/rules/show/%s?layout=false";
 
     return String.format(urlTemplate, serverUrl, ruleKey);
-  }
-
-  private String resourcesUrlTemplate(ISonarResource resource) {
-    if (resource.getResource() instanceof IFile) {
-      return "%s/resource/index/%s";
-    }
-    return "%s/project/index/%s";
-  }
-
-  private SonarProject properties(ISonarResource resource) {
-    return SonarProject.getInstance(resource.getProject());
   }
 }

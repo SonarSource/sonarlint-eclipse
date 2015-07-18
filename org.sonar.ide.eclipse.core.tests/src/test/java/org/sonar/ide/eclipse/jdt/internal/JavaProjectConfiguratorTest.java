@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,12 +28,14 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
@@ -111,6 +113,58 @@ public class JavaProjectConfiguratorTest {
     // assertThat(sonarProperties.getProperty("sonar.tests"), is(testFolder.getPath()));
     // assertTrue(sonarProperties.containsKey("sonar.binaries"));
     // assertThat(sonarProperties.getProperty("sonar.binaries"), is(outputFolder.getPath()));
+  }
+
+  @Test
+  public void shouldConfigureProjectsWithCircularDependencies() throws CoreException, IOException {
+    // the bug appeared when at least 3 projects were involved: the first project depends on the second one which has a circular dependency
+    // towards the second one
+    Properties sonarProperties = new Properties();
+    // mock three projects that depend on each other
+    final String project1Name = "project1";
+    final String project2Name = "project2";
+    final String project3Name = "project3";
+    IJavaProject project1 = mock(IJavaProject.class, Mockito.RETURNS_DEEP_STUBS);
+    IJavaProject project2 = mock(IJavaProject.class, Mockito.RETURNS_DEEP_STUBS);
+    IJavaProject project3 = mock(IJavaProject.class, Mockito.RETURNS_DEEP_STUBS);
+    // these are required during the call to configureJavaProject
+    when(project1.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
+    when(project1.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
+    when(project1.getProject().getName()).thenReturn(project1Name);
+    when(project2.getProject().getName()).thenReturn(project2Name);
+    when(project3.getProject().getName()).thenReturn(project3Name);
+
+    // create three classpathEntries, one for each Project
+    IClasspathEntry entryProject1 = mock(IClasspathEntry.class, Mockito.RETURNS_DEEP_STUBS);
+    IClasspathEntry entryProject2 = mock(IClasspathEntry.class, Mockito.RETURNS_DEEP_STUBS);
+    IClasspathEntry entryProject3 = mock(IClasspathEntry.class, Mockito.RETURNS_DEEP_STUBS);
+    when(entryProject1.getEntryKind()).thenReturn(IClasspathEntry.CPE_PROJECT);
+    when(entryProject1.getPath().segment(0)).thenReturn(project1Name);
+    when(entryProject2.getEntryKind()).thenReturn(IClasspathEntry.CPE_PROJECT);
+    when(entryProject2.getPath().segment(0)).thenReturn(project2Name);
+    when(entryProject3.getEntryKind()).thenReturn(IClasspathEntry.CPE_PROJECT);
+    when(entryProject3.getPath().segment(0)).thenReturn(project3Name);
+    // project1 depends on project2, which depends on project3, which depends on project2
+    IClasspathEntry[] classpath1 = new IClasspathEntry[] {entryProject2};
+    IClasspathEntry[] classpath2 = new IClasspathEntry[] {entryProject3};
+    IClasspathEntry[] classpath3 = new IClasspathEntry[] {entryProject2};
+    when(project1.getResolvedClasspath(true)).thenReturn(classpath1);
+    when(project2.getResolvedClasspath(true)).thenReturn(classpath2);
+    when(project3.getResolvedClasspath(true)).thenReturn(classpath3);
+
+    // mock the JavaModel
+    IJavaModel javaModel = mock(IJavaModel.class);
+    when(javaModel.getJavaProject(project1Name)).thenReturn(project1);
+    when(javaModel.getJavaProject(project2Name)).thenReturn(project2);
+    when(javaModel.getJavaProject(project3Name)).thenReturn(project3);
+
+    when(project1.getJavaModel()).thenReturn(javaModel);
+    when(project2.getJavaModel()).thenReturn(javaModel);
+    when(project3.getJavaModel()).thenReturn(javaModel);
+
+    // this call should not fail (StackOverFlowError before patch)
+    configurator.configureJavaProject(project1, sonarProperties);
+
   }
 
   private IClasspathEntry createCPE(int kind, File path) {

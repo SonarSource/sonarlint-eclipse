@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -79,6 +79,7 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
     // Nothing to do
   }
 
+  @Override
   public Object getAdapter(Class adapter) {
     return null;
   }
@@ -105,13 +106,13 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
         menu.dispose();
       }
       menu = new Menu(parent);
-      addActionToMenu(menu, new MyAction(Messages.SonarShowConsoleAction_never_text, SonarConsole.P_SHOW_CONSOLE_NEVER)); //$NON-NLS-1$
-      addActionToMenu(menu, new MyAction(Messages.SonarShowConsoleAction_onOutput_text, SonarConsole.P_SHOW_CONSOLE_ON_OUTPUT)); //$NON-NLS-1$
-      addActionToMenu(menu, new MyAction(Messages.SonarShowConsoleAction_onError_text, SonarConsole.P_SHOW_CONSOLE_ON_ERROR)); //$NON-NLS-1$
+      addActionToMenu(menu, new MyAction(Messages.SonarShowConsoleAction_never_text, SonarConsole.P_SHOW_CONSOLE_NEVER));
+      addActionToMenu(menu, new MyAction(Messages.SonarShowConsoleAction_onOutput_text, SonarConsole.P_SHOW_CONSOLE_ON_OUTPUT));
+      addActionToMenu(menu, new MyAction(Messages.SonarShowConsoleAction_onError_text, SonarConsole.P_SHOW_CONSOLE_ON_ERROR));
       return menu;
     }
 
-    private void addActionToMenu(Menu parent, Action action) {
+    private static void addActionToMenu(Menu parent, Action action) {
       ActionContributionItem item = new ActionContributionItem(action);
       item.fill(parent, -1);
     }
@@ -121,7 +122,7 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
       return null;
     }
 
-    private IPreferenceStore getPreferenceStore() {
+    private static IPreferenceStore getPreferenceStore() {
       return SonarUiPlugin.getDefault().getPreferenceStore();
     }
 
@@ -175,7 +176,7 @@ public class SonarConsolePageParticipant implements IConsolePageParticipant {
       getPreferenceStore().setValue(SonarConsole.P_DEBUG_OUTPUT, isChecked());
     }
 
-    private IPreferenceStore getPreferenceStore() {
+    private static IPreferenceStore getPreferenceStore() {
       return SonarUiPlugin.getDefault().getPreferenceStore();
     }
 

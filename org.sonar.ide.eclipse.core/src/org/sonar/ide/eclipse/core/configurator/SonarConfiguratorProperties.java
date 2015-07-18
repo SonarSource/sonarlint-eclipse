@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,8 +27,9 @@ package org.sonar.ide.eclipse.core.configurator;
 public interface SonarConfiguratorProperties {
 
   String SOURCE_DIRS_PROPERTY = "sonar.sources";
+  String SOURCE_EXCLUSIONS_PROPERTY = "sonar.exclusions";
   String TEST_DIRS_PROPERTY = "sonar.tests";
-  String BINARIES_PROPERTY = "sonar.binaries";
-  String LIBRARIES_PROPERTY = "sonar.libraries";
+  String TEST_INCLUSIONS_PROPERTY = "sonar.test.inclusions";
+  String TEST_EXCLUSIONS_PROPERTY = "sonar.test.exclusions";
 
 }

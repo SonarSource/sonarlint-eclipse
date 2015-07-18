@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,27 +28,32 @@ public abstract class AbstractTableLabelProvider implements ITableLabelProvider 
   /**
    * {@inheritDoc}
    */
+  @Override
   public Image getColumnImage(Object element, int columnIndex) {
     return null;
   }
 
+  @Override
   public abstract String getColumnText(Object element, int columnIndex);
 
   /**
    * {@inheritDoc}
    */
+  @Override
   public void addListener(ILabelProviderListener listener) {
   }
 
   /**
    * {@inheritDoc}
    */
+  @Override
   public void dispose() {
   }
 
   /**
    * {@inheritDoc}
    */
+  @Override
   public boolean isLabelProperty(Object element, String property) {
     return false;
   }
@@ -56,6 +61,7 @@ public abstract class AbstractTableLabelProvider implements ITableLabelProvider 
   /**
    * {@inheritDoc}
    */
+  @Override
   public void removeListener(ILabelProviderListener listener) {
   }
 

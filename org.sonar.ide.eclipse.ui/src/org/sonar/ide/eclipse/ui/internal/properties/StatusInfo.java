@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -59,6 +59,7 @@ class StatusInfo implements IStatus {
    *
    * @return <code>true</code> if the status' severity is OK
    */
+  @Override
   public boolean isOK() {
     return fSeverity == IStatus.OK;
   }
@@ -96,6 +97,7 @@ class StatusInfo implements IStatus {
    * @return the message
    * @see IStatus#getMessage()
    */
+  @Override
   public String getMessage() {
     return fStatusMessage;
   }
@@ -141,6 +143,7 @@ class StatusInfo implements IStatus {
   /*
    * @see IStatus#matches(int)
    */
+  @Override
   public boolean matches(int severityMask) {
     return (fSeverity & severityMask) != 0;
   }
@@ -149,6 +152,7 @@ class StatusInfo implements IStatus {
    * Returns always <code>false</code>.
    * @see IStatus#isMultiStatus()
    */
+  @Override
   public boolean isMultiStatus() {
     return false;
   }
@@ -156,6 +160,7 @@ class StatusInfo implements IStatus {
   /*
    * @see IStatus#getSeverity()
    */
+  @Override
   public int getSeverity() {
     return fSeverity;
   }
@@ -163,6 +168,7 @@ class StatusInfo implements IStatus {
   /*
    * @see IStatus#getPlugin()
    */
+  @Override
   public String getPlugin() {
     return SonarUiPlugin.PLUGIN_ID;
   }
@@ -171,6 +177,7 @@ class StatusInfo implements IStatus {
    * Returns always <code>null</code>.
    * @see IStatus#getException()
    */
+  @Override
   public Throwable getException() {
     return null;
   }
@@ -179,6 +186,7 @@ class StatusInfo implements IStatus {
    * Returns always the error severity.
    * @see IStatus#getCode()
    */
+  @Override
   public int getCode() {
     return fSeverity;
   }
@@ -187,6 +195,7 @@ class StatusInfo implements IStatus {
    * Returns always <code>null</code>.
    * @see IStatus#getChildren()
    */
+  @Override
   public IStatus[] getChildren() {
     return new IStatus[0];
   }

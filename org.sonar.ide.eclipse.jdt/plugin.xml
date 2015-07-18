@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
+
+   <extension point="org.eclipse.core.runtime.adapters">
+      <factory adaptableType="org.eclipse.jdt.core.IJavaElement"
+               class="org.sonar.ide.eclipse.core.SonarElementsAdapterFactory">
+         <adapter type="org.sonar.ide.eclipse.core.resources.ISonarResource"/>
+      </factory>
+      <factory adaptableType="org.eclipse.jdt.core.IJavaElement"
+               class="org.sonar.ide.eclipse.core.SonarElementsAdapterFactory">
+         <adapter type="org.sonar.ide.eclipse.core.resources.ISonarFile"/>
+      </factory>
+   </extension>
+   
    <extension
          point="org.eclipse.jdt.ui.javaElementFilters">
       <filter

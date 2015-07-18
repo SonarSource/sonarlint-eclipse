@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -50,6 +50,10 @@ public final class EclipseSonar {
     if (sonarServer == null) {
       SonarCorePlugin.getDefault().info(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
         sonarProject.getProject().getName(), sonarProject.getUrl()) + "\n");
+      return null;
+    }
+    if (sonarServer.disabled()) {
+      SonarCorePlugin.getDefault().info("SonarQube server is disabled for project " + sonarProject.getProject().getName() + " \n");
       return null;
     }
     return new EclipseSonar(sonarServer);

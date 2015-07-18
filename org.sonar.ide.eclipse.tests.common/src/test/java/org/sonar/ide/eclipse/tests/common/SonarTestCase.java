@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,8 +39,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServersManager;
 
 import static org.junit.Assert.assertTrue;
 
@@ -109,11 +109,7 @@ public abstract class SonarTestCase {
   }
 
   private static void cleanWorkspace() throws Exception {
-    final List<ISonarServer> hosts = new ArrayList<ISonarServer>();
-    hosts.addAll(SonarCorePlugin.getServersManager().getServers());
-    for (final ISonarServer host : hosts) {
-      SonarCorePlugin.getServersManager().removeServer(host);
-    }
+    ((SonarServersManager) (SonarCorePlugin.getServersManager())).clean();
     final IWorkspaceRoot root = workspace.getRoot();
     for (final IProject project : root.getProjects()) {
       project.delete(true, true, MONITOR);
@@ -137,6 +133,7 @@ public abstract class SonarTestCase {
 
     workspace.run(new IWorkspaceRunnable() {
 
+      @Override
       public void run(final IProgressMonitor monitor) throws CoreException {
         // create project as java project
         if (!project.exists()) {

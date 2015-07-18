@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,16 +38,19 @@ public class IsNewIssueConfigurationArea extends FilterConfigurationArea {
     super();
   }
 
+  @Override
   public void apply(MarkerFieldFilter filter) {
     ((IsNewIssueFieldFilter) filter).selectedNewIssues = newIssues;
   }
 
+  @Override
   public void createContents(Composite parent) {
     parent.setLayout(new GridLayout(2, false));
 
     newIssuesButton = new Button(parent, SWT.CHECK);
     newIssuesButton.setText("New issues");
     newIssuesButton.addSelectionListener(new SelectionAdapter() {
+      @Override
       public void widgetSelected(SelectionEvent e) {
         updateIssueType(IsNewIssueFieldFilter.SHOW_NEW, newIssuesButton.getSelection());
       }
@@ -56,6 +59,7 @@ public class IsNewIssueConfigurationArea extends FilterConfigurationArea {
     otherIssuesButton = new Button(parent, SWT.CHECK);
     otherIssuesButton.setText("Other issues");
     otherIssuesButton.addSelectionListener(new SelectionAdapter() {
+      @Override
       public void widgetSelected(SelectionEvent e) {
         updateIssueType(IsNewIssueFieldFilter.SHOW_OTHER, otherIssuesButton.getSelection());
       }
@@ -70,6 +74,7 @@ public class IsNewIssueConfigurationArea extends FilterConfigurationArea {
     }
   }
 
+  @Override
   public void initialize(MarkerFieldFilter filter) {
     if (filter != null) {
       newIssues = ((IsNewIssueFieldFilter) filter).selectedNewIssues;
@@ -79,6 +84,7 @@ public class IsNewIssueConfigurationArea extends FilterConfigurationArea {
     }
   }
 
+  @Override
   public String getTitle() {
     return "Issue type";
   }

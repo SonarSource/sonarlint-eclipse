@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -68,7 +68,7 @@ public class IssueDescriptionField extends MarkerField {
     return severity2 - severity1;
   }
 
-  private int getSeverity(MarkerItem item) {
+  private static int getSeverity(MarkerItem item) {
     return convertSeverity(item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, ""));
   }
 
@@ -91,7 +91,7 @@ public class IssueDescriptionField extends MarkerField {
     return result;
   }
 
-  private Image getImage(MarkerItem item) {
+  private static Image getImage(MarkerItem item) {
     if (item.getMarker() != null) {
       return getSeverityImage(getSeverity(item));
     } else {
@@ -108,7 +108,7 @@ public class IssueDescriptionField extends MarkerField {
     }
   }
 
-  private Image getSeverityImage(int severity) {
+  private static Image getSeverityImage(int severity) {
     final Image result;
     switch (severity) {
       case -1:

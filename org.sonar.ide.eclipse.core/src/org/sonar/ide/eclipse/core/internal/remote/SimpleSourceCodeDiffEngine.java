@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,7 +56,7 @@ public class SimpleSourceCodeDiffEngine {
    *
    * @return -1 if not found
    */
-  private int internalMatch(String originalSourceLine, int[] hashCodes, int originalLine) {
+  private static int internalMatch(String originalSourceLine, int[] hashCodes, int originalLine) {
     int newLine = -1;
     int originalHashCode = getHashCode(originalSourceLine);
     // line might not exists in working copy

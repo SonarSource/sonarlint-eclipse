@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -60,6 +60,7 @@ public class SonarProject implements ISonarProject {
     SonarCorePlugin.getDefault().getProjectManager().saveSonarConfiguration(project, this);
   }
 
+  @Override
   public String getUrl() {
     return url;
   }
@@ -68,14 +69,17 @@ public class SonarProject implements ISonarProject {
     this.url = url;
   }
 
+  @Override
   public IProject getProject() {
     return project;
   }
 
+  @Override
   public IResource getResource() {
     return project;
   }
 
+  @Override
   public String getKey() {
     return key;
   }
@@ -84,6 +88,7 @@ public class SonarProject implements ISonarProject {
     this.key = key;
   }
 
+  @Override
   public String getName() {
     return project.getName();
   }
@@ -96,6 +101,7 @@ public class SonarProject implements ISonarProject {
     this.lastAnalysisDate = lastAnalysisDate == null ? null : new Date(lastAnalysisDate.getTime());
   }
 
+  @Override
   public List<SonarProperty> getExtraProperties() {
     return extraProperties;
   }

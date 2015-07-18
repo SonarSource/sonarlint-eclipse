@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,6 +56,7 @@ class RemoteSourceCode implements SourceCode {
   /**
    * {@inheritDoc}
    */
+  @Override
   public String getKey() {
     return key;
   }
@@ -63,6 +64,7 @@ class RemoteSourceCode implements SourceCode {
   /**
    * {@inheritDoc}
    */
+  @Override
   public SourceCode setLocalContent(final String content) {
     this.localContent = content;
     return this;
@@ -82,6 +84,7 @@ class RemoteSourceCode implements SourceCode {
     return remoteContent;
   }
 
+  @Override
   public String getRemoteContent() {
     return StringUtils.join(getRemoteContentAsArray(), "\n");
   }
@@ -93,11 +96,13 @@ class RemoteSourceCode implements SourceCode {
     return diff;
   }
 
+  @Override
   public List<ISonarIssue> getRemoteIssuesWithLineCorrection(IProgressMonitor monitor) {
     final List<ISonarIssueWithPath> issues = getRemoteSonarIndex().getSonarClient().getUnresolvedRemoteIssuesRecursively(getKey(), monitor);
     return IssuesUtils.convertLines(issues, getDiff());
   }
 
+  @Override
   public List<ISonarIssueWithPath> getRemoteIssuesRecursively(IProgressMonitor monitor) {
     return getRemoteSonarIndex().getSonarClient().getUnresolvedRemoteIssuesRecursively(getKey(), monitor);
   }
@@ -105,6 +110,7 @@ class RemoteSourceCode implements SourceCode {
   /**
    * {@inheritDoc}
    */
+  @Override
   public int compareTo(final SourceCode resource) {
     return key.compareTo(resource.getKey());
   }
@@ -133,6 +139,7 @@ class RemoteSourceCode implements SourceCode {
     return index;
   }
 
+  @Override
   public Date getAnalysisDate() {
     return index.getSonarClient().getLastAnalysisDate(key);
   }

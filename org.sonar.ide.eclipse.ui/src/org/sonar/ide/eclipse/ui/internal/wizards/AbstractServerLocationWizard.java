@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -51,6 +51,7 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
 
   @Override
   public boolean performFinish() {
+    final String serverId = page.getServerId();
     final String serverUrl = page.getServerUrl();
     final String username = page.getUsername();
     final String password = page.getPassword();
@@ -58,9 +59,9 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
     IRunnableWithProgress op = new IRunnableWithProgress() {
       @Override
       public void run(IProgressMonitor monitor) throws InvocationTargetException {
-        monitor.beginTask("Saving " + serverUrl, 1);
+        monitor.beginTask("Saving " + serverId, 1);
         try {
-          doFinish(serverUrl, username, password);
+          doFinish(serverId, serverUrl, username, password);
         } catch (Exception e) {
           SonarCorePlugin.getDefault().error(e.getMessage(), e);
         } finally {
@@ -80,7 +81,7 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
     return true;
   }
 
-  protected void doFinish(String serverUrl, String username, String password) {
-    SonarCorePlugin.getServersManager().addServer(SonarCorePlugin.getServersManager().create(serverUrl, username, password));
+  protected void doFinish(String serverId, String serverUrl, String username, String password) {
+    SonarCorePlugin.getServersManager().addServer(SonarCorePlugin.getServersManager().create(serverId, serverUrl, username, password));
   }
 }

@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -59,6 +59,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
@@ -305,7 +306,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     });
   }
 
-  private void createLinkToGlobal(final Composite ancestor, Composite parent) {
+  private static void createLinkToGlobal(final Composite ancestor, Composite parent) {
     Link fLink = new Link(parent, SWT.NONE);
     fLink.setText("<A>Configure Workspace Settings...</A>");
     fLink.setLayoutData(new GridData());
@@ -397,7 +398,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     return null;
   }
 
-  private int computeMinimumColumnWidth(GC gc, String string) {
+  private static int computeMinimumColumnWidth(GC gc, String string) {
     // pad 10 to accommodate table header trimmings
     return gc.stringExtent(string).x + 10;
   }
@@ -453,7 +454,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
   private void loadProperties() {
     sonarProperties = new ArrayList<SonarProperty>();
     if (isGlobal()) {
-      String props = getPreferenceStore().getString(SonarUiPlugin.PREF_EXTRA_ARGS);
+      String props = getPreferenceStore().getString(PreferencesUtils.PREF_EXTRA_ARGS);
       try {
         String[] keyValuePairs = StringUtils.split(props, "\n\r");
         for (String keyValuePair : keyValuePairs) {
@@ -476,7 +477,7 @@ public class SonarExtraArgumentsPreferenceAndPropertyPage extends PropertyPage i
     }
     String props = StringUtils.join(keyValuePairs, "\r\n");
     if (isGlobal()) {
-      getPreferenceStore().setValue(SonarUiPlugin.PREF_EXTRA_ARGS, props);
+      getPreferenceStore().setValue(PreferencesUtils.PREF_EXTRA_ARGS, props);
     } else {
       SonarProject sonarProject = getSonarProject();
       sonarProject.setExtraProperties(sonarProperties);

@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,23 +17,30 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.ui.internal.command;
+package org.sonar.ide.eclipse.core.internal.jobs;
 
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.ui.PlatformUI;
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.ide.eclipse.ui.internal.views.IssueEditorWebView;
+import org.eclipse.core.resources.IProject;
 
-public class EditIssueCommand extends AbstractIssueCommand {
+public class AnalyzeProjectRequest {
 
-  @Override
-  protected void execute(IMarker selectedMarker) {
-    try {
-      IssueEditorWebView view = (IssueEditorWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueEditorWebView.ID);
-      view.setInput(selectedMarker);
-    } catch (Exception e) {
-      SonarCorePlugin.getDefault().error("Unable to open Issue Editor Web View", e);
-    }
+  private IProject project;
+  private boolean debugEnabled;
+
+  public AnalyzeProjectRequest(IProject project) {
+    this.project = project;
+  }
+
+  public IProject getProject() {
+    return project;
+  }
+
+  public boolean isDebugEnabled() {
+    return debugEnabled;
+  }
+
+  public AnalyzeProjectRequest setDebugEnabled(boolean debugEnabled) {
+    this.debugEnabled = debugEnabled;
+    return this;
   }
 
 }

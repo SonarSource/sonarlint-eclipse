@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,6 +48,7 @@ public class ConfigureProjectsCommand extends AbstractHandler {
     return display;
   }
 
+  @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
     IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
 
@@ -72,6 +73,7 @@ public class ConfigureProjectsCommand extends AbstractHandler {
     final WizardDialog dialog = new WizardDialog(display.getActiveShell(), wizard);
     dialog.setHelpAvailable(true);
     BusyIndicator.showWhile(display, new Runnable() {
+      @Override
       public void run() {
         dialog.open();
       }

@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,7 @@ import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
  */
 public class SonarConsoleFactory implements IConsoleFactory {
 
+  @Override
   public void openConsole() {
     ISonarConsole console = SonarUiPlugin.getDefault().getSonarConsole();
     ((SonarConsole) console).showConsole();

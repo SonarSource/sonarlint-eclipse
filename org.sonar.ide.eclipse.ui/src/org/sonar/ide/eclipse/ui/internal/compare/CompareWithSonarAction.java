@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -57,7 +57,11 @@ public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
   @Override
   public void run(final IAction action) {
     if (resource != null) {
-      final SourceCode sourceCode = EclipseSonar.getInstance(resource.getProject()).search(resource);
+      EclipseSonar eclipseSonar = EclipseSonar.getInstance(resource.getProject());
+      if (eclipseSonar == null) {
+        return;
+      }
+      final SourceCode sourceCode = eclipseSonar.search(resource);
       if (sourceCode != null) {
         CompareUI.openCompareEditor(new SonarCompareInput(resource.getResource(), sourceCode.getRemoteContent()));
       } else {

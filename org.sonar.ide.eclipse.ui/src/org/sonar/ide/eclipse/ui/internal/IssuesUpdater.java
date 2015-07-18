@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,7 @@ import org.sonar.ide.eclipse.core.internal.jobs.SynchronizeIssuesJob;
 import java.util.Collections;
 
 public class IssuesUpdater implements IPartListener2 {
+  @Override
   public void partOpened(IWorkbenchPartReference partRef) {
     IWorkbenchPart part = partRef.getPart(true);
     if (part instanceof IEditorPart) {
@@ -42,30 +43,37 @@ public class IssuesUpdater implements IPartListener2 {
     }
   }
 
+  @Override
   public void partVisible(IWorkbenchPartReference partRef) {
     // Nothing to do
   }
 
+  @Override
   public void partInputChanged(IWorkbenchPartReference partRef) {
     // Nothing to do
   }
 
+  @Override
   public void partHidden(IWorkbenchPartReference partRef) {
     // Nothing to do
   }
 
+  @Override
   public void partDeactivated(IWorkbenchPartReference partRef) {
     // Nothing to do
   }
 
+  @Override
   public void partClosed(IWorkbenchPartReference partRef) {
     // Nothing to do
   }
 
+  @Override
   public void partBroughtToTop(IWorkbenchPartReference partRef) {
     // Nothing to do
   }
 
+  @Override
   public void partActivated(IWorkbenchPartReference partRef) {
     // Nothing to do
   }

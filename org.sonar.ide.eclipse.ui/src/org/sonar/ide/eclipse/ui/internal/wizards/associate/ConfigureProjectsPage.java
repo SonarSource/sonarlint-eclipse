@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -247,8 +247,7 @@ public class ConfigureProjectsPage extends WizardPage {
           }
           if (changed) {
             boolean debugEnabled = SonarConsole.isDebugEnabled();
-            SynchronizeAllIssuesJob.createAndSchedule(project, debugEnabled,
-              SonarUiPlugin.getExtraPropertiesForLocalAnalysis(project), SonarUiPlugin.getSonarJvmArgs(), SonarUiPlugin.isForceFullPreview());
+            SynchronizeAllIssuesJob.createAndSchedule(project, debugEnabled);
           }
         } catch (CoreException e) {
           SonarCorePlugin.getDefault().error(e.getMessage(), e);
@@ -368,6 +367,10 @@ public class ConfigureProjectsPage extends WizardPage {
     private Map<String, List<ISonarRemoteModule>> fetchAllRemoteSonarModules() {
       Map<String, List<ISonarRemoteModule>> remoteSonarModules = new HashMap<String, List<ISonarRemoteModule>>();
       for (ISonarServer sonarServer : sonarServers) {
+        if (sonarServer.disabled()) {
+          SonarCorePlugin.getDefault().debug(sonarServer + " is disabled\n");
+          continue;
+        }
         List<ISonarRemoteModule> remoteModules = WSClientFactory.getSonarClient(sonarServer).listAllRemoteModules();
         remoteSonarModules.put(sonarServer.getUrl(), remoteModules);
       }

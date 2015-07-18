@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,7 @@ public final class WorkspaceHelpers {
     final IWorkspace workspace = ResourcesPlugin.getWorkspace();
     workspace.run(new IWorkspaceRunnable() {
 
+      @Override
       public void run(IProgressMonitor monitor) throws CoreException {
         IProject[] projects = workspace.getRoot().getProjects();
         for (IProject project : projects) {

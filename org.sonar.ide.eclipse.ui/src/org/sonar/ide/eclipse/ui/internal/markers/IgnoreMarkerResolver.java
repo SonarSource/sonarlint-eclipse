@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,7 @@ public class IgnoreMarkerResolver implements ISonarResolver {
   private String label;
   private String description;
 
+  @Override
   public boolean canResolve(final IMarker marker) {
     try {
       final Object ruleName = marker.getAttribute("rulename"); //$NON-NLS-1$
@@ -45,14 +46,17 @@ public class IgnoreMarkerResolver implements ISonarResolver {
     }
   }
 
+  @Override
   public String getDescription() {
     return description;
   }
 
+  @Override
   public String getLabel() {
     return label;
   }
 
+  @Override
   public boolean resolve(final IMarker marker, final IFile cu) {
     return true;
   }

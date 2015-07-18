@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -49,7 +49,7 @@ final class ServerConnectionTestJob implements IRunnableWithProgress {
   public void run(IProgressMonitor monitor) {
     monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
     try {
-      ISonarServer newServer = SonarCorePlugin.getServersManager().create(serverUrl, username, password);
+      ISonarServer newServer = SonarCorePlugin.getServersManager().create("test", serverUrl, username, password);
       ConnectionTestResult result = WSClientFactory.getSonarClient(newServer).testConnection();
       switch (result.status) {
         case OK:

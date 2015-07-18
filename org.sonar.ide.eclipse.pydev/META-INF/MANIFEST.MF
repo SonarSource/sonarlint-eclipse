@@ -12,12 +12,11 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.navigator,
  org.eclipse.jface.text,
  org.eclipse.core.filebuffers,
- org.sonar.ide.eclipse.ui,
  org.sonar.ide.eclipse.core,
- org.sonar.ide.eclipse.wsclient,
  org.python.pydev,
  org.python.pydev.core,
- findbugsAnnotations;bundle-version="2.0.0"
+ findbugsAnnotations;bundle-version="2.0.0",
+ org.sonar.ide.eclipse.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle

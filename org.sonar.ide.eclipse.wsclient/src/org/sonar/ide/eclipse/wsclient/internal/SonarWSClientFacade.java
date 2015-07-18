@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@ package org.sonar.ide.eclipse.wsclient.internal;
 
 import com.google.common.base.Strings;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.annotation.CheckForNull;
@@ -109,6 +110,9 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
 
   @Override
   public List<ISonarRemoteModule> searchRemoteModules(String text) {
+    if (text.length() < 2) {
+      return Collections.emptyList();
+    }
     List<ISonarRemoteModule> result;
     ResourceSearchQuery query = ResourceSearchQuery.create(text).setQualifiers(Resource.QUALIFIER_PROJECT, Resource.QUALIFIER_MODULE);
     ResourceSearchResult searchResult = find(query);

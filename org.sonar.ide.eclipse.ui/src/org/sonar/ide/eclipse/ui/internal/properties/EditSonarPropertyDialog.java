@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -107,10 +107,12 @@ public class EditSonarPropertyDialog extends StatusDialog {
     fNameText = createNameText(composite);
     if (fIsNameModifiable) {
       fNameText.addFocusListener(new FocusListener() {
+        @Override
         public void focusGained(FocusEvent e) {
           // Nothing to do
         }
 
+        @Override
         public void focusLost(FocusEvent e) {
           if (fSuppressError) {
             fSuppressError = false;
@@ -131,6 +133,7 @@ public class EditSonarPropertyDialog extends StatusDialog {
     fNameText.setText(sonarProperty.getName());
     if (fIsNameModifiable) {
       ModifyListener listener = new ModifyListener() {
+        @Override
         public void modifyText(ModifyEvent e) {
           fSuppressError = false;
           updateStatusAndButtons();
@@ -187,7 +190,7 @@ public class EditSonarPropertyDialog extends StatusDialog {
    * @param name the string to test
    * @return <code>true</code> if the name is valid
    */
-  private boolean isValidPropertyName(String name) {
+  private static boolean isValidPropertyName(String name) {
     return !name.contains(" ");
   }
 

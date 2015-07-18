@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.core.internal.servers;
 
-import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.junit.After;
@@ -32,13 +31,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-public class SonarServerManagerTest {
+public class SonarServersManagerTest {
 
-  private ServersManager serversManager;
+  private SonarServersManager serversManager;
 
   @Before
   public void setUp() {
-    serversManager = (ServersManager) SonarCorePlugin.getServersManager();
+    serversManager = (SonarServersManager) SonarCorePlugin.getServersManager();
     serversManager.clean();
   }
 
@@ -47,17 +46,16 @@ public class SonarServerManagerTest {
     String url = "http://new";
     ISonarServer server = serversManager.findServer(url);
     assertThat(server, nullValue());
-    assertThat(serversManager.getServers().size(), is(0));
+    assertThat(serversManager.reloadServers().size(), is(0));
   }
 
   @Test
   public void shouldUseSecureStorage() throws Exception {
-    String url = "http://secure";
-    ISonarServer server = serversManager.create(url, "tester", "secret");
+    ISonarServer server = serversManager.create("secure", "http://secure", "tester", "secret");
     serversManager.addServer(server);
 
-    ISecurePreferences securePreferences = SecurePreferencesFactory.getDefault().node(ServersManager.PREF_SERVERS);
-    securePreferences = securePreferences.node(EncodingUtils.encodeSlashes(url));
+    ISecurePreferences securePreferences = SecurePreferencesFactory.getDefault().node(SonarServersManager.PREF_SERVERS);
+    securePreferences = securePreferences.node("secure");
     assertThat(securePreferences.get("username", null), is("tester"));
     assertThat(securePreferences.get("password", null), is("secret"));
   }

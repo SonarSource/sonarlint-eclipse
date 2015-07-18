@@ -1,7 +1,7 @@
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
- * dev@sonar.codehaus.org
+ * sonarqube@googlegroups.com
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -105,7 +105,7 @@ public class SonarProjectManager {
         String[] props = StringUtils.split(extraArgsAsString, "\r\n");
         for (String keyValuePair : props) {
           String[] keyValue = StringUtils.split(keyValuePair, "=");
-          sonarProperties.add(new SonarProperty(keyValue[0], keyValue[1]));
+          sonarProperties.add(new SonarProperty(keyValue[0], keyValue.length > 1 ? keyValue[1] : ""));
         }
       } catch (Exception e) {
         SonarCorePlugin.getDefault().error("Error while loading SonarQube properties", e);
