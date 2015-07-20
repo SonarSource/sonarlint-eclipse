@@ -68,12 +68,13 @@ public class SynchronizeAllIssuesJob extends Job {
         if (monitor.isCanceled()) {
           break;
         }
+        IProject project = request.getProject();
         if (request.getProject().isAccessible()) {
-          MarkerUtils.deleteIssuesMarkers(request.getProject());
+          MarkerUtils.deleteIssuesMarkers(project);
           monitor.subTask(request.getProject().getName());
           if (!PreferencesUtils.isForceFullPreview()) {
             // Only get remote issues in incremental mode
-            fetchRemoteIssues(request.getProject(), monitor);
+            fetchRemoteIssues(project, monitor);
           }
           scheduleAnalysis(request);
         }
@@ -107,10 +108,8 @@ public class SynchronizeAllIssuesJob extends Job {
 
   private void fetchRemoteIssues(final IProject project, IProgressMonitor monitor) throws CoreException {
     long start = System.currentTimeMillis();
-    SonarCorePlugin.getDefault().info("Retrieve remote issues of project " + project.getName() + "...\n");
 
     SonarProject sonarProject = SonarProject.getInstance(project);
-    MarkerUtils.deleteIssuesMarkers(project);
     if (monitor.isCanceled()) {
       return;
     }
@@ -118,12 +117,8 @@ public class SynchronizeAllIssuesJob extends Job {
     if (sonar == null) {
       return;
     }
+    SonarCorePlugin.getDefault().info("Retrieve remote issues of project " + project.getName() + "...\n");
     SourceCode sourceCode = sonar.search(project);
-
-    if (monitor.isCanceled()) {
-      return;
-    }
-
     if (sourceCode != null) {
       doRefreshIssues(sonarProject, sourceCode, monitor);
       sonarProject.setLastAnalysisDate(sourceCode.getAnalysisDate());
