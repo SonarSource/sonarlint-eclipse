@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="SonarQube Eclipse Product" uid="org.sonar.ide.eclipse.site" version="3.5.0.qualifier" useFeatures="true" includeLaunchers="false">
+<product name="SonarQube Eclipse Product" uid="org.sonar.ide.eclipse.site" version="3.5.0.20150720-1545-RC1" useFeatures="true" includeLaunchers="false">
 
    <configIni use="default">
    </configIni>

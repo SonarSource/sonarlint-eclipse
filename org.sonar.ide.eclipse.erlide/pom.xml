@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.sonarsource.sonar-eclipse</groupId>
     <artifactId>eclipse-parent</artifactId>
-    <version>3.5.0-SNAPSHOT</version>
+    <version>3.5.0.20150720-1545-RC1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
