@@ -6,6 +6,9 @@
  */
 package org.sonar.ide.eclipse.ui.its.bots;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
@@ -29,10 +32,6 @@ import org.eclipse.swtbot.swt.finder.widgets.TimeoutException;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.sonar.ide.eclipse.ui.its.utils.JobHelpers;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable.syncExec;
 import static org.eclipse.swtbot.swt.finder.matchers.WidgetMatcherFactory.widgetOfType;
@@ -98,11 +97,11 @@ public class ConfigureProjectsWizardBot {
   @SuppressWarnings("all")
   public List<String> getAutoCompleteProposals(String insertText) {
     typeText(insertText);
+    activateAutoCompleteShell();
     WaitForObjectCondition<SWTBotTable> autoCompleteAppears = autoCompleteAppears(tableWithRowIgnoringCase(insertText));
     waitUntil(autoCompleteAppears);
     final SWTBotTable autoCompleteTable = autoCompleteAppears.get(0);
     List<String> proposals = getRows(autoCompleteTable);
-    makeProposalsDisappear();
     return proposals;
   }
 
@@ -114,7 +113,8 @@ public class ConfigureProjectsWizardBot {
    */
   public void autoCompleteProposal(String insertText, String proposalText) {
     typeText(insertText);
-    WaitForObjectCondition<SWTBotTable> autoCompleteTable = autoCompleteAppears(tableWithRow(proposalText));
+    activateAutoCompleteShell();
+    WaitForObjectCondition<SWTBotTable> autoCompleteTable = autoCompleteAppears(tableWithRow(insertText));
     waitUntil(autoCompleteTable);
     selectProposal(autoCompleteTable.get(0), proposalText);
   }
@@ -177,14 +177,9 @@ public class ConfigureProjectsWizardBot {
     return new WaitForObjectCondition<SWTBotTable>(tableMatcher) {
       @Override
       protected List<SWTBotTable> findMatches() {
-        try {
-          activateAutoCompleteShell();
-          SWTBotTable autoCompleteTable = getProposalTable();
-          if (matcher.matches(autoCompleteTable)) {
-            return Arrays.asList(autoCompleteTable);
-          }
-        } catch (Throwable e) {
-          makeProposalsDisappear();
+        SWTBotTable autoCompleteTable = getProposalTable();
+        if (matcher.matches(autoCompleteTable)) {
+          return Arrays.asList(autoCompleteTable);
         }
         return null;
       }
@@ -259,10 +254,6 @@ public class ConfigureProjectsWizardBot {
 
   private void activateAutoCompleteShell() {
     text.pressShortcut(Keystrokes.CTRL, Keystrokes.SPACE);
-  }
-
-  private void makeProposalsDisappear() {
-    text.setFocus();
   }
 
   private Matcher<SWTBotTable> tableWithRowIgnoringCase(final String itemText) {
