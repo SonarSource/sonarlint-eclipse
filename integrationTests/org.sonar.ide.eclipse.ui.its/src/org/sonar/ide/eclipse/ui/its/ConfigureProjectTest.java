@@ -17,7 +17,6 @@ import org.sonar.ide.eclipse.ui.its.bots.ConfigureProjectsWizardBot;
 import org.sonar.ide.eclipse.ui.its.bots.ImportProjectBot;
 import org.sonar.ide.eclipse.ui.its.bots.JavaPackageExplorerBot;
 
-import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -54,15 +53,16 @@ public class ConfigureProjectTest extends AbstractSQEclipseUITest {
     // SONARIDE-362 Verify you can search for projects with less than 3 characters
     List<String> autoCompleteProposals = projectWizardBot.getAutoCompleteProposals("p2");
     assertTrue("P2 was not found in autocomplete: " + Joiner.on(", ").join(autoCompleteProposals), autoCompleteProposals.contains("P2"));
+    projectWizardBot.cancel();
 
+    new JavaPackageExplorerBot(bot)
+      .expandAndSelect(PROJECT_NAME)
+      .clickContextMenu("SonarQube", "Change Project Association...");
+
+    projectWizardBot = new ConfigureProjectsWizardBot(bot);
     // Select second choice in content assist to take the branch
     projectWizardBot.editRow(0);
-    autoCompleteProposals = projectWizardBot.getAutoCompleteProposals("reference");
-    try {
-      projectWizardBot.autoCompleteProposal("reference", "reference BRANCH-0.9");
-    } catch (Exception e) {
-      fail("List of content assist proposals: " + Joiner.on(',').join(autoCompleteProposals), e);
-    }
+    projectWizardBot.autoCompleteProposal("reference", "reference BRANCH-0.9");
     assertThat(projectWizardBot.getAssociatedProjectText(0), is("reference BRANCH-0.9 on " + getSonarServerUrl() + " (org.sonar-ide.tests:reference:BRANCH-0.9)"));
     projectWizardBot.finish();
 
