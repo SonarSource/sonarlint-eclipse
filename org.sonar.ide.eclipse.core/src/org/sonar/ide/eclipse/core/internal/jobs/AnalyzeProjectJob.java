@@ -83,7 +83,7 @@ public class AnalyzeProjectJob extends Job {
 
   @Override
   protected IStatus run(final IProgressMonitor monitor) {
-    if (singleFile != null) {
+    if (singleFile == null) {
       monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analyzing, project.getName()), IProgressMonitor.UNKNOWN);
     } else {
       monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analyzing_file, singleFile.getName()), IProgressMonitor.UNKNOWN);
