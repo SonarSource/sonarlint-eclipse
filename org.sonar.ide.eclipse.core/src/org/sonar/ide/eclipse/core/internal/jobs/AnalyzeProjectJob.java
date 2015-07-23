@@ -34,7 +34,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -45,7 +44,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
-import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
@@ -109,25 +107,30 @@ public class AnalyzeProjectJob extends Job {
     try {
       Files.deleteIfExists(outputFile.toPath());
     } catch (IOException e) {
-      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Unable to delete", e);
+      return new Status(Status.WARNING, SonarCorePlugin.PLUGIN_ID, "Unable to delete", e);
     }
-    IStatus result;
     long start = System.currentTimeMillis();
     SonarCorePlugin.getDefault().info("Start SonarQube analysis on " + project.getName() + "...\n");
     try {
-      result = run(project, properties, debugEnabled, monitor);
+      run(project, properties, debugEnabled, monitor);
     } catch (Exception e) {
-      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error when executing SonarQube runner", e);
+      SonarCorePlugin.getDefault().error("Error during execution of SonarQube analysis", e);
+      return new Status(Status.WARNING, SonarCorePlugin.PLUGIN_ID, "Error when executing SonarQube analysis", e);
     }
-    if (result != Status.OK_STATUS) {
-      return result;
+    if (monitor.isCanceled()) {
+      return Status.CANCEL_STATUS;
     }
     SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - start) + "ms\n");
 
     // Create markers
     long startMarker = System.currentTimeMillis();
-    SonarCorePlugin.getDefault().debug("Create markers on project " + project.getName() + " resources...\n");
-    createMarkersFromReportOutput(monitor, outputFile);
+    try {
+      SonarCorePlugin.getDefault().debug("Create markers on project " + project.getName() + " resources...\n");
+      createMarkersFromReportOutput(monitor, outputFile);
+    } catch (Exception e) {
+      SonarCorePlugin.getDefault().error("Error during creation of markers", e);
+      return new Status(Status.WARNING, SonarCorePlugin.PLUGIN_ID, "Error during creation of markers", e);
+    }
     SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - startMarker) + "ms\n");
 
     monitor.done();
@@ -143,7 +146,7 @@ public class AnalyzeProjectJob extends Job {
   }
 
   @VisibleForTesting
-  public void createMarkersFromReportOutput(final IProgressMonitor monitor, File outputFile) {
+  public void createMarkersFromReportOutput(final IProgressMonitor monitor, File outputFile) throws Exception {
     try (FileReader fileReader = new FileReader(outputFile)) {
       Object obj = JSONValue.parse(fileReader);
       JSONObject sonarResult = (JSONObject) obj;
@@ -168,8 +171,6 @@ public class AnalyzeProjectJob extends Job {
       Map<String, String> userNameByLogin = readUserNameByLogin(sonarResult);
       // Now iterate over all issues and create markers
       MarkerUtils.createMarkersForJSONIssues(resourcesByKey, ruleByKey, userNameByLogin, (JSONArray) sonarResult.get("issues"));
-    } catch (Exception e) {
-      throw new SonarEclipseException("Unable to create markers", e);
     }
   }
 
@@ -237,37 +238,11 @@ public class AnalyzeProjectJob extends Job {
     return outputFile;
   }
 
-  public IStatus run(IProject project, Properties props, boolean debugEnabled, final IProgressMonitor monitor) throws InterruptedException,
-    CoreException, IOException {
-
-    try {
-
-      if (debugEnabled) {
-        SonarCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props));
-      }
-
-      sonarServer.startAnalysis(props, debugEnabled);
-
-      return checkCancel(monitor);
-    } catch (Exception e) {
-      return handleException(monitor, e);
+  public void run(IProject project, Properties props, boolean debugEnabled, final IProgressMonitor monitor) {
+    if (debugEnabled) {
+      SonarCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props));
     }
-
-  }
-
-  private static IStatus checkCancel(final IProgressMonitor monitor) {
-    if (monitor.isCanceled()) {
-      return Status.CANCEL_STATUS;
-    }
-    return Status.OK_STATUS;
-  }
-
-  private static IStatus handleException(final IProgressMonitor monitor, Exception e) {
-    if (monitor.isCanceled()) {
-      // On OSX it seems that cancelling produce an exception
-      return Status.CANCEL_STATUS;
-    }
-    return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID, "Error during execution of Sonar", e);
+    sonarServer.startAnalysis(props, debugEnabled);
   }
 
   private static String propsToString(Properties props) {
