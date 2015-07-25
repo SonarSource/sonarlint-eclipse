@@ -3,8 +3,9 @@
 set -euo pipefail
 
 function installTravisTools {
-  curl -sSL https://raw.githubusercontent.com/sonarsource/travis-utils/v10/install.sh | bash
-  source /tmp/travis-utils/env.sh
+  mkdir ~/.local
+  curl -sSL https://github.com/SonarSource/travis-utils/tarball/v15 | tar zx --strip-components 1 -C ~/.local
+  source ~/.local/bin/install
 }
 
 mvn verify -B -e -V -Dtycho.disableP2Mirrors=true -Dtarget.platform=$TARGET_PLATFORM
@@ -12,9 +13,10 @@ mvn verify -B -e -V -Dtycho.disableP2Mirrors=true -Dtarget.platform=$TARGET_PLAT
 if [ "${RUN_ITS}" == "true" ]
 then
   installTravisTools
-  travis_build_green "SonarSource/sonarqube" "master"
 
-  travis_start_xvfb
+  build_snapshot "SonarSource/sonarqube"
+
+  start_xvfb
   metacity --sm-disable --replace &
 
   cd integrationTests
