@@ -31,9 +31,11 @@ import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.EncodingUtils;
+import org.eclipse.osgi.util.NLS;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
+import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
@@ -189,7 +191,11 @@ public class SonarServersManager implements ISonarServersManager {
     try {
       return WSClientFactory.getSonarClient(server).getServerVersion();
     } catch (Exception e) {
-      SonarCorePlugin.getDefault().error("Unable to get version of server " + server.getUrl() + ": " + e.getMessage() + "\n");
+    	// when a server is not reachable, we use an implicit log because current error could have been thrown on an implicit action (not a user action) like "reload from preferences".
+    	IStatus status = new Status(IStatus.WARNING, SonarCorePlugin.PLUGIN_ID, NLS.bind(Messages.Unable_to_detect_server_version, server.getUrl()), e);
+    	SonarCorePlugin.getDefault().getLog().log(status);
+    	// disable explicit log (TODO remove this dead code if new behaviour has been accepted).
+//      SonarCorePlugin.getDefault().error("Unable to get version of server " + server.getUrl() + ": " + e.getMessage() + "\n");
     }
     return null;
   }

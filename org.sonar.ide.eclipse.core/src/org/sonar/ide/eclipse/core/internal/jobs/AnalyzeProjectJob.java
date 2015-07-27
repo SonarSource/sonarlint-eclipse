@@ -97,6 +97,8 @@ public class AnalyzeProjectJob extends Job {
     }
     // Verify version and server is reachable
     if (getServerVersion() == null) {
+    	// explicit call to server version => this job is explicitly launched on user action (after project configuration)
+    	SonarCorePlugin.getDefault().error(NLS.bind(Messages.Unable_to_detect_server_version, sonarProject.getUrl()));
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
         NLS.bind(Messages.Unable_to_detect_server_version, sonarProject.getUrl()));
     }
