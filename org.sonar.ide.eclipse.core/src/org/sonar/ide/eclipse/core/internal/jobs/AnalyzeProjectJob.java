@@ -96,6 +96,10 @@ public class AnalyzeProjectJob extends Job {
         NLS.bind(Messages.No_matching_server_in_configuration_for_project, project.getName(), sonarProject.getUrl()));
     }
     // Verify version and server is reachable
+    if (getSonarServer().disabled()) {
+      return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
+        "SonarQube server " + sonarProject.getUrl() + " is disabled");
+    }
     if (getServerVersion() == null) {
       return new Status(Status.ERROR, SonarCorePlugin.PLUGIN_ID,
         NLS.bind(Messages.Unable_to_detect_server_version, sonarProject.getUrl()));
