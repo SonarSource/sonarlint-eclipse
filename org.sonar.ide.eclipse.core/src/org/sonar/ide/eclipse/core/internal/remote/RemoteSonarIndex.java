@@ -19,7 +19,9 @@
  */
 package org.sonar.ide.eclipse.core.internal.remote;
 
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
+import org.sonar.ide.eclipse.wsclient.ConnectionException;
 import org.sonar.ide.eclipse.wsclient.ISonarWSClientFacade;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
@@ -35,22 +37,25 @@ class RemoteSonarIndex {
 
   private final ISonarWSClientFacade sonarClient;
   private final SimpleSourceCodeDiffEngine diffEngine;
+  private final SonarServer sonarServer;
 
-  public RemoteSonarIndex(ISonarServer sonarServer, SimpleSourceCodeDiffEngine diffEngine) {
-    this(WSClientFactory.getSonarClient(sonarServer), diffEngine);
-  }
-
-  private RemoteSonarIndex(ISonarWSClientFacade sonarClient, SimpleSourceCodeDiffEngine diffEngine) {
-    this.sonarClient = sonarClient;
+  public RemoteSonarIndex(SonarServer sonarServer, SimpleSourceCodeDiffEngine diffEngine) {
+    this.sonarClient = WSClientFactory.getSonarClient(sonarServer);
     this.diffEngine = diffEngine;
+    this.sonarServer = sonarServer;
   }
 
   /**
    * {@inheritDoc}
    */
   public SourceCode search(String key) {
-    if (sonarClient.exists(key)) {
-      return new RemoteSourceCode(key).setRemoteSonarIndex(this);
+    try {
+      if (sonarClient.exists(key)) {
+        return new RemoteSourceCode(key).setRemoteSonarIndex(this);
+      }
+    } catch (ConnectionException e) {
+      SonarCorePlugin.getDefault().info("Unable to connect to " + sonarServer.getUrl() + ". Server will be disabled.");
+      sonarServer.setDisabled(true);
     }
     return null;
   }
