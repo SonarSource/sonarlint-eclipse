@@ -96,7 +96,7 @@ public class SonarServersManager implements ISonarServersManager {
               for (String prefix : UNSUPPORTED_VERSION_PREFIX) {
                 if (serverVersion.startsWith(prefix)) {
                   SonarCorePlugin.getDefault()
-                    .error("SonarQube server " + serverVersion + " at " + url + " is not supported. Minimal supported version is " + MINIMAL_VERSION);
+                    .error("SonarQube server " + serverVersion + " at " + url + " is not supported. Minimal supported version is " + MINIMAL_VERSION + "\n");
                   disabled = true;
                   break;
                 }
@@ -189,7 +189,7 @@ public class SonarServersManager implements ISonarServersManager {
     try {
       return WSClientFactory.getSonarClient(server).getServerVersion();
     } catch (Exception e) {
-      SonarCorePlugin.getDefault().error("Unable to get version of server " + server.getUrl() + ": " + e.getMessage() + "\n");
+      SonarCorePlugin.getDefault().info("Unable to get version of server " + server.getUrl() + ": " + e.getMessage() + "\n");
     }
     return null;
   }

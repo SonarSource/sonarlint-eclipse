@@ -39,7 +39,6 @@ import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
 import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
-import org.sonar.ide.eclipse.wsclient.ConnectionException;
 
 /**
  * This class load issues in background.
@@ -87,8 +86,6 @@ public class SynchronizeIssuesJob extends Job implements IResourceProxyVisitor {
       } else {
         status = Status.CANCEL_STATUS;
       }
-    } catch (final ConnectionException e) {
-      status = new Status(IStatus.ERROR, SonarCorePlugin.PLUGIN_ID, IStatus.ERROR, "Unable to contact SonarQube server", e);
     } catch (final Exception e) {
       status = new Status(IStatus.ERROR, SonarCorePlugin.PLUGIN_ID, IStatus.ERROR, e.getLocalizedMessage(), e);
     } finally {

@@ -34,6 +34,7 @@ import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 /**
@@ -46,7 +47,7 @@ public final class EclipseSonar {
   @CheckForNull
   public static EclipseSonar getInstance(IProject project) {
     SonarProject sonarProject = SonarProject.getInstance(project);
-    ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+    SonarServer sonarServer = (SonarServer) SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     if (sonarServer == null) {
       SonarCorePlugin.getDefault().info(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
         sonarProject.getProject().getName(), sonarProject.getUrl()) + "\n");
@@ -60,12 +61,12 @@ public final class EclipseSonar {
   }
 
   private final RemoteSonarIndex index;
-  private ISonarServer sonarServer;
+  private SonarServer sonarServer;
 
   /**
    * It's better to use {@link #getInstance(IProject)} instead of it.
    */
-  public EclipseSonar(ISonarServer sonarServer) {
+  public EclipseSonar(SonarServer sonarServer) {
     this.sonarServer = sonarServer;
     index = new RemoteSonarIndex(sonarServer, new SimpleSourceCodeDiffEngine());
   }
