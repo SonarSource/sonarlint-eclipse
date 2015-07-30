@@ -19,15 +19,12 @@
  */
 package org.sonar.ide.eclipse.core.internal.resources;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-
-import javax.annotation.CheckForNull;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 /**
  * @author Evgeny Mandrikov
@@ -44,14 +41,10 @@ public class SonarProject implements ISonarProject {
     this.project = project;
   }
 
-  @CheckForNull
   public static SonarProject getInstance(IResource resource) {
-    if (resource == null) {
-      return null;
-    }
     IProject project = resource.getProject();
-    if ((project == null) || !project.isAccessible()) {
-      return null;
+    if (project == null || !project.isAccessible()) {
+      throw new IllegalStateException("Unable to find project for resource " + resource);
     }
     return SonarCorePlugin.getDefault().getProjectManager().readSonarConfiguration(project);
   }
