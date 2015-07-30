@@ -54,7 +54,7 @@ public class CProjectConfigurator extends ProjectConfigurator {
       }
       IIncludeReference[] includes = cProject.getIncludeReferences();
       for (IIncludeReference include : includes) {
-        appendProperty(sonarProjectProperties, "sonar.cpp.library.directories", getAbsolutePath(include.getPath()));
+        appendProperty(sonarProjectProperties, "sonar.cfamily.library.directories", getAbsolutePath(include.getPath()));
       }
     } catch (CModelException e) {
       SonarCorePlugin.getDefault().error(e.getMessage(), e);
