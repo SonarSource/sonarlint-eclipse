@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundle_name
 Bundle-SymbolicName: org.sonar.ide.eclipse.m2e;singleton:=true
-Bundle-Version: 3.5.0.qualifier
+Bundle-Version: 3.5.0.20150730-1003-RC2
 Bundle-Vendor: %bundle_vendor
 Bundle-ClassPath: .
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
