@@ -8,6 +8,8 @@ function installTravisTools {
   source ~/.local/bin/install
 }
 
+build_snapshot "SonarSource/sonar-runner"
+
 mvn verify -B -e -V -Dtycho.disableP2Mirrors=true -Dtarget.platform=$TARGET_PLATFORM
 
 if [ "${RUN_ITS}" == "true" ]
