@@ -20,7 +20,6 @@
 package org.sonar.ide.eclipse.ui.internal.command;
 
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -45,8 +44,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
+import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectRequest;
-import org.sonar.ide.eclipse.core.internal.jobs.SonarQubeAnalysisJob;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 import org.sonar.ide.eclipse.ui.internal.views.issues.IssuesView;
@@ -71,18 +70,15 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
 
   private void runAnalysisJob(List<IProject> selectedProjects) {
     boolean debugEnabled = SonarConsole.isDebugEnabled();
-    List<AnalyzeProjectRequest> requests = new ArrayList<AnalyzeProjectRequest>();
-    SonarUiPlugin.getDefault().getSonarConsole().clearConsole();
     for (IProject project : selectedProjects) {
       if (!SonarNature.hasSonarNature(project)) {
         break;
       }
-      requests.add(new AnalyzeProjectRequest(project)
-        .setDebugEnabled(debugEnabled)
-        .useHttpWsCache(false));
+      AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(project, null, false)
+        .setDebugEnabled(debugEnabled));
+      job.schedule();
+      showIssuesViewAfterJobSuccess(job);
     }
-    SonarQubeAnalysisJob job = new SonarQubeAnalysisJob(requests);
-    showIssuesViewAfterJobSuccess(job);
   }
 
   private void findSelectedProjects(ExecutionEvent event, List<IProject> selectedProjects) throws ExecutionException {

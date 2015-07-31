@@ -33,6 +33,7 @@ import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.runner.api.EmbeddedRunner;
+import org.sonar.runner.api.IssueListener;
 import org.sonar.runner.api.LogOutput;
 
 public final class SonarServer implements ISonarServer {
@@ -155,8 +156,7 @@ public final class SonarServer implements ISonarServer {
     this.disabled = disabled;
   }
 
-  @Override
-  public synchronized void startAnalysis(Properties props, boolean debugEnabled) {
+  public synchronized void startAnalysis(Properties props, boolean debugEnabled, IssueListener issueListener) {
     if (runner == null) {
       Properties globalProps = new Properties();
       globalProps.setProperty(SonarProperties.SONAR_URL, getUrl());
@@ -165,7 +165,7 @@ public final class SonarServer implements ISonarServer {
         globalProps.setProperty(SonarProperties.SONAR_PASSWORD, getPassword());
       }
       globalProps.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_PREVIEW);
-      globalProps.setProperty(SonarProperties.USE_HTTP_CACHE, "" + disabled);
+      globalProps.setProperty(SonarProperties.ENABLE_OFFLINE_PROPERTY, "true");
       if (debugEnabled) {
         globalProps.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
       }
@@ -200,7 +200,7 @@ public final class SonarServer implements ISonarServer {
         .addGlobalProperties(globalProps);
       runner.start();
     }
-    runner.runAnalysis(props);
+    runner.runAnalysis(props, issueListener);
   }
 
   public void stop() {

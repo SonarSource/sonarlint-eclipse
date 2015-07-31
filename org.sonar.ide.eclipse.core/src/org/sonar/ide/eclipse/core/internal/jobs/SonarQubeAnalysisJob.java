@@ -34,7 +34,7 @@ public class SonarQubeAnalysisJob extends Job {
   private List<AnalyzeProjectRequest> requests;
 
   public SonarQubeAnalysisJob(List<AnalyzeProjectRequest> requests) {
-    super("Synchronize issues");
+    super("Run full SonarQube analysis");
     this.requests = requests;
     setPriority(Job.LONG);
   }
@@ -50,7 +50,7 @@ public class SonarQubeAnalysisJob extends Job {
         if (monitor.isCanceled()) {
           break;
         }
-        IProject project = request.getResource().getProject();
+        IProject project = request.getProject();
         if (project.isAccessible()) {
           monitor.subTask(project.getName());
           scheduleAnalysis(request);

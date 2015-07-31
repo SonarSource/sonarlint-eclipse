@@ -19,20 +19,34 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
-import org.eclipse.core.resources.IResource;
+import java.util.Collection;
+import javax.annotation.Nullable;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 
 public class AnalyzeProjectRequest {
 
-  private IResource resource;
   private boolean debugEnabled;
-  private boolean useHttpWsCache = true;
+  private boolean quick;
+  private final IProject project;
+  private final Collection<IFile> onlyOnFiles;
 
-  public AnalyzeProjectRequest(IResource resource) {
-    this.resource = resource;
+  public AnalyzeProjectRequest(IProject project, @Nullable Collection<IFile> onlyOnFiles, boolean quick) {
+    this.project = project;
+    this.onlyOnFiles = onlyOnFiles;
+    this.quick = quick;
   }
 
-  public IResource getResource() {
-    return resource;
+  public IProject getProject() {
+    return project;
+  }
+
+  public Collection<IFile> getOnlyOnFiles() {
+    return onlyOnFiles;
+  }
+
+  public boolean isQuick() {
+    return quick;
   }
 
   public boolean isDebugEnabled() {
@@ -41,15 +55,6 @@ public class AnalyzeProjectRequest {
 
   public AnalyzeProjectRequest setDebugEnabled(boolean debugEnabled) {
     this.debugEnabled = debugEnabled;
-    return this;
-  }
-
-  public boolean useHttpWsCache() {
-    return useHttpWsCache;
-  }
-
-  public AnalyzeProjectRequest useHttpWsCache(boolean useHttpWsCache) {
-    this.useHttpWsCache = useHttpWsCache;
     return this;
   }
 }

@@ -19,7 +19,8 @@
  */
 package org.sonar.ide.eclipse.ui.internal;
 
-import java.util.Collections;
+import java.util.Arrays;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -27,8 +28,8 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectRequest;
-import org.sonar.ide.eclipse.core.internal.jobs.SonarQubeAnalysisJob;
 import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 
 public class IssuesUpdater implements IPartListener2 {
@@ -46,10 +47,12 @@ public class IssuesUpdater implements IPartListener2 {
 
   private void scheduleUpdate(IResource resource) {
     boolean debugEnabled = SonarConsole.isDebugEnabled();
-    AnalyzeProjectRequest request = new AnalyzeProjectRequest(resource)
-      .setDebugEnabled(debugEnabled)
-      .useHttpWsCache(false);
-    new SonarQubeAnalysisJob(Collections.singletonList(request)).schedule();
+    IFile file = (IFile) resource.getAdapter(IFile.class);
+    if (file != null) {
+      AnalyzeProjectRequest request = new AnalyzeProjectRequest(resource.getProject(), Arrays.asList(file), true)
+        .setDebugEnabled(debugEnabled);
+      new AnalyzeProjectJob(request).schedule();
+    }
   }
 
   @Override

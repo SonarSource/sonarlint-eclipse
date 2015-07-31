@@ -19,11 +19,11 @@
  */
 package org.sonar.ide.eclipse.core.configurator;
 
+import com.google.common.base.Joiner;
 import java.util.Collection;
 import java.util.Properties;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -74,11 +74,11 @@ public abstract class ProjectConfigurator {
     return absolutePath != null ? absolutePath.makeRelativeTo(absoluteRoot).toOSString() : null;
   }
 
-  protected static void setPropertyList(Properties properties, String key, Collection<String> values) {
-    properties.put(key, StringUtils.join(values, SonarProperties.SEPARATOR));
+  public static void setPropertyList(Properties properties, String key, Collection<String> values) {
+    properties.put(key, Joiner.on(SonarProperties.SEPARATOR).skipNulls().join(values));
   }
 
   public static void appendPropertyList(Properties properties, String key, Collection<String> values) {
-    appendProperty(properties, key, StringUtils.join(values, SonarProperties.SEPARATOR));
+    appendProperty(properties, key, Joiner.on(SonarProperties.SEPARATOR).skipNulls().join(values));
   }
 }

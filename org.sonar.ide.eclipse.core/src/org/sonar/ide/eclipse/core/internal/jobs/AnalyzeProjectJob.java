@@ -20,11 +20,14 @@
 package org.sonar.ide.eclipse.core.internal.jobs;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -38,12 +41,14 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
+import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
@@ -53,43 +58,47 @@ import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
+import org.sonar.runner.api.Issue;
+import org.sonar.runner.api.IssueListener;
 
 public class AnalyzeProjectJob extends Job {
 
-  private final IProject project;
-  private final boolean debugEnabled;
   private final SonarProject sonarProject;
-  private final IFile singleFile;
-  private final boolean useHttpCache;
 
   private List<SonarProperty> extraProps;
 
-  private ISonarServer sonarServer;
+  private SonarServer sonarServer;
+  private final AnalyzeProjectRequest request;
+
+  private static final ISchedulingRule SONAR_ANALYSIS_RULE = ResourcesPlugin.getWorkspace().getRuleFactory().buildRule();
 
   public AnalyzeProjectJob(AnalyzeProjectRequest request) {
-    super(Messages.AnalyseProjectJob_title);
-    this.singleFile = (IFile) request.getResource().getAdapter(IFile.class);
-    this.project = request.getResource().getProject();
-    this.debugEnabled = request.isDebugEnabled();
-    this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(project);
-    this.sonarProject = SonarProject.getInstance(project);
-    this.sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
-    this.useHttpCache = request.useHttpWsCache();
-    // Prevent modifications of project during analysis
-    setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
+    super(jobTitle(request));
+    this.request = request;
+    this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(request.getProject());
+    this.sonarProject = SonarProject.getInstance(request.getProject());
+    this.sonarServer = (SonarServer) SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+    setPriority(request.isQuick() ? Job.SHORT : Job.LONG);
+    // Prevent concurrent SQ analysis
+    setRule(SONAR_ANALYSIS_RULE);
+  }
+
+  private static String jobTitle(AnalyzeProjectRequest request) {
+    if (request.getOnlyOnFiles() == null) {
+      return "SonarQube analysis of project " + request.getProject().getName();
+    }
+    if (request.getOnlyOnFiles().size() == 1) {
+      return "SonarQube analysis of file " + request.getOnlyOnFiles().iterator().next().getProjectRelativePath().toString() + "(Project " + request.getProject().getName() + ")";
+    }
+    return "SonarQube analysis of project " + request.getProject().getName() + " (" + request.getOnlyOnFiles().size() + " files)";
   }
 
   @Override
   protected IStatus run(final IProgressMonitor monitor) {
-    if (singleFile == null) {
-      monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analyzing, project.getName()), IProgressMonitor.UNKNOWN);
-    } else {
-      monitor.beginTask(NLS.bind(Messages.AnalyseProjectJob_task_analyzing_file, singleFile.getName()), IProgressMonitor.UNKNOWN);
-    }
-
     // Verify Host
     if (getSonarServer() == null) {
-      SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project, project.getName(), sonarProject.getUrl()));
+      SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project, request.getProject().getName(), sonarProject.getUrl()) + "\n");
       return Status.OK_STATUS;
     }
     // Verify version and server is reachable
@@ -110,9 +119,9 @@ public class AnalyzeProjectJob extends Job {
       return new Status(Status.WARNING, SonarCorePlugin.PLUGIN_ID, "Unable to delete", e);
     }
     long start = System.currentTimeMillis();
-    SonarCorePlugin.getDefault().info("Start SonarQube analysis on " + project.getName() + "...\n");
+    SonarCorePlugin.getDefault().info("Start SonarQube analysis on " + request.getProject().getName() + "...\n");
     try {
-      run(project, properties, debugEnabled, monitor);
+      run(request.getProject(), properties, request.isDebugEnabled(), monitor);
     } catch (Exception e) {
       SonarCorePlugin.getDefault().error("Error during execution of SonarQube analysis", e);
       return new Status(Status.WARNING, SonarCorePlugin.PLUGIN_ID, "Error when executing SonarQube analysis", e);
@@ -125,15 +134,13 @@ public class AnalyzeProjectJob extends Job {
     // Create markers
     long startMarker = System.currentTimeMillis();
     try {
-      SonarCorePlugin.getDefault().debug("Create markers on project " + project.getName() + " resources...\n");
+      SonarCorePlugin.getDefault().debug("Create markers on project " + request.getProject().getName() + " resources...\n");
       createMarkersFromReportOutput(monitor, outputFile);
     } catch (Exception e) {
       SonarCorePlugin.getDefault().error("Error during creation of markers", e);
       return new Status(Status.WARNING, SonarCorePlugin.PLUGIN_ID, "Error during creation of markers", e);
     }
     SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - startMarker) + "ms\n");
-
-    monitor.done();
     return Status.OK_STATUS;
   }
 
@@ -206,12 +213,14 @@ public class AnalyzeProjectJob extends Job {
    */
   @VisibleForTesting
   public File configureAnalysis(final IProgressMonitor monitor, Properties properties, List<SonarProperty> extraProps) {
+    IProject project = request.getProject();
     File baseDir = project.getLocation().toFile();
     IPath projectSpecificWorkDir = project.getWorkingLocation(SonarCorePlugin.PLUGIN_ID);
     File outputFile = new File(projectSpecificWorkDir.toFile(), "sonar-report.json");
 
     // Preview mode by default
-    properties.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_PREVIEW);
+    properties.setProperty(SonarProperties.ANALYSIS_MODE, request.isQuick() ? SonarProperties.ANALYSIS_MODE_QUICK : SonarProperties.ANALYSIS_MODE_PREVIEW);
+    properties.setProperty(SonarProperties.ENABLE_OFFLINE_PROPERTY, "true");
 
     // Configuration by configurators (common and language specific)
     ConfiguratorUtils.configure(project, properties, getServerVersion(), monitor);
@@ -220,19 +229,24 @@ public class AnalyzeProjectJob extends Job {
     for (SonarProperty sonarProperty : extraProps) {
       properties.put(sonarProperty.getName(), sonarProperty.getValue());
     }
+    System.out.println("Foo");
 
-    if (this.singleFile != null) {
-      properties.setProperty("sonar.tests", singleFile.getProjectRelativePath().toString());
-      properties.setProperty("sonar.sources", singleFile.getProjectRelativePath().toString());
+    if (this.request.getOnlyOnFiles() != null) {
+      Collection<String> paths = Collections2.transform(request.getOnlyOnFiles(), new Function<IFile, String>() {
+        public String apply(IFile file) {
+          return file.getProjectRelativePath().toString();
+        };
+      });
+      ProjectConfigurator.setPropertyList(properties, "sonar.tests", paths);
+      ProjectConfigurator.setPropertyList(properties, "sonar.sources", paths);
     }
 
     properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
     properties.setProperty(SonarProperties.WORK_DIR, projectSpecificWorkDir.toString());
-    properties.setProperty(SonarProperties.USE_HTTP_CACHE, "" + useHttpCache);
 
     // Output file is relative to working dir
     properties.setProperty(SonarProperties.REPORT_OUTPUT_PROPERTY, outputFile.getName());
-    if (debugEnabled) {
+    if (request.isDebugEnabled()) {
       properties.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
     }
     return outputFile;
@@ -242,7 +256,13 @@ public class AnalyzeProjectJob extends Job {
     if (debugEnabled) {
       SonarCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props));
     }
-    sonarServer.startAnalysis(props, debugEnabled);
+    sonarServer.startAnalysis(props, debugEnabled, new IssueListener() {
+
+      @Override
+      public void handle(Issue issue) {
+        // TODO
+      }
+    });
   }
 
   private static String propsToString(Properties props) {

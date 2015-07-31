@@ -19,7 +19,8 @@
  */
 package org.sonar.ide.eclipse.core.internal.builder;
 
-import java.util.Collections;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -29,8 +30,9 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectRequest;
-import org.sonar.ide.eclipse.core.internal.jobs.SonarQubeAnalysisJob;
 
 public class SonarQubeBuilder extends IncrementalProjectBuilder {
 
@@ -49,35 +51,46 @@ public class SonarQubeBuilder extends IncrementalProjectBuilder {
     return null;
   }
 
-  private void incrementalBuild(IResourceDelta delta, IProgressMonitor monitor) {
-    System.out.println("incremental build on " + delta);
+  private void incrementalBuild(IResourceDelta delta, final IProgressMonitor monitor) {
+    final Multimap<IProject, IFile> filesPerProject = LinkedHashMultimap.create();
     try {
       delta.accept(new IResourceDeltaVisitor() {
         @Override
         public boolean visit(IResourceDelta delta) {
           IResource resource = delta.getResource();
-          if (resource.isDerived()) {
+          try {
+            resource.refreshLocal(IResource.DEPTH_ZERO, monitor);
+          } catch (CoreException e) {
+            return false;
+          }
+          if (!resource.exists() || resource.isDerived() || resource.isHidden()) {
+            return false;
+          }
+          // Ignore changes on .project, .settings, ...
+          if (resource.getName().startsWith(".")) {
             return false;
           }
           IFile file = (IFile) resource.getAdapter(IFile.class);
           if (file == null) {
+            // visit children too
             return true;
           }
-          System.out.println("changed: " + file.getRawLocation());
           IProject project = resource.getProject();
-          AnalyzeProjectRequest request = new AnalyzeProjectRequest(file)
-            // // FIXME .setDebugEnabled(false)
-            .useHttpWsCache(true);
-          new SonarQubeAnalysisJob(Collections.singletonList(request)).schedule();
-          return true; // visit children too
+          filesPerProject.put(project, file);
+          return true;
         }
       });
     } catch (CoreException e) {
-      e.printStackTrace();
+      SonarCorePlugin.getDefault().error("Error during builder", e);
+    }
+    for (IProject project : filesPerProject.keys()) {
+      AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, filesPerProject.get(project), true);
+      new AnalyzeProjectJob(request).schedule();
+
     }
   }
 
   private void fullBuild(IProgressMonitor monitor) {
-    System.out.println("full build");
+    // Do nothing
   }
 }
