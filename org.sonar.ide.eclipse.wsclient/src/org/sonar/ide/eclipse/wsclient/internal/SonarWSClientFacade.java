@@ -163,7 +163,9 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
       issues = findIssues(IssueQuery.create().componentRoots(resourceKey).resolved(false).pageSize(maxPageSize).pageIndex(pageIndex));
       for (Issue issue : issues.list()) {
         Component comp = issues.component(issue);
-        result.add(new SonarRemoteIssue(issue, issues.rule(issue), issues.user(issue.assignee()), comp != null ? comp.path() : null));
+        String path = comp != null ? comp.path() : null;
+        String componentKey = comp != null ? comp.key() : null;
+        result.add(new SonarRemoteIssue(issue, issues.rule(issue), issues.user(issue.assignee()), path, componentKey));
       }
     } while (pageIndex++ < issues.paging().pages() && !monitor.isCanceled());
     return result;
@@ -174,7 +176,7 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     Issues issues = findIssues(IssueQuery.create().components(resourceKey).resolved(false));
     List<ISonarIssue> result = new ArrayList<ISonarIssue>(issues.list().size());
     for (Issue issue : issues.list()) {
-      result.add(new SonarRemoteIssue(issue, issues.rule(issue), issues.user(issue.assignee()), null));
+      result.add(new SonarRemoteIssue(issue, issues.rule(issue), issues.user(issue.assignee()), null, resourceKey));
     }
     return result;
   }
@@ -195,12 +197,14 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     private final Rule rule;
     private final User assignee;
     private final String path;
+    private final String componentKey;
 
-    public SonarRemoteIssue(final Issue remoteIssue, final Rule rule, @Nullable final User assignee, @Nullable final String path) {
+    public SonarRemoteIssue(final Issue remoteIssue, final Rule rule, @Nullable final User assignee, @Nullable final String path, String componentKey) {
       this.remoteIssue = remoteIssue;
       this.rule = rule;
       this.assignee = assignee;
       this.path = path;
+      this.componentKey = componentKey;
     }
 
     @Override
@@ -210,7 +214,7 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
 
     @Override
     public String resourceKey() {
-      return remoteIssue.componentKey();
+      return componentKey;
     }
 
     @Override
