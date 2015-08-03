@@ -71,6 +71,7 @@ public final class ResourceUtils {
     return AdapterUtils.adapt(eclipseObject, ISonarResource.class);
   }
 
+  @CheckForNull
   public static IResource findResource(SonarProject sonarProject, String resourceKey) {
     if (sonarProject != null && resourceKey.equals(sonarProject.getKey())) {
       return sonarProject.getProject();

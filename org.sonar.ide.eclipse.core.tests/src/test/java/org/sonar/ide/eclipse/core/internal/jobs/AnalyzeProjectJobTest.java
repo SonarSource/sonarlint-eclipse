@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,14 +26,11 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.matchers.JUnitMatchers;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
@@ -117,36 +113,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.java.source", "fake")));
 
     assertThat(props.get("sonar.java.source").toString()).isEqualTo("fake");
-  }
-
-  @Test
-  public void shouldCreateMarkersFromIssuesReport() throws Exception {
-    AnalyzeProjectJob job = job(project);
-    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
-
-    List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size()).isEqualTo(6);
-
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Findbugs.java", 5)));
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Pmd.java", 2)));
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Checkstyle.java", 1)));
-  }
-
-  @Test
-  public void shouldCleanAndCreateMarkersForSingleFile() throws Exception {
-    AnalyzeProjectJob job = job(project);
-    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
-    List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size()).isEqualTo(6);
-
-    // During single file analysis, Findbugs has one remaing issue
-    job = job(project);
-    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report-single.json"));
-
-    markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size()).isEqualTo(5);
-
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Findbugs.java", 5)));
   }
 
   static class IsMarker extends BaseMatcher<IMarker> {

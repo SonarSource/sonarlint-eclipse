@@ -22,21 +22,17 @@ package org.sonar.ide.eclipse.core.internal.jobs;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.Maps;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -44,9 +40,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.internal.Messages;
@@ -55,6 +48,7 @@ import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.configurator.ConfiguratorUtils;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
+import org.sonar.ide.eclipse.core.internal.markers.SonarMarker;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
@@ -118,8 +112,6 @@ public class AnalyzeProjectJob extends Job {
     } catch (IOException e) {
       return new Status(Status.WARNING, SonarCorePlugin.PLUGIN_ID, "Unable to delete", e);
     }
-    long start = System.currentTimeMillis();
-    SonarCorePlugin.getDefault().info("Start SonarQube analysis on " + request.getProject().getName() + "...\n");
     try {
       run(request.getProject(), properties, request.isDebugEnabled(), monitor);
     } catch (Exception e) {
@@ -129,18 +121,7 @@ public class AnalyzeProjectJob extends Job {
     if (monitor.isCanceled()) {
       return Status.CANCEL_STATUS;
     }
-    SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - start) + "ms\n");
 
-    // Create markers
-    long startMarker = System.currentTimeMillis();
-    try {
-      SonarCorePlugin.getDefault().debug("Create markers on project " + request.getProject().getName() + " resources...\n");
-      createMarkersFromReportOutput(monitor, outputFile);
-    } catch (Exception e) {
-      SonarCorePlugin.getDefault().error("Error during creation of markers", e);
-      return new Status(Status.WARNING, SonarCorePlugin.PLUGIN_ID, "Error during creation of markers", e);
-    }
-    SonarCorePlugin.getDefault().debug("Done in " + (System.currentTimeMillis() - startMarker) + "ms\n");
     return Status.OK_STATUS;
   }
 
@@ -150,59 +131,6 @@ public class AnalyzeProjectJob extends Job {
 
   private ISonarServer getSonarServer() {
     return sonarServer;
-  }
-
-  @VisibleForTesting
-  public void createMarkersFromReportOutput(final IProgressMonitor monitor, File outputFile) throws Exception {
-    try (FileReader fileReader = new FileReader(outputFile)) {
-      Object obj = JSONValue.parse(fileReader);
-      JSONObject sonarResult = (JSONObject) obj;
-      // Start by resolving all components in a cache
-      Map<String, IResource> resourcesByKey = Maps.newHashMap();
-      final JSONArray components = (JSONArray) sonarResult.get("components");
-      for (Object component : components) {
-        String key = ObjectUtils.toString(((JSONObject) component).get("key"));
-        String status = ObjectUtils.toString(((JSONObject) component).get("status"));
-        IResource resource = ResourceUtils.findResource(sonarProject, key);
-        if (resource != null) {
-          resourcesByKey.put(key, resource);
-          // Status is blank for modules
-          if (StringUtils.isNotBlank(status)) {
-            MarkerUtils.deleteIssuesMarkers(resource);
-          }
-        }
-      }
-      // Now read all rules name in a cache
-      Map<String, String> ruleByKey = readRules(sonarResult);
-      // Now read all users name in a cache
-      Map<String, String> userNameByLogin = readUserNameByLogin(sonarResult);
-      // Now iterate over all issues and create markers
-      MarkerUtils.createMarkersForJSONIssues(resourcesByKey, ruleByKey, userNameByLogin, (JSONArray) sonarResult.get("issues"));
-    }
-  }
-
-  private static Map<String, String> readRules(JSONObject sonarResult) {
-    Map<String, String> ruleByKey = Maps.newHashMap();
-    final JSONArray rules = (JSONArray) sonarResult.get("rules");
-    for (Object rule : rules) {
-      String key = ObjectUtils.toString(((JSONObject) rule).get("key"));
-      String name = ObjectUtils.toString(((JSONObject) rule).get("name"));
-      ruleByKey.put(key, name);
-    }
-    return ruleByKey;
-  }
-
-  private static Map<String, String> readUserNameByLogin(JSONObject sonarResult) {
-    Map<String, String> userNameByLogin = Maps.newHashMap();
-    final JSONArray users = (JSONArray) sonarResult.get("users");
-    if (users != null) {
-      for (Object user : users) {
-        String login = ObjectUtils.toString(((JSONObject) user).get("login"));
-        String name = ObjectUtils.toString(((JSONObject) user).get("name"));
-        userNameByLogin.put(login, name);
-      }
-    }
-    return userNameByLogin;
   }
 
   /**
@@ -229,16 +157,17 @@ public class AnalyzeProjectJob extends Job {
     for (SonarProperty sonarProperty : extraProps) {
       properties.put(sonarProperty.getName(), sonarProperty.getValue());
     }
-    System.out.println("Foo");
-
     if (this.request.getOnlyOnFiles() != null) {
       Collection<String> paths = Collections2.transform(request.getOnlyOnFiles(), new Function<IFile, String>() {
         public String apply(IFile file) {
+          MarkerUtils.deleteIssuesMarkers(file);
           return file.getProjectRelativePath().toString();
         };
       });
       ProjectConfigurator.setPropertyList(properties, "sonar.tests", paths);
       ProjectConfigurator.setPropertyList(properties, "sonar.sources", paths);
+    } else {
+      MarkerUtils.deleteIssuesMarkers(project);
     }
 
     properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
@@ -260,7 +189,12 @@ public class AnalyzeProjectJob extends Job {
 
       @Override
       public void handle(Issue issue) {
-        // TODO
+        IResource r = ResourceUtils.findResource(sonarProject, issue.getComponentKey());
+        try {
+          SonarMarker.create(r, issue);
+        } catch (CoreException e) {
+          SonarCorePlugin.getDefault().error(e.getMessage(), e);
+        }
       }
     });
   }

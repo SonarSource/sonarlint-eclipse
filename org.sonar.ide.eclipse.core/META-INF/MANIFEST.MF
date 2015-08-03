@@ -15,8 +15,7 @@ Export-Package: org.sonar.ide.eclipse.core,org.sonar.ide.eclipse.core.
  nds:="org.sonar.ide.eclipse.ui",org.sonar.ide.eclipse.core.internal.j
  obs;x-friends:="org.sonar.ide.eclipse.ui,org.sonar.ide.eclipse.core.t
  ests",org.sonar.ide.eclipse.core.internal.markers;x-friends:="org.son
- ar.ide.eclipse.ui",org.sonar.ide.eclipse.core.internal.remote;x-frien
- ds:="org.sonar.ide.eclipse.ui",org.sonar.ide.eclipse.core.internal.re
+ ar.ide.eclipse.ui",org.sonar.ide.eclipse.core.internal.re
  sources; x-friends:="org.sonar.ide.eclipse.ui,  org.sonar.ide.eclipse
  .m2e,  org.sonar.ide.eclipse.mylyn.ui,  org.sonar.ide.eclipse.mylyn.c
  ore,  org.sonar.ide.eclipse.core.tests",org.sonar.ide.eclipse.core.in
@@ -29,7 +28,6 @@ Require-Bundle: org.eclipse.equinox.security,
  org.apache.commons.lang;bundle-version="2.6.0";visibility:=reexport,
  org.sonar.ide.eclipse.wsclient;visibility:=reexport,
  com.google.guava;bundle-version="10.0.1",
- com.googlecode.json-simple;bundle-version="1.1.1",
  org.sonarsource.sonar-runner.api;bundle-version="[2.5.0,2.6.0)",
  org.sonar.ide.eclipse.common
 Bundle-ActivationPolicy: lazy
