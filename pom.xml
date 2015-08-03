@@ -154,7 +154,7 @@
       <version>4.5.1</version>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.sonar.runner</groupId>
+      <groupId>org.sonarsource.sonar-runner</groupId>
       <artifactId>sonar-runner-api</artifactId>
       <version>2.5-SNAPSHOT</version>
     </dependency>

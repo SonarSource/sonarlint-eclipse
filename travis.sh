@@ -8,15 +8,14 @@ function installTravisTools {
   source ~/.local/bin/install
 }
 
+installTravisTools
+build_snapshot "SonarSource/sonarqube"
 build_snapshot "SonarSource/sonar-runner"
 
 mvn verify -B -e -V -Dtycho.disableP2Mirrors=true -Dtarget.platform=$TARGET_PLATFORM
 
 if [ "${RUN_ITS}" == "true" ]
 then
-  installTravisTools
-
-  build_snapshot "SonarSource/sonarqube"
 
   start_xvfb
   metacity --sm-disable --replace &
