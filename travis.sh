@@ -20,5 +20,5 @@ then
   metacity --sm-disable --replace &
 
   cd integrationTests
-  mvn verify -Dsonar-eclipse.p2.url=file:///home/travis/build/SonarSource/sonar-eclipse/org.sonar.ide.eclipse.site/target/repository/ -Dsonar.runtimeVersion=$SQ_VERSION -DjavaVersion=LATEST_RELEASE -DpythonVersion=LATEST_RELEASE
+  mvn verify -Dtycho.showEclipseLog=true -Dsonar-eclipse.p2.url=file://${TRAVIS_BUILD_DIR}/org.sonar.ide.eclipse.site/target/repository/ -Dsonar.runtimeVersion=$SQ_VERSION -DjavaVersion=LATEST_RELEASE -DpythonVersion=LATEST_RELEASE
 fi
