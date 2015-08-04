@@ -21,7 +21,7 @@
 <location path="${M2_REPO}/commons-lang/commons-lang/2.6" type="Directory"/>
 <location path="${M2_REPO}/commons-io/commons-io/2.4" type="Directory"/>
 <location path="${M2_REPO}/com/google/guava/guava/18.0" type="Directory"/>
-<location path="${M2_REPO}/com/sonarsource/orchestrator/sonar-orchestrator-osgi/3.3-SNAPSHOT" type="Directory"/>
+<location path="${M2_REPO}/com/sonarsource/orchestrator/sonar-orchestrator-osgi/3.3" type="Directory"/>
 <location path="${M2_REPO}/com/google/code/findbugs/annotations/2.0.1" type="Directory"/>
 <location path="${M2_REPO}/org/slf4j/slf4j-api/1.7.2" type="Directory"/>
 <location path="${M2_REPO}/org/slf4j/slf4j-simple/1.7.2" type="Directory"/>
