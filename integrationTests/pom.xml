@@ -27,7 +27,6 @@
   <properties>
     <tycho.version>0.23.0</tycho.version>
     <jdk.min.version>1.7</jdk.min.version>
-    <orchestrator.configUrl>${env.ORCHESTRATOR_CONFIG_URL}</orchestrator.configUrl>
     <target.platform>e44</target.platform>
     <orchestrator.computeCoverage>false</orchestrator.computeCoverage>
     <orchestrator.coverageReportPath></orchestrator.coverageReportPath>
@@ -105,14 +104,14 @@
             <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
             <providerHint>junit47</providerHint>
             <systemProperties>
-              <orchestrator.configUrl>${orchestrator.configUrl}</orchestrator.configUrl>
               <sonar.runtimeVersion>${sonar.runtimeVersion}</sonar.runtimeVersion>
               <javaVersion>${javaVersion}</javaVersion>
               <pythonVersion>${pythonVersion}</pythonVersion>
-              <!-- Uncomment this if you need to gather coverage on forked process like SonarQube server/Maven/Sonar Runner -->
-              <!-- orchestrator.computeCoverage>${orchestrator.computeCoverage}</orchestrator.computeCoverage>
-              <orchestrator.coverageReportPath>${orchestrator.coverageReportPath}</orchestrator.coverageReportPath-->
             </systemProperties>
+            <environmentVariables>
+              <TRAVIS>${env.TRAVIS}</TRAVIS>
+              <ORCHESTRATOR_CONFIG_URL>${env.ORCHESTRATOR_CONFIG_URL}</ORCHESTRATOR_CONFIG_URL>
+            </environmentVariables>
           </configuration>
         </plugin>
         <plugin>
