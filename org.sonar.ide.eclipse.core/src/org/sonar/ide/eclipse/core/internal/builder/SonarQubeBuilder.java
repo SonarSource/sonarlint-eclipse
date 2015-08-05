@@ -52,6 +52,7 @@ public class SonarQubeBuilder extends IncrementalProjectBuilder {
   }
 
   private void incrementalBuild(IResourceDelta delta, final IProgressMonitor monitor) {
+    SonarCorePlugin.getDefault().debug("BUILDER: incremental build on " + getProject() + "\n");
     final Multimap<IProject, IFile> filesPerProject = LinkedHashMultimap.create();
     try {
       delta.accept(new IResourceDeltaVisitor() {
@@ -72,13 +73,14 @@ public class SonarQubeBuilder extends IncrementalProjectBuilder {
           }
           IProject project = resource.getProject();
           filesPerProject.put(project, file);
+          SonarCorePlugin.getDefault().debug("BUILDER: file changed " + file + " on project " + project + "\n");
           return true;
         }
       });
     } catch (CoreException e) {
       SonarCorePlugin.getDefault().error("Error during builder", e);
     }
-    for (IProject project : filesPerProject.keys()) {
+    for (IProject project : filesPerProject.keySet()) {
       AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, filesPerProject.get(project), true);
       new AnalyzeProjectJob(request).schedule();
 
@@ -86,6 +88,6 @@ public class SonarQubeBuilder extends IncrementalProjectBuilder {
   }
 
   private void fullBuild(IProgressMonitor monitor) {
-    // Do nothing
+    SonarCorePlugin.getDefault().debug("BUILDER: full build on " + getProject() + "\n");
   }
 }
