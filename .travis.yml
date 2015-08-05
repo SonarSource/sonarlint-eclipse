@@ -23,7 +23,6 @@ script:
   - ./travis.sh
 
 after_failure:
- - cat /home/travis/build/SonarSource/sonar-eclipse/integrationTests/org.sonar.ide.eclipse.ui.its/target/work/data/.metadata/.log
  - cat /home/travis/build/SonarSource/sonar-eclipse/integrationTests/org.sonar.ide.eclipse.ui.its/target/surefire-reports/*
 
 cache:
