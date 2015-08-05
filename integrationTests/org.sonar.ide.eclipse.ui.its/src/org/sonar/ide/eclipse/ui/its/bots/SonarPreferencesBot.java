@@ -24,15 +24,6 @@ public class SonarPreferencesBot {
     return bot.table().rowCount();
   }
 
-  public SonarPreferencesBot setJvmArguments(String jvmArguments) {
-    bot.textWithLabel("JVM arguments for preview analysis:").setText(jvmArguments);
-    return this;
-  }
-
-  public String getJvmArguments() {
-    return bot.textWithLabel("JVM arguments for preview analysis:").getText();
-  }
-
   public void ok() {
     SWTBotShell shell = bot.shell("Preferences").activate();
     bot.button("OK").click();

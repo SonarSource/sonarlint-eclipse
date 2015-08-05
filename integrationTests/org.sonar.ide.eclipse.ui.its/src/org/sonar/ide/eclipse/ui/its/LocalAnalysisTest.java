@@ -34,7 +34,6 @@ import org.sonar.ide.eclipse.ui.its.bots.ConfigureProjectsWizardBot;
 import org.sonar.ide.eclipse.ui.its.bots.ImportProjectBot;
 import org.sonar.ide.eclipse.ui.its.bots.JavaPackageExplorerBot;
 import org.sonar.ide.eclipse.ui.its.bots.PydevPackageExplorerBot;
-import org.sonar.ide.eclipse.ui.its.bots.SonarPreferencesBot;
 import org.sonar.ide.eclipse.ui.its.utils.JobHelpers;
 import org.sonar.ide.eclipse.ui.its.utils.SwtBotUtils;
 
@@ -77,61 +76,6 @@ public class LocalAnalysisTest extends AbstractSQEclipseUITest {
 
     // SONARIDE-209 Divide source code for tests and main source code
     assertThat(markers, hasItem(new IsMarker("test/PmdTest.java", 14)));
-  }
-
-  // SONARIDE-348, SONARIDE-370
-  @Test
-  public void shouldPassAdditionalArguments() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
-    SonarCorePlugin.getServersManager().addServer(SonarCorePlugin.getServersManager().create("for-its", getSonarServerUrl(), "", ""));
-    IProject project = importEclipseProject("java/java-simple", "java-simple-additional-args");
-    JobHelpers.waitForJobsToComplete(bot);
-
-    // Enable Sonar Nature
-    SonarProject sonarProject = SonarCorePlugin.createSonarProject(project, getSonarServerUrl(), "bar:foo");
-
-    // Configure extra args on project
-    sonarProject.getExtraProperties().add(new SonarProperty("sonar.exclusions", "**/Pmd.java"));
-    // Force default profile to ensure analysis is correctly done
-    sonarProject.getExtraProperties().add(new SonarProperty("sonar.profile", "it-profile"));
-    sonarProject.save();
-
-    // Configure JVM arguments (SONARIDE-370)
-    new SonarPreferencesBot(bot).setJvmArguments("-Xms512m -Xmx1024m").ok();
-
-    // FindBugs requires bytecode, so project should be compiled
-    project.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
-
-    new JavaPackageExplorerBot(bot)
-      .expandAndSelect("java-simple-additional-args")
-      .clickContextMenu("SonarQube", "Analyze");
-
-    JobHelpers.waitForJobsToComplete(bot);
-
-    List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size(), is(3));
-
-    assertThat(markers, hasItem(new IsMarker("src/Findbugs.java", 5)));
-    assertThat(markers, hasItem(new IsMarker("src/Checkstyle.java", 1)));
-
-    // SONARIDE-209 Divide source code for tests and main source code
-    assertThat(markers, hasItem(new IsMarker("test/PmdTest.java", 14)));
-
-    // Configure wrong JVM arguments to test if it is taken into account (SONARIDE-370)
-    new SonarPreferencesBot(bot).setJvmArguments("-Xmx10m").ok();
-
-    new JavaPackageExplorerBot(bot)
-      .expandAndSelect("java-simple-additional-args")
-      .clickContextMenu("SonarQube", "Analyze");
-
-    JobHelpers.waitForJobsToComplete(bot);
-
-    // No marker as local analysis should have failed
-    markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size(), is(0));
-
-    // Restore JVM arguments
-    new SonarPreferencesBot(bot).setJvmArguments("").ok();
   }
 
   // SONARIDE-359
