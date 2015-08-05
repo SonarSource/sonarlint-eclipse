@@ -58,11 +58,6 @@ public class SonarQubeBuilder extends IncrementalProjectBuilder {
         @Override
         public boolean visit(IResourceDelta delta) {
           IResource resource = delta.getResource();
-          try {
-            resource.refreshLocal(IResource.DEPTH_ZERO, monitor);
-          } catch (CoreException e) {
-            return false;
-          }
           if (!resource.exists() || resource.isDerived() || resource.isHidden()) {
             return false;
           }

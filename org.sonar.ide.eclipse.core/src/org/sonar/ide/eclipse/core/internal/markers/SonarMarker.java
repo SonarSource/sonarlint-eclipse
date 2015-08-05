@@ -60,7 +60,7 @@ public class SonarMarker {
   private SonarMarker from(final Issue issue) throws CoreException {
     final Map<String, Object> markerAttributes = new HashMap<String, Object>();
     Integer line = issue.getLine();
-    markerAttributes.put(IMarker.PRIORITY, getPriority("MAJOR")); // FIXME
+    markerAttributes.put(IMarker.PRIORITY, getPriority(issue.getSeverity()));
     markerAttributes.put(IMarker.SEVERITY, issue.isNew() ? PreferencesUtils.getMarkerSeverityNewIssues() : PreferencesUtils.getMarkerSeverity());
     // File level issues (line == null) are displayed on line 1
     markerAttributes.put(IMarker.LINE_NUMBER, line != null ? line : 1);
@@ -70,20 +70,18 @@ public class SonarMarker {
     if (line != null) {
       addLine(markerAttributes, line, resource);
     }
-    // FIXME we need rule name and key
-    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, issue.getRule());
-    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, issue.getRule());
-    markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, "MAJOR"); // FIXME
+    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, issue.getRuleKey());
+    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, issue.getRuleName());
+    markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, issue.getSeverity());
     String key = issue.getKey();
     if (key != null) {
       markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR, key);
     }
-    // FIXME We need assignee name and login
-    if (issue.getAssignee() != null) {
-      markerAttributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE, issue.getAssignee());
+    if (issue.getAssigneeLogin() != null) {
+      markerAttributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE, issue.getAssigneeLogin());
     }
-    if (issue.getAssignee() != null) {
-      markerAttributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE_NAME, issue.getAssignee());
+    if (issue.getAssigneeName() != null) {
+      markerAttributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE_NAME, issue.getAssigneeName());
     }
 
     marker.setAttributes(markerAttributes);
@@ -91,7 +89,7 @@ public class SonarMarker {
   }
 
   private static String getMessage(final Issue issue) {
-    return issue.getRule() + " : " + issue.getMessage();
+    return issue.getRuleKey() + " : " + issue.getMessage();
   }
 
   /**

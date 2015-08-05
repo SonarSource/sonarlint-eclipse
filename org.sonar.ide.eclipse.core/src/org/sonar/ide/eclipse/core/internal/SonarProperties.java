@@ -31,7 +31,6 @@ public interface SonarProperties {
   String ANALYSIS_MODE = "sonar.analysis.mode";
   String ANALYSIS_MODE_PREVIEW = "preview";
   String ANALYSIS_MODE_QUICK = "quick";
-  String REPORT_OUTPUT_PROPERTY = "sonar.report.export.path";
   String ENABLE_OFFLINE_PROPERTY = "sonar.enableOffline";
 
   String SONAR_URL = "sonar.host.url";

@@ -23,8 +23,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -102,16 +100,10 @@ public class AnalyzeProjectJob extends Job {
     }
 
     // Configure
-    Properties properties = new Properties();
-    File outputFile = configureAnalysis(monitor, properties, extraProps);
+    Properties properties = configureAnalysis(monitor, extraProps);
 
     // Analyze
     // To be sure to not reuse something from a previous analysis
-    try {
-      Files.deleteIfExists(outputFile.toPath());
-    } catch (IOException e) {
-      return new Status(Status.WARNING, SonarCorePlugin.PLUGIN_ID, "Unable to delete", e);
-    }
     try {
       run(request.getProject(), properties, request.isDebugEnabled(), monitor);
     } catch (Exception e) {
@@ -140,11 +132,11 @@ public class AnalyzeProjectJob extends Job {
    * @return
    */
   @VisibleForTesting
-  public File configureAnalysis(final IProgressMonitor monitor, Properties properties, List<SonarProperty> extraProps) {
+  public Properties configureAnalysis(final IProgressMonitor monitor, List<SonarProperty> extraProps) {
+    Properties properties = new Properties();
     IProject project = request.getProject();
     File baseDir = project.getLocation().toFile();
     IPath projectSpecificWorkDir = project.getWorkingLocation(SonarCorePlugin.PLUGIN_ID);
-    File outputFile = new File(projectSpecificWorkDir.toFile(), "sonar-report.json");
 
     // Preview mode by default
     properties.setProperty(SonarProperties.ANALYSIS_MODE, request.isQuick() ? SonarProperties.ANALYSIS_MODE_QUICK : SonarProperties.ANALYSIS_MODE_PREVIEW);
@@ -174,11 +166,10 @@ public class AnalyzeProjectJob extends Job {
     properties.setProperty(SonarProperties.WORK_DIR, projectSpecificWorkDir.toString());
 
     // Output file is relative to working dir
-    properties.setProperty(SonarProperties.REPORT_OUTPUT_PROPERTY, outputFile.getName());
     if (request.isDebugEnabled()) {
       properties.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
     }
-    return outputFile;
+    return properties;
   }
 
   public void run(IProject project, Properties props, boolean debugEnabled, final IProgressMonitor monitor) {
