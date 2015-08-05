@@ -9,7 +9,7 @@
 <repository location="http://download.eclipse.org/releases/mars"/>
 </location>
 <location path="${M2_REPO}/commons-codec/commons-codec/1.7" type="Directory"/>
-<location path="${M2_REPO}/org/codehaus/sonar/runner/sonar-runner-api/2.4" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/sonar-runner/sonar-runner-api/2.5-SNAPSHOT" type="Directory"/>
 <location path="${M2_REPO}/org/mockito/mockito-all/1.9.5" type="Directory"/>
 <location path="${M2_REPO}/org/assertj/assertj-core/2.1.0" type="Directory"/>
 <location path="${M2_REPO}/org/codehaus/sonar/sonar-ws-client/4.5.1" type="Directory"/>
@@ -22,7 +22,6 @@
 <unit id="org.python.pydev.feature.feature.group" version="0.0.0"/>
 <repository location="http://pydev.org/updates"/>
 </location>
-<location path="${M2_REPO}/com/googlecode/json-simple/json-simple/1.1.1" type="Directory"/>
 <location path="${M2_REPO}/org/apache/httpcomponents/httpcore-osgi/4.3.2" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
 <unit id="org.erlide.feature.group" version="0.0.0"/>

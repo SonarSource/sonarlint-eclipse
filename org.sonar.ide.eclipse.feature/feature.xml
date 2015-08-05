@@ -2,7 +2,7 @@
 <feature
       id="org.sonar.ide.eclipse.feature"
       label="%feature_name"
-      version="3.5.0.qualifier"
+      version="4.0.0.qualifier"
       provider-name="%provider_name"
       plugin="org.sonar.ide.eclipse.ui">
 
@@ -54,13 +54,6 @@
          unpack="false"/>
 
    <plugin
-         id="com.googlecode.json-simple"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.codehaus.sonar.ws-client"
          download-size="0"
          install-size="0"
@@ -89,7 +82,7 @@
          unpack="false"/>
 
    <plugin
-         id="org.codehaus.sonar.runner.sonar-runner-api"
+         id="org.sonarsource.sonar-runner.api"
          download-size="0"
          install-size="0"
          version="0.0.0"

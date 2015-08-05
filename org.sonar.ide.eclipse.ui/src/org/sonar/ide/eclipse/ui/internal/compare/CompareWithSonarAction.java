@@ -26,8 +26,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
-import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
-import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 import org.sonar.ide.eclipse.ui.internal.util.SelectionUtils;
 
@@ -57,13 +55,9 @@ public class CompareWithSonarAction implements IWorkbenchWindowActionDelegate {
   @Override
   public void run(final IAction action) {
     if (resource != null) {
-      EclipseSonar eclipseSonar = EclipseSonar.getInstance(resource.getProject());
-      if (eclipseSonar == null) {
-        return;
-      }
-      final SourceCode sourceCode = eclipseSonar.search(resource);
-      if (sourceCode != null) {
-        CompareUI.openCompareEditor(new SonarCompareInput(resource.getResource(), sourceCode.getRemoteContent()));
+      String remoteSource = SonarReferenceProvider.downloadRemoteSource(resource.getResource());
+      if (remoteSource != null) {
+        CompareUI.openCompareEditor(new SonarCompareInput(resource.getResource(), remoteSource));
       } else {
         MessageDialog.openInformation(
           PlatformUI.getWorkbench().getDisplay().getActiveShell(),

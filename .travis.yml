@@ -8,8 +8,8 @@ env:
   matrix:
     - TARGET_PLATFORM=e42 RUN_ITS=false
     - TARGET_PLATFORM=e43 RUN_ITS=false
-    - TARGET_PLATFORM=e44 RUN_ITS=true
-    - TARGET_PLATFORM=e45 RUN_ITS=true
+    - TARGET_PLATFORM=e44 RUN_ITS=true SQ_VERSION=LTS
+    - TARGET_PLATFORM=e45 RUN_ITS=true SQ_VERSION=DEV
 
 jdk:
   - oraclejdk7

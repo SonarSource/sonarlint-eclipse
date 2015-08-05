@@ -57,6 +57,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
 
     sonarProjectProperties.setProperty("sonar.java.source", javaSource);
     sonarProjectProperties.setProperty("sonar.java.target", javaTarget);
+    sonarProjectProperties.setProperty("sonar.junit.reportsPath", "");
 
     try {
       JavaProjectConfiguration configuration = new JavaProjectConfiguration();

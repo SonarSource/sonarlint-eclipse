@@ -2,12 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundle_name
 Bundle-SymbolicName: org.sonar.ide.eclipse.common;singleton:=true
-Bundle-Version: 3.5.0.qualifier
+Bundle-Version: 4.0.0.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: %bundle_vendor
 Bundle-Localization: OSGI-INF/l10n/bundle
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Export-Package: org.sonar.ide.eclipse.common.issues,org.sonar.ide.ecli
- pse.common.servers
+Export-Package: org.sonar.ide.eclipse.common.servers
 Require-Bundle: findbugsAnnotations;bundle-version="2.0.0";visibility:=reexport

@@ -120,11 +120,12 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   }
 
   public static void setupIssuesUpdater() {
+    final IssuesUpdater issuesUpdater = new IssuesUpdater();
     new UIJob("Prepare issues updater") {
       @Override
       public IStatus runInUIThread(IProgressMonitor monitor) {
         final IWorkbenchPage page = SonarUiPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        page.addPartListener(new IssuesUpdater());
+        page.addPartListener(issuesUpdater);
         return Status.OK_STATUS;
       }
     }.schedule();

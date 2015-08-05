@@ -19,27 +19,36 @@
  */
 package org.sonar.ide.eclipse.ui.internal.compare;
 
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.quickdiff.IQuickDiffReferenceProvider;
+import org.sonar.ide.eclipse.core.internal.Messages;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
-import org.sonar.ide.eclipse.core.internal.remote.EclipseSonar;
-import org.sonar.ide.eclipse.core.internal.remote.SourceCode;
+import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
+import org.sonar.ide.eclipse.core.resources.ISonarResource;
+import org.sonar.ide.eclipse.wsclient.ConnectionException;
+import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
 public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
 
   private String id;
-  private IDocument sonarSource;
+  private IDocument source;
   private IResource resource;
 
   @Override
   public void dispose() {
-    sonarSource = null;
+    source = null;
     resource = null;
   }
 
@@ -55,29 +64,55 @@ public class SonarReferenceProvider implements IQuickDiffReferenceProvider {
 
   @Override
   public IDocument getReference(final IProgressMonitor monitor) throws CoreException {
-    if (sonarSource != null) {
-      return sonarSource;
+    if (source != null) {
+      return source;
     }
     if (resource != null) {
-      IProject project = resource.getProject();
-      if (!SonarNature.hasSonarNature(project)) {
-        return null;
-      }
-      EclipseSonar eclipseSonar = EclipseSonar.getInstance(project);
-      if (eclipseSonar == null) {
-        return null;
-      }
-      SourceCode sourceCode = eclipseSonar.search(resource);
-      if (sourceCode != null) {
-        sonarSource = new Document(sourceCode.getRemoteContent());
+      String remoteSrc = downloadRemoteSource(resource);
+      if (remoteSrc != null) {
+        source = new Document(remoteSrc);
       }
     }
-    return sonarSource;
+    return source;
+  }
+
+  static String downloadRemoteSource(IResource resource) {
+    if (resource.getAdapter(IFile.class) == null) {
+      return null;
+    }
+    IProject project = resource.getProject();
+    if (!SonarNature.hasSonarNature(project)) {
+      return null;
+    }
+    SonarProject sonarProject = SonarProject.getInstance(project);
+    SonarServer sonarServer = (SonarServer) SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+    if (sonarServer == null) {
+      SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
+        sonarProject.getProject().getName(), sonarProject.getUrl()) + "\n");
+      return null;
+    }
+    if (sonarServer.disabled()) {
+      SonarCorePlugin.getDefault().info("SonarQube server is disabled for project " + sonarProject.getProject().getName() + " \n");
+      return null;
+    }
+    ISonarResource element = ResourceUtils.adapt(resource);
+    if (element == null) {
+      return null;
+    }
+    try {
+      String[] remoteSrc = WSClientFactory.getSonarClient(sonarServer).getRemoteCode(element.getKey());
+      if (remoteSrc != null) {
+        return StringUtils.join(remoteSrc, "\n");
+      }
+    } catch (ConnectionException e) {
+      return null;
+    }
+    return null;
   }
 
   @Override
   public void setActiveEditor(final ITextEditor targetEditor) {
-    sonarSource = null;
+    source = null;
     resource = null;
     if (targetEditor != null) {
       resource = (IResource) targetEditor.getEditorInput().getAdapter(IResource.class);

@@ -28,13 +28,14 @@ import java.io.LineNumberReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.sonar.ide.eclipse.common.issues.ISonarIssue;
 import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.runner.api.Issue;
 
 public class SonarMarker {
 
@@ -48,19 +49,19 @@ public class SonarMarker {
     this.marker = resource.createMarker(isNew ? SonarCorePlugin.NEW_ISSUE_MARKER_ID : SonarCorePlugin.MARKER_ID);
   }
 
-  public static void create(final IResource resource, final boolean isNew, final ISonarIssue issue) throws CoreException {
-    if (issue.resolved()) {
+  public static void create(final IResource resource, final Issue issue) throws CoreException {
+    if (StringUtils.isNotBlank(issue.getResolution())) {
       // Don't display resolved issues
       return;
     }
-    new SonarMarker(resource, isNew).from(issue);
+    new SonarMarker(resource, issue.isNew()).from(issue);
   }
 
-  private SonarMarker from(final ISonarIssue issue) throws CoreException {
+  private SonarMarker from(final Issue issue) throws CoreException {
     final Map<String, Object> markerAttributes = new HashMap<String, Object>();
-    Integer line = issue.line();
-    markerAttributes.put(IMarker.PRIORITY, getPriority(issue.severity()));
-    markerAttributes.put(IMarker.SEVERITY, isNew ? PreferencesUtils.getMarkerSeverityNewIssues() : PreferencesUtils.getMarkerSeverity());
+    Integer line = issue.getLine();
+    markerAttributes.put(IMarker.PRIORITY, getPriority("MAJOR")); // FIXME
+    markerAttributes.put(IMarker.SEVERITY, issue.isNew() ? PreferencesUtils.getMarkerSeverityNewIssues() : PreferencesUtils.getMarkerSeverity());
     // File level issues (line == null) are displayed on line 1
     markerAttributes.put(IMarker.LINE_NUMBER, line != null ? line : 1);
     markerAttributes.put(IMarker.MESSAGE, getMessage(issue));
@@ -69,25 +70,28 @@ public class SonarMarker {
     if (line != null) {
       addLine(markerAttributes, line, resource);
     }
-    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, issue.ruleKey());
-    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, issue.ruleName());
-    markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, issue.severity());
-    if (issue.key() != null) {
-      markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR, issue.key());
+    // FIXME we need rule name and key
+    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, issue.getRule());
+    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, issue.getRule());
+    markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, "MAJOR"); // FIXME
+    String key = issue.getKey();
+    if (key != null) {
+      markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_ID_ATTR, key);
     }
-    if (issue.assigneeLogin() != null) {
-      markerAttributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE, issue.assigneeLogin());
+    // FIXME We need assignee name and login
+    if (issue.getAssignee() != null) {
+      markerAttributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE, issue.getAssignee());
     }
-    if (issue.assigneeName() != null) {
-      markerAttributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE_NAME, issue.assigneeName());
+    if (issue.getAssignee() != null) {
+      markerAttributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE_NAME, issue.getAssignee());
     }
 
     marker.setAttributes(markerAttributes);
     return this;
   }
 
-  private static String getMessage(final ISonarIssue issue) {
-    return issue.ruleName() + " : " + issue.message();
+  private static String getMessage(final Issue issue) {
+    return issue.getRule() + " : " + issue.getMessage();
   }
 
   /**

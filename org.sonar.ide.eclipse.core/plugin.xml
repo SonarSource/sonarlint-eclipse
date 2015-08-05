@@ -23,6 +23,7 @@
                class="org.sonar.ide.eclipse.core.internal.SonarNature">
          </run>
       </runtime>
+      <builder id="org.sonar.ide.eclipse.core.sonarQubeBuilder"/>
    </extension>
 
    <extension
@@ -86,4 +87,12 @@
        </command>
     </menuContribution>
   </extension>
+  
+  <extension id="sonarQubeBuilder" name="SonarQube Builder" point="org.eclipse.core.resources.builders">
+      <builder hasNature="true">
+         <run class="org.sonar.ide.eclipse.core.internal.builder.SonarQubeBuilder">
+            <parameter name="natureId" value="sonarNature"/>
+         </run>
+      </builder>
+   </extension>
 </plugin>

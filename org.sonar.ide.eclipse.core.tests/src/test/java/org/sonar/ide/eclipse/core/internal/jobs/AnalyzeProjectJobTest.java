@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,20 +26,17 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.matchers.JUnitMatchers;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
 import org.sonar.ide.eclipse.core.internal.markers.MarkerUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProperty;
 import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 import org.sonar.ide.eclipse.tests.common.SonarTestCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,13 +46,13 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
 
   public org.junit.rules.ExternalResource test = null;
   private static IProject project;
-  private static ISonarServer server;
+  private static SonarServer server;
   private static ISonarServersManager serversManager;
 
   @BeforeClass
   public static void prepare() throws Exception {
     serversManager = SonarCorePlugin.getServersManager();
-    server = serversManager.create("localhost", "http://localhost:9000", null, null);
+    server = (SonarServer) serversManager.create("localhost", "http://localhost:9000", null, null);
     SonarCorePlugin.getServersManager().addServer(server);
 
     project = importEclipseProject("reference");
@@ -71,19 +67,16 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   }
 
   private static AnalyzeProjectJob job(IProject project) {
-    return new AnalyzeProjectJob(new AnalyzeProjectRequest(project));
+    return new AnalyzeProjectJob(new AnalyzeProjectRequest(project, null, false));
   }
 
   @Test
   public void shouldConfigureAnalysis() throws Exception {
     AnalyzeProjectJob job = job(project);
-    job.setIncremental(true);
     Properties props = new Properties();
     job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
 
-    assertThat(props.get(SonarProperties.SONAR_URL).toString()).isEqualTo("http://localhost:9000");
     assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString()).isEqualTo("bar:foo");
-    assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString()).isEqualTo("incremental");
     // SONARIDE-386 check that at least some JARs from the VM are appended
     List<String> libs = Arrays.asList(props.get("sonar.libraries").toString().split(","));
     assertThat(libs).doesNotHaveDuplicates();
@@ -97,18 +90,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     if (!foundRT) {
       fail("rt.jar/classes.jar not found in sonar.libraries: " + props.get("sonar.libraries").toString());
     }
-  }
-
-  @Test
-  public void shouldForceFullPreview() throws Exception {
-    AnalyzeProjectJob job = job(project);
-    job.setIncremental(false);
-    Properties props = new Properties();
-    job.configureAnalysis(MONITOR, props, new ArrayList<SonarProperty>());
-
-    assertThat(props.get(SonarProperties.SONAR_URL).toString()).isEqualTo("http://localhost:9000");
-    assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString()).isEqualTo("bar:foo");
-    assertThat(props.get(SonarProperties.ANALYSIS_MODE).toString()).isEqualTo("preview");
   }
 
   @Test
@@ -132,35 +113,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     job.configureAnalysis(MONITOR, props, Arrays.asList(new SonarProperty("sonar.java.source", "fake")));
 
     assertThat(props.get("sonar.java.source").toString()).isEqualTo("fake");
-  }
-
-  @Test
-  public void shouldCreateMarkersFromIssuesReport() throws Exception {
-    AnalyzeProjectJob job = job(project);
-    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
-
-    List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size()).isEqualTo(6);
-
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Findbugs.java", 5)));
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Pmd.java", 2)));
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Checkstyle.java", 1)));
-  }
-
-  @Test
-  public void shouldCleanAndCreateMarkersFromIncrementalAnalysis() throws Exception {
-    AnalyzeProjectJob job = job(project);
-    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report.json"));
-
-    // During incremental analysis PMD file was not modified, Findbugs has one remaing issue and Checkstyle has no remaining issues
-    job = job(project);
-    job.createMarkersFromReportOutput(MONITOR, new File("testdata/sonar-report-incremental.json"));
-
-    List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers.size()).isEqualTo(3);
-
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Findbugs.java", 5)));
-    Assert.assertThat(markers, JUnitMatchers.hasItem(new IsMarker("src/Pmd.java", 2)));
   }
 
   static class IsMarker extends BaseMatcher<IMarker> {

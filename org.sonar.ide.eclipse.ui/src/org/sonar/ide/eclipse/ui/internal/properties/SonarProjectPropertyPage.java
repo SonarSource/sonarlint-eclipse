@@ -42,8 +42,6 @@ import org.sonar.ide.eclipse.ui.internal.Messages;
  */
 public class SonarProjectPropertyPage extends PropertyPage {
 
-  private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-
   public SonarProjectPropertyPage() {
     setTitle(Messages.SonarProjectPropertyPage_title);
     noDefaultAndApplyButton();
@@ -69,9 +67,6 @@ public class SonarProjectPropertyPage extends PropertyPage {
 
     addText(Messages.SonarProjectPropertyBlock_label_host, sonarProject.getUrl(), container);
     addText(Messages.SonarProjectPropertyBlock_label_key, sonarProject.getKey(), container);
-    if (sonarProject.getLastAnalysisDate() != null) {
-      addText(Messages.SonarProjectPropertyBlock_label_analysis_date, sdf.format(sonarProject.getLastAnalysisDate()), container);
-    }
 
     return container;
   }

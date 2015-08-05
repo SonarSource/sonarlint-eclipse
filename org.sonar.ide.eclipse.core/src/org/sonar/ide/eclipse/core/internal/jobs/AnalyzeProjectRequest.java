@@ -19,19 +19,34 @@
  */
 package org.sonar.ide.eclipse.core.internal.jobs;
 
+import java.util.Collection;
+import javax.annotation.Nullable;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 
 public class AnalyzeProjectRequest {
 
-  private IProject project;
   private boolean debugEnabled;
+  private boolean quick;
+  private final IProject project;
+  private final Collection<IFile> onlyOnFiles;
 
-  public AnalyzeProjectRequest(IProject project) {
+  public AnalyzeProjectRequest(IProject project, @Nullable Collection<IFile> onlyOnFiles, boolean quick) {
     this.project = project;
+    this.onlyOnFiles = onlyOnFiles;
+    this.quick = quick;
   }
 
   public IProject getProject() {
     return project;
+  }
+
+  public Collection<IFile> getOnlyOnFiles() {
+    return onlyOnFiles;
+  }
+
+  public boolean isQuick() {
+    return quick;
   }
 
   public boolean isDebugEnabled() {
@@ -42,5 +57,4 @@ public class AnalyzeProjectRequest {
     this.debugEnabled = debugEnabled;
     return this;
   }
-
 }
