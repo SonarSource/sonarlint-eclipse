@@ -99,9 +99,9 @@
           <version>${tycho.version}</version>
           <configuration>
             <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
-            <!-- Kill test JVM if tests take more than 10 minutes (600 seconds)
+            <!-- Kill test JVM if tests take more than 20 minutes (1200 seconds)
               to finish -->
-            <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
+            <forkedProcessTimeoutInSeconds>1200</forkedProcessTimeoutInSeconds>
             <providerHint>junit47</providerHint>
             <systemProperties>
               <sonar.runtimeVersion>${sonar.runtimeVersion}</sonar.runtimeVersion>
