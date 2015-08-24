@@ -164,8 +164,7 @@ public final class SonarServer implements ISonarServer {
         globalProps.setProperty(SonarProperties.SONAR_LOGIN, getUsername());
         globalProps.setProperty(SonarProperties.SONAR_PASSWORD, getPassword());
       }
-      globalProps.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_PREVIEW);
-      globalProps.setProperty(SonarProperties.ENABLE_OFFLINE_PROPERTY, "true");
+      globalProps.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_ISSUES);
       if (debugEnabled) {
         globalProps.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
       }
