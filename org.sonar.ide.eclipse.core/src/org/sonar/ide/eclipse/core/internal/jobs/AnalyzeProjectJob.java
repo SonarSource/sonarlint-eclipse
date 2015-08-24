@@ -139,8 +139,7 @@ public class AnalyzeProjectJob extends Job {
     IPath projectSpecificWorkDir = project.getWorkingLocation(SonarCorePlugin.PLUGIN_ID);
 
     // Preview mode by default
-    properties.setProperty(SonarProperties.ANALYSIS_MODE, request.isQuick() ? SonarProperties.ANALYSIS_MODE_QUICK : SonarProperties.ANALYSIS_MODE_PREVIEW);
-    properties.setProperty(SonarProperties.ENABLE_OFFLINE_PROPERTY, "true");
+    properties.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_ISSUES);
 
     // Configuration by configurators (common and language specific)
     ConfiguratorUtils.configure(project, properties, getServerVersion(), monitor);

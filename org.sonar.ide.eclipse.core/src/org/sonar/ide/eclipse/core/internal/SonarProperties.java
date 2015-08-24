@@ -29,9 +29,7 @@ public interface SonarProperties {
   String ENCODING_PROPERTY = "sonar.sourceEncoding";
 
   String ANALYSIS_MODE = "sonar.analysis.mode";
-  String ANALYSIS_MODE_PREVIEW = "preview";
-  String ANALYSIS_MODE_QUICK = "quick";
-  String ENABLE_OFFLINE_PROPERTY = "sonar.enableOffline";
+  String ANALYSIS_MODE_ISSUES = "issues";
 
   String SONAR_URL = "sonar.host.url";
   String SONAR_LOGIN = "sonar.login";
