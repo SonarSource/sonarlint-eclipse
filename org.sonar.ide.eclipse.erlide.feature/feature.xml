@@ -19,29 +19,8 @@
    </license>
 
    <requires>
-      <import feature="org.sonar.ide.eclipse.feature" version="3.5.0.qualifier"/>
+      <import feature="org.sonar.ide.eclipse.feature" version="4.0.0.qualifier"/>
    </requires>
-
-   <plugin
-         id="org.sonar.ide.eclipse.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.sonar.ide.eclipse.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.sonar.ide.eclipse.wsclient"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
 
    <plugin
          id="org.sonar.ide.eclipse.erlide"
