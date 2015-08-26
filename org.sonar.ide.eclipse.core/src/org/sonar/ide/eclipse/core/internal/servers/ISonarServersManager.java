@@ -21,7 +21,6 @@ package org.sonar.ide.eclipse.core.internal.servers;
 
 import java.util.Collection;
 import javax.annotation.CheckForNull;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 
 /**
  * @noimplement This interface is not intended to be implemented by clients.
@@ -29,16 +28,16 @@ import org.sonar.ide.eclipse.common.servers.ISonarServer;
  */
 public interface ISonarServersManager {
 
-  Collection<ISonarServer> getServers();
+  Collection<SonarServer> getServers();
 
-  Collection<ISonarServer> reloadServers();
+  Collection<SonarServer> reloadServers();
 
-  void removeServer(ISonarServer server);
+  void removeServer(SonarServer server);
 
-  void addServer(ISonarServer server);
+  void addServer(SonarServer server);
 
   @CheckForNull
-  ISonarServer findServer(String idOrUrl);
+  SonarServer findServer(String idOrUrl);
 
   /**
    * Create a new ISonarServer without saving it in Eclipse preferences.
@@ -47,6 +46,6 @@ public interface ISonarServersManager {
    * @param password
    * @return
    */
-  ISonarServer create(String id, String location, String username, String password);
+  SonarServer create(String id, String location, String username, String password);
 
 }

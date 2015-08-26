@@ -28,7 +28,6 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.eclipse.core.net.proxy.IProxyData;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.wsclient.internal.SonarWSClientFacade;
 import org.sonar.ide.eclipse.wsclient.internal.WSClientPlugin;
 import org.sonar.wsclient.Host;

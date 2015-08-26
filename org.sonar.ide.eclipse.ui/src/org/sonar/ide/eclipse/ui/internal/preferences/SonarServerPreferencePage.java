@@ -44,14 +44,15 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.servers.ISonarServersManager;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.util.SelectionUtils;
 import org.sonar.ide.eclipse.ui.internal.wizards.EditServerLocationWizard;
 import org.sonar.ide.eclipse.ui.internal.wizards.NewServerLocationWizard;
+import org.sonar.ide.eclipse.wsclient.ISonarServer;
 
 /**
  * Preference page for the workspace.
@@ -60,7 +61,7 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
 
   private TableViewer serversViewer;
 
-  private Collection<ISonarServer> servers;
+  private Collection<SonarServer> servers;
 
   public SonarServerPreferencePage() {
     super(Messages.SonarServerPreferencePage_title);
@@ -85,8 +86,8 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     return container;
   }
 
-  private ISonarServer getSelectedServer() {
-    return (ISonarServer) SelectionUtils.getSingleElement(serversViewer.getSelection());
+  private SonarServer getSelectedServer() {
+    return (SonarServer) SelectionUtils.getSingleElement(serversViewer.getSelection());
   }
 
   private void initTable() {
@@ -164,7 +165,7 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     removeButton.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        ISonarServer selected = getSelectedServer();
+        SonarServer selected = getSelectedServer();
         if (MessageDialog.openConfirm(SonarServerPreferencePage.this.getShell(), "Remove SonarQube server connection",
           MessageFormat.format("Confirm removing {0}",
             new Object[] {selected.getUrl()}))) {
@@ -194,7 +195,7 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     colId.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
-        ISonarServer sonarServer = (ISonarServer) element;
+        SonarServer sonarServer = (SonarServer) element;
         return sonarServer.getId();
       }
     });
@@ -218,7 +219,7 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     colVersion.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
-        ISonarServer sonarServer = (ISonarServer) element;
+        SonarServer sonarServer = (SonarServer) element;
         return sonarServer.getVersion();
       }
     });

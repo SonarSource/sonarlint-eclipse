@@ -23,9 +23,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.SonarEclipseException;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.wsclient.ISonarWSClientFacade.ConnectionTestResult;
@@ -49,7 +49,7 @@ final class ServerConnectionTestJob implements IRunnableWithProgress {
   public void run(IProgressMonitor monitor) {
     monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
     try {
-      ISonarServer newServer = SonarCorePlugin.getServersManager().create("test", serverUrl, username, password);
+      SonarServer newServer = SonarCorePlugin.getServersManager().create("test", serverUrl, username, password);
       ConnectionTestResult result = WSClientFactory.getSonarClient(newServer).testConnection();
       switch (result.status) {
         case OK:

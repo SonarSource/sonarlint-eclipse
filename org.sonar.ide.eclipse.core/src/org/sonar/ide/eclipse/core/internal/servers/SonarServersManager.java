@@ -33,7 +33,6 @@ import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
@@ -51,18 +50,18 @@ public class SonarServersManager implements ISonarServersManager {
 
   static final String PREF_SERVERS = "servers";
 
-  private List<ISonarServer> servers = Lists.newArrayList();
+  private List<SonarServer> servers = Lists.newArrayList();
 
   private boolean loadedOnce = false;
 
   @Override
-  public synchronized Collection<ISonarServer> reloadServers() {
+  public synchronized Collection<SonarServer> reloadServers() {
     reloadFromEclipsePreferencesAndCheckStatus();
     return servers;
   }
 
   @Override
-  public synchronized Collection<ISonarServer> getServers() {
+  public synchronized Collection<SonarServer> getServers() {
     if (!loadedOnce) {
       reloadFromEclipsePreferencesAndCheckStatus();
     }
@@ -72,6 +71,7 @@ public class SonarServersManager implements ISonarServersManager {
   private void reloadFromEclipsePreferencesAndCheckStatus() {
     final Job job = new Job("Reload SonarQube servers status") {
       protected IStatus run(IProgressMonitor monitor) {
+        stopAllServers();
         servers.clear();
         IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
         try {
@@ -124,7 +124,7 @@ public class SonarServersManager implements ISonarServersManager {
   }
 
   @Override
-  public synchronized void addServer(ISonarServer server) {
+  public synchronized void addServer(SonarServer server) {
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     try {
       Preferences serversNode = rootNode.node(PREF_SERVERS);
@@ -143,6 +143,7 @@ public class SonarServersManager implements ISonarServersManager {
    * For tests.
    */
   public synchronized void clean() {
+    stopAllServers();
     servers.clear();
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     try {
@@ -154,8 +155,14 @@ public class SonarServersManager implements ISonarServersManager {
     }
   }
 
+  public void stopAllServers() {
+    for (SonarServer server : servers) {
+      server.stop();
+    }
+  }
+
   @Override
-  public synchronized void removeServer(ISonarServer server) {
+  public synchronized void removeServer(SonarServer server) {
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     try {
       Preferences serversNode = rootNode.node(PREF_SERVERS);
@@ -170,8 +177,8 @@ public class SonarServersManager implements ISonarServersManager {
 
   @CheckForNull
   @Override
-  public synchronized ISonarServer findServer(String idOrUrl) {
-    for (ISonarServer server : getServers()) {
+  public synchronized SonarServer findServer(String idOrUrl) {
+    for (SonarServer server : getServers()) {
       if (server.getId().equals(idOrUrl) || server.getUrl().equals(idOrUrl)) {
         return server;
       }
@@ -180,12 +187,12 @@ public class SonarServersManager implements ISonarServersManager {
   }
 
   @Override
-  public ISonarServer create(String id, String location, String username, String password) {
+  public SonarServer create(String id, String location, String username, String password) {
     return new SonarServer(id, location, username, password);
   }
 
   @CheckForNull
-  private String getServerVersion(ISonarServer server) {
+  private String getServerVersion(SonarServer server) {
     try {
       return WSClientFactory.getSonarClient(server).getServerVersion();
     } catch (Exception e) {

@@ -24,7 +24,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.sonar.ide.eclipse.wsclient,
  org.apache.commons.codec;bundle-version="1.7.0",
  org.eclipse.ui.navigator,
- org.sonar.ide.eclipse.common,
  org.sonar.ide.eclipse.wsclient
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy

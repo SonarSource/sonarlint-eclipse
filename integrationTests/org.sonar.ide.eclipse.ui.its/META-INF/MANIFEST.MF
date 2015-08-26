@@ -38,7 +38,6 @@ Require-Bundle: org.eclipse.jdt.core,
  org.sonar.ide.eclipse.cdt,
  org.sonar.ide.eclipse.m2e,
  org.codehaus.sonar.ws-client,
- org.sonar.ide.eclipse.common,
  com.sonarsource.orchestrator.sonar-orchestrator-osgi;bundle-version="3.2.0",
  org.apache.commons.io;bundle-version="2.4.0",
  org.assertj.core;bundle-version="2.1.0"

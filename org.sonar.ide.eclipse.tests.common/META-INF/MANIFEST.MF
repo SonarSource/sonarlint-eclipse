@@ -4,7 +4,6 @@ Require-Bundle: org.eclipse.core.resources,
  org.sonar.ide.eclipse.core,
  org.sonar.ide.eclipse.ui,
  org.junit;bundle-version="4.8.2";visibility:=reexport,
- org.sonar.ide.eclipse.common,
  org.apache.commons.io;bundle-version="2.4.0"
 Bundle-Vendor: SonarSource
 Bundle-ClassPath: .

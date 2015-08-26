@@ -29,9 +29,9 @@ import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
+import org.sonar.ide.eclipse.wsclient.ISonarServer;
 import org.sonar.runner.api.EmbeddedRunner;
 import org.sonar.runner.api.IssueListener;
 import org.sonar.runner.api.LogOutput;
@@ -65,7 +65,6 @@ public final class SonarServer implements ISonarServer {
     this.hasCredentials = auth;
   }
 
-  @Override
   public String getId() {
     return id;
   }
@@ -96,7 +95,6 @@ public final class SonarServer implements ISonarServer {
   }
 
   @CheckForNull
-  @Override
   public String getVersion() {
     return version;
   }

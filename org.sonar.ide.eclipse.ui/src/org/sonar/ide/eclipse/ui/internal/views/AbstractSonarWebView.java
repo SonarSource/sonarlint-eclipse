@@ -33,10 +33,10 @@ import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 
 /**
  * Open Sonar server URL in an embedded browser
@@ -60,7 +60,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
   }
 
   protected void open(SonarProject sonarProject, String url) {
-    ISonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+    SonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     if (sonarServer == null) {
       showMessage(NLS.bind(Messages.No_matching_server_in_configuration_for_project, sonarProject.getProject().getName(), url));
       return;

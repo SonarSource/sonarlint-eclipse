@@ -20,14 +20,14 @@
 package org.sonar.ide.eclipse.ui.internal.wizards;
 
 import org.apache.commons.lang.StringUtils;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 
 public class EditServerLocationWizard extends AbstractServerLocationWizard {
 
-  private final ISonarServer sonarServer;
+  private final SonarServer sonarServer;
 
-  public EditServerLocationWizard(ISonarServer sonarServer) {
+  public EditServerLocationWizard(SonarServer sonarServer) {
     super(new ServerLocationWizardPage(sonarServer), "Edit SonarQube Server");
     this.sonarServer = sonarServer;
   }

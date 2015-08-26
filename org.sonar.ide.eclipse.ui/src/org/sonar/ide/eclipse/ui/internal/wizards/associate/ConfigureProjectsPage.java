@@ -58,21 +58,22 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.wsclient.ConnectionException;
 import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
+import org.sonar.ide.eclipse.wsclient.ISonarServer;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
 public class ConfigureProjectsPage extends WizardPage {
 
   private final List<IProject> projects;
   private TableViewer viewer;
-  private final Collection<ISonarServer> sonarServers;
+  private final Collection<SonarServer> sonarServers;
   private boolean alreadyRun = false;
 
   public ConfigureProjectsPage(List<IProject> projects) {
@@ -258,10 +259,10 @@ public class ConfigureProjectsPage extends WizardPage {
 
   public static class AssociateProjects implements IRunnableWithProgress {
 
-    private final Collection<ISonarServer> sonarServers;
+    private final Collection<SonarServer> sonarServers;
     private final ProjectAssociationModel[] projectAssociations;
 
-    public AssociateProjects(Collection<ISonarServer> sonarServers, ProjectAssociationModel[] projects) {
+    public AssociateProjects(Collection<SonarServer> sonarServers, ProjectAssociationModel[] projects) {
       Assert.isNotNull(sonarServers);
       Assert.isNotNull(projects);
       this.sonarServers = sonarServers;

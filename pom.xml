@@ -65,7 +65,6 @@
 
   <modules>
     <module>org.sonar.ide.eclipse.wsclient</module>
-    <module>org.sonar.ide.eclipse.common</module>
 
     <module>org.sonar.ide.eclipse.core</module>
     <module>org.sonar.ide.eclipse.ui</module>

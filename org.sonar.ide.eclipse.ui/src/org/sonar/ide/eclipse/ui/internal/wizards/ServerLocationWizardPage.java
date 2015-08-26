@@ -40,14 +40,14 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 import org.sonar.ide.eclipse.ui.internal.Messages;
 import org.sonar.ide.eclipse.ui.internal.SonarImages;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 
 public class ServerLocationWizardPage extends WizardPage {
-  private final ISonarServer sonarServer;
+  private final SonarServer sonarServer;
 
   private Text serverIdText;
   private Text serverUrlText;
@@ -63,7 +63,7 @@ public class ServerLocationWizardPage extends WizardPage {
     this(null);
   }
 
-  public ServerLocationWizardPage(@Nullable ISonarServer sonarServer) {
+  public ServerLocationWizardPage(@Nullable SonarServer sonarServer) {
     super("server_location_page", "SonarQube Server Configuration", SonarImages.SONARWIZBAN_IMG);
     this.edit = sonarServer != null;
     this.sonarServer = sonarServer;

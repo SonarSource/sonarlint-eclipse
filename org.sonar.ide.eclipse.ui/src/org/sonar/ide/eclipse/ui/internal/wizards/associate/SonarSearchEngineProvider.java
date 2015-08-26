@@ -27,7 +27,7 @@ import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
 import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
@@ -39,10 +39,10 @@ import org.sonar.ide.eclipse.wsclient.WSClientFactory;
  */
 public class SonarSearchEngineProvider implements IContentProposalProvider {
 
-  private final Collection<ISonarServer> sonarServers;
+  private final Collection<SonarServer> sonarServers;
   private final WizardPage parentPage;
 
-  public SonarSearchEngineProvider(Collection<ISonarServer> sonarServers, WizardPage parentPage) {
+  public SonarSearchEngineProvider(Collection<SonarServer> sonarServers, WizardPage parentPage) {
     this.sonarServers = sonarServers;
     this.parentPage = parentPage;
   }
@@ -50,7 +50,7 @@ public class SonarSearchEngineProvider implements IContentProposalProvider {
   @Override
   public IContentProposal[] getProposals(String contents, int position) {
     List<IContentProposal> list = new ArrayList<IContentProposal>();
-    for (ISonarServer sonarServer : sonarServers) {
+    for (SonarServer sonarServer : sonarServers) {
       if (sonarServer.disabled()) {
         continue;
       }

@@ -24,7 +24,6 @@ import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -44,14 +43,14 @@ public class SonarServersManagerTest {
   @Test
   public void shouldNotCreateFakeServer() throws Exception {
     String url = "http://new";
-    ISonarServer server = serversManager.findServer(url);
+    SonarServer server = serversManager.findServer(url);
     assertThat(server, nullValue());
     assertThat(serversManager.reloadServers().size(), is(0));
   }
 
   @Test
   public void shouldUseSecureStorage() throws Exception {
-    ISonarServer server = serversManager.create("secure", "http://secure", "tester", "secret");
+    SonarServer server = serversManager.create("secure", "http://secure", "tester", "secret");
     serversManager.addServer(server);
 
     ISecurePreferences securePreferences = SecurePreferencesFactory.getDefault().node(SonarServersManager.PREF_SERVERS);

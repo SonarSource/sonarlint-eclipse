@@ -38,7 +38,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
-import org.sonar.ide.eclipse.common.servers.ISonarServer;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
 import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
@@ -121,7 +120,7 @@ public class AnalyzeProjectJob extends Job {
     return sonarServer.getVersion();
   }
 
-  private ISonarServer getSonarServer() {
+  private SonarServer getSonarServer() {
     return sonarServer;
   }
 

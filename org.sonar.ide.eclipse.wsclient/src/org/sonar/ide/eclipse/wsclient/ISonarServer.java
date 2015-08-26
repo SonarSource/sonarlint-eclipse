@@ -1,3 +1,5 @@
+package org.sonar.ide.eclipse.wsclient;
+
 /*
  * SonarQube Eclipse
  * Copyright (C) 2010-2015 SonarSource
@@ -17,22 +19,16 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.common.servers;
-
 public interface ISonarServer {
 
-  String getId();
-
-  String getUrl();
+  boolean disabled();
 
   boolean hasCredentials();
+
+  String getUrl();
 
   String getUsername();
 
   String getPassword();
-
-  String getVersion();
-
-  boolean disabled();
 
 }
