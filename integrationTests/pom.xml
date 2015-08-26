@@ -25,7 +25,7 @@
   </modules>
 
   <properties>
-    <tycho.version>0.23.0</tycho.version>
+    <tycho.version>0.23.1</tycho.version>
     <jdk.min.version>1.7</jdk.min.version>
     <target.platform>e44</target.platform>
     <orchestrator.computeCoverage>false</orchestrator.computeCoverage>
@@ -108,10 +108,6 @@
               <javaVersion>${javaVersion}</javaVersion>
               <pythonVersion>${pythonVersion}</pythonVersion>
             </systemProperties>
-            <environmentVariables>
-              <TRAVIS>${env.TRAVIS}</TRAVIS>
-              <ORCHESTRATOR_CONFIG_URL>${env.ORCHESTRATOR_CONFIG_URL}</ORCHESTRATOR_CONFIG_URL>
-            </environmentVariables>
           </configuration>
         </plugin>
         <plugin>
