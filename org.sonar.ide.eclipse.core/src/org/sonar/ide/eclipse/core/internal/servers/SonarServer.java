@@ -213,7 +213,7 @@ public final class SonarServer implements ISonarServer {
       runner.start();
       this.version = runner.serverVersion();
     } catch (Exception e) {
-      SonarCorePlugin.getDefault().error("Unable to start server " + id + System.lineSeparator());
+      SonarCorePlugin.getDefault().error("Unable to start SonarQube for server " + id + System.lineSeparator(), e);
       runner = null;
       disabled = true;
     }

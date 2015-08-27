@@ -93,7 +93,6 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
   private void initTable() {
     // retrieve list of servers
     ISonarServersManager serversManager = SonarCorePlugin.getServersManager();
-    serversManager.reloadServers();
     servers = serversManager.getServers();
     serversViewer.setInput(servers);
     for (int i = 0, n = serversViewer.getTable().getColumnCount(); i < n; i++) {
@@ -112,13 +111,14 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     final Table table = serversViewer.getTable();
     table.setLinesVisible(true);
     table.setHeaderVisible(true);
-    GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 2, 3);
+    GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 2, 4);
     gridData.heightHint = 300;
     table.setLayoutData(gridData);
 
     final Button addButton = new Button(composite, SWT.NONE);
     final Button editButton = new Button(composite, SWT.NONE);
-    final Button removeButton = new Button(composite, SWT.NONE);
+    final Button deleteButton = new Button(composite, SWT.NONE);
+    final Button reloadButton = new Button(composite, SWT.NONE);
 
     addButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
     addButton.setText(Messages.SonarServerPreferencePage_action_add);
@@ -152,17 +152,17 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
         if (dialog.open() == Window.OK) {
           initTable();
         }
-        removeButton.setEnabled(false);
+        deleteButton.setEnabled(false);
         editButton.setEnabled(false);
       }
     });
 
-    removeButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-    removeButton.setText(Messages.SonarServerPreferencePage_action_delete);
-    removeButton.setToolTipText(Messages.SonarServerPreferencePage_action_delete_tooltip);
-    removeButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE).createImage());
-    removeButton.setEnabled(false);
-    removeButton.addSelectionListener(new SelectionAdapter() {
+    deleteButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+    deleteButton.setText(Messages.SonarServerPreferencePage_action_delete);
+    deleteButton.setToolTipText(Messages.SonarServerPreferencePage_action_delete_tooltip);
+    deleteButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE).createImage());
+    deleteButton.setEnabled(false);
+    deleteButton.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         SonarServer selected = getSelectedServer();
@@ -172,16 +172,32 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
           SonarCorePlugin.getServersManager().removeServer(selected);
           servers.remove(selected);
           serversViewer.refresh();
-          removeButton.setEnabled(false);
+          deleteButton.setEnabled(false);
           editButton.setEnabled(false);
         }
+      }
+    });
+
+    reloadButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+    reloadButton.setText(Messages.SonarServerPreferencePage_action_reload);
+    reloadButton.setToolTipText(Messages.SonarServerPreferencePage_action_reload_tooltip);
+    reloadButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_REDO).createImage());
+    reloadButton.setEnabled(true);
+    reloadButton.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        SonarUiPlugin.getDefault().getSonarConsole().clearConsole();
+        SonarCorePlugin.getServersManager().reloadServers();
+        serversViewer.refresh();
+        deleteButton.setEnabled(false);
+        editButton.setEnabled(false);
       }
     });
 
     serversViewer.addSelectionChangedListener(new ISelectionChangedListener() {
       @Override
       public void selectionChanged(SelectionChangedEvent event) {
-        removeButton.setEnabled(!servers.isEmpty());
+        deleteButton.setEnabled(!servers.isEmpty());
         editButton.setEnabled(true);
       }
     });

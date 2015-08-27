@@ -62,6 +62,8 @@ public final class Messages extends NLS {
   public static String SonarServerPreferencePage_action_edit_tooltip;
   public static String SonarServerPreferencePage_action_delete;
   public static String SonarServerPreferencePage_action_delete_tooltip;
+  public static String SonarServerPreferencePage_action_reload;
+  public static String SonarServerPreferencePage_action_reload_tooltip;
 
   public static String SonarPreferencePage_title;
   public static String SonarPreferencePage_description;
