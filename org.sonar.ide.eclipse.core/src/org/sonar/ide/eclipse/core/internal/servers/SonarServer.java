@@ -162,6 +162,11 @@ public final class SonarServer implements ISonarServer {
     runner.runAnalysis(props, issueListener);
   }
 
+  public synchronized void synchCaches(String projectKey) {
+    start();
+    runner.syncProject(projectKey);
+  }
+
   public synchronized void start() {
     if (runner == null) {
       tryStart();

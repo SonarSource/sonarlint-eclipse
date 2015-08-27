@@ -21,35 +21,25 @@ package org.sonar.ide.eclipse.ui.internal.command;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
 import org.sonar.ide.eclipse.ui.internal.views.issues.IssuesView;
 
-public class AnalyzeProjectsCommand extends AbstractHandler {
+public class AnalyzeProjectsCommand extends AbstractProjectsCommand {
 
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -75,40 +65,6 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
       AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(project, null));
       job.schedule();
       showIssuesViewAfterJobSuccess(job);
-    }
-  }
-
-  private void findSelectedProjects(ExecutionEvent event, List<IProject> selectedProjects) throws ExecutionException {
-    ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
-
-    if (selection instanceof IStructuredSelection) {
-      Object[] elems = ((IStructuredSelection) selection).toArray();
-      collectProjects(selectedProjects, elems);
-    }
-  }
-
-  private void collectProjects(List<IProject> selectedProjects, Object[] elems) {
-    for (Object elem : elems) {
-      if (elem instanceof IProject) {
-        selectedProjects.add((IProject) elem);
-      } else if (elem instanceof IWorkingSet) {
-        IWorkingSet ws = (IWorkingSet) elem;
-        collectProjects(selectedProjects, ws.getElements());
-      } else if (elem instanceof IAdaptable) {
-        IProject proj = (IProject) ((IAdaptable) elem).getAdapter(IProject.class);
-        if (proj != null) {
-          selectedProjects.add(proj);
-        }
-      }
-    }
-  }
-
-  private static void findProjectOfSelectedEditor(ExecutionEvent event, List<IProject> selectedProjects) {
-    IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
-    IEditorInput input = activeEditor.getEditorInput();
-    if (input instanceof IFileEditorInput) {
-      IFile currentFile = ((IFileEditorInput) input).getFile();
-      selectedProjects.add(currentFile.getProject());
     }
   }
 

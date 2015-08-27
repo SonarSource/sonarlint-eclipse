@@ -62,7 +62,7 @@ public class AnalyzeProjectJob extends Job {
   private SonarServer sonarServer;
   private final AnalyzeProjectRequest request;
 
-  private static final ISchedulingRule SONAR_ANALYSIS_RULE = ResourcesPlugin.getWorkspace().getRuleFactory().buildRule();
+  static final ISchedulingRule SONAR_ANALYSIS_RULE = ResourcesPlugin.getWorkspace().getRuleFactory().buildRule();
 
   public AnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request));
