@@ -175,10 +175,12 @@ public class AnalyzeProjectJob extends Job {
       @Override
       public void handle(Issue issue) {
         IResource r = ResourceUtils.findResource(sonarProject, issue.getComponentKey());
-        try {
-          SonarMarker.create(r, issue);
-        } catch (CoreException e) {
-          SonarCorePlugin.getDefault().error(e.getMessage(), e);
+        if (request.getOnlyOnFiles() == null || request.getOnlyOnFiles().contains(r)) {
+          try {
+            SonarMarker.create(r, issue);
+          } catch (CoreException e) {
+            SonarCorePlugin.getDefault().error(e.getMessage(), e);
+          }
         }
       }
     });
