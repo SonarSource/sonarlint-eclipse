@@ -67,7 +67,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   }
 
   private static AnalyzeProjectJob job(IProject project) {
-    return new AnalyzeProjectJob(new AnalyzeProjectRequest(project, null, false));
+    return new AnalyzeProjectJob(new AnalyzeProjectRequest(project, null));
   }
 
   @Test

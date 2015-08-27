@@ -44,7 +44,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
   // The shared instance
   private static SonarUiPlugin plugin;
 
-  private IPropertyChangeListener listener;
+  private IPropertyChangeListener prefListener;
 
   public SonarUiPlugin() {
     plugin = this;
@@ -60,7 +60,9 @@ public class SonarUiPlugin extends AbstractUIPlugin {
 
     setupIssuesUpdater();
 
-    listener = new IPropertyChangeListener() {
+    SonarCorePlugin.getDefault().setDebugEnabled(SonarConsole.isDebugEnabled());
+
+    prefListener = new IPropertyChangeListener() {
       @Override
       public void propertyChange(PropertyChangeEvent event) {
         if (event.getProperty().equals(PreferencesUtils.PREF_MARKER_SEVERITY) || event.getProperty().equals(PreferencesUtils.PREF_NEW_ISSUE_MARKER_SEVERITY)) {
@@ -70,9 +72,13 @@ public class SonarUiPlugin extends AbstractUIPlugin {
             SonarCorePlugin.getDefault().error("Unable to update marker severity", e);
           }
         }
+        if (event.getProperty().equals(SonarConsole.P_DEBUG_OUTPUT)) {
+          SonarCorePlugin.getDefault().setDebugEnabled(SonarConsole.isDebugEnabled());
+        }
       }
     };
-    getPreferenceStore().addPropertyChangeListener(listener);
+
+    getPreferenceStore().addPropertyChangeListener(prefListener);
   }
 
   @Override
@@ -81,7 +87,7 @@ public class SonarUiPlugin extends AbstractUIPlugin {
       if (getSonarConsole() != null) {
         SonarCorePlugin.getDefault().removeLogListener(getSonarConsole());
       }
-      getPreferenceStore().removePropertyChangeListener(listener);
+      getPreferenceStore().removePropertyChangeListener(prefListener);
     } finally {
       super.stop(context);
     }

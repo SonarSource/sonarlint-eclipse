@@ -47,7 +47,6 @@ import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonar.ide.eclipse.ui.internal.SonarUiPlugin;
-import org.sonar.ide.eclipse.ui.internal.console.SonarConsole;
 import org.sonar.ide.eclipse.ui.internal.views.issues.IssuesView;
 
 public class AnalyzeProjectsCommand extends AbstractHandler {
@@ -69,13 +68,11 @@ public class AnalyzeProjectsCommand extends AbstractHandler {
   }
 
   private void runAnalysisJob(List<IProject> selectedProjects) {
-    boolean debugEnabled = SonarConsole.isDebugEnabled();
     for (IProject project : selectedProjects) {
       if (!SonarNature.hasSonarNature(project)) {
         break;
       }
-      AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(project, null, false)
-        .setDebugEnabled(debugEnabled));
+      AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(project, null));
       job.schedule();
       showIssuesViewAfterJobSuccess(job);
     }

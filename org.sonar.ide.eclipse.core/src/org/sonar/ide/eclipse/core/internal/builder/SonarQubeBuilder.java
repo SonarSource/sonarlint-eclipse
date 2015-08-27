@@ -81,7 +81,7 @@ public class SonarQubeBuilder extends IncrementalProjectBuilder {
       SonarCorePlugin.getDefault().error("Error during builder", e);
     }
     for (IProject project : filesPerProject.keySet()) {
-      AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, filesPerProject.get(project), true);
+      AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, filesPerProject.get(project));
       new AnalyzeProjectJob(request).schedule();
 
     }

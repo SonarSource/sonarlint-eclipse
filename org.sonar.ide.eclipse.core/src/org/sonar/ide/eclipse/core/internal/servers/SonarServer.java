@@ -154,50 +154,69 @@ public final class SonarServer implements ISonarServer {
     this.disabled = disabled;
   }
 
-  public synchronized void startAnalysis(Properties props, boolean debugEnabled, IssueListener issueListener) {
-    if (runner == null) {
-      Properties globalProps = new Properties();
-      globalProps.setProperty(SonarProperties.SONAR_URL, getUrl());
-      if (StringUtils.isNotBlank(getUsername())) {
-        globalProps.setProperty(SonarProperties.SONAR_LOGIN, getUsername());
-        globalProps.setProperty(SonarProperties.SONAR_PASSWORD, getPassword());
-      }
-      globalProps.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_ISSUES);
-      if (debugEnabled) {
-        globalProps.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
-      }
-      globalProps.setProperty(SonarProperties.WORK_DIR, ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonar").toString());
-      runner = EmbeddedRunner.create(new LogOutput() {
-
-        @Override
-        public void log(String msg, Level level) {
-          switch (level) {
-            case TRACE:
-              SonarCorePlugin.getDefault().debug(msg + System.lineSeparator());
-              break;
-            case DEBUG:
-              SonarCorePlugin.getDefault().debug(msg + System.lineSeparator());
-              break;
-            case INFO:
-              SonarCorePlugin.getDefault().info(msg + System.lineSeparator());
-              break;
-            case WARN:
-              SonarCorePlugin.getDefault().info(msg + System.lineSeparator());
-              break;
-            case ERROR:
-              SonarCorePlugin.getDefault().error(msg + System.lineSeparator());
-              break;
-            default:
-              SonarCorePlugin.getDefault().info(msg + System.lineSeparator());
-          }
-
-        }
-      })
-        .setApp("Eclipse", SonarCorePlugin.getDefault().getBundle().getVersion().toString())
-        .addGlobalProperties(globalProps);
-      runner.start();
+  public synchronized void startAnalysis(Properties props, IssueListener issueListener) {
+    start();
+    if (SonarCorePlugin.getDefault().isDebugEnabled()) {
+      props.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
     }
     runner.runAnalysis(props, issueListener);
+  }
+
+  public synchronized void start() {
+    if (runner == null) {
+      tryStart();
+    }
+  }
+
+  private void tryStart() {
+    Properties globalProps = new Properties();
+    globalProps.setProperty(SonarProperties.SONAR_URL, getUrl());
+    if (StringUtils.isNotBlank(getUsername())) {
+      globalProps.setProperty(SonarProperties.SONAR_LOGIN, getUsername());
+      globalProps.setProperty(SonarProperties.SONAR_PASSWORD, getPassword());
+    }
+    globalProps.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_ISSUES);
+    if (SonarCorePlugin.getDefault().isDebugEnabled()) {
+      globalProps.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
+    }
+    globalProps.setProperty(SonarProperties.WORK_DIR, ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonar").append(id).toString());
+    runner = EmbeddedRunner.create(new LogOutput() {
+
+      @Override
+      public void log(String msg, Level level) {
+        switch (level) {
+          case TRACE:
+            SonarCorePlugin.getDefault().debug(msg + System.lineSeparator());
+            break;
+          case DEBUG:
+            SonarCorePlugin.getDefault().debug(msg + System.lineSeparator());
+            break;
+          case INFO:
+            SonarCorePlugin.getDefault().info(msg + System.lineSeparator());
+            break;
+          case WARN:
+            SonarCorePlugin.getDefault().info(msg + System.lineSeparator());
+            break;
+          case ERROR:
+            SonarCorePlugin.getDefault().error(msg + System.lineSeparator());
+            break;
+          default:
+            SonarCorePlugin.getDefault().info(msg + System.lineSeparator());
+        }
+
+      }
+    })
+      .setApp("Eclipse", SonarCorePlugin.getDefault().getBundle().getVersion().toString())
+      .addGlobalProperties(globalProps);
+    try {
+      SonarCorePlugin.getDefault().info("Starting SonarQube for server " + id + System.lineSeparator());
+      runner.start();
+      this.version = runner.serverVersion();
+    } catch (Exception e) {
+      SonarCorePlugin.getDefault().error("Unable to start server " + id + System.lineSeparator());
+      runner = null;
+      disabled = true;
+    }
   }
 
   public void stop() {

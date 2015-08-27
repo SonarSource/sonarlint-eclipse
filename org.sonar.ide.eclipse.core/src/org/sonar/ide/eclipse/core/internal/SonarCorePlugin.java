@@ -47,6 +47,8 @@ public class SonarCorePlugin extends AbstractPlugin {
 
   private static SonarCorePlugin plugin;
 
+  private boolean debugEnabled;
+
   public SonarCorePlugin() {
     plugin = this;
   }
@@ -144,6 +146,14 @@ public class SonarCorePlugin extends AbstractPlugin {
     getServersManager().stopAllServers();
 
     super.stop(context);
+  }
+
+  public boolean isDebugEnabled() {
+    return debugEnabled;
+  }
+
+  public void setDebugEnabled(boolean debugEnabled) {
+    this.debugEnabled = debugEnabled;
   }
 
 }

@@ -26,15 +26,12 @@ import org.eclipse.core.resources.IProject;
 
 public class AnalyzeProjectRequest {
 
-  private boolean debugEnabled;
-  private boolean quick;
   private final IProject project;
   private final Collection<IFile> onlyOnFiles;
 
-  public AnalyzeProjectRequest(IProject project, @Nullable Collection<IFile> onlyOnFiles, boolean quick) {
+  public AnalyzeProjectRequest(IProject project, @Nullable Collection<IFile> onlyOnFiles) {
     this.project = project;
     this.onlyOnFiles = onlyOnFiles;
-    this.quick = quick;
   }
 
   public IProject getProject() {
@@ -45,16 +42,4 @@ public class AnalyzeProjectRequest {
     return onlyOnFiles;
   }
 
-  public boolean isQuick() {
-    return quick;
-  }
-
-  public boolean isDebugEnabled() {
-    return debugEnabled;
-  }
-
-  public AnalyzeProjectRequest setDebugEnabled(boolean debugEnabled) {
-    this.debugEnabled = debugEnabled;
-    return this;
-  }
 }

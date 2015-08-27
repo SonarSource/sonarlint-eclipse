@@ -34,7 +34,6 @@ import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
-import org.sonar.ide.eclipse.wsclient.WSClientFactory;
 
 public class SonarServersManager implements ISonarServersManager {
 
@@ -89,8 +88,8 @@ public class SonarServersManager implements ISonarServersManager {
             }
             boolean auth = serverNode.getBoolean(AUTH_ATTRIBUTE, false);
             SonarServer sonarServer = new SonarServer(id, url, auth);
-            String serverVersion = getServerVersion(sonarServer);
-            sonarServer.setVersion(serverVersion != null ? serverVersion : "<unknown>");
+            sonarServer.start();
+            String serverVersion = sonarServer.getVersion();
             boolean disabled = false;
             if (serverVersion != null) {
               for (String prefix : UNSUPPORTED_VERSION_PREFIX) {
@@ -189,16 +188,6 @@ public class SonarServersManager implements ISonarServersManager {
   @Override
   public SonarServer create(String id, String location, String username, String password) {
     return new SonarServer(id, location, username, password);
-  }
-
-  @CheckForNull
-  private String getServerVersion(SonarServer server) {
-    try {
-      return WSClientFactory.getSonarClient(server).getServerVersion();
-    } catch (Exception e) {
-      SonarCorePlugin.getDefault().info("Unable to get version of server " + server.getUrl() + ": " + e.getMessage() + "\n");
-    }
-    return null;
   }
 
 }

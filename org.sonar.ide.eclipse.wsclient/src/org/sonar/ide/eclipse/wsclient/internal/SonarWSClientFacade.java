@@ -36,7 +36,6 @@ import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
 import org.sonar.wsclient.services.ResourceSearchQuery;
 import org.sonar.wsclient.services.ResourceSearchResult;
-import org.sonar.wsclient.services.ServerQuery;
 import org.sonar.wsclient.services.Source;
 import org.sonar.wsclient.services.SourceQuery;
 
@@ -62,11 +61,6 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     } catch (Exception e) {
       return new ConnectionTestResult(ConnectionTestStatus.CONNECT_ERROR, e.getMessage());
     }
-  }
-
-  @Override
-  public String getServerVersion() {
-    return find(new ServerQuery()).getVersion();
   }
 
   @Override

@@ -44,14 +44,12 @@ public interface ISonarWSClientFacade {
 
   ConnectionTestResult testConnection();
 
-  String getServerVersion();
-
   List<ISonarRemoteModule> listAllRemoteModules();
 
   List<ISonarRemoteModule> searchRemoteModules(String partialName);
 
   boolean exists(String resourceKey);
-  
+
   String[] getRemoteCode(String resourceKey);
 
 }

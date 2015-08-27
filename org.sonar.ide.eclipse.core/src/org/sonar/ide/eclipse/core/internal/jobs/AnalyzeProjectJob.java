@@ -69,8 +69,8 @@ public class AnalyzeProjectJob extends Job {
     this.request = request;
     this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(request.getProject());
     this.sonarProject = SonarProject.getInstance(request.getProject());
-    this.sonarServer = (SonarServer) SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
-    setPriority(request.isQuick() ? Job.SHORT : Job.LONG);
+    this.sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+    setPriority(this.request.getOnlyOnFiles() != null ? Job.SHORT : Job.LONG);
     // Prevent concurrent SQ analysis
     setRule(SONAR_ANALYSIS_RULE);
   }
@@ -104,7 +104,7 @@ public class AnalyzeProjectJob extends Job {
     // Analyze
     // To be sure to not reuse something from a previous analysis
     try {
-      run(request.getProject(), properties, request.isDebugEnabled(), monitor);
+      run(request.getProject(), properties, monitor);
     } catch (Exception e) {
       SonarCorePlugin.getDefault().error("Error during execution of SonarQube analysis", e);
       return new Status(Status.WARNING, SonarCorePlugin.PLUGIN_ID, "Error when executing SonarQube analysis", e);
@@ -163,18 +163,14 @@ public class AnalyzeProjectJob extends Job {
     properties.setProperty(SonarProperties.PROJECT_BASEDIR, baseDir.toString());
     properties.setProperty(SonarProperties.WORK_DIR, projectSpecificWorkDir.toString());
 
-    // Output file is relative to working dir
-    if (request.isDebugEnabled()) {
-      properties.setProperty(SonarProperties.VERBOSE_PROPERTY, "true");
-    }
     return properties;
   }
 
-  public void run(IProject project, Properties props, boolean debugEnabled, final IProgressMonitor monitor) {
-    if (debugEnabled) {
+  public void run(IProject project, Properties props, final IProgressMonitor monitor) {
+    if (SonarCorePlugin.getDefault().isDebugEnabled()) {
       SonarCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props));
     }
-    sonarServer.startAnalysis(props, debugEnabled, new IssueListener() {
+    sonarServer.startAnalysis(props, new IssueListener() {
 
       @Override
       public void handle(Issue issue) {
