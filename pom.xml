@@ -129,6 +129,7 @@
     <license.year>2010-2015</license.year>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho.version>0.23.1</tycho.version>
+    <tycho-extras-version>${tycho.version}</tycho-extras-version>
     <target.platform>e44</target.platform>
 
     <!-- disable accidental deployment -->
@@ -143,6 +144,8 @@
     <sonar.java.target>1.7</sonar.java.target>
     <sonar.scm.ignoreLocalModifications>true</sonar.scm.ignoreLocalModifications>
     <sonar.skippedModules>org.sonar.ide.eclipse.tests.common,org.sonar.ide.eclipse.core.tests,org.sonar.ide.eclipse.mylyn.tests</sonar.skippedModules>
+    
+    <jarsigner.skip>true</jarsigner.skip>
   </properties>
 
   <!-- These dependencies will be added to the target platform -->
@@ -352,6 +355,66 @@
               </environments>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.eclipse.tycho.extras</groupId>
+        <artifactId>tycho-pack200a-plugin</artifactId>
+        <version>${tycho-extras-version}</version>
+        <executions>
+          <execution>
+            <id>pack200-normalize</id>
+            <goals>
+              <goal>normalize</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jarsigner-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <id>sign</id>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <skip>${jarsigner.skip}</skip>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.eclipse.tycho.extras</groupId>
+        <artifactId>tycho-pack200b-plugin</artifactId>
+        <version>${tycho-extras-version}</version>
+        <executions>
+          <execution>
+            <id>pack200-pack</id>
+            <goals>
+              <goal>pack</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-p2-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>p2-metadata</id>
+            <goals>
+              <goal>p2-metadata</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <defaultP2Metadata>false</defaultP2Metadata>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -387,7 +450,7 @@
       </build>
     </profile>
 
-    <!-- TODO This profile is used to sign artifacts -->
+    <!-- This profile is used to sign artifacts -->
     <profile>
       <id>sign</id>
       <activation>
@@ -395,22 +458,9 @@
           <name>jarsigner.alias</name>
         </property>
       </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jarsigner-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>sign</id>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
+      <properties>
+        <jarsigner.skip>false</jarsigner.skip>
+      </properties>
     </profile>
   </profiles>
 </project>
