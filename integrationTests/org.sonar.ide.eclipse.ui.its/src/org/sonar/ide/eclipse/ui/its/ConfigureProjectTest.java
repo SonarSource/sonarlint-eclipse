@@ -11,7 +11,6 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.junit.Test;
-import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.its.bots.ConfigureProjectsWizardBot;
 import org.sonar.ide.eclipse.ui.its.bots.ImportProjectBot;
@@ -31,7 +30,11 @@ public class ConfigureProjectTest extends AbstractSQEclipseUITest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndSelect(PROJECT_NAME)
-      .clickContextMenu("Configure", "Associate with SonarQube...");
+      .clickContextMenu("Configure", "Enable SonarQube");
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndSelect(PROJECT_NAME)
+      .clickContextMenu("SonarQube", "Associate with SonarQube Server...");
 
     ConfigureProjectsWizardBot projectWizardBot = new ConfigureProjectsWizardBot(bot);
 
@@ -39,7 +42,7 @@ public class ConfigureProjectTest extends AbstractSQEclipseUITest {
     projectWizardBot.finish();
 
     IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(PROJECT_NAME);
-    ISonarProject sonarProject = SonarProject.getInstance(project);
+    SonarProject sonarProject = SonarProject.getInstance(project);
     assertThat(sonarProject, is(notNullValue()));
     assertThat(sonarProject.getKey(), is("org.sonar-ide.tests:reference"));
 

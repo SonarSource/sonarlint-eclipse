@@ -59,7 +59,6 @@ public class AnalyzeProjectJob extends Job {
 
   private List<SonarProperty> extraProps;
 
-  private SonarServer sonarServer;
   private final AnalyzeProjectRequest request;
 
   static final ISchedulingRule SONAR_ANALYSIS_RULE = ResourcesPlugin.getWorkspace().getRuleFactory().buildRule();
@@ -69,7 +68,6 @@ public class AnalyzeProjectJob extends Job {
     this.request = request;
     this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(request.getProject());
     this.sonarProject = SonarProject.getInstance(request.getProject());
-    this.sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     setPriority(this.request.getOnlyOnFiles() != null ? Job.SHORT : Job.LONG);
     // Prevent concurrent SQ analysis
     setRule(SONAR_ANALYSIS_RULE);
@@ -87,26 +85,29 @@ public class AnalyzeProjectJob extends Job {
 
   @Override
   protected IStatus run(final IProgressMonitor monitor) {
+    SonarServer serverToUse = findServerToUse();
+
     // Verify Host
-    if (getSonarServer() == null) {
-      SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project, request.getProject().getName(), sonarProject.getUrl()) + "\n");
+    if (serverToUse == null) {
+      SonarCorePlugin.getDefault()
+        .error(NLS.bind(Messages.No_matching_server_in_configuration_for_project, request.getProject().getName(), sonarProject.getServerId()) + System.lineSeparator());
       return Status.OK_STATUS;
     }
     // Verify version and server is reachable
-    if (getSonarServer().disabled()) {
-      SonarCorePlugin.getDefault().info("SonarQube server " + sonarProject.getUrl() + " is disabled" + System.lineSeparator());
+    if (serverToUse.disabled()) {
+      SonarCorePlugin.getDefault().info("SonarQube server " + sonarProject.getServerId() + " is disabled" + System.lineSeparator());
       return Status.OK_STATUS;
     }
 
     // Configure
-    Properties properties = configureAnalysis(monitor, extraProps);
+    Properties properties = configureAnalysis(monitor, extraProps, serverToUse);
 
     // Analyze
     // To be sure to not reuse something from a previous analysis
     try {
-      run(request.getProject(), properties, monitor);
+      run(request.getProject(), properties, serverToUse, monitor);
     } catch (Exception e) {
-      SonarCorePlugin.getDefault().error("Error during execution of SonarQube analysis", e);
+      SonarCorePlugin.getDefault().error("Error during execution of SonarQube analysis" + System.lineSeparator(), e);
       return new Status(Status.WARNING, SonarCorePlugin.PLUGIN_ID, "Error when executing SonarQube analysis", e);
     }
     if (monitor.isCanceled()) {
@@ -116,12 +117,20 @@ public class AnalyzeProjectJob extends Job {
     return Status.OK_STATUS;
   }
 
-  private String getServerVersion() {
-    return sonarServer.getVersion();
-  }
-
-  private SonarServer getSonarServer() {
-    return sonarServer;
+  private SonarServer findServerToUse() {
+    // Unassociated projects should use first available server
+    SonarServer serverToUse = null;
+    if (!sonarProject.isAssociated()) {
+      for (SonarServer server : SonarCorePlugin.getServersManager().getServers()) {
+        if (!server.disabled()) {
+          serverToUse = server;
+          break;
+        }
+      }
+    } else {
+      serverToUse = sonarProject.getServer();
+    }
+    return serverToUse;
   }
 
   /**
@@ -131,7 +140,7 @@ public class AnalyzeProjectJob extends Job {
    * @return
    */
   @VisibleForTesting
-  public Properties configureAnalysis(final IProgressMonitor monitor, List<SonarProperty> extraProps) {
+  public Properties configureAnalysis(final IProgressMonitor monitor, List<SonarProperty> extraProps, SonarServer server) {
     Properties properties = new Properties();
     IProject project = request.getProject();
     File baseDir = project.getLocation().toFile();
@@ -141,7 +150,7 @@ public class AnalyzeProjectJob extends Job {
     properties.setProperty(SonarProperties.ANALYSIS_MODE, SonarProperties.ANALYSIS_MODE_ISSUES);
 
     // Configuration by configurators (common and language specific)
-    ConfiguratorUtils.configure(project, properties, getServerVersion(), monitor);
+    ConfiguratorUtils.configure(project, properties, server.getVersion(), monitor);
 
     // Append workspace and project properties
     for (SonarProperty sonarProperty : extraProps) {
@@ -166,14 +175,14 @@ public class AnalyzeProjectJob extends Job {
     return properties;
   }
 
-  public void run(IProject project, final Properties props, final IProgressMonitor monitor) {
+  public void run(IProject project, final Properties props, final SonarServer server, final IProgressMonitor monitor) {
     if (SonarCorePlugin.getDefault().isDebugEnabled()) {
-      SonarCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props));
+      SonarCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props) + System.lineSeparator());
     }
     Thread t = new Thread() {
       @Override
       public void run() {
-        sonarServer.startAnalysis(props, new IssueListener() {
+        server.startAnalysis(props, new IssueListener() {
 
           @Override
           public void handle(Issue issue) {

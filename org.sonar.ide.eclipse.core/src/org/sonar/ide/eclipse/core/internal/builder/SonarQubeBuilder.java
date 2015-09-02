@@ -31,6 +31,7 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.SonarNature;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 
@@ -61,7 +62,7 @@ public class SonarQubeBuilder extends IncrementalProjectBuilder {
         @Override
         public boolean visit(IResourceDelta delta) {
           IResource resource = delta.getResource();
-          if (!resource.exists() || resource.isDerived() || resource.isHidden()) {
+          if (!SonarNature.hasSonarNature(resource.getProject()) || !resource.exists() || resource.isDerived() || resource.isHidden()) {
             return false;
           }
           // Ignore changes on .project, .settings, ...

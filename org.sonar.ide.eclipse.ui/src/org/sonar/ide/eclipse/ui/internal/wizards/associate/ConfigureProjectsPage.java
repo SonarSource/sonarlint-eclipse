@@ -32,7 +32,6 @@ import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.property.value.IValueProperty;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
@@ -225,27 +224,22 @@ public class ConfigureProjectsPage extends WizardPage {
     final ProjectAssociationModel[] projectAssociations = getProjects();
     for (ProjectAssociationModel projectAssociation : projectAssociations) {
       if (StringUtils.isNotBlank(projectAssociation.getKey())) {
-        try {
-          boolean changed = false;
-          IProject project = projectAssociation.getProject();
-          SonarProject sonarProject = SonarProject.getInstance(project);
-          if (!projectAssociation.getUrl().equals(sonarProject.getUrl())) {
-            sonarProject.setUrl(projectAssociation.getUrl());
-            changed = true;
-          }
-          if (!projectAssociation.getKey().equals(sonarProject.getKey())) {
-            sonarProject.setKey(projectAssociation.getKey());
-            changed = true;
-          }
-          if (changed) {
-            sonarProject.save();
-          }
-          if (!SonarNature.hasSonarNature(project)) {
-            SonarNature.enableNature(project);
-          }
-        } catch (CoreException e) {
-          SonarCorePlugin.getDefault().error(e.getMessage(), e);
-          return false;
+        boolean changed = false;
+        IProject project = projectAssociation.getProject();
+        SonarProject sonarProject = SonarProject.getInstance(project);
+        if (!projectAssociation.getServerId().equals(sonarProject.getServerId())) {
+          sonarProject.setServerId(projectAssociation.getServerId());
+          changed = true;
+        }
+        if (!projectAssociation.getKey().equals(sonarProject.getKey())) {
+          sonarProject.setKey(projectAssociation.getKey());
+          changed = true;
+        }
+        if (changed) {
+          sonarProject.save();
+        }
+        if (!SonarNature.hasSonarNature(project)) {
+          SonarNature.enableNature(project);
         }
       }
     }
@@ -334,7 +328,7 @@ public class ConfigureProjectsPage extends WizardPage {
         if (SonarNature.hasSonarNature(projectAssociation.getProject())) {
           SonarProject sonarProject = SonarProject.getInstance(projectAssociation.getProject());
           String key = sonarProject.getKey();
-          String url = sonarProject.getUrl();
+          String url = sonarProject.getServerId();
           validateProjectAssociation(remoteSonarProjects, projectAssociation, key, url);
         }
       }

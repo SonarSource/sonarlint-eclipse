@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.IPath;
 import org.sonar.ide.eclipse.core.internal.AdapterUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
+import org.sonar.ide.eclipse.core.internal.configurator.ConfiguratorUtils;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 public final class ResourceUtils {
@@ -73,11 +74,12 @@ public final class ResourceUtils {
 
   @CheckForNull
   public static IResource findResource(SonarProject sonarProject, String resourceKey) {
-    if (sonarProject != null && resourceKey.equals(sonarProject.getKey())) {
+    String projectKey = sonarProject.isAssociated() ? sonarProject.getKey() : ConfiguratorUtils.UNASSOCIATED;
+    if (sonarProject != null && resourceKey.equals(projectKey)) {
       return sonarProject.getProject();
     }
-    if (sonarProject != null && resourceKey.startsWith(sonarProject.getKey() + SonarKeyUtils.PROJECT_DELIMITER)) {
-      String resourceKeyMinusProjectKey = resourceKey.substring(sonarProject.getKey().length() + 1);
+    if (sonarProject != null && resourceKey.startsWith(projectKey + SonarKeyUtils.PROJECT_DELIMITER)) {
+      String resourceKeyMinusProjectKey = resourceKey.substring(projectKey.length() + 1);
       return sonarProject.getProject().findMember(resourceKeyMinusProjectKey);
     }
     return null;

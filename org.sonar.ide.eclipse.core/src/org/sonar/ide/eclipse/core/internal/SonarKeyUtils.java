@@ -20,7 +20,7 @@
 package org.sonar.ide.eclipse.core.internal;
 
 import org.apache.commons.lang.StringUtils;
-import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
+import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 
 public final class SonarKeyUtils {
   public static final char PROJECT_DELIMITER = ':';
@@ -60,38 +60,13 @@ public final class SonarKeyUtils {
   /**
    * Examples:
    * <ul>
-   * <li>org.example:myproject:[default]</li>
-   * <li>org.example:myproject:org.example.mypackage</li>
-   * </ul>
-   *
-   * @return key for Java package
-   */
-  public static String packageKey(ISonarProject project, String packageName) {
-    return project.getKey() + PROJECT_DELIMITER + StringUtils.defaultIfEmpty(packageName, DEFAULT_PACKAGE_NAME);
-  }
-
-  /**
-   * Examples:
-   * <ul>
    * <li>myproject:ui/foo.c</li>
    * </ul>
    *
    * @return key for non Java resources
    */
-  public static String resourceKey(ISonarProject project, String resourcePath) {
+  public static String resourceKey(SonarProject project, String resourcePath) {
     return project.getKey() + PROJECT_DELIMITER + resourcePath;
   }
 
-  /**
-   * Examples:
-   * <ul>
-   * <li>org.example:myproject:[default].ClassOnDefaultPackage</li>
-   * <li>org.example:myproject:org.example.mypackage.ClassOne</li>
-   * </ul>
-   *
-   * @return key for Java file
-   */
-  public static String classKey(ISonarProject project, String packageName, String fileName) {
-    return packageKey(project, packageName) + PACKAGE_DELIMITER + fileName;
-  }
 }

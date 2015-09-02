@@ -32,12 +32,10 @@ import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 public class SyncProjectJob extends Job {
 
   private final SonarProject sonarProject;
-  private final SonarServer sonarServer;
 
   public SyncProjectJob(SonarProject sonarProject) {
     super("Synchronize caches of project " + sonarProject.getName());
     this.sonarProject = sonarProject;
-    this.sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
     setPriority(Job.LONG);
     // Prevent concurrent SQ analysis
     setRule(AnalyzeProjectJob.SONAR_ANALYSIS_RULE);
@@ -45,19 +43,21 @@ public class SyncProjectJob extends Job {
 
   @Override
   protected IStatus run(final IProgressMonitor monitor) {
+    SonarServer serverToUse = findServerToUse();
+
     // Verify Host
-    if (getSonarServer() == null) {
-      SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project, sonarProject.getName(), sonarProject.getUrl()) + "\n");
+    if (serverToUse == null) {
+      SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project, sonarProject.getName(), sonarProject.getServerId()) + "\n");
       return Status.OK_STATUS;
     }
     // Verify version and server is reachable
-    if (getSonarServer().disabled()) {
-      SonarCorePlugin.getDefault().info("SonarQube server " + sonarProject.getUrl() + " is disabled");
+    if (serverToUse.disabled()) {
+      SonarCorePlugin.getDefault().info("SonarQube server " + sonarProject.getServerId() + " is disabled");
       return Status.OK_STATUS;
     }
 
     try {
-      getSonarServer().synchCaches(sonarProject.getKey());
+      serverToUse.synchCaches(sonarProject.getKey());
     } catch (Exception e) {
       SonarCorePlugin.getDefault().error("Error during execution of SonarQube analysis", e);
       return new Status(Status.WARNING, SonarCorePlugin.PLUGIN_ID, "Error when executing SonarQube analysis", e);
@@ -69,8 +69,20 @@ public class SyncProjectJob extends Job {
     return Status.OK_STATUS;
   }
 
-  private SonarServer getSonarServer() {
-    return sonarServer;
+  private SonarServer findServerToUse() {
+    // Unassociated projects should use first available server
+    SonarServer serverToUse = null;
+    if (!sonarProject.isAssociated()) {
+      for (SonarServer server : SonarCorePlugin.getServersManager().getServers()) {
+        if (!server.disabled()) {
+          serverToUse = server;
+          break;
+        }
+      }
+    } else {
+      serverToUse = sonarProject.getServer();
+    }
+    return serverToUse;
   }
 
 }

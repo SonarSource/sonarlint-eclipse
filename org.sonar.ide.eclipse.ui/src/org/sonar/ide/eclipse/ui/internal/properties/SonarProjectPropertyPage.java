@@ -65,7 +65,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
     layout.numColumns = 2;
     layout.verticalSpacing = 9;
 
-    addText(Messages.SonarProjectPropertyBlock_label_host, sonarProject.getUrl(), container);
+    addText(Messages.SonarProjectPropertyBlock_label_host, sonarProject.getServerId(), container);
     addText(Messages.SonarProjectPropertyBlock_label_key, sonarProject.getKey(), container);
 
     return container;

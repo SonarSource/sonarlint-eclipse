@@ -29,11 +29,11 @@ import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
-import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.ResourceUtils;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 import org.sonar.ide.eclipse.core.resources.ISonarFile;
+import org.sonar.ide.eclipse.core.resources.ISonarProject;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
 
 /**
@@ -42,7 +42,7 @@ import org.sonar.ide.eclipse.core.resources.ISonarResource;
 @SuppressWarnings("rawtypes")
 public class SonarElementsAdapterFactory implements IAdapterFactory {
 
-  private static final Class<?>[] ADAPTER_LIST = {ISonarResource.class, ISonarFile.class};
+  private static final Class<?>[] ADAPTER_LIST = {ISonarResource.class, ISonarFile.class, ISonarProject.class};
 
   @Override
   public Object getAdapter(Object adaptableObject, Class adapterType) {
@@ -51,6 +51,9 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
     } else if (adapterType == ISonarFile.class) {
       ISonarResource res = getSonarResource(adaptableObject);
       return (res instanceof ISonarFile) ? res : null;
+    } else if (adapterType == ISonarProject.class) {
+      ISonarResource res = getSonarResource(adaptableObject);
+      return (res instanceof ISonarProject) ? res : null;
     }
     return null;
   }
@@ -72,11 +75,11 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
       if (!isConfigured(parentProject)) {
         return null;
       }
-      ISonarProject sonarProject = SonarProject.getInstance(parentProject);
-      SonarServer sonarServer = SonarCorePlugin.getServersManager().findServer(sonarProject.getUrl());
+      SonarProject sonarProject = SonarProject.getInstance(parentProject);
+      SonarServer sonarServer = sonarProject.getServer();
       if (sonarServer == null) {
         SonarCorePlugin.getDefault().error(NLS.bind(Messages.No_matching_server_in_configuration_for_project,
-          sonarProject.getProject().getName(), sonarProject.getUrl()) + "\n");
+          sonarProject.getProject().getName(), sonarProject.getServerId()) + "\n");
         return null;
       }
       String serverVersion = sonarServer.getVersion();
@@ -90,7 +93,7 @@ public class SonarElementsAdapterFactory implements IAdapterFactory {
     return null;
   }
 
-  private static ISonarResource createSonarResource(IResource resource, ISonarProject sonarProject, String keyWithoutProject) {
+  private static ISonarResource createSonarResource(IResource resource, SonarProject sonarProject, String keyWithoutProject) {
     if (resource instanceof IFile) {
       return SonarCorePlugin.createSonarFile((IFile) resource, SonarKeyUtils.resourceKey(sonarProject, keyWithoutProject), resource.getName());
     }

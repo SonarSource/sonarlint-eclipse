@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.internal.command;
 
-import com.google.common.collect.Lists;
 import java.util.List;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -43,9 +42,8 @@ public class AnalyzeProjectsCommand extends AbstractProjectsCommand {
 
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    List<IProject> selectedProjects = Lists.newArrayList();
 
-    findSelectedProjects(event, selectedProjects);
+    List<IProject> selectedProjects = findSelectedProjects(event);
     if (selectedProjects.isEmpty()) {
       findProjectOfSelectedEditor(event, selectedProjects);
     }

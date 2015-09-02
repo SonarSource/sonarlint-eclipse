@@ -21,17 +21,18 @@ package org.sonar.ide.eclipse.core.internal.resources;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.CheckForNull;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
+import org.sonar.ide.eclipse.core.resources.ISonarProject;
 
-/**
- * @author Evgeny Mandrikov
- */
 public class SonarProject implements ISonarProject {
 
   private final IProject project;
-  private String url;
+  private String serverId;
   private String key;
   private List<SonarProperty> extraProperties = new ArrayList<SonarProperty>();
 
@@ -51,13 +52,13 @@ public class SonarProject implements ISonarProject {
     SonarCorePlugin.getDefault().getProjectManager().saveSonarConfiguration(project, this);
   }
 
-  @Override
-  public String getUrl() {
-    return url;
+  @CheckForNull
+  public SonarServer getServer() {
+    return SonarCorePlugin.getServersManager().findServer(serverId);
   }
 
-  public void setUrl(String url) {
-    this.url = url;
+  public void setServerId(String id) {
+    this.serverId = id;
   }
 
   @Override
@@ -84,13 +85,21 @@ public class SonarProject implements ISonarProject {
     return project.getName();
   }
 
-  @Override
   public List<SonarProperty> getExtraProperties() {
     return extraProperties;
   }
 
   public void setExtraProperties(List<SonarProperty> extraProperties) {
     this.extraProperties = extraProperties;
+  }
+
+  public String getServerId() {
+    return serverId;
+  }
+
+  @Override
+  public boolean isAssociated() {
+    return StringUtils.isNotBlank(serverId);
   }
 
 }

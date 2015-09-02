@@ -36,14 +36,14 @@ public class ProjectAssociationModel extends AbstractModelObject {
   private final IProject project;
   private String sonarProjectName;
   private String key;
-  private String url;
+  private String serverId;
 
   public ProjectAssociationModel(IProject project) {
     this.project = project;
     if (SonarNature.hasSonarNature(project)) {
       SonarProject sonarProject = SonarProject.getInstance(project);
       this.key = sonarProject.getKey();
-      this.url = sonarProject.getUrl();
+      this.serverId = sonarProject.getServerId();
       this.sonarProjectName = "<Searching name...>";
     }
   }
@@ -60,7 +60,7 @@ public class ProjectAssociationModel extends AbstractModelObject {
     if (key == null) {
       return "<Click here to start searching for a remote SonarQube project...>";
     } else {
-      return sonarProjectName + " on " + url + " (" + key + ")";
+      return sonarProjectName + " on " + serverId + " (" + key + ")";
     }
   }
 
@@ -68,10 +68,10 @@ public class ProjectAssociationModel extends AbstractModelObject {
     return key;
   }
 
-  public void associate(String url, String sonarProjectName, String key) {
+  public void associate(String serverId, String sonarProjectName, String key) {
     String oldValue = getSonarFullName();
     this.key = key;
-    this.url = url;
+    this.serverId = serverId;
     this.sonarProjectName = sonarProjectName;
     firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());
   }
@@ -79,13 +79,13 @@ public class ProjectAssociationModel extends AbstractModelObject {
   public void unassociate() {
     String oldValue = getSonarFullName();
     this.key = null;
-    this.url = null;
+    this.serverId = null;
     this.sonarProjectName = null;
     firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());
   }
 
-  public String getUrl() {
-    return url;
+  public String getServerId() {
+    return serverId;
   }
 
   public String getSonarProjectName() {

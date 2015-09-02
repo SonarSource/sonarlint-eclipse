@@ -41,7 +41,7 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker>i
   protected void open(IMarker element) {
     SonarProject sonarProject = SonarProject.getInstance(element.getResource());
     try {
-      String url = new SonarUrls().ruleDescriptionUrl("" + element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR), sonarProject.getUrl());
+      String url = new SonarUrls().ruleDescriptionUrl("" + element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR), sonarProject.getServerId());
       super.open(sonarProject, url);
     } catch (CoreException e) {
       SonarCorePlugin.getDefault().error("Unable to open rule description", e);

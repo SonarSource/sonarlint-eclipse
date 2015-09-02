@@ -24,34 +24,20 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
-import org.sonar.ide.eclipse.core.internal.jobs.SyncProjectJob;
-import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 
-public class SyncProjectsCommand extends AbstractProjectsCommand {
+public class EnableSonarQubeNatureCommand extends AbstractProjectsCommand {
 
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
     List<IProject> selectedProjects = findSelectedProjects(event);
-    if (selectedProjects.isEmpty()) {
-      findProjectOfSelectedEditor(event, selectedProjects);
-    }
 
-    if (!selectedProjects.isEmpty()) {
-      runSyncJob(selectedProjects);
+    for (IProject project : selectedProjects) {
+      if (!SonarNature.hasSonarNature(project)) {
+        SonarNature.enableNature(project);
+      }
     }
 
     return null;
-  }
-
-  private void runSyncJob(List<IProject> selectedProjects) {
-    for (IProject project : selectedProjects) {
-      if (!SonarNature.hasSonarNature(project)) {
-        break;
-      }
-      SonarProject sonarProject = SonarProject.getInstance(project);
-      SyncProjectJob job = new SyncProjectJob(sonarProject);
-      job.schedule();
-    }
   }
 
 }

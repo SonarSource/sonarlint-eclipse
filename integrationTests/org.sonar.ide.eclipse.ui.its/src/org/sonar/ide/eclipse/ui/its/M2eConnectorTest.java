@@ -10,7 +10,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.junit.Test;
 import org.sonar.ide.eclipse.core.internal.SonarNature;
-import org.sonar.ide.eclipse.core.internal.resources.ISonarProject;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.ui.its.bots.ImportMavenProjectBot;
 import org.sonar.ide.eclipse.ui.its.bots.ImportProjectBot;
@@ -34,7 +33,7 @@ public class M2eConnectorTest extends AbstractSQEclipseUITest {
 
     IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(PROJECT_NAME);
     assertThat(SonarNature.hasSonarNature(project)).isTrue();
-    ISonarProject sonarProject = SonarProject.getInstance(project);
+    SonarProject sonarProject = SonarProject.getInstance(project);
     assertThat(sonarProject).isNotNull();
     assertThat(sonarProject.getKey()).isEqualTo("org.sonar-ide.tests:reference");
     // SONARIDE-355
@@ -49,7 +48,7 @@ public class M2eConnectorTest extends AbstractSQEclipseUITest {
 
     IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("example-java-maven");
     assertThat(SonarNature.hasSonarNature(project)).isTrue();
-    ISonarProject sonarProject = SonarProject.getInstance(project);
+    SonarProject sonarProject = SonarProject.getInstance(project);
     assertThat(sonarProject).isNotNull();
     assertThat(sonarProject.getKey()).isEqualTo("org.codehaus.sonar:example-java-maven");
   }

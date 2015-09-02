@@ -17,24 +17,9 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonar.ide.eclipse.core.internal.resources;
+package org.sonar.ide.eclipse.core.resources;
 
-import org.sonar.ide.eclipse.core.resources.ISonarResource;
-
-import java.util.List;
-
-/**
- * Represents a view of a project in terms of Sonar.
- *
- * @noimplement This interface is not intended to be implemented by clients.
- * @noextend This interface is not intended to be extended by clients.
- */
 public interface ISonarProject extends ISonarResource {
 
-  @Override
-  String getKey();
-
-  String getUrl();
-
-  List<SonarProperty> getExtraProperties();
+  boolean isAssociated();
 }

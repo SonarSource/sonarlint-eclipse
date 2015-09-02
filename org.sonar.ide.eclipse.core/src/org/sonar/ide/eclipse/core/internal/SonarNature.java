@@ -102,28 +102,36 @@ public class SonarNature implements IProjectNature {
     }
   }
 
-  public static void enableNature(IProject project) throws CoreException {
-    IProjectDescription description = project.getDescription();
-    String[] prevNatures = description.getNatureIds();
-    String[] newNatures = new String[prevNatures.length + 1];
-    System.arraycopy(prevNatures, 0, newNatures, 1, prevNatures.length);
-    newNatures[0] = NATURE_ID;
-    description.setNatureIds(newNatures);
-    project.setDescription(description, null);
+  public static void enableNature(IProject project) {
+    try {
+      IProjectDescription description = project.getDescription();
+      String[] prevNatures = description.getNatureIds();
+      String[] newNatures = new String[prevNatures.length + 1];
+      System.arraycopy(prevNatures, 0, newNatures, 1, prevNatures.length);
+      newNatures[0] = NATURE_ID;
+      description.setNatureIds(newNatures);
+      project.setDescription(description, null);
+    } catch (CoreException e) {
+      throw new IllegalStateException("Unable to enable SonarQube nature", e);
+    }
   }
 
-  public static void disableNature(IProject project) throws CoreException {
-    project.deleteMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+  public static void disableNature(IProject project) {
+    try {
+      project.deleteMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
 
-    IProjectDescription description = project.getDescription();
-    List<String> newNatures = Lists.newArrayList();
-    for (String natureId : description.getNatureIds()) {
-      if (!NATURE_ID.equals(natureId)) {
-        newNatures.add(natureId);
+      IProjectDescription description = project.getDescription();
+      List<String> newNatures = Lists.newArrayList();
+      for (String natureId : description.getNatureIds()) {
+        if (!NATURE_ID.equals(natureId)) {
+          newNatures.add(natureId);
+        }
       }
+      description.setNatureIds(newNatures.toArray(new String[newNatures.size()]));
+      project.setDescription(description, null);
+    } catch (CoreException e) {
+      throw new IllegalStateException("Unable to disable SonarQube nature", e);
     }
-    description.setNatureIds(newNatures.toArray(new String[newNatures.size()]));
-    project.setDescription(description, null);
   }
 
   public static void addSonarQubeBuilderIfMissing(final IProject project) throws CoreException {

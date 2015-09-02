@@ -169,15 +169,15 @@ public class SonarCorePlugin extends AbstractPlugin {
   /**
    * Create a new SonarQube project from the given project. Enable SonarQube nature.
    * @param project
-   * @param url
+   * @param serverId
    * @param key
    * @param analysedLocally
    * @return
    * @throws CoreException
    */
-  public static SonarProject createSonarProject(IProject project, String url, String key) throws CoreException {
+  public static SonarProject createSonarProject(IProject project, String serverId, String key) throws CoreException {
     SonarProject sonarProject = SonarProject.getInstance(project);
-    sonarProject.setUrl(url);
+    sonarProject.setServerId(serverId);
     sonarProject.setKey(key);
     sonarProject.save();
     SonarNature.enableNature(project);

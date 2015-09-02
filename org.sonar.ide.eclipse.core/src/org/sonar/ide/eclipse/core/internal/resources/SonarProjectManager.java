@@ -35,9 +35,10 @@ import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
  */
 public class SonarProjectManager {
 
-  private static final String VERSION = "2";
+  private static final String VERSION = "3";
   private static final String P_VERSION = "version";
   private static final String P_SONAR_SERVER_URL = "serverUrl";
+  private static final String P_SONAR_SERVER_ID = "serverId";
 
   /**
    * @deprecated Replaced by P_PROJECT_KEY
@@ -61,7 +62,6 @@ public class SonarProjectManager {
   private static final String P_EXTRA_PROPS = "extraProperties";
 
   public SonarProject readSonarConfiguration(IProject project) {
-
     IScopeContext projectScope = new ProjectScope(project);
     IEclipsePreferences projectNode = projectScope.getNode(SonarCorePlugin.PLUGIN_ID);
     if (projectNode == null) {
@@ -90,7 +90,7 @@ public class SonarProjectManager {
     }
 
     SonarProject sonarProject = new SonarProject(project);
-    sonarProject.setUrl(projectNode.get(P_SONAR_SERVER_URL, ""));
+    sonarProject.setServerId(projectNode.get(P_SONAR_SERVER_ID, projectNode.get(P_SONAR_SERVER_URL, "")));
     sonarProject.setKey(key);
     String extraArgsAsString = projectNode.get(P_EXTRA_PROPS, null);
     List<SonarProperty> sonarProperties = new ArrayList<SonarProperty>();
@@ -121,7 +121,7 @@ public class SonarProjectManager {
 
     projectNode.put(P_VERSION, VERSION);
 
-    projectNode.put(P_SONAR_SERVER_URL, configuration.getUrl());
+    projectNode.put(P_SONAR_SERVER_ID, configuration.getServerId());
     projectNode.put(P_PROJECT_KEY, configuration.getKey());
     if (configuration.getExtraProperties() != null) {
       List<String> keyValuePairs = new ArrayList<String>(configuration.getExtraProperties().size());

@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.ui.internal.command;
 
+import com.google.common.collect.Lists;
 import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -36,13 +37,16 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 public abstract class AbstractProjectsCommand extends AbstractHandler {
 
-  protected void findSelectedProjects(ExecutionEvent event, List<IProject> selectedProjects) throws ExecutionException {
+  protected List<IProject> findSelectedProjects(ExecutionEvent event) throws ExecutionException {
+    List<IProject> selectedProjects = Lists.newArrayList();
     ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
 
     if (selection instanceof IStructuredSelection) {
       Object[] elems = ((IStructuredSelection) selection).toArray();
       collectProjects(selectedProjects, elems);
     }
+
+    return selectedProjects;
   }
 
   private void collectProjects(List<IProject> selectedProjects, Object[] elems) {

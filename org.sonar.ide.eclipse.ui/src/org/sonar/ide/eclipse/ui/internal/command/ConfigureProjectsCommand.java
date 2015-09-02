@@ -19,26 +19,20 @@
  */
 package org.sonar.ide.eclipse.ui.internal.command;
 
-import com.google.common.collect.Lists;
-import org.eclipse.core.commands.AbstractHandler;
+import java.util.List;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonar.ide.eclipse.ui.internal.wizards.associate.ConfigureProjectsWizard;
-
-import java.util.List;
 
 /**
  *
  * @see ConfigureProjectsWizard
  */
-public class ConfigureProjectsCommand extends AbstractHandler {
+public class ConfigureProjectsCommand extends AbstractProjectsCommand {
 
   public Display getDisplay() {
     Display display = Display.getCurrent();
@@ -50,22 +44,7 @@ public class ConfigureProjectsCommand extends AbstractHandler {
 
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
-
-    List<IProject> selectedProjects = Lists.newArrayList();
-
-    @SuppressWarnings("rawtypes")
-    List elems = selection.toList();
-    for (Object elem : elems) {
-      if (elem instanceof IProject) {
-        selectedProjects.add((IProject) elem);
-      } else if (elem instanceof IAdaptable) {
-        IProject proj = (IProject) ((IAdaptable) elem).getAdapter(IProject.class);
-        if (proj != null) {
-          selectedProjects.add(proj);
-        }
-      }
-    }
+    List<IProject> selectedProjects = findSelectedProjects(event);
 
     ConfigureProjectsWizard wizard = new ConfigureProjectsWizard(selectedProjects);
 

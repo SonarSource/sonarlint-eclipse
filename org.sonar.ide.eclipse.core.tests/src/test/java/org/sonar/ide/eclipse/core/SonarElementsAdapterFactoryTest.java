@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.sonar.ide.eclipse.core.SonarElementsAdapterFactory;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.resources.ISonarFile;
 import org.sonar.ide.eclipse.core.resources.ISonarResource;
@@ -57,7 +56,7 @@ public class SonarElementsAdapterFactoryTest extends SonarTestCase {
 
   @Test
   public void testAdapterList() {
-    assertThat(factory.getAdapterList().length, is(2));
+    assertThat(factory.getAdapterList().length, is(3));
   }
 
   @Test

@@ -73,7 +73,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   @Test
   public void shouldConfigureAnalysis() throws Exception {
     AnalyzeProjectJob job = job(project);
-    Properties props = job.configureAnalysis(MONITOR, new ArrayList<SonarProperty>());
+    Properties props = job.configureAnalysis(MONITOR, new ArrayList<SonarProperty>(), server);
 
     assertThat(props.get(SonarProperties.PROJECT_KEY_PROPERTY).toString()).isEqualTo("bar:foo");
     // SONARIDE-386 check that at least some JARs from the VM are appended
@@ -94,7 +94,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   @Test
   public void shouldConfigureAnalysisWithExtraProps() throws Exception {
     AnalyzeProjectJob job = job(project);
-    Properties props = job.configureAnalysis(MONITOR, Arrays.asList(new SonarProperty("sonar.foo", "value")));
+    Properties props = job.configureAnalysis(MONITOR, Arrays.asList(new SonarProperty("sonar.foo", "value")), server);
 
     assertThat(props.get("sonar.foo").toString()).isEqualTo("value");
   }
@@ -102,11 +102,11 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   @Test
   public void userConfiguratorShouldOverrideConfiguratorHelperProps() throws Exception {
     AnalyzeProjectJob job = job(project);
-    Properties props = job.configureAnalysis(MONITOR, Arrays.<SonarProperty>asList());
+    Properties props = job.configureAnalysis(MONITOR, Arrays.<SonarProperty>asList(), server);
 
     assertThat(props.get("sonar.java.source").toString()).isNotEqualTo("fake");
 
-    props = job.configureAnalysis(MONITOR, Arrays.asList(new SonarProperty("sonar.java.source", "fake")));
+    props = job.configureAnalysis(MONITOR, Arrays.asList(new SonarProperty("sonar.java.source", "fake")), server);
 
     assertThat(props.get("sonar.java.source").toString()).isEqualTo("fake");
   }
