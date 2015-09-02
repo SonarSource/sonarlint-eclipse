@@ -23,10 +23,19 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang.ArrayUtils;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.framework.BundleContext;
 import org.sonar.ide.eclipse.core.AbstractPlugin;
 import org.sonar.ide.eclipse.core.internal.jobs.LogListener;
@@ -100,6 +109,40 @@ public class SonarCorePlugin extends AbstractPlugin {
     super.start(context);
 
     serversManager = new SonarServersManager();
+    scheduleStartupJobs();
+  }
+
+  private void scheduleStartupJobs() {
+    final Job job = new Job("Migrate SonarQube projects") {
+
+      @Override
+      protected IStatus run(final IProgressMonitor monitor) {
+
+        final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        if (workspace != null) {
+          final IWorkspaceRoot root = workspace.getRoot();
+          if (root != null) {
+            final IProject[] projects = root.getProjects(IContainer.INCLUDE_HIDDEN);
+            if (ArrayUtils.isNotEmpty(projects)) {
+              monitor.beginTask("Configuring SonarQube builder for SonarQube projects...  ", projects.length);
+              for (final IProject iProject : projects) {
+                if (SonarNature.hasSonarNature(iProject)) {
+                  monitor.subTask(iProject.getName());
+                  try {
+                    SonarNature.addSonarQubeBuilderIfMissing(iProject);
+                  } catch (final CoreException e) {
+                    throw new IllegalStateException(e);
+                  }
+                }
+              }
+            }
+          }
+        }
+        return Status.OK_STATUS;
+      }
+    };
+    job.setPriority(Job.LONG);
+    job.schedule();
   }
 
   private static SonarProjectManager projectManager;

@@ -29,6 +29,7 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.sonar.ide.eclipse.core.internal.builder.SonarQubeBuilder;
 
 public class SonarNature implements IProjectNature {
 
@@ -120,6 +121,50 @@ public class SonarNature implements IProjectNature {
     }
     description.setNatureIds(newNatures.toArray(new String[newNatures.size()]));
     project.setDescription(description, null);
+  }
+
+  public static void addSonarQubeBuilderIfMissing(final IProject project) throws CoreException {
+    IProjectDescription description = project.getDescription();
+    final ICommand[] oldBuildSpec = description.getBuildSpec();
+    final List<ICommand> oldBuilderCommands = Arrays.asList(oldBuildSpec);
+    final List<ICommand> sonarBuilderCommands = getSonarQubeCommands(oldBuilderCommands);
+    final List<ICommand> newBuilderCommands = new ArrayList<ICommand>(oldBuilderCommands);
+
+    boolean changed = false;
+    if (sonarBuilderCommands.isEmpty()) {
+      final ICommand newCommand = description.newCommand();
+      newCommand.setBuilderName(SonarQubeBuilder.BUILDER_ID);
+      // Add at last
+      newBuilderCommands.add(newCommand);
+      changed = true;
+    } else if (sonarBuilderCommands.size() > 1) {
+      newBuilderCommands.removeAll(sonarBuilderCommands);
+      newBuilderCommands.add(sonarBuilderCommands.get(0));
+      changed = true;
+    }
+
+    if (changed) {
+      // Commit the spec change into the project
+      description.setBuildSpec(newBuilderCommands.toArray(new ICommand[0]));
+      project.setDescription(description, null);
+    }
+  }
+
+  /**
+   * Find the specific SonarQube command amongst the given build spec
+   * and return its index or -1 if not found.
+   */
+  private static List<ICommand> getSonarQubeCommands(final List<ICommand> buildSpec) {
+
+    final List<ICommand> list = new ArrayList<ICommand>();
+    for (int i = 0; i < buildSpec.size(); ++i) {
+      final ICommand iCommand = buildSpec.get(i);
+      final String builderName = iCommand.getBuilderName();
+      if (builderName.equals(SonarQubeBuilder.BUILDER_ID)) {
+        list.add(iCommand);
+      }
+    }
+    return list;
   }
 
 }

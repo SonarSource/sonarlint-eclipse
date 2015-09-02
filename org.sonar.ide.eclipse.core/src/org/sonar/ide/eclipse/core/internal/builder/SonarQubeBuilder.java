@@ -36,6 +36,8 @@ import org.sonar.ide.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 
 public class SonarQubeBuilder extends IncrementalProjectBuilder {
 
+  public static final String BUILDER_ID = "org.sonar.ide.eclipse.core.sonarQubeBuilder";
+
   @Override
   protected IProject[] build(int kind, Map args, IProgressMonitor monitor) {
     if (kind == IncrementalProjectBuilder.FULL_BUILD) {
