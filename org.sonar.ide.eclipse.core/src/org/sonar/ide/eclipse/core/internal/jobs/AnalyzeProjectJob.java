@@ -94,7 +94,7 @@ public class AnalyzeProjectJob extends Job {
     }
     // Verify version and server is reachable
     if (getSonarServer().disabled()) {
-      SonarCorePlugin.getDefault().info("SonarQube server " + sonarProject.getUrl() + " is disabled");
+      SonarCorePlugin.getDefault().info("SonarQube server " + sonarProject.getUrl() + " is disabled" + System.lineSeparator());
       return Status.OK_STATUS;
     }
 
@@ -166,24 +166,40 @@ public class AnalyzeProjectJob extends Job {
     return properties;
   }
 
-  public void run(IProject project, Properties props, final IProgressMonitor monitor) {
+  public void run(IProject project, final Properties props, final IProgressMonitor monitor) {
     if (SonarCorePlugin.getDefault().isDebugEnabled()) {
       SonarCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props));
     }
-    sonarServer.startAnalysis(props, new IssueListener() {
-
+    Thread t = new Thread() {
       @Override
-      public void handle(Issue issue) {
-        IResource r = ResourceUtils.findResource(sonarProject, issue.getComponentKey());
-        if (request.getOnlyOnFiles() == null || request.getOnlyOnFiles().contains(r)) {
-          try {
-            SonarMarker.create(r, issue);
-          } catch (CoreException e) {
-            SonarCorePlugin.getDefault().error(e.getMessage(), e);
+      public void run() {
+        sonarServer.startAnalysis(props, new IssueListener() {
+
+          @Override
+          public void handle(Issue issue) {
+            IResource r = ResourceUtils.findResource(sonarProject, issue.getComponentKey());
+            if (request.getOnlyOnFiles() == null || request.getOnlyOnFiles().contains(r)) {
+              try {
+                SonarMarker.create(r, issue);
+              } catch (CoreException e) {
+                SonarCorePlugin.getDefault().error(e.getMessage(), e);
+              }
+            }
           }
+        });
+      }
+    };
+    t.start();
+    while (t.isAlive()) {
+      if (monitor.isCanceled()) {
+        t.interrupt();
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException e) {
+          // Here we don't care
         }
       }
-    });
+    }
   }
 
   private static String propsToString(Properties props) {
