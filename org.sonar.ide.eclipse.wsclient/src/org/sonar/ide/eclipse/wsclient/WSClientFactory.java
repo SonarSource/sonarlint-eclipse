@@ -32,8 +32,6 @@ import org.sonar.ide.eclipse.wsclient.internal.SonarWSClientFacade;
 import org.sonar.ide.eclipse.wsclient.internal.WSClientPlugin;
 import org.sonar.wsclient.Host;
 import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.SonarClient;
-import org.sonar.wsclient.SonarClient.Builder;
 import org.sonar.wsclient.connectors.HttpClient4Connector;
 
 public final class WSClientFactory {
@@ -55,7 +53,7 @@ public final class WSClientFactory {
     } else {
       host = new Host(sonarServer.getUrl());
     }
-    return new SonarWSClientFacade(create(host), createSonarClient(host));
+    return new SonarWSClientFacade(create(host));
   }
 
   /**
@@ -65,24 +63,6 @@ public final class WSClientFactory {
     HttpClient4Connector connector = new HttpClient4Connector(host);
     configureProxy(connector.getHttpClient(), host);
     return new Sonar(connector);
-  }
-
-  /**
-   * Creates new Sonar web service client, which uses proxy settings from Eclipse.
-   */
-  private static SonarClient createSonarClient(Host host) {
-    Builder builder = SonarClient.builder()
-      .url(host.getHost())
-      .login(host.getUsername())
-      .password(host.getPassword());
-    IProxyData proxyData = getEclipseProxyFor(host);
-    if (proxyData != null && !IProxyData.SOCKS_PROXY_TYPE.equals(proxyData.getType())) {
-      builder.proxy(proxyData.getHost(), proxyData.getPort());
-      if (proxyData.isRequiresAuthentication()) {
-        builder.proxyLogin(proxyData.getUserId()).proxyPassword(proxyData.getPassword());
-      }
-    }
-    return builder.build();
   }
 
   /**

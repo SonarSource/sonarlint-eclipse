@@ -91,6 +91,9 @@ public class SonarNature implements IProjectNature {
   }
 
   public static boolean hasSonarNature(IProject project) {
+    if (!project.isAccessible()) {
+      return false;
+    }
     try {
       return project.hasNature(NATURE_ID);
     } catch (CoreException e) {

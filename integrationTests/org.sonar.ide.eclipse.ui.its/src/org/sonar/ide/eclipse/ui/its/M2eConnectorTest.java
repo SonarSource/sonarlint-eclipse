@@ -17,9 +17,7 @@ import org.sonar.ide.eclipse.ui.its.bots.ImportProjectBot;
 import org.sonar.ide.eclipse.ui.its.bots.JavaPackageExplorerBot;
 import org.sonar.ide.eclipse.ui.its.utils.JobHelpers;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class M2eConnectorTest extends AbstractSQEclipseUITest {
   private static final String PROJECT_NAME = "reference";
@@ -35,13 +33,13 @@ public class M2eConnectorTest extends AbstractSQEclipseUITest {
     JobHelpers.waitForJobsToComplete(bot);
 
     IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(PROJECT_NAME);
-    assertThat(SonarNature.hasSonarNature(project), is(true));
+    assertThat(SonarNature.hasSonarNature(project)).isTrue();
     ISonarProject sonarProject = SonarProject.getInstance(project);
-    assertThat(sonarProject, is(notNullValue()));
-    assertThat(sonarProject.getKey(), is("org.sonar-ide.tests:reference"));
+    assertThat(sonarProject).isNotNull();
+    assertThat(sonarProject.getKey()).isEqualTo("org.sonar-ide.tests:reference");
     // SONARIDE-355
-    assertThat(sonarProject.getExtraProperties().get(0).getName(), is("sonar.sampleProperty"));
-    assertThat(sonarProject.getExtraProperties().get(0).getValue(), is("value"));
+    assertThat(sonarProject.getExtraProperties().get(0).getName()).isEqualTo("sonar.sampleProperty");
+    assertThat(sonarProject.getExtraProperties().get(0).getValue()).isEqualTo("value");
   }
 
   // SONARIDE-369
@@ -50,10 +48,10 @@ public class M2eConnectorTest extends AbstractSQEclipseUITest {
     new ImportMavenProjectBot(bot).setPath(getProjectPath("java/java-maven-simple")).finish();
 
     IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("example-java-maven");
-    assertThat(SonarNature.hasSonarNature(project), is(true));
+    assertThat(SonarNature.hasSonarNature(project)).isTrue();
     ISonarProject sonarProject = SonarProject.getInstance(project);
-    assertThat(sonarProject, is(notNullValue()));
-    assertThat(sonarProject.getKey(), is("org.codehaus.sonar:example-java-maven"));
+    assertThat(sonarProject).isNotNull();
+    assertThat(sonarProject.getKey()).isEqualTo("org.codehaus.sonar:example-java-maven");
   }
 
 }

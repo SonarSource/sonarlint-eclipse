@@ -26,7 +26,6 @@ import javax.annotation.CheckForNull;
 import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
 import org.sonar.ide.eclipse.wsclient.ISonarWSClientFacade;
 import org.sonar.wsclient.Sonar;
-import org.sonar.wsclient.SonarClient;
 import org.sonar.wsclient.connectors.ConnectionException;
 import org.sonar.wsclient.services.Authentication;
 import org.sonar.wsclient.services.AuthenticationQuery;
@@ -42,11 +41,9 @@ import org.sonar.wsclient.services.SourceQuery;
 public class SonarWSClientFacade implements ISonarWSClientFacade {
 
   private final Sonar sonar;
-  private final SonarClient sonarClient;
 
-  public SonarWSClientFacade(final Sonar sonar, final SonarClient sonarClient) {
+  public SonarWSClientFacade(final Sonar sonar) {
     this.sonar = sonar;
-    this.sonarClient = sonarClient;
   }
 
   @Override
