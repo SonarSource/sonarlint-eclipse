@@ -48,8 +48,4 @@ public interface ISonarWSClientFacade {
 
   List<ISonarRemoteModule> searchRemoteModules(String partialName);
 
-  boolean exists(String resourceKey);
-
-  String[] getRemoteCode(String resourceKey);
-
 }

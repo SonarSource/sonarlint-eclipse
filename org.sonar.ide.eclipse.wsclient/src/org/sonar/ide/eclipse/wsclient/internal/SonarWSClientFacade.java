@@ -22,7 +22,6 @@ package org.sonar.ide.eclipse.wsclient.internal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.CheckForNull;
 import org.sonar.ide.eclipse.wsclient.ISonarRemoteModule;
 import org.sonar.ide.eclipse.wsclient.ISonarWSClientFacade;
 import org.sonar.wsclient.Sonar;
@@ -35,8 +34,6 @@ import org.sonar.wsclient.services.Resource;
 import org.sonar.wsclient.services.ResourceQuery;
 import org.sonar.wsclient.services.ResourceSearchQuery;
 import org.sonar.wsclient.services.ResourceSearchResult;
-import org.sonar.wsclient.services.Source;
-import org.sonar.wsclient.services.SourceQuery;
 
 public class SonarWSClientFacade implements ISonarWSClientFacade {
 
@@ -102,25 +99,6 @@ public class SonarWSClientFacade implements ISonarWSClientFacade {
     }
 
     return result;
-  }
-
-  @Override
-  public boolean exists(String resourceKey) {
-    return find(new ResourceQuery().setResourceKeyOrId(resourceKey)) != null;
-  }
-
-  @CheckForNull
-  @Override
-  public String[] getRemoteCode(String resourceKey) {
-    Source source = find(SourceQuery.create(resourceKey));
-    String[] remote = new String[source.getLinesById().lastKey()];
-    for (int i = 0; i < remote.length; i++) {
-      remote[i] = source.getLine(i + 1);
-      if (remote[i] == null) {
-        remote[i] = "";
-      }
-    }
-    return remote;
   }
 
   private static class SonarRemoteModule implements ISonarRemoteModule {

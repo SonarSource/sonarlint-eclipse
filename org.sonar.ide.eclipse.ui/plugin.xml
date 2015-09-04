@@ -344,19 +344,6 @@
               menubarPath="sonar.menu/group3">
         </action>
     </objectContribution>
-    <objectContribution
-           id="org.sonar.ide.eclipse.ui.fileContributions"
-           objectClass="org.sonar.ide.eclipse.core.resources.ISonarFile"
-           adaptable="true">
-        <action
-              label="SonarQube server"
-              enablesFor="1"
-              class="org.sonar.ide.eclipse.ui.internal.compare.CompareWithSonarAction"
-              menubarPath="compareWithMenu/compareWithGroup"
-              id="org.sonar.ide.eclipse.compareWithSonar"
-              icon="icons/onde-sonar-16.png">
-        </action>
-    </objectContribution>
   </extension>
 
   <extension point="org.eclipse.ui.menus">
@@ -577,16 +564,6 @@
      <resolver
            class="org.sonar.ide.eclipse.ui.internal.markers.IgnoreMarkerResolver">
      </resolver>
-  </extension>
-
-  <!-- Quick diff -->
-  <extension
-        point="org.eclipse.ui.workbench.texteditor.quickDiffReferenceProvider">
-     <referenceprovider
-            label="SonarQube source"
-           class="org.sonar.ide.eclipse.ui.internal.compare.SonarReferenceProvider"
-           id="org.sonar.ide.eclipse.referenceprovider">
-     </referenceprovider>
   </extension>
 
   <extension
