@@ -1,0 +1,4 @@
+How to deploy composite repository on Bintray:
+
+curl -X PUT -u <username> https://api.bintray.com/content/sonarsource/SonarLint-for-Eclipse/compositeContent.xml --upload-file composite/compositeContent.xml
+curl -X PUT -u <username> https://api.bintray.com/content/sonarsource/SonarLint-for-Eclipse/compositeArtifacts.xml --upload-file composite/compositeArtifacts.xml
