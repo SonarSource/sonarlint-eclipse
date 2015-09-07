@@ -104,11 +104,11 @@
 
   <issueManagement>
     <system>JIRA</system>
-    <url>http://jira.codehaus.org/browse/SONARIDE/component/14315</url>
+    <url>https://jira.sonarsource.com/browse/SONARCLIPS</url>
   </issueManagement>
   <ciManagement>
-    <system>Bamboo</system>
-    <url>http://bamboo.ci.codehaus.org/browse/SONARIDE-ECLIPSE</url>
+    <system>Travis</system>
+    <url>https://travis-ci.org/SonarSource/sonar-eclipse</url>
   </ciManagement>
   <distributionManagement>
     <repository>
