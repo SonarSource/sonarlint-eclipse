@@ -36,10 +36,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.osgi.util.NLS;
 import org.sonar.ide.eclipse.core.configurator.ProjectConfigurator;
-import org.sonar.ide.eclipse.core.internal.Messages;
 import org.sonar.ide.eclipse.core.internal.PreferencesUtils;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarProperties;
@@ -53,9 +50,7 @@ import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 import org.sonar.runner.api.Issue;
 import org.sonar.runner.api.IssueListener;
 
-public class AnalyzeProjectJob extends Job {
-
-  private final SonarProject sonarProject;
+public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   private List<SonarProperty> extraProps;
 
@@ -64,13 +59,9 @@ public class AnalyzeProjectJob extends Job {
   static final ISchedulingRule SONAR_ANALYSIS_RULE = ResourcesPlugin.getWorkspace().getRuleFactory().buildRule();
 
   public AnalyzeProjectJob(AnalyzeProjectRequest request) {
-    super(jobTitle(request));
+    super(jobTitle(request), SonarProject.getInstance(request.getProject()));
     this.request = request;
     this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(request.getProject());
-    this.sonarProject = SonarProject.getInstance(request.getProject());
-    setPriority(this.request.getOnlyOnFiles() != null ? Job.SHORT : Job.LONG);
-    // Prevent concurrent SQ analysis
-    setRule(SONAR_ANALYSIS_RULE);
   }
 
   private static String jobTitle(AnalyzeProjectRequest request) {
@@ -84,21 +75,7 @@ public class AnalyzeProjectJob extends Job {
   }
 
   @Override
-  protected IStatus run(final IProgressMonitor monitor) {
-    SonarServer serverToUse = findServerToUse();
-
-    // Verify Host
-    if (serverToUse == null) {
-      SonarCorePlugin.getDefault()
-        .error(NLS.bind(Messages.No_matching_server_in_configuration_for_project, request.getProject().getName(), sonarProject.getServerId()) + System.lineSeparator());
-      return Status.OK_STATUS;
-    }
-    // Verify version and server is reachable
-    if (serverToUse.disabled()) {
-      SonarCorePlugin.getDefault().info("SonarQube server " + sonarProject.getServerId() + " is disabled" + System.lineSeparator());
-      return Status.OK_STATUS;
-    }
-
+  protected IStatus run(SonarServer serverToUse, final IProgressMonitor monitor) {
     // Configure
     Properties properties = configureAnalysis(monitor, extraProps, serverToUse);
 
@@ -115,22 +92,6 @@ public class AnalyzeProjectJob extends Job {
     }
 
     return Status.OK_STATUS;
-  }
-
-  private SonarServer findServerToUse() {
-    // Unassociated projects should use first available server
-    SonarServer serverToUse = null;
-    if (!sonarProject.isAssociated()) {
-      for (SonarServer server : SonarCorePlugin.getServersManager().getServers()) {
-        if (!server.disabled()) {
-          serverToUse = server;
-          break;
-        }
-      }
-    } else {
-      serverToUse = sonarProject.getServer();
-    }
-    return serverToUse;
   }
 
   /**
@@ -179,14 +140,14 @@ public class AnalyzeProjectJob extends Job {
     if (SonarCorePlugin.getDefault().isDebugEnabled()) {
       SonarCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props) + System.lineSeparator());
     }
-    Thread t = new Thread() {
+    Thread t = new Thread("SonarQube analysis") {
       @Override
       public void run() {
         server.startAnalysis(props, new IssueListener() {
 
           @Override
           public void handle(Issue issue) {
-            IResource r = ResourceUtils.findResource(sonarProject, issue.getComponentKey());
+            IResource r = ResourceUtils.findResource(getSonarProject(), issue.getComponentKey());
             if (request.getOnlyOnFiles() == null || request.getOnlyOnFiles().contains(r)) {
               try {
                 SonarMarker.create(r, issue);

@@ -21,7 +21,7 @@ package org.sonar.ide.eclipse.wsclient;
  */
 public interface ISonarServer {
 
-  boolean disabled();
+  boolean started();
 
   boolean hasCredentials();
 

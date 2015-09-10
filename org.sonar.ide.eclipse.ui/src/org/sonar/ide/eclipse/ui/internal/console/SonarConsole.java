@@ -113,7 +113,7 @@ public class SonarConsole extends IOConsole implements LogListener, ISonarConsol
   @Override
   public void debug(String msg) {
     if (isDebugEnabled()) {
-      if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
+      if (isShowConsoleOnOutput()) {
         bringConsoleToFront();
       }
       write(getDebugStream(), msg);

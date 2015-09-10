@@ -43,12 +43,15 @@ public class SonarServersManager implements ISonarServersManager {
 
   private static final String INITIALIZED_ATTRIBUTE = "initialized";
 
+  private static final String DEFAULT_ATTRIBUTE = "default_server";
+
   private static final String AUTH_ATTRIBUTE = "auth";
 
   private static final String URL_ATTRIBUTE = "url";
 
   static final String PREF_SERVERS = "servers";
 
+  private SonarServer defaultServer;
   private List<SonarServer> servers = Lists.newArrayList();
 
   private boolean loadedOnce = false;
@@ -72,10 +75,12 @@ public class SonarServersManager implements ISonarServersManager {
       protected IStatus run(IProgressMonitor monitor) {
         stopAllServers();
         servers.clear();
+        defaultServer = null;
         IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
         try {
           rootNode.sync();
           Preferences serversNode = rootNode.nodeExists(PREF_SERVERS) ? rootNode.node(PREF_SERVERS) : DefaultScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID).node(PREF_SERVERS);
+          String defaultId = serversNode.get(DEFAULT_ATTRIBUTE, "");
           for (String idOrEncodedUrl : serversNode.childrenNames()) {
             Preferences serverNode = serversNode.node(idOrEncodedUrl);
             String id;
@@ -88,23 +93,33 @@ public class SonarServersManager implements ISonarServersManager {
             }
             boolean auth = serverNode.getBoolean(AUTH_ATTRIBUTE, false);
             SonarServer sonarServer = new SonarServer(id, url, auth);
+            if (defaultId.equals(sonarServer.getId())) {
+              defaultServer = sonarServer;
+            }
             sonarServer.start();
             String serverVersion = sonarServer.getVersion();
-            boolean disabled = false;
+            boolean started = true;
             if (serverVersion != null) {
               for (String prefix : UNSUPPORTED_VERSION_PREFIX) {
                 if (serverVersion.startsWith(prefix)) {
                   SonarCorePlugin.getDefault()
                     .error("SonarQube server " + serverVersion + " at " + url + " is not supported. Minimal supported version is " + MINIMAL_VERSION + "\n");
-                  disabled = true;
+                  started = false;
                   break;
                 }
               }
             } else {
-              disabled = true;
+              started = false;
             }
-            sonarServer.setDisabled(disabled);
+            sonarServer.setStarted(started);
             servers.add(sonarServer);
+          }
+          if (defaultServer == null && !servers.isEmpty()) {
+            defaultServer = servers.get(0);
+          }
+          if (defaultServer != null && !defaultId.equals(defaultServer.getId())) {
+            serversNode.put(DEFAULT_ATTRIBUTE, defaultServer.getId());
+            serversNode.flush();
           }
         } catch (BackingStoreException e) {
           SonarCorePlugin.getDefault().error(e.getMessage(), e);
@@ -128,6 +143,10 @@ public class SonarServersManager implements ISonarServersManager {
     try {
       Preferences serversNode = rootNode.node(PREF_SERVERS);
       serversNode.put(INITIALIZED_ATTRIBUTE, "true");
+      if (defaultServer == null) {
+        defaultServer = server;
+        serversNode.put(DEFAULT_ATTRIBUTE, server.getId());
+      }
       Preferences serverNode = serversNode.node(EncodingUtils.encodeSlashes(server.getId()));
       serverNode.put(URL_ATTRIBUTE, server.getUrl());
       serverNode.putBoolean(AUTH_ATTRIBUTE, server.hasCredentials());
@@ -144,6 +163,7 @@ public class SonarServersManager implements ISonarServersManager {
   public synchronized void clean() {
     stopAllServers();
     servers.clear();
+    defaultServer = null;
     IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
     try {
       rootNode.node(PREF_SERVERS).removeNode();
@@ -188,6 +208,22 @@ public class SonarServersManager implements ISonarServersManager {
   @Override
   public SonarServer create(String id, String location, String username, String password) {
     return new SonarServer(id, location, username, password);
+  }
+
+  public SonarServer getDefaultServer() {
+    return defaultServer;
+  }
+
+  public void setDefault(SonarServer server) {
+    IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarCorePlugin.PLUGIN_ID);
+    try {
+      Preferences serversNode = rootNode.node(PREF_SERVERS);
+      serversNode.put(DEFAULT_ATTRIBUTE, server.getId());
+      serversNode.flush();
+    } catch (BackingStoreException e) {
+      SonarCorePlugin.getDefault().error(e.getMessage(), e);
+    }
+    reloadFromEclipsePreferencesAndCheckStatus();
   }
 
 }

@@ -32,10 +32,7 @@ public final class Messages extends NLS {
   private Messages() {
   }
 
-  public static String AnalyseProjectJob_title;
-  public static String AnalyseProjectJob_task_analyzing;
-  public static String AnalyseProjectJob_task_analyzing_files;
-
+  public static String No_default_server;
   public static String No_matching_server_in_configuration_for_project;
   public static String No_matching_server_in_configuration;
 }

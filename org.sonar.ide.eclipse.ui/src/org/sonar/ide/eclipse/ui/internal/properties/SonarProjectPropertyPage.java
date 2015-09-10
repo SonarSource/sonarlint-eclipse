@@ -19,7 +19,6 @@
  */
 package org.sonar.ide.eclipse.ui.internal.properties;
 
-import java.text.SimpleDateFormat;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -65,8 +64,12 @@ public class SonarProjectPropertyPage extends PropertyPage {
     layout.numColumns = 2;
     layout.verticalSpacing = 9;
 
-    addText(Messages.SonarProjectPropertyBlock_label_host, sonarProject.getServerId(), container);
-    addText(Messages.SonarProjectPropertyBlock_label_key, sonarProject.getKey(), container);
+    if (sonarProject.isAssociated()) {
+      addText(Messages.SonarProjectPropertyBlock_label_server, sonarProject.getServerId(), container);
+      addText(Messages.SonarProjectPropertyBlock_label_key, sonarProject.getKey(), container);
+    } else {
+      addText(Messages.SonarProjectPropertyBlock_label_server, "Unassociated", container);
+    }
 
     return container;
   }

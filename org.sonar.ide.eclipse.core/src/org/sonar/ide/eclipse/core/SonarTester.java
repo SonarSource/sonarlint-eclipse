@@ -21,18 +21,21 @@ package org.sonar.ide.eclipse.core;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IProject;
+import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
 import org.sonar.ide.eclipse.core.resources.ISonarProject;
 
-public class IsAssociatedTester extends PropertyTester {
+public class SonarTester extends PropertyTester {
 
   @Override
   public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-    ISonarProject sonarProject = SonarProject.getInstance((IProject) receiver);
     if ("isAssociated".equals(property)) {
+      ISonarProject sonarProject = SonarProject.getInstance((IProject) receiver);
       return expectedValue == null
         ? sonarProject.isAssociated()
         : sonarProject.isAssociated() == ((Boolean) expectedValue).booleanValue();
+    } else if ("hasConfiguredServer".equals(property)) {
+      return !SonarCorePlugin.getServersManager().getServers().isEmpty();
     }
     return false;
   }

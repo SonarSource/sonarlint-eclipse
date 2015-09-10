@@ -44,9 +44,6 @@ public final class WSClientFactory {
    */
   @Nullable
   public static ISonarWSClientFacade getSonarClient(ISonarServer sonarServer) {
-    if (sonarServer.disabled()) {
-      return null;
-    }
     Host host;
     if (sonarServer.hasCredentials()) {
       host = new Host(sonarServer.getUrl(), sonarServer.getUsername(), sonarServer.getPassword());

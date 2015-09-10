@@ -42,7 +42,7 @@ public final class SonarServer implements ISonarServer {
   private String url;
   private boolean hasCredentials;
   private String version;
-  private boolean disabled;
+  private boolean started;
   private EmbeddedRunner runner;
 
   public SonarServer(String id, String url, String username, String password) {
@@ -75,8 +75,8 @@ public final class SonarServer implements ISonarServer {
   }
 
   @Override
-  public boolean disabled() {
-    return disabled;
+  public boolean started() {
+    return started;
   }
 
   @Override
@@ -150,8 +150,8 @@ public final class SonarServer implements ISonarServer {
     return false;
   }
 
-  public void setDisabled(boolean disabled) {
-    this.disabled = disabled;
+  public void setStarted(boolean started) {
+    this.started = started;
   }
 
   public synchronized void startAnalysis(Properties props, IssueListener issueListener) {
@@ -220,11 +220,11 @@ public final class SonarServer implements ISonarServer {
     } catch (Throwable e) {
       SonarCorePlugin.getDefault().error("Unable to start SonarQube for server " + id + System.lineSeparator(), e);
       runner = null;
-      disabled = true;
+      started = false;
     }
   }
 
-  public void stop() {
+  public synchronized void stop() {
     if (runner != null) {
       runner.stop();
       runner = null;

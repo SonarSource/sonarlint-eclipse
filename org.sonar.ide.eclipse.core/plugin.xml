@@ -20,10 +20,10 @@
    
   <extension point="org.eclipse.core.expressions.propertyTesters">
     <propertyTester
-        class="org.sonar.ide.eclipse.core.IsAssociatedTester"
-        id="org.sonar.ide.eclipse.isAssociated"
+        class="org.sonar.ide.eclipse.core.SonarTester"
+        id="org.sonar.ide.eclipse.sonarTester"
         namespace="org.sonar.ide.eclipse"
-        properties="isAssociated"
+        properties="isAssociated,hasConfiguredServer"
         type="org.eclipse.core.resources.IProject">
     </propertyTester>
   </extension>

@@ -50,7 +50,7 @@ public final class Messages extends NLS {
   public static String ServerLocationWizardPage_msg_connection_error;
   public static String ServerLocationWizardPage_msg_authentication_error;
 
-  public static String SonarProjectPropertyBlock_label_host;
+  public static String SonarProjectPropertyBlock_label_server;
   public static String SonarProjectPropertyBlock_label_key;
   public static String SonarProjectPropertyBlock_label_language;
 
@@ -64,6 +64,8 @@ public final class Messages extends NLS {
   public static String SonarServerPreferencePage_action_delete_tooltip;
   public static String SonarServerPreferencePage_action_reload;
   public static String SonarServerPreferencePage_action_reload_tooltip;
+  public static String SonarServerPreferencePage_action_default;
+  public static String SonarServerPreferencePage_action_default_tooltip;
 
   public static String SonarPreferencePage_title;
   public static String SonarPreferencePage_description;

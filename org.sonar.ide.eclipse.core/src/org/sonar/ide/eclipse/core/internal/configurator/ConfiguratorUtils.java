@@ -46,7 +46,6 @@ import org.sonar.ide.eclipse.core.internal.resources.SonarProject;
  */
 public class ConfiguratorUtils {
 
-  public static final String UNASSOCIATED = "_unassociated_";
   public static final String ATTR_CLASS = "class"; //$NON-NLS-1$
 
   private ConfiguratorUtils() {
@@ -83,9 +82,6 @@ public class ConfiguratorUtils {
     if (remoteProject.isAssociated()) {
       String projectKey = remoteProject.getKey();
       properties.setProperty(SonarProperties.PROJECT_KEY_PROPERTY, projectKey);
-    } else {
-      // TODO Hack waiting for SONAR-6817
-      properties.setProperty(SonarProperties.PROJECT_KEY_PROPERTY, UNASSOCIATED);
     }
     properties.setProperty(SonarProperties.PROJECT_NAME_PROPERTY, projectName);
     properties.setProperty(SonarProperties.PROJECT_VERSION_PROPERTY, "0.1-SNAPSHOT");

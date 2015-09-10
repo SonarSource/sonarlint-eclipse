@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
 import org.sonar.ide.eclipse.core.internal.SonarKeyUtils;
+import org.sonar.ide.eclipse.core.internal.servers.SonarServer;
 
 /**
  * @author Evgeny Mandrikov
@@ -90,7 +91,9 @@ public class SonarProjectManager {
     }
 
     SonarProject sonarProject = new SonarProject(project);
-    sonarProject.setServerId(projectNode.get(P_SONAR_SERVER_ID, projectNode.get(P_SONAR_SERVER_URL, "")));
+    String serverId = projectNode.get(P_SONAR_SERVER_ID, projectNode.get(P_SONAR_SERVER_URL, ""));
+    SonarServer server = SonarCorePlugin.getServersManager().findServer(serverId);
+    sonarProject.setServerId(server != null ? server.getId() : serverId);
     sonarProject.setKey(key);
     String extraArgsAsString = projectNode.get(P_EXTRA_PROPS, null);
     List<SonarProperty> sonarProperties = new ArrayList<SonarProperty>();
@@ -120,9 +123,15 @@ public class SonarProjectManager {
     }
 
     projectNode.put(P_VERSION, VERSION);
+    projectNode.remove(P_SONAR_SERVER_URL);
 
-    projectNode.put(P_SONAR_SERVER_ID, configuration.getServerId());
-    projectNode.put(P_PROJECT_KEY, configuration.getKey());
+    if (configuration.isAssociated()) {
+      projectNode.put(P_SONAR_SERVER_ID, configuration.getServerId());
+      projectNode.put(P_PROJECT_KEY, configuration.getKey());
+    } else {
+      projectNode.remove(P_SONAR_SERVER_ID);
+      projectNode.remove(P_PROJECT_KEY);
+    }
     if (configuration.getExtraProperties() != null) {
       List<String> keyValuePairs = new ArrayList<String>(configuration.getExtraProperties().size());
       for (SonarProperty prop : configuration.getExtraProperties()) {
@@ -140,5 +149,12 @@ public class SonarProjectManager {
       SonarCorePlugin.getDefault().error("Failed to save project configuration", e);
       return false;
     }
+  }
+
+  public void unassociate(IProject project) {
+    SonarProject sonarProject = readSonarConfiguration(project);
+    sonarProject.setServerId(null);
+    sonarProject.setKey(null);
+    saveSonarConfiguration(project, sonarProject);
   }
 }

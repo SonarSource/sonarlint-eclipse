@@ -51,7 +51,7 @@ public class SonarSearchEngineProvider implements IContentProposalProvider {
   public IContentProposal[] getProposals(String contents, int position) {
     List<IContentProposal> list = new ArrayList<IContentProposal>();
     for (SonarServer sonarServer : sonarServers) {
-      if (sonarServer.disabled()) {
+      if (!sonarServer.started()) {
         continue;
       }
       List<ISonarRemoteModule> remoteModules = WSClientFactory.getSonarClient(sonarServer).searchRemoteModules(contents);

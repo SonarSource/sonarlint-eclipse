@@ -99,7 +99,7 @@ public class SonarProject implements ISonarProject {
 
   @Override
   public boolean isAssociated() {
-    return StringUtils.isNotBlank(serverId);
+    return StringUtils.isNotBlank(serverId) && SonarCorePlugin.getServersManager().findServer(serverId) != null;
   }
 
 }

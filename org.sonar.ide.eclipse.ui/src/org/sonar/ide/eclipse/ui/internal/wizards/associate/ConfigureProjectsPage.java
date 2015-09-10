@@ -355,8 +355,8 @@ public class ConfigureProjectsPage extends WizardPage {
     private Map<String, List<ISonarRemoteModule>> fetchAllRemoteSonarModules() {
       Map<String, List<ISonarRemoteModule>> remoteSonarModules = new HashMap<String, List<ISonarRemoteModule>>();
       for (ISonarServer sonarServer : sonarServers) {
-        if (sonarServer.disabled()) {
-          SonarCorePlugin.getDefault().debug(sonarServer + " is disabled\n");
+        if (!sonarServer.started()) {
+          SonarCorePlugin.getDefault().debug(sonarServer + " seems unreachable\n");
           continue;
         }
         List<ISonarRemoteModule> remoteModules = WSClientFactory.getSonarClient(sonarServer).listAllRemoteModules();

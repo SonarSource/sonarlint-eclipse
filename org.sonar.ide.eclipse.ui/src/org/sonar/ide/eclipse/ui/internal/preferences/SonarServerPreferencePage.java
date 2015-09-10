@@ -19,9 +19,13 @@
  */
 package org.sonar.ide.eclipse.ui.internal.preferences;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.Collection;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -34,6 +38,7 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -62,6 +67,16 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
   private TableViewer serversViewer;
 
   private Collection<SonarServer> servers;
+
+  private Button addButton;
+
+  private Button editButton;
+
+  private Button deleteButton;
+
+  private Button reloadButton;
+
+  private Button defaultButton;
 
   public SonarServerPreferencePage() {
     super(Messages.SonarServerPreferencePage_title);
@@ -95,14 +110,40 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     ISonarServersManager serversManager = SonarCorePlugin.getServersManager();
     servers = serversManager.getServers();
     serversViewer.setInput(servers);
+  }
+
+  private void packColumns() {
     for (int i = 0, n = serversViewer.getTable().getColumnCount(); i < n; i++) {
       serversViewer.getTable().getColumn(i).pack();
     }
   }
 
+  private abstract class ButtonSelectionAdapter extends SelectionAdapter {
+
+    @Override
+    public final void widgetSelected(SelectionEvent e) {
+      SonarServer selected = getSelectedServer();
+      if (selected == null) {
+        return;
+      }
+      buttonSelected(selected);
+      serversViewer.refresh();
+      updateButtons();
+    }
+
+    public abstract void buttonSelected(SonarServer server);
+
+  }
+
+  private void updateButtons() {
+    SonarServer selected = getSelectedServer();
+    deleteButton.setEnabled(selected != null);
+    editButton.setEnabled(selected != null);
+    defaultButton.setEnabled(selected != null && !(SonarCorePlugin.getServersManager().getDefaultServer() == selected));
+  }
+
   private void createTable(Composite composite) {
-    serversViewer = new TableViewer(composite, SWT.MULTI | SWT.H_SCROLL
-      | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+    serversViewer = new TableViewer(composite, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 
     createColumns();
 
@@ -111,95 +152,153 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     final Table table = serversViewer.getTable();
     table.setLinesVisible(true);
     table.setHeaderVisible(true);
-    GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 2, 4);
+    GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, false, 2, 5);
     gridData.heightHint = 300;
     table.setLayoutData(gridData);
 
-    final Button addButton = new Button(composite, SWT.NONE);
-    final Button editButton = new Button(composite, SWT.NONE);
-    final Button deleteButton = new Button(composite, SWT.NONE);
-    final Button reloadButton = new Button(composite, SWT.NONE);
+    createAddButton(composite);
+    createEditButton(composite);
+    createDeleteButton(composite);
+    createReloadButton(composite);
+    createDefaultButton(composite);
 
+    serversViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
+      @Override
+      public void selectionChanged(SelectionChangedEvent event) {
+        updateButtons();
+      }
+
+    });
+  }
+
+  private void createAddButton(Composite composite) {
+    addButton = new Button(composite, SWT.NONE);
     addButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
     addButton.setText(Messages.SonarServerPreferencePage_action_add);
     addButton.setToolTipText(Messages.SonarServerPreferencePage_action_add_tooltip);
     addButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
     addButton.addSelectionListener(new SelectionAdapter() {
+
       @Override
-      public void widgetSelected(SelectionEvent e) {
+      public final void widgetSelected(SelectionEvent e) {
         NewServerLocationWizard wiz = new NewServerLocationWizard();
         wiz.init(SonarUiPlugin.getDefault().getWorkbench(), null);
         WizardDialog dialog = new WizardDialog(addButton.getShell(), wiz);
         dialog.create();
         if (dialog.open() == Window.OK) {
-          initTable();
+          serversViewer.refresh();
+          updateButtons();
+          packColumns();
         }
       }
     });
+  }
 
+  private void createEditButton(Composite composite) {
+    editButton = new Button(composite, SWT.NONE);
     editButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
     editButton.setText(Messages.SonarServerPreferencePage_action_edit);
     editButton.setToolTipText(Messages.SonarServerPreferencePage_action_edit_tooltip);
     editButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_NEW_WIZARD).createImage());
     editButton.setEnabled(false);
-    editButton.addSelectionListener(new SelectionAdapter() {
+    editButton.addSelectionListener(new ButtonSelectionAdapter() {
+
       @Override
-      public void widgetSelected(SelectionEvent e) {
-        EditServerLocationWizard wizard = new EditServerLocationWizard(getSelectedServer());
+      public void buttonSelected(final SonarServer server) {
+        EditServerLocationWizard wizard = new EditServerLocationWizard(server);
         wizard.init(SonarUiPlugin.getDefault().getWorkbench(), null);
         WizardDialog dialog = new WizardDialog(editButton.getShell(), wizard);
         dialog.create();
         if (dialog.open() == Window.OK) {
-          initTable();
+          serversViewer.refresh();
+          packColumns();
         }
-        deleteButton.setEnabled(false);
-        editButton.setEnabled(false);
       }
     });
+  }
 
+  private void createDeleteButton(Composite composite) {
+    deleteButton = new Button(composite, SWT.NONE);
     deleteButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
     deleteButton.setText(Messages.SonarServerPreferencePage_action_delete);
     deleteButton.setToolTipText(Messages.SonarServerPreferencePage_action_delete_tooltip);
     deleteButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_DELETE).createImage());
     deleteButton.setEnabled(false);
-    deleteButton.addSelectionListener(new SelectionAdapter() {
+    deleteButton.addSelectionListener(new ButtonSelectionAdapter() {
+
       @Override
-      public void widgetSelected(SelectionEvent e) {
-        SonarServer selected = getSelectedServer();
-        if (MessageDialog.openConfirm(SonarServerPreferencePage.this.getShell(), "Remove SonarQube server connection",
-          MessageFormat.format("Confirm removing {0}",
-            new Object[] {selected.getUrl()}))) {
-          SonarCorePlugin.getServersManager().removeServer(selected);
-          servers.remove(selected);
-          serversViewer.refresh();
-          deleteButton.setEnabled(false);
-          editButton.setEnabled(false);
+      public void buttonSelected(final SonarServer server) {
+        if (MessageDialog.openConfirm(SonarServerPreferencePage.this.getShell(), "Remove SonarQube server configuration",
+          MessageFormat.format("Confirm removing server {0}", new Object[] {server.getId()}))) {
+          try {
+            IRunnableWithProgress op = new IRunnableWithProgress() {
+              @Override
+              public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                SonarCorePlugin.getServersManager().removeServer(server);
+              }
+            };
+            new ProgressMonitorDialog(SonarServerPreferencePage.this.getShell()).run(true, true, op);
+          } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+          }
         }
       }
     });
+  }
 
+  private void createReloadButton(Composite composite) {
+    reloadButton = new Button(composite, SWT.NONE);
     reloadButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
     reloadButton.setText(Messages.SonarServerPreferencePage_action_reload);
     reloadButton.setToolTipText(Messages.SonarServerPreferencePage_action_reload_tooltip);
     reloadButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_REDO).createImage());
     reloadButton.setEnabled(true);
-    reloadButton.addSelectionListener(new SelectionAdapter() {
+    reloadButton.addSelectionListener(new ButtonSelectionAdapter() {
+
       @Override
-      public void widgetSelected(SelectionEvent e) {
-        SonarUiPlugin.getDefault().getSonarConsole().clearConsole();
-        SonarCorePlugin.getServersManager().reloadServers();
-        serversViewer.refresh();
-        deleteButton.setEnabled(false);
-        editButton.setEnabled(false);
+      public void buttonSelected(final SonarServer server) {
+        try {
+          IRunnableWithProgress op = new IRunnableWithProgress() {
+            @Override
+            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+              SonarUiPlugin.getDefault().getSonarConsole().clearConsole();
+              SonarCorePlugin.getServersManager().reloadServers();
+              initTable();
+            }
+          };
+          new ProgressMonitorDialog(SonarServerPreferencePage.this.getShell()).run(true, true, op);
+        } catch (Exception ex) {
+          throw new IllegalStateException(ex);
+        }
       }
     });
+  }
 
-    serversViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+  private void createDefaultButton(Composite composite) {
+    defaultButton = new Button(composite, SWT.NONE);
+    defaultButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+    defaultButton.setText(Messages.SonarServerPreferencePage_action_default);
+    defaultButton.setToolTipText(Messages.SonarServerPreferencePage_action_default_tooltip);
+    defaultButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_BKMRK_TSK).createImage());
+    defaultButton.setEnabled(false);
+    defaultButton.addSelectionListener(new ButtonSelectionAdapter() {
+
       @Override
-      public void selectionChanged(SelectionChangedEvent event) {
-        deleteButton.setEnabled(!servers.isEmpty());
-        editButton.setEnabled(true);
+      public void buttonSelected(final SonarServer server) {
+        try {
+          IRunnableWithProgress op = new IRunnableWithProgress() {
+            @Override
+            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+              SonarCorePlugin.getServersManager().setDefault(server);
+            }
+          };
+          new ProgressMonitorDialog(SonarServerPreferencePage.this.getShell()).run(true, true, op);
+        } catch (Exception ex) {
+          throw new IllegalStateException(ex);
+        }
       }
+
     });
   }
 
@@ -213,6 +312,13 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
       public String getText(Object element) {
         SonarServer sonarServer = (SonarServer) element;
         return sonarServer.getId();
+      }
+
+      @Override
+      public Image getImage(Object element) {
+        SonarServer sonarServer = (SonarServer) element;
+        return SonarCorePlugin.getServersManager().getDefaultServer() == sonarServer
+          ? PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_BKMRK_TSK).createImage() : super.getImage(element);
       }
     });
 
@@ -241,14 +347,14 @@ public class SonarServerPreferencePage extends PreferencePage implements IWorkbe
     });
 
     TableViewerColumn colEnabled = new TableViewerColumn(serversViewer, SWT.NONE);
-    colEnabled.getColumn().setText("Disabled");
+    colEnabled.getColumn().setText("Status");
     colEnabled.getColumn().setWidth(30);
     colEnabled.getColumn().setResizable(true);
     colEnabled.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
         ISonarServer sonarServer = (ISonarServer) element;
-        return "" + sonarServer.disabled();
+        return sonarServer.started() ? "OK" : "KO";
       }
 
     });
