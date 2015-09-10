@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.ui.JavaUI;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.python.pydev.ui.perspective.PythonPerspectiveFactory;
 import org.sonar.ide.eclipse.core.internal.SonarCorePlugin;
@@ -44,7 +43,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.matchers.JUnitMatchers.hasItem;
 
 @SuppressWarnings("restriction")
-@Ignore("Analysis in complety changed in 4.0. Will update ITs later")
 public class LocalAnalysisTest extends AbstractSQEclipseUITest {
 
   @Test
@@ -65,7 +63,7 @@ public class LocalAnalysisTest extends AbstractSQEclipseUITest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndSelect("java-simple")
-      .clickContextMenu("SonarQube", "Analyze");
+      .clickContextMenu("SonarQube", "Analyze all files");
 
     JobHelpers.waitForJobsToComplete(bot);
 
@@ -99,7 +97,7 @@ public class LocalAnalysisTest extends AbstractSQEclipseUITest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndSelect("java-simple-optional-src")
-      .clickContextMenu("SonarQube", "Analyze");
+      .clickContextMenu("SonarQube", "Analyze all files");
 
     JobHelpers.waitForJobsToComplete(bot);
 
@@ -126,7 +124,7 @@ public class LocalAnalysisTest extends AbstractSQEclipseUITest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndSelect("java-several-output-folders")
-      .clickContextMenu("SonarQube", "Analyze");
+      .clickContextMenu("SonarQube", "Analyze all files");
 
     JobHelpers.waitForJobsToComplete(bot);
 
@@ -161,7 +159,7 @@ public class LocalAnalysisTest extends AbstractSQEclipseUITest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndSelect("java-main-project")
-      .clickContextMenu("SonarQube", "Analyze");
+      .clickContextMenu("SonarQube", "Analyze all files");
 
     JobHelpers.waitForJobsToComplete(bot);
 
@@ -185,7 +183,7 @@ public class LocalAnalysisTest extends AbstractSQEclipseUITest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndSelect("reference")
-      .clickContextMenu("Configure", "Associate with SonarQube...");
+      .clickContextMenu("Configure", "Associate with SonarQube Server...");
 
     ConfigureProjectsWizardBot projectWizardBot = new ConfigureProjectsWizardBot(bot);
     projectWizardBot.finish();
@@ -212,7 +210,7 @@ public class LocalAnalysisTest extends AbstractSQEclipseUITest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndSelect("multimodule-module1")
-      .clickContextMenu("Configure", "Associate with SonarQube...");
+      .clickContextMenu("Configure", "Associate with SonarQube Server...");
 
     ConfigureProjectsWizardBot projectWizardBot = new ConfigureProjectsWizardBot(bot);
     projectWizardBot.finish();
@@ -237,7 +235,7 @@ public class LocalAnalysisTest extends AbstractSQEclipseUITest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndSelect("multimodule-module1")
-      .clickContextMenu("SonarQube", "Analyze");
+      .clickContextMenu("SonarQube", "Analyze all files");
 
     JobHelpers.waitForJobsToComplete(bot);
 
@@ -268,7 +266,7 @@ public class LocalAnalysisTest extends AbstractSQEclipseUITest {
 
     new PydevPackageExplorerBot(bot)
       .expandAndSelect("python")
-      .clickContextMenu("SonarQube", "Analyze");
+      .clickContextMenu("SonarQube", "Analyze all files");
 
     JobHelpers.waitForJobsToComplete(bot);
 

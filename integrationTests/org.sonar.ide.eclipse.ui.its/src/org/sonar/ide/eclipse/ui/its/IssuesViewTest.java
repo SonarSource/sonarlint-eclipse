@@ -7,7 +7,6 @@
 package org.sonar.ide.eclipse.ui.its;
 
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.sonar.ide.eclipse.ui.its.bots.ConfigureProjectsWizardBot;
 import org.sonar.ide.eclipse.ui.its.bots.ImportProjectBot;
@@ -17,7 +16,6 @@ import org.sonar.ide.eclipse.ui.its.bots.JavaPackageExplorerBot;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-@Ignore("Issue management is deeply changed in 4.0. Will update ITs later")
 public class IssuesViewTest extends AbstractSQEclipseUITest {
   private static final String PROJECT_NAME = "reference";
 
@@ -37,7 +35,7 @@ public class IssuesViewTest extends AbstractSQEclipseUITest {
     // Enable Sonar nature
     new JavaPackageExplorerBot(bot)
       .expandAndSelect(PROJECT_NAME)
-      .clickContextMenu("Configure", "Associate with SonarQube...");
+      .clickContextMenu("Configure", "Associate with SonarQube Server...");
 
     ConfigureProjectsWizardBot projectWizardBot = new ConfigureProjectsWizardBot(bot);
     projectWizardBot.finish();

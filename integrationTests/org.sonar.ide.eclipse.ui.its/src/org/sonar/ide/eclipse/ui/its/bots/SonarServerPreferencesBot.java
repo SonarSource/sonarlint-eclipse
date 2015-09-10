@@ -43,7 +43,7 @@ public class SonarServerPreferencesBot {
 
   public SonarServerPreferencesBot remove() {
     bot.button("Remove").click();
-    bot.waitUntil(Conditions.shellIsActive("Remove SonarQube server connection"));
+    bot.waitUntil(Conditions.shellIsActive("Remove SonarQube server configuration"));
     bot.button("OK").click();
     return this;
   }

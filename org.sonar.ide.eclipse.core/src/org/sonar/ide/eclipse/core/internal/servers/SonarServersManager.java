@@ -97,21 +97,17 @@ public class SonarServersManager implements ISonarServersManager {
               defaultServer = sonarServer;
             }
             sonarServer.start();
-            String serverVersion = sonarServer.getVersion();
-            boolean started = true;
-            if (serverVersion != null) {
+            if (sonarServer.started()) {
+              String serverVersion = sonarServer.getVersion();
               for (String prefix : UNSUPPORTED_VERSION_PREFIX) {
                 if (serverVersion.startsWith(prefix)) {
                   SonarCorePlugin.getDefault()
                     .error("SonarQube server " + serverVersion + " at " + url + " is not supported. Minimal supported version is " + MINIMAL_VERSION + "\n");
-                  started = false;
+                  sonarServer.stop();
                   break;
                 }
               }
-            } else {
-              started = false;
             }
-            sonarServer.setStarted(started);
             servers.add(sonarServer);
           }
           if (defaultServer == null && !servers.isEmpty()) {

@@ -150,10 +150,6 @@ public final class SonarServer implements ISonarServer {
     return false;
   }
 
-  public void setStarted(boolean started) {
-    this.started = started;
-  }
-
   public synchronized void startAnalysis(Properties props, IssueListener issueListener) {
     start();
     if (SonarCorePlugin.getDefault().isDebugEnabled()) {
@@ -168,7 +164,7 @@ public final class SonarServer implements ISonarServer {
   }
 
   public synchronized void start() {
-    if (runner == null) {
+    if (!started) {
       tryStart();
     }
   }
@@ -217,6 +213,7 @@ public final class SonarServer implements ISonarServer {
       SonarCorePlugin.getDefault().info("Starting SonarQube for server " + id + System.lineSeparator());
       runner.start();
       this.version = runner.serverVersion();
+      this.started = version != null;
     } catch (Throwable e) {
       SonarCorePlugin.getDefault().error("Unable to start SonarQube for server " + id + System.lineSeparator(), e);
       runner = null;
@@ -229,6 +226,7 @@ public final class SonarServer implements ISonarServer {
       runner.stop();
       runner = null;
     }
+    started = false;
   }
 
 }
