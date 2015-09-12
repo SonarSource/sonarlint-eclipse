@@ -19,6 +19,7 @@
  */
 package org.sonar.ide.eclipse.ui.internal.wizards.associate;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
+import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.CellEditor;
@@ -76,8 +78,8 @@ public class ConfigureProjectsPage extends WizardPage {
   private boolean alreadyRun = false;
 
   public ConfigureProjectsPage(List<IProject> projects) {
-    super("configureProjects", "Associate with SonarQube", SonarImages.SONARWIZBAN_IMG);
-    setDescription("Select projects to add SonarQube capability.");
+    super("configureProjects", Messages.ConfigureProjectsPage_title, SonarImages.SONARWIZBAN_IMG); //$NON-NLS-1$
+    setDescription(Messages.ConfigureProjectsPage_description);
     this.projects = projects;
     sonarServers = SonarCorePlugin.getServersManager().getServers();
   }
@@ -101,11 +103,11 @@ public class ConfigureProjectsPage extends WizardPage {
     viewer.getTable().setHeaderVisible(true);
 
     TableViewerColumn columnProject = new TableViewerColumn(viewer, SWT.LEFT);
-    columnProject.getColumn().setText("Project");
+    columnProject.getColumn().setText(Messages.ConfigureProjectsPage_project);
     columnProject.getColumn().setWidth(200);
 
     TableViewerColumn columnSonarProject = new TableViewerColumn(viewer, SWT.LEFT);
-    columnSonarProject.getColumn().setText("SonarQube Project");
+    columnSonarProject.getColumn().setText(Messages.ConfigureProjectsPage_sonar_project);
     columnSonarProject.getColumn().setWidth(600);
 
     columnSonarProject.setEditingSupport(new ProjectAssociationModelEditingSupport(viewer));
@@ -162,15 +164,27 @@ public class ConfigureProjectsPage extends WizardPage {
           alreadyRun = true;
           try {
             if (sonarServers.isEmpty()) {
-              setMessage("Please configure a SonarQube server first", IMessageProvider.ERROR);
+              setMessage(Messages.ConfigureProjectsPage_no_servers, IMessageProvider.ERROR);
             } else {
-              setMessage("", IMessageProvider.NONE);
+
+              List<ISonarServer> nonReachableServers = new ArrayList<ISonarServer>();
+              for (ISonarServer sonarServer : sonarServers) {
+                if (sonarServer.disabled()) {
+                  nonReachableServers.add(sonarServer);
+                }
+              }
+              // Provide non-reachable servers detail
+              if (!nonReachableServers.isEmpty()) {
+                displayErrorMessageWithServers(ConfigureProjectsPage.this, nonReachableServers);
+              } else {
+                setMessage("", IMessageProvider.NONE);
+              }
+
               getWizard().getContainer().run(true, false, new AssociateProjects(sonarServers, getProjects()));
             }
           } catch (InvocationTargetException ex) {
-            SonarCorePlugin.getDefault().error(ex.getMessage(), ex);
             if (ex.getTargetException() instanceof ConnectionException) {
-              setMessage("One of your SonarQube server cannot be reached. Please check your connection settings.", IMessageProvider.ERROR);
+              setMessage(Messages.ConfigureProjectsPage_one_of_servers_not_reachable, IMessageProvider.ERROR);
             } else {
               setMessage("Error: " + ex.getMessage(), IMessageProvider.ERROR);
             }
@@ -265,7 +279,7 @@ public class ConfigureProjectsPage extends WizardPage {
 
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-      monitor.beginTask("Associating SonarQube projects", IProgressMonitor.UNKNOWN);
+      monitor.beginTask(Messages.ConfigureProjectsPage_taskname, IProgressMonitor.UNKNOWN);
       // Retrieve list of all remote projects
       Map<String, List<ISonarRemoteModule>> remoteSonarProjects = fetchAllRemoteSonarModules();
 
@@ -384,6 +398,35 @@ public class ConfigureProjectsPage extends WizardPage {
       }
 
     }
+  }
+
+  /**
+   * Displays a user facing error message on the project configuration page with non-reachable servers details.
+   *  
+   * @param nonReachableServers
+   */
+  private void displayErrorMessageWithServers(final DialogPage configureProjectsPage, List<ISonarServer> nonReachableServers) {
+    final StringBuilder builder = new StringBuilder();
+    if (nonReachableServers.size() == sonarServers.size()) {
+      // All servers are non-reachable.
+      builder.append(Messages.ConfigureProjectsPage_no_live_servers);
+    } else {
+      final String message = Messages.ConfigureProjectsPage_only_few_servers_live;
+      builder.append(message);
+      builder.append("\n"); //$NON-NLS-1$
+      for (final ISonarServer nonReachableServer : nonReachableServers) {
+        builder.append("\t"); //$NON-NLS-1$
+        builder.append(nonReachableServer.getUrl());
+        final String username = nonReachableServer.getUsername();
+        if (!Strings.isNullOrEmpty(username)) {
+          builder.append(","); //$NON-NLS-1$
+          builder.append(username);
+        }
+        builder.append("\n"); //$NON-NLS-1$
+      }
+    }
+    builder.append(Messages.ConfigureProjectsPage_check_conn_settings);
+    configureProjectsPage.setMessage(builder.toString(), IMessageProvider.ERROR);
   }
 
 }
