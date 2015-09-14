@@ -170,6 +170,12 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     while (t.isAlive()) {
       if (monitor.isCanceled()) {
         t.interrupt();
+        try {
+          t.join(5000);
+        } catch (InterruptedException e) {
+          // just quit
+        }
+        break;
       }
       try {
         Thread.sleep(100);
