@@ -140,6 +140,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     if (SonarCorePlugin.getDefault().isDebugEnabled()) {
       SonarCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props) + System.lineSeparator());
     }
+    Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
+      public void uncaughtException(Thread th, Throwable ex) {
+        SonarCorePlugin.getDefault().error("Error during analysis", ex);
+      }
+    };
     Thread t = new Thread("SonarQube analysis") {
       @Override
       public void run() {
@@ -159,6 +164,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         });
       }
     };
+    t.setDaemon(true);
+    t.setUncaughtExceptionHandler(h);
     t.start();
     while (t.isAlive()) {
       if (monitor.isCanceled()) {
