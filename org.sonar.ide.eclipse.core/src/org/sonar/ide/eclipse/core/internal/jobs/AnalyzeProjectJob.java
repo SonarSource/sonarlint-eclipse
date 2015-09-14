@@ -175,6 +175,9 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         } catch (InterruptedException e) {
           // just quit
         }
+        if (t.isAlive()) {
+          SonarCorePlugin.getDefault().error("Unable to properly terminate SonarQube analysis");
+        }
         break;
       }
       try {
