@@ -6,24 +6,16 @@ env:
   global:
     - DISPLAY=:99.0
   matrix:
-    - TARGET_PLATFORM=e42 RUN_ITS=false
-    - TARGET_PLATFORM=e43 RUN_ITS=false
-    - TARGET_PLATFORM=e44 RUN_ITS=false
-    - TARGET_PLATFORM=e45 RUN_ITS=true SQ_VERSION=DEV
+    - TARGET_PLATFORM=e42
+    - TARGET_PLATFORM=e43
+    - TARGET_PLATFORM=e44
+    - TARGET_PLATFORM=e45
 
 jdk:
   - oraclejdk7
 
-addons:
-  apt:
-    packages:
-    - metacity # metacity is required by swtbot
-
 script:
   - ./travis.sh
-
-after_failure:
- - cat /home/travis/build/SonarSource/sonar-eclipse/integrationTests/org.sonar.ide.eclipse.ui.its/target/surefire-reports/*
 
 cache:
   directories:

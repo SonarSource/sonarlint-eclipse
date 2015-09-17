@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+
+   <extension point="org.eclipse.core.runtime.adapters">
+      <factory adaptableType="org.eclipse.jdt.core.IJavaElement"
+               class="org.sonarlint.eclipse.core.SonarElementsAdapterFactory">
+         <adapter type="org.sonarlint.eclipse.core.resources.ISonarResource"/>
+      </factory>
+      <factory adaptableType="org.eclipse.jdt.core.IJavaElement"
+               class="org.sonarlint.eclipse.core.SonarElementsAdapterFactory">
+         <adapter type="org.sonarlint.eclipse.core.resources.ISonarFile"/>
+      </factory>
+   </extension>
+   
+   <extension
+         point="org.eclipse.jdt.ui.javaElementFilters">
+      <filter
+            class="org.sonarlint.eclipse.ui.NonSonarProjectsFilter"
+            id="org.sonarlint.eclipse.jdt.ui.filters.HideNonSonarProjects"
+            name="Non-SonarQube projects"
+            description="Hides all projects without SonarQube nature"
+            enabled="false"
+            targetId="org.eclipse.jdt.ui.PackageExplorer">
+      </filter>
+   </extension>
+
+   <extension
+         point="org.sonarlint.eclipse.core.projectConfigurators">
+      <configurator
+            class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfigurator">
+      </configurator>
+   </extension>
+</plugin>

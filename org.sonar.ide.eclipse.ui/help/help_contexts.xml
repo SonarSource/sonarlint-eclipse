@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?NLS TYPE="org.eclipse.help.contexts"?>
-<contexts>
-   <context id="help_associate" >
-        <description>This dialog allows you to associate your project(s) with SonarQube server(s)</description>
-        <topic label="Associate a project with SonarQube" href="help/html/associate.html"/>
-   </context>
-</contexts>

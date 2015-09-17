@@ -1,4 +1,4 @@
-SonarQube Eclipse Plugin
+SonarLint Eclipse Plugin
 =============
 [![Build Status](https://travis-ci.org/SonarSource/sonar-eclipse.svg?branch=master)](https://travis-ci.org/SonarSource/sonar-eclipse)
 

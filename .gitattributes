@@ -1,5 +1,5 @@
-org.sonar.ide.eclipse.runtime/META-INF/MANIFEST.MF  eol=crlf
-org.sonar.ide.eclipse.wsclient/META-INF/MANIFEST.MF eol=crlf
+org.sonarlint.eclipse.runtime/META-INF/MANIFEST.MF  eol=crlf
+org.sonarlint.eclipse.wsclient/META-INF/MANIFEST.MF eol=crlf
 
 #Prevent Git on Windows to change LF to CRLF on this file
-org.sonar.ide.eclipse.core.tests/testdata/SimpleProject/src/main/java/ViolationOnFile.java eol=lf
+org.sonarlint.eclipse.core.tests/testdata/SimpleProject/src/main/java/ViolationOnFile.java eol=lf

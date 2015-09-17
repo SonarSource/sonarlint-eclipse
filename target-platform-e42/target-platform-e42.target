@@ -5,17 +5,7 @@
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
 <unit id="org.eclipse.platform.ide" version="0.0.0"/>
 <unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/juno"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
-<unit id="org.python.pydev.feature.feature.group" version="0.0.0"/>
-<repository location="http://pydev.org/updates"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
-<unit id="org.erlide.feature.group" version="0.0.0"/>
-<repository location="http://download.erlide.org/update"/>
 </location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>

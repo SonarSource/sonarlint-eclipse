@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description url="http://sonar-ide.codehaus.org/">
+      SonarLint for Eclipse
+   </description>
+   <feature url="features/org.sonarlint.eclipse.jdt.feature_0.0.0.jar" id="org.sonarlint.eclipse.jdt.feature" version="0.0.0">
+      <category name="SonarQube Eclipse Optional Configuration Helpers"/>
+   </feature>
+   <feature url="features/org.sonarlint.eclipse.feature_0.0.0.qualifier.jar" id="org.sonarlint.eclipse.feature" version="0.0.0">
+      <category name="SonarQube Eclipse Integration"/>
+   </feature>
+   <category-def name="SonarQube Eclipse Integration" label="SonarQube Eclipse Integration">
+      <description>
+         Allows to run SonarQube analysis of Eclipse projects
+      </description>
+   </category-def>
+   <category-def name="SonarQube Eclipse Optional Configuration Helpers" label="SonarQube Eclipse Optional Configuration Helpers">
+      <description>
+         Optional components used to simplify/automate configuration of SonarQube analysis properties
+      </description>
+   </category-def>
+</site>
