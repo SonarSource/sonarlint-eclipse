@@ -28,9 +28,9 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.sonarlint.eclipse.core.internal.builder.SonarLintBuilder;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
-import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 
 public class IssuesUpdater implements IPartListener2 {
   @Override
@@ -46,9 +46,11 @@ public class IssuesUpdater implements IPartListener2 {
   }
 
   private void scheduleUpdate(IResource resource) {
-    boolean debugEnabled = SonarLintConsole.isDebugEnabled();
     IFile file = (IFile) resource.getAdapter(IFile.class);
     if (file != null) {
+      if (!SonarLintBuilder.shouldAnalyze(file)) {
+        return;
+      }
       AnalyzeProjectRequest request = new AnalyzeProjectRequest(resource.getProject(), Arrays.asList(file));
       new AnalyzeProjectJob(request).schedule();
     }

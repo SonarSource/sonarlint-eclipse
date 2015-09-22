@@ -250,7 +250,7 @@
         <action id="org.sonarlint.eclipse.addRemoveNatureAction"
               class="org.sonarlint.eclipse.ui.internal.actions.ToggleNatureAction"
               enablesFor="+"
-              label="Remove SonarQube Nature"
+              label="Disable SonarLint"
               menubarPath="sonar.menu/group3">
         </action>
     </objectContribution>

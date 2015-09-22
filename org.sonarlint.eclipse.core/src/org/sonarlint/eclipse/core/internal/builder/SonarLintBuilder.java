@@ -53,18 +53,13 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
   }
 
   private void incrementalBuild(IResourceDelta delta, final IProgressMonitor monitor) {
-    SonarLintCorePlugin.getDefault().debug("BUILDER: incremental build on " + getProject() + "\n");
     final Multimap<IProject, IFile> filesPerProject = LinkedHashMultimap.create();
     try {
       delta.accept(new IResourceDeltaVisitor() {
         @Override
         public boolean visit(IResourceDelta delta) {
           IResource resource = delta.getResource();
-          if (!SonarLintNature.hasSonarLintNature(resource.getProject()) || !resource.exists() || resource.isDerived() || resource.isHidden()) {
-            return false;
-          }
-          // Ignore changes on .project, .settings, ...
-          if (resource.getName().startsWith(".")) {
+          if (!shouldAnalyze(resource.getProject())) {
             return false;
           }
           IFile file = (IFile) resource.getAdapter(IFile.class);
@@ -74,7 +69,6 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
           }
           IProject project = resource.getProject();
           filesPerProject.put(project, file);
-          SonarLintCorePlugin.getDefault().debug("BUILDER: file changed " + file + " on project " + project + "\n");
           return true;
         }
       });
@@ -88,7 +82,18 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
     }
   }
 
+  public static boolean shouldAnalyze(IResource resource) {
+    if (!SonarLintNature.hasSonarLintNature(resource.getProject()) || !resource.exists() || resource.isDerived() || resource.isHidden()) {
+      return false;
+    }
+    // Ignore .project, .settings, ...
+    if (resource.getName().startsWith(".")) {
+      return false;
+    }
+    return true;
+  }
+
   private void fullBuild(IProgressMonitor monitor) {
-    SonarLintCorePlugin.getDefault().debug("BUILDER: full build on " + getProject() + "\n");
+    // Nothing to do
   }
 }
