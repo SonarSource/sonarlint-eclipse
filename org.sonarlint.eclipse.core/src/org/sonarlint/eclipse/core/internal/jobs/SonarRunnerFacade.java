@@ -42,7 +42,9 @@ public final class SonarRunnerFacade {
   }
 
   public synchronized void startAnalysis(Properties props, IssueListener issueListener) {
-    start();
+    if (!started) {
+      tryStart(false);
+    }
     if (!started) {
       return;
     }
@@ -52,13 +54,16 @@ public final class SonarRunnerFacade {
     runner.runAnalysis(props, issueListener);
   }
 
-  public synchronized void start() {
+  public synchronized void tryUpdate() {
+    stop();
+    tryStart(true);
     if (!started) {
-      tryStart();
+      return;
     }
+    runner.syncProject(null);
   }
 
-  private void tryStart() {
+  private void tryStart(boolean tryUpdate) {
     Properties globalProps = new Properties();
     globalProps.setProperty(SonarLintProperties.SONAR_URL, url);
     globalProps.setProperty(SonarLintProperties.ANALYSIS_MODE, SonarLintProperties.ANALYSIS_MODE_ISSUES);
@@ -96,7 +101,7 @@ public final class SonarRunnerFacade {
       .addGlobalProperties(globalProps);
     try {
       SonarLintCorePlugin.getDefault().info("Starting SonarQube for server " + url + System.lineSeparator());
-      runner.start();
+      runner.start(tryUpdate);
       String version = runner.serverVersion();
       this.started = version != null;
     } catch (Throwable e) {
