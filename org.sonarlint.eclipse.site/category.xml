@@ -4,19 +4,19 @@
       SonarLint for Eclipse
    </description>
    <feature url="features/org.sonarlint.eclipse.jdt.feature_0.0.0.jar" id="org.sonarlint.eclipse.jdt.feature" version="0.0.0">
-      <category name="SonarQube Eclipse Optional Configuration Helpers"/>
+      <category name="SonarLint for Eclipse Optional Configuration Helpers"/>
    </feature>
    <feature url="features/org.sonarlint.eclipse.feature_0.0.0.qualifier.jar" id="org.sonarlint.eclipse.feature" version="0.0.0">
-      <category name="SonarQube Eclipse Integration"/>
+      <category name="SonarLint for Eclipse"/>
    </feature>
-   <category-def name="SonarQube Eclipse Integration" label="SonarQube Eclipse Integration">
+   <category-def name="SonarLint for Eclipse" label="SonarLint for Eclipse">
       <description>
-         Allows to run SonarQube analysis of Eclipse projects
+         Allows to run SonarLint analysis on your Eclipse projects
       </description>
    </category-def>
-   <category-def name="SonarQube Eclipse Optional Configuration Helpers" label="SonarQube Eclipse Optional Configuration Helpers">
+   <category-def name="SonarLint for Eclipse Optional Configuration Helpers" label="SonarLint for Eclipse Optional Configuration Helpers">
       <description>
-         Optional components used to simplify/automate configuration of SonarQube analysis properties
+         Optional components used to simplify/automate configuration of SonarLint analysis properties
       </description>
    </category-def>
 </site>
