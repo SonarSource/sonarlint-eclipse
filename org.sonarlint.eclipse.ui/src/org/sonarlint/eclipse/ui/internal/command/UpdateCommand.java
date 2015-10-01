@@ -22,13 +22,24 @@ package org.sonarlint.eclipse.ui.internal.command;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
 public class UpdateCommand extends AbstractHandler {
 
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    SonarLintCorePlugin.getDefault().getRunner().tryUpdate();
+    new Job("Update SonarLint") {
+
+      @Override
+      protected IStatus run(IProgressMonitor monitor) {
+        SonarLintCorePlugin.getDefault().getRunner().tryUpdate();
+        return Status.OK_STATUS;
+      }
+    }.schedule();
     return null;
   }
 
