@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.Properties;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.sonar.runner.api.EmbeddedRunner;
@@ -32,6 +33,7 @@ public final class SonarRunnerFacade {
   private boolean started;
   private EmbeddedRunner runner;
   private final String url;
+  private String version;
 
   public SonarRunnerFacade() {
     url = DefaultScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID).get("server_url", null);
@@ -43,7 +45,7 @@ public final class SonarRunnerFacade {
 
   public synchronized void startAnalysis(Properties props, IssueListener issueListener) {
     if (!started) {
-      tryStart(false);
+      tryStart(true);
     }
     if (!started) {
       return;
@@ -56,14 +58,14 @@ public final class SonarRunnerFacade {
 
   public synchronized void tryUpdate() {
     stop();
-    tryStart(true);
+    tryStart(false);
     if (!started) {
       return;
     }
     runner.syncProject(null);
   }
 
-  private void tryStart(boolean tryUpdate) {
+  private void tryStart(boolean preferCache) {
     Properties globalProps = new Properties();
     globalProps.setProperty(SonarLintProperties.SONAR_URL, url);
     globalProps.setProperty(SonarLintProperties.ANALYSIS_MODE, SonarLintProperties.ANALYSIS_MODE_ISSUES);
@@ -101,14 +103,19 @@ public final class SonarRunnerFacade {
       .addGlobalProperties(globalProps);
     try {
       SonarLintCorePlugin.getDefault().info("Starting SonarQube for server " + url + System.lineSeparator());
-      runner.start(tryUpdate);
-      String version = runner.serverVersion();
+      runner.start(preferCache);
+      version = runner.serverVersion();
       this.started = version != null;
     } catch (Throwable e) {
       SonarLintCorePlugin.getDefault().error("Unable to start SonarQube for server " + url + System.lineSeparator(), e);
       runner = null;
       started = false;
     }
+  }
+
+  @CheckForNull
+  public String getVersion() {
+    return version;
   }
 
   public synchronized void stop() {

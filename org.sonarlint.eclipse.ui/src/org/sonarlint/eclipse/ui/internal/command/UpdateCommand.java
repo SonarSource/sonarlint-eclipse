@@ -26,17 +26,42 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
 public class UpdateCommand extends AbstractHandler {
 
+  private static final String TITLE = "SonarLint update";
+
   @Override
-  public Object execute(ExecutionEvent event) throws ExecutionException {
+  public Object execute(final ExecutionEvent event) throws ExecutionException {
     new Job("Update SonarLint") {
 
       @Override
       protected IStatus run(IProgressMonitor monitor) {
-        SonarLintCorePlugin.getDefault().getRunner().tryUpdate();
+        try {
+          SonarLintCorePlugin.getDefault().getRunner().tryUpdate();
+        } catch (final Exception e) {
+          Display.getDefault().syncExec(new Runnable() {
+            public void run() {
+              MessageDialog.openError(HandlerUtil.getActiveShell(event).getShell(), TITLE, "Unable to update SonarLint: " + e.getMessage());
+            }
+          });
+          return Status.OK_STATUS;
+        }
+        final String version = SonarLintCorePlugin.getDefault().getRunner().getVersion();
+        Display.getDefault().syncExec(new Runnable() {
+          public void run() {
+            if (version == null) {
+              MessageDialog.openError(HandlerUtil.getActiveShell(event).getShell(), TITLE, "Unable to update SonarLint. Please check logs in SonarLint console.");
+            } else {
+              MessageDialog.openInformation(HandlerUtil.getActiveShell(event).getShell(), TITLE, "SonarLint is up and running Scanner version " + version);
+            }
+          }
+        });
+
         return Status.OK_STATUS;
       }
     }.schedule();
