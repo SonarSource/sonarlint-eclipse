@@ -9,8 +9,6 @@ function installTravisTools {
 }
 
 installTravisTools
-build_snapshot "SonarSource/sonarqube"
-build_snapshot "SonarSource/sonar-runner"
 
 mvn verify -B -e -V -Dtycho.disableP2Mirrors=true -Dtarget.platform=$TARGET_PLATFORM
 
