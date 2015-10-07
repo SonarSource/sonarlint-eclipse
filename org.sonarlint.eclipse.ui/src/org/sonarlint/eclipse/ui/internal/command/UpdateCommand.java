@@ -57,7 +57,7 @@ public class UpdateCommand extends AbstractHandler {
             if (version == null) {
               MessageDialog.openError(HandlerUtil.getActiveShell(event).getShell(), TITLE, "Unable to update SonarLint. Please check logs in SonarLint console.");
             } else {
-              MessageDialog.openInformation(HandlerUtil.getActiveShell(event).getShell(), TITLE, "SonarLint is up and running Scanner version " + version);
+              MessageDialog.openInformation(HandlerUtil.getActiveShell(event).getShell(), TITLE, "SonarLint is up to date and running");
             }
           }
         });
