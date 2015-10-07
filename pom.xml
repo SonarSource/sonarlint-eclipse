@@ -75,6 +75,7 @@
   <properties>
     <license.title>SonarLint for Eclipse</license.title>
     <license.year>2015</license.year>
+    <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho.version>0.23.1</tycho.version>
     <tycho-extras-version>${tycho.version}</tycho-extras-version>

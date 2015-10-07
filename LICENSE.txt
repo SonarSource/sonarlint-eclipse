@@ -1,6 +1,6 @@
-SonarLint for Eclipse, open source software quality management tool.
-Copyright (C) 2010-2015 SonarSource
-mailto:contact AT sonarsource DOT com
+SonarLint for Eclipse
+Copyright (C) 2015 SonarSource
+sonarlint@sonarsource.com
 
 SonarLint for Eclipse is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
