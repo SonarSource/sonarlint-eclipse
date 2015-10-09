@@ -114,7 +114,7 @@ public class SonarMarker {
           }
         }
       } catch (Exception e) {
-        SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarQube marker on resource " + resource.getName() + ": " + e.getMessage());
+        SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarLint marker on resource " + resource.getName() + ": " + e.getMessage());
       }
     }
   }

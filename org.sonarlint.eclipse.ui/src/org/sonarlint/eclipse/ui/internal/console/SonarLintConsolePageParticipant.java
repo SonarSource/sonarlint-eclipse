@@ -126,7 +126,7 @@ public class SonarLintConsolePageParticipant implements IConsolePageParticipant 
       return SonarLintUiPlugin.getDefault().getPreferenceStore();
     }
 
-    private String getCurrentValue() {
+    private static String getCurrentValue() {
       return getPreferenceStore().getString(SonarLintConsole.P_SHOW_CONSOLE);
     }
 

@@ -427,7 +427,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     SonarLintProperty data = (SonarLintProperty) selection.getFirstElement();
 
     int index = sonarProperties.indexOf(data);
-    int target = up ? index - 1 : index + 1;
+    int target = up ? (index - 1) : (index + 1);
 
     if (index >= 0) {
       sonarProperties.remove(index);

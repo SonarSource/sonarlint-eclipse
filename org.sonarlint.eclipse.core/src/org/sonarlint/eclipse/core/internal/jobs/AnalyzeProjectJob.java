@@ -64,12 +64,12 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   private static String jobTitle(AnalyzeProjectRequest request) {
     if (request.getOnlyOnFiles() == null) {
-      return "SonarQube analysis of project " + request.getProject().getName();
+      return "SonarLint analysis of project " + request.getProject().getName();
     }
     if (request.getOnlyOnFiles().size() == 1) {
-      return "SonarQube analysis of file " + request.getOnlyOnFiles().iterator().next().getProjectRelativePath().toString() + "(Project " + request.getProject().getName() + ")";
+      return "SonarLint analysis of file " + request.getOnlyOnFiles().iterator().next().getProjectRelativePath().toString() + "(Project " + request.getProject().getName() + ")";
     }
-    return "SonarQube analysis of project " + request.getProject().getName() + " (" + request.getOnlyOnFiles().size() + " files)";
+    return "SonarLint analysis of project " + request.getProject().getName() + " (" + request.getOnlyOnFiles().size() + " files)";
   }
 
   @Override
@@ -82,8 +82,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     try {
       run(request.getProject(), properties, runner, monitor);
     } catch (Exception e) {
-      SonarLintCorePlugin.getDefault().error("Error during execution of SonarQube analysis" + System.lineSeparator(), e);
-      return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarQube analysis", e);
+      SonarLintCorePlugin.getDefault().error("Error during execution of SonarLint analysis" + System.lineSeparator(), e);
+      return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
     }
     if (monitor.isCanceled()) {
       return Status.CANCEL_STATUS;
@@ -93,7 +93,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   /**
-   * Populate properties with everything required for the SonarQube analysis in dryRun mode.
+   * Populate properties with everything required for the SonarLint analysis in issues mode.
    * @param monitor
    * @param properties
    * @return
@@ -117,10 +117,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
     if (this.request.getOnlyOnFiles() != null) {
       Collection<String> paths = Collections2.transform(request.getOnlyOnFiles(), new Function<IFile, String>() {
+        @Override
         public String apply(IFile file) {
           MarkerUtils.deleteIssuesMarkers(file);
           return file.getProjectRelativePath().toString();
-        };
+        }
       });
       ProjectConfigurator.setPropertyList(properties, "sonar.tests", paths);
       ProjectConfigurator.setPropertyList(properties, "sonar.sources", paths);
@@ -139,11 +140,12 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       SonarLintCorePlugin.getDefault().info("Start sonar-runner with args:\n" + propsToString(props) + System.lineSeparator());
     }
     Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
+      @Override
       public void uncaughtException(Thread th, Throwable ex) {
         SonarLintCorePlugin.getDefault().error("Error during analysis", ex);
       }
     };
-    Thread t = new Thread("SonarQube analysis") {
+    Thread t = new Thread("SonarLint analysis") {
       @Override
       public void run() {
         runner.startAnalysis(props, new IssueListener() {
@@ -174,7 +176,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           // just quit
         }
         if (t.isAlive()) {
-          SonarLintCorePlugin.getDefault().error("Unable to properly terminate SonarQube analysis");
+          SonarLintCorePlugin.getDefault().error("Unable to properly terminate SonarLint analysis");
         }
         break;
       }

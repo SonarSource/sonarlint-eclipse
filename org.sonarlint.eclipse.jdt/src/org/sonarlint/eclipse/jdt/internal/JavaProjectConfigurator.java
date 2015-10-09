@@ -142,7 +142,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     }
   }
 
-  private String resolveLibrary(IJavaProject javaProject, IClasspathEntry entry) {
+  private static String resolveLibrary(IJavaProject javaProject, IClasspathEntry entry) {
     final String libPath;
     IResource member = findPath(javaProject.getProject(), entry.getPath());
     if (member != null) {

@@ -45,6 +45,7 @@ public class UpdateCommand extends AbstractHandler {
           SonarLintCorePlugin.getDefault().getRunner().tryUpdate();
         } catch (final Exception e) {
           Display.getDefault().syncExec(new Runnable() {
+            @Override
             public void run() {
               MessageDialog.openError(HandlerUtil.getActiveShell(event).getShell(), TITLE, "Unable to update SonarLint: " + e.getMessage());
             }
@@ -53,6 +54,7 @@ public class UpdateCommand extends AbstractHandler {
         }
         final String version = SonarLintCorePlugin.getDefault().getRunner().getVersion();
         Display.getDefault().syncExec(new Runnable() {
+          @Override
           public void run() {
             if (version == null) {
               MessageDialog.openError(HandlerUtil.getActiveShell(event).getShell(), TITLE, "Unable to update SonarLint. Please check logs in SonarLint console.");

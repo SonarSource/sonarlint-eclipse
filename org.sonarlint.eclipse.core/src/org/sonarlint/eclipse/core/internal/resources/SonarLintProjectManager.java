@@ -51,7 +51,7 @@ public class SonarLintProjectManager {
           sonarProperties.add(new SonarLintProperty(keyValue[0], keyValue.length > 1 ? keyValue[1] : ""));
         }
       } catch (Exception e) {
-        SonarLintCorePlugin.getDefault().error("Error while loading SonarQube properties", e);
+        SonarLintCorePlugin.getDefault().error("Error while loading SonarLint properties", e);
       }
     }
     sonarProject.setExtraProperties(sonarProperties);

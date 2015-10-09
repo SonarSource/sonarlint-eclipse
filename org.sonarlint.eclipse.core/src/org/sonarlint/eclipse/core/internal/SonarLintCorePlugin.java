@@ -30,14 +30,16 @@ import org.sonarlint.eclipse.core.internal.jobs.SonarRunnerFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
 
 public class SonarLintCorePlugin extends AbstractPlugin {
+
   public static final String PLUGIN_ID = "org.sonarlint.eclipse.core";
   public static final String UI_PLUGIN_ID = "org.sonarlint.eclipse.ui";
-
   public static final String MARKER_ID = PLUGIN_ID + ".sonarlintProblem";
 
   private static SonarLintCorePlugin plugin;
-  private SonarRunnerFacade runner;
+  private static SonarLintProjectManager projectManager;
 
+  private final List<LogListener> logListeners = new ArrayList<LogListener>();
+  private SonarRunnerFacade runner;
   private boolean debugEnabled;
 
   public SonarLintCorePlugin() {
@@ -47,8 +49,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   public static SonarLintCorePlugin getDefault() {
     return plugin;
   }
-
-  private final List<LogListener> logListeners = new ArrayList<LogListener>();
 
   public void addLogListener(LogListener listener) {
     logListeners.add(listener);
@@ -84,13 +84,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
       listener.debug(msg);
     }
   }
-
-  @Override
-  public void start(BundleContext context) {
-    super.start(context);
-  }
-
-  private static SonarLintProjectManager projectManager;
 
   public synchronized SonarLintProjectManager getProjectManager() {
     if (projectManager == null) {

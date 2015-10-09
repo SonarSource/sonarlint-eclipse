@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.builder;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -39,27 +40,23 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
 
   @Override
   protected IProject[] build(int kind, Map args, IProgressMonitor monitor) {
-    if (kind == IncrementalProjectBuilder.FULL_BUILD) {
-      fullBuild(monitor);
-    } else {
+    if (kind != IncrementalProjectBuilder.FULL_BUILD) {
       IResourceDelta delta = getDelta(getProject());
-      if (delta == null) {
-        fullBuild(monitor);
-      } else {
-        incrementalBuild(delta, monitor);
+      if (delta != null) {
+        incrementalBuild(delta);
       }
     }
     return null;
   }
 
-  private void incrementalBuild(IResourceDelta delta, final IProgressMonitor monitor) {
+  private void incrementalBuild(IResourceDelta delta) {
     final Multimap<IProject, IFile> filesPerProject = LinkedHashMultimap.create();
     try {
       delta.accept(new IResourceDeltaVisitor() {
         @Override
         public boolean visit(IResourceDelta delta) {
           IResource resource = delta.getResource();
-          if (!shouldAnalyze(resource.getProject())) {
+          if (!shouldAnalyze(delta, resource.getProject())) {
             return false;
           }
           IFile file = (IFile) resource.getAdapter(IFile.class);
@@ -78,11 +75,13 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
     for (IProject project : filesPerProject.keySet()) {
       AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, filesPerProject.get(project));
       new AnalyzeProjectJob(request).schedule();
-
     }
   }
 
-  public static boolean shouldAnalyze(IResource resource) {
+  public static boolean shouldAnalyze(@Nullable IResourceDelta delta, IResource resource) {
+    if (delta != null && delta.getKind() == IResourceDelta.REMOVED) {
+      return false;
+    }
     if (!SonarLintNature.hasSonarLintNature(resource.getProject()) || !resource.exists() || resource.isDerived() || resource.isHidden()) {
       return false;
     }
@@ -93,7 +92,4 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
     return true;
   }
 
-  private void fullBuild(IProgressMonitor monitor) {
-    // Nothing to do
-  }
 }

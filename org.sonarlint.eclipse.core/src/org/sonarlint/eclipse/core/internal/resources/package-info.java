@@ -17,22 +17,8 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonarlint.eclipse.core.internal;
+@ParametersAreNonnullByDefault
+package org.sonarlint.eclipse.core.internal.resources;
 
-import org.eclipse.osgi.util.NLS;
+import javax.annotation.ParametersAreNonnullByDefault;
 
-public final class Messages extends NLS {
-  private static final String BUNDLE_NAME = "org.sonarlint.eclipse.core.internal.messages"; //$NON-NLS-1$
-
-  static {
-    // load message values from bundle file
-    NLS.initializeMessages(BUNDLE_NAME, Messages.class);
-  }
-
-  private Messages() {
-  }
-
-  public static String No_default_server;
-  public static String No_matching_server_in_configuration_for_project;
-  public static String No_matching_server_in_configuration;
-}

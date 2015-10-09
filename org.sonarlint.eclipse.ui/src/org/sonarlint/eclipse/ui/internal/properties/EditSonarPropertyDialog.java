@@ -155,7 +155,7 @@ public class EditSonarPropertyDialog extends StatusDialog {
   }
 
   private Text createNameText(Composite parent) {
-    int descFlags = fIsNameModifiable ? SWT.BORDER : SWT.BORDER | SWT.READ_ONLY;
+    int descFlags = fIsNameModifiable ? SWT.BORDER : (SWT.BORDER | SWT.READ_ONLY);
     Text text = new Text(parent, descFlags);
     final GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.widthHint = convertWidthInCharsToPixels(20);

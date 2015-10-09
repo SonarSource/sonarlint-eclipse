@@ -20,9 +20,7 @@
 package org.sonarlint.eclipse.core.configurator;
 
 /**
- * Properties that configurator may want to set for the SonarQube analysis.
- * @author Julien Henry
- *
+ * Properties that configurator may want to set for the SonarLint analysis.
  */
 public interface SonarConfiguratorProperties {
 

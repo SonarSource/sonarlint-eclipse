@@ -34,12 +34,12 @@ public abstract class ProjectConfigurator {
 
   /**
    * Tell if this project configurator can configure the given project. It is already assumed
-   * that the project has the SonarQube nature.
+   * that the project has the SonarLint nature.
    */
   public abstract boolean canConfigure(IProject project);
 
   /**
-   * Configures SonarQube project, using information from Eclipse project.
+   * Configures SonarLint analysis, using information from Eclipse project.
    */
   public abstract void configure(ProjectConfigurationRequest request, IProgressMonitor monitor);
 

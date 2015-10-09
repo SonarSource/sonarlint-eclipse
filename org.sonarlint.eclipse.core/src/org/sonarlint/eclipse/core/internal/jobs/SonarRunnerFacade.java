@@ -79,14 +79,10 @@ public final class SonarRunnerFacade {
       public void log(String msg, Level level) {
         switch (level) {
           case TRACE:
-            SonarLintCorePlugin.getDefault().debug(msg + System.lineSeparator());
-            break;
           case DEBUG:
             SonarLintCorePlugin.getDefault().debug(msg + System.lineSeparator());
             break;
           case INFO:
-            SonarLintCorePlugin.getDefault().info(msg + System.lineSeparator());
-            break;
           case WARN:
             SonarLintCorePlugin.getDefault().info(msg + System.lineSeparator());
             break;
@@ -102,12 +98,12 @@ public final class SonarRunnerFacade {
       .setApp("Eclipse", SonarLintCorePlugin.getDefault().getBundle().getVersion().toString())
       .addGlobalProperties(globalProps);
     try {
-      SonarLintCorePlugin.getDefault().info("Starting SonarQube for server " + url + System.lineSeparator());
+      SonarLintCorePlugin.getDefault().info("Starting SonarLint" + System.lineSeparator());
       runner.start(preferCache);
       version = runner.serverVersion();
       this.started = version != null;
     } catch (Throwable e) {
-      SonarLintCorePlugin.getDefault().error("Unable to start SonarQube for server " + url + System.lineSeparator(), e);
+      SonarLintCorePlugin.getDefault().error("Unable to start SonarLint" + System.lineSeparator(), e);
       runner = null;
       started = false;
     }
