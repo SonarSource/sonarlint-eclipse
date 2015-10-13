@@ -23,6 +23,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -74,22 +77,52 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   @Override
   protected IStatus run(SonarRunnerFacade runner, final IProgressMonitor monitor) {
+
     // Configure
     Properties properties = configureAnalysis(monitor, extraProps);
 
     // Analyze
-    // To be sure to not reuse something from a previous analysis
+    Collection<File> tmpToDelete = new ArrayList<>();
     try {
+      if (request.getOnlyOnFiles() != null) {
+        IProject project = request.getProject();
+        final File baseDir = project.getLocation().toFile();
+        handleLinkedFiles(tmpToDelete, baseDir);
+      }
       run(request.getProject(), properties, runner, monitor);
     } catch (Exception e) {
       SonarLintCorePlugin.getDefault().error("Error during execution of SonarLint analysis" + System.lineSeparator(), e);
       return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
+    } finally {
+      for (File f : tmpToDelete) {
+        try {
+          f.delete();
+        } catch (Exception e) {
+          SonarLintCorePlugin.getDefault().error("Unable to delete temporary file" + System.lineSeparator(), e);
+        }
+      }
     }
     if (monitor.isCanceled()) {
       return Status.CANCEL_STATUS;
     }
 
     return Status.OK_STATUS;
+  }
+
+  private void handleLinkedFiles(Collection<File> tmpToDelete, final File baseDir) {
+    // Handle linked files
+    for (IFile file : request.getOnlyOnFiles()) {
+      if (file.isLinked()) {
+        File tmp = new File(baseDir, file.getProjectRelativePath().toString());
+        SonarLintCorePlugin.getDefault().debug(file.getName() + " is a linked resource. Will create a temporary copy" + System.lineSeparator());
+        try {
+          Files.copy(file.getContents(), tmp.toPath());
+          tmpToDelete.add(tmp);
+        } catch (IOException | CoreException e) {
+          SonarLintCorePlugin.getDefault().error("Unable to create temporary copy for linked resource" + System.lineSeparator(), e);
+        }
+      }
+    }
   }
 
   /**
@@ -102,7 +135,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   public Properties configureAnalysis(final IProgressMonitor monitor, List<SonarLintProperty> extraProps) {
     Properties properties = new Properties();
     IProject project = request.getProject();
-    File baseDir = project.getLocation().toFile();
+    final File baseDir = project.getLocation().toFile();
     IPath projectSpecificWorkDir = project.getWorkingLocation(SonarLintCorePlugin.PLUGIN_ID);
 
     // Preview mode by default
