@@ -112,7 +112,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     processOutputDir(javaProject.getOutputLocation(), context, topProject);
   }
 
-  private void processOutputDir(IPath outputDir, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
+  private static void processOutputDir(IPath outputDir, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
     String outDir = getAbsolutePath(outputDir);
     if (outDir != null) {
       if (topProject) {
@@ -181,7 +181,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     return false;
   }
 
-  private void configurationToProperties(Properties sonarProjectProperties, JavaProjectConfiguration context) {
+  private static void configurationToProperties(Properties sonarProjectProperties, JavaProjectConfiguration context) {
     setPropertyList(sonarProjectProperties, "sonar.libraries", context.libraries());
     // Eclipse doesn't separate main and test classpath
     setPropertyList(sonarProjectProperties, "sonar.java.libraries", context.libraries());

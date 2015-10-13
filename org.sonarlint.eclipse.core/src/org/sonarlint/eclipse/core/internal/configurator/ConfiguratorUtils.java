@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -67,7 +68,7 @@ public class ConfiguratorUtils {
     return result;
   }
 
-  public static void configure(final IProject project, final Properties properties, final IProgressMonitor monitor) {
+  public static void configure(final IProject project, Collection<IFile> filesToAnalyze, final Properties properties, final IProgressMonitor monitor) {
     String projectName = project.getName();
     String encoding;
     try {
@@ -80,7 +81,7 @@ public class ConfiguratorUtils {
     properties.setProperty(SonarLintProperties.PROJECT_VERSION_PROPERTY, "0.1-SNAPSHOT");
     properties.setProperty(SonarLintProperties.ENCODING_PROPERTY, encoding);
 
-    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, properties);
+    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, filesToAnalyze, properties);
     for (ProjectConfigurator configurator : ConfiguratorUtils.getConfigurators()) {
       if (configurator.canConfigure(project)) {
         configurator.configure(request, monitor);

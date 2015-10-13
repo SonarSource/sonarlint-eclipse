@@ -19,17 +19,23 @@
  */
 package org.sonarlint.eclipse.core.configurator;
 
+import java.util.Collection;
 import java.util.Properties;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 
 public class ProjectConfigurationRequest {
 
   private final IProject project;
   private final Properties sonarProjectProperties;
+  private final Collection<IFile> filesToAnalyze;
 
-  public ProjectConfigurationRequest(IProject eclipseProject, Properties sonarProjectProperties) {
+  public ProjectConfigurationRequest(IProject eclipseProject, @Nullable Collection<IFile> filesToAnalyze, Properties sonarProjectProperties) {
     this.project = eclipseProject;
     this.sonarProjectProperties = sonarProjectProperties;
+    this.filesToAnalyze = filesToAnalyze;
   }
 
   public IProject getProject() {
@@ -38,6 +44,14 @@ public class ProjectConfigurationRequest {
 
   public Properties getSonarProjectProperties() {
     return sonarProjectProperties;
+  }
+
+  /**
+   * List of files to analyze "on-the-fly" or <code>null</code> if full project analysis.
+   */
+  @CheckForNull
+  public Collection<IFile> getFilesToAnalyze() {
+    return filesToAnalyze;
   }
 
 }

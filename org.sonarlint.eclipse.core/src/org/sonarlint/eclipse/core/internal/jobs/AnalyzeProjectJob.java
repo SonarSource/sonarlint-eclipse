@@ -109,7 +109,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     properties.setProperty(SonarLintProperties.ANALYSIS_MODE, SonarLintProperties.ANALYSIS_MODE_ISSUES);
 
     // Configuration by configurators (common and language specific)
-    ConfiguratorUtils.configure(project, properties, monitor);
+    ConfiguratorUtils.configure(project, this.request.getOnlyOnFiles(), properties, monitor);
 
     // Append workspace and project properties
     for (SonarLintProperty sonarProperty : extraProps) {
