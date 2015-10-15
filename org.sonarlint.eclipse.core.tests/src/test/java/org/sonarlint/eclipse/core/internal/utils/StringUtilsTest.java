@@ -17,4 +17,22 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonarlint.eclipse.core.internal.builder;
+package org.sonarlint.eclipse.core.internal.utils;
+
+import java.util.Arrays;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+public class StringUtilsTest {
+
+  @Test
+  public void testJoin() {
+    assertThat(StringUtils.joinSkipNull(Arrays.asList("a", "b", "c"), ",")).isEqualTo("a,b,c");
+    assertThat(StringUtils.joinSkipNull(Arrays.asList("a", null, "c"), ",")).isEqualTo("a,c");
+    assertThat(StringUtils.joinSkipNull(Arrays.asList(null, "b", "c"), ",")).isEqualTo("b,c");
+    assertThat(StringUtils.joinSkipNull(Arrays.asList(null, null, "c"), ",")).isEqualTo("c");
+    assertThat(StringUtils.joinSkipNull(Arrays.<String>asList(null, null, null), ",")).isEqualTo("");
+  }
+
+}

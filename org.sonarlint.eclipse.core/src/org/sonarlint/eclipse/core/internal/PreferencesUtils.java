@@ -21,12 +21,12 @@ package org.sonarlint.eclipse.core.internal;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Platform;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public class PreferencesUtils {
 
@@ -51,7 +51,7 @@ public class PreferencesUtils {
     String globalExtraArgs = Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_EXTRA_ARGS, PREF_EXTRA_ARGS_DEFAULT, null);
     String[] keyValuePairs = StringUtils.split(globalExtraArgs, "\n\r");
     for (String keyValuePair : keyValuePairs) {
-      String[] keyValue = keyValuePair.split("=");
+      String[] keyValue = StringUtils.split(keyValuePair, "=");
       props.add(new SonarLintProperty(keyValue[0], keyValue[1]));
     }
 

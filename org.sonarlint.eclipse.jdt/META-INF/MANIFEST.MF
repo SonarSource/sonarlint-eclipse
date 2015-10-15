@@ -15,7 +15,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.core,
  org.eclipse.jdt.ui,
  org.sonarlint.eclipse.core,
- findbugsAnnotations;bundle-version="2.0.0",
  org.sonarlint.eclipse.ui
 Export-Package: org.sonarlint.eclipse.jdt.internal;x-friends:="org.son
  ar.ide.eclipse.core.tests"

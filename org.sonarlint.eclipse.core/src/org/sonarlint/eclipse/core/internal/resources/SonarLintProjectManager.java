@@ -21,13 +21,14 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import java.util.regex.Pattern;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public class SonarLintProjectManager {
 
@@ -45,9 +46,9 @@ public class SonarLintProjectManager {
     List<SonarLintProperty> sonarProperties = new ArrayList<SonarLintProperty>();
     if (extraArgsAsString != null) {
       try {
-        String[] props = StringUtils.split(extraArgsAsString, "\r\n");
+        String[] props = extraArgsAsString.split(Pattern.quote("\r\n"));
         for (String keyValuePair : props) {
-          String[] keyValue = StringUtils.split(keyValuePair, "=");
+          String[] keyValue = keyValuePair.split("=");
           sonarProperties.add(new SonarLintProperty(keyValue[0], keyValue.length > 1 ? keyValue[1] : ""));
         }
       } catch (Exception e) {
@@ -73,7 +74,7 @@ public class SonarLintProjectManager {
       for (SonarLintProperty prop : configuration.getExtraProperties()) {
         keyValuePairs.add(prop.getName() + "=" + prop.getValue());
       }
-      String props = StringUtils.join(keyValuePairs, "\r\n");
+      String props = StringUtils.joinSkipNull(keyValuePairs, "\r\n");
       projectNode.put(P_EXTRA_PROPS, props);
     } else {
       projectNode.remove(P_EXTRA_PROPS);

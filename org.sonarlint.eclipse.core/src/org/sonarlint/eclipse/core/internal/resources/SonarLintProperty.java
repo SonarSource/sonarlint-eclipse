@@ -19,9 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.resources;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 public class SonarLintProperty {
   private String name;
   private String value;
@@ -64,17 +61,11 @@ public class SonarLintProperty {
       return false;
     }
     SonarLintProperty rhs = (SonarLintProperty) obj;
-    return new EqualsBuilder()
-        .append(name, rhs.name)
-        .append(value, rhs.value)
-        .isEquals();
+    return name.equals(rhs.name) && value.equals(rhs.value);
   }
 
   @Override
   public int hashCode() {
-    return new HashCodeBuilder(23, 47).
-        append(name).
-        append(value).
-        toHashCode();
+    return name.hashCode() + value.hashCode();
   }
 }

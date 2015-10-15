@@ -19,16 +19,14 @@
  */
 package org.sonarlint.eclipse.core.configurator;
 
-import com.google.common.base.Joiner;
 import java.util.Collection;
 import java.util.Properties;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintProperties;
 import org.sonarlint.eclipse.core.internal.resources.ResourceUtils;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public abstract class ProjectConfigurator {
 
@@ -48,13 +46,12 @@ public abstract class ProjectConfigurator {
     return getClass().getName();
   }
 
-  @CheckForNull
   protected static String getAbsolutePath(IPath path) {
     IPath absolutePath = ResourceUtils.getAbsolutePath(path);
     return absolutePath != null ? absolutePath.toString() : null;
   }
 
-  public static void appendProperty(Properties properties, String key, @Nullable String value) {
+  public static void appendProperty(Properties properties, String key, String value) {
     if (value == null) {
       return;
     }
@@ -67,7 +64,6 @@ public abstract class ProjectConfigurator {
     properties.put(key, newValue);
   }
 
-  @CheckForNull
   protected String getRelativePath(IPath root, IPath path) {
     IPath absoluteRoot = ResourceUtils.getAbsolutePath(root);
     IPath absolutePath = ResourceUtils.getAbsolutePath(path);
@@ -79,10 +75,11 @@ public abstract class ProjectConfigurator {
   }
 
   public static void setPropertyList(Properties properties, String key, Collection<String> values) {
-    properties.put(key, Joiner.on(SonarLintProperties.SEPARATOR).skipNulls().join(values));
+    properties.put(key, StringUtils.joinSkipNull(values, SonarLintProperties.SEPARATOR));
   }
 
   public static void appendPropertyList(Properties properties, String key, Collection<String> values) {
-    appendProperty(properties, key, Joiner.on(SonarLintProperties.SEPARATOR).skipNulls().join(values));
+    appendProperty(properties, key, StringUtils.joinSkipNull(values, SonarLintProperties.SEPARATOR));
   }
+
 }

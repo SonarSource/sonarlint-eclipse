@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.ui.internal.properties;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.TableColumnLayout;
@@ -63,6 +62,7 @@ import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
@@ -456,7 +456,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     if (isGlobal()) {
       String props = getPreferenceStore().getString(PreferencesUtils.PREF_EXTRA_ARGS);
       try {
-        String[] keyValuePairs = StringUtils.split(props, "\n\r");
+        String[] keyValuePairs = StringUtils.split(props, "\r\n");
         for (String keyValuePair : keyValuePairs) {
           String[] keyValue = StringUtils.split(keyValuePair, "=");
           sonarProperties.add(new SonarLintProperty(keyValue[0], keyValue[1]));
@@ -475,7 +475,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     for (SonarLintProperty prop : sonarProperties) {
       keyValuePairs.add(prop.getName() + "=" + prop.getValue());
     }
-    String props = StringUtils.join(keyValuePairs, "\r\n");
+    String props = StringUtils.joinSkipNull(keyValuePairs, "\r\n");
     if (isGlobal()) {
       getPreferenceStore().setValue(PreferencesUtils.PREF_EXTRA_ARGS, props);
     } else {

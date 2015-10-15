@@ -19,10 +19,10 @@
  */
 package org.sonarlint.eclipse.core.internal.builder;
 
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -50,7 +50,7 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
   }
 
   private void incrementalBuild(IResourceDelta delta) {
-    final Multimap<IProject, IFile> filesPerProject = LinkedHashMultimap.create();
+    final Map<IProject, Collection<IFile>> filesPerProject = new HashMap<>();
     try {
       delta.accept(new IResourceDeltaVisitor() {
         @Override
@@ -65,7 +65,10 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
             return true;
           }
           IProject project = resource.getProject();
-          filesPerProject.put(project, file);
+          if (!filesPerProject.containsKey(project)) {
+            filesPerProject.put(project, new ArrayList<IFile>());
+          }
+          filesPerProject.get(project).add(file);
           return true;
         }
       });
@@ -78,7 +81,7 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
     }
   }
 
-  public static boolean shouldAnalyze(@Nullable IResourceDelta delta, IResource resource) {
+  public static boolean shouldAnalyze(IResourceDelta delta, IResource resource) {
     if (delta != null && delta.getKind() == IResourceDelta.REMOVED) {
       return false;
     }

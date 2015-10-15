@@ -19,7 +19,13 @@
  */
 package org.sonarlint.eclipse.tests.common;
 
-import org.apache.commons.io.FileUtils;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -27,9 +33,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * @author Evgeny Mandrikov
@@ -60,7 +63,20 @@ public final class WorkspaceHelpers {
       for (File file : files) {
         if (!".metadata".equals(file.getName())) {
           if (file.isDirectory()) {
-            FileUtils.deleteDirectory(file);
+            Files.walkFileTree(file.toPath(), new SimpleFileVisitor<Path>() {
+              @Override
+              public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+              }
+
+              @Override
+              public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+              }
+
+            });
           } else {
             if (!file.delete()) {
               throw new IOException("Could not delete file " + file.getCanonicalPath());

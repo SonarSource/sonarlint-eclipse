@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -120,7 +119,7 @@ public class SonarLintNature implements IProjectNature {
       project.deleteMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
 
       IProjectDescription description = project.getDescription();
-      List<String> newNatures = Lists.newArrayList();
+      List<String> newNatures = new ArrayList<>();
       for (String natureId : description.getNatureIds()) {
         if (!NATURE_ID.equals(natureId)) {
           newNatures.add(natureId);

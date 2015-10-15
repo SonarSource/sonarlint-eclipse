@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.Properties;
-import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.sonar.runner.api.EmbeddedRunner;
@@ -109,7 +108,6 @@ public final class SonarRunnerFacade {
     }
   }
 
-  @CheckForNull
   public String getVersion() {
     return version;
   }

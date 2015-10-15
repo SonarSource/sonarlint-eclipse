@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.Collection;
-import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 
@@ -29,7 +28,7 @@ public class AnalyzeProjectRequest {
   private final IProject project;
   private final Collection<IFile> onlyOnFiles;
 
-  public AnalyzeProjectRequest(IProject project, @Nullable Collection<IFile> onlyOnFiles) {
+  public AnalyzeProjectRequest(IProject project, Collection<IFile> onlyOnFiles) {
     this.project = project;
     this.onlyOnFiles = onlyOnFiles;
   }

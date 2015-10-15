@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -38,7 +38,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 public abstract class AbstractProjectsCommand extends AbstractHandler {
 
   protected List<IProject> findSelectedProjects(ExecutionEvent event) throws ExecutionException {
-    List<IProject> selectedProjects = Lists.newArrayList();
+    List<IProject> selectedProjects = new ArrayList<>();
     ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
 
     if (selection instanceof IStructuredSelection) {

@@ -10,23 +10,21 @@ Bundle-Localization: OSGI-INF/l10n/bundle
 Export-Package: org.sonarlint.eclipse.core,
  org.sonarlint.eclipse.core.configurator,
  org.sonarlint.eclipse.core.internal;
-  x-friends:="org.sonar.ide.eclipse.ui,
+  x-friends:="org.sonarlint.eclipse.core.tests,
    org.sonarlint.eclipse.m2e,
-   org.sonarlint.eclipse.core.tests,
    org.sonarlint.eclipse.mylyn.ui,
-   org.sonarlint.eclipse.tests.common",
+   org.sonarlint.eclipse.tests.common,
+   org.sonarlint.eclipse.ui",
  org.sonarlint.eclipse.core.internal.builder;x-friends:="org.sonarlint.eclipse.ui",
  org.sonarlint.eclipse.core.internal.configurator;x-friends:="org.sonarlint.eclipse.ui",
  org.sonarlint.eclipse.core.internal.jobs;x-friends:="org.sonarlint.eclipse.ui,org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.core.internal.markers;x-friends:="org.sonar.ide.eclipse.ui",
- org.sonarlint.eclipse.core.internal.resources;x-friends:="org.sonarlint.eclipse.ui,org.sonarlint.eclipse.core.tests"
+ org.sonarlint.eclipse.core.internal.resources;x-friends:="org.sonarlint.eclipse.ui,org.sonarlint.eclipse.core.tests",
+ org.sonarlint.eclipse.core.internal.utils;x-friends:="org.sonarlint.eclipse.core.tests,org.sonarlint.eclipse.ui"
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
- org.apache.commons.lang;bundle-version="2.6.0";visibility:=reexport,
- com.google.guava;bundle-version="10.0.1",
  org.sonarsource.sonar-runner.api;bundle-version="[2.5.0,2.6.0)",
- findbugsAnnotations;bundle-version="2.0.0";visibility:=reexport,
  org.eclipse.core.expressions
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

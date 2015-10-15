@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.console;
 
 import java.io.IOException;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -170,11 +169,11 @@ public class SonarLintConsole extends IOConsole implements LogListener, ISonarLi
   }
 
   private static boolean isShowConsoleOnOutput() {
-    return StringUtils.equals(getShowConsolePreference(), P_SHOW_CONSOLE_ON_OUTPUT);
+    return P_SHOW_CONSOLE_ON_OUTPUT.equals(getShowConsolePreference());
   }
 
   private static boolean isShowConsoleOnError() {
-    return StringUtils.equals(getShowConsolePreference(), P_SHOW_CONSOLE_ON_ERROR);
+    return P_SHOW_CONSOLE_ON_ERROR.equals(getShowConsolePreference());
   }
 
   public static boolean isDebugEnabled() {

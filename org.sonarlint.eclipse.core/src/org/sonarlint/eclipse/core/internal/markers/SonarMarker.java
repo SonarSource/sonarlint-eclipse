@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +27,6 @@ import java.io.LineNumberReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -36,6 +34,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.sonar.runner.api.Issue;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public class SonarMarker {
 
@@ -98,7 +97,6 @@ public class SonarMarker {
     return result;
   }
 
-  @VisibleForTesting
   public static void addLine(final Map<String, Object> markerAttributes, final long line, final IResource resource) {
     if (resource instanceof IFile) {
       IFile file = (IFile) resource;

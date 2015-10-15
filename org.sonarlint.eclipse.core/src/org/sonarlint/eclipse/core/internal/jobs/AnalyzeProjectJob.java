@@ -19,9 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -131,7 +128,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
    * @param properties
    * @return
    */
-  @VisibleForTesting
   public Properties configureAnalysis(final IProgressMonitor monitor, List<SonarLintProperty> extraProps) {
     Properties properties = new Properties();
     IProject project = request.getProject();
@@ -149,13 +145,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       properties.put(sonarProperty.getName(), sonarProperty.getValue());
     }
     if (this.request.getOnlyOnFiles() != null) {
-      Collection<String> paths = Collections2.transform(request.getOnlyOnFiles(), new Function<IFile, String>() {
-        @Override
-        public String apply(IFile file) {
-          MarkerUtils.deleteIssuesMarkers(file);
-          return file.getProjectRelativePath().toString();
-        }
-      });
+      Collection<String> paths = new ArrayList<>(this.request.getOnlyOnFiles().size());
+      for (IFile file : this.request.getOnlyOnFiles()) {
+        MarkerUtils.deleteIssuesMarkers(file);
+        paths.add(file.getProjectRelativePath().toString());
+      }
       ProjectConfigurator.setPropertyList(properties, "sonar.tests", paths);
       ProjectConfigurator.setPropertyList(properties, "sonar.sources", paths);
     } else {

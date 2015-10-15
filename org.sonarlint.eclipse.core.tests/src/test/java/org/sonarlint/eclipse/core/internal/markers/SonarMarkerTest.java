@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.core.internal.markers;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
-import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -58,12 +57,10 @@ public class SonarMarkerTest extends SonarTestCase {
   @Test
   public void testLineStartEndCrLf() throws Exception {
     IFile file = project.getFile("src/main/java/ViolationOnFileCrLf.java");
-    InputStream is = file.getContents();
     String content;
-    try {
-      content = IOUtils.toString(is, file.getCharset());
-    } finally {
-      IOUtils.closeQuietly(is);
+    try (InputStream is = file.getContents()) {
+      java.util.Scanner s = new java.util.Scanner(is, file.getCharset()).useDelimiter("\\A");
+      content = s.hasNext() ? s.next() : "";
     }
     content.replaceAll("\n", "\r\n");
     file.setContents(new ByteArrayInputStream(content.getBytes()), IFile.FORCE, new NullProgressMonitor());

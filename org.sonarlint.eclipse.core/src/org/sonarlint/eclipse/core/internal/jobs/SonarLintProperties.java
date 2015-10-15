@@ -39,6 +39,6 @@ public interface SonarLintProperties {
 
   String VERBOSE_PROPERTY = "sonar.verbose";
 
-  char SEPARATOR = ',';
+  String SEPARATOR = ",";
 
 }

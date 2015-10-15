@@ -19,7 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -28,8 +29,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
-
-import java.util.List;
 
 /**
  * A handler for a command on an issue
@@ -48,7 +47,7 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
   public Object execute(ExecutionEvent event) throws ExecutionException {
     IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
 
-    List<IMarker> selectedSonarMarkers = Lists.newArrayList();
+    List<IMarker> selectedSonarMarkers = new ArrayList<>();
 
     @SuppressWarnings("rawtypes")
     List elems = selection.toList();

@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.views;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -66,7 +66,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
   protected IMarker findSelectedSonarIssue(IWorkbenchPart part, ISelection selection) {
     try {
       if (selection instanceof IStructuredSelection) {
-        List<IMarker> selectedSonarMarkers = Lists.newArrayList();
+        List<IMarker> selectedSonarMarkers = new ArrayList<>();
 
         @SuppressWarnings("rawtypes")
         List elems = ((IStructuredSelection) selection).toList();
