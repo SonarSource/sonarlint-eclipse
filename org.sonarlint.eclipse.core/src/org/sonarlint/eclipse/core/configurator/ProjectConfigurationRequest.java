@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.configurator;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -40,15 +41,18 @@ public class ProjectConfigurationRequest {
     return project;
   }
 
+  /**
+   * Analysis properties. Can be modified by the configurator.
+   */
   public Properties getSonarProjectProperties() {
     return sonarProjectProperties;
   }
 
   /**
-   * List of files to analyze "on-the-fly" or <code>null</code> if full project analysis.
+   * Read-only list of files to analyze "on-the-fly" or <code>null</code> if full project analysis.
    */
   public Collection<IFile> getFilesToAnalyze() {
-    return filesToAnalyze;
+    return Collections.unmodifiableCollection(filesToAnalyze);
   }
 
 }

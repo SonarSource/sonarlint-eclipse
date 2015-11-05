@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.configurator;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
@@ -40,6 +41,14 @@ public abstract class ProjectConfigurator {
    * Configures SonarLint analysis, using information from Eclipse project.
    */
   public abstract void configure(ProjectConfigurationRequest request, IProgressMonitor monitor);
+
+  /**
+   * This method is called after analysis is finished
+   * @param analysisProperties Properties used during the analysis
+   */
+  public void analysisComplete(Map<String, String> analysisProperties, IProgressMonitor monitor) {
+    // Do nothing by default
+  }
 
   @Override
   public String toString() {

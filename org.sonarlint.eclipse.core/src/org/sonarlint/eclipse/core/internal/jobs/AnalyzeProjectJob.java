@@ -24,7 +24,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -38,7 +41,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.sonar.runner.api.Issue;
 import org.sonar.runner.api.IssueListener;
+import org.sonarlint.eclipse.core.SonarEclipseException;
+import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
+import org.sonarlint.eclipse.core.configurator.SonarConfiguratorProperties;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.configurator.ConfiguratorUtils;
@@ -55,6 +61,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private final AnalyzeProjectRequest request;
 
   static final ISchedulingRule SONAR_ANALYSIS_RULE = ResourcesPlugin.getWorkspace().getRuleFactory().buildRule();
+
+  private Collection<ProjectConfigurator> usedConfigurators = new ArrayList<>();
 
   public AnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), SonarLintProject.getInstance(request.getProject()));
@@ -87,6 +95,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         handleLinkedFiles(tmpToDelete, baseDir);
       }
       run(request.getProject(), properties, runner, monitor);
+      analysisCompleted(properties, monitor);
     } catch (Exception e) {
       SonarLintCorePlugin.getDefault().error("Error during execution of SonarLint analysis" + System.lineSeparator(), e);
       return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
@@ -104,6 +113,21 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     return Status.OK_STATUS;
+  }
+
+  private void analysisCompleted(Properties properties, final IProgressMonitor monitor) {
+    for (ProjectConfigurator p : usedConfigurators) {
+      p.analysisComplete(Collections.unmodifiableMap(toMap(properties)), monitor);
+    }
+
+  }
+
+  private static Map<String, String> toMap(Properties properties) {
+    Map<String, String> result = new HashMap<>();
+    for (final String name : properties.stringPropertyNames()) {
+      result.put(name, properties.getProperty(name));
+    }
+    return result;
   }
 
   private void handleLinkedFiles(Collection<File> tmpToDelete, final File baseDir) {
@@ -138,7 +162,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     properties.setProperty(SonarLintProperties.ANALYSIS_MODE, SonarLintProperties.ANALYSIS_MODE_ISSUES);
 
     // Configuration by configurators (common and language specific)
-    ConfiguratorUtils.configure(project, this.request.getOnlyOnFiles(), properties, monitor);
+    configure(project, this.request.getOnlyOnFiles(), properties, monitor);
 
     // Append workspace and project properties
     for (SonarLintProperty sonarProperty : extraProps) {
@@ -160,6 +184,47 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     properties.setProperty(SonarLintProperties.WORK_DIR, projectSpecificWorkDir.toString());
 
     return properties;
+  }
+
+  private void configure(final IProject project, Collection<IFile> filesToAnalyze, final Properties properties, final IProgressMonitor monitor) {
+    String projectName = project.getName();
+    String encoding;
+    try {
+      encoding = project.getDefaultCharset();
+    } catch (CoreException e) {
+      throw new SonarEclipseException("Unable to get charset from project", e);
+    }
+
+    properties.setProperty(SonarLintProperties.PROJECT_NAME_PROPERTY, projectName);
+    properties.setProperty(SonarLintProperties.PROJECT_VERSION_PROPERTY, "0.1-SNAPSHOT");
+    properties.setProperty(SonarLintProperties.ENCODING_PROPERTY, encoding);
+
+    ProjectConfigurationRequest configuratorRequest = new ProjectConfigurationRequest(project, filesToAnalyze, properties);
+    Collection<ProjectConfigurator> configurators = ConfiguratorUtils.getConfigurators();
+    for (ProjectConfigurator configurator : configurators) {
+      if (configurator.canConfigure(project)) {
+        configurator.configure(configuratorRequest, monitor);
+        usedConfigurators.add(configurator);
+      }
+    }
+
+    ProjectConfigurator.appendProperty(properties, SonarConfiguratorProperties.TEST_INCLUSIONS_PROPERTY, PreferencesUtils.getTestFileRegexps());
+    if (!properties.containsKey(SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY) && !properties.containsKey(SonarConfiguratorProperties.TEST_DIRS_PROPERTY)) {
+      // Try to analyze all files
+      properties.setProperty(SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, ".");
+      properties.setProperty(SonarConfiguratorProperties.TEST_DIRS_PROPERTY, ".");
+      // Try to exclude derived folders
+      try {
+        for (IResource member : project.members()) {
+          if (member.isDerived()) {
+            ProjectConfigurator.appendProperty(properties, SonarConfiguratorProperties.SOURCE_EXCLUSIONS_PROPERTY, member.getName() + "/**/*");
+            ProjectConfigurator.appendProperty(properties, SonarConfiguratorProperties.TEST_EXCLUSIONS_PROPERTY, member.getName() + "/**/*");
+          }
+        }
+      } catch (CoreException e) {
+        throw new IllegalStateException("Unable to list members of " + project, e);
+      }
+    }
   }
 
   public void run(IProject project, final Properties props, final SonarRunnerFacade runner, final IProgressMonitor monitor) {
