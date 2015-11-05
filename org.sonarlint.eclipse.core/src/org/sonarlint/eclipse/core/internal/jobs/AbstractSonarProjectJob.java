@@ -20,29 +20,26 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 
-public abstract class AbstractSonarProjectJob extends Job {
+public abstract class AbstractSonarProjectJob extends WorkspaceJob {
 
   private final SonarLintProject sonarProject;
-
-  private static final ISchedulingRule SONAR_ANALYSIS_RULE = ResourcesPlugin.getWorkspace().getRuleFactory().buildRule();
 
   public AbstractSonarProjectJob(String title, SonarLintProject project) {
     super(title);
     this.sonarProject = project;
     setPriority(Job.DECORATE);
-    // Prevent concurrent SQ analysis
-    setRule(SONAR_ANALYSIS_RULE);
+    setRule(ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(project.getProject()));
   }
 
   @Override
-  protected final IStatus run(final IProgressMonitor monitor) {
+  public final IStatus runInWorkspace(final IProgressMonitor monitor) {
     SonarRunnerFacade facadeToUse = SonarLintCorePlugin.getDefault().getRunner();
     return run(facadeToUse, monitor);
   }

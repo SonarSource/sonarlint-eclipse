@@ -75,7 +75,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       return "SonarLint analysis of project " + request.getProject().getName();
     }
     if (request.getOnlyOnFiles().size() == 1) {
-      return "SonarLint analysis of file " + request.getOnlyOnFiles().iterator().next().getProjectRelativePath().toString() + "(Project " + request.getProject().getName() + ")";
+      return "SonarLint analysis of file " + request.getOnlyOnFiles().iterator().next().getProjectRelativePath().toString() + " (Project " + request.getProject().getName() + ")";
     }
     return "SonarLint analysis of project " + request.getProject().getName() + " (" + request.getOnlyOnFiles().size() + " files)";
   }
@@ -234,7 +234,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
       @Override
       public void uncaughtException(Thread th, Throwable ex) {
-        SonarLintCorePlugin.getDefault().error("Error during analysis", ex);
+        SonarLintCorePlugin.getDefault().error("Error during analysis" + System.lineSeparator(), ex);
       }
     };
     Thread t = new Thread("SonarLint analysis") {
