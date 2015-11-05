@@ -49,7 +49,7 @@ public class PreferencesUtils {
     List<SonarLintProperty> props = new ArrayList<SonarLintProperty>();
     // First add all global properties
     String globalExtraArgs = Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_EXTRA_ARGS, PREF_EXTRA_ARGS_DEFAULT, null);
-    String[] keyValuePairs = StringUtils.split(globalExtraArgs, "\n\r");
+    String[] keyValuePairs = StringUtils.split(globalExtraArgs, "\r\n");
     for (String keyValuePair : keyValuePairs) {
       String[] keyValue = StringUtils.split(keyValuePair, "=");
       props.add(new SonarLintProperty(keyValue[0], keyValue[1]));
