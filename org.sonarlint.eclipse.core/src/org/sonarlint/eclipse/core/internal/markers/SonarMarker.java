@@ -19,18 +19,18 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.core.filebuffers.FileBuffers;
+import org.eclipse.core.filebuffers.ITextFileBuffer;
+import org.eclipse.core.filebuffers.ITextFileBufferManager;
+import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.IDocument;
 import org.sonar.runner.api.Issue;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -56,16 +56,14 @@ public class SonarMarker {
 
   private SonarMarker from(final Issue issue) throws CoreException {
     final Map<String, Object> markerAttributes = new HashMap<String, Object>();
-    Integer line = issue.getLine();
+    Integer startLine = issue.getStartLine();
     markerAttributes.put(IMarker.PRIORITY, getPriority(issue.getSeverity()));
     markerAttributes.put(IMarker.SEVERITY, PreferencesUtils.getMarkerSeverity());
     // File level issues (line == null) are displayed on line 1
-    markerAttributes.put(IMarker.LINE_NUMBER, line != null ? line : 1);
+    markerAttributes.put(IMarker.LINE_NUMBER, startLine != null ? startLine : 1);
     markerAttributes.put(IMarker.MESSAGE, getMessage(issue));
 
-    if (line != null) {
-      addLine(markerAttributes, line, resource);
-    }
+    setPosition(markerAttributes, issue, resource);
     markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, issue.getRuleKey());
     markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, issue.getRuleName());
     markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, issue.getSeverity());
@@ -97,76 +95,44 @@ public class SonarMarker {
     return result;
   }
 
-  public static void addLine(final Map<String, Object> markerAttributes, final long line, final IResource resource) {
+  // Visible for testing
+  public static void setPosition(final Map<String, Object> markerAttributes, final Issue issue, final IResource resource) {
     if (resource instanceof IFile) {
-      IFile file = (IFile) resource;
-      try (InputStream is = file.getContents(); LineAndCharCountReader lnr = new LineAndCharCountReader(new InputStreamReader(is, file.getCharset()))) {
-        while (lnr.read() != -1) {
-          if (lnr.getLineNumber() == line) {
-            markerAttributes.put(IMarker.CHAR_START, lnr.getCharIndex());
-            String s = lnr.readLine();
-            if (s != null) {
-              markerAttributes.put(IMarker.CHAR_END, lnr.getCharIndex() + s.length());
-            }
-            return;
-          }
+      IFile iFile = (IFile) resource;
+      Integer startLine = issue.getStartLine();
+      if (startLine == null) {
+        return;
+      }
+      ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
+      try {
+        iTextFileBufferManager.connect(iFile.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
+        ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(iFile.getFullPath(), LocationKind.IFILE);
+        IDocument iDoc = iTextFileBuffer.getDocument();
+        int startLineStartOffset = iDoc.getLineOffset(startLine - 1);
+        Integer issueStartLineOffset = issue.getStartLineOffset();
+        if (issueStartLineOffset != null) {
+          markerAttributes.put(IMarker.CHAR_START, startLineStartOffset + issueStartLineOffset);
+          Integer issueEndLine = issue.getEndLine();
+          int endLineStartOffset = issueEndLine != startLine ? iDoc.getLineOffset(issueEndLine - 1) : startLineStartOffset;
+          markerAttributes.put(IMarker.CHAR_END, endLineStartOffset + issue.getEndLineOffset());
+        } else {
+          markerAttributes.put(IMarker.CHAR_START, startLineStartOffset);
+          int length = iDoc.getLineLength((int) startLine - 1);
+          String lineDelimiter = iDoc.getLineDelimiter(startLine - 1);
+          int lineDelimiterLength = lineDelimiter != null ? lineDelimiter.length() : 0;
+          markerAttributes.put(IMarker.CHAR_END, startLineStartOffset + length - lineDelimiterLength);
         }
       } catch (Exception e) {
         SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarLint marker on resource " + resource.getName() + ": " + e.getMessage());
-      }
-    }
-  }
-
-  /**
-   * This class is used to count lines in a stream and keep char index. Contrary to {@link LineNumberReader} it preserve
-   * \r\n as 2 characters.
-   */
-  private static class LineAndCharCountReader extends BufferedReader {
-
-    /** The current line number */
-    private int lineNumber = 1;
-
-    private int charIndex = 0;
-
-    /** If the previous character was a cariage return */
-    private boolean cr = false;
-
-    public LineAndCharCountReader(Reader in) {
-      super(in);
-    }
-
-    public int getLineNumber() {
-      return lineNumber;
-    }
-
-    public int getCharIndex() {
-      return charIndex;
-    }
-
-    @Override
-    public int read() throws IOException {
-      int val = super.read();
-      if (val == -1) {
-        if (cr) {
-          lineNumber++;
-          cr = false;
-        }
-      } else {
-        charIndex++;
-        if (val == '\r') {
-          if (cr) {
-            lineNumber++;
-          } else {
-            cr = true;
-          }
-        } else if (val == '\n' || cr) {
-          lineNumber++;
-          cr = false;
+      } finally {
+        try {
+          iTextFileBufferManager.disconnect(iFile.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
+        } catch (CoreException e) {
+          // Ignore
         }
       }
 
-      return val;
     }
-
   }
+
 }

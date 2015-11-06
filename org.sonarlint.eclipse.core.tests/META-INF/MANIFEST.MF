@@ -16,5 +16,6 @@ Require-Bundle: org.eclipse.ui,
  org.sonarlint.eclipse.jdt,
  org.mockito.mockito-all,
  org.assertj.core,
- org.junit;bundle-version="4.8.2"
+ org.junit;bundle-version="4.8.2",
+ org.sonarsource.sonar-runner.api
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

@@ -6,7 +6,7 @@
 <unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/mars"/>
 </location>
-<location path="${M2_REPO}/org/sonarsource/sonar-runner/sonar-runner-api/2.5-RC1" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/sonar-runner/sonar-runner-api/2.5-SNAPSHOT" type="Directory"/>
 <location path="${M2_REPO}/org/mockito/mockito-all/1.9.5" type="Directory"/>
 <location path="${M2_REPO}/org/assertj/assertj-core/2.1.0" type="Directory"/>
 </locations>

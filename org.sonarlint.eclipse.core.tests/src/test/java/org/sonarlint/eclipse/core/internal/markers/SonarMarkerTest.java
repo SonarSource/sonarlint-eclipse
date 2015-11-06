@@ -28,6 +28,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.sonar.runner.api.Issue;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
@@ -49,7 +50,8 @@ public class SonarMarkerTest extends SonarTestCase {
   public void testLineStartEnd() throws Exception {
     IFile file = project.getFile("src/main/java/ViolationOnFile.java");
     HashMap<String, Object> markers = new HashMap<String, Object>();
-    SonarMarker.addLine(markers, 2, file);
+    Issue issue = Issue.builder().setStartLine(2).build();
+    SonarMarker.setPosition(markers, issue, file);
     assertThat((Integer) markers.get(IMarker.CHAR_START)).isEqualTo(31);
     assertThat((Integer) markers.get(IMarker.CHAR_END)).isEqualTo(63);
   }
@@ -65,8 +67,39 @@ public class SonarMarkerTest extends SonarTestCase {
     content.replaceAll("\n", "\r\n");
     file.setContents(new ByteArrayInputStream(content.getBytes()), IFile.FORCE, new NullProgressMonitor());
     HashMap<String, Object> markers = new HashMap<String, Object>();
-    SonarMarker.addLine(markers, 2, file);
+    Issue issue = Issue.builder().setStartLine(2).build();
+    SonarMarker.setPosition(markers, issue, file);
     assertThat((Integer) markers.get(IMarker.CHAR_START)).isEqualTo(32);
     assertThat((Integer) markers.get(IMarker.CHAR_END)).isEqualTo(64);
+  }
+
+  @Test
+  public void testPreciseIssueLocationSingleLine() throws Exception {
+    IFile file = project.getFile("src/main/java/ViolationOnFile.java");
+    HashMap<String, Object> markers = new HashMap<String, Object>();
+    Issue issue = Issue.builder()
+      .setStartLine(2)
+      .setStartLineOffset(23)
+      .setEndLine(2)
+      .setEndLineOffset(31)
+      .build();
+    SonarMarker.setPosition(markers, issue, file);
+    assertThat((Integer) markers.get(IMarker.CHAR_START)).isEqualTo(54);
+    assertThat((Integer) markers.get(IMarker.CHAR_END)).isEqualTo(62);
+  }
+
+  @Test
+  public void testPreciseIssueLocationMultiLine() throws Exception {
+    IFile file = project.getFile("src/main/java/ViolationOnFile.java");
+    HashMap<String, Object> markers = new HashMap<String, Object>();
+    Issue issue = Issue.builder()
+      .setStartLine(4)
+      .setStartLineOffset(34)
+      .setEndLine(5)
+      .setEndLineOffset(12)
+      .build();
+    SonarMarker.setPosition(markers, issue, file);
+    assertThat((Integer) markers.get(IMarker.CHAR_START)).isEqualTo(101);
+    assertThat((Integer) markers.get(IMarker.CHAR_END)).isEqualTo(119);
   }
 }
