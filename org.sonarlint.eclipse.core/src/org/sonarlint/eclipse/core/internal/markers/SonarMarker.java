@@ -113,7 +113,7 @@ public class SonarMarker {
         if (issueStartLineOffset != null) {
           markerAttributes.put(IMarker.CHAR_START, startLineStartOffset + issueStartLineOffset);
           Integer issueEndLine = issue.getEndLine();
-          int endLineStartOffset = issueEndLine != startLine ? iDoc.getLineOffset(issueEndLine - 1) : startLineStartOffset;
+          int endLineStartOffset = issueEndLine != (int) startLine ? iDoc.getLineOffset(issueEndLine - 1) : startLineStartOffset;
           markerAttributes.put(IMarker.CHAR_END, endLineStartOffset + issue.getEndLineOffset());
         } else {
           markerAttributes.put(IMarker.CHAR_START, startLineStartOffset);
