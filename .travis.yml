@@ -9,7 +9,7 @@ env:
     - TARGET_PLATFORM=e42
     - TARGET_PLATFORM=e43
     - TARGET_PLATFORM=e44
-    - TARGET_PLATFORM=e45
+    - TARGET_PLATFORM=e45 PR_ANALYSIS=true
 
 jdk:
   - oraclejdk7
