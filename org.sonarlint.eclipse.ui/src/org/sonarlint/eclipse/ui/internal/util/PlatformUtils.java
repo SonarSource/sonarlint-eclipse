@@ -58,7 +58,7 @@ public final class PlatformUtils {
 
     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     try {
-      Map<String, Object> map = new HashMap<String, Object>(1);
+      Map<String, Object> map = new HashMap<>(1);
       map.put(IMarker.LINE_NUMBER, Integer.valueOf(line));
       IMarker marker = file.createMarker(IMarker.TEXT);
       marker.setAttributes(map);

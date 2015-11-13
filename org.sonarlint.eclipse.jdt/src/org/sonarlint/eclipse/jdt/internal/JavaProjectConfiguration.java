@@ -25,8 +25,8 @@ import org.sonarlint.eclipse.core.configurator.ProjectConfiguration;
 
 public class JavaProjectConfiguration extends ProjectConfiguration {
 
-  private final Set<String> libraries = new LinkedHashSet<String>();
-  private final Set<String> binaries = new LinkedHashSet<String>();
+  private final Set<String> libraries = new LinkedHashSet<>();
+  private final Set<String> binaries = new LinkedHashSet<>();
 
   public Set<String> libraries() {
     return libraries;

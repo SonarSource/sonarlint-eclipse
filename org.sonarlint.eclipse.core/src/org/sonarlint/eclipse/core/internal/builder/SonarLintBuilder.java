@@ -56,7 +56,7 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
         @Override
         public boolean visit(IResourceDelta delta) {
           IResource resource = delta.getResource();
-          if (!shouldAnalyze(delta, resource.getProject())) {
+          if (!shouldAnalyze(delta, resource)) {
             return false;
           }
           IFile file = (IFile) resource.getAdapter(IFile.class);

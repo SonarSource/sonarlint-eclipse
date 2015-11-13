@@ -55,7 +55,7 @@ public class SonarMarker {
   }
 
   private SonarMarker from(final Issue issue) throws CoreException {
-    final Map<String, Object> markerAttributes = new HashMap<String, Object>();
+    final Map<String, Object> markerAttributes = new HashMap<>();
     Integer startLine = issue.getStartLine();
     markerAttributes.put(IMarker.PRIORITY, getPriority(issue.getSeverity()));
     markerAttributes.put(IMarker.SEVERITY, PreferencesUtils.getMarkerSeverity());

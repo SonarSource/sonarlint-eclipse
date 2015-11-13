@@ -43,7 +43,7 @@ public class SonarLintProjectManager {
 
     SonarLintProject sonarProject = new SonarLintProject(project);
     String extraArgsAsString = projectNode.get(P_EXTRA_PROPS, null);
-    List<SonarLintProperty> sonarProperties = new ArrayList<SonarLintProperty>();
+    List<SonarLintProperty> sonarProperties = new ArrayList<>();
     if (extraArgsAsString != null) {
       try {
         String[] props = extraArgsAsString.split(Pattern.quote("\r\n"));
@@ -70,7 +70,7 @@ public class SonarLintProjectManager {
     }
 
     if (configuration.getExtraProperties() != null) {
-      List<String> keyValuePairs = new ArrayList<String>(configuration.getExtraProperties().size());
+      List<String> keyValuePairs = new ArrayList<>(configuration.getExtraProperties().size());
       for (SonarLintProperty prop : configuration.getExtraProperties()) {
         keyValuePairs.add(prop.getName() + "=" + prop.getValue());
       }

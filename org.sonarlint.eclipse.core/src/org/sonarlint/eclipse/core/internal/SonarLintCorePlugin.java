@@ -38,7 +38,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectManager projectManager;
 
-  private final List<LogListener> logListeners = new ArrayList<LogListener>();
+  private final List<LogListener> logListeners = new ArrayList<>();
   private SonarRunnerFacade runner;
   private boolean debugEnabled;
 

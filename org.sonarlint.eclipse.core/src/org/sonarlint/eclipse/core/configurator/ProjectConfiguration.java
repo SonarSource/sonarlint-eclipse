@@ -25,9 +25,9 @@ import java.util.Set;
 
 public class ProjectConfiguration {
 
-  private final Set<String> sourceDirs = new LinkedHashSet<String>();
-  private final Set<String> testDirs = new LinkedHashSet<String>();
-  private final Set<Object> dependentProjects = new HashSet<Object>();
+  private final Set<String> sourceDirs = new LinkedHashSet<>();
+  private final Set<String> testDirs = new LinkedHashSet<>();
+  private final Set<Object> dependentProjects = new HashSet<>();
 
   public Set<Object> dependentProjects() {
     return dependentProjects;

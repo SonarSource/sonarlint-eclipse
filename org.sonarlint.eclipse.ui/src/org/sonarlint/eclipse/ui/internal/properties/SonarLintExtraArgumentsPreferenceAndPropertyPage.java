@@ -452,7 +452,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
   }
 
   private void loadProperties() {
-    sonarProperties = new ArrayList<SonarLintProperty>();
+    sonarProperties = new ArrayList<>();
     if (isGlobal()) {
       String props = getPreferenceStore().getString(PreferencesUtils.PREF_EXTRA_ARGS);
       try {
@@ -471,7 +471,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
 
   @Override
   public boolean performOk() {
-    List<String> keyValuePairs = new ArrayList<String>(sonarProperties.size());
+    List<String> keyValuePairs = new ArrayList<>(sonarProperties.size());
     for (SonarLintProperty prop : sonarProperties) {
       keyValuePairs.add(prop.getName() + "=" + prop.getValue());
     }

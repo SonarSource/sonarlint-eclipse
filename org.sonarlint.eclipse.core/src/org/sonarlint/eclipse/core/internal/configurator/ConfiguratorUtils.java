@@ -43,7 +43,7 @@ public class ConfiguratorUtils {
   }
 
   public static Collection<ProjectConfigurator> getConfigurators() {
-    List<ProjectConfigurator> result = new ArrayList<ProjectConfigurator>();
+    List<ProjectConfigurator> result = new ArrayList<>();
     IExtensionRegistry registry = Platform.getExtensionRegistry();
     IConfigurationElement[] config = registry.getConfigurationElementsFor("org.sonarlint.eclipse.core.projectConfigurators");
     for (final IConfigurationElement element : config) {
