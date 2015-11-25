@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -46,7 +45,7 @@ public class SonarLintProjectManager {
     List<SonarLintProperty> sonarProperties = new ArrayList<>();
     if (extraArgsAsString != null) {
       try {
-        String[] props = extraArgsAsString.split(Pattern.quote("\r\n"));
+        String[] props = StringUtils.split(extraArgsAsString, "\r\n");
         for (String keyValuePair : props) {
           String[] keyValue = keyValuePair.split("=");
           sonarProperties.add(new SonarLintProperty(keyValue[0], keyValue.length > 1 ? keyValue[1] : ""));

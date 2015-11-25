@@ -31,11 +31,8 @@ import org.sonarlint.eclipse.ui.internal.Messages;
 
 /**
  * Property page for projects to view sonar server connection. It store in
- * <project>/.settings/org.sonarlint.eclipse.prefs following properties:
- * - url,
- * - groupId, artifactId, branch
+ * <project>/.settings/org.sonarlint.eclipse.prefs following properties
  *
- * @author Jérémie Lagarde
  */
 public class SonarProjectPropertyPage extends PropertyPage {
 
