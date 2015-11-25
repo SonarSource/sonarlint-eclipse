@@ -6,7 +6,7 @@
   <parent> 
     <groupId>org.sonarsource.parent</groupId> 
     <artifactId>parent</artifactId> 
-    <version>23</version>
+    <version>24</version>
     <relativePath/>
   </parent>
 
@@ -65,7 +65,7 @@
 
   <issueManagement>
     <system>JIRA</system>
-    <url>https://jira.sonarsource.com/browse/SONARCLIPS</url>
+    <url>https://jira.sonarsource.com/browse/SLE</url>
   </issueManagement>
   <ciManagement>
     <system>Travis</system>
