@@ -10,8 +10,6 @@ function installTravisTools {
 
 installTravisTools
 
-build_snapshot SonarSource/sonar-runner
-
 if [ -n "${PR_ANALYSIS:-}" ] && [ "${PR_ANALYSIS}" == true ]
 then
   if [ "$TRAVIS_PULL_REQUEST" != "false" ]
