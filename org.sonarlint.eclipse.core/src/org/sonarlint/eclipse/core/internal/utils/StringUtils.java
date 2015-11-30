@@ -85,4 +85,8 @@ public class StringUtils {
     return isEmpty(str) ? new String[0] : str.split(Pattern.quote(separator));
   }
 
+  public static String defaultString(String str, String defaultStr) {
+    return str == null ? defaultStr : str;
+  }
+
 }

@@ -22,10 +22,15 @@ package org.sonarlint.eclipse.core.internal.markers;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import org.eclipse.core.filebuffers.FileBuffers;
+import org.eclipse.core.filebuffers.ITextFileBuffer;
+import org.eclipse.core.filebuffers.ITextFileBufferManager;
+import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.IDocument;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonar.runner.api.Issue;
@@ -36,7 +41,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class SonarMarkerTest extends SonarTestCase {
 
-  private static final String key = "org.sonar-ide.tests.SimpleProject:SimpleProject";
   private static IProject project;
 
   @BeforeClass
@@ -49,11 +53,17 @@ public class SonarMarkerTest extends SonarTestCase {
   @Test
   public void testLineStartEnd() throws Exception {
     IFile file = project.getFile("src/main/java/ViolationOnFile.java");
-    HashMap<String, Object> markers = new HashMap<String, Object>();
+    ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
+    iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
+    ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
+    IDocument iDoc = iTextFileBuffer.getDocument();
     Issue issue = Issue.builder().setStartLine(2).build();
-    SonarMarker.setPosition(markers, issue, file);
-    assertThat((Integer) markers.get(IMarker.CHAR_START)).isEqualTo(31);
-    assertThat((Integer) markers.get(IMarker.CHAR_END)).isEqualTo(63);
+
+    IMarker marker = SonarMarker.create(iDoc, file, issue);
+    assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(31);
+    assertThat(marker.getAttribute(IMarker.CHAR_END, 0)).isEqualTo(63);
+
+    iTextFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
   }
 
   @Test
@@ -66,11 +76,17 @@ public class SonarMarkerTest extends SonarTestCase {
     }
     content.replaceAll("\n", "\r\n");
     file.setContents(new ByteArrayInputStream(content.getBytes()), IFile.FORCE, new NullProgressMonitor());
-    HashMap<String, Object> markers = new HashMap<String, Object>();
+    ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
+    iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
+    ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
+    IDocument iDoc = iTextFileBuffer.getDocument();
     Issue issue = Issue.builder().setStartLine(2).build();
-    SonarMarker.setPosition(markers, issue, file);
-    assertThat((Integer) markers.get(IMarker.CHAR_START)).isEqualTo(32);
-    assertThat((Integer) markers.get(IMarker.CHAR_END)).isEqualTo(64);
+
+    IMarker marker = SonarMarker.create(iDoc, file, issue);
+    assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(32);
+    assertThat(marker.getAttribute(IMarker.CHAR_END, 0)).isEqualTo(64);
+
+    iTextFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
   }
 
   @Test
@@ -83,9 +99,16 @@ public class SonarMarkerTest extends SonarTestCase {
       .setEndLine(2)
       .setEndLineOffset(31)
       .build();
-    SonarMarker.setPosition(markers, issue, file);
-    assertThat((Integer) markers.get(IMarker.CHAR_START)).isEqualTo(54);
-    assertThat((Integer) markers.get(IMarker.CHAR_END)).isEqualTo(62);
+    ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
+    iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
+    ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
+    IDocument iDoc = iTextFileBuffer.getDocument();
+
+    IMarker marker = SonarMarker.create(iDoc, file, issue);
+    assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(54);
+    assertThat(marker.getAttribute(IMarker.CHAR_END, 0)).isEqualTo(62);
+
+    iTextFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
   }
 
   @Test
@@ -98,8 +121,15 @@ public class SonarMarkerTest extends SonarTestCase {
       .setEndLine(5)
       .setEndLineOffset(12)
       .build();
-    SonarMarker.setPosition(markers, issue, file);
-    assertThat((Integer) markers.get(IMarker.CHAR_START)).isEqualTo(101);
-    assertThat((Integer) markers.get(IMarker.CHAR_END)).isEqualTo(119);
+    ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
+    iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
+    ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
+    IDocument iDoc = iTextFileBuffer.getDocument();
+
+    IMarker marker = SonarMarker.create(iDoc, file, issue);
+    assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(101);
+    assertThat(marker.getAttribute(IMarker.CHAR_END, 0)).isEqualTo(119);
+
+    iTextFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
   }
 }

@@ -79,17 +79,17 @@ public final class SonarRunnerFacade {
         switch (level) {
           case TRACE:
           case DEBUG:
-            SonarLintCorePlugin.getDefault().debug(msg + System.lineSeparator());
+            SonarLintCorePlugin.getDefault().debug(msg);
             break;
           case INFO:
           case WARN:
-            SonarLintCorePlugin.getDefault().info(msg + System.lineSeparator());
+            SonarLintCorePlugin.getDefault().info(msg);
             break;
           case ERROR:
-            SonarLintCorePlugin.getDefault().error(msg + System.lineSeparator());
+            SonarLintCorePlugin.getDefault().error(msg);
             break;
           default:
-            SonarLintCorePlugin.getDefault().info(msg + System.lineSeparator());
+            SonarLintCorePlugin.getDefault().info(msg);
         }
 
       }
@@ -97,12 +97,12 @@ public final class SonarRunnerFacade {
       .setApp("Eclipse", SonarLintCorePlugin.getDefault().getBundle().getVersion().toString())
       .addGlobalProperties(globalProps);
     try {
-      SonarLintCorePlugin.getDefault().info("Starting SonarLint" + System.lineSeparator());
+      SonarLintCorePlugin.getDefault().info("Starting SonarLint");
       runner.start(preferCache);
       version = runner.serverVersion();
       this.started = version != null;
     } catch (Throwable e) {
-      SonarLintCorePlugin.getDefault().error("Unable to start SonarLint" + System.lineSeparator(), e);
+      SonarLintCorePlugin.getDefault().error("Unable to start SonarLint", e);
       runner = null;
       started = false;
     }

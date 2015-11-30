@@ -124,7 +124,7 @@ public class SonarLintConsole extends IOConsole implements LogListener, ISonarLi
       return;
     }
     try {
-      stream.write(msg);
+      stream.write(msg + System.lineSeparator());
     } catch (IOException e) {
       throw new SonarEclipseException("Unable to write in console", e);
     }

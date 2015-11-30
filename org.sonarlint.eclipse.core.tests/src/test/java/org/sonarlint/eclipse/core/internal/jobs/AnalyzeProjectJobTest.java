@@ -19,39 +19,78 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.sonar.runner.api.Issue;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.SonarLintNature;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 public class AnalyzeProjectJobTest extends SonarTestCase {
 
   public org.junit.rules.ExternalResource test = null;
-  private static IProject project;
+  private IProject project;
+  private static final List<String> errors = new ArrayList<>();
 
   @BeforeClass
   public static void prepare() throws Exception {
 
+    SonarLintCorePlugin.getDefault().addLogListener(new LogListener() {
+
+      @Override
+      public void info(String msg) {
+      }
+
+      @Override
+      public void error(String msg) {
+        errors.add(msg);
+      }
+
+      @Override
+      public void debug(String msg) {
+      }
+    });
+  }
+
+  @Before
+  public void cleanup() throws Exception {
+    errors.clear();
     project = importEclipseProject("reference");
+    MarkerUtils.deleteIssuesMarkers(project);
 
     // Enable Sonar Nature
     SonarLintNature.enableNature(project);
   }
 
-  @Before
-  public void cleanup() {
-    MarkerUtils.deleteIssuesMarkers(project);
+  @After
+  public void checkErrorsInLog() throws Exception {
+    project.delete(true, null);
+    if (!errors.isEmpty()) {
+      fail(StringUtils.joinSkipNull(errors, "\n"));
+    }
   }
 
   private static AnalyzeProjectJob job(IProject project) {
@@ -59,44 +98,102 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   }
 
   @Test
-  public void shouldConfigureAnalysis() throws Exception {
+  public void run_first_analysis_with_one_issue() throws Exception {
     AnalyzeProjectJob job = job(project);
-    Properties props = job.configureAnalysis(MONITOR, new ArrayList<SonarLintProperty>());
+    IFile file = project.getFile("src/Findbugs.java");
+    job = spy(job);
+    Map<IResource, List<Issue>> result = new HashMap<>();
+    Issue issue1 = Issue.builder()
+      .setRuleKey("foo:bar")
+      .setSeverity("BLOCKER")
+      .setMessage("Self assignment of field")
+      .setStartLine(5)
+      .setStartLineOffset(4)
+      .setEndLine(5)
+      .setEndLineOffset(14)
+      .setComponentKey("my-fake-project:key:src/Findbugs.java")
+      .build();
+    result.put(file, Arrays.asList(issue1));
+    doReturn(result).when(job).run(any(Properties.class), any(SonarRunnerFacade.class), eq(MONITOR));
+    job.runInWorkspace(MONITOR);
 
-    assertThat(props).doesNotContainKey(SonarLintProperties.PROJECT_KEY_PROPERTY);
-    // SONARIDE-386 check that at least some JARs from the VM are appended
-    List<String> libs = Arrays.asList(props.get("sonar.libraries").toString().split(","));
-    assertThat(libs).doesNotHaveDuplicates();
-    boolean foundRT = false;
-    for (String lib : libs) {
-      if (lib.endsWith("rt.jar") || lib.endsWith("classes.jar") /* For Mac JDK 1.6 */) {
-        foundRT = true;
-        break;
-      }
-    }
-    if (!foundRT) {
-      fail("rt.jar/classes.jar not found in sonar.libraries: " + props.get("sonar.libraries").toString());
-    }
+    IMarker[] markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+    assertThat(markers).hasSize(1);
+    assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(5);
+    assertThat(markers[0].getAttribute(IMarker.CHAR_START)).isEqualTo(78);
+    assertThat(markers[0].getAttribute(IMarker.CHAR_END)).isEqualTo(88);
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CHECKSUM_ATTR)).isEqualTo("this.x=x".hashCode());
+    String timestamp = (String) markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR);
+    assertThat(timestamp).isNotNull();
   }
 
   @Test
-  public void shouldConfigureAnalysisWithExtraProps() throws Exception {
+  public void issue_tracking() throws Exception {
     AnalyzeProjectJob job = job(project);
-    Properties props = job.configureAnalysis(MONITOR, Arrays.asList(new SonarLintProperty("sonar.foo", "value")));
+    IFile file = project.getFile("src/Findbugs.java");
+    job = spy(job);
+    Map<IResource, List<Issue>> result = new HashMap<>();
+    Issue issue1 = Issue.builder()
+      .setRuleKey("foo:bar")
+      .setSeverity("BLOCKER")
+      .setMessage("Self assignment of field")
+      .setStartLine(5)
+      .setStartLineOffset(4)
+      .setEndLine(5)
+      .setEndLineOffset(14)
+      .setComponentKey("my-fake-project:key:src/Findbugs.java")
+      .build();
+    result.put(file, Arrays.asList(issue1));
+    doReturn(result).when(job).run(any(Properties.class), any(SonarRunnerFacade.class), eq(MONITOR));
+    job.runInWorkspace(MONITOR);
+    IMarker[] markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+    assertThat(markers).hasSize(1);
+    String timestamp = (String) markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR);
 
-    assertThat(props.get("sonar.foo").toString()).isEqualTo("value");
-  }
+    // Second execution same file, same issue
+    job.runInWorkspace(MONITOR);
 
-  @Test
-  public void userConfiguratorShouldOverrideConfiguratorHelperProps() throws Exception {
-    AnalyzeProjectJob job = job(project);
-    Properties props = job.configureAnalysis(MONITOR, Arrays.<SonarLintProperty>asList());
+    markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+    assertThat(markers).hasSize(1);
+    assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(5);
+    assertThat(markers[0].getAttribute(IMarker.CHAR_START)).isEqualTo(78);
+    assertThat(markers[0].getAttribute(IMarker.CHAR_END)).isEqualTo(88);
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CHECKSUM_ATTR)).isEqualTo("this.x=x".hashCode());
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isEqualTo(timestamp);
 
-    assertThat(props.get("sonar.java.source").toString()).isNotEqualTo("fake");
+    InputStream is = file.getContents();
+    java.util.Scanner s = new java.util.Scanner(is, file.getCharset()).useDelimiter("\\A");
+    String content = s.hasNext() ? s.next() : "";
+    content = "\n\n" + content;
+    file.setContents(new ByteArrayInputStream(content.getBytes(file.getCharset())), true, true, null);
 
-    props = job.configureAnalysis(MONITOR, Arrays.asList(new SonarLintProperty("sonar.java.source", "fake")));
+    markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+    // Here marker was not notified of the file change
+    assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(5);
 
-    assertThat(props.get("sonar.java.source").toString()).isEqualTo("fake");
+    // Third execution with modified file content
+    result = new HashMap<>();
+    Issue issue1Updated = Issue.builder()
+      .setRuleKey("foo:bar")
+      .setSeverity("BLOCKER")
+      .setMessage("Self assignment of field")
+      .setStartLine(7)
+      .setStartLineOffset(4)
+      .setEndLine(7)
+      .setEndLineOffset(14)
+      .setComponentKey("my-fake-project:key:src/Findbugs.java")
+      .build();
+    result.put(file, Arrays.asList(issue1Updated));
+    doReturn(result).when(job).run(any(Properties.class), any(SonarRunnerFacade.class), eq(MONITOR));
+    job.runInWorkspace(MONITOR);
+
+    markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+    assertThat(markers).hasSize(1);
+    assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(7);
+    assertThat(markers[0].getAttribute(IMarker.CHAR_START)).isEqualTo(80);
+    assertThat(markers[0].getAttribute(IMarker.CHAR_END)).isEqualTo(90);
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CHECKSUM_ATTR)).isEqualTo("this.x=x".hashCode());
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isEqualTo(timestamp);
   }
 
 }

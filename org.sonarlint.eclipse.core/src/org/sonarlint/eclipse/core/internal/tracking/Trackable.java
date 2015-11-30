@@ -17,30 +17,19 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.core.internal.tracking;
 
-import java.util.Collection;
-import java.util.HashSet;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
+public interface Trackable {
 
-public class AnalyzeProjectRequest {
+  /**
+   * The line index, starting with 1. Null means that
+   * issue does not relate to a line (file issue for example).
+   */
+  Integer getLine();
 
-  private final IProject project;
-  private final Collection<IFile> onlyOnFiles;
+  String getMessage();
 
-  public AnalyzeProjectRequest(IProject project, Collection<IFile> onlyOnFiles) {
-    this.project = project;
-    // Use a Set so that contains operation is cheap
-    this.onlyOnFiles = onlyOnFiles != null ? new HashSet<>(onlyOnFiles) : null;
-  }
+  Integer getLineHash();
 
-  public IProject getProject() {
-    return project;
-  }
-
-  public Collection<IFile> getOnlyOnFiles() {
-    return onlyOnFiles;
-  }
-
+  String getRuleKey();
 }

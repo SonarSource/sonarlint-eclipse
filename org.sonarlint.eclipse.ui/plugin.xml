@@ -92,10 +92,12 @@
       point="org.eclipse.ui.ide.markerSupport">
     <markerContentGenerator
          id="org.sonarlint.eclipse.ui.views.issues.issueMarkerGenerator"
-         defaultMarkerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
          name="SonarLint Issue Marker Generator">
         <markerTypeReference
               id="org.sonarlint.eclipse.core.sonarlintProblem"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.issueCreationDateField"
+              visible="true"/>
         <markerFieldReference
               id="org.sonarlint.eclipse.ui.views.issues.issueDescriptionField"
               visible="true"/>
@@ -191,27 +193,18 @@
         name="Rule name">
     </markerField>
     <markerField
-        class="org.sonarlint.eclipse.ui.internal.views.issues.IssueAssigneeField"
-        id="org.sonarlint.eclipse.ui.views.issues.issueAssigneeField"
-        filterClass="org.sonarlint.eclipse.ui.internal.views.issues.AssigneeFieldFilter"
-        filterConfigurationClass="org.sonarlint.eclipse.ui.internal.views.issues.AssigneeConfigurationArea"
-        name="Assignee">
-    </markerField>
-    <markerField
         class="org.sonarlint.eclipse.ui.internal.views.issues.IssueRuleKeyField"
         id="org.sonarlint.eclipse.ui.views.issues.issueRuleKeyField"
         name="%sonar.issues.view.rulekeyfield">
     </markerField>
     <markerField
-        class="org.sonarlint.eclipse.ui.internal.views.issues.IssueIsNewField"
-        id="org.sonarlint.eclipse.ui.views.issues.issueIsNewField"
-        filterClass="org.sonarlint.eclipse.ui.internal.views.issues.IsNewIssueFieldFilter"
-        filterConfigurationClass="org.sonarlint.eclipse.ui.internal.views.issues.IsNewIssueConfigurationArea"
-        name="%sonar.issues.view.isnewfield">
+        class="org.sonarlint.eclipse.ui.internal.views.issues.CreationDateField"
+        id="org.sonarlint.eclipse.ui.views.issues.issueCreationDateField"
+        name="Date">
     </markerField>
 
     <markerTypeCategory
-          name="Sonar">
+          name="SonarLint">
        <markerTypeReference id="org.sonarlint.eclipse.core.sonarlintProblem">
        </markerTypeReference>
     </markerTypeCategory>

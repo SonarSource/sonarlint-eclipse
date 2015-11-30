@@ -19,17 +19,11 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.eclipse.core.filebuffers.FileBuffers;
-import org.eclipse.core.filebuffers.ITextFileBuffer;
-import org.eclipse.core.filebuffers.ITextFileBufferManager;
-import org.eclipse.core.filebuffers.LocationKind;
-import org.eclipse.core.resources.IFile;
+import java.util.Date;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.sonar.runner.api.Issue;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
@@ -38,41 +32,99 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public class SonarMarker {
 
-  private final IResource resource;
-  private final IMarker marker;
-
-  private SonarMarker(final IResource resource) throws CoreException {
-    this.resource = resource;
-    this.marker = resource.createMarker(SonarLintCorePlugin.MARKER_ID);
+  private SonarMarker() {
   }
 
-  public static void create(final IResource resource, final Issue issue) throws CoreException {
+  public static IMarker create(final IDocument iDoc, final IResource resource, final Issue issue) throws CoreException {
     if (StringUtils.isNotBlank(issue.getResolution())) {
       // Don't display resolved issues
-      return;
+      return null;
     }
-    new SonarMarker(resource).from(issue);
+    IMarker marker = resource.createMarker(SonarLintCorePlugin.MARKER_ID);
+    updateAttributes(marker, issue, iDoc);
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(new Date().getTime()));
+    return marker;
   }
 
-  private SonarMarker from(final Issue issue) throws CoreException {
-    final Map<String, Object> markerAttributes = new HashMap<>();
+  public static void updateAttributes(final IMarker marker, final Issue issue, final IDocument iDoc) throws CoreException {
     Integer startLine = issue.getStartLine();
-    markerAttributes.put(IMarker.PRIORITY, getPriority(issue.getSeverity()));
-    markerAttributes.put(IMarker.SEVERITY, PreferencesUtils.getMarkerSeverity());
+    marker.setAttribute(IMarker.PRIORITY, getPriority(issue.getSeverity()));
+    marker.setAttribute(IMarker.SEVERITY, PreferencesUtils.getMarkerSeverity());
     // File level issues (line == null) are displayed on line 1
-    markerAttributes.put(IMarker.LINE_NUMBER, startLine != null ? startLine : 1);
-    markerAttributes.put(IMarker.MESSAGE, getMessage(issue));
+    marker.setAttribute(IMarker.LINE_NUMBER, startLine != null ? startLine : 1);
+    marker.setAttribute(IMarker.MESSAGE, getMessage(issue));
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, issue.getRuleKey());
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, issue.getRuleName());
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, issue.getSeverity());
 
-    setPosition(markerAttributes, issue, resource);
-    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, issue.getRuleKey());
-    markerAttributes.put(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, issue.getRuleName());
-    markerAttributes.put(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, issue.getSeverity());
-
-    marker.setAttributes(markerAttributes);
-    return this;
+    if (iDoc != null && startLine != null) {
+      try {
+        updateLocationAndChecksum(marker, issue, iDoc);
+      } catch (BadLocationException e) {
+        SonarLintCorePlugin.getDefault().error("Error while updating markers", e);
+      }
+    } else {
+      marker.setAttribute(IMarker.CHAR_START, null);
+      marker.setAttribute(IMarker.CHAR_END, null);
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_CHECKSUM_ATTR, null);
+    }
   }
 
-  private static String getMessage(final Issue issue) {
+  private static void updateLocationAndChecksum(final IMarker marker, final Issue issue, final IDocument iDoc) throws BadLocationException, CoreException {
+    Range range = findRangeInFile(issue, iDoc);
+    marker.setAttribute(IMarker.CHAR_START, range.getStartOffset());
+    marker.setAttribute(IMarker.CHAR_END, range.getEndOffset());
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_CHECKSUM_ATTR, checksum(range.getContent()));
+  }
+
+  public static Range findRangeInFile(final Issue issue, final IDocument iDoc) throws BadLocationException {
+    Integer startLine = issue.getStartLine();
+    int startLineStartOffset = iDoc.getLineOffset(startLine - 1);
+    Integer issueStartLineOffset = issue.getStartLineOffset();
+    int start;
+    int end;
+    if (issueStartLineOffset != null) {
+      start = startLineStartOffset + issueStartLineOffset;
+      Integer issueEndLine = issue.getEndLine();
+      int endLineStartOffset = issueEndLine != (int) startLine ? iDoc.getLineOffset(issueEndLine - 1) : startLineStartOffset;
+      end = endLineStartOffset + issue.getEndLineOffset();
+    } else {
+      start = startLineStartOffset;
+      int length = iDoc.getLineLength((int) startLine - 1);
+      String lineDelimiter = iDoc.getLineDelimiter(startLine - 1);
+      int lineDelimiterLength = lineDelimiter != null ? lineDelimiter.length() : 0;
+      end = startLineStartOffset + length - lineDelimiterLength;
+    }
+    String content = iDoc.get(start, end - start);
+    return new Range(start, end, content);
+  }
+
+  public static class Range {
+    private final int startOffset;
+    private final int endOffset;
+    private final String content;
+
+    public Range(int startOffset, int endOffset, String content) {
+      this.startOffset = startOffset;
+      this.endOffset = endOffset;
+      this.content = content;
+    }
+
+    public int getStartOffset() {
+      return startOffset;
+    }
+
+    public int getEndOffset() {
+      return endOffset;
+    }
+
+    public String getContent() {
+      return content;
+    }
+
+  }
+
+  public static String getMessage(final Issue issue) {
     return issue.getRuleKey() + " : " + issue.getMessage();
   }
 
@@ -95,44 +147,8 @@ public class SonarMarker {
     return result;
   }
 
-  // Visible for testing
-  public static void setPosition(final Map<String, Object> markerAttributes, final Issue issue, final IResource resource) {
-    if (resource instanceof IFile) {
-      IFile iFile = (IFile) resource;
-      Integer startLine = issue.getStartLine();
-      if (startLine == null) {
-        return;
-      }
-      ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
-      try {
-        iTextFileBufferManager.connect(iFile.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
-        ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(iFile.getFullPath(), LocationKind.IFILE);
-        IDocument iDoc = iTextFileBuffer.getDocument();
-        int startLineStartOffset = iDoc.getLineOffset(startLine - 1);
-        Integer issueStartLineOffset = issue.getStartLineOffset();
-        if (issueStartLineOffset != null) {
-          markerAttributes.put(IMarker.CHAR_START, startLineStartOffset + issueStartLineOffset);
-          Integer issueEndLine = issue.getEndLine();
-          int endLineStartOffset = issueEndLine != (int) startLine ? iDoc.getLineOffset(issueEndLine - 1) : startLineStartOffset;
-          markerAttributes.put(IMarker.CHAR_END, endLineStartOffset + issue.getEndLineOffset());
-        } else {
-          markerAttributes.put(IMarker.CHAR_START, startLineStartOffset);
-          int length = iDoc.getLineLength((int) startLine - 1);
-          String lineDelimiter = iDoc.getLineDelimiter(startLine - 1);
-          int lineDelimiterLength = lineDelimiter != null ? lineDelimiter.length() : 0;
-          markerAttributes.put(IMarker.CHAR_END, startLineStartOffset + length - lineDelimiterLength);
-        }
-      } catch (Exception e) {
-        SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarLint marker on resource " + resource.getName() + ": " + e.getMessage());
-      } finally {
-        try {
-          iTextFileBufferManager.disconnect(iFile.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
-        } catch (CoreException e) {
-          // Ignore
-        }
-      }
-
-    }
+  public static int checksum(String content) {
+    return content.replaceAll("[\\s]", "").hashCode();
   }
 
 }

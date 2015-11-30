@@ -34,7 +34,7 @@ public class ProjectConfigurationRequest {
   public ProjectConfigurationRequest(IProject eclipseProject, Collection<IFile> filesToAnalyze, Properties sonarProjectProperties) {
     this.project = eclipseProject;
     this.sonarProjectProperties = sonarProjectProperties;
-    this.filesToAnalyze = filesToAnalyze;
+    this.filesToAnalyze = filesToAnalyze != null ? Collections.unmodifiableCollection(filesToAnalyze) : null;
   }
 
   public IProject getProject() {
@@ -52,7 +52,7 @@ public class ProjectConfigurationRequest {
    * Read-only list of files to analyze "on-the-fly" or <code>null</code> if full project analysis.
    */
   public Collection<IFile> getFilesToAnalyze() {
-    return Collections.unmodifiableCollection(filesToAnalyze);
+    return filesToAnalyze;
   }
 
 }

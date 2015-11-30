@@ -43,7 +43,7 @@ public class IssueDescriptionField extends MarkerField {
 
   @Override
   public int getDefaultColumnWidth(Control control) {
-    return 50 * getFontWidth(control);
+    return 100 * getFontWidth(control);
   }
 
   public static final int getFontWidth(Control control) {

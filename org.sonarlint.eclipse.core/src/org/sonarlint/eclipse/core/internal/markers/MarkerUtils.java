@@ -19,6 +19,9 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -32,6 +35,8 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_RULE_KEY_ATTR = "rulekey";
   public static final String SONAR_MARKER_RULE_NAME_ATTR = "rulename";
   public static final String SONAR_MARKER_ISSUE_SEVERITY_ATTR = "sonarseverity";
+  public static final String SONAR_MARKER_CREATION_DATE_ATTR = "creationdate";
+  public static final String SONAR_MARKER_CHECKSUM_ATTR = "checksum";
 
   private MarkerUtils() {
   }
@@ -41,6 +46,15 @@ public final class MarkerUtils {
       resource.deleteMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+    }
+  }
+
+  public static List<IMarker> findMarkers(IResource resource) {
+    try {
+      return Arrays.asList(resource.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
+    } catch (CoreException e) {
+      SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+      return Collections.emptyList();
     }
   }
 

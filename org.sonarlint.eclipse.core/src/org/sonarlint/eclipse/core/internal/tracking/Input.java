@@ -17,30 +17,12 @@
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.Collection;
-import java.util.HashSet;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 
-public class AnalyzeProjectRequest {
+public interface Input<ISSUE extends Trackable> {
 
-  private final IProject project;
-  private final Collection<IFile> onlyOnFiles;
-
-  public AnalyzeProjectRequest(IProject project, Collection<IFile> onlyOnFiles) {
-    this.project = project;
-    // Use a Set so that contains operation is cheap
-    this.onlyOnFiles = onlyOnFiles != null ? new HashSet<>(onlyOnFiles) : null;
-  }
-
-  public IProject getProject() {
-    return project;
-  }
-
-  public Collection<IFile> getOnlyOnFiles() {
-    return onlyOnFiles;
-  }
+  Collection<ISSUE> getIssues();
 
 }

@@ -30,6 +30,12 @@
       <attribute
             name="rulekey">
       </attribute>
+      <attribute
+            name="creationdate">
+      </attribute>
+      <attribute
+            name="checksum">
+      </attribute>
    </extension>
 
   <extension id="sonarlintBuilder" name="SonarLint Builder" point="org.eclipse.core.resources.builders">
