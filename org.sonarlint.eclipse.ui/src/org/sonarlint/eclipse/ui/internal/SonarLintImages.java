@@ -31,12 +31,12 @@ public final class SonarLintImages {
   private static final URL BASE_URL = SonarLintUiPlugin.getDefault().getBundle().getEntry("/icons/"); //$NON-NLS-1$
 
   public static final ImageDescriptor SONARWIZBAN_IMG = createImageDescriptor("sonarqube-48x200.png"); //$NON-NLS-1$
-  public static final ImageDescriptor SONAR16_IMG = createImageDescriptor("onde-sonar-16.png"); //$NON-NLS-1$
-  public static final ImageDescriptor SONAR32_IMG = createImageDescriptor("sonar32.png"); //$NON-NLS-1$
+  public static final ImageDescriptor SONAR16_IMG_DESC = createImageDescriptor("onde-sonar-16.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONARSYNCHRO_IMG = createImageDescriptor("synced.gif"); //$NON-NLS-1$
   public static final ImageDescriptor SONARREFRESH_IMG = createImageDescriptor("refresh.gif"); //$NON-NLS-1$
   public static final ImageDescriptor SONARCLOSE_IMG = createImageDescriptor("close.gif"); //$NON-NLS-1$
 
+  public static final Image SONAR16_IMG = createImage("onde-sonar-16.png"); //$NON-NLS-1$
   public static final Image IMG_ISSUE = createImage("issue_annotation.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_CRITICAL = createImage("severity/critical.png"); //$NON-NLS-1$

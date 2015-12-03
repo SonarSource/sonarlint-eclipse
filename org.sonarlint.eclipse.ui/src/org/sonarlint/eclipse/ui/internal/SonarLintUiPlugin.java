@@ -104,7 +104,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public synchronized SonarLintConsole getSonarConsole() {
     // Don't try to initialize console without actual UI - it will cause headless tests failure
     if ((console == null) && PlatformUI.isWorkbenchRunning()) {
-      console = new SonarLintConsole(SonarLintImages.SONAR16_IMG);
+      console = new SonarLintConsole(SonarLintImages.SONAR16_IMG_DESC);
     }
     return console;
   }

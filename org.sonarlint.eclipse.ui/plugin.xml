@@ -48,46 +48,6 @@
     </view>
   </extension>
 
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            locationURI="menu:org.sonarlint.eclipse.ui.views.issues.IssuesView">
-         <menu
-           id="org.eclipse.ui.ide.problems.filtersMenu"
-           label="Show"
-           mnemonic="S">
-         </menu>
-     <menu
-           id="problemsGroupByMenu"
-           label="Group By"
-           mnemonic="G">
-         </menu>
-         <menu
-               id="org.eclipse.ui.ide.problems.markerSortMenu"
-               label="Sort By"
-               mnemonic="S">
-         </menu>
-         <command
-               commandId="org.eclipse.ui.ide.configureFilters"
-               mnemonic="%command.configureFilters.mnemonic"
-               style="push">
-         </command>
-         <command
-               commandId="org.eclipse.ui.ide.configureColumns"
-               mnemonic="%command.configureColumns.mnemonic"
-               style="push">
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
-           <command
-                 commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
-                 style="push"
-                 mnemonic="R">
-         </command>
-      </menuContribution>
-  </extension>
-
   <extension
       point="org.eclipse.ui.ide.markerSupport">
     <markerContentGenerator
@@ -250,6 +210,50 @@
   </extension>
 
   <extension point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.sonarlint.eclipse.ui.views.issues.IssuesView">
+         <menu
+           id="org.eclipse.ui.ide.problems.filtersMenu"
+           label="Show"
+           mnemonic="S">
+         </menu>
+     <menu
+           id="problemsGroupByMenu"
+           label="Group By"
+           mnemonic="G">
+         </menu>
+         <menu
+               id="org.eclipse.ui.ide.problems.markerSortMenu"
+               label="Sort By"
+               mnemonic="S">
+         </menu>
+         <command
+               commandId="org.eclipse.ui.ide.configureFilters"
+               mnemonic="%command.configureFilters.mnemonic"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.ide.configureColumns"
+               mnemonic="%command.configureColumns.mnemonic"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
+           <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
+                 style="push"
+                 mnemonic="R">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
+           <command
+                 commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"
+                 style="push"
+                 mnemonic="%command.correctionAssistProposals.mnemonic">
+         </command>
+      </menuContribution>
      <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
        <command
              commandId="org.sonarlint.eclipse.ui.command.EnableSonarLintCommand"
@@ -362,6 +366,10 @@
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.UpdateCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.UpdateCommand">
+    </handler>
+    <handler
+          class="org.eclipse.ui.internal.views.markers.QuickFixHandler"
+          commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals">
     </handler>
   </extension>
 
@@ -482,5 +490,14 @@
        </enablement>
      </decorator>
 
+  </extension>
+  
+  <!-- Marker resolver -->
+  <extension
+        point="org.eclipse.ui.ide.markerResolution">
+     <markerResolutionGenerator
+           class="org.sonarlint.eclipse.ui.internal.resolver.MarkerResolutionGenerator"
+           markerType="org.sonarlint.eclipse.core.sonarlintProblem">
+     </markerResolutionGenerator>
   </extension>
 </plugin>
