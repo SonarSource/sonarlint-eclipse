@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.views.issues;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.markers.MarkerField;
@@ -37,7 +38,34 @@ public class CreationDateField extends MarkerField {
       return null;
     }
     String time = item.getAttributeValue(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, null);
-    return time != null ? sdf.format(new Date(Long.valueOf(time))) : null;
+    Date date = new Date(Long.valueOf(time));
+    Date now = new Date();
+    long days = TimeUnit.MILLISECONDS.toDays(now.getTime() - date.getTime());
+    if (days == 1) {
+      return "1 day ago";
+    }
+    if (days > 1) {
+      return days + " days ago";
+    }
+    long hours = TimeUnit.MILLISECONDS.toHours(now.getTime() - date.getTime());
+    if (hours == 1) {
+      return "1 hour ago";
+    }
+    if (hours > 1) {
+      return hours + " hours ago";
+    }
+    long minutes = TimeUnit.MILLISECONDS.toMinutes(now.getTime() - date.getTime());
+    if (minutes == 1) {
+      return "1 minute ago";
+    }
+    if (minutes > 1) {
+      return minutes + " minutes ago";
+    }
+    long seconds = TimeUnit.MILLISECONDS.toSeconds(now.getTime() - date.getTime());
+    if (seconds > 1) {
+      return seconds + " seconds ago";
+    }
+    return "1 second ago";
   }
 
   @Override
