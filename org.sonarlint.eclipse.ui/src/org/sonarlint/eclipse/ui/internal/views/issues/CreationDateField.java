@@ -38,6 +38,10 @@ public class CreationDateField extends MarkerField {
       return null;
     }
     String time = item.getAttributeValue(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, null);
+    if (time == null) {
+      // Persistent markers before 1.2 don't have creation date attribute
+      return null;
+    }
     Date date = new Date(Long.valueOf(time));
     Date now = new Date();
     long days = TimeUnit.MILLISECONDS.toDays(now.getTime() - date.getTime());
