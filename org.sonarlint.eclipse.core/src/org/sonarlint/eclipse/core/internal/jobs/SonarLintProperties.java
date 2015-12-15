@@ -30,6 +30,7 @@ public interface SonarLintProperties {
 
   String ANALYSIS_MODE = "sonar.analysis.mode";
   String ANALYSIS_MODE_ISSUES = "issues";
+  String USE_WS_CACHE = "sonar.useWsCache";
 
   String SONAR_URL = "sonar.host.url";
   String SONAR_LOGIN = "sonar.login";

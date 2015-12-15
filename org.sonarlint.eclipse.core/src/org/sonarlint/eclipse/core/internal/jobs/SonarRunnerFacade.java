@@ -68,6 +68,8 @@ public final class SonarRunnerFacade {
     Properties globalProps = new Properties();
     globalProps.setProperty(SonarLintProperties.SONAR_URL, url);
     globalProps.setProperty(SonarLintProperties.ANALYSIS_MODE, SonarLintProperties.ANALYSIS_MODE_ISSUES);
+    // Normally not needed in global container, but just in case
+    globalProps.setProperty(SonarLintProperties.USE_WS_CACHE, Boolean.toString(preferCache));
     if (SonarLintCorePlugin.getDefault().isDebugEnabled()) {
       globalProps.setProperty(SonarLintProperties.VERBOSE_PROPERTY, "true");
     }
