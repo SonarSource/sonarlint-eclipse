@@ -28,7 +28,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 public class SonarLintProject {
 
   private final IProject project;
-  private List<SonarLintProperty> extraProperties = new ArrayList<SonarLintProperty>();
+  private List<SonarLintProperty> extraProperties = new ArrayList<>();
 
   public SonarLintProject(IProject project) {
     this.project = project;

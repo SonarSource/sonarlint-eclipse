@@ -97,6 +97,12 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
       if (this == o) {
         return true;
       }
+      if (o == null) {
+        return false;
+      }
+      if (this.getClass() != o.getClass()) {
+        return false;
+      }
       LineAndLineHashKey that = (LineAndLineHashKey) o;
       // start with most discriminant field
       return Objects.equals(line, that.line)
@@ -136,6 +142,12 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
     public boolean equals(Object o) {
       if (this == o) {
         return true;
+      }
+      if (o == null) {
+        return false;
+      }
+      if (this.getClass() != o.getClass()) {
+        return false;
       }
       LineHashAndMessageKey that = (LineHashAndMessageKey) o;
       // start with most discriminant field
@@ -177,6 +189,12 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
       if (this == o) {
         return true;
       }
+      if (o == null) {
+        return false;
+      }
+      if (this.getClass() != o.getClass()) {
+        return false;
+      }
       LineAndMessageKey that = (LineAndMessageKey) o;
       // start with most discriminant field
       return Objects.equals(line, that.line)
@@ -214,6 +232,12 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
     public boolean equals(Object o) {
       if (this == o) {
         return true;
+      }
+      if (o == null) {
+        return false;
+      }
+      if (this.getClass() != o.getClass()) {
+        return false;
       }
       LineHashKey that = (LineHashKey) o;
       // start with most discriminant field

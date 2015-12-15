@@ -55,6 +55,7 @@ public class SonarLintAnalysisConfigurator {
 
     // Preview mode by default
     properties.setProperty(SonarLintProperties.ANALYSIS_MODE, SonarLintProperties.ANALYSIS_MODE_ISSUES);
+
     properties.setProperty(SonarLintProperties.USE_WS_CACHE, "true");
 
     // Configuration by configurators (common and language specific)

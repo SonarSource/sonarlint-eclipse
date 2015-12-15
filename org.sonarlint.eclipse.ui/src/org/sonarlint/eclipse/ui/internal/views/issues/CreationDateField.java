@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import org.eclipse.swt.graphics.GC;
@@ -28,9 +27,9 @@ import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 
-public class CreationDateField extends MarkerField {
+import static java.lang.Math.max;
 
-  private final SimpleDateFormat sdf = new SimpleDateFormat();
+public class CreationDateField extends MarkerField {
 
   @Override
   public String getValue(MarkerItem item) {
@@ -45,31 +44,26 @@ public class CreationDateField extends MarkerField {
     Date date = new Date(Long.valueOf(time));
     Date now = new Date();
     long days = TimeUnit.MILLISECONDS.toDays(now.getTime() - date.getTime());
-    if (days == 1) {
-      return "1 day ago";
-    }
-    if (days > 1) {
-      return days + " days ago";
+    if (days > 0) {
+      return pluralize(days, "day", "days");
     }
     long hours = TimeUnit.MILLISECONDS.toHours(now.getTime() - date.getTime());
-    if (hours == 1) {
-      return "1 hour ago";
-    }
-    if (hours > 1) {
-      return hours + " hours ago";
+    if (hours > 0) {
+      return pluralize(hours, "hour", "hours");
     }
     long minutes = TimeUnit.MILLISECONDS.toMinutes(now.getTime() - date.getTime());
-    if (minutes == 1) {
-      return "1 minute ago";
-    }
-    if (minutes > 1) {
-      return minutes + " minutes ago";
+    if (minutes > 0) {
+      return pluralize(minutes, "minute", "minutes");
     }
     long seconds = TimeUnit.MILLISECONDS.toSeconds(now.getTime() - date.getTime());
-    if (seconds > 1) {
-      return seconds + " seconds ago";
+    return pluralize(max(1, seconds), "second", "seconds");
+  }
+
+  private static String pluralize(long strictlyPositiveCount, String singular, String plural) {
+    if (strictlyPositiveCount == 1) {
+      return "1 " + singular + " ago";
     }
-    return "1 second ago";
+    return strictlyPositiveCount + " " + plural + " ago";
   }
 
   @Override

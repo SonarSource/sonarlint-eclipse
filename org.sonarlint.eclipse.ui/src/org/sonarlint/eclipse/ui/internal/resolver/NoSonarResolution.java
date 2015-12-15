@@ -100,7 +100,7 @@ public class NoSonarResolution extends WorkbenchMarkerResolution {
   public IMarker[] findOtherMarkers(IMarker[] markers) {
     List<IMarker> result = new ArrayList<>();
     for (IMarker iMarker : markers) {
-      if (iMarker != this.marker) {
+      if (!iMarker.equals(this.marker)) {
         result.add(iMarker);
       }
     }

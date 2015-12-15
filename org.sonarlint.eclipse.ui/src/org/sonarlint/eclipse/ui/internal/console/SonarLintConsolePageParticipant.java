@@ -130,7 +130,7 @@ public class SonarLintConsolePageParticipant implements IConsolePageParticipant 
       return getPreferenceStore().getString(SonarLintConsole.P_SHOW_CONSOLE);
     }
 
-    class MyAction extends Action {
+    static class MyAction extends Action {
       private final String value;
 
       public MyAction(String name, String value) {

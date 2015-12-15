@@ -37,6 +37,10 @@ public class PreferencesUtils {
   public static final String PREF_TEST_FILE_REGEXPS = "testFileRegexps"; //$NON-NLS-1$
   public static final String PREF_TEST_FILE_REGEXPS_DEFAULT = "**/*Test.*,**/test/**/*"; //$NON-NLS-1$
 
+  private PreferencesUtils() {
+    // Utility class
+  }
+
   public static String getTestFileRegexps() {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_TEST_FILE_REGEXPS, PREF_TEST_FILE_REGEXPS_DEFAULT, null);
   }
@@ -46,7 +50,7 @@ public class PreferencesUtils {
   }
 
   public static List<SonarLintProperty> getExtraPropertiesForLocalAnalysis(IProject project) {
-    List<SonarLintProperty> props = new ArrayList<SonarLintProperty>();
+    List<SonarLintProperty> props = new ArrayList<>();
     // First add all global properties
     String globalExtraArgs = Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_EXTRA_ARGS, PREF_EXTRA_ARGS_DEFAULT, null);
     String[] keyValuePairs = StringUtils.split(globalExtraArgs, "\r\n");
@@ -64,7 +68,4 @@ public class PreferencesUtils {
     return props;
   }
 
-  private PreferencesUtils() {
-    // Utility class
-  }
 }

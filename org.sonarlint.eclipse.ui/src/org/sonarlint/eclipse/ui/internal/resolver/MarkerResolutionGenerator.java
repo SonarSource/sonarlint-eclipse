@@ -42,7 +42,7 @@ public class MarkerResolutionGenerator implements IMarkerResolutionGenerator2 {
 
   @Override
   public IMarkerResolution[] getResolutions(final IMarker marker) {
-    return hasResolutions(marker) ? new IMarkerResolution[] {new NoSonarResolution(marker)} : new IMarkerResolution[0];
+    return hasResolutions(marker) ? (new IMarkerResolution[] {new NoSonarResolution(marker)}) : new IMarkerResolution[0];
   }
 
 }
