@@ -379,7 +379,7 @@
       icon="icons/onde-sonar-16.png" />
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeProjectsCommand"
-      icon="icons/inspect.png" />
+      icon="icons/onde-sonar-16-execute.png" />
   </extension>
 
    <extension
