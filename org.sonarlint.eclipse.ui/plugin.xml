@@ -468,7 +468,7 @@
          <command
                commandId="org.sonarlint.eclipse.ui.internal.command.UpdateCommand"
                icon="icons/onde-sonar-16.png"
-               label="Update SonarLint"
+               label="Update SonarLint analyzers"
                style="push">
          </command>
       </menuContribution>
