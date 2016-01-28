@@ -342,12 +342,6 @@
           name="Sync with server"
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>    
-    <command
-          description="Update SonarLint rules and configuration"
-          id="org.sonarlint.eclipse.ui.internal.command.UpdateCommand"
-          name="Update SonarLint"
-          categoryId="org.sonarlint.eclipse.ui.command.category">
-    </command>    
   </extension>
 
   <extension point="org.eclipse.ui.handlers">
@@ -362,10 +356,6 @@
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.AnalyzeProjectsCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeProjectsCommand">
-    </handler>
-    <handler
-          class="org.sonarlint.eclipse.ui.internal.command.UpdateCommand"
-          commandId="org.sonarlint.eclipse.ui.internal.command.UpdateCommand">
     </handler>
     <handler
           class="org.eclipse.ui.internal.views.markers.QuickFixHandler"
@@ -463,15 +453,6 @@
            </separator>
         </menu>
      </menuContribution>
-     <menuContribution
-            locationURI="menu:help?after=org.eclipse.equinox.p2.ui.sdk.update">
-         <command
-               commandId="org.sonarlint.eclipse.ui.internal.command.UpdateCommand"
-               icon="icons/onde-sonar-16.png"
-               label="Update SonarLint analyzers"
-               style="push">
-         </command>
-      </menuContribution>
   </extension>
 
   <!-- Label decorator -->

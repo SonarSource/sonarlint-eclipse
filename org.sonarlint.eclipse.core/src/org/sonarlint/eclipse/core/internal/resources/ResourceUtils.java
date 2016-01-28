@@ -20,23 +20,15 @@
 package org.sonarlint.eclipse.core.internal.resources;
 
 import java.io.File;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public final class ResourceUtils {
 
   private ResourceUtils() {
-  }
-
-  public static IResource findResource(IProject project, String componentKey) {
-    String relativePath = StringUtils.substringAfterLast(componentKey, ":");
-    IResource resource = project.findMember(relativePath);
-    return resource != null ? resource : project;
   }
 
   public static IPath getAbsolutePath(IPath path) {

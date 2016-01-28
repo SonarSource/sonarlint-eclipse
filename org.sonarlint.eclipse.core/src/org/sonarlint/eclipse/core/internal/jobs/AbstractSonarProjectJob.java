@@ -40,7 +40,7 @@ public abstract class AbstractSonarProjectJob extends WorkspaceJob {
 
   @Override
   public final IStatus runInWorkspace(final IProgressMonitor monitor) {
-    SonarRunnerFacade facadeToUse = SonarLintCorePlugin.getDefault().getRunner();
+    SonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getSonarLintClient();
     return run(facadeToUse, monitor);
   }
 
@@ -48,6 +48,6 @@ public abstract class AbstractSonarProjectJob extends WorkspaceJob {
     return sonarProject;
   }
 
-  protected abstract IStatus run(SonarRunnerFacade runner, final IProgressMonitor monitor);
+  protected abstract IStatus run(SonarLintClientFacade runner, final IProgressMonitor monitor);
 
 }

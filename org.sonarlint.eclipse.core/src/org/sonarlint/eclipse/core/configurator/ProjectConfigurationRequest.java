@@ -20,21 +20,20 @@
 package org.sonarlint.eclipse.core.configurator;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Properties;
+import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 
 public class ProjectConfigurationRequest {
 
   private final IProject project;
-  private final Properties sonarProjectProperties;
+  private final Map<String, String> sonarProjectProperties;
   private final Collection<IFile> filesToAnalyze;
 
-  public ProjectConfigurationRequest(IProject eclipseProject, Collection<IFile> filesToAnalyze, Properties sonarProjectProperties) {
+  public ProjectConfigurationRequest(IProject eclipseProject, Collection<IFile> filesToAnalyze, Map<String, String> sonarProjectProperties) {
     this.project = eclipseProject;
     this.sonarProjectProperties = sonarProjectProperties;
-    this.filesToAnalyze = filesToAnalyze != null ? Collections.unmodifiableCollection(filesToAnalyze) : null;
+    this.filesToAnalyze = filesToAnalyze;
   }
 
   public IProject getProject() {
@@ -44,12 +43,12 @@ public class ProjectConfigurationRequest {
   /**
    * Analysis properties. Can be modified by the configurator.
    */
-  public Properties getSonarProjectProperties() {
+  public Map<String, String> getSonarProjectProperties() {
     return sonarProjectProperties;
   }
 
   /**
-   * Read-only list of files to analyze "on-the-fly" or <code>null</code> if full project analysis.
+   * List of files to analyze. The project configurator can decide to exclude some of them.
    */
   public Collection<IFile> getFilesToAnalyze() {
     return filesToAnalyze;

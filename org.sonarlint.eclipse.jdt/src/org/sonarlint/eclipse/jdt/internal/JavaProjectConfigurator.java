@@ -20,7 +20,7 @@
 package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
-import java.util.Properties;
+import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -33,7 +33,6 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
-import org.sonarlint.eclipse.core.configurator.SonarConfiguratorProperties;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
@@ -51,12 +50,12 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   }
 
   // Visible for testing
-  public void configureJavaProject(IJavaProject javaProject, Properties sonarProjectProperties) {
+  public void configureJavaProject(IJavaProject javaProject, Map<String, String> sonarProjectProperties) {
     String javaSource = javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
     String javaTarget = javaProject.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true);
 
-    sonarProjectProperties.setProperty("sonar.java.source", javaSource);
-    sonarProjectProperties.setProperty("sonar.java.target", javaTarget);
+    sonarProjectProperties.put("sonar.java.source", javaSource);
+    sonarProjectProperties.put("sonar.java.target", javaTarget);
 
     try {
       JavaProjectConfiguration configuration = new JavaProjectConfiguration();
@@ -132,11 +131,6 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       SonarLintCorePlugin.getDefault().info("Skipping non existing source entry: " + entry.getPath().toOSString());
       return;
     }
-    // Eclipse doesn't make a difference between main and test code/classpath
-    if (topProject) {
-      context.testDirs().add(srcDir);
-      context.sourceDirs().add(srcDir);
-    }
     if (entry.getOutputLocation() != null) {
       processOutputDir(entry.getOutputLocation(), context, topProject);
     }
@@ -181,13 +175,11 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     return false;
   }
 
-  private static void configurationToProperties(Properties sonarProjectProperties, JavaProjectConfiguration context) {
+  private static void configurationToProperties(Map<String, String> sonarProjectProperties, JavaProjectConfiguration context) {
     setPropertyList(sonarProjectProperties, "sonar.libraries", context.libraries());
     // Eclipse doesn't separate main and test classpath
     setPropertyList(sonarProjectProperties, "sonar.java.libraries", context.libraries());
     setPropertyList(sonarProjectProperties, "sonar.java.test.libraries", context.libraries());
-    appendPropertyList(sonarProjectProperties, SonarConfiguratorProperties.TEST_DIRS_PROPERTY, context.testDirs());
-    appendPropertyList(sonarProjectProperties, SonarConfiguratorProperties.SOURCE_DIRS_PROPERTY, context.sourceDirs());
     setPropertyList(sonarProjectProperties, "sonar.binaries", context.binaries());
     // Eclipse doesn't separate main and test classpath
     setPropertyList(sonarProjectProperties, "sonar.java.binaries", context.binaries());

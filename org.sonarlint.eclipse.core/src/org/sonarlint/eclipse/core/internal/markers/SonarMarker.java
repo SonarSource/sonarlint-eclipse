@@ -25,10 +25,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.sonar.runner.api.Issue;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarsource.sonarlint.core.IssueListener.Issue;
 
 public class SonarMarker {
 
@@ -36,10 +35,6 @@ public class SonarMarker {
   }
 
   public static IMarker create(final IDocument iDoc, final IResource resource, final Issue issue) throws CoreException {
-    if (StringUtils.isNotBlank(issue.getResolution())) {
-      // Don't display resolved issues
-      return null;
-    }
     IMarker marker = resource.createMarker(SonarLintCorePlugin.MARKER_ID);
     updateAttributes(marker, issue, iDoc);
     marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(new Date().getTime()));
@@ -125,7 +120,7 @@ public class SonarMarker {
   }
 
   public static String getMessage(final Issue issue) {
-    return issue.getRuleKey() + " : " + issue.getMessage();
+    return issue.getMessage();
   }
 
   /**

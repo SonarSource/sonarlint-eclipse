@@ -21,11 +21,16 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,34 +39,42 @@ import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceProxy;
+import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.sonar.runner.api.Issue;
-import org.sonar.runner.api.IssueListener;
+import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.configurator.ConfiguratorUtils;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.SonarMarker;
 import org.sonarlint.eclipse.core.internal.markers.SonarMarker.Range;
-import org.sonarlint.eclipse.core.internal.resources.ResourceUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.tracking.Input;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.tracking.Tracker;
 import org.sonarlint.eclipse.core.internal.tracking.Tracking;
+import org.sonarsource.sonarlint.core.AnalysisConfiguration;
+import org.sonarsource.sonarlint.core.AnalysisConfiguration.InputFile;
+import org.sonarsource.sonarlint.core.IssueListener;
+import org.sonarsource.sonarlint.core.IssueListener.Issue;
 
 public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
@@ -119,24 +132,85 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   @Override
-  protected IStatus run(SonarRunnerFacade runner, final IProgressMonitor monitor) {
-
-    // Configure
-    Properties properties = new Properties();
-    Collection<ProjectConfigurator> usedConfigurators = SonarLintAnalysisConfigurator.configureAnalysis(request, properties, extraProps, monitor);
+  protected IStatus run(SonarLintClientFacade sonarlint, final IProgressMonitor monitor) {
 
     // Analyze
     Collection<File> tmpToDelete = new ArrayList<>();
     try {
+      // Configure
+      IProject project = request.getProject();
+      IPath projectSpecificWorkDir = project.getWorkingLocation(SonarLintCorePlugin.PLUGIN_ID);
+      Map<String, String> mergedExtraProps = new LinkedHashMap<>();
+      final List<IFile> filesToAnalyze;
       if (request.getOnlyOnFiles() != null) {
-        IProject project = request.getProject();
-        final File baseDir = project.getLocation().toFile();
-        handleLinkedFiles(tmpToDelete, baseDir);
+        filesToAnalyze = new ArrayList<>(request.getOnlyOnFiles().size());
+        filesToAnalyze.addAll(request.getOnlyOnFiles());
+      } else {
+        filesToAnalyze = new ArrayList<>();
+        project.accept(new IResourceProxyVisitor() {
+
+          @Override
+          public boolean visit(IResourceProxy proxy) throws CoreException {
+            if (proxy.getType() == IResource.FILE) {
+              filesToAnalyze.add((IFile) proxy.requestResource());
+              return false;
+            }
+            return true;
+          }
+        }, IResource.DEPTH_INFINITE, IContainer.EXCLUDE_DERIVED);
       }
-      Map<IResource, List<Issue>> issuesPerResource = run(properties, runner, monitor);
+
+      Collection<ProjectConfigurator> usedConfigurators = configure(project, filesToAnalyze, mergedExtraProps, monitor);
+
+      handleLinkedFiles(tmpToDelete, filesToAnalyze);
+
+      List<InputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
+      String allTestPattern = PreferencesUtils.getTestFileRegexps();
+      String[] testPatterns = allTestPattern.split(",");
+      final List<PathMatcher> pathMatchersForTests = new ArrayList<>();
+      FileSystem fs = FileSystems.getDefault();
+      for (String testPattern : testPatterns) {
+        pathMatchersForTests.add(fs.getPathMatcher("glob:" + testPattern));
+      }
+      for (final IFile file : filesToAnalyze) {
+        final java.nio.file.Path filePath = file.getRawLocation().makeAbsolute().toFile().toPath();
+        inputFiles.add(new InputFile() {
+
+          @Override
+          public java.nio.file.Path path() {
+            return filePath;
+          }
+
+          @Override
+          public boolean isTest() {
+            for (PathMatcher matcher : pathMatchersForTests) {
+              if (matcher.matches(filePath)) {
+                return true;
+              }
+            }
+            return false;
+          }
+
+          @Override
+          public Charset charset() {
+            try {
+              return Charset.forName(file.getCharset());
+            } catch (CoreException e) {
+              return null;
+            }
+          }
+        });
+      }
+
+      for (SonarLintProperty sonarProperty : extraProps) {
+        mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue());
+      }
+
+      AnalysisConfiguration config = new AnalysisConfiguration(project.getLocation().toFile().toPath(), projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
+      Map<IResource, List<Issue>> issuesPerResource = run(config, sonarlint, monitor);
       updateMarkers(issuesPerResource);
 
-      analysisCompleted(usedConfigurators, properties, monitor);
+      analysisCompleted(usedConfigurators, mergedExtraProps, monitor);
     } catch (Exception e) {
       SonarLintCorePlugin.getDefault().error("Error during execution of SonarLint analysis", e);
       return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
@@ -154,6 +228,21 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     return Status.OK_STATUS;
+  }
+
+  private static Collection<ProjectConfigurator> configure(final IProject project, Collection<IFile> filesToAnalyze, final Map<String, String> extraProperties,
+    final IProgressMonitor monitor) {
+    ProjectConfigurationRequest configuratorRequest = new ProjectConfigurationRequest(project, filesToAnalyze, extraProperties);
+    Collection<ProjectConfigurator> configurators = ConfiguratorUtils.getConfigurators();
+    Collection<ProjectConfigurator> usedConfigurators = new ArrayList<>();
+    for (ProjectConfigurator configurator : configurators) {
+      if (configurator.canConfigure(project)) {
+        configurator.configure(configuratorRequest, monitor);
+        usedConfigurators.add(configurator);
+      }
+    }
+
+    return usedConfigurators;
   }
 
   private void updateMarkers(Map<IResource, List<Issue>> issuesPerResource) throws CoreException {
@@ -213,26 +302,18 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private static void analysisCompleted(Collection<ProjectConfigurator> usedConfigurators, Properties properties, final IProgressMonitor monitor) {
+  private static void analysisCompleted(Collection<ProjectConfigurator> usedConfigurators, Map<String, String> properties, final IProgressMonitor monitor) {
     for (ProjectConfigurator p : usedConfigurators) {
-      p.analysisComplete(Collections.unmodifiableMap(toMap(properties)), monitor);
+      p.analysisComplete(Collections.unmodifiableMap(properties), monitor);
     }
 
   }
 
-  private static Map<String, String> toMap(Properties properties) {
-    Map<String, String> result = new HashMap<>();
-    for (final String name : properties.stringPropertyNames()) {
-      result.put(name, properties.getProperty(name));
-    }
-    return result;
-  }
-
-  private void handleLinkedFiles(Collection<File> tmpToDelete, final File baseDir) {
+  private void handleLinkedFiles(Collection<File> tmpToDelete, List<IFile> filesToAnalyze) {
     // Handle linked files
-    for (IFile file : request.getOnlyOnFiles()) {
+    for (IFile file : filesToAnalyze) {
       if (file.isLinked()) {
-        File tmp = new File(baseDir, file.getProjectRelativePath().toString());
+        File tmp = file.getRawLocation().makeAbsolute().toFile();
         SonarLintCorePlugin.getDefault().debug(file.getName() + " is a linked resource. Will create a temporary copy");
         try {
           Files.copy(file.getContents(), tmp.toPath());
@@ -244,18 +325,23 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  public Map<IResource, List<Issue>> run(final Properties props, final SonarRunnerFacade runner, final IProgressMonitor monitor) {
-    SonarLintCorePlugin.getDefault().debug("Start analysis with args:\n" + propsToString(props));
+  public Map<IResource, List<Issue>> run(final AnalysisConfiguration config, final SonarLintClientFacade sonarlint, final IProgressMonitor monitor) {
+    SonarLintCorePlugin.getDefault().debug("Start analysis with configuration:\n" + config.toString());
     Thread.UncaughtExceptionHandler h = exceptionHandler();
     final Map<IResource, List<Issue>> issuesPerResource = new HashMap<>();
     Thread t = new Thread("SonarLint analysis") {
       @Override
       public void run() {
-        runner.startAnalysis(props, new IssueListener() {
+        sonarlint.startAnalysis(config, new IssueListener() {
 
           @Override
           public void handle(Issue issue) {
-            IResource r = ResourceUtils.findResource(request.getProject(), issue.getComponentKey());
+            IResource r;
+            if (issue.getFilePath() == null) {
+              r = request.getProject();
+            } else {
+              r = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(Path.fromOSString(issue.getFilePath().toString()));
+            }
             if (request.getOnlyOnFiles() == null || request.getOnlyOnFiles().contains(r)) {
               if (!issuesPerResource.containsKey(r)) {
                 issuesPerResource.put(r, new ArrayList<Issue>());

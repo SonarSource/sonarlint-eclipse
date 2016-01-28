@@ -21,12 +21,12 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -35,12 +35,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.sonar.runner.api.Issue;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.SonarLintNature;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
+import org.sonarsource.sonarlint.core.AnalysisConfiguration;
+import org.sonarsource.sonarlint.core.IssueListener.Issue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -103,7 +104,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     IFile file = project.getFile("src/Findbugs.java");
     job = spy(job);
     Map<IResource, List<Issue>> result = new HashMap<>();
-    Issue issue1 = Issue.builder()
+    Issue issue1 = new Issue()
       .setRuleKey("foo:bar")
       .setSeverity("BLOCKER")
       .setMessage("Self assignment of field")
@@ -111,10 +112,9 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
       .setStartLineOffset(4)
       .setEndLine(5)
       .setEndLineOffset(14)
-      .setComponentKey("my-fake-project:key:src/Findbugs.java")
-      .build();
+      .setFilePath(Paths.get("src/Findbugs.java"));
     result.put(file, Arrays.asList(issue1));
-    doReturn(result).when(job).run(any(Properties.class), any(SonarRunnerFacade.class), eq(MONITOR));
+    doReturn(result).when(job).run(any(AnalysisConfiguration.class), any(SonarLintClientFacade.class), eq(MONITOR));
     job.runInWorkspace(MONITOR);
 
     IMarker[] markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
@@ -133,7 +133,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     IFile file = project.getFile("src/Findbugs.java");
     job = spy(job);
     Map<IResource, List<Issue>> result = new HashMap<>();
-    Issue issue1 = Issue.builder()
+    Issue issue1 = new Issue()
       .setRuleKey("foo:bar")
       .setSeverity("BLOCKER")
       .setMessage("Self assignment of field")
@@ -141,10 +141,9 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
       .setStartLineOffset(4)
       .setEndLine(5)
       .setEndLineOffset(14)
-      .setComponentKey("my-fake-project:key:src/Findbugs.java")
-      .build();
+      .setFilePath(Paths.get("src/Findbugs.java"));
     result.put(file, Arrays.asList(issue1));
-    doReturn(result).when(job).run(any(Properties.class), any(SonarRunnerFacade.class), eq(MONITOR));
+    doReturn(result).when(job).run(any(AnalysisConfiguration.class), any(SonarLintClientFacade.class), eq(MONITOR));
     job.runInWorkspace(MONITOR);
     IMarker[] markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertThat(markers).hasSize(1);
@@ -173,7 +172,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
 
     // Third execution with modified file content
     result = new HashMap<>();
-    Issue issue1Updated = Issue.builder()
+    Issue issue1Updated = new Issue()
       .setRuleKey("foo:bar")
       .setSeverity("BLOCKER")
       .setMessage("Self assignment of field")
@@ -181,10 +180,9 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
       .setStartLineOffset(4)
       .setEndLine(7)
       .setEndLineOffset(14)
-      .setComponentKey("my-fake-project:key:src/Findbugs.java")
-      .build();
+      .setFilePath(Paths.get("src/Findbugs.java"));
     result.put(file, Arrays.asList(issue1Updated));
-    doReturn(result).when(job).run(any(Properties.class), any(SonarRunnerFacade.class), eq(MONITOR));
+    doReturn(result).when(job).run(any(AnalysisConfiguration.class), any(SonarLintClientFacade.class), eq(MONITOR));
     job.runInWorkspace(MONITOR);
 
     markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);

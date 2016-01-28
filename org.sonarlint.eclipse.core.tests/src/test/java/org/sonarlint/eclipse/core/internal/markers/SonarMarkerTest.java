@@ -33,9 +33,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.sonar.runner.api.Issue;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
+import org.sonarsource.sonarlint.core.IssueListener.Issue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -57,7 +57,7 @@ public class SonarMarkerTest extends SonarTestCase {
     iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
     ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
     IDocument iDoc = iTextFileBuffer.getDocument();
-    Issue issue = Issue.builder().setStartLine(2).build();
+    Issue issue = new Issue().setStartLine(2);
 
     IMarker marker = SonarMarker.create(iDoc, file, issue);
     assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(31);
@@ -80,7 +80,7 @@ public class SonarMarkerTest extends SonarTestCase {
     iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
     ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
     IDocument iDoc = iTextFileBuffer.getDocument();
-    Issue issue = Issue.builder().setStartLine(2).build();
+    Issue issue = new Issue().setStartLine(2);
 
     IMarker marker = SonarMarker.create(iDoc, file, issue);
     assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(32);
@@ -93,12 +93,11 @@ public class SonarMarkerTest extends SonarTestCase {
   public void testPreciseIssueLocationSingleLine() throws Exception {
     IFile file = project.getFile("src/main/java/ViolationOnFile.java");
     HashMap<String, Object> markers = new HashMap<String, Object>();
-    Issue issue = Issue.builder()
+    Issue issue = new Issue()
       .setStartLine(2)
       .setStartLineOffset(23)
       .setEndLine(2)
-      .setEndLineOffset(31)
-      .build();
+      .setEndLineOffset(31);
     ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
     iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
     ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
@@ -115,12 +114,11 @@ public class SonarMarkerTest extends SonarTestCase {
   public void testPreciseIssueLocationMultiLine() throws Exception {
     IFile file = project.getFile("src/main/java/ViolationOnFile.java");
     HashMap<String, Object> markers = new HashMap<String, Object>();
-    Issue issue = Issue.builder()
+    Issue issue = new Issue()
       .setStartLine(4)
       .setStartLineOffset(34)
       .setEndLine(5)
-      .setEndLineOffset(12)
-      .build();
+      .setEndLineOffset(12);
     ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
     iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
     ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);

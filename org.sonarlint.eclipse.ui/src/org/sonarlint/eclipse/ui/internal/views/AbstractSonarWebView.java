@@ -63,6 +63,10 @@ public abstract class AbstractSonarWebView extends ViewPart {
     browser.setText("<p style=\"font: 13px arial,helvetica,clean,sans-serif;\">" + message + "</p>");
   }
 
+  protected void showHtml(String html) {
+    browser.setText(html);
+  }
+
   protected IMarker findSelectedSonarIssue(IWorkbenchPart part, ISelection selection) {
     try {
       if (selection instanceof IStructuredSelection) {

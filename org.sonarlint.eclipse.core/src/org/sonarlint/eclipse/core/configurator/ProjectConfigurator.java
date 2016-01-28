@@ -21,15 +21,15 @@ package org.sonarlint.eclipse.core.configurator;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Properties;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonarlint.eclipse.core.internal.jobs.SonarLintProperties;
 import org.sonarlint.eclipse.core.internal.resources.ResourceUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public abstract class ProjectConfigurator {
+
+  public static final String SEPARATOR = ",";
 
   /**
    * Tell if this project configurator can configure the given project. It is already assumed
@@ -60,13 +60,13 @@ public abstract class ProjectConfigurator {
     return absolutePath != null ? absolutePath.toString() : null;
   }
 
-  public static void appendProperty(Properties properties, String key, String value) {
+  public static void appendProperty(Map<String, String> properties, String key, String value) {
     if (value == null) {
       return;
     }
-    String newValue = properties.getProperty(key, null);
+    String newValue = properties.get(key);
     if (newValue != null) {
-      newValue += SonarLintProperties.SEPARATOR + value;
+      newValue += SEPARATOR + value;
     } else {
       newValue = value;
     }
@@ -83,12 +83,12 @@ public abstract class ProjectConfigurator {
     return relativePath;
   }
 
-  public static void setPropertyList(Properties properties, String key, Collection<String> values) {
-    properties.put(key, StringUtils.joinSkipNull(values, SonarLintProperties.SEPARATOR));
+  public static void setPropertyList(Map<String, String> properties, String key, Collection<String> values) {
+    properties.put(key, StringUtils.joinSkipNull(values, SEPARATOR));
   }
 
-  public static void appendPropertyList(Properties properties, String key, Collection<String> values) {
-    appendProperty(properties, key, StringUtils.joinSkipNull(values, SonarLintProperties.SEPARATOR));
+  public static void appendPropertyList(Map<String, String> properties, String key, Collection<String> values) {
+    appendProperty(properties, key, StringUtils.joinSkipNull(values, SEPARATOR));
   }
 
 }

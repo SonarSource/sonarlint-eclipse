@@ -26,7 +26,7 @@ import java.util.List;
 import org.osgi.framework.BundleContext;
 import org.sonarlint.eclipse.core.AbstractPlugin;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
-import org.sonarlint.eclipse.core.internal.jobs.SonarRunnerFacade;
+import org.sonarlint.eclipse.core.internal.jobs.SonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
 
 public class SonarLintCorePlugin extends AbstractPlugin {
@@ -39,7 +39,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   private static SonarLintProjectManager projectManager;
 
   private final List<LogListener> logListeners = new ArrayList<>();
-  private SonarRunnerFacade runner;
+  private SonarLintClientFacade sonarlint;
   private boolean debugEnabled;
 
   public SonarLintCorePlugin() {
@@ -94,8 +94,8 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   @Override
   public void stop(BundleContext context) {
-    if (runner != null) {
-      runner.stop();
+    if (sonarlint != null) {
+      sonarlint.stop();
     }
     super.stop(context);
   }
@@ -108,11 +108,11 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     this.debugEnabled = debugEnabled;
   }
 
-  public SonarRunnerFacade getRunner() {
-    if (runner == null) {
-      runner = new SonarRunnerFacade();
+  public SonarLintClientFacade getSonarLintClient() {
+    if (sonarlint == null) {
+      sonarlint = new SonarLintClientFacade();
     }
-    return runner;
+    return sonarlint;
   }
 
 }

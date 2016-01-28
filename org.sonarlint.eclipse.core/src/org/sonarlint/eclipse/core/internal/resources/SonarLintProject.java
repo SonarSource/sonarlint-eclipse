@@ -58,8 +58,4 @@ public class SonarLintProject {
     this.extraProperties = extraProperties;
   }
 
-  public String getServerUrl() {
-    return SonarLintCorePlugin.getDefault().getRunner().getUrl();
-  }
-
 }

@@ -21,7 +21,8 @@ package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -58,7 +59,7 @@ public class JavaProjectConfiguratorTest {
   @Test
   public void shouldConfigureJavaSourceAndTarget() throws JavaModelException, IOException {
     IJavaProject project = mock(IJavaProject.class);
-    Properties sonarProperties = new Properties();
+    Map<String, String> sonarProperties = new HashMap<>();
 
     when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
     when(project.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
@@ -68,9 +69,9 @@ public class JavaProjectConfiguratorTest {
     configurator.configureJavaProject(project, sonarProperties);
 
     assertThat(sonarProperties).containsKey("sonar.java.source");
-    assertThat(sonarProperties.getProperty("sonar.java.source")).isEqualTo("1.6");
+    assertThat(sonarProperties.get("sonar.java.source")).isEqualTo("1.6");
     assertThat(sonarProperties).containsKey("sonar.java.target");
-    assertThat(sonarProperties.getProperty("sonar.java.target")).isEqualTo("1.6");
+    assertThat(sonarProperties.get("sonar.java.target")).isEqualTo("1.6");
   }
 
   @Test
@@ -87,7 +88,7 @@ public class JavaProjectConfiguratorTest {
     outputFolder.mkdir();
 
     IJavaProject project = mock(IJavaProject.class);
-    Properties sonarProperties = new Properties();
+    Map<String, String> sonarProperties = new HashMap<>();
 
     when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
     when(project.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
@@ -117,7 +118,7 @@ public class JavaProjectConfiguratorTest {
   public void shouldConfigureProjectsWithCircularDependencies() throws CoreException, IOException {
     // the bug appeared when at least 3 projects were involved: the first project depends on the second one which has a circular dependency
     // towards the second one
-    Properties sonarProperties = new Properties();
+    Map<String, String> sonarProperties = new HashMap<>();
     // mock three projects that depend on each other
     final String project1Name = "project1";
     final String project2Name = "project2";

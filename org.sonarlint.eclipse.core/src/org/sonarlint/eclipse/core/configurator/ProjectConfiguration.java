@@ -20,25 +20,14 @@
 package org.sonarlint.eclipse.core.configurator;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class ProjectConfiguration {
 
-  private final Set<String> sourceDirs = new LinkedHashSet<>();
-  private final Set<String> testDirs = new LinkedHashSet<>();
   private final Set<Object> dependentProjects = new HashSet<>();
 
   public Set<Object> dependentProjects() {
     return dependentProjects;
-  }
-
-  public Set<String> sourceDirs() {
-    return sourceDirs;
-  }
-
-  public Set<String> testDirs() {
-    return testDirs;
   }
 
 }
