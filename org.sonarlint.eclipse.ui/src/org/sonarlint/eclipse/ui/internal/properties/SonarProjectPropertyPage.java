@@ -21,8 +21,11 @@ package org.sonarlint.eclipse.ui.internal.properties;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
@@ -58,6 +61,16 @@ public class SonarProjectPropertyPage extends PropertyPage {
     container.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
     layout.numColumns = 2;
     layout.verticalSpacing = 9;
+
+    final Button enabledBtn = new Button(container, SWT.CHECK);
+    enabledBtn.setText("Run SonarLint automatically");
+    enabledBtn.setSelection(sonarProject.isBuilderEnabled());
+    enabledBtn.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        sonarProject.setBuilderEnabled(enabledBtn.getSelection());
+      }
+    });
 
     return container;
   }

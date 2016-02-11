@@ -52,7 +52,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jface.text.BadLocationException;
@@ -71,10 +70,10 @@ import org.sonarlint.eclipse.core.internal.tracking.Input;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.tracking.Tracker;
 import org.sonarlint.eclipse.core.internal.tracking.Tracking;
-import org.sonarsource.sonarlint.core.AnalysisConfiguration;
-import org.sonarsource.sonarlint.core.AnalysisConfiguration.InputFile;
-import org.sonarsource.sonarlint.core.IssueListener;
-import org.sonarsource.sonarlint.core.IssueListener.Issue;
+import org.sonarsource.sonarlint.core.client.api.AnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.ClientInputFile;
+import org.sonarsource.sonarlint.core.client.api.Issue;
+import org.sonarsource.sonarlint.core.client.api.IssueListener;
 
 public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
@@ -164,7 +163,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
       handleLinkedFiles(tmpToDelete, filesToAnalyze);
 
-      List<InputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
+      List<ClientInputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
       String allTestPattern = PreferencesUtils.getTestFileRegexps();
       String[] testPatterns = allTestPattern.split(",");
       final List<PathMatcher> pathMatchersForTests = new ArrayList<>();
@@ -174,10 +173,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
       for (final IFile file : filesToAnalyze) {
         final java.nio.file.Path filePath = file.getRawLocation().makeAbsolute().toFile().toPath();
-        inputFiles.add(new InputFile() {
+        inputFiles.add(new ClientInputFile() {
 
           @Override
-          public java.nio.file.Path path() {
+          public java.nio.file.Path getPath() {
             return filePath;
           }
 
@@ -192,12 +191,17 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           }
 
           @Override
-          public Charset charset() {
+          public Charset getCharset() {
             try {
               return Charset.forName(file.getCharset());
             } catch (CoreException e) {
               return null;
             }
+          }
+
+          @Override
+          public <G> G getClientObject() {
+            return (G) file;
           }
         });
       }
@@ -206,9 +210,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue());
       }
 
-      AnalysisConfiguration config = new AnalysisConfiguration(project.getLocation().toFile().toPath(), projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
-      Map<IResource, List<Issue>> issuesPerResource = run(config, sonarlint, monitor);
-      updateMarkers(issuesPerResource);
+      if (!inputFiles.isEmpty()) {
+        AnalysisConfiguration config = new AnalysisConfiguration(project.getLocation().toFile().toPath(), projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
+        Map<IResource, List<Issue>> issuesPerResource = run(config, sonarlint, monitor);
+        updateMarkers(issuesPerResource);
+      }
 
       analysisCompleted(usedConfigurators, mergedExtraProps, monitor);
     } catch (Exception e) {
@@ -313,7 +319,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     // Handle linked files
     for (IFile file : filesToAnalyze) {
       if (file.isLinked()) {
-        File tmp = file.getRawLocation().makeAbsolute().toFile();
+        File tmp = new File(file.getProject().getLocation().makeAbsolute().toFile(), file.getProjectRelativePath().toString());
         SonarLintCorePlugin.getDefault().debug(file.getName() + " is a linked resource. Will create a temporary copy");
         try {
           Files.copy(file.getContents(), tmp.toPath());
@@ -337,17 +343,15 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           @Override
           public void handle(Issue issue) {
             IResource r;
-            if (issue.getFilePath() == null) {
+            if (issue.getInputFile() == null) {
               r = request.getProject();
             } else {
-              r = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(Path.fromOSString(issue.getFilePath().toString()));
+              r = issue.getInputFile().getClientObject();
             }
-            if (request.getOnlyOnFiles() == null || request.getOnlyOnFiles().contains(r)) {
-              if (!issuesPerResource.containsKey(r)) {
-                issuesPerResource.put(r, new ArrayList<Issue>());
-              }
-              issuesPerResource.get(r).add(issue);
+            if (!issuesPerResource.containsKey(r)) {
+              issuesPerResource.put(r, new ArrayList<Issue>());
             }
+            issuesPerResource.get(r).add(issue);
           }
 
         });

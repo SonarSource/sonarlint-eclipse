@@ -49,7 +49,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.sonarlint.eclipse.core.internal.SonarLintNature;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
@@ -246,11 +245,6 @@ public abstract class SonarTestCase {
     }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, MONITOR);
     JobHelpers.waitForJobsToComplete();
     return addedProjectList.get(0);
-  }
-
-  public static void configureProject(String name) throws Exception {
-    IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(name);
-    SonarLintNature.enableNature(project);
   }
 
 }

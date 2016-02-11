@@ -32,7 +32,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.internal.SonarLintNature;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -57,9 +56,6 @@ public class AnalyzeProjectsCommand extends AbstractProjectsCommand {
 
   private void runAnalysisJob(List<IProject> selectedProjects) {
     for (IProject project : selectedProjects) {
-      if (!SonarLintNature.hasSonarLintNature(project)) {
-        break;
-      }
       AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(project, null));
       job.schedule();
       showIssuesViewAfterJobSuccess(job);

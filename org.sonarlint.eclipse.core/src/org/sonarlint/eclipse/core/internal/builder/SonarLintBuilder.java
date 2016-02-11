@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
@@ -32,11 +34,12 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.SonarLintNature;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 
 public class SonarLintBuilder extends IncrementalProjectBuilder {
+
+  public static final String BUILDER_ID = SonarLintCorePlugin.PLUGIN_ID + ".sonarlintBuilder";
 
   @Override
   protected IProject[] build(int kind, Map args, IProgressMonitor monitor) {
@@ -85,8 +88,7 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
     if (delta != null && delta.getKind() == IResourceDelta.REMOVED) {
       return false;
     }
-    if (!SonarLintNature.hasSonarLintNature(resource.getProject()) || !resource.exists() || resource.isDerived(IResource.CHECK_ANCESTORS)
-      || resource.isHidden(IResource.CHECK_ANCESTORS)) {
+    if (!resource.exists() || resource.isDerived(IResource.CHECK_ANCESTORS) || resource.isHidden(IResource.CHECK_ANCESTORS)) {
       return false;
     }
     // Ignore .project, .settings, ...
@@ -94,6 +96,31 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
       return false;
     }
     return true;
+  }
+
+  public static void addBuilder(IProject project) throws CoreException {
+    IProjectDescription desc = project.getDescription();
+    ICommand[] commands = desc.getBuildSpec();
+    boolean found = false;
+
+    for (int i = 0; i < commands.length; ++i) {
+      if (commands[i].getBuilderName().equals(BUILDER_ID)) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      // add builder to project
+      ICommand command = desc.newCommand();
+      command.setBuilderName(BUILDER_ID);
+      ICommand[] newCommands = new ICommand[commands.length + 1];
+
+      // Add it after other builders.
+      System.arraycopy(commands, 0, newCommands, 0, commands.length);
+      newCommands[commands.length] = command;
+      desc.setBuildSpec(newCommands);
+      project.setDescription(desc, null);
+    }
   }
 
 }

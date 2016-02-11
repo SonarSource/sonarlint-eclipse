@@ -3,16 +3,6 @@
 <plugin>
    <extension-point id="projectConfigurators" name="Project Configurators" schema="schema/projectConfigurators.exsd"/>
 
-   <extension
-         id="sonarlintNature"
-         name="SonarLint Nature"
-         point="org.eclipse.core.resources.natures">
-      <runtime>
-         <run class="org.sonarlint.eclipse.core.internal.SonarLintNature">
-         </run>
-      </runtime>
-      <builder id="org.sonarlint.eclipse.core.sonarlintBuilder"/>
-   </extension>
 
    <extension
         id="sonarlintProblem"
@@ -39,9 +29,8 @@
    </extension>
 
   <extension id="sonarlintBuilder" name="SonarLint Builder" point="org.eclipse.core.resources.builders">
-      <builder hasNature="true">
+      <builder hasNature="false">
          <run class="org.sonarlint.eclipse.core.internal.builder.SonarLintBuilder">
-            <parameter name="natureId" value="sonarlintNature"/>
          </run>
       </builder>
    </extension>

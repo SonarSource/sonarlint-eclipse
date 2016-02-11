@@ -23,10 +23,12 @@ import java.net.URL;
 import java.util.Collections;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarsource.sonarlint.core.AnalysisConfiguration;
-import org.sonarsource.sonarlint.core.IssueListener;
-import org.sonarsource.sonarlint.core.LogOutput;
-import org.sonarsource.sonarlint.core.SonarLintClient;
+import org.sonarsource.sonarlint.core.SonarLintClientImpl;
+import org.sonarsource.sonarlint.core.client.api.AnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.GlobalConfiguration;
+import org.sonarsource.sonarlint.core.client.api.IssueListener;
+import org.sonarsource.sonarlint.core.client.api.LogOutput;
+import org.sonarsource.sonarlint.core.client.api.SonarLintClient;
 
 public final class SonarLintClientFacade {
 
@@ -70,7 +72,8 @@ public final class SonarLintClientFacade {
   }
 
   private void tryStart() {
-    client = SonarLintClient.builder()
+    client = new SonarLintClientImpl();
+    GlobalConfiguration globalConfig = GlobalConfiguration.builder()
       .addPlugins(Collections.list(SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false)).toArray(new URL[0]))
       .setVerbose(SonarLintCorePlugin.getDefault().isDebugEnabled())
       .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonar").toFile().toPath())
@@ -78,7 +81,7 @@ public final class SonarLintClientFacade {
       .build();
     try {
       SonarLintCorePlugin.getDefault().info("Starting SonarLint");
-      client.start();
+      client.start(globalConfig);
       this.started = true;
     } catch (Throwable e) {
       SonarLintCorePlugin.getDefault().error("Unable to start SonarLint", e);

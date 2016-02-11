@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,19 +35,21 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.SonarLintNature;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
-import org.sonarsource.sonarlint.core.AnalysisConfiguration;
-import org.sonarsource.sonarlint.core.IssueListener.Issue;
+import org.sonarsource.sonarlint.core.client.api.AnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.ClientInputFile;
+import org.sonarsource.sonarlint.core.client.api.Issue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public class AnalyzeProjectJobTest extends SonarTestCase {
 
@@ -82,8 +83,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     project = importEclipseProject("reference");
     MarkerUtils.deleteIssuesMarkers(project);
 
-    // Enable Sonar Nature
-    SonarLintNature.enableNature(project);
   }
 
   @After
@@ -104,15 +103,17 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     IFile file = project.getFile("src/Findbugs.java");
     job = spy(job);
     Map<IResource, List<Issue>> result = new HashMap<>();
-    Issue issue1 = new Issue()
-      .setRuleKey("foo:bar")
-      .setSeverity("BLOCKER")
-      .setMessage("Self assignment of field")
-      .setStartLine(5)
-      .setStartLineOffset(4)
-      .setEndLine(5)
-      .setEndLineOffset(14)
-      .setFilePath(Paths.get("src/Findbugs.java"));
+    Issue issue1 = mock(Issue.class);
+    when(issue1.getRuleKey()).thenReturn("foo:bar");
+    when(issue1.getSeverity()).thenReturn("BLOCKER");
+    when(issue1.getMessage()).thenReturn("Self assignment of field");
+    when(issue1.getStartLine()).thenReturn(5);
+    when(issue1.getStartLineOffset()).thenReturn(4);
+    when(issue1.getEndLine()).thenReturn(5);
+    when(issue1.getEndLineOffset()).thenReturn(14);
+    ClientInputFile inputFile = mock(ClientInputFile.class);
+    when(inputFile.getClientObject()).thenReturn(file);
+    when(issue1.getInputFile()).thenReturn(inputFile);
     result.put(file, Arrays.asList(issue1));
     doReturn(result).when(job).run(any(AnalysisConfiguration.class), any(SonarLintClientFacade.class), eq(MONITOR));
     job.runInWorkspace(MONITOR);
@@ -133,15 +134,17 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     IFile file = project.getFile("src/Findbugs.java");
     job = spy(job);
     Map<IResource, List<Issue>> result = new HashMap<>();
-    Issue issue1 = new Issue()
-      .setRuleKey("foo:bar")
-      .setSeverity("BLOCKER")
-      .setMessage("Self assignment of field")
-      .setStartLine(5)
-      .setStartLineOffset(4)
-      .setEndLine(5)
-      .setEndLineOffset(14)
-      .setFilePath(Paths.get("src/Findbugs.java"));
+    Issue issue1 = mock(Issue.class);
+    when(issue1.getRuleKey()).thenReturn("foo:bar");
+    when(issue1.getSeverity()).thenReturn("BLOCKER");
+    when(issue1.getMessage()).thenReturn("Self assignment of field");
+    when(issue1.getStartLine()).thenReturn(5);
+    when(issue1.getStartLineOffset()).thenReturn(4);
+    when(issue1.getEndLine()).thenReturn(5);
+    when(issue1.getEndLineOffset()).thenReturn(14);
+    ClientInputFile inputFile = mock(ClientInputFile.class);
+    when(inputFile.getClientObject()).thenReturn(file);
+    when(issue1.getInputFile()).thenReturn(inputFile);
     result.put(file, Arrays.asList(issue1));
     doReturn(result).when(job).run(any(AnalysisConfiguration.class), any(SonarLintClientFacade.class), eq(MONITOR));
     job.runInWorkspace(MONITOR);
@@ -172,15 +175,15 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
 
     // Third execution with modified file content
     result = new HashMap<>();
-    Issue issue1Updated = new Issue()
-      .setRuleKey("foo:bar")
-      .setSeverity("BLOCKER")
-      .setMessage("Self assignment of field")
-      .setStartLine(7)
-      .setStartLineOffset(4)
-      .setEndLine(7)
-      .setEndLineOffset(14)
-      .setFilePath(Paths.get("src/Findbugs.java"));
+    Issue issue1Updated = mock(Issue.class);
+    when(issue1Updated.getRuleKey()).thenReturn("foo:bar");
+    when(issue1Updated.getSeverity()).thenReturn("BLOCKER");
+    when(issue1Updated.getMessage()).thenReturn("Self assignment of field");
+    when(issue1Updated.getStartLine()).thenReturn(7);
+    when(issue1Updated.getStartLineOffset()).thenReturn(4);
+    when(issue1Updated.getEndLine()).thenReturn(7);
+    when(issue1Updated.getEndLineOffset()).thenReturn(14);
+    when(issue1Updated.getInputFile()).thenReturn(inputFile);
     result.put(file, Arrays.asList(issue1Updated));
     doReturn(result).when(job).run(any(AnalysisConfiguration.class), any(SonarLintClientFacade.class), eq(MONITOR));
     job.runInWorkspace(MONITOR);

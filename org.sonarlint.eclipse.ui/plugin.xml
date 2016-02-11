@@ -176,7 +176,6 @@
       class="org.sonarlint.eclipse.ui.internal.properties.SonarProjectPropertyPage"
        id="org.sonarlint.eclipse.ui.properties.sonarProjectPropertyPage"
        name="%sonar.properties.page.name">
-       <filter name="projectNature" value="org.sonarlint.eclipse.core.sonarlintNature"/>
        <enabledWhen>
           <adapt type="org.eclipse.core.resources.IProject"/>
        </enabledWhen>
@@ -186,27 +185,10 @@
        id="org.sonarlint.eclipse.ui.properties.SonarExtraArgumentsPreferenceAndPropertyPage"
        category="org.sonarlint.eclipse.ui.properties.sonarProjectPropertyPage"
        name="%sonar.preference.extraProps.page.name">
-       <filter name="projectNature" value="org.sonarlint.eclipse.core.sonarlintNature"/>
        <enabledWhen>
           <adapt type="org.eclipse.core.resources.IProject"/>
        </enabledWhen>
     </page>
-  </extension>
-
-  <extension point="org.eclipse.ui.popupMenus">
-    <objectContribution id="org.sonarlint.eclipse.ui.projectContributions"
-                        adaptable="true"
-                        objectClass="org.eclipse.core.resources.IProject">
-        <visibility>
-           <objectState name="nature" value="org.sonarlint.eclipse.core.sonarlintNature"/>
-        </visibility>
-        <action id="org.sonarlint.eclipse.addRemoveNatureAction"
-              class="org.sonarlint.eclipse.ui.internal.actions.ToggleNatureAction"
-              enablesFor="+"
-              label="Disable SonarLint"
-              menubarPath="sonar.menu/group3">
-        </action>
-    </objectContribution>
   </extension>
 
   <extension point="org.eclipse.ui.menus">
@@ -254,44 +236,22 @@
                  mnemonic="%command.correctionAssistProposals.mnemonic">
          </command>
       </menuContribution>
-     <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
-       <command
-             commandId="org.sonarlint.eclipse.ui.command.EnableSonarLintCommand"
-             style="push">
-          <visibleWhen>
-              <with variable="activeMenuSelection">
-                 <iterate ifEmpty="false">
-                   <or>
-                     <adapt type="org.eclipse.core.resources.IProject">
-                       <not>
-                          <test property="org.eclipse.core.resources.projectNature" value="org.sonarlint.eclipse.core.sonarlintNature"/>
-                       </not>
-                     </adapt>
-                     <adapt type="org.eclipse.ui.IWorkingSet" />
-                   </or>
-                 </iterate>
-             </with>
-          </visibleWhen>
-       </command>
-    </menuContribution>
-    <menuContribution locationURI="popup:sonar.menu?after=group1">
-       <command
-             commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeProjectsCommand"
-             style="push">
-          <visibleWhen>
-             <with variable="activeMenuSelection">
-                <iterate ifEmpty="false">
-                  <or>
-                    <adapt type="org.eclipse.core.resources.IProject">
-                      <test property="org.eclipse.core.resources.projectNature" value="org.sonarlint.eclipse.core.sonarlintNature"/>
-                    </adapt>
-                    <adapt type="org.eclipse.ui.IWorkingSet" />
-                  </or>
-                </iterate>
-             </with>
-          </visibleWhen>
-       </command>
-    </menuContribution>
+	<menuContribution locationURI="popup:sonar.menu?after=group1">
+	   <command
+	         commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeProjectsCommand"
+	         style="push">
+	      <visibleWhen>
+	         <with variable="activeMenuSelection">
+	            <iterate ifEmpty="false">
+	              <or>
+	                <adapt type="org.eclipse.core.resources.IProject"/>
+	                <adapt type="org.eclipse.ui.IWorkingSet" />
+	              </or>
+	            </iterate>
+	         </with>
+	      </visibleWhen>
+	   </command>
+	</menuContribution>
   </extension>
 
   <extension point="org.eclipse.ui.commands">
@@ -345,10 +305,6 @@
   </extension>
 
   <extension point="org.eclipse.ui.handlers">
-    <handler
-          class="org.sonarlint.eclipse.ui.internal.command.EnableSonarQubeNatureCommand"
-          commandId="org.sonarlint.eclipse.ui.command.EnableSonarLintCommand">
-    </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand">
@@ -455,23 +411,6 @@
      </menuContribution>
   </extension>
 
-  <!-- Label decorator -->
-  <extension point="org.eclipse.ui.decorators">
-     <decorator
-           adaptable="true"
-           icon="icons/sonar-label-decorator.gif"
-           id="org.sonarlint.eclipse.ui.sonarlintDecorator"
-           label="%sonar.decorator.name"
-           lightweight="true"
-           location="TOP_RIGHT"
-           state="true">
-       <description>%sonar.decorator.description</description>
-       <enablement>
-         <objectState name="nature" value="org.sonarlint.eclipse.core.sonarlintNature"/>
-       </enablement>
-     </decorator>
-
-  </extension>
   
   <!-- Marker resolver -->
   <extension
