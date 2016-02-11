@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,14 +94,14 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     }
   }
 
-  private static AnalyzeProjectJob job(IProject project) {
-    return new AnalyzeProjectJob(new AnalyzeProjectRequest(project, null));
+  private static AnalyzeProjectJob job(IProject project, Collection<IFile> files) {
+    return new AnalyzeProjectJob(new AnalyzeProjectRequest(project, files));
   }
 
   @Test
   public void run_first_analysis_with_one_issue() throws Exception {
-    AnalyzeProjectJob job = job(project);
     IFile file = project.getFile("src/Findbugs.java");
+    AnalyzeProjectJob job = job(project, Arrays.asList(file));
     job = spy(job);
     Map<IResource, List<Issue>> result = new HashMap<>();
     Issue issue1 = mock(Issue.class);
@@ -130,8 +131,8 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
 
   @Test
   public void issue_tracking() throws Exception {
-    AnalyzeProjectJob job = job(project);
     IFile file = project.getFile("src/Findbugs.java");
+    AnalyzeProjectJob job = job(project, Arrays.asList(file));
     job = spy(job);
     Map<IResource, List<Issue>> result = new HashMap<>();
     Issue issue1 = mock(Issue.class);

@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,18 +35,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceProxy;
-import org.eclipse.core.resources.IResourceProxyVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -90,21 +87,62 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private static String jobTitle(AnalyzeProjectRequest request) {
-    if (request.getOnlyOnFiles() == null) {
+    if (request.getFiles() == null) {
       return "SonarLint analysis of project " + request.getProject().getName();
     }
-    if (request.getOnlyOnFiles().size() == 1) {
-      return "SonarLint analysis of file " + request.getOnlyOnFiles().iterator().next().getProjectRelativePath().toString() + " (Project " + request.getProject().getName() + ")";
+    if (request.getFiles().size() == 1) {
+      return "SonarLint analysis of file " + request.getFiles().iterator().next().getProjectRelativePath().toString() + " (Project " + request.getProject().getName() + ")";
     }
-    return "SonarLint analysis of project " + request.getProject().getName() + " (" + request.getOnlyOnFiles().size() + " files)";
+    return "SonarLint analysis of project " + request.getProject().getName() + " (" + request.getFiles().size() + " files)";
+  }
+
+  private final class EclipseInputFile implements ClientInputFile {
+    private final List<PathMatcher> pathMatchersForTests;
+    private final IFile file;
+    private final Path filePath;
+
+    private EclipseInputFile(List<PathMatcher> pathMatchersForTests, IFile file, Path filePath) {
+      this.pathMatchersForTests = pathMatchersForTests;
+      this.file = file;
+      this.filePath = filePath;
+    }
+
+    @Override
+    public java.nio.file.Path getPath() {
+      return filePath;
+    }
+
+    @Override
+    public boolean isTest() {
+      for (PathMatcher matcher : pathMatchersForTests) {
+        if (matcher.matches(filePath)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public Charset getCharset() {
+      try {
+        return Charset.forName(file.getCharset());
+      } catch (CoreException e) {
+        return null;
+      }
+    }
+
+    @Override
+    public <G> G getClientObject() {
+      return (G) file;
+    }
   }
 
   private static class PreviousMarkerCache {
     Map<IResource, List<IMarker>> markersByResource = new HashMap<>();
 
     public PreviousMarkerCache(AnalyzeProjectRequest request) {
-      if (request.getOnlyOnFiles() != null) {
-        for (IFile file : request.getOnlyOnFiles()) {
+      if (request.getFiles() != null) {
+        for (IFile file : request.getFiles()) {
           markersByResource.put(file, new ArrayList<IMarker>(MarkerUtils.findMarkers(file)));
         }
       } else {
@@ -140,24 +178,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       IProject project = request.getProject();
       IPath projectSpecificWorkDir = project.getWorkingLocation(SonarLintCorePlugin.PLUGIN_ID);
       Map<String, String> mergedExtraProps = new LinkedHashMap<>();
-      final List<IFile> filesToAnalyze;
-      if (request.getOnlyOnFiles() != null) {
-        filesToAnalyze = new ArrayList<>(request.getOnlyOnFiles().size());
-        filesToAnalyze.addAll(request.getOnlyOnFiles());
-      } else {
-        filesToAnalyze = new ArrayList<>();
-        project.accept(new IResourceProxyVisitor() {
-
-          @Override
-          public boolean visit(IResourceProxy proxy) throws CoreException {
-            if (proxy.getType() == IResource.FILE) {
-              filesToAnalyze.add((IFile) proxy.requestResource());
-              return false;
-            }
-            return true;
-          }
-        }, IResource.DEPTH_INFINITE, IContainer.EXCLUDE_DERIVED);
-      }
+      final List<IFile> filesToAnalyze = new ArrayList<>(request.getFiles().size());
+      filesToAnalyze.addAll(request.getFiles());
 
       Collection<ProjectConfigurator> usedConfigurators = configure(project, filesToAnalyze, mergedExtraProps, monitor);
 
@@ -173,37 +195,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
       for (final IFile file : filesToAnalyze) {
         final java.nio.file.Path filePath = file.getRawLocation().makeAbsolute().toFile().toPath();
-        inputFiles.add(new ClientInputFile() {
-
-          @Override
-          public java.nio.file.Path getPath() {
-            return filePath;
-          }
-
-          @Override
-          public boolean isTest() {
-            for (PathMatcher matcher : pathMatchersForTests) {
-              if (matcher.matches(filePath)) {
-                return true;
-              }
-            }
-            return false;
-          }
-
-          @Override
-          public Charset getCharset() {
-            try {
-              return Charset.forName(file.getCharset());
-            } catch (CoreException e) {
-              return null;
-            }
-          }
-
-          @Override
-          public <G> G getClientObject() {
-            return (G) file;
-          }
-        });
+        inputFiles.add(new EclipseInputFile(pathMatchersForTests, file, filePath));
       }
 
       for (SonarLintProperty sonarProperty : extraProps) {
@@ -514,14 +506,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       return marker.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "");
     }
 
-  }
-
-  private static String propsToString(Properties props) {
-    StringBuilder builder = new StringBuilder();
-    for (Object key : props.keySet()) {
-      builder.append(key).append("=").append(props.getProperty(key.toString())).append("\n");
-    }
-    return builder.toString();
   }
 
 }

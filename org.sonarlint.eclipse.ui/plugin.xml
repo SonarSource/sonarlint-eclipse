@@ -238,14 +238,13 @@
       </menuContribution>
 	<menuContribution locationURI="popup:sonar.menu?after=group1">
 	   <command
-	         commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeProjectsCommand"
+	         commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
 	         style="push">
 	      <visibleWhen>
 	         <with variable="activeMenuSelection">
 	            <iterate ifEmpty="false">
 	              <or>
-	                <adapt type="org.eclipse.core.resources.IProject"/>
-	                <adapt type="org.eclipse.ui.IWorkingSet" />
+	                <adapt type="org.eclipse.core.resources.IFile"/>
 	              </or>
 	            </iterate>
 	         </with>
@@ -261,47 +260,17 @@
           name="SonarLint">
     </category>
     <command
-          description="Enable SonarLint"
-          id="org.sonarlint.eclipse.ui.command.EnableSonarLintCommand"
-          name="Enable SonarLint"
-          categoryId="org.sonarlint.eclipse.ui.command.category">
-    </command>
-    <command
-          description="Open SonarQube association wizard"
-          id="org.sonarlint.eclipse.ui.command.ConfigureProjectsCommand"
-          name="Associate with SonarQube Server..."
-          categoryId="org.sonarlint.eclipse.ui.command.category">
-    </command>
-    <command
-          description="Open SonarQube association wizard"
-          id="org.sonarlint.eclipse.ui.internal.command.ReConfigureProjectsCommand"
-          name="Change Project Association..."
-          categoryId="org.sonarlint.eclipse.ui.command.category">
-    </command>
-    <command
-          description="Remove project association with a remote server"
-          id="org.sonarlint.eclipse.ui.internal.command.RemoveAssociationProjectsCommand"
-          name="Remove Project Association"
-          categoryId="org.sonarlint.eclipse.ui.command.category">
-    </command>
-    <command
           description="Show rule details"
           id="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
           name="Rule description"
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
-          description="Analyze project with SonarQube"
-          id="org.sonarlint.eclipse.ui.internal.command.AnalyzeProjectsCommand"
-          name="Analyze all files"
+          description="Analyze with SonarLint"
+          id="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
+          name="Analyze"
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
-    <command
-          description="Reload caches from server"
-          id="org.sonarlint.eclipse.ui.internal.command.SyncProjectsCommand"
-          name="Sync with server"
-          categoryId="org.sonarlint.eclipse.ui.command.category">
-    </command>    
   </extension>
 
   <extension point="org.eclipse.ui.handlers">
@@ -310,17 +279,14 @@
           commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand">
     </handler>
     <handler
-          class="org.sonarlint.eclipse.ui.internal.command.AnalyzeProjectsCommand"
-          commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeProjectsCommand">
+          class="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand">
     </handler>
   </extension>
 
   <extension point="org.eclipse.ui.commandImages">
     <image
-      commandId="org.sonarlint.eclipse.ui.command.EnableSonarLintCommand"
-      icon="icons/onde-sonar-16.png" />
-    <image
-      commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeProjectsCommand"
+      commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
       icon="icons/onde-sonar-16-execute.png" />
   </extension>
 

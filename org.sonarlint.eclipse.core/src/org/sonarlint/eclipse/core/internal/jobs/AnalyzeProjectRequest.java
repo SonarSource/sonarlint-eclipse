@@ -20,27 +20,25 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.Collection;
-import java.util.HashSet;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 
 public class AnalyzeProjectRequest {
 
   private final IProject project;
-  private final Collection<IFile> onlyOnFiles;
+  private final Collection<IFile> files;
 
-  public AnalyzeProjectRequest(IProject project, Collection<IFile> onlyOnFiles) {
+  public AnalyzeProjectRequest(IProject project, Collection<IFile> files) {
     this.project = project;
-    // Use a Set so that contains operation is cheap
-    this.onlyOnFiles = onlyOnFiles != null ? new HashSet<>(onlyOnFiles) : null;
+    this.files = files;
   }
 
   public IProject getProject() {
     return project;
   }
 
-  public Collection<IFile> getOnlyOnFiles() {
-    return onlyOnFiles;
+  public Collection<IFile> getFiles() {
+    return files;
   }
 
 }

@@ -88,6 +88,10 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
     if (delta != null && delta.getKind() == IResourceDelta.REMOVED) {
       return false;
     }
+    return shouldAnalyze(resource);
+  }
+
+  public static boolean shouldAnalyze(IResource resource) {
     if (!resource.exists() || resource.isDerived(IResource.CHECK_ANCESTORS) || resource.isHidden(IResource.CHECK_ANCESTORS)) {
       return false;
     }
