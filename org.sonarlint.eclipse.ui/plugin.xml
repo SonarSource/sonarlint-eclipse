@@ -313,10 +313,6 @@
           class="org.sonarlint.eclipse.ui.internal.command.AnalyzeProjectsCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeProjectsCommand">
     </handler>
-    <handler
-          class="org.eclipse.ui.internal.views.markers.QuickFixHandler"
-          commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals">
-    </handler>
   </extension>
 
   <extension point="org.eclipse.ui.commandImages">
@@ -409,15 +405,5 @@
            </separator>
         </menu>
      </menuContribution>
-  </extension>
-
-  
-  <!-- Marker resolver -->
-  <extension
-        point="org.eclipse.ui.ide.markerResolution">
-     <markerResolutionGenerator
-           class="org.sonarlint.eclipse.ui.internal.resolver.MarkerResolutionGenerator"
-           markerType="org.sonarlint.eclipse.core.sonarlintProblem">
-     </markerResolutionGenerator>
   </extension>
 </plugin>
