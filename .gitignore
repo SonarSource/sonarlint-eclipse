@@ -6,4 +6,4 @@ target/
 .project
 .settings
 
-org.sonarlint.eclipse.core/plugins/
+org.sonarlint.eclipse.core/plugins/*.jar
