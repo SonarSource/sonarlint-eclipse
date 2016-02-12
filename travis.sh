@@ -25,7 +25,7 @@ CI)
     # this commit is master must be built and analyzed (with upload of report)
     export MAVEN_OPTS="-Xmx1G -Xms128m"
     mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar \
-      -Pjacoco
+      -Pjacoco \
       -Dtycho.disableP2Mirrors=true \
       -Dsonar.host.url=$SONAR_HOST_URL \
       -Dsonar.login=$SONAR_TOKEN \

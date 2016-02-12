@@ -99,7 +99,7 @@ public class AnalyzeCommand extends AbstractHandler {
       if (elem instanceof IResource) {
         collectChildren(filesToAnalyzePerProject, (IResource) elem);
       } else if (elem instanceof IAdaptable && ((IAdaptable) elem).getAdapter(IResource.class) != null) {
-        collectChildren(filesToAnalyzePerProject, ((IAdaptable) elem).getAdapter(IResource.class));
+        collectChildren(filesToAnalyzePerProject, (IResource) ((IAdaptable) elem).getAdapter(IResource.class));
       } else if (elem instanceof IWorkingSet) {
         IWorkingSet ws = (IWorkingSet) elem;
         collectFilesPerProject(filesToAnalyzePerProject, ws.getElements());
