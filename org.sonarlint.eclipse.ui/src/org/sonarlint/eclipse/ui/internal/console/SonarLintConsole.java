@@ -71,7 +71,6 @@ public class SonarLintConsole extends IOConsole implements LogListener, ISonarLi
       this.warnStream = newOutputStream();
       this.debugStream = newOutputStream();
 
-      // TODO make colors configurable
       warnColor = new Color(display, new RGB(255, 0, 0));
       debugColor = new Color(display, new RGB(0, 0, 255));
 
@@ -119,7 +118,7 @@ public class SonarLintConsole extends IOConsole implements LogListener, ISonarLi
     }
   }
 
-  private void write(IOConsoleOutputStream stream, String msg) {
+  private static void write(IOConsoleOutputStream stream, String msg) {
     if (msg == null) {
       return;
     }

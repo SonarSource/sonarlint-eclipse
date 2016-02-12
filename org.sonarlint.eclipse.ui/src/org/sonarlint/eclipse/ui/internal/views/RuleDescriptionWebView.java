@@ -35,17 +35,18 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.RuleDescriptionWebView";
 
-  private static final String CSS = "<style type=\"text/css\">body {    font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif;    font-size: 13px;    line-height: 1.23076923;}\n"
-    + "h1 { color: #444;font-size: 14px;font-weight: 500; }\n"
-    + "h2 {    line-height: 24px;    color: #444;}"
-    + "a {    border-bottom: 1px solid #cae3f2;    color: #236a97;    cursor: pointer;    outline: none;    text-decoration: none;    transition: all .2s ease;}"
-    + ".rule-desc {    line-height: 1.5;}"
-    + ".rule-desc {    line-height: 1.5;}\n"
-    + ".rule-desc h2 {    font-size: 16px;    font-weight: 400;}\n"
-    + ".rule-desc code {    padding: .2em .45em;    margin: 0;    background-color: rgba(0,0,0,.04);    border-radius: 3px;    white-space: nowrap;}"
-    + ".rule-desc pre {    padding: 10px;    border-top: 1px solid #e6e6e6;    border-bottom: 1px solid #e6e6e6;    line-height: 18px;    overflow: auto;}"
-    + ".rule-desc code, .rule-desc pre {    font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;    font-size: 12px;}"
-    + ".rule-desc ul {    padding-left: 40px;    list-style: disc;}</style>";
+  private static final String CSS = "<style type=\"text/css\">"
+    + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: 13px; line-height: 1.23076923;}"
+    + "h1 { color: #444;font-size: 14px;font-weight: 500; }"
+    + "h2 { line-height: 24px; color: #444;}"
+    + "a { border-bottom: 1px solid #cae3f2; color: #236a97; cursor: pointer; outline: none; text-decoration: none; transition: all .2s ease;}"
+    + ".rule-desc { line-height: 1.5;}"
+    + ".rule-desc { line-height: 1.5;}"
+    + ".rule-desc h2 { font-size: 16px; font-weight: 400;}"
+    + ".rule-desc code { padding: .2em .45em; margin: 0; background-color: rgba(0,0,0,.04); border-radius: 3px; white-space: nowrap;}"
+    + ".rule-desc pre { padding: 10px; border-top: 1px solid #e6e6e6; border-bottom: 1px solid #e6e6e6; line-height: 18px; overflow: auto;}"
+    + ".rule-desc code, .rule-desc pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace; font-size: 12px;}"
+    + ".rule-desc ul { padding-left: 40px; list-style: disc;}</style>";
 
   @Override
   protected void open(IMarker element) {

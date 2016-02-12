@@ -224,7 +224,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return Status.OK_STATUS;
   }
 
-  private List<PathMatcher> createMatchersForTests(String[] testPatterns) {
+  private static List<PathMatcher> createMatchersForTests(String[] testPatterns) {
     final List<PathMatcher> pathMatchersForTests = new ArrayList<>();
     FileSystem fs = FileSystems.getDefault();
     for (String testPattern : testPatterns) {
@@ -312,7 +312,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   }
 
-  private void handleLinkedFiles(Collection<File> tmpToDelete, List<IFile> filesToAnalyze) {
+  private static void handleLinkedFiles(Collection<File> tmpToDelete, List<IFile> filesToAnalyze) {
     // Handle linked files
     for (IFile file : filesToAnalyze) {
       if (file.isLinked()) {

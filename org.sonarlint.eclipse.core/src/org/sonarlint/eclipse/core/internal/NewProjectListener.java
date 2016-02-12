@@ -71,7 +71,7 @@ public class NewProjectListener implements IResourceChangeListener {
         }
       });
     } catch (CoreException e) {
-      // handle error
+      throw new IllegalStateException(e);
     }
     return projects;
   }
