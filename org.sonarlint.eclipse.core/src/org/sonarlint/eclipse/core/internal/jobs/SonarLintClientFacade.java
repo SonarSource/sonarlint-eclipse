@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.net.URL;
 import java.util.Collections;
+import java.util.Enumeration;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarsource.sonarlint.core.SonarLintClientImpl;
@@ -73,8 +74,9 @@ public final class SonarLintClientFacade {
 
   private void tryStart() {
     client = new SonarLintClientImpl();
+    Enumeration<URL> pluginEntries = SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false);
     GlobalConfiguration globalConfig = GlobalConfiguration.builder()
-      .addPlugins(Collections.list(SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false)).toArray(new URL[0]))
+      .addPlugins(pluginEntries != null ? Collections.list(pluginEntries).toArray(new URL[0]) : new URL[0])
       .setVerbose(SonarLintCorePlugin.getDefault().isDebugEnabled())
       .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonar").toFile().toPath())
       .setLogOutput(new DefaultLogOutput())
