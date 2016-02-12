@@ -188,11 +188,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       List<ClientInputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
       String allTestPattern = PreferencesUtils.getTestFileRegexps();
       String[] testPatterns = allTestPattern.split(",");
-      final List<PathMatcher> pathMatchersForTests = new ArrayList<>();
-      FileSystem fs = FileSystems.getDefault();
-      for (String testPattern : testPatterns) {
-        pathMatchersForTests.add(fs.getPathMatcher("glob:" + testPattern));
-      }
+      final List<PathMatcher> pathMatchersForTests = createMatchersForTests(testPatterns);
       for (final IFile file : filesToAnalyze) {
         final java.nio.file.Path filePath = file.getRawLocation().makeAbsolute().toFile().toPath();
         inputFiles.add(new EclipseInputFile(pathMatchersForTests, file, filePath));
@@ -226,6 +222,15 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     return Status.OK_STATUS;
+  }
+
+  private List<PathMatcher> createMatchersForTests(String[] testPatterns) {
+    final List<PathMatcher> pathMatchersForTests = new ArrayList<>();
+    FileSystem fs = FileSystems.getDefault();
+    for (String testPattern : testPatterns) {
+      pathMatchersForTests.add(fs.getPathMatcher("glob:" + testPattern));
+    }
+    return pathMatchersForTests;
   }
 
   private static Collection<ProjectConfigurator> configure(final IProject project, Collection<IFile> filesToAnalyze, final Map<String, String> extraProperties,
