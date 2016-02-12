@@ -177,14 +177,10 @@
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>0.7.5.201505241946</version>
-          <executions>
-            <execution>
-              <configuration>
-                <append>true</append>
-                <destFile>${sonar.jacoco.reportPath}</destFile>
-              </configuration>
-            </execution>
-          </executions>
+          <configuration>
+            <append>true</append>
+            <destFile>${sonar.jacoco.reportPath}</destFile>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
