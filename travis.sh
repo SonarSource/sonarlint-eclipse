@@ -10,29 +10,57 @@ function installTravisTools {
 
 installTravisTools
 
+function strongEcho {
+  echo ""
+  echo "================ $1 ================="
+}
+
 build_snapshot "SonarSource/sonarlint-core"
 
-if [ -n "${PR_ANALYSIS:-}" ] && [ "${PR_ANALYSIS}" == true ]
-then
-  if [ "$TRAVIS_PULL_REQUEST" != "false" ]
-  then
-    # For security reasons environment variables are not available on the pull requests
-    # coming from outside repositories
-    # http://docs.travis-ci.com/user/pull-requests/#Security-Restrictions-when-testing-Pull-Requests
-    if [ -n "${SONAR_TOKEN:-}" ]; then
+case "$TARGET" in
 
-      # PR analysis
-      mvn verify sonar:sonar -B -e -V -Dtycho.disableP2Mirrors=true -Dtarget.platform=$TARGET_PLATFORM \
-        -Dsonar.analysis.mode=issues \
-        -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST \
-        -Dsonar.github.repository=$TRAVIS_REPO_SLUG \
-        -Dsonar.github.oauth=$GITHUB_TOKEN \
-        -Dsonar.host.url=$SONAR_HOST_URL \
-        -Dsonar.login=$SONAR_TOKEN
-    fi
+CI)
+  if [ "${TRAVIS_BRANCH}" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    strongEcho 'Build and analyze commit in master'
+    # this commit is master must be built and analyzed (with upload of report)
+    export MAVEN_OPTS="-Xmx1G -Xms128m"
+    mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar \
+      -Pjacoco
+      -Dtycho.disableP2Mirrors=true \
+      -Dsonar.host.url=$SONAR_HOST_URL \
+      -Dsonar.login=$SONAR_TOKEN \
+      -B -e -V
+
+  elif [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
+    strongEcho 'Build and analyze pull request'
+    # this pull request must be built and analyzed (without upload of report)
+    mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar \
+      -Dtycho.disableP2Mirrors=true \
+      -Dsonar.analysis.mode=issues \
+      -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST \
+      -Dsonar.github.repository=$TRAVIS_REPO_SLUG \
+      -Dsonar.github.oauth=$GITHUB_TOKEN \
+      -Dsonar.host.url=$SONAR_HOST_URL \
+      -Dsonar.login=$SONAR_TOKEN \
+      -B -e -V
+
+  else
+    strongEcho 'Build, no analysis'
+    # Build branch, without any analysis
+
+    # No need for Maven goal "install" as the generated JAR file does not need to be installed
+    # in Maven local repository
+    mvn verify -B -e -V -Dtycho.disableP2Mirrors=true
   fi
-else
-  # Regular CI
+  ;;
+
+IT)
   mvn verify -B -e -V -Dtycho.disableP2Mirrors=true -Dtarget.platform=$TARGET_PLATFORM
-fi
+  ;;
+*)
+  echo "Unexpected TARGET value: $TARGET"
+  exit 1
+  ;;
+
+esac
 

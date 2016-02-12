@@ -6,10 +6,11 @@ env:
   global:
     - DISPLAY=:99.0
   matrix:
-    - TARGET_PLATFORM=e42
-    - TARGET_PLATFORM=e43
-    - TARGET_PLATFORM=e44
-    - TARGET_PLATFORM=e45 PR_ANALYSIS=true
+    - TARGET=CI
+    - TARGET=IT TARGET_PLATFORM=e42
+    - TARGET=IT TARGET_PLATFORM=e43
+    - TARGET=IT TARGET_PLATFORM=e44
+    - TARGET=IT TARGET_PLATFORM=e45
 
 jdk:
   - oraclejdk7
@@ -19,7 +20,8 @@ script:
 
 cache:
   directories:
-    - '$HOME/.m2/repository'
+    - $HOME/.m2/repository
+    - $HOME/.sonar
 
 notifications:
   email: false

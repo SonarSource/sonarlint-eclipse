@@ -311,7 +311,6 @@
       <id>jacoco</id>
       <properties>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
-        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.jacoco.reportPath>../target/jacoco.exec</sonar.jacoco.reportPath>
       </properties>
 
