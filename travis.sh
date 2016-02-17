@@ -26,6 +26,7 @@ CI)
     git fetch --unshallow || true
     export MAVEN_OPTS="-Xmx1G -Xms128m"
     mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar \
+      -Pcoverage \
       -Dtycho.disableP2Mirrors=true \
       -Dsonar.host.url=$SONAR_HOST_URL \
       -Dsonar.login=$SONAR_TOKEN \

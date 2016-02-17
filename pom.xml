@@ -87,7 +87,6 @@
     <sonar.java.source>1.7</sonar.java.source>
     <sonar.java.target>1.7</sonar.java.target>
     <sonar.scm.ignoreLocalModifications>true</sonar.scm.ignoreLocalModifications>
-    <sonar.skippedModules>org.sonarlint.eclipse.core.tests</sonar.skippedModules>
     <sonar.jacoco.reportPath>../target/jacoco.exec</sonar.jacoco.reportPath>
     <jarsigner.skip>true</jarsigner.skip>
   </properties>
@@ -173,15 +172,6 @@
           <artifactId>tycho-p2-repository-plugin</artifactId>
           <version>${tycho.version}</version>
         </plugin>
-        <plugin>
-          <groupId>org.jacoco</groupId>
-          <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.7.5.201505241946</version>
-          <configuration>
-            <append>true</append>
-            <destFile>${sonar.jacoco.reportPath}</destFile>
-          </configuration>
-        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -248,19 +238,6 @@
           </environments>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.eclipse.tycho.extras</groupId>
-        <artifactId>tycho-pack200a-plugin</artifactId>
-        <version>${tycho-extras-version}</version>
-        <executions>
-          <execution>
-            <id>pack200-normalize</id>
-            <goals>
-              <goal>normalize</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -283,19 +260,6 @@
       </plugin>
 
       <plugin>
-        <groupId>org.eclipse.tycho.extras</groupId>
-        <artifactId>tycho-pack200b-plugin</artifactId>
-        <version>${tycho-extras-version}</version>
-        <executions>
-          <execution>
-            <id>pack200-pack</id>
-            <goals>
-              <goal>pack</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-p2-plugin</artifactId>
         <executions>
@@ -315,6 +279,29 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>coverage</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.7.5.201505241946</version>
+            <configuration>
+              <append>true</append>
+              <destFile>${sonar.jacoco.reportPath}</destFile>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <!-- This profile is used to sign artifacts -->
     <profile>
       <id>sign</id>
