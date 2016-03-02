@@ -34,6 +34,7 @@ import org.osgi.framework.BundleContext;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
@@ -131,6 +132,11 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         return Status.OK_STATUS;
       }
     }.schedule();
+  }
+
+  public void editServer(IServer server) {
+    // TODO Auto-generated method stub
+
   }
 
 }

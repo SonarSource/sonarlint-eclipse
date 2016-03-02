@@ -26,6 +26,40 @@
             label="sonar sonarqube sonarlint"
             id="org.sonarlint.eclipse.ui.SonarLintKeyword"/>
    </extension>
+   
+    
+	<extension point="org.eclipse.ui.newWizards">
+	  <category
+	    id="org.sonarlint.eclipse"
+	    name="%sonar.category.view.name"/>
+	
+	  <wizard
+	      id="org.sonarlint.eclipse.ui.new.server"
+	      name="New Server"
+	      class="org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard"
+	      category="org.sonarlint.eclipse"
+	      icon="icons/onde-sonar-16.png">
+	    <description>Register a new SonarQube server</description>
+	  </wizard>
+	</extension>
+	
+	<extension
+      point="org.eclipse.ui.decorators">
+   <decorator
+         class="org.sonarlint.eclipse.ui.internal.server.ServerDecorator"
+         icon="icons/onde-sonar-16.png"
+         id="org.sonarlint.eclipse.ui.navigatorDecorator"
+         label="SonarLint Server State Decorator"
+         lightweight="true"
+         location="BOTTOM_RIGHT"
+         state="true">
+      <enablement>
+            <objectClass
+                  name="org.sonarlint.eclipse.core.internal.server.IServer">
+            </objectClass>
+      </enablement>
+   </decorator>
+</extension>
 
   <extension point="org.eclipse.ui.views">
     <category
@@ -33,6 +67,7 @@
         id="org.sonarlint.eclipse">
     </category>
     <view
+        allowMultiple="false"
         category="org.sonarlint.eclipse"
         class="org.sonarlint.eclipse.ui.internal.views.issues.IssuesView"
         icon="icons/onde-sonar-16.png"
@@ -40,13 +75,114 @@
         name="%sonar.issues.view.name">
     </view>
     <view
+	        allowMultiple="false"
           category="org.sonarlint.eclipse"
           class="org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView"
           icon="icons/onde-sonar-16.png"
           id="org.sonarlint.eclipse.ui.views.RuleDescriptionWebView"
           name="SonarLint Rule Description">
     </view>
+    <view
+	        allowMultiple="false"
+	        category="org.sonarlint.eclipse"
+	        class="org.sonarlint.eclipse.ui.internal.server.ServersView"
+	        icon="icons/onde-sonar-16.png"
+	        id="org.sonarlint.eclipse.ui.ServersView"
+	        name="SonarLint Servers">
+	  </view>
   </extension>
+  
+  <extension point="org.eclipse.ui.contexts">
+	  <context
+	    id="org.eclipse.ui.sonarlintServerViewScope"
+	    name="In SonarLint Servers View"
+	    description="In SonarLint Servers View"
+	    parentId="org.eclipse.ui.contexts.window">
+	  </context>
+	</extension>
+	
+	<extension
+      point="org.eclipse.ui.navigator.navigatorContent">
+	   <navigatorContent
+	         activeByDefault="true"
+	         contentProvider="org.sonarlint.eclipse.ui.internal.server.ServerContentProvider"
+	         icon="icons/onde-sonar-16.png"
+	         id="org.sonarlint.eclipse.ui.ServersView.content.root"
+	         labelProvider="org.sonarlint.eclipse.ui.internal.server.ServerLabelProvider"
+	         name="Server Provider"
+	         priority="highest">
+	      <triggerPoints>
+	         <or>
+	            <instanceof
+	                  value="org.sonarlint.eclipse.core.internal.server.IServer">
+	            </instanceof>
+	         </or>
+	      </triggerPoints>
+	      <possibleChildren>
+	         <or>
+	            <instanceof
+	                  value="java.lang.Object">
+	            </instanceof>
+	            <instanceof
+	                  value="org.sonarlint.eclipse.core.internal.server.IServer">
+	            </instanceof>
+	         </or>
+	      </possibleChildren>
+		  <actionProvider
+		            class="org.sonarlint.eclipse.ui.internal.server.ServerActionProvider"
+		            id="org.sonarlint.eclipse.ui.ServersView.ServerActionProvider"
+		            priority="highest">
+				<enablement>
+	             <or>
+	                <instanceof
+	                      value="org.sonarlint.eclipse.core.internal.server.IServer">
+	                </instanceof>
+	                <instanceof
+	                      value="org.eclipse.core.resources.IWorkspaceRoot">
+	                </instanceof>
+	               <adapt
+	                     type="java.util.Collection">
+	                  <count
+	                        value="0">
+	                  </count>
+	               </adapt>
+	             </or>
+	            </enablement>
+		  </actionProvider>      
+	      <!--dropAssistant
+	             class="org.eclipse.wst.server.ui.internal.cnf.ServersViewDropAdapterAssistant"
+	             id="org.eclipse.wst.server.ui.ServersView.DropAssistant">
+	          <possibleDropTargets>
+	             <or>
+	                <instanceof
+	                      value="java.lang.Object">
+	                </instanceof>
+	             </or>
+	          </possibleDropTargets>
+	       </dropAssistant-->
+	   </navigatorContent>
+	</extension>
+	
+	<extension
+	      point="org.eclipse.ui.navigator.viewer">
+	   <viewerContentBinding
+	         viewerId="org.sonarlint.eclipse.ui.ServersView">
+	      <includes>
+	         <contentExtension
+	               isRoot="true"
+	               pattern="org.sonarlint.eclipse.ui.ServersView.content.root">
+	         </contentExtension>
+	      </includes>
+	   </viewerContentBinding>
+		<viewer
+	       viewerId="org.sonarlint.eclipse.ui.ServersView">
+			<options>
+				<property name="org.eclipse.ui.navigator.hideLinkWithEditorAction"
+					value="true">
+				</property>
+			</options>
+		</viewer>
+	</extension>
 
   <extension
       point="org.eclipse.ui.ide.markerSupport">
@@ -375,4 +511,6 @@
         </menu>
      </menuContribution>
   </extension>
+
+	
 </plugin>

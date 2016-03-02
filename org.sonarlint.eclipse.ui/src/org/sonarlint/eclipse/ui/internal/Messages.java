@@ -56,4 +56,34 @@ public final class Messages extends NLS {
   public static String PropertyAndPreferencePage_useworkspacesettings_change;
   public static String PropertyAndPreferencePage_showprojectspecificsettings_label;
 
+  public static String ServersView_noServers;
+  public static String jobInitializingServersView;
+  public static String viewInitializing;
+
+  public static String actionDelete;
+  public static String actionEdit;
+  public static String actionNew;
+  public static String actionNewServer;
+  public static String actionSetNewServer;
+
+  public static String toolTipEnableFocus;
+  public static String toolTipDisableFocus;
+
+  public static String deleteServerDialogTitle;
+  public static String deleteServerDialogMessage;
+  public static String deleteServerDialogMessageMany;
+  public static String deleteServerTask;
+
+  public static String ServerLocationWizardPage_label_id;
+  public static String ServerLocationWizardPage_label_host;
+  public static String ServerLocationWizardPage_label_name;
+  public static String ServerLocationWizardPage_label_username;
+  public static String ServerLocationWizardPage_label_password;
+  public static String ServerLocationWizardPage_action_test;
+  public static String ServerLocationWizardPage_action_test_tooltip;
+  public static String ServerLocationWizardPage_msg_connected;
+  public static String ServerLocationWizardPage_msg_error;
+  public static String ServerLocationWizardPage_msg_connection_error;
+  public static String ServerLocationWizardPage_msg_authentication_error;
+
 }

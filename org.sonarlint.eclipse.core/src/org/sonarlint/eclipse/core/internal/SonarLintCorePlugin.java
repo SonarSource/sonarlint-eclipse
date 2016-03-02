@@ -30,6 +30,10 @@ import org.sonarlint.eclipse.core.AbstractPlugin;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
+import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
+import org.sonarlint.eclipse.core.internal.server.Server;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
 public class SonarLintCorePlugin extends AbstractPlugin {
 
@@ -121,6 +125,40 @@ public class SonarLintCorePlugin extends AbstractPlugin {
       sonarlint = new SonarLintClientFacade();
     }
     return sonarlint;
+  }
+
+  private static final ServersManager getServerManager() {
+    return ServersManager.getInstance();
+  }
+
+  public IServer[] getServers() {
+    return getServerManager().getServers();
+  }
+
+  public void addServerLifecycleListener(IServerLifecycleListener listener) {
+    getServerManager().addServerLifecycleListener(listener);
+  }
+
+  public void removeServerLifecycleListener(IServerLifecycleListener listener) {
+    getServerManager().removeServerLifecycleListener(listener);
+  }
+
+  public IServer findServer(String id) {
+    return getServerManager().getServer(id);
+  }
+
+  public void removeServer(IServer server) {
+    getServerManager().removeServer(server);
+  }
+
+  public void addServer(String serverId, String serverName, String serverUrl, String username, String password) {
+    getServerManager().addServer(new Server(serverId, serverName, serverUrl, username, password));
+
+  }
+
+  public void testConnection(String serverUrl, String username, String password) {
+    // TODO Auto-generated method stub
+
   }
 
 }

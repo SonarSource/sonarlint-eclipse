@@ -21,7 +21,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.sonarlint.eclipse.core,
  org.eclipse.core.resources,
  org.eclipse.ui.navigator,
- org.eclipse.ui.editors
+ org.eclipse.ui.editors,
+ org.eclipse.ui.forms
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle

@@ -89,4 +89,35 @@ public class StringUtils {
     return str == null ? defaultStr : str;
   }
 
+  public static String defaultString(String str) {
+    return str == null ? EMPTY : str;
+  }
+
+  public static String removeEnd(String str, String remove) {
+    if (isEmpty(str) || isEmpty(remove)) {
+      return str;
+    }
+    if (str.endsWith(remove)) {
+      return str.substring(0, str.length() - remove.length());
+    }
+    return str;
+  }
+
+  public static <T extends CharSequence> T defaultIfBlank(final T str, final T defaultStr) {
+    return isBlank(str) ? defaultStr : str;
+  }
+
+  public static boolean isBlank(final CharSequence cs) {
+    int strLen;
+    if (cs == null || (strLen = cs.length()) == 0) {
+      return true;
+    }
+    for (int i = 0; i < strLen; i++) {
+      if (Character.isWhitespace(cs.charAt(i)) == false) {
+        return false;
+      }
+    }
+    return true;
+  }
+
 }
