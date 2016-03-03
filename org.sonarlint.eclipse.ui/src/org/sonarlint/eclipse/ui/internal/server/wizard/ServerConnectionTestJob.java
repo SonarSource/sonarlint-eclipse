@@ -22,42 +22,23 @@ package org.sonarlint.eclipse.ui.internal.server.wizard;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.server.IServer;
 
 final class ServerConnectionTestJob implements IRunnableWithProgress {
 
   private IStatus status;
 
-  private final String username;
-  private final String password;
-  private final String serverUrl;
+  private final IServer server;
 
-  ServerConnectionTestJob(String username, String password, String serverUrl) {
-    this.username = username;
-    this.password = password;
-    this.serverUrl = serverUrl;
+  ServerConnectionTestJob(IServer server) {
+    this.server = server;
   }
 
   @Override
   public void run(IProgressMonitor monitor) {
     monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
     try {
-      SonarLintCorePlugin.getDefault().testConnection(serverUrl, username, password);
-      // ConnectionTestResult result = WSClientFactory.getSonarClient(newServer).testConnection();
-      // switch (result.status) {
-      // case OK:
-      // status = new Status(IStatus.OK, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connected);
-      // break;
-      // case AUTHENTICATION_ERROR:
-      // status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_authentication_error);
-      // break;
-      // case CONNECT_ERROR:
-      // status = new Status(IStatus.ERROR, SonarUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_connection_error +
-      // result.message);
-      // break;
-      // default:
-      // throw new SonarEclipseException("Unknow status code: " + result);
-      // }
+      status = server.testConnection();
     } finally {
       monitor.done();
     }

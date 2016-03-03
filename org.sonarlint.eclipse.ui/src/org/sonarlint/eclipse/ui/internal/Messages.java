@@ -61,6 +61,7 @@ public final class Messages extends NLS {
   public static String viewInitializing;
 
   public static String actionDelete;
+  public static String actionSync;
   public static String actionEdit;
   public static String actionNew;
   public static String actionNewServer;
@@ -81,9 +82,6 @@ public final class Messages extends NLS {
   public static String ServerLocationWizardPage_label_password;
   public static String ServerLocationWizardPage_action_test;
   public static String ServerLocationWizardPage_action_test_tooltip;
-  public static String ServerLocationWizardPage_msg_connected;
   public static String ServerLocationWizardPage_msg_error;
-  public static String ServerLocationWizardPage_msg_connection_error;
-  public static String ServerLocationWizardPage_msg_authentication_error;
 
 }

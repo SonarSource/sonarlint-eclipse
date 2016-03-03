@@ -67,10 +67,10 @@ import org.sonarlint.eclipse.core.internal.tracking.Input;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.tracking.Tracker;
 import org.sonarlint.eclipse.core.internal.tracking.Tracking;
-import org.sonarsource.sonarlint.core.client.api.AnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.ClientInputFile;
-import org.sonarsource.sonarlint.core.client.api.Issue;
-import org.sonarsource.sonarlint.core.client.api.IssueListener;
+import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.analysis.ClientInputFile;
+import org.sonarsource.sonarlint.core.client.api.analysis.Issue;
+import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
 
 public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
@@ -199,7 +199,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
 
       if (!inputFiles.isEmpty()) {
-        AnalysisConfiguration config = new AnalysisConfiguration(project.getLocation().toFile().toPath(), projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
+        AnalysisConfiguration config = new AnalysisConfiguration(null, project.getLocation().toFile().toPath(), projectSpecificWorkDir.toFile().toPath(), inputFiles,
+          mergedExtraProps);
         Map<IResource, List<Issue>> issuesPerResource = run(config, sonarlint, monitor);
         updateMarkers(issuesPerResource);
       }

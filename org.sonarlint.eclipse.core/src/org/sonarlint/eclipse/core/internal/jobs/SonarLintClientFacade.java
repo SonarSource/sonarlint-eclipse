@@ -25,35 +25,15 @@ import java.util.Enumeration;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarsource.sonarlint.core.SonarLintClientImpl;
-import org.sonarsource.sonarlint.core.client.api.AnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.GlobalConfiguration;
-import org.sonarsource.sonarlint.core.client.api.IssueListener;
-import org.sonarsource.sonarlint.core.client.api.LogOutput;
+import org.sonarsource.sonarlint.core.client.api.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.SonarLintClient;
+import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
+import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
+import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
 
-public final class SonarLintClientFacade {
-
-  private final class DefaultLogOutput implements LogOutput {
-    @Override
-    public void log(String msg, Level level) {
-      switch (level) {
-        case TRACE:
-        case DEBUG:
-          SonarLintCorePlugin.getDefault().debug(msg);
-          break;
-        case INFO:
-        case WARN:
-          SonarLintCorePlugin.getDefault().info(msg);
-          break;
-        case ERROR:
-          SonarLintCorePlugin.getDefault().error(msg);
-          break;
-        default:
-          SonarLintCorePlugin.getDefault().info(msg);
-      }
-
-    }
-  }
+public class SonarLintClientFacade {
 
   private boolean started;
   private SonarLintClient client;
@@ -73,17 +53,17 @@ public final class SonarLintClientFacade {
   }
 
   private void tryStart() {
-    client = new SonarLintClientImpl();
     Enumeration<URL> pluginEntries = SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false);
     GlobalConfiguration globalConfig = GlobalConfiguration.builder()
       .addPlugins(pluginEntries != null ? Collections.list(pluginEntries).toArray(new URL[0]) : new URL[0])
       .setVerbose(SonarLintCorePlugin.getDefault().isDebugEnabled())
-      .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonar").toFile().toPath())
-      .setLogOutput(new DefaultLogOutput())
+      .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("default").toFile().toPath())
+      .setLogOutput(new SonarLintLogOutput())
       .build();
+    client = new SonarLintClientImpl(globalConfig);
     try {
       SonarLintCorePlugin.getDefault().info("Starting SonarLint");
-      client.start(globalConfig);
+      client.start();
       this.started = true;
     } catch (Throwable e) {
       SonarLintCorePlugin.getDefault().error("Unable to start SonarLint", e);
@@ -99,7 +79,8 @@ public final class SonarLintClientFacade {
     if (!started) {
       return "Unavailable";
     }
-    return client.getHtmlRuleDescription(ruleKey);
+    RuleDetails ruleDetails = client.getRuleDetails(ruleKey);
+    return ruleDetails != null ? ruleDetails.getHtmlDescription() : "Not found";
   }
 
   public synchronized void stop() {
@@ -108,6 +89,13 @@ public final class SonarLintClientFacade {
       client = null;
     }
     started = false;
+  }
+
+  public synchronized ValidationResult testConnection(ServerConfiguration config) {
+    if (!started) {
+      tryStart();
+    }
+    return client.validateCredentials(config);
   }
 
 }

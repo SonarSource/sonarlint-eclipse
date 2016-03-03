@@ -22,27 +22,18 @@ import org.eclipse.ui.navigator.ICommonViewerWorkbenchSite;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.server.actions.GlobalDeleteAction;
-import org.sonarlint.eclipse.ui.internal.server.actions.GlobalEditAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.NewServerWizardAction;
+import org.sonarlint.eclipse.ui.internal.server.actions.ServerDeleteAction;
+import org.sonarlint.eclipse.ui.internal.server.actions.ServerEditAction;
+import org.sonarlint.eclipse.ui.internal.server.actions.ServerSyncAction;
 
 public class ServerActionProvider extends CommonActionProvider {
-  public static final String NEW_MENU_ID = "org.eclipse.wst.server.ui.internal.cnf.newMenuId";
-  public static final String SHOW_IN_MENU_ID = "org.eclipse.ui.navigate.showInQuickMenu";
-  public static final String TOP_SECTION_START_SEPARATOR = "org.eclipse.wst.server.ui.internal.cnf.topSectionStart";
-  public static final String TOP_SECTION_END_SEPARATOR = "org.eclipse.wst.server.ui.internal.cnf.topSectionEnd";
-  public static final String EDIT_SECTION_START_SEPARATOR = "org.eclipse.wst.server.ui.internal.cnfeditSectionStart";
-  public static final String EDIT_SECTION_END_SEPARATOR = "org.eclipse.wst.server.ui.internal.cnf.editSectionEnd";
-  public static final String CONTROL_SERVER_SECTION_START_SEPARATOR = "org.eclipse.wst.server.ui.internal.cnf.controlServerSectionStart";
-  public static final String CONTROL_SERVER_SECTION_END_SEPARATOR = "org.eclipse.wst.server.ui.internal.cnf.controlServerSectionEnd";
-  public static final String SERVER_ETC_SECTION_START_SEPARATOR = "org.eclipse.wst.server.ui.internal.cnf.serverEtcSectionStart";
-  public static final String SERVER_ETC_SECTION_END_SEPARATOR = "org.eclipse.wst.server.ui.internal.cnf.serverEtcSectionEnd";
-  public static final String CONTROL_MODULE_SECTION_START_SEPARATOR = "org.eclipse.wst.server.ui.internal.cnf.controlModuleSectionStart";
-  public static final String CONTROL_MODULE_SECTION_END_SEPARATOR = "org.eclipse.wst.server.ui.internal.cnf.controlModuleSectionEnd";
+  public static final String NEW_MENU_ID = "org.sonarlint.eclipse.ui.server.newMenuId";
 
   private ICommonActionExtensionSite actionSite;
-  protected Action globalDeleteAction;
-  protected Action globalEditAction;
+  protected Action deleteAction;
+  protected Action editAction;
+  protected Action syncAction;
 
   public ServerActionProvider() {
     super();
@@ -80,15 +71,17 @@ public class ServerActionProvider extends CommonActionProvider {
 
   private void makeServerActions(CommonViewer tableViewer, ISelectionProvider provider) {
     Shell shell = tableViewer.getTree().getShell();
-    globalDeleteAction = new GlobalDeleteAction(shell, provider);
-    globalEditAction = new GlobalEditAction(shell, provider);
+    deleteAction = new ServerDeleteAction(shell, provider);
+    editAction = new ServerEditAction(shell, provider);
+    syncAction = new ServerSyncAction(shell, provider);
   }
 
   @Override
   public void fillActionBars(IActionBars actionBars) {
     actionBars.updateActionBars();
-    actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(), globalDeleteAction);
-    actionBars.setGlobalActionHandler(ActionFactory.RENAME.getId(), globalEditAction);
+    actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(), deleteAction);
+    actionBars.setGlobalActionHandler(ActionFactory.RENAME.getId(), editAction);
+    actionBars.setGlobalActionHandler(ActionFactory.REFRESH.getId(), syncAction);
   }
 
   @Override
@@ -116,15 +109,13 @@ public class ServerActionProvider extends CommonActionProvider {
       }
     }
 
-    menu.add(invisibleSeparator(TOP_SECTION_START_SEPARATOR));
     addTopSection(menu);
-    menu.add(invisibleSeparator(TOP_SECTION_END_SEPARATOR));
     menu.add(new Separator());
 
     if (server != null) {
-      menu.add(invisibleSeparator(EDIT_SECTION_START_SEPARATOR));
-      menu.add(globalEditAction);
-      menu.add(globalDeleteAction);
+      menu.add(editAction);
+      menu.add(deleteAction);
+      menu.add(syncAction);
     }
   }
 
@@ -136,9 +127,4 @@ public class ServerActionProvider extends CommonActionProvider {
     menu.add(newMenu);
   }
 
-  private Separator invisibleSeparator(String s) {
-    Separator sep = new Separator(s);
-    sep.setVisible(false);
-    return sep;
-  }
 }

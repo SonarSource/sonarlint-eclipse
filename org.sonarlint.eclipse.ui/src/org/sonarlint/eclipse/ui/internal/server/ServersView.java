@@ -24,6 +24,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IDecoratorManager;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionContext;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.forms.widgets.Form;
@@ -50,10 +52,10 @@ public class ServersView extends CommonNavigator {
   protected CommonViewer tableViewer;
   private Control mainPage;
   private Control noServersPage;
-  PageBook book;
+  private PageBook book;
 
-  protected IServerLifecycleListener serverResourceListener;
-  protected IServerListener serverListener;
+  private IServerLifecycleListener serverResourceListener;
+  private IServerListener serverListener;
 
   // servers that are currently publishing and starting
   protected static Set<String> starting = new HashSet<>(4);
@@ -224,7 +226,16 @@ public class ServersView extends CommonNavigator {
   }
 
   protected void refreshServerState(final IServer server) {
-    // ServerDecoratorsHandler.refresh(tableViewer);
+    Display.getDefault().asyncExec(new Runnable() {
+      @Override
+      public void run() {
+        IDecoratorManager dm = PlatformUI.getWorkbench().getDecoratorManager();
+        dm.update(ServerDecorator.ID);
+        if (tableViewer != null) {
+          tableViewer.setSelection(tableViewer.getSelection());
+        }
+      }
+    });
   }
 
   protected void addListener() {
@@ -233,6 +244,7 @@ public class ServersView extends CommonNavigator {
       @Override
       public void serverAdded(IServer server) {
         addServer(server);
+        server.addServerListener(serverListener);
       }
 
       @Override
@@ -243,9 +255,23 @@ public class ServersView extends CommonNavigator {
       @Override
       public void serverRemoved(IServer server) {
         removeServer(server);
+        server.removeServerListener(serverListener);
       }
     };
     SonarLintCorePlugin.getDefault().addServerLifecycleListener(serverResourceListener);
+
+    serverListener = new IServerListener() {
+
+      @Override
+      public void serverChanged(IServer server) {
+        refreshServerState(server);
+      }
+    };
+
+    // add listeners to servers
+    for (IServer server : SonarLintCorePlugin.getDefault().getServers()) {
+      server.addServerListener(serverListener);
+    }
 
   }
 

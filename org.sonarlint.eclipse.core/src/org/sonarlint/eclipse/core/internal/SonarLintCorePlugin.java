@@ -32,7 +32,6 @@ import org.sonarlint.eclipse.core.internal.jobs.SonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
-import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
 public class SonarLintCorePlugin extends AbstractPlugin {
@@ -120,7 +119,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     this.debugEnabled = debugEnabled;
   }
 
-  public SonarLintClientFacade getSonarLintClientFacade() {
+  public SonarLintClientFacade getDefaultSonarLintClientFacade() {
     if (sonarlint == null) {
       sonarlint = new SonarLintClientFacade();
     }
@@ -151,8 +150,8 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     getServerManager().removeServer(server);
   }
 
-  public void addServer(String serverId, String serverName, String serverUrl, String username, String password) {
-    getServerManager().addServer(new Server(serverId, serverName, serverUrl, username, password));
+  public void addServer(IServer server) {
+    getServerManager().addServer(server);
 
   }
 

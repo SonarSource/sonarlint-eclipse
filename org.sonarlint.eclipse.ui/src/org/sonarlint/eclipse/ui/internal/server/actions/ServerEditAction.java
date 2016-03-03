@@ -20,11 +20,11 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.server.wizard.EditServerLocationWizard;
 
-public class GlobalEditAction extends SelectionProviderAction {
+public class ServerEditAction extends SelectionProviderAction {
   private List<IServer> servers;
   private Shell shell;
 
-  public GlobalEditAction(Shell shell, ISelectionProvider selectionProvider) {
+  public ServerEditAction(Shell shell, ISelectionProvider selectionProvider) {
     super(selectionProvider, Messages.actionEdit);
     this.shell = shell;
     ISharedImages sharedImages = PlatformUI.getWorkbench().getSharedImages();

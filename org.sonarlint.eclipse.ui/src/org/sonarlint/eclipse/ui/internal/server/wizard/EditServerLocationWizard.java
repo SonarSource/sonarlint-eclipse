@@ -33,11 +33,11 @@ public class EditServerLocationWizard extends AbstractServerLocationWizard {
   }
 
   @Override
-  protected void doFinish(String id, String serverName, String serverUrl, String username, String password) {
+  protected void doFinish(IServer server) {
     String oldServerId = sonarServer.getId();
     if (StringUtils.isNotBlank(oldServerId) && (SonarLintCorePlugin.getDefault().findServer(oldServerId) != null)) {
       sonarServer.delete();
     }
-    super.doFinish(id, serverName, serverUrl, username, password);
+    super.doFinish(server);
   }
 }

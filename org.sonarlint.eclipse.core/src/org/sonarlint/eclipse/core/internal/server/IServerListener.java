@@ -17,9 +17,9 @@ package org.sonarlint.eclipse.core.internal.server;
  */
 public interface IServerListener {
   /**
-   * A server or module has been changed as specified in the event.
+   * A server has been changed as specified in the event.
    * 
    * @param event a server event that contains information on the change
    */
-  public void serverChanged(ServerEvent event);
+  public void serverChanged(IServer server);
 }

@@ -41,6 +41,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -159,17 +160,12 @@ public class ServerLocationWizardPage extends WizardPage {
 
       @Override
       public void widgetSelected(SelectionEvent e) {
-        // We need those variables - in other case we would get an IllegalAccessException
-        final String serverUrl = getServerUrl();
-        final String username = getUsername();
-        final String password = getPassword();
         try {
-          ServerConnectionTestJob testJob = new ServerConnectionTestJob(username, password, serverUrl);
+          ServerConnectionTestJob testJob = new ServerConnectionTestJob(getServer());
           getWizard().getContainer().run(true, true, testJob);
           status = testJob.getStatus();
         } catch (InvocationTargetException | InterruptedException e1) {
-          SonarLintCorePlugin.getDefault().error(e1.getMessage(), e1);
-          status = new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error);
+          status = new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error, e1);
         } catch (OperationCanceledException e1) {
           status = Status.CANCEL_STATUS;
         }
@@ -239,6 +235,10 @@ public class ServerLocationWizardPage extends WizardPage {
 
   public String getServerName() {
     return StringUtils.defaultIfBlank(serverNameText.getText(), getServerId());
+  }
+
+  public IServer getServer() {
+    return new Server(getServerId(), getServerName(), getServerUrl(), getUsername(), getPassword());
   }
 
 }

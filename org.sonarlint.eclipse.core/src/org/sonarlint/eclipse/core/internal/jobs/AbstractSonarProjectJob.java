@@ -40,7 +40,7 @@ public abstract class AbstractSonarProjectJob extends WorkspaceJob {
 
   @Override
   public final IStatus runInWorkspace(final IProgressMonitor monitor) {
-    SonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getSonarLintClientFacade();
+    SonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade();
     return run(facadeToUse, monitor);
   }
 

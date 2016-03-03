@@ -14,11 +14,11 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.server.DeleteServerDialog;
 
-public class GlobalDeleteAction extends SelectionProviderAction {
+public class ServerDeleteAction extends SelectionProviderAction {
   private List<IServer> servers;
   private Shell shell;
 
-  public GlobalDeleteAction(Shell shell, ISelectionProvider selectionProvider) {
+  public ServerDeleteAction(Shell shell, ISelectionProvider selectionProvider) {
     super(selectionProvider, Messages.actionDelete);
     this.shell = shell;
     ISharedImages sharedImages = PlatformUI.getWorkbench().getSharedImages();

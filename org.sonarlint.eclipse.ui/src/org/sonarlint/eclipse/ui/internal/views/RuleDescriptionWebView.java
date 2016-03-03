@@ -52,7 +52,7 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
   protected void open(IMarker element) {
     try {
       String ruleName = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR).toString();
-      String htmlDescription = SonarLintCorePlugin.getDefault().getSonarLintClientFacade()
+      String htmlDescription = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade()
         .getHtmlRuleDescription(element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR).toString());
 
       super.showHtml("<!doctype html><html><head>" + CSS + "</head><body><h1><big>" + ruleName + "</big></h1><div class=\"rule-desc\">" + htmlDescription + "</div></body></html>");

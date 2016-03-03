@@ -1,6 +1,16 @@
 package org.sonarlint.eclipse.core.internal.server;
 
+import org.eclipse.core.runtime.IStatus;
+
 public interface IServer {
+
+  enum State {
+    STOPPED,
+    STARTING,
+    SYNCING,
+    STARTED_NOT_SYNCED,
+    STARTED_SYNCED
+  }
 
   /**
    * Returns the displayable name for this server.
@@ -40,6 +50,41 @@ public interface IServer {
 
   String getPassword();
 
-  String getSyncState();
+  /**
+   * Only if {@link #getState()} returns {@link State#STARTED_SYNCED}
+   */
+  String getSyncDate();
+
+  /**
+   * Only if {@link #getState()} returns {@link State#STARTED_SYNCED}
+   */
+  String getServerVersion();
+
+  State getState();
+
+  void sync();
+
+  IStatus testConnection();
+
+  /**
+   * Adds the given server state listener to this server.
+   * Once registered, a listener starts receiving notification of 
+   * state changes to this server. The listener continues to receive
+   * notifications until it is removed.
+   * Has no effect if an identical listener is already registered.
+   *
+   * @param listener the server listener
+   * @see #removeServerListener(IServerListener)
+   */
+  public void addServerListener(IServerListener listener);
+
+  /**
+   * Removes the given server state listener from this server. Has no
+   * effect if the listener is not registered.
+   * 
+   * @param listener the listener
+   * @see #addServerListener(IServerListener)
+   */
+  public void removeServerListener(IServerListener listener);
 
 }
