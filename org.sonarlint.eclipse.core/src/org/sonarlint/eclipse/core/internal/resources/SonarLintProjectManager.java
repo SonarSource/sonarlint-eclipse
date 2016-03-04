@@ -32,6 +32,8 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 public class SonarLintProjectManager {
 
   private static final String P_EXTRA_PROPS = "extraProperties";
+  private static final String P_SERVER_ID = "serverId";
+  private static final String P_MODULE_KEY = "moduleKey";
 
   public SonarLintProject readSonarConfiguration(IProject project) {
     IScopeContext projectScope = new ProjectScope(project);
@@ -55,6 +57,8 @@ public class SonarLintProjectManager {
       }
     }
     sonarProject.setExtraProperties(sonarProperties);
+    sonarProject.setModuleKey(projectNode.get(P_MODULE_KEY, ""));
+    sonarProject.setServerId(projectNode.get(P_SERVER_ID, ""));
     return sonarProject;
   }
 
@@ -77,6 +81,16 @@ public class SonarLintProjectManager {
       projectNode.put(P_EXTRA_PROPS, props);
     } else {
       projectNode.remove(P_EXTRA_PROPS);
+    }
+    if (StringUtils.isNotBlank(configuration.getModuleKey())) {
+      projectNode.put(P_MODULE_KEY, configuration.getModuleKey());
+    } else {
+      projectNode.remove(P_MODULE_KEY);
+    }
+    if (StringUtils.isNotBlank(configuration.getServerId())) {
+      projectNode.put(P_SERVER_ID, configuration.getServerId());
+    } else {
+      projectNode.remove(P_SERVER_ID);
     }
     try {
       projectNode.flush();

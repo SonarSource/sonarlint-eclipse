@@ -21,13 +21,13 @@ package org.sonarlint.eclipse.ui.internal.properties;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
@@ -39,9 +39,13 @@ import org.sonarlint.eclipse.ui.internal.Messages;
  */
 public class SonarProjectPropertyPage extends PropertyPage {
 
+  private Button enabledBtn;
+  private Text serverIdField;
+  private Text moduleKeyField;
+
   public SonarProjectPropertyPage() {
     setTitle(Messages.SonarProjectPropertyPage_title);
-    noDefaultAndApplyButton();
+    noDefaultButton();
   }
 
   @Override
@@ -51,9 +55,6 @@ public class SonarProjectPropertyPage extends PropertyPage {
     }
 
     final SonarLintProject sonarProject = SonarLintProject.getInstance(getProject());
-    if (sonarProject == null) {
-      return new Composite(parent, SWT.NULL);
-    }
 
     Composite container = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout();
@@ -62,17 +63,37 @@ public class SonarProjectPropertyPage extends PropertyPage {
     layout.numColumns = 2;
     layout.verticalSpacing = 9;
 
-    final Button enabledBtn = new Button(container, SWT.CHECK);
+    enabledBtn = new Button(container, SWT.CHECK);
     enabledBtn.setText("Run SonarLint automatically");
     enabledBtn.setSelection(sonarProject.isBuilderEnabled());
-    enabledBtn.addSelectionListener(new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        sonarProject.setBuilderEnabled(enabledBtn.getSelection());
-      }
-    });
+    GridData layoutData = new GridData();
+    layoutData.horizontalSpan = 2;
+    enabledBtn.setLayoutData(layoutData);
+
+    serverIdField = addText(Messages.SonarProjectPropertyBlock_label_serverId, sonarProject.getServerId(), container);
+    moduleKeyField = addText(Messages.SonarProjectPropertyBlock_label_key, sonarProject.getModuleKey(), container);
 
     return container;
+  }
+
+  private static Text addText(String label, String text, Composite container) {
+    Label labelField = new Label(container, SWT.NONE);
+    labelField.setText(label);
+
+    Text textField = new Text(container, SWT.SINGLE | SWT.BORDER);
+    textField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    textField.setText(text);
+    return textField;
+  }
+
+  @Override
+  public boolean performOk() {
+    final SonarLintProject sonarProject = SonarLintProject.getInstance(getProject());
+    sonarProject.setBuilderEnabled(enabledBtn.getSelection());
+    sonarProject.setServerId(serverIdField.getText());
+    sonarProject.setModuleKey(moduleKeyField.getText());
+    sonarProject.save();
+    return super.performOk();
   }
 
   private IProject getProject() {

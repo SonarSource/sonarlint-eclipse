@@ -26,6 +26,9 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 /**
@@ -52,8 +55,19 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
   protected void open(IMarker element) {
     try {
       String ruleName = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR).toString();
-      String htmlDescription = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade()
-        .getHtmlRuleDescription(element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR).toString());
+      String ruleKey = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR).toString();
+      SonarLintProject p = SonarLintProject.getInstance(element.getResource());
+      String htmlDescription;
+      if (StringUtils.isBlank(p.getServerId())) {
+        htmlDescription = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade().getHtmlRuleDescription(ruleKey);
+      } else {
+        IServer server = SonarLintCorePlugin.getDefault().findServer(p.getServerId());
+        if (server == null) {
+          super.showMessage("Project " + p.getProject().getName() + " is linked to an unknown server: " + p.getServerId() + ". Please update configuration.");
+          return;
+        }
+        htmlDescription = server.getHtmlRuleDescription(ruleKey);
+      }
 
       super.showHtml("<!doctype html><html><head>" + CSS + "</head><body><h1><big>" + ruleName + "</big></h1><div class=\"rule-desc\">" + htmlDescription + "</div></body></html>");
     } catch (CoreException e) {

@@ -120,4 +120,16 @@ public class StringUtils {
     return true;
   }
 
+  public static String trimToEmpty(final String str) {
+    return str == null ? EMPTY : str.trim();
+  }
+
+  public static String trimToNull(final String str) {
+    final String ts = trim(str);
+    return isEmpty(ts) ? null : ts;
+  }
+
+  public static String trim(final String str) {
+    return str == null ? null : str.trim();
+  }
 }

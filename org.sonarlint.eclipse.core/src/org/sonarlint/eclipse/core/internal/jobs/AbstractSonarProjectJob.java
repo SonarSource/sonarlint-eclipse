@@ -24,7 +24,6 @@ import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 
 public abstract class AbstractSonarProjectJob extends WorkspaceJob {
@@ -40,14 +39,13 @@ public abstract class AbstractSonarProjectJob extends WorkspaceJob {
 
   @Override
   public final IStatus runInWorkspace(final IProgressMonitor monitor) {
-    SonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade();
-    return run(facadeToUse, monitor);
+    return doRun(monitor);
   }
 
   protected SonarLintProject getSonarProject() {
     return sonarProject;
   }
 
-  protected abstract IStatus run(SonarLintClientFacade runner, final IProgressMonitor monitor);
+  protected abstract IStatus doRun(final IProgressMonitor monitor);
 
 }

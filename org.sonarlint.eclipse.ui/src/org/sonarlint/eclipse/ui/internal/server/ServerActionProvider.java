@@ -21,7 +21,6 @@ import org.eclipse.ui.navigator.ICommonViewerSite;
 import org.eclipse.ui.navigator.ICommonViewerWorkbenchSite;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
-import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.actions.NewServerWizardAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ServerDeleteAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ServerEditAction;
@@ -64,7 +63,7 @@ public class ServerActionProvider extends CommonActionProvider {
         if (!(data instanceof IServer))
           return;
         IServer server = (IServer) data;
-        SonarLintUiPlugin.getDefault().editServer(server);
+        ServerEditAction.openEditWizard(server);
       }
     });
   }

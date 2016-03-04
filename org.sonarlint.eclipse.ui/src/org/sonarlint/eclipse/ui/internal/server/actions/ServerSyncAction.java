@@ -74,7 +74,7 @@ public class ServerSyncAction extends SelectionProviderAction {
           @Override
           protected IStatus run(IProgressMonitor monitor) {
             try {
-              server.sync();
+              server.sync(monitor);
               return Status.OK_STATUS;
             } catch (Exception e) {
               return new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, "Unable to sync server " + server.getName(), e);

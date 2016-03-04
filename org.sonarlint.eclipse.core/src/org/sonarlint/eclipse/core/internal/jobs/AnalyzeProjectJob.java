@@ -63,10 +63,12 @@ import org.sonarlint.eclipse.core.internal.markers.SonarMarker;
 import org.sonarlint.eclipse.core.internal.markers.SonarMarker.Range;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
+import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.tracking.Input;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.tracking.Tracker;
 import org.sonarlint.eclipse.core.internal.tracking.Tracking;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.analysis.Issue;
@@ -94,6 +96,29 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       return "SonarLint analysis of file " + request.getFiles().iterator().next().getProjectRelativePath().toString() + " (Project " + request.getProject().getName() + ")";
     }
     return "SonarLint analysis of project " + request.getProject().getName() + " (" + request.getFiles().size() + " files)";
+  }
+
+  private final class SonarLintIssueListener implements IssueListener {
+    private final Map<IResource, List<Issue>> issuesPerResource;
+
+    private SonarLintIssueListener(Map<IResource, List<Issue>> issuesPerResource) {
+      this.issuesPerResource = issuesPerResource;
+    }
+
+    @Override
+    public void handle(Issue issue) {
+      IResource r;
+      ClientInputFile inputFile = issue.getInputFile();
+      if (inputFile == null) {
+        r = request.getProject();
+      } else {
+        r = inputFile.getClientObject();
+      }
+      if (!issuesPerResource.containsKey(r)) {
+        issuesPerResource.put(r, new ArrayList<Issue>());
+      }
+      issuesPerResource.get(r).add(issue);
+    }
   }
 
   private final class EclipseInputFile implements ClientInputFile {
@@ -169,13 +194,14 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   @Override
-  protected IStatus run(SonarLintClientFacade sonarlint, final IProgressMonitor monitor) {
+  protected IStatus doRun(final IProgressMonitor monitor) {
 
     // Analyze
     Collection<File> tmpToDelete = new ArrayList<>();
     try {
       // Configure
       IProject project = request.getProject();
+      SonarLintProject sonarProject = SonarLintProject.getInstance(project);
       IPath projectSpecificWorkDir = project.getWorkingLocation(SonarLintCorePlugin.PLUGIN_ID);
       Map<String, String> mergedExtraProps = new LinkedHashMap<>();
       final List<IFile> filesToAnalyze = new ArrayList<>(request.getFiles().size());
@@ -199,9 +225,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
 
       if (!inputFiles.isEmpty()) {
-        AnalysisConfiguration config = new AnalysisConfiguration(null, project.getLocation().toFile().toPath(), projectSpecificWorkDir.toFile().toPath(), inputFiles,
+        AnalysisConfiguration config = new AnalysisConfiguration(StringUtils.trimToNull(sonarProject.getModuleKey()), project.getLocation().toFile().toPath(),
+          projectSpecificWorkDir.toFile().toPath(), inputFiles,
           mergedExtraProps);
-        Map<IResource, List<Issue>> issuesPerResource = run(config, sonarlint, monitor);
+        Map<IResource, List<Issue>> issuesPerResource = run(config, sonarProject, monitor);
         updateMarkers(issuesPerResource);
       }
 
@@ -329,30 +356,24 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  public Map<IResource, List<Issue>> run(final AnalysisConfiguration config, final SonarLintClientFacade sonarlint, final IProgressMonitor monitor) {
+  public Map<IResource, List<Issue>> run(final AnalysisConfiguration config, final SonarLintProject project, final IProgressMonitor monitor) {
     SonarLintCorePlugin.getDefault().debug("Start analysis with configuration:\n" + config.toString());
     Thread.UncaughtExceptionHandler h = exceptionHandler();
     final Map<IResource, List<Issue>> issuesPerResource = new HashMap<>();
     Thread t = new Thread("SonarLint analysis") {
       @Override
       public void run() {
-        sonarlint.startAnalysis(config, new IssueListener() {
-
-          @Override
-          public void handle(Issue issue) {
-            IResource r;
-            if (issue.getInputFile() == null) {
-              r = request.getProject();
-            } else {
-              r = issue.getInputFile().getClientObject();
-            }
-            if (!issuesPerResource.containsKey(r)) {
-              issuesPerResource.put(r, new ArrayList<Issue>());
-            }
-            issuesPerResource.get(r).add(issue);
+        if (StringUtils.isNotBlank(project.getServerId())) {
+          IServer server = SonarLintCorePlugin.getDefault().findServer(project.getServerId());
+          if (server == null) {
+            throw new IllegalStateException(
+              "Project " + project.getProject().getName() + " is linked to an unknow server: " + project.getServerId() + ". Please update project configuration.");
           }
-
-        });
+          server.startAnalysis(config, new SonarLintIssueListener(issuesPerResource));
+        } else {
+          SonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade();
+          facadeToUse.startAnalysis(config, new SonarLintIssueListener(issuesPerResource));
+        }
       }
     };
     t.setDaemon(true);

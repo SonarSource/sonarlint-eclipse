@@ -98,4 +98,10 @@ public class SonarLintClientFacade {
     return client.validateCredentials(config);
   }
 
+  public void setVerbose(boolean verbose) {
+    if (client != null) {
+      client.setVerbose(verbose);
+    }
+  }
+
 }

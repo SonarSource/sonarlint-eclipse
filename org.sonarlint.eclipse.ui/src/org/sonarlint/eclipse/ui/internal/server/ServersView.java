@@ -165,11 +165,6 @@ public class ServersView extends CommonNavigator {
     Job job = new Job(Messages.jobInitializingServersView) {
       @Override
       public IStatus run(IProgressMonitor monitor) {
-        IServer[] servers = SonarLintCorePlugin.getDefault().getServers();
-        int size = servers.length;
-        for (int i = 0; i < size; i++) {
-          // TODO Load associated projects? ((Server) servers[i]).getAllModules().iterator();
-        }
         deferredInitialize();
         return Status.OK_STATUS;
       }

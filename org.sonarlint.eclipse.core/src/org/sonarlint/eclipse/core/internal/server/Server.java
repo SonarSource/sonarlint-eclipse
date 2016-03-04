@@ -3,12 +3,16 @@ package org.sonarlint.eclipse.core.internal.server;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintLogOutput;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.SonarLintClientImpl;
 import org.sonarsource.sonarlint.core.client.api.GlobalConfiguration;
@@ -17,6 +21,7 @@ import org.sonarsource.sonarlint.core.client.api.SonarLintClient;
 import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.GlobalSyncStatus;
+import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
 
@@ -122,6 +127,7 @@ public class Server implements IServer {
     SonarLintCorePlugin.getDefault().removeServer(this);
   }
 
+  @Override
   public synchronized void startAnalysis(AnalysisConfiguration config, IssueListener issueListener) {
     if (!isStarted()) {
       tryStart();
@@ -139,12 +145,13 @@ public class Server implements IServer {
       client.start();
       syncStatus = client.getSyncStatus();
       changeState(syncStatus == null ? State.STARTED_NOT_SYNCED : State.STARTED_SYNCED);
-    } catch (Throwable e) {
+    } catch (Exception e) {
       SonarLintCorePlugin.getDefault().error("Unable to start SonarLint for server " + getName(), e);
       changeState(State.STOPPED);
     }
   }
 
+  @Override
   public synchronized String getHtmlRuleDescription(String ruleKey) {
     if (!isStarted()) {
       tryStart();
@@ -164,13 +171,45 @@ public class Server implements IServer {
   }
 
   @Override
-  public synchronized void sync() {
+  public synchronized void sync(IProgressMonitor monitor) {
     if (isStarted()) {
       stop();
     }
     changeState(State.SYNCING);
     try {
+      List<SonarLintProject> projectsToSync = new ArrayList<>();
+      for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+        if (project.isAccessible()) {
+          SonarLintProject sonarProject = SonarLintProject.getInstance(project);
+          if (sonarProject.getServerId().equals(id)) {
+            projectsToSync.add(sonarProject);
+          }
+        }
+      }
+      monitor.beginTask("Sync server and all associated projects", projectsToSync.size() + 1);
       client.sync(getConfig());
+      monitor.worked(1);
+      for (SonarLintProject projectToSync : projectsToSync) {
+        if (monitor.isCanceled()) {
+          return;
+        }
+        client.syncModule(getConfig(), projectToSync.getModuleKey());
+        monitor.worked(1);
+      }
+      monitor.done();
+    } finally {
+      tryStart();
+    }
+  }
+
+  @Override
+  public synchronized void syncProject(String moduleKey) {
+    if (isStarted()) {
+      stop();
+    }
+    changeState(State.SYNCING);
+    try {
+      client.syncModule(getConfig(), moduleKey);
     } finally {
       tryStart();
     }
@@ -204,6 +243,17 @@ public class Server implements IServer {
   }
 
   @Override
+  public List<RemoteModule> findModules(String keyOrPartialName) {
+    if (!isStarted()) {
+      tryStart();
+    }
+    if (!isStarted()) {
+      return Collections.emptyList();
+    }
+    return client.searchModule(getConfig(), keyOrPartialName);
+  }
+
+  @Override
   public void addServerListener(IServerListener listener) {
     listeners.add(listener);
   }
@@ -211,6 +261,11 @@ public class Server implements IServer {
   @Override
   public void removeServerListener(IServerListener listener) {
     listeners.remove(listener);
+  }
+
+  @Override
+  public void setVerbose(boolean verbose) {
+    client.setVerbose(verbose);
   }
 
 }

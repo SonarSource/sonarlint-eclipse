@@ -37,6 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
@@ -116,7 +117,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     when(inputFile.getClientObject()).thenReturn(file);
     when(issue1.getInputFile()).thenReturn(inputFile);
     result.put(file, Arrays.asList(issue1));
-    doReturn(result).when(job).run(any(AnalysisConfiguration.class), any(SonarLintClientFacade.class), eq(MONITOR));
+    doReturn(result).when(job).run(any(AnalysisConfiguration.class), any(SonarLintProject.class), eq(MONITOR));
     job.runInWorkspace(MONITOR);
 
     IMarker[] markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
@@ -147,7 +148,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     when(inputFile.getClientObject()).thenReturn(file);
     when(issue1.getInputFile()).thenReturn(inputFile);
     result.put(file, Arrays.asList(issue1));
-    doReturn(result).when(job).run(any(AnalysisConfiguration.class), any(SonarLintClientFacade.class), eq(MONITOR));
+    doReturn(result).when(job).run(any(AnalysisConfiguration.class), any(SonarLintProject.class), eq(MONITOR));
     job.runInWorkspace(MONITOR);
     IMarker[] markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertThat(markers).hasSize(1);
@@ -186,7 +187,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     when(issue1Updated.getEndLineOffset()).thenReturn(14);
     when(issue1Updated.getInputFile()).thenReturn(inputFile);
     result.put(file, Arrays.asList(issue1Updated));
-    doReturn(result).when(job).run(any(AnalysisConfiguration.class), any(SonarLintClientFacade.class), eq(MONITOR));
+    doReturn(result).when(job).run(any(AnalysisConfiguration.class), any(SonarLintProject.class), eq(MONITOR));
     job.runInWorkspace(MONITOR);
 
     markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);

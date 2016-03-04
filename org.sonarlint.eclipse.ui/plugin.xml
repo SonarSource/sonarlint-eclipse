@@ -128,38 +128,27 @@
 	            </instanceof>
 	         </or>
 	      </possibleChildren>
-		  <actionProvider
-		            class="org.sonarlint.eclipse.ui.internal.server.ServerActionProvider"
-		            id="org.sonarlint.eclipse.ui.ServersView.ServerActionProvider"
-		            priority="highest">
-				<enablement>
-	             <or>
-	                <instanceof
-	                      value="org.sonarlint.eclipse.core.internal.server.IServer">
-	                </instanceof>
-	                <instanceof
-	                      value="org.eclipse.core.resources.IWorkspaceRoot">
-	                </instanceof>
-	               <adapt
-	                     type="java.util.Collection">
-	                  <count
-	                        value="0">
-	                  </count>
-	               </adapt>
-	             </or>
-	            </enablement>
-		  </actionProvider>      
-	      <!--dropAssistant
-	             class="org.eclipse.wst.server.ui.internal.cnf.ServersViewDropAdapterAssistant"
-	             id="org.eclipse.wst.server.ui.ServersView.DropAssistant">
-	          <possibleDropTargets>
-	             <or>
-	                <instanceof
-	                      value="java.lang.Object">
-	                </instanceof>
-	             </or>
-	          </possibleDropTargets>
-	       </dropAssistant-->
+			  <actionProvider
+			            class="org.sonarlint.eclipse.ui.internal.server.ServerActionProvider"
+			            id="org.sonarlint.eclipse.ui.ServersView.ServerActionProvider"
+			            priority="highest">
+					<enablement>
+		             <or>
+		                <instanceof
+		                      value="org.sonarlint.eclipse.core.internal.server.IServer">
+		                </instanceof>
+		                <instanceof
+		                      value="org.eclipse.core.resources.IWorkspaceRoot">
+		                </instanceof>
+		               <adapt
+		                     type="java.util.Collection">
+		                  <count
+		                        value="0">
+		                  </count>
+		               </adapt>
+		             </or>
+		            </enablement>
+			  </actionProvider>      
 	   </navigatorContent>
 	</extension>
 	
@@ -380,15 +369,26 @@
 	         <with variable="activeMenuSelection">
 	            <iterate ifEmpty="false">
 	              <or>
-				    <adapt type="org.eclipse.core.resources.IFile"/>
-				    <adapt type="org.eclipse.core.resources.IResource">
-				      <instanceof value="org.eclipse.core.resources.IFile"/>
-				    </adapt>
-				  </or>
+							    <adapt type="org.eclipse.core.resources.IFile"/>
+							    <adapt type="org.eclipse.core.resources.IResource">
+				      			<instanceof value="org.eclipse.core.resources.IFile"/>
+				    			</adapt>
+				  			</or>
 	            </iterate>
 	         </with>
 	      </visibleWhen>
 	   </command>
+	   <command
+             commandId="org.sonarlint.eclipse.ui.internal.command.LinkProjectsCommand"
+             style="push">
+          <visibleWhen>
+              <with variable="activeMenuSelection">
+                 <iterate ifEmpty="false">
+                 	 <adapt type="org.eclipse.core.resources.IProject"/>
+                 </iterate>
+             </with>
+          </visibleWhen>
+       </command>
 	</menuContribution>
   </extension>
 
@@ -410,6 +410,12 @@
           name="Analyze"
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
+    <command
+          description="Link with a remote SonarQube server"
+          id="org.sonarlint.eclipse.ui.internal.command.LinkProjectsCommand"
+          name="Link with remote SonarQube server..."
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
   </extension>
 
   <extension point="org.eclipse.ui.handlers">
@@ -421,12 +427,19 @@
           class="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand">
     </handler>
+    <handler
+          class="org.sonarlint.eclipse.ui.internal.command.LinkProjectsCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.LinkProjectsCommand">
+    </handler>
   </extension>
 
   <extension point="org.eclipse.ui.commandImages">
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
       icon="icons/onde-sonar-16-execute.png" />
+    <image
+      commandId="org.sonarlint.eclipse.ui.internal.command.LinkProjectsCommand"
+      icon="icons/synced.gif" />
   </extension>
 
    <extension

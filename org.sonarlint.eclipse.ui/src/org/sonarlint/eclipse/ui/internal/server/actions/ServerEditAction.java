@@ -9,11 +9,9 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.SelectionProviderAction;
 import org.sonarlint.eclipse.core.internal.server.IServer;
@@ -22,14 +20,9 @@ import org.sonarlint.eclipse.ui.internal.server.wizard.EditServerLocationWizard;
 
 public class ServerEditAction extends SelectionProviderAction {
   private List<IServer> servers;
-  private Shell shell;
 
   public ServerEditAction(Shell shell, ISelectionProvider selectionProvider) {
     super(selectionProvider, Messages.actionEdit);
-    this.shell = shell;
-    ISharedImages sharedImages = PlatformUI.getWorkbench().getSharedImages();
-    // setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
-    // setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_DELETE_DISABLED));
     setActionDefinitionId(IWorkbenchCommandConstants.FILE_RENAME);
   }
 
@@ -73,21 +66,25 @@ public class ServerEditAction extends SelectionProviderAction {
     }
 
     if (servers != null || !servers.isEmpty()) {
-      IWorkbench workbench = PlatformUI.getWorkbench();
-      IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
-      ISelection selection = workbenchWindow.getSelectionService().getSelection();
 
-      IStructuredSelection selectionToPass;
-      if (selection instanceof IStructuredSelection)
-        selectionToPass = (IStructuredSelection) selection;
-      else
-        selectionToPass = StructuredSelection.EMPTY;
-
-      IWorkbenchWizard wizard = new EditServerLocationWizard(servers.get(0));
-      wizard.init(workbench, selectionToPass);
-      WizardDialog dialog = new WizardDialog(workbench.getActiveWorkbenchWindow().getShell(), wizard);
-      dialog.open();
+      openEditWizard(servers.get(0));
     }
+  }
+
+  public static void openEditWizard(IServer server) {
+    IWorkbench workbench = PlatformUI.getWorkbench();
+    IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
+    ISelection selection = workbenchWindow.getSelectionService().getSelection();
+
+    IStructuredSelection selectionToPass;
+    if (selection instanceof IStructuredSelection)
+      selectionToPass = (IStructuredSelection) selection;
+    else
+      selectionToPass = StructuredSelection.EMPTY;
+    EditServerLocationWizard wizard = new EditServerLocationWizard(server);
+    wizard.init(workbench, selectionToPass);
+    WizardDialog dialog = new WizardDialog(workbench.getActiveWorkbenchWindow().getShell(), wizard);
+    dialog.open();
   }
 
 }

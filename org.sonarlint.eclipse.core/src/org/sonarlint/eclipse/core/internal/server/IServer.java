@@ -1,6 +1,11 @@
 package org.sonarlint.eclipse.core.internal.server;
 
+import java.util.List;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
+import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 
 public interface IServer {
 
@@ -62,7 +67,7 @@ public interface IServer {
 
   State getState();
 
-  void sync();
+  void sync(IProgressMonitor monitor);
 
   IStatus testConnection();
 
@@ -86,5 +91,15 @@ public interface IServer {
    * @see #addServerListener(IServerListener)
    */
   public void removeServerListener(IServerListener listener);
+
+  List<RemoteModule> findModules(String keyOrPartialName);
+
+  void startAnalysis(AnalysisConfiguration config, IssueListener issueListener);
+
+  String getHtmlRuleDescription(String ruleKey);
+
+  void syncProject(String moduleKey);
+
+  void setVerbose(boolean verbose);
 
 }

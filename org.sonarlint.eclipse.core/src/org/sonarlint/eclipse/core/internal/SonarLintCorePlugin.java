@@ -72,9 +72,9 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   public void error(String msg, Throwable t) {
     for (LogListener listener : logListeners) {
       listener.error(msg);
-      StringWriter errors = new StringWriter();
-      t.printStackTrace(new PrintWriter(errors));
-      listener.error(errors.toString());
+      StringWriter stack = new StringWriter();
+      t.printStackTrace(new PrintWriter(stack));
+      listener.error(stack.toString());
     }
   }
 
@@ -87,6 +87,15 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   public void debug(String msg) {
     for (LogListener listener : logListeners) {
       listener.debug(msg);
+    }
+  }
+
+  public void debug(String msg, Throwable t) {
+    for (LogListener listener : logListeners) {
+      listener.debug(msg);
+      StringWriter stack = new StringWriter();
+      t.printStackTrace(new PrintWriter(stack));
+      listener.debug(stack.toString());
     }
   }
 
@@ -117,6 +126,11 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   public void setDebugEnabled(boolean debugEnabled) {
     this.debugEnabled = debugEnabled;
+    getDefaultSonarLintClientFacade().setVerbose(debugEnabled);
+    for (IServer server : getServers()) {
+      server.setVerbose(debugEnabled);
+    }
+
   }
 
   public SonarLintClientFacade getDefaultSonarLintClientFacade() {
@@ -130,7 +144,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     return ServersManager.getInstance();
   }
 
-  public IServer[] getServers() {
+  public List<IServer> getServers() {
     return getServerManager().getServers();
   }
 

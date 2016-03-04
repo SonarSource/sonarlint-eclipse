@@ -33,6 +33,8 @@ public class SonarLintProject {
 
   private final IProject project;
   private List<SonarLintProperty> extraProperties = new ArrayList<>();
+  private String moduleKey;
+  private String serverId;
 
   public SonarLintProject(IProject project) {
     this.project = project;
@@ -123,6 +125,27 @@ public class SonarLintProject {
     } catch (CoreException e) {
       throw new IllegalStateException("Unable to add builder", e);
     }
+  }
+
+  public String getModuleKey() {
+    return moduleKey;
+  }
+
+  public String getServerId() {
+    return serverId;
+  }
+
+  public void setModuleKey(String moduleKey) {
+    this.moduleKey = moduleKey;
+  }
+
+  public void setServerId(String serverId) {
+    this.serverId = serverId;
+  }
+
+  public void sync() {
+    SonarLintCorePlugin.getDefault().findServer(serverId).syncProject(moduleKey);
+
   }
 
 }

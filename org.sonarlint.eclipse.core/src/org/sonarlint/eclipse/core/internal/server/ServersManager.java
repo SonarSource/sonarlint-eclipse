@@ -2,6 +2,7 @@ package org.sonarlint.eclipse.core.internal.server;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
@@ -209,8 +210,9 @@ public class ServersManager {
   }
 
   public void removeServer(IServer server) {
-    if (!initialized)
+    if (!initialized) {
       init();
+    }
 
     if (servers.contains(server)) {
       deregisterServer(server);
@@ -223,14 +225,12 @@ public class ServersManager {
    *
    * @return an array containing all servers
    */
-  public IServer[] getServers() {
-    if (!initialized)
+  public List<IServer> getServers() {
+    if (!initialized) {
       init();
+    }
 
-    IServer[] servers2 = new IServer[servers.size()];
-    servers.toArray(servers2);
-
-    return servers2;
+    return Collections.unmodifiableList(servers);
   }
 
   /**

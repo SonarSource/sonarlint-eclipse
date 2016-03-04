@@ -1,7 +1,5 @@
 package org.sonarlint.eclipse.ui.internal.server;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
@@ -11,15 +9,7 @@ public class ServerContentProvider extends BaseContentProvider implements ITreeC
 
   @Override
   public Object[] getElements(Object element) {
-    List<IServer> list = new ArrayList<IServer>();
-    IServer[] servers = SonarLintCorePlugin.getDefault().getServers();
-    if (servers != null) {
-      int size = servers.length;
-      for (int i = 0; i < size; i++) {
-        list.add(servers[i]);
-      }
-    }
-    return list.toArray();
+    return SonarLintCorePlugin.getDefault().getServers().toArray();
   }
 
   @Override
