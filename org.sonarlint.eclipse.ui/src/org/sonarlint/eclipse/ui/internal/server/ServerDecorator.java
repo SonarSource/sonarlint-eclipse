@@ -16,7 +16,7 @@ public class ServerDecorator extends LabelProvider implements ILightweightLabelD
 
       switch (server.getState()) {
         case STOPPED:
-          addSuffix(decoration, "Stopped");
+          addSuffix(decoration, "Unknown");
           break;
         case STARTED_NOT_SYNCED:
           addSuffix(decoration, "Not synced");
@@ -25,7 +25,7 @@ public class ServerDecorator extends LabelProvider implements ILightweightLabelD
           addSuffix(decoration, "Version: " + server.getServerVersion() + ", Last sync: " + server.getSyncDate());
           break;
         case STARTING:
-          addSuffix(decoration, "Starting...");
+          addSuffix(decoration, "Loading...");
           break;
         case SYNCING:
           addSuffix(decoration, "Synchonizing...");

@@ -1,6 +1,8 @@
 package org.sonarlint.eclipse.ui.internal.server;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -96,23 +98,24 @@ public class ServerActionProvider extends CommonActionProvider {
       selection = (IStructuredSelection) wsSite.getSelectionProvider().getSelection();
     }
 
-    IServer server = null;
+    List<IServer> servers = new ArrayList<>();
     if (selection != null && !selection.isEmpty()) {
       Iterator iterator = selection.iterator();
-      Object obj = iterator.next();
-      if (obj instanceof IServer) {
-        server = (IServer) obj;
-      }
-      if (iterator.hasNext()) {
-        server = null;
+      while (iterator.hasNext()) {
+        Object obj = iterator.next();
+        if (obj instanceof IServer) {
+          servers.add((IServer) obj);
+        }
       }
     }
 
     addTopSection(menu);
     menu.add(new Separator());
 
-    if (server != null) {
+    if (servers.size() == 1) {
       menu.add(editAction);
+    }
+    if (!servers.isEmpty()) {
       menu.add(deleteAction);
       menu.add(syncAction);
     }

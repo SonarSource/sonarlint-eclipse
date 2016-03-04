@@ -93,6 +93,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
     sonarProject.setServerId(serverIdField.getText());
     sonarProject.setModuleKey(moduleKeyField.getText());
     sonarProject.save();
+    sonarProject.sync();
     return super.performOk();
   }
 

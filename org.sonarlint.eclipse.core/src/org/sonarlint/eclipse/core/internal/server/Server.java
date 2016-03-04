@@ -1,10 +1,17 @@
 package org.sonarlint.eclipse.core.internal.server;
 
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.Proxy;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.eclipse.core.net.proxy.IProxyData;
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -23,6 +30,7 @@ import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.GlobalSyncStatus;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
+import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration.Builder;
 import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
 
 public class Server implements IServer {
@@ -164,7 +172,7 @@ public class Server implements IServer {
   }
 
   public synchronized void stop() {
-    if (client != null) {
+    if (client != null && isStarted()) {
       client.stop();
     }
     changeState(State.STOPPED);
@@ -234,12 +242,29 @@ public class Server implements IServer {
   }
 
   private ServerConfiguration getConfig() {
-    return ServerConfiguration.builder()
+    Builder builder = ServerConfiguration.builder()
       .url(getHost())
       .credentials(getUsername(), getPassword())
-      .userAgent("SonarLint Eclipse " + SonarLintCorePlugin.getDefault().getBundle().getVersion().toString())
-      // TODO proxy
-      .build();
+      .userAgent("SonarLint Eclipse " + SonarLintCorePlugin.getDefault().getBundle().getVersion().toString());
+
+    IProxyService proxyService = SonarLintCorePlugin.getDefault().getProxyService();
+    IProxyData[] proxyDataForHost;
+    try {
+      proxyDataForHost = proxyService.select(new URL(host).toURI());
+    } catch (MalformedURLException | URISyntaxException e) {
+      throw new IllegalStateException("Invalid URL for server " + id + ": " + host, e);
+    }
+
+    for (IProxyData data : proxyDataForHost) {
+      if (data.getHost() != null) {
+        builder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(data.getHost(), data.getPort())));
+        if (data.isRequiresAuthentication()) {
+          builder.proxyCredentials(data.getUserId(), data.getPassword());
+        }
+        break;
+      }
+    }
+    return builder.build();
   }
 
   @Override

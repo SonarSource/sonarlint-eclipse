@@ -23,9 +23,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
 import org.sonarlint.eclipse.core.AbstractPlugin;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintClientFacade;
@@ -46,9 +49,12 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   private final List<LogListener> logListeners = new ArrayList<>();
   private SonarLintClientFacade sonarlint;
   private boolean debugEnabled;
+  private final ServiceTracker proxyTracker;
 
   public SonarLintCorePlugin() {
     plugin = this;
+    proxyTracker = new ServiceTracker(FrameworkUtil.getBundle(this.getClass()).getBundleContext(), IProxyService.class.getName(), null);
+    proxyTracker.open();
   }
 
   public static SonarLintCorePlugin getDefault() {
@@ -117,6 +123,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     if (sonarlint != null) {
       sonarlint.stop();
     }
+    proxyTracker.close();
     super.stop(context);
   }
 
@@ -166,12 +173,9 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   public void addServer(IServer server) {
     getServerManager().addServer(server);
-
   }
 
-  public void testConnection(String serverUrl, String username, String password) {
-    // TODO Auto-generated method stub
-
+  public IProxyService getProxyService() {
+    return (IProxyService) proxyTracker.getService();
   }
-
 }
