@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Sonar Integration for Eclipse Tests
 Bundle-SymbolicName: org.sonarlint.eclipse.core.tests;singleton:=true
-Bundle-Version: 1.4.0.qualifier
+Bundle-Version: 2.0.0.qualifier
 Bundle-Vendor: SonarSource
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources,
