@@ -80,7 +80,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
     Label labelField = new Label(container, SWT.NONE);
     labelField.setText(label);
 
-    Text textField = new Text(container, SWT.SINGLE | SWT.BORDER);
+    Text textField = new Text(container, SWT.SINGLE | SWT.READ_ONLY);
     textField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     textField.setText(text);
     return textField;
@@ -90,10 +90,6 @@ public class SonarProjectPropertyPage extends PropertyPage {
   public boolean performOk() {
     final SonarLintProject sonarProject = SonarLintProject.getInstance(getProject());
     sonarProject.setBuilderEnabled(enabledBtn.getSelection());
-    sonarProject.setServerId(serverIdField.getText());
-    sonarProject.setModuleKey(moduleKeyField.getText());
-    sonarProject.save();
-    sonarProject.sync();
     return super.performOk();
   }
 

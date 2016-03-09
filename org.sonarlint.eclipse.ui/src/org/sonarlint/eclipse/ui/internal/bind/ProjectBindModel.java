@@ -21,6 +21,8 @@ package org.sonarlint.eclipse.ui.internal.bind;
 
 import org.eclipse.core.resources.IProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 /**
@@ -32,16 +34,16 @@ public class ProjectBindModel extends AbstractModelObject {
   public static final String PROPERTY_PROJECT_SONAR_FULLNAME = "sonarFullName";
 
   private final IProject project;
-  private String sonarProjectName;
   private String key;
   private String serverId;
+  private IServer server;
 
   public ProjectBindModel(IProject project) {
     this.project = project;
     SonarLintProject sonarProject = SonarLintProject.getInstance(project);
     this.key = sonarProject.getModuleKey();
     this.serverId = sonarProject.getServerId();
-    this.sonarProjectName = "<Searching name...>";
+    this.server = ServersManager.getInstance().getServer(this.serverId);
   }
 
   public IProject getProject() {
@@ -55,8 +57,10 @@ public class ProjectBindModel extends AbstractModelObject {
   public String getSonarFullName() {
     if (StringUtils.isBlank(key)) {
       return "<Type here to start searching for a remote SonarQube project...>";
+    } else if (server == null) {
+      return "<Bound to an unknown server: '" + this.serverId + "'>";
     } else {
-      return sonarProjectName + " on " + serverId + " (" + key + ")";
+      return "'" + key + "' on server '" + server.getName() + "'";
     }
   }
 
@@ -68,7 +72,7 @@ public class ProjectBindModel extends AbstractModelObject {
     String oldValue = getSonarFullName();
     this.key = key;
     this.serverId = serverId;
-    this.sonarProjectName = sonarProjectName;
+    this.server = ServersManager.getInstance().getServer(this.serverId);
     firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());
   }
 
@@ -76,7 +80,7 @@ public class ProjectBindModel extends AbstractModelObject {
     String oldValue = getSonarFullName();
     this.key = null;
     this.serverId = null;
-    this.sonarProjectName = null;
+    this.server = null;
     firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());
   }
 
@@ -84,7 +88,4 @@ public class ProjectBindModel extends AbstractModelObject {
     return serverId;
   }
 
-  public String getSonarProjectName() {
-    return sonarProjectName;
-  }
 }

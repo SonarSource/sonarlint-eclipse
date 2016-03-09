@@ -28,6 +28,7 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
@@ -52,6 +53,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration.Builder;
 import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
+import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class Server implements IServer, StateListener {
 
@@ -177,7 +179,7 @@ public class Server implements IServer, StateListener {
       }
     }
     monitor.beginTask("Sync server and all associated projects", projectsToSync.size() + 1);
-    client.sync(getConfig());
+    syncStatus = client.sync(getConfig());
     monitor.worked(1);
     for (SonarLintProject projectToSync : projectsToSync) {
       if (monitor.isCanceled()) {
@@ -251,8 +253,13 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public List<RemoteModule> findModules(String keyOrPartialName) {
-    return client.searchModule(keyOrPartialName);
+  public TextSearchIndex<RemoteModule> getModuleIndex() {
+    Map<String, RemoteModule> allModulesByKey = client.allModulesByKey();
+    TextSearchIndex<RemoteModule> index = new TextSearchIndex<>();
+    for (RemoteModule module : allModulesByKey.values()) {
+      index.index(module, module.getKey() + " " + module.getName());
+    }
+    return index;
   }
 
   @Override

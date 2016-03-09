@@ -19,13 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.server;
 
-import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.sonarsource.sonarlint.core.client.api.SonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
+import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public interface IServer {
 
@@ -100,7 +100,7 @@ public interface IServer {
    */
   void removeServerListener(IServerListener listener);
 
-  List<RemoteModule> findModules(String keyOrPartialName);
+  TextSearchIndex<RemoteModule> getModuleIndex();
 
   void startAnalysis(AnalysisConfiguration config, IssueListener issueListener);
 

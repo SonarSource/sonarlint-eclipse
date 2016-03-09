@@ -29,6 +29,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
+import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 /**
  * This provider will search for projects on all configured SonarQube servers
@@ -39,10 +40,12 @@ import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 public class SearchEngineProvider implements IContentProposalProvider {
 
   private final WizardPage parentPage;
+  private final TextSearchIndex<RemoteModule> moduleIndex;
   private final IServer server;
 
   public SearchEngineProvider(IServer server, WizardPage parentPage) {
     this.server = server;
+    moduleIndex = server.getModuleIndex();
     this.parentPage = parentPage;
   }
 
@@ -50,7 +53,7 @@ public class SearchEngineProvider implements IContentProposalProvider {
   public IContentProposal[] getProposals(String contents, int position) {
     List<IContentProposal> list = new ArrayList<>();
     try {
-      List<RemoteModule> modules = server.findModules(contents);
+      List<RemoteModule> modules = moduleIndex.search(contents);
       for (RemoteModule m : modules) {
         RemoteSonarProject prj = new RemoteSonarProject(server.getId(), m.getKey(), m.getName());
         list.add(new ContentProposal(prj.asString(), m.getName(), prj.getDescription()));

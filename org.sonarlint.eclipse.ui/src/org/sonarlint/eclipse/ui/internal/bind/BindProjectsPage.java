@@ -52,11 +52,15 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.part.PageBook;
@@ -69,6 +73,8 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
+import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
+import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class BindProjectsPage extends WizardPage {
 
@@ -99,15 +105,12 @@ public class BindProjectsPage extends WizardPage {
     Composite container = new Composite(parent, SWT.NONE);
 
     GridLayout layout = new GridLayout();
-    layout.numColumns = 2;
+    layout.numColumns = 1;
     layout.marginHeight = 0;
     layout.marginWidth = 5;
     container.setLayout(layout);
 
     book = new PageBook(container, SWT.NONE);
-    GridData layoutData = new GridData();
-    layoutData.horizontalSpan = 2;
-    book.setLayoutData(layoutData);
 
     createNoServerForm(book);
     createServerDropDown(book);
@@ -115,13 +118,13 @@ public class BindProjectsPage extends WizardPage {
     toggleServerPage();
 
     // List of projects
-    viewer = new TableViewer(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.VIRTUAL);
+    viewer = new TableViewer(container, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.VIRTUAL);
     viewer.getTable().setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1, 3));
 
     viewer.getTable().setHeaderVisible(true);
 
     TableViewerColumn columnProject = new TableViewerColumn(viewer, SWT.LEFT);
-    columnProject.getColumn().setText("Project");
+    columnProject.getColumn().setText("Eclipse Project");
     columnProject.getColumn().setWidth(200);
 
     TableViewerColumn columnSonarProject = new TableViewerColumn(viewer, SWT.LEFT);
@@ -154,7 +157,58 @@ public class BindProjectsPage extends WizardPage {
       new IValueProperty[] {BeanProperties.value(ProjectBindModel.class, ProjectBindModel.PROPERTY_PROJECT_ECLIPSE_NAME),
         BeanProperties.value(ProjectBindModel.class, ProjectBindModel.PROPERTY_PROJECT_SONAR_FULLNAME)});
 
-    setControl(container);
+    Composite btnContainer = new Composite(container, SWT.NONE);
+
+    FillLayout btnLayout = new FillLayout();
+    btnContainer.setLayout(btnLayout);
+
+    final Button unassociateBtn = new Button(btnContainer, SWT.PUSH);
+    viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
+      @Override
+      public void selectionChanged(SelectionChangedEvent event) {
+        unassociateBtn.setEnabled(!viewer.getStructuredSelection().isEmpty());
+      }
+    });
+
+    unassociateBtn.setText("Unbind selected projects");
+    unassociateBtn.setEnabled(!viewer.getStructuredSelection().isEmpty());
+    unassociateBtn.addListener(SWT.Selection, new Listener() {
+
+      @Override
+      public void handleEvent(Event event) {
+        for (ProjectBindModel bind : (List<ProjectBindModel>) viewer.getStructuredSelection().toList()) {
+          bind.unassociate();
+        }
+      }
+    });
+
+    final Button autoBindBtn = new Button(btnContainer, SWT.PUSH);
+    viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
+      @Override
+      public void selectionChanged(SelectionChangedEvent event) {
+        autoBindBtn.setEnabled(!viewer.getStructuredSelection().isEmpty());
+      }
+    });
+
+    autoBindBtn.setText("Auto bind selected projects");
+    autoBindBtn.setEnabled(!viewer.getStructuredSelection().isEmpty() && selectedServer != null);
+    autoBindBtn.addListener(SWT.Selection, new Listener() {
+
+      @Override
+      public void handleEvent(Event event) {
+        TextSearchIndex<RemoteModule> moduleIndex = selectedServer.getModuleIndex();
+        for (ProjectBindModel bind : (List<ProjectBindModel>) viewer.getStructuredSelection().toList()) {
+          List<RemoteModule> results = moduleIndex.search(bind.getEclipseName());
+          if (results.size() > 0) {
+            bind.associate(selectedServer.getId(), results.get(0).getName(), results.get(0).getKey());
+          }
+        }
+      }
+    });
+
+    setControl(btnContainer);
   }
 
   private void createServerDropDown(Composite parent) {
@@ -299,7 +353,7 @@ public class BindProjectsPage extends WizardPage {
 
     @Override
     protected Object getValue(Object element) {
-      return StringUtils.trimToEmpty(((ProjectBindModel) element).getSonarProjectName());
+      return StringUtils.trimToEmpty(((ProjectBindModel) element).getSonarFullName());
     }
 
     @Override
