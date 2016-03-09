@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.server;
 
-import java.util.HashSet;
-import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -75,11 +73,6 @@ public class ServersView extends CommonNavigator {
 
   private IServerLifecycleListener serverResourceListener;
   private IServerListener serverListener;
-
-  // servers that are currently publishing and starting
-  protected static Set<String> starting = new HashSet<>(4);
-  protected boolean animationActive = false;
-  protected boolean stopAnimation = false;
 
   /**
    * ServersView constructor comment.
@@ -315,7 +308,4 @@ public class ServersView extends CommonNavigator {
     super.dispose();
   }
 
-  protected void stopThread() {
-    stopAnimation = true;
-  }
 }

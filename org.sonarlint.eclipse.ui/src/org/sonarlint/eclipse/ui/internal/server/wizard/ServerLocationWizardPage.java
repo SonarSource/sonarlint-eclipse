@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.eclipse.core.runtime.IStatus;
@@ -113,7 +112,7 @@ public class ServerLocationWizardPage extends WizardPage {
           try {
             URL url = new URL(serverUrlText.getText());
             serverIdText.removeModifyListener(idModifyListener);
-            serverIdText.setText(url.getHost());
+            serverIdText.setText(StringUtils.substringBefore(url.getHost(), "."));
             serverIdText.addModifyListener(idModifyListener);
           } catch (MalformedURLException e1) {
             // Ignore
@@ -161,13 +160,13 @@ public class ServerLocationWizardPage extends WizardPage {
       @Override
       public void widgetSelected(SelectionEvent e) {
         try {
-          ServerConnectionTestJob testJob = new ServerConnectionTestJob(getServer());
+          ServerConnectionTestJob testJob = new ServerConnectionTestJob(getServer(), getUsername(), getPassword());
           getWizard().getContainer().run(true, true, testJob);
           status = testJob.getStatus();
-        } catch (InvocationTargetException | InterruptedException e1) {
-          status = new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error, e1);
         } catch (OperationCanceledException e1) {
           status = Status.CANCEL_STATUS;
+        } catch (Exception e1) {
+          status = new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error + " " + e1.getMessage(), e1);
         }
         getWizard().getContainer().updateButtons();
 

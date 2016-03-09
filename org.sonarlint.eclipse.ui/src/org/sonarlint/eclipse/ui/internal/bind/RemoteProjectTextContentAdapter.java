@@ -17,22 +17,22 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.link;
+package org.sonarlint.eclipse.ui.internal.bind;
 
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.widgets.Control;
 
 /**
- * This adapter will update the model ({@link ProjectAssociationModel}) of a row
+ * This adapter will update the model ({@link ProjectBindModel}) of a row
  * with what is provided by the content assist. Because content assist can only return
  * a String there is a serialization that is done with {@link RemoteSonarProject#asString()}
  * and here we can deserialize using {@link RemoteSonarProject#fromString(String)}
  *
  */
 public class RemoteProjectTextContentAdapter extends TextContentAdapter {
-  private ProjectAssociationModel project;
+  private ProjectBindModel project;
 
-  public RemoteProjectTextContentAdapter(ProjectAssociationModel project) {
+  public RemoteProjectTextContentAdapter(ProjectBindModel project) {
     this.project = project;
   }
 

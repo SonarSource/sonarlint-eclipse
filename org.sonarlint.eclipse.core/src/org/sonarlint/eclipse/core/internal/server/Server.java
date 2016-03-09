@@ -38,6 +38,7 @@ import org.eclipse.core.runtime.Status;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintLogOutput;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.SonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.client.api.GlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.RuleDetails;
@@ -71,7 +72,8 @@ public class Server implements IServer, StateListener {
     GlobalConfiguration globalConfig = GlobalConfiguration.builder()
       .setServerId(getId())
       .setVerbose(SonarLintCorePlugin.getDefault().isDebugEnabled())
-      .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append(getId()).toFile().toPath())
+      .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append(getId()).append("work").toFile().toPath())
+      .setStorageRoot(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append(getId()).append("storage").toFile().toPath())
       .setLogOutput(new SonarLintLogOutput())
       .build();
     this.client = new SonarLintEngineImpl(globalConfig);
@@ -193,9 +195,13 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public IStatus testConnection() {
+  public IStatus testConnection(String username, String password) {
     try {
-      ValidationResult testConnection = client.validateCredentials(getConfig());
+      Builder builder = getConfigBuilderNoCredentials();
+      if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
+        builder.credentials(username, password);
+      }
+      ValidationResult testConnection = client.validateCredentials(builder.build());
       if (testConnection.status()) {
         return new Status(IStatus.OK, SonarLintCorePlugin.PLUGIN_ID, "Successfully connected!");
       } else {
@@ -211,13 +217,18 @@ public class Server implements IServer, StateListener {
   }
 
   private ServerConfiguration getConfig() {
-    Builder builder = ServerConfiguration.builder()
-      .url(getHost())
-      .userAgent("SonarLint Eclipse " + SonarLintCorePlugin.getDefault().getBundle().getVersion().toString());
+    Builder builder = getConfigBuilderNoCredentials();
 
     if (hasAuth()) {
       builder.credentials(ServersManager.getUsername(this), ServersManager.getPassword(this));
     }
+    return builder.build();
+  }
+
+  private Builder getConfigBuilderNoCredentials() {
+    Builder builder = ServerConfiguration.builder()
+      .url(getHost())
+      .userAgent("SonarLint Eclipse " + SonarLintCorePlugin.getDefault().getBundle().getVersion().toString());
 
     IProxyService proxyService = SonarLintCorePlugin.getDefault().getProxyService();
     IProxyData[] proxyDataForHost;
@@ -236,7 +247,7 @@ public class Server implements IServer, StateListener {
         break;
       }
     }
-    return builder.build();
+    return builder;
   }
 
   @Override

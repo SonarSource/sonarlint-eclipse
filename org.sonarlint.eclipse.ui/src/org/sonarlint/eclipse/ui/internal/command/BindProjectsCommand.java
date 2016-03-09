@@ -31,9 +31,9 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.sonarlint.eclipse.ui.internal.link.LinkProjectsWizard;
+import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
 
-public class LinkProjectsCommand extends AbstractHandler {
+public class BindProjectsCommand extends AbstractHandler {
 
   public Display getDisplay() {
     Display display = Display.getCurrent();
@@ -62,7 +62,7 @@ public class LinkProjectsCommand extends AbstractHandler {
       }
     }
 
-    LinkProjectsWizard wizard = new LinkProjectsWizard(selectedProjects);
+    BindProjectsWizard wizard = new BindProjectsWizard(selectedProjects);
 
     final Display display = getDisplay();
     final WizardDialog dialog = new WizardDialog(display.getActiveShell(), wizard);

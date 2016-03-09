@@ -27,18 +27,21 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 final class ServerConnectionTestJob implements IRunnableWithProgress {
 
   private IStatus status;
-
   private final IServer server;
+  private final String username;
+  private final String password;
 
-  ServerConnectionTestJob(IServer server) {
+  ServerConnectionTestJob(IServer server, String username, String password) {
     this.server = server;
+    this.username = username;
+    this.password = password;
   }
 
   @Override
   public void run(IProgressMonitor monitor) {
     monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
     try {
-      status = server.testConnection();
+      status = server.testConnection(username, password);
     } finally {
       monitor.done();
     }

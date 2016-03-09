@@ -368,7 +368,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           IServer server = ServersManager.getInstance().getServer(project.getServerId());
           if (server == null) {
             throw new IllegalStateException(
-              "Project " + project.getProject().getName() + " is linked to an unknow server: " + project.getServerId() + ". Please update project configuration.");
+              "Project '" + project.getProject().getName() + "' is linked to an unknow server: '" + project.getServerId() + "'. Please bind project again.");
           }
           server.startAnalysis(config, new SonarLintIssueListener(issuesPerResource));
         } else {

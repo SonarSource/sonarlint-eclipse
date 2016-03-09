@@ -17,10 +17,9 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.link;
+package org.sonarlint.eclipse.ui.internal.bind;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.list.WritableList;
@@ -29,40 +28,70 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
+import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
+import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.FocusCellHighlighter;
 import org.eclipse.jface.viewers.FocusCellOwnerDrawHighlighter;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TableViewerEditor;
 import org.eclipse.jface.viewers.TableViewerFocusCellManager;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.ui.forms.widgets.Form;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.part.PageBook;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
 
-public class LinkProjectsPage extends WizardPage {
+public class BindProjectsPage extends WizardPage {
 
   private final List<IProject> projects;
   private TableViewer viewer;
-  private final Collection<IServer> sonarServers;
+  private Form noServersPage;
+  private PageBook book;
+  private IServerLifecycleListener serverListener;
+  private IServer selectedServer;
+  private Composite serverDropDownPage;
+  private ComboViewer serverCombo;
 
-  public LinkProjectsPage(List<IProject> projects) {
-    super("linkProjects", "Link with SonarQube", SonarLintImages.SONARWIZBAN_IMG);
-    setDescription("Associate Eclipse projects with remote project/module on a SonarQube server");
+  public BindProjectsPage(List<IProject> projects) {
+    super("bindProjects", "Bind with SonarQube", SonarLintImages.SONARWIZBAN_IMG);
+    setDescription("Bind Eclipse project(s) with remote project/module on a SonarQube server");
     this.projects = projects;
-    sonarServers = ServersManager.getInstance().getServers();
+  }
+
+  @Override
+  public void dispose() {
+    if (serverListener != null) {
+      ServersManager.getInstance().removeServerLifecycleListener(serverListener);
+    }
   }
 
   @Override
@@ -74,6 +103,16 @@ public class LinkProjectsPage extends WizardPage {
     layout.marginHeight = 0;
     layout.marginWidth = 5;
     container.setLayout(layout);
+
+    book = new PageBook(container, SWT.NONE);
+    GridData layoutData = new GridData();
+    layoutData.horizontalSpan = 2;
+    book.setLayoutData(layoutData);
+
+    createNoServerForm(book);
+    createServerDropDown(book);
+
+    toggleServerPage();
 
     // List of projects
     viewer = new TableViewer(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.VIRTUAL);
@@ -91,9 +130,9 @@ public class LinkProjectsPage extends WizardPage {
 
     columnSonarProject.setEditingSupport(new ProjectAssociationModelEditingSupport(viewer));
 
-    List<ProjectAssociationModel> list = new ArrayList<>();
+    List<ProjectBindModel> list = new ArrayList<>();
     for (IProject project : projects) {
-      ProjectAssociationModel sonarProject = new ProjectAssociationModel(project);
+      ProjectBindModel sonarProject = new ProjectBindModel(project);
       list.add(sonarProject);
     }
 
@@ -111,11 +150,92 @@ public class LinkProjectsPage extends WizardPage {
 
     ViewerSupport.bind(
       viewer,
-      new WritableList(list, ProjectAssociationModel.class),
-      new IValueProperty[] {BeanProperties.value(ProjectAssociationModel.class, ProjectAssociationModel.PROPERTY_PROJECT_ECLIPSE_NAME),
-        BeanProperties.value(ProjectAssociationModel.class, ProjectAssociationModel.PROPERTY_PROJECT_SONAR_FULLNAME)});
+      new WritableList(list, ProjectBindModel.class),
+      new IValueProperty[] {BeanProperties.value(ProjectBindModel.class, ProjectBindModel.PROPERTY_PROJECT_ECLIPSE_NAME),
+        BeanProperties.value(ProjectBindModel.class, ProjectBindModel.PROPERTY_PROJECT_SONAR_FULLNAME)});
 
     setControl(container);
+  }
+
+  private void createServerDropDown(Composite parent) {
+    serverDropDownPage = new Composite(parent, SWT.NONE);
+    GridData layoutData = new GridData();
+    layoutData.horizontalSpan = 2;
+    serverDropDownPage.setLayoutData(layoutData);
+
+    GridLayout layout = new GridLayout();
+    layout.numColumns = 2;
+    layout.marginHeight = 0;
+    layout.marginWidth = 5;
+    serverDropDownPage.setLayout(layout);
+
+    Label labelField = new Label(serverDropDownPage, SWT.NONE);
+    labelField.setText("Select server: ");
+    serverCombo = new ComboViewer(serverDropDownPage, SWT.READ_ONLY);
+
+    serverCombo.setContentProvider(ArrayContentProvider.getInstance());
+
+    serverCombo.setLabelProvider(new LabelProvider() {
+      @Override
+      public String getText(Object element) {
+        IServer current = (IServer) element;
+        return current.getName();
+      }
+    });
+
+    serverListener = new ServerChangeListener();
+
+    ServersManager.getInstance().addServerLifecycleListener(serverListener);
+
+    /* within the selection event, tell the object it was selected */
+    serverCombo.addSelectionChangedListener(new ISelectionChangedListener() {
+      @Override
+      public void selectionChanged(SelectionChangedEvent event) {
+        IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+        selectedServer = (IServer) selection.getFirstElement();
+        serverCombo.refresh();
+      }
+    });
+  }
+
+  private void createNoServerForm(Composite parent) {
+    FormToolkit toolkit = new FormToolkit(parent.getDisplay());
+    noServersPage = toolkit.createForm(book);
+    GridData layoutData = new GridData();
+    layoutData.horizontalSpan = 2;
+    noServersPage.setLayoutData(layoutData);
+
+    Composite body = noServersPage.getBody();
+    GridLayout layout = new GridLayout(2, false);
+    body.setLayout(layout);
+
+    Link hlink = new Link(body, SWT.NONE);
+    hlink.setText(Messages.ServersView_noServers);
+    hlink.setBackground(book.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+    GridData gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
+    hlink.setLayoutData(gd);
+    hlink.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        NewServerLocationWizard wizard = new NewServerLocationWizard();
+        WizardDialog wd = new WizardDialog(book.getShell(), wizard);
+        if (wd.open() == Window.OK) {
+          toggleServerPage();
+        }
+      }
+    });
+  }
+
+  private void toggleServerPage() {
+    List<IServer> servers = ServersManager.getInstance().getServers();
+    if (servers.isEmpty()) {
+      book.showPage(noServersPage);
+      selectedServer = null;
+    } else {
+      book.showPage(serverDropDownPage);
+      serverCombo.setInput(servers.toArray());
+      serverCombo.setSelection(new StructuredSelection(servers.contains(selectedServer) ? selectedServer : servers.get(0)));
+    }
   }
 
   private ColumnViewerEditorActivationStrategy createActivationSupport() {
@@ -133,9 +253,35 @@ public class LinkProjectsPage extends WizardPage {
     return activationSupport;
   }
 
-  private class ProjectAssociationModelEditingSupport extends EditingSupport {
+  private final class ServerChangeListener implements IServerLifecycleListener {
 
-    SonarSearchEngineProvider contentProposalProvider = new SonarSearchEngineProvider(sonarServers, LinkProjectsPage.this);
+    @Override
+    public void serverRemoved(IServer server) {
+      updateServerPage();
+    }
+
+    @Override
+    public void serverChanged(IServer server) {
+      updateServerPage();
+    }
+
+    @Override
+    public void serverAdded(IServer server) {
+      updateServerPage();
+    }
+
+    private void updateServerPage() {
+      getContainer().getShell().getDisplay().asyncExec(new Runnable() {
+        @Override
+        public void run() {
+          toggleServerPage();
+          getContainer().getShell().layout(true, true);
+        }
+      });
+    }
+  }
+
+  private class ProjectAssociationModelEditingSupport extends EditingSupport {
 
     public ProjectAssociationModelEditingSupport(TableViewer viewer) {
       super(viewer);
@@ -143,17 +289,17 @@ public class LinkProjectsPage extends WizardPage {
 
     @Override
     protected boolean canEdit(Object element) {
-      return element instanceof ProjectAssociationModel;
+      return selectedServer != null && element instanceof ProjectBindModel;
     }
 
     @Override
     protected CellEditor getCellEditor(Object element) {
-      return new TextCellEditorWithContentProposal(viewer.getTable(), contentProposalProvider, (ProjectAssociationModel) element);
+      return new TextCellEditorWithContentProposal(viewer.getTable(), new SearchEngineProvider(selectedServer, BindProjectsPage.this), (ProjectBindModel) element);
     }
 
     @Override
     protected Object getValue(Object element) {
-      return StringUtils.trimToEmpty(((ProjectAssociationModel) element).getSonarProjectName());
+      return StringUtils.trimToEmpty(((ProjectBindModel) element).getSonarProjectName());
     }
 
     @Override
@@ -171,8 +317,8 @@ public class LinkProjectsPage extends WizardPage {
    * @return
    */
   public boolean finish() {
-    final ProjectAssociationModel[] projectAssociations = getProjects();
-    for (ProjectAssociationModel projectAssociation : projectAssociations) {
+    final ProjectBindModel[] projectAssociations = getProjects();
+    for (ProjectBindModel projectAssociation : projectAssociations) {
       if (StringUtils.isNotBlank(projectAssociation.getKey())) {
         try {
           boolean changed = false;
@@ -201,9 +347,9 @@ public class LinkProjectsPage extends WizardPage {
     return true;
   }
 
-  private ProjectAssociationModel[] getProjects() {
+  private ProjectBindModel[] getProjects() {
     WritableList projectAssociations = (WritableList) viewer.getInput();
-    return (ProjectAssociationModel[]) projectAssociations.toArray(new ProjectAssociationModel[projectAssociations.size()]);
+    return (ProjectBindModel[]) projectAssociations.toArray(new ProjectBindModel[projectAssociations.size()]);
   }
 
 }

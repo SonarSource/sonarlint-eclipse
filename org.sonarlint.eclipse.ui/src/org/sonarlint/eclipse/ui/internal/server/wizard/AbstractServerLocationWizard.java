@@ -54,13 +54,15 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
   @Override
   public boolean performFinish() {
     final IServer server = page.getServer();
+    final String username = page.getUsername();
+    final String password = page.getPassword();
 
     IRunnableWithProgress op = new IRunnableWithProgress() {
       @Override
       public void run(IProgressMonitor monitor) throws InvocationTargetException {
         monitor.beginTask("Saving " + server.getName(), 1);
         try {
-          doFinish(server, page.getUsername(), page.getPassword());
+          doFinish(server, username, password);
         } catch (Exception e) {
           SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
         } finally {

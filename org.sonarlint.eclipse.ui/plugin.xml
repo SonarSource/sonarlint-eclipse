@@ -379,7 +379,7 @@
 	      </visibleWhen>
 	   </command>
 	   <command
-             commandId="org.sonarlint.eclipse.ui.internal.command.LinkProjectsCommand"
+             commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
              style="push">
           <visibleWhen>
               <with variable="activeMenuSelection">
@@ -411,9 +411,9 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
-          description="Link with a remote SonarQube server"
-          id="org.sonarlint.eclipse.ui.internal.command.LinkProjectsCommand"
-          name="Link with remote SonarQube server..."
+          description="Bind with a remote SonarQube server"
+          id="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
+          name="Bind with remote SonarQube server..."
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
   </extension>
@@ -428,8 +428,8 @@
           commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand">
     </handler>
     <handler
-          class="org.sonarlint.eclipse.ui.internal.command.LinkProjectsCommand"
-          commandId="org.sonarlint.eclipse.ui.internal.command.LinkProjectsCommand">
+          class="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand">
     </handler>
   </extension>
 
@@ -438,7 +438,7 @@
       commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
       icon="icons/onde-sonar-16-execute.png" />
     <image
-      commandId="org.sonarlint.eclipse.ui.internal.command.LinkProjectsCommand"
+      commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
       icon="icons/synced.gif" />
   </extension>
 

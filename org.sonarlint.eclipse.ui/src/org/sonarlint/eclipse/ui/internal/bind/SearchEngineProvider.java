@@ -17,10 +17,9 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.link;
+package org.sonarlint.eclipse.ui.internal.bind;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ContentProposal;
@@ -37,35 +36,33 @@ import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
  * we will serialize {@link RemoteSonarProject} using {@link RemoteSonarProject#asString()}
  *
  */
-public class SonarSearchEngineProvider implements IContentProposalProvider {
+public class SearchEngineProvider implements IContentProposalProvider {
 
-  private final Collection<IServer> sonarServers;
   private final WizardPage parentPage;
+  private final IServer server;
 
-  public SonarSearchEngineProvider(Collection<IServer> sonarServers, WizardPage parentPage) {
-    this.sonarServers = sonarServers;
+  public SearchEngineProvider(IServer server, WizardPage parentPage) {
+    this.server = server;
     this.parentPage = parentPage;
   }
 
   @Override
   public IContentProposal[] getProposals(String contents, int position) {
     List<IContentProposal> list = new ArrayList<>();
-    for (IServer sonarServer : sonarServers) {
-      try {
-        List<RemoteModule> modules = sonarServer.findModules(contents);
-        for (RemoteModule m : modules) {
-          RemoteSonarProject prj = new RemoteSonarProject(sonarServer.getId(), m.getKey(), m.getName());
-          list.add(new ContentProposal(prj.asString(), m.getName(), prj.getDescription()));
-        }
-      } catch (Exception e) {
-        SonarLintCorePlugin.getDefault().debug("Unable to search modules from server " + sonarServer.getName(), e);
+    try {
+      List<RemoteModule> modules = server.findModules(contents);
+      for (RemoteModule m : modules) {
+        RemoteSonarProject prj = new RemoteSonarProject(server.getId(), m.getKey(), m.getName());
+        list.add(new ContentProposal(prj.asString(), m.getName(), prj.getDescription()));
       }
+    } catch (Exception e) {
+      SonarLintCorePlugin.getDefault().debug("Unable to search modules from server " + server.getName(), e);
     }
     if (!list.isEmpty()) {
       parentPage.setMessage("", IMessageProvider.NONE);
       return list.toArray(new IContentProposal[list.size()]);
     } else {
-      parentPage.setMessage("No result", IMessageProvider.INFORMATION);
+      parentPage.setMessage("No results", IMessageProvider.INFORMATION);
       return new IContentProposal[0];
     }
   }

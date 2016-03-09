@@ -129,7 +129,7 @@ public class ServersManager {
       return;
     }
 
-    List<IServerLifecycleListener> clone = new ArrayList<IServerLifecycleListener>();
+    List<IServerLifecycleListener> clone = new ArrayList<>();
     clone.addAll(serverListeners);
     for (IServerLifecycleListener srl : clone) {
       if (b == EVENT_ADDED) {

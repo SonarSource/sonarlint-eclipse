@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.link;
+package org.sonarlint.eclipse.ui.internal.bind;
 
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
@@ -29,13 +29,13 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 public class TextCellEditorWithContentProposal extends TextCellEditor {
 
   public TextCellEditorWithContentProposal(Composite parent, IContentProposalProvider contentProposalProvider,
-    ProjectAssociationModel sonarProject) {
+    ProjectBindModel sonarProject) {
     super(parent);
 
     enableContentProposal(contentProposalProvider, sonarProject);
   }
 
-  private void enableContentProposal(IContentProposalProvider contentProposalProvider, ProjectAssociationModel sonarProject) {
+  private void enableContentProposal(IContentProposalProvider contentProposalProvider, ProjectBindModel sonarProject) {
     ContentProposalAdapter contentProposalAdapter = new ContentAssistCommandAdapter(
       text,
       new RemoteProjectTextContentAdapter(sonarProject),
@@ -45,5 +45,8 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
       null,
       true);
     contentProposalAdapter.setAutoActivationCharacters(null);
+    contentProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
+    contentProposalAdapter.setFilterStyle(ContentProposalAdapter.FILTER_NONE);
+    contentProposalAdapter.setAutoActivationDelay(100);
   }
 }

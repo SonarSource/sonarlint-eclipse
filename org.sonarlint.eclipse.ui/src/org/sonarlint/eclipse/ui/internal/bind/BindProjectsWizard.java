@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.link;
+package org.sonarlint.eclipse.ui.internal.bind;
 
 import java.util.List;
 import org.eclipse.core.resources.IProject;
@@ -26,12 +26,12 @@ import org.eclipse.jface.wizard.Wizard;
 /**
  * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertedProjectWizard
  */
-public class LinkProjectsWizard extends Wizard {
+public class BindProjectsWizard extends Wizard {
 
   private final List<IProject> projects;
-  private LinkProjectsPage mainPage;
+  private BindProjectsPage mainPage;
 
-  public LinkProjectsWizard(List<IProject> projects) {
+  public BindProjectsWizard(List<IProject> projects) {
     this.projects = projects;
     setNeedsProgressMonitor(true);
     setWindowTitle("Link with SonarQube");
@@ -40,7 +40,7 @@ public class LinkProjectsWizard extends Wizard {
 
   @Override
   public void addPages() {
-    mainPage = new LinkProjectsPage(projects);
+    mainPage = new BindProjectsPage(projects);
     addPage(mainPage);
   }
 

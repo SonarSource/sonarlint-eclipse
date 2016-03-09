@@ -17,13 +17,13 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.link;
+package org.sonarlint.eclipse.ui.internal.bind;
 
 /**
  * This is one possible result that will be displayed as a suggestion.
  * Because content assist can only work with String and not with complex objects
  * we will have to "serialize" this object using {@link #asString()} in
- * {@link SonarSearchEngineProvider#getProposals(String, int)}
+ * {@link SearchEngineProvider#getProposals(String, int)}
  * then deserialize in the {@link RemoteProjectTextContentAdapter}
  * @author julien
  *

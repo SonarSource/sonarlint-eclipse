@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.link;
+package org.sonarlint.eclipse.ui.internal.bind;
 
 import org.eclipse.core.resources.IProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
@@ -27,7 +27,7 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
  * This class represents the association between an Eclipse and a SonarQube project/module.
  *
  */
-public class ProjectAssociationModel extends AbstractModelObject {
+public class ProjectBindModel extends AbstractModelObject {
   public static final String PROPERTY_PROJECT_ECLIPSE_NAME = "eclipseName";
   public static final String PROPERTY_PROJECT_SONAR_FULLNAME = "sonarFullName";
 
@@ -36,7 +36,7 @@ public class ProjectAssociationModel extends AbstractModelObject {
   private String key;
   private String serverId;
 
-  public ProjectAssociationModel(IProject project) {
+  public ProjectBindModel(IProject project) {
     this.project = project;
     SonarLintProject sonarProject = SonarLintProject.getInstance(project);
     this.key = sonarProject.getModuleKey();

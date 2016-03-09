@@ -77,7 +77,7 @@ public interface IServer {
 
   void sync(IProgressMonitor monitor);
 
-  IStatus testConnection();
+  IStatus testConnection(String username, String password);
 
   /**
    * Adds the given server state listener to this server.
