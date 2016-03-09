@@ -22,18 +22,15 @@ package org.sonarlint.eclipse.ui.internal.server.actions;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.actions.SelectionProviderAction;
+import org.sonarlint.eclipse.core.internal.jobs.ServerSyncJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 public class ServerSyncAction extends SelectionProviderAction {
   private List<IServer> servers;
@@ -88,18 +85,7 @@ public class ServerSyncAction extends SelectionProviderAction {
 
     if (servers != null) {
       for (final IServer server : servers) {
-        Job j = new Job("Sync SonarQube server " + server.getName()) {
-
-          @Override
-          protected IStatus run(IProgressMonitor monitor) {
-            try {
-              server.sync(monitor);
-              return Status.OK_STATUS;
-            } catch (Exception e) {
-              return new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, "Unable to sync server " + server.getName(), e);
-            }
-          }
-        };
+        Job j = new ServerSyncJob(server);
         j.schedule();
       }
     }

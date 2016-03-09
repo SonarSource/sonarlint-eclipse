@@ -17,25 +17,30 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.server.wizard;
+package org.sonarlint.eclipse.core.internal.jobs;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.sonarlint.eclipse.core.internal.jobs.ServerSyncJob;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
-public class NewServerLocationWizard extends AbstractServerLocationWizard {
+public class ServerSyncJob extends Job {
+  private final IServer server;
 
-  public NewServerLocationWizard() {
-    super(new ServerLocationWizardPage(), "Add SonarQube Server");
+  public ServerSyncJob(IServer server) {
+    super("Sync SonarQube server " + server.getName());
+    this.server = server;
   }
 
   @Override
-  protected void doFinish(IServer server, String username, String password) {
-    ServersManager.getInstance().addServer(server, username, password);
-
-    Job j = new ServerSyncJob(server);
-    j.schedule();
+  protected IStatus run(IProgressMonitor monitor) {
+    try {
+      server.sync(monitor);
+      return Status.OK_STATUS;
+    } catch (Exception e) {
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to sync server " + server.getName(), e);
+    }
   }
-
 }
