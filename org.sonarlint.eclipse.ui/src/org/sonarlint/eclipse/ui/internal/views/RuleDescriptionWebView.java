@@ -28,6 +28,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
@@ -61,7 +62,7 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
       if (StringUtils.isBlank(p.getServerId())) {
         htmlDescription = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade().getHtmlRuleDescription(ruleKey);
       } else {
-        IServer server = SonarLintCorePlugin.getDefault().findServer(p.getServerId());
+        IServer server = ServersManager.getInstance().getServer(p.getServerId());
         if (server == null) {
           super.showMessage("Project " + p.getProject().getName() + " is linked to an unknown server: " + p.getServerId() + ". Please update configuration.");
           return;

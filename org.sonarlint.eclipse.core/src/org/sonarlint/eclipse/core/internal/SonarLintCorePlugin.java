@@ -31,10 +31,9 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 import org.sonarlint.eclipse.core.AbstractPlugin;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
-import org.sonarlint.eclipse.core.internal.jobs.SonarLintClientFacade;
+import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
 public class SonarLintCorePlugin extends AbstractPlugin {
@@ -47,7 +46,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   private static SonarLintProjectManager projectManager;
 
   private final List<LogListener> logListeners = new ArrayList<>();
-  private SonarLintClientFacade sonarlint;
+  private StandaloneSonarLintClientFacade sonarlint;
   private boolean debugEnabled;
   private final ServiceTracker proxyTracker;
 
@@ -134,45 +133,16 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   public void setDebugEnabled(boolean debugEnabled) {
     this.debugEnabled = debugEnabled;
     getDefaultSonarLintClientFacade().setVerbose(debugEnabled);
-    for (IServer server : getServers()) {
+    for (IServer server : ServersManager.getInstance().getServersNoInit()) {
       server.setVerbose(debugEnabled);
     }
-
   }
 
-  public SonarLintClientFacade getDefaultSonarLintClientFacade() {
+  public StandaloneSonarLintClientFacade getDefaultSonarLintClientFacade() {
     if (sonarlint == null) {
-      sonarlint = new SonarLintClientFacade();
+      sonarlint = new StandaloneSonarLintClientFacade();
     }
     return sonarlint;
-  }
-
-  private static final ServersManager getServerManager() {
-    return ServersManager.getInstance();
-  }
-
-  public List<IServer> getServers() {
-    return getServerManager().getServers();
-  }
-
-  public void addServerLifecycleListener(IServerLifecycleListener listener) {
-    getServerManager().addServerLifecycleListener(listener);
-  }
-
-  public void removeServerLifecycleListener(IServerLifecycleListener listener) {
-    getServerManager().removeServerLifecycleListener(listener);
-  }
-
-  public IServer findServer(String id) {
-    return getServerManager().getServer(id);
-  }
-
-  public void removeServer(IServer server) {
-    getServerManager().removeServer(server);
-  }
-
-  public void addServer(IServer server) {
-    getServerManager().addServer(server);
   }
 
   public IProxyService getProxyService() {

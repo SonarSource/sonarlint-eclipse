@@ -20,15 +20,15 @@
 package org.sonarlint.eclipse.ui.internal.server;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
 public class ServerContentProvider extends BaseContentProvider implements ITreeContentProvider {
   public static Object INITIALIZING = new Object();
 
   @Override
   public Object[] getElements(Object element) {
-    return SonarLintCorePlugin.getDefault().getServers().toArray();
+    return ServersManager.getInstance().getServers().toArray();
   }
 
   @Override

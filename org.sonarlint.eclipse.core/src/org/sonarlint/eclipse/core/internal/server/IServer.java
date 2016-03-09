@@ -22,19 +22,12 @@ package org.sonarlint.eclipse.core.internal.server;
 import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.sonarsource.sonarlint.core.client.api.SonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 
 public interface IServer {
-
-  enum State {
-    STOPPED,
-    STARTING,
-    SYNCING,
-    STARTED_NOT_SYNCED,
-    STARTED_SYNCED
-  }
 
   /**
    * Returns the displayable name for this server.
@@ -70,21 +63,17 @@ public interface IServer {
 
   void delete();
 
-  String getUsername();
-
-  String getPassword();
-
   /**
-   * Only if {@link #getState()} returns {@link State#STARTED_SYNCED}
+   * Only if {@link #getSonarLintClientState()} returns {@link State#SYNCED}
    */
   String getSyncDate();
 
   /**
-   * Only if {@link #getState()} returns {@link State#STARTED_SYNCED}
+   * Only if {@link #getSonarLintClientState()} returns {@link State#SYNCED}
    */
   String getServerVersion();
 
-  State getState();
+  String getSonarLintClientState();
 
   void sync(IProgressMonitor monitor);
 
@@ -100,7 +89,7 @@ public interface IServer {
    * @param listener the server listener
    * @see #removeServerListener(IServerListener)
    */
-  public void addServerListener(IServerListener listener);
+  void addServerListener(IServerListener listener);
 
   /**
    * Removes the given server state listener from this server. Has no
@@ -109,7 +98,7 @@ public interface IServer {
    * @param listener the listener
    * @see #addServerListener(IServerListener)
    */
-  public void removeServerListener(IServerListener listener);
+  void removeServerListener(IServerListener listener);
 
   List<RemoteModule> findModules(String keyOrPartialName);
 

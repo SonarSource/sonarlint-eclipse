@@ -48,6 +48,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
@@ -61,7 +62,7 @@ public class LinkProjectsPage extends WizardPage {
     super("linkProjects", "Link with SonarQube", SonarLintImages.SONARWIZBAN_IMG);
     setDescription("Associate Eclipse projects with remote project/module on a SonarQube server");
     this.projects = projects;
-    sonarServers = SonarLintCorePlugin.getDefault().getServers();
+    sonarServers = ServersManager.getInstance().getServers();
   }
 
   @Override

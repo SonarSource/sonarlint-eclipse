@@ -19,25 +19,17 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
 public class EditServerLocationWizard extends AbstractServerLocationWizard {
 
-  private final IServer sonarServer;
-
   public EditServerLocationWizard(IServer sonarServer) {
     super(new ServerLocationWizardPage(sonarServer), "Edit SonarQube Server");
-    this.sonarServer = sonarServer;
   }
 
   @Override
-  protected void doFinish(IServer server) {
-    String oldServerId = sonarServer.getId();
-    if (StringUtils.isNotBlank(oldServerId) && (SonarLintCorePlugin.getDefault().findServer(oldServerId) != null)) {
-      sonarServer.delete();
-    }
-    super.doFinish(server);
+  protected void doFinish(IServer server, String username, String password) {
+    ServersManager.getInstance().updateServer(server, username, password);
   }
 }

@@ -28,6 +28,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.builder.SonarLintBuilder;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
 public class SonarLintProject {
 
@@ -144,8 +145,7 @@ public class SonarLintProject {
   }
 
   public void sync() {
-    SonarLintCorePlugin.getDefault().findServer(serverId).syncProject(moduleKey);
-
+    ServersManager.getInstance().getServer(serverId).syncProject(moduleKey);
   }
 
 }

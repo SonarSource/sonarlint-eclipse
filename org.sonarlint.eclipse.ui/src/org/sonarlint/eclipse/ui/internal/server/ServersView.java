@@ -55,10 +55,10 @@ import org.eclipse.ui.navigator.CommonViewerSiteFactory;
 import org.eclipse.ui.navigator.ICommonViewerSite;
 import org.eclipse.ui.navigator.NavigatorActionService;
 import org.eclipse.ui.part.PageBook;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
 import org.sonarlint.eclipse.core.internal.server.IServerListener;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
 
@@ -272,7 +272,7 @@ public class ServersView extends CommonNavigator {
         server.removeServerListener(serverListener);
       }
     };
-    SonarLintCorePlugin.getDefault().addServerLifecycleListener(serverResourceListener);
+    ServersManager.getInstance().addServerLifecycleListener(serverResourceListener);
 
     serverListener = new IServerListener() {
 
@@ -283,7 +283,7 @@ public class ServersView extends CommonNavigator {
     };
 
     // add listeners to servers
-    for (IServer server : SonarLintCorePlugin.getDefault().getServers()) {
+    for (IServer server : ServersManager.getInstance().getServers()) {
       server.addServerListener(serverListener);
     }
 
@@ -311,7 +311,7 @@ public class ServersView extends CommonNavigator {
 
   @Override
   public void dispose() {
-    SonarLintCorePlugin.getDefault().removeServerLifecycleListener(serverResourceListener);
+    ServersManager.getInstance().removeServerLifecycleListener(serverResourceListener);
     super.dispose();
   }
 

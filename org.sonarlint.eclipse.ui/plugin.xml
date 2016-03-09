@@ -88,7 +88,7 @@
 	        class="org.sonarlint.eclipse.ui.internal.server.ServersView"
 	        icon="icons/onde-sonar-16.png"
 	        id="org.sonarlint.eclipse.ui.ServersView"
-	        name="SonarLint Servers">
+	        name="SonarQube Servers">
 	  </view>
   </extension>
   

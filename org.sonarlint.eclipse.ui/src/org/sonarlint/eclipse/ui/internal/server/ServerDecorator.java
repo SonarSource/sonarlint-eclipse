@@ -32,27 +32,7 @@ public class ServerDecorator extends LabelProvider implements ILightweightLabelD
   public void decorate(Object element, IDecoration decoration) {
     if (element instanceof IServer) {
       IServer server = (IServer) element;
-
-      switch (server.getState()) {
-        case STOPPED:
-          addSuffix(decoration, "Unknown");
-          break;
-        case STARTED_NOT_SYNCED:
-          addSuffix(decoration, "Not synced");
-          break;
-        case STARTED_SYNCED:
-          addSuffix(decoration, "Version: " + server.getServerVersion() + ", Last sync: " + server.getSyncDate());
-          break;
-        case STARTING:
-          addSuffix(decoration, "Loading...");
-          break;
-        case SYNCING:
-          addSuffix(decoration, "Synchonizing...");
-          break;
-        default:
-          throw new IllegalArgumentException(server.getState().name());
-      }
-
+      addSuffix(decoration, server.getSonarLintClientState());
     }
   }
 

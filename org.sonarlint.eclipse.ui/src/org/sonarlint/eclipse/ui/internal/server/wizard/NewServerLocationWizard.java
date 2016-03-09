@@ -19,10 +19,18 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
+import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
+
 public class NewServerLocationWizard extends AbstractServerLocationWizard {
 
   public NewServerLocationWizard() {
     super(new ServerLocationWizardPage(), "Add SonarQube Server");
+  }
+
+  @Override
+  protected void doFinish(IServer server, String username, String password) {
+    ServersManager.getInstance().addServer(server, username, password);
   }
 
 }

@@ -22,7 +22,9 @@ package org.sonarlint.eclipse.core.internal.server;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -51,9 +53,9 @@ public class ServersManager {
 
   private static ServersManager instance = new ServersManager();
 
-  protected List<IServer> servers;
+  private final Map<String, IServer> serversById = new LinkedHashMap<>();
 
-  protected List<IServerLifecycleListener> serverListeners = new ArrayList<>(3);
+  private final List<IServerLifecycleListener> serverListeners = new ArrayList<>();
 
   // resource change listeners
   private IResourceChangeListener resourceChangeListener;
@@ -71,12 +73,11 @@ public class ServersManager {
   }
 
   protected synchronized void init() {
-    if (initialized || initializing)
+    if (initialized || initializing) {
       return;
+    }
 
     initializing = true;
-
-    servers = new ArrayList<IServer>();
 
     loadServersList();
 
@@ -120,20 +121,6 @@ public class ServersManager {
   }
 
   /**
-   * Deregister an existing server resource.
-   *
-   * @param server
-   */
-  private void deregisterServer(IServer server) {
-    if (server == null) {
-      return;
-    }
-
-    servers.remove(server);
-    fireServerEvent(server, EVENT_REMOVED);
-  }
-
-  /**
    * Fire a server event.
    */
   private void fireServerEvent(final IServer server, byte b) {
@@ -158,30 +145,19 @@ public class ServersManager {
   private void saveServersList() {
     try {
       IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID);
-      ISecurePreferences secureServersNode = null;
       rootNode.sync();
       Preferences serversNode = rootNode.node(PREF_SERVERS);
       serversNode.removeNode();
       serversNode = rootNode.node(PREF_SERVERS);
       serversNode.put(INITIALIZED_ATTRIBUTE, "true");
-      for (IServer server : servers) {
+      for (IServer server : serversById.values()) {
         Preferences serverNode = serversNode.node(server.getId());
         serverNode.put(NAME_ATTRIBUTE, server.getName());
         serverNode.put(URL_ATTRIBUTE, server.getHost());
         serverNode.putBoolean(AUTH_ATTRIBUTE, server.hasAuth());
-        if (server.hasAuth()) {
-          secureServersNode = secureServersNode != null ? secureServersNode
-            : SecurePreferencesFactory.getDefault().node(SonarLintCorePlugin.PLUGIN_ID).node(ServersManager.PREF_SERVERS);
-          ISecurePreferences secureServerNode = secureServersNode.node(server.getId());
-          secureServerNode.put(USERNAME_ATTRIBUTE, server.getUsername(), true);
-          secureServerNode.put(PASSWORD_ATTRIBUTE, server.getPassword(), true);
-        }
       }
       serversNode.flush();
-      if (secureServersNode != null) {
-        secureServersNode.flush();
-      }
-    } catch (IOException | StorageException | BackingStoreException e) {
+    } catch (BackingStoreException e) {
       throw new IllegalStateException("Unable to save server list", e);
     }
   }
@@ -189,7 +165,6 @@ public class ServersManager {
   protected void loadServersList() {
     try {
       IEclipsePreferences rootNode = InstanceScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID);
-      ISecurePreferences secureServersNode = null;
       rootNode.sync();
       Preferences serversNode = rootNode.nodeExists(PREF_SERVERS) ? rootNode.node(PREF_SERVERS) : DefaultScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID).node(PREF_SERVERS);
       for (String serverId : serversNode.childrenNames()) {
@@ -197,35 +172,44 @@ public class ServersManager {
         boolean auth = serverNode.getBoolean(AUTH_ATTRIBUTE, false);
         String name = serverNode.get(NAME_ATTRIBUTE, "");
         String url = serverNode.get(URL_ATTRIBUTE, "");
-        String username = "";
-        String password = "";
-        if (auth) {
-          secureServersNode = secureServersNode != null ? secureServersNode
-            : SecurePreferencesFactory.getDefault().node(SonarLintCorePlugin.PLUGIN_ID).node(ServersManager.PREF_SERVERS);
-          ISecurePreferences secureServerNode = secureServersNode.node(serverId);
-          username = secureServerNode.get(USERNAME_ATTRIBUTE, "");
-          password = secureServerNode.get(PASSWORD_ATTRIBUTE, "");
-        }
-        Server sonarServer = new Server(serverId, name, url, username, password);
-        servers.add(sonarServer);
+        Server sonarServer = new Server(serverId, name, url, auth);
+        serversById.put(serverId, sonarServer);
       }
-    } catch (StorageException | BackingStoreException e) {
+    } catch (BackingStoreException e) {
       throw new IllegalStateException("Unable to load server list", e);
     }
   }
 
-  public void addServer(IServer server) {
-    if (server == null)
+  public void addServer(IServer server, String username, String password) {
+    if (server == null) {
       return;
+    }
 
-    if (!initialized)
+    if (!initialized) {
       init();
+    }
 
-    if (!servers.contains(server))
-      registerServer(server);
-    else
-      fireServerEvent(server, EVENT_CHANGED);
+    if (serversById.containsKey(server.getId())) {
+      throw new IllegalStateException("There is already a server with id '" + server.getId() + "'");
+    }
+    serversById.put(server.getId(), server);
     saveServersList();
+    if (server.hasAuth()) {
+      storeCredentials(server, username, password);
+    }
+    fireServerEvent(server, EVENT_ADDED);
+  }
+
+  private void storeCredentials(IServer server, String username, String password) {
+    try {
+      ISecurePreferences secureServersNode = SecurePreferencesFactory.getDefault().node(SonarLintCorePlugin.PLUGIN_ID).node(ServersManager.PREF_SERVERS);
+      ISecurePreferences secureServerNode = secureServersNode.node(server.getId());
+      secureServerNode.put(USERNAME_ATTRIBUTE, username, true);
+      secureServerNode.put(PASSWORD_ATTRIBUTE, password, true);
+      secureServersNode.flush();
+    } catch (StorageException | IOException e) {
+      throw new IllegalStateException("Unable to save secure credentials", e);
+    }
   }
 
   public void removeServer(IServer server) {
@@ -233,9 +217,12 @@ public class ServersManager {
       init();
     }
 
-    if (servers.contains(server)) {
-      deregisterServer(server);
+    if (serversById.containsKey(server.getId())) {
+      serversById.remove(server.getId());
       saveServersList();
+      ISecurePreferences secureServersNode = SecurePreferencesFactory.getDefault().node(SonarLintCorePlugin.PLUGIN_ID).node(ServersManager.PREF_SERVERS);
+      secureServersNode.node(server.getId()).removeNode();
+      fireServerEvent(server, EVENT_REMOVED);
     }
   }
 
@@ -249,7 +236,11 @@ public class ServersManager {
       init();
     }
 
-    return Collections.unmodifiableList(servers);
+    return getServersNoInit();
+  }
+
+  public List<IServer> getServersNoInit() {
+    return Collections.unmodifiableList(new ArrayList<>(serversById.values()));
   }
 
   /**
@@ -259,34 +250,58 @@ public class ServersManager {
    * @return a server
    */
   public IServer getServer(String id) {
-    if (!initialized) {
-      init();
-    }
-
     if (id == null) {
       throw new IllegalArgumentException();
     }
 
-    for (IServer server : servers) {
-      if (id.equals(server.getId())) {
-        return server;
-      }
+    if (!initialized) {
+      init();
     }
-    return null;
+
+    return serversById.get(id);
   }
 
-  /**
-   * Registers a new server.
-   *
-   * @param server a server
-   */
-  private void registerServer(IServer server) {
+  public void updateServer(IServer server, String username, String password) {
     if (server == null) {
       return;
     }
 
-    servers.add(server);
-    fireServerEvent(server, EVENT_ADDED);
+    if (!initialized) {
+      init();
+    }
+
+    if (!serversById.containsKey(server.getId())) {
+      throw new IllegalStateException("There is no server with id '" + server.getId() + "'");
+    }
+
+    ((Server) serversById.get(server.getId())).stop();
+    serversById.put(server.getId(), server);
+    saveServersList();
+    if (server.hasAuth()) {
+      storeCredentials(server, username, password);
+    }
+    fireServerEvent(server, EVENT_CHANGED);
+  }
+
+  public static String getUsername(IServer server) {
+    return getFromSecure(server, USERNAME_ATTRIBUTE);
+  }
+
+  public static String getPassword(IServer server) {
+    return getFromSecure(server, PASSWORD_ATTRIBUTE);
+  }
+
+  private static String getFromSecure(IServer server, String attribute) {
+    try {
+      ISecurePreferences secureServersNode = SecurePreferencesFactory.getDefault().node(SonarLintCorePlugin.PLUGIN_ID).node(ServersManager.PREF_SERVERS);
+      if (!secureServersNode.nodeExists(server.getId())) {
+        return null;
+      }
+      ISecurePreferences secureServerNode = secureServersNode.node(server.getId());
+      return secureServerNode.get(attribute, null);
+    } catch (StorageException e) {
+      throw new IllegalStateException("Unable to save secure credentials", e);
+    }
   }
 
 }

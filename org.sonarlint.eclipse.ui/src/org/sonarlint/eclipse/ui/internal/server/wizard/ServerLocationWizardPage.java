@@ -39,9 +39,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -186,8 +186,8 @@ public class ServerLocationWizardPage extends WizardPage {
       serverIdText.setText(StringUtils.defaultString(server.getId()));
       serverUrlText.setText(StringUtils.defaultString(server.getHost()));
       serverNameText.setText(StringUtils.defaultString(server.getName()));
-      serverUsernameText.setText(StringUtils.defaultString(server.getUsername()));
-      serverPasswordText.setText(StringUtils.defaultString(server.getPassword()));
+      serverUsernameText.setText(StringUtils.defaultString(ServersManager.getUsername(server)));
+      serverPasswordText.setText(StringUtils.defaultString(ServersManager.getPassword(server)));
     } else {
       serverIdManuallyChanged = false;
       serverUrlText.setText("http://");
@@ -205,7 +205,7 @@ public class ServerLocationWizardPage extends WizardPage {
       updateStatus("Server id must be specified");
       return;
     }
-    if (!edit && SonarLintCorePlugin.getDefault().findServer(getServerId()) != null) {
+    if (!edit && ServersManager.getInstance().getServer(getServerId()) != null) {
       updateStatus("Server id already exists");
       return;
     }
@@ -238,7 +238,7 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   public IServer getServer() {
-    return new Server(getServerId(), getServerName(), getServerUrl(), getUsername(), getPassword());
+    return new Server(getServerId(), getServerName(), getServerUrl(), StringUtils.isNotBlank(getUsername()) || StringUtils.isNotBlank(getPassword()));
   }
 
 }

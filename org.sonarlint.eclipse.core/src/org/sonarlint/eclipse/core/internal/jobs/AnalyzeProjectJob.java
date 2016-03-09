@@ -64,6 +64,7 @@ import org.sonarlint.eclipse.core.internal.markers.SonarMarker.Range;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.tracking.Input;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.tracking.Tracker;
@@ -364,14 +365,14 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       @Override
       public void run() {
         if (StringUtils.isNotBlank(project.getServerId())) {
-          IServer server = SonarLintCorePlugin.getDefault().findServer(project.getServerId());
+          IServer server = ServersManager.getInstance().getServer(project.getServerId());
           if (server == null) {
             throw new IllegalStateException(
               "Project " + project.getProject().getName() + " is linked to an unknow server: " + project.getServerId() + ". Please update project configuration.");
           }
           server.startAnalysis(config, new SonarLintIssueListener(issuesPerResource));
         } else {
-          SonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade();
+          StandaloneSonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade();
           facadeToUse.startAnalysis(config, new SonarLintIssueListener(issuesPerResource));
         }
       }
