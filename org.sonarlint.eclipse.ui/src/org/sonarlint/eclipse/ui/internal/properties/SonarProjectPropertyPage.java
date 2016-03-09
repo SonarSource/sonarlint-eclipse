@@ -20,17 +20,25 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.ui.internal.Messages;
+import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
 
 /**
  * Property page for projects to view sonar server connection. It store in
@@ -42,6 +50,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
   private Button enabledBtn;
   private Text serverIdField;
   private Text moduleKeyField;
+  private IServer server;
 
   public SonarProjectPropertyPage() {
     setTitle(Messages.SonarProjectPropertyPage_title);
@@ -56,7 +65,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
 
     final SonarLintProject sonarProject = SonarLintProject.getInstance(getProject());
 
-    Composite container = new Composite(parent, SWT.NULL);
+    final Composite container = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout();
     container.setLayout(layout);
     container.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
@@ -70,10 +79,37 @@ public class SonarProjectPropertyPage extends PropertyPage {
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
 
-    serverIdField = addText(Messages.SonarProjectPropertyBlock_label_serverId, sonarProject.getServerId(), container);
+    server = ServersManager.getInstance().getServer(sonarProject.getServerId());
+
+    serverIdField = addText(Messages.SonarProjectPropertyBlock_label_serverId, serverName(sonarProject.getServerId()),
+      container);
     moduleKeyField = addText(Messages.SonarProjectPropertyBlock_label_key, sonarProject.getModuleKey(), container);
 
+    if (server == null) {
+      Link hlink = new Link(container, SWT.NONE);
+      hlink.setText("<a>Add SonarQube server '" + sonarProject.getServerId() + "'</a>");
+      hlink.setBackground(container.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+      GridData gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
+      gd.horizontalSpan = 2;
+      hlink.setLayoutData(gd);
+      hlink.addSelectionListener(new SelectionAdapter() {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+          NewServerLocationWizard wizard = new NewServerLocationWizard(sonarProject.getServerId());
+          WizardDialog wd = new WizardDialog(container.getShell(), wizard);
+          if (wd.open() == Window.OK) {
+            server = ServersManager.getInstance().getServer(sonarProject.getServerId());
+            serverIdField.setText(serverName(sonarProject.getServerId()));
+          }
+        }
+      });
+    }
+
     return container;
+  }
+
+  private String serverName(final String serverId) {
+    return server != null ? server.getName() : "Unknown server: '" + serverId + "'";
   }
 
   private static Text addText(String label, String text, Composite container) {

@@ -60,14 +60,25 @@ public class ServerLocationWizardPage extends WizardPage {
 
   private ModifyListener idModifyListener;
 
+  private final String defaultServerId;
+
   public ServerLocationWizardPage() {
-    this(null);
+    this((IServer) null);
+  }
+
+  public ServerLocationWizardPage(String defaultServerId) {
+    this((IServer) null, defaultServerId);
   }
 
   public ServerLocationWizardPage(IServer sonarServer) {
+    this(sonarServer, null);
+  }
+
+  public ServerLocationWizardPage(IServer sonarServer, String defaultServerId) {
     super("server_location_page", "SonarQube Server Configuration", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
     this.edit = sonarServer != null;
     this.server = sonarServer;
+    this.defaultServerId = defaultServerId;
   }
 
   /**
@@ -188,8 +199,13 @@ public class ServerLocationWizardPage extends WizardPage {
       serverUsernameText.setText(StringUtils.defaultString(ServersManager.getUsername(server)));
       serverPasswordText.setText(StringUtils.defaultString(ServersManager.getPassword(server)));
     } else {
-      serverIdManuallyChanged = false;
-      serverUrlText.setText("http://");
+      if (defaultServerId != null) {
+        serverIdText.setText(defaultServerId);
+        serverIdManuallyChanged = true;
+      } else {
+        serverIdManuallyChanged = false;
+      }
+      serverUrlText.setText("https://");
     }
     serverUrlText.setFocus();
     serverUrlText.setSelection(serverUrlText.getText().length());
@@ -206,6 +222,12 @@ public class ServerLocationWizardPage extends WizardPage {
     }
     if (!edit && ServersManager.getInstance().getServer(getServerId()) != null) {
       updateStatus("Server id already exists");
+      return;
+    }
+    try {
+      getServer();
+    } catch (Exception e) {
+      updateStatus(e.getMessage());
       return;
     }
     updateStatus(null);

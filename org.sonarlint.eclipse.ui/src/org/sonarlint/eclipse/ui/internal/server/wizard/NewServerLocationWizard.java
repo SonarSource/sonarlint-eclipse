@@ -30,6 +30,10 @@ public class NewServerLocationWizard extends AbstractServerLocationWizard {
     super(new ServerLocationWizardPage(), "Add SonarQube Server");
   }
 
+  public NewServerLocationWizard(String serverId) {
+    super(new ServerLocationWizardPage(serverId), "Add SonarQube Server");
+  }
+
   @Override
   protected void doFinish(IServer server, String username, String password) {
     ServersManager.getInstance().addServer(server, username, password);
