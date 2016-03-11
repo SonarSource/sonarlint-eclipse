@@ -39,7 +39,7 @@ public class ServerSyncAction extends SelectionProviderAction {
   public ServerSyncAction(Shell shell, ISelectionProvider selectionProvider) {
     super(selectionProvider, Messages.actionSync);
     this.shell = shell;
-    setImageDescriptor(SonarLintImages.SONARSYNCHRO_IMG);
+    setImageDescriptor(SonarLintImages.DOWNLOAD_IMG);
   }
 
   @Override

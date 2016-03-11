@@ -34,7 +34,7 @@ public final class SonarLintImages {
   public static final ImageDescriptor IMG_WIZBAN_NEW_SERVER = createImageDescriptor("new_server_wiz.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONAR16_IMG_DESC = createImageDescriptor("onde-sonar-16.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONARSYNCHRO_IMG = createImageDescriptor("synced.gif"); //$NON-NLS-1$
-  public static final ImageDescriptor SONARREFRESH_IMG = createImageDescriptor("refresh.gif"); //$NON-NLS-1$
+  public static final ImageDescriptor DOWNLOAD_IMG = createImageDescriptor("download16.png"); //$NON-NLS-1$
   public static final ImageDescriptor SONARCLOSE_IMG = createImageDescriptor("close.gif"); //$NON-NLS-1$
   public static final ImageDescriptor WIZ_NEW_SERVER = createImageDescriptor("wiz_new_server.gif"); //$NON-NLS-1$
 

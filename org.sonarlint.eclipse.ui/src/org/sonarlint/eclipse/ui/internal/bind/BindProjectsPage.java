@@ -28,6 +28,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
@@ -86,6 +87,7 @@ public class BindProjectsPage extends WizardPage {
   private IServer selectedServer;
   private Composite serverDropDownPage;
   private ComboViewer serverCombo;
+  private Button autoBindBtn;
 
   public BindProjectsPage(List<IProject> projects) {
     super("bindProjects", "Bind with SonarQube", SonarLintImages.SONARWIZBAN_IMG);
@@ -183,17 +185,17 @@ public class BindProjectsPage extends WizardPage {
       }
     });
 
-    final Button autoBindBtn = new Button(btnContainer, SWT.PUSH);
+    autoBindBtn = new Button(btnContainer, SWT.PUSH);
     viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
       @Override
       public void selectionChanged(SelectionChangedEvent event) {
-        autoBindBtn.setEnabled(!viewer.getStructuredSelection().isEmpty());
+        updateAutoBindState();
       }
     });
 
     autoBindBtn.setText("Auto bind selected projects");
-    autoBindBtn.setEnabled(!viewer.getStructuredSelection().isEmpty() && selectedServer != null);
+    updateAutoBindState();
     autoBindBtn.addListener(SWT.Selection, new Listener() {
 
       @Override
@@ -201,7 +203,7 @@ public class BindProjectsPage extends WizardPage {
         TextSearchIndex<RemoteModule> moduleIndex = selectedServer.getModuleIndex();
         for (ProjectBindModel bind : (List<ProjectBindModel>) viewer.getStructuredSelection().toList()) {
           List<RemoteModule> results = moduleIndex.search(bind.getEclipseName());
-          if (results.size() > 0) {
+          if (!results.isEmpty()) {
             bind.associate(selectedServer.getId(), results.get(0).getName(), results.get(0).getKey());
           }
         }
@@ -248,8 +250,21 @@ public class BindProjectsPage extends WizardPage {
         IStructuredSelection selection = (IStructuredSelection) event.getSelection();
         selectedServer = (IServer) selection.getFirstElement();
         serverCombo.refresh();
+        updateAutoBindState();
       }
+
     });
+  }
+
+  private void updateAutoBindState() {
+    if (selectedServer != null && !selectedServer.isSynced()) {
+      setMessage("Server is not synced", IMessageProvider.WARNING);
+    } else {
+      setMessage("");
+    }
+    if (autoBindBtn != null) {
+      autoBindBtn.setEnabled(!viewer.getStructuredSelection().isEmpty() && selectedServer != null && selectedServer.isSynced());
+    }
   }
 
   private void createNoServerForm(Composite parent) {

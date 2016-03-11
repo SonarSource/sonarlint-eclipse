@@ -40,20 +40,30 @@ import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 public class SearchEngineProvider implements IContentProposalProvider {
 
   private final WizardPage parentPage;
-  private final TextSearchIndex<RemoteModule> moduleIndex;
   private final IServer server;
+  private TextSearchIndex<RemoteModule> moduleIndex;
 
   public SearchEngineProvider(IServer server, WizardPage parentPage) {
     this.server = server;
-    moduleIndex = server.getModuleIndex();
     this.parentPage = parentPage;
+  }
+
+  public TextSearchIndex<RemoteModule> getModuleIndex() {
+    if (moduleIndex == null && server.isSynced()) {
+      moduleIndex = server.getModuleIndex();
+    }
+    return moduleIndex;
   }
 
   @Override
   public IContentProposal[] getProposals(String contents, int position) {
+    if (!server.isSynced()) {
+      parentPage.setMessage("Please sync server first", IMessageProvider.INFORMATION);
+      return new IContentProposal[0];
+    }
     List<IContentProposal> list = new ArrayList<>();
     try {
-      List<RemoteModule> modules = moduleIndex.search(contents);
+      List<RemoteModule> modules = getModuleIndex().search(contents);
       for (RemoteModule m : modules) {
         RemoteSonarProject prj = new RemoteSonarProject(server.getId(), m.getKey(), m.getName());
         list.add(new ContentProposal(prj.asString(), m.getName(), prj.getDescription()));

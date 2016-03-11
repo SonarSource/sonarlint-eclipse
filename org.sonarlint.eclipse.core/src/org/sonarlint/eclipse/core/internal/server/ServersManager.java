@@ -300,7 +300,7 @@ public class ServersManager {
       ISecurePreferences secureServerNode = secureServersNode.node(server.getId());
       return secureServerNode.get(attribute, null);
     } catch (StorageException e) {
-      throw new IllegalStateException("Unable to save secure credentials", e);
+      throw new IllegalStateException("Unable to read secure credentials", e);
     }
   }
 

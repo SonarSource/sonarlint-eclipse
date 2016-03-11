@@ -74,8 +74,8 @@ public class Server implements IServer, StateListener {
     GlobalConfiguration globalConfig = GlobalConfiguration.builder()
       .setServerId(getId())
       .setVerbose(SonarLintCorePlugin.getDefault().isDebugEnabled())
-      .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append(getId()).append("work").toFile().toPath())
-      .setStorageRoot(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append(getId()).append("storage").toFile().toPath())
+      .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("work").append(getId()).toFile().toPath())
+      .setStorageRoot(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("storage").toFile().toPath())
       .setLogOutput(new SonarLintLogOutput())
       .build();
     this.client = new SonarLintEngineImpl(globalConfig);
@@ -115,6 +115,11 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
+  public boolean isSynced() {
+    return syncStatus != null;
+  }
+
+  @Override
   public String getServerVersion() {
     if (syncStatus == null) {
       return NOT_SYNCED;
@@ -140,7 +145,7 @@ public class Server implements IServer, StateListener {
       case SYNCED:
         return "Version: " + getServerVersion() + ", Last sync: " + getSyncDate();
       case SYNCING:
-        return "Synchonizing...";
+        return "Synchronizing...";
       default:
         throw new IllegalArgumentException(client.getState().name());
     }

@@ -110,4 +110,6 @@ public interface IServer {
 
   void setVerbose(boolean verbose);
 
+  boolean isSynced();
+
 }
