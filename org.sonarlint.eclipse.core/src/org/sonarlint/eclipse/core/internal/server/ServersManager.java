@@ -251,7 +251,7 @@ public class ServersManager {
    */
   public IServer getServer(String id) {
     if (id == null) {
-      throw new IllegalArgumentException();
+      return null;
     }
 
     if (!initialized) {

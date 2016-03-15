@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
+import java.util.Arrays;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -38,6 +39,7 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.ui.internal.Messages;
+import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
 import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
 
 /**
@@ -50,7 +52,9 @@ public class SonarProjectPropertyPage extends PropertyPage {
   private Button enabledBtn;
   private Text serverIdField;
   private Text moduleKeyField;
-  private IServer server;
+  private Link addServerLink;
+  private Link bindLink;
+  private Composite container;
 
   public SonarProjectPropertyPage() {
     setTitle(Messages.SonarProjectPropertyPage_title);
@@ -65,7 +69,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
 
     final SonarLintProject sonarProject = SonarLintProject.getInstance(getProject());
 
-    final Composite container = new Composite(parent, SWT.NULL);
+    container = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout();
     container.setLayout(layout);
     container.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
@@ -79,36 +83,72 @@ public class SonarProjectPropertyPage extends PropertyPage {
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
 
-    server = ServersManager.getInstance().getServer(sonarProject.getServerId());
+    serverIdField = addText(Messages.SonarProjectPropertyBlock_label_server, "", container);
+    moduleKeyField = addText(Messages.SonarProjectPropertyBlock_label_key, "", container);
 
-    serverIdField = addText(Messages.SonarProjectPropertyBlock_label_serverId, serverName(sonarProject.getServerId()),
-      container);
-    moduleKeyField = addText(Messages.SonarProjectPropertyBlock_label_key, sonarProject.getModuleKey(), container);
-
-    if (server == null) {
-      Link hlink = new Link(container, SWT.NONE);
-      hlink.setText("<a>Add SonarQube server '" + sonarProject.getServerId() + "'</a>");
-      hlink.setBackground(container.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-      GridData gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
-      gd.horizontalSpan = 2;
-      hlink.setLayoutData(gd);
-      hlink.addSelectionListener(new SelectionAdapter() {
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-          NewServerLocationWizard wizard = new NewServerLocationWizard(sonarProject.getServerId());
-          WizardDialog wd = new WizardDialog(container.getShell(), wizard);
-          if (wd.open() == Window.OK) {
-            server = ServersManager.getInstance().getServer(sonarProject.getServerId());
-            serverIdField.setText(serverName(sonarProject.getServerId()));
-          }
+    addServerLink = new Link(container, SWT.NONE);
+    addServerLink.setBackground(container.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+    GridData gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
+    gd.horizontalSpan = 2;
+    addServerLink.setLayoutData(gd);
+    addServerLink.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        String serverId = SonarLintProject.getInstance(getProject()).getServerId();
+        NewServerLocationWizard wizard = new NewServerLocationWizard(serverId);
+        WizardDialog wd = new WizardDialog(container.getShell(), wizard);
+        if (wd.open() == Window.OK) {
+          updateState();
         }
-      });
-    }
+      }
+    });
+
+    bindLink = new Link(container, SWT.NONE);
+    bindLink.setBackground(container.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+    gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
+    gd.horizontalSpan = 2;
+    bindLink.setLayoutData(gd);
+    bindLink.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        BindProjectsWizard wizard = new BindProjectsWizard(Arrays.asList(getProject()));
+        WizardDialog wd = new WizardDialog(container.getShell(), wizard);
+        if (wd.open() == Window.OK) {
+          updateState();
+        }
+      }
+    });
+
+    updateState();
 
     return container;
   }
 
-  private String serverName(final String serverId) {
+  private void updateState() {
+    final SonarLintProject sonarProject = SonarLintProject.getInstance(getProject());
+    String moduleKey = sonarProject.getModuleKey();
+    moduleKeyField.setText(moduleKey != null ? moduleKey : "");
+    final String serverId = sonarProject.getServerId();
+    serverIdField.setText(serverName(serverId));
+    if (moduleKey == null && serverId == null) {
+      bindLink.setText("<a>Bind project</a>");
+    } else {
+      bindLink.setText("<a>Update project binding</a>");
+    }
+    if (serverId != null && ServersManager.getInstance().getServer(serverId) == null) {
+      addServerLink.setText("<a>Add SonarQube server '" + serverId + "'</a>");
+      addServerLink.setVisible(true);
+    } else {
+      addServerLink.setVisible(false);
+    }
+    container.layout(true, true);
+  }
+
+  private static String serverName(final String serverId) {
+    if (serverId == null) {
+      return "";
+    }
+    IServer server = ServersManager.getInstance().getServer(serverId);
     return server != null ? server.getName() : "Unknown server: '" + serverId + "'";
   }
 

@@ -34,14 +34,14 @@ public class ProjectBindModel extends AbstractModelObject {
   public static final String PROPERTY_PROJECT_SONAR_FULLNAME = "sonarFullName";
 
   private final IProject project;
-  private String key;
+  private String moduleKey;
   private String serverId;
   private IServer server;
 
   public ProjectBindModel(IProject project) {
     this.project = project;
     SonarLintProject sonarProject = SonarLintProject.getInstance(project);
-    this.key = sonarProject.getModuleKey();
+    this.moduleKey = sonarProject.getModuleKey();
     this.serverId = sonarProject.getServerId();
     this.server = ServersManager.getInstance().getServer(this.serverId);
   }
@@ -55,22 +55,22 @@ public class ProjectBindModel extends AbstractModelObject {
   }
 
   public String getSonarFullName() {
-    if (StringUtils.isBlank(key)) {
+    if (StringUtils.isBlank(moduleKey)) {
       return "<Type here to start searching for a remote SonarQube project...>";
     } else if (server == null) {
       return "<Bound to an unknown server: '" + this.serverId + "'>";
     } else {
-      return "'" + key + "' on server '" + server.getName() + "'";
+      return "'" + moduleKey + "' on server '" + server.getName() + "'";
     }
   }
 
-  public String getKey() {
-    return key;
+  public String getModuleKey() {
+    return moduleKey;
   }
 
   public void associate(String serverId, String sonarProjectName, String key) {
     String oldValue = getSonarFullName();
-    this.key = key;
+    this.moduleKey = key;
     this.serverId = serverId;
     this.server = ServersManager.getInstance().getServer(this.serverId);
     firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());
@@ -78,7 +78,7 @@ public class ProjectBindModel extends AbstractModelObject {
 
   public void unassociate() {
     String oldValue = getSonarFullName();
-    this.key = null;
+    this.moduleKey = null;
     this.serverId = null;
     this.server = null;
     firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());

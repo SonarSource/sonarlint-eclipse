@@ -28,7 +28,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.builder.SonarLintBuilder;
+import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public class SonarLintProject {
 
@@ -129,11 +131,11 @@ public class SonarLintProject {
   }
 
   public String getModuleKey() {
-    return moduleKey;
+    return StringUtils.trimToNull(moduleKey);
   }
 
   public String getServerId() {
-    return serverId;
+    return StringUtils.trimToNull(serverId);
   }
 
   public void setModuleKey(String moduleKey) {
@@ -145,7 +147,16 @@ public class SonarLintProject {
   }
 
   public void sync() {
-    ServersManager.getInstance().getServer(serverId).syncProject(moduleKey);
+    IServer server = ServersManager.getInstance().getServer(getServerId());
+    if (server == null) {
+      SonarLintCorePlugin.getDefault().error("Unable to sync project '" + project.getName() + "' since it is bound to an unknow server: '" + getServerId() + "'");
+      return;
+    }
+    server.syncProject(moduleKey);
+  }
+
+  public boolean isBound() {
+    return getServerId() != null && getModuleKey() != null;
   }
 
 }

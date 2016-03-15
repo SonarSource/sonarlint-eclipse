@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.bind;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.property.value.IValueProperty;
@@ -65,7 +66,6 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.part.PageBook;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
@@ -388,29 +388,22 @@ public class BindProjectsPage extends WizardPage {
   public boolean finish() {
     final ProjectBindModel[] projectAssociations = getProjects();
     for (ProjectBindModel projectAssociation : projectAssociations) {
-      if (StringUtils.isNotBlank(projectAssociation.getKey())) {
-        try {
-          boolean changed = false;
-          IProject project = projectAssociation.getProject();
-          SonarLintProject sonarProject = SonarLintProject.getInstance(project);
-          if (!projectAssociation.getServerId().equals(sonarProject.getServerId())) {
-            sonarProject.setServerId(projectAssociation.getServerId());
-            changed = true;
-          }
-          if (!projectAssociation.getKey().equals(sonarProject.getModuleKey())) {
-            sonarProject.setModuleKey(projectAssociation.getKey());
-            changed = true;
-          }
-          if (changed) {
-            sonarProject.save();
-          }
-          if (changed) {
-            sonarProject.sync();
-          }
-        } catch (Exception e) {
-          SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
-          return false;
-        }
+      boolean changed = false;
+      IProject project = projectAssociation.getProject();
+      SonarLintProject sonarProject = SonarLintProject.getInstance(project);
+      if (!Objects.equals(projectAssociation.getServerId(), sonarProject.getServerId())) {
+        sonarProject.setServerId(projectAssociation.getServerId());
+        changed = true;
+      }
+      if (!Objects.equals(projectAssociation.getModuleKey(), sonarProject.getModuleKey())) {
+        sonarProject.setModuleKey(projectAssociation.getModuleKey());
+        changed = true;
+      }
+      if (changed) {
+        sonarProject.save();
+      }
+      if (changed && sonarProject.isBound()) {
+        sonarProject.sync();
       }
     }
     return true;
