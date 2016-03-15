@@ -524,6 +524,24 @@
         </menu>
      </menuContribution>
   </extension>
+  
+  <extension point="org.eclipse.ui.decorators">  
+	  <decorator 
+	     id="org.sonarlint.eclipse.ui.sonarlintDecorator"
+       label="%sonarlint.decorator.name"
+	     state="true"  
+	     class="org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator"  
+	     lightweight="true"  
+	     location="TOP_LEFT">
+	     <description>%sonarlint.decorator.description</description>
+	     <enablement>
+	       <or> 
+	         <objectClass name="org.eclipse.core.resources.IProject"/>
+	         <objectClass name="org.eclipse.core.runtime.IAdaptable"/>
+	       </or>  
+	     </enablement>  
+	  </decorator>
+  </extension>
 
 	
 </plugin>
