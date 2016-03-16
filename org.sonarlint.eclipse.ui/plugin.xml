@@ -384,7 +384,24 @@
           <visibleWhen>
               <with variable="activeMenuSelection">
                  <iterate ifEmpty="false">
-                 	 <adapt type="org.eclipse.core.resources.IProject"/>
+                   <and>
+                 	   <adapt type="org.eclipse.core.resources.IProject"/>
+                 	   <test property="org.sonarlint.eclipse.core.isBound" value="false"/>
+                 	 </and>
+                 </iterate>
+             </with>
+          </visibleWhen>
+       </command>
+      <command
+             commandId="org.sonarlint.eclipse.ui.internal.command.UpdateProjectsBindingCommand"
+             style="push">
+          <visibleWhen>
+              <with variable="activeMenuSelection">
+                 <iterate ifEmpty="false">
+                   <and>
+                 	   <adapt type="org.eclipse.core.resources.IProject"/>
+                 	   <test property="org.sonarlint.eclipse.core.isBound" value="true"/>
+                 	 </and>
                  </iterate>
              </with>
           </visibleWhen>
@@ -416,6 +433,12 @@
           name="Bind with remote SonarQube server..."
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
+    <command
+          description="Update binding configuration"
+          id="org.sonarlint.eclipse.ui.internal.command.UpdateProjectsBindingCommand"
+          name="Update binding..."
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
   </extension>
 
   <extension point="org.eclipse.ui.handlers">
@@ -431,6 +454,10 @@
           class="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand">
     </handler>
+    <handler
+          class="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.UpdateProjectsBindingCommand">
+    </handler>
   </extension>
 
   <extension point="org.eclipse.ui.commandImages">
@@ -439,6 +466,9 @@
       icon="icons/onde-sonar-16-execute.png" />
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
+      icon="icons/synced.gif" />
+    <image
+      commandId="org.sonarlint.eclipse.ui.internal.command.UpdateProjectsBindingCommand"
       icon="icons/synced.gif" />
   </extension>
 
@@ -542,6 +572,6 @@
 	     </enablement>  
 	  </decorator>
   </extension>
-
+  
 	
 </plugin>

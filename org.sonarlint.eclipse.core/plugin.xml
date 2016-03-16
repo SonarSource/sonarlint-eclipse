@@ -34,4 +34,15 @@
          </run>
       </builder>
    </extension>
+
+  <extension
+        point="org.eclipse.core.expressions.propertyTesters">
+     <propertyTester
+           class="org.sonarlint.eclipse.core.internal.resources.BindedPropertyTester"
+           id="org.sonarlint.eclipse.core.internal.resources.BindedPropertyTester"
+           namespace="org.sonarlint.eclipse.core"
+           properties="isBound"
+           type="org.eclipse.core.runtime.IAdaptable">
+     </propertyTester>
+  </extension>
 </plugin>

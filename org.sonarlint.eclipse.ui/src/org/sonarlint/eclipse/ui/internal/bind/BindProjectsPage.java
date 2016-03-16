@@ -32,6 +32,7 @@ import org.eclipse.jface.databinding.viewers.ViewerSupport;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
@@ -80,7 +81,7 @@ import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 public class BindProjectsPage extends WizardPage {
 
   private final List<IProject> projects;
-  private TableViewer viewer;
+  private CheckboxTableViewer viewer;
   private Form noServersPage;
   private PageBook book;
   private IServerLifecycleListener serverListener;
@@ -120,7 +121,7 @@ public class BindProjectsPage extends WizardPage {
     toggleServerPage();
 
     // List of projects
-    viewer = new TableViewer(container, SWT.MULTI | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.VIRTUAL);
+    viewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.VIRTUAL);
     viewer.getTable().setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1, 3));
 
     viewer.getTable().setHeaderVisible(true);
@@ -169,7 +170,8 @@ public class BindProjectsPage extends WizardPage {
 
       @Override
       public void selectionChanged(SelectionChangedEvent event) {
-        unassociateBtn.setEnabled(!viewer.getStructuredSelection().isEmpty());
+        unassociateBtn.setEnabled(viewer.getCheckedElements().length > 0);
+        updateAutoBindState();
       }
     });
 
@@ -179,7 +181,8 @@ public class BindProjectsPage extends WizardPage {
 
       @Override
       public void handleEvent(Event event) {
-        for (ProjectBindModel bind : (List<ProjectBindModel>) viewer.getStructuredSelection().toList()) {
+        for (Object object : viewer.getCheckedElements()) {
+          ProjectBindModel bind = (ProjectBindModel) object;
           bind.unassociate();
         }
       }
@@ -201,7 +204,8 @@ public class BindProjectsPage extends WizardPage {
       @Override
       public void handleEvent(Event event) {
         TextSearchIndex<RemoteModule> moduleIndex = selectedServer.getModuleIndex();
-        for (ProjectBindModel bind : (List<ProjectBindModel>) viewer.getStructuredSelection().toList()) {
+        for (Object object : viewer.getCheckedElements()) {
+          ProjectBindModel bind = (ProjectBindModel) object;
           List<RemoteModule> results = moduleIndex.search(bind.getEclipseName());
           if (!results.isEmpty()) {
             bind.associate(selectedServer.getId(), results.get(0).getName(), results.get(0).getKey());
@@ -263,7 +267,7 @@ public class BindProjectsPage extends WizardPage {
       setMessage("");
     }
     if (autoBindBtn != null) {
-      autoBindBtn.setEnabled(!viewer.getStructuredSelection().isEmpty() && selectedServer != null && selectedServer.isSynced());
+      autoBindBtn.setEnabled(viewer.getCheckedElements().length > 0 && selectedServer != null && selectedServer.isSynced());
     }
   }
 
