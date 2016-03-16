@@ -29,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
@@ -88,7 +89,8 @@ public class Server implements IServer, StateListener {
     notifyAllListeners();
   }
 
-  private void notifyAllListeners() {
+  @Override
+  public void notifyAllListeners() {
     for (IServerListener listener : listeners) {
       listener.serverChanged(this);
     }
@@ -174,15 +176,7 @@ public class Server implements IServer, StateListener {
 
   @Override
   public synchronized void sync(IProgressMonitor monitor) {
-    List<SonarLintProject> projectsToSync = new ArrayList<>();
-    for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-      if (project.isAccessible()) {
-        SonarLintProject sonarProject = SonarLintProject.getInstance(project);
-        if (sonarProject.getServerId().equals(id)) {
-          projectsToSync.add(sonarProject);
-        }
-      }
-    }
+    List<SonarLintProject> projectsToSync = getBoundProjects();
     monitor.beginTask("Sync server and all associated projects", projectsToSync.size() + 1);
     syncStatus = client.sync(getConfig());
     monitor.worked(1);
@@ -194,6 +188,20 @@ public class Server implements IServer, StateListener {
       monitor.worked(1);
     }
     monitor.done();
+  }
+
+  @Override
+  public List<SonarLintProject> getBoundProjects() {
+    List<SonarLintProject> projectsToSync = new ArrayList<>();
+    for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+      if (project.isAccessible()) {
+        SonarLintProject sonarProject = SonarLintProject.getInstance(project);
+        if (Objects.equals(sonarProject.getServerId(), id)) {
+          projectsToSync.add(sonarProject);
+        }
+      }
+    }
+    return projectsToSync;
   }
 
   @Override

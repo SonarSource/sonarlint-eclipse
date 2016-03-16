@@ -32,7 +32,7 @@ import org.eclipse.ui.PlatformUI;
  * A basic cell label provider.
  */
 public abstract class BaseCellLabelProvider extends ColumnLabelProvider {
-  public ILabelDecorator decorator;
+  private ILabelDecorator decorator;
   protected ILabelProviderListener providerListener;
 
   /*
@@ -40,6 +40,7 @@ public abstract class BaseCellLabelProvider extends ColumnLabelProvider {
    * 
    * @see org.eclipse.jface.viewers.ColumnLabelProvider#update(org.eclipse.jface.viewers.ViewerCell)
    */
+  @Override
   public void update(ViewerCell cell) {
     super.update(cell);
     Object element = cell.getElement();
@@ -66,18 +67,22 @@ public abstract class BaseCellLabelProvider extends ColumnLabelProvider {
     this.decorator = getDecorator();
   }
 
+  @Override
   public Point getToolTipShift(Object object) {
     return new Point(5, 5);
   }
 
+  @Override
   public int getToolTipDisplayDelayTime(Object object) {
     return 2000;
   }
 
+  @Override
   public int getToolTipTimeDisplayed(Object object) {
     return 5000;
   }
 
+  @Override
   public void dispose() {
     if (decorator != null && providerListener != null) {
       decorator.removeListener(providerListener);
@@ -90,6 +95,7 @@ public abstract class BaseCellLabelProvider extends ColumnLabelProvider {
       decorator = PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator();
       providerListener = new ILabelProviderListener() {
         @SuppressWarnings("synthetic-access")
+        @Override
         public void labelProviderChanged(LabelProviderChangedEvent event) {
           fireLabelProviderChanged(event);
         }

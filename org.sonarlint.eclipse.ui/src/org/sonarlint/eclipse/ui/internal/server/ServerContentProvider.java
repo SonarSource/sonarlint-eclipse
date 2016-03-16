@@ -19,12 +19,15 @@
  */
 package org.sonarlint.eclipse.ui.internal.server;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
 public class ServerContentProvider extends BaseContentProvider implements ITreeContentProvider {
-  public static Object INITIALIZING = new Object();
 
   @Override
   public Object[] getElements(Object element) {
@@ -33,21 +36,29 @@ public class ServerContentProvider extends BaseContentProvider implements ITreeC
 
   @Override
   public Object[] getChildren(Object element) {
-    // TODO Associated projects
+    if (element instanceof IServer) {
+      List<IProject> projects = new ArrayList<>();
+      for (SonarLintProject p : ((IServer) element).getBoundProjects()) {
+        projects.add(p.getProject());
+      }
+      return projects.toArray();
+    }
     return new Object[0];
   }
 
   @Override
   public Object getParent(Object element) {
-    // TODO server of associated project
+    if (element instanceof IProject) {
+      String serverId = SonarLintProject.getInstance((IProject) element).getServerId();
+      return ServersManager.getInstance().getServer(serverId);
+    }
     return null;
   }
 
   @Override
   public boolean hasChildren(Object element) {
     if (element instanceof IServer) {
-      // TODO check if it has associated projects
-      return false;
+      return !((IServer) element).getBoundProjects().isEmpty();
     }
     return false;
   }

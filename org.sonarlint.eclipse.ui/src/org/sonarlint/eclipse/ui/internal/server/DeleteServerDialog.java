@@ -46,19 +46,35 @@ public class DeleteServerDialog extends MessageDialog {
    * @param configs an array of server configurations
    */
   public DeleteServerDialog(Shell parentShell, List<IServer> servers) {
-    super(parentShell, Messages.deleteServerDialogTitle, null, null, QUESTION, new String[] {IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL}, 0);
-
-    if (servers == null) {
-      throw new IllegalArgumentException();
-    }
-
+    super(parentShell, Messages.deleteServerDialogTitle, null, getMessage(servers), getImage(servers), new String[] {IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL}, 0);
     this.servers = servers;
 
-    if (servers.size() == 1) {
-      message = NLS.bind(Messages.deleteServerDialogMessage, servers.get(0).getName());
-    } else {
-      message = NLS.bind(Messages.deleteServerDialogMessageMany, Integer.toString(servers.size()));
+  }
+
+  private static int getImage(List<IServer> servers) {
+    for (IServer iServer : servers) {
+      if (!iServer.getBoundProjects().isEmpty()) {
+        return WARNING;
+      }
     }
+    return QUESTION;
+  }
+
+  private static String getMessage(List<IServer> servers) {
+    StringBuilder sb = new StringBuilder();
+    if (servers.size() == 1) {
+      sb.append(NLS.bind(Messages.deleteServerDialogMessage, servers.get(0).getName()));
+    } else {
+      sb.append(NLS.bind(Messages.deleteServerDialogMessageMany, Integer.toString(servers.size())));
+    }
+    int boundCount = 0;
+    for (IServer iServer : servers) {
+      boundCount += iServer.getBoundProjects().size();
+    }
+    if (boundCount > 0) {
+      sb.append("\n").append(NLS.bind(Messages.deleteServerDialogBoundProject, boundCount));
+    }
+    return sb.toString();
   }
 
   @Override

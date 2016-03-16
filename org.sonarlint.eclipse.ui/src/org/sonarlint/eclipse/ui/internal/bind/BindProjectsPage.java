@@ -40,6 +40,7 @@ import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.FocusCellHighlighter;
 import org.eclipse.jface.viewers.FocusCellOwnerDrawHighlighter;
+import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -64,9 +65,11 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.part.PageBook;
+import org.sonarlint.eclipse.core.internal.jobs.ProjectSyncJob;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
@@ -74,6 +77,7 @@ import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
 import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
@@ -395,7 +399,8 @@ public class BindProjectsPage extends WizardPage {
       boolean changed = false;
       IProject project = projectAssociation.getProject();
       SonarLintProject sonarProject = SonarLintProject.getInstance(project);
-      if (!Objects.equals(projectAssociation.getServerId(), sonarProject.getServerId())) {
+      String oldServerId = sonarProject.getServerId();
+      if (!Objects.equals(projectAssociation.getServerId(), oldServerId)) {
         sonarProject.setServerId(projectAssociation.getServerId());
         changed = true;
       }
@@ -405,9 +410,25 @@ public class BindProjectsPage extends WizardPage {
       }
       if (changed) {
         sonarProject.save();
-      }
-      if (changed && sonarProject.isBound()) {
-        sonarProject.sync();
+        if (sonarProject.isBound()) {
+          new ProjectSyncJob(sonarProject).schedule();
+        }
+        if (oldServerId != null && !Objects.equals(projectAssociation.getServerId(), oldServerId)) {
+          IServer server = ServersManager.getInstance().getServer(oldServerId);
+          if (server != null) {
+            server.notifyAllListeners();
+          }
+        }
+        if (projectAssociation.getServerId() != null) {
+          IServer server = ServersManager.getInstance().getServer(projectAssociation.getServerId());
+          if (server != null) {
+            server.notifyAllListeners();
+          }
+        }
+        IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
+        if (labelProvider != null) {
+          ((SonarLintProjectDecorator) labelProvider).fireChange(new IProject[] {sonarProject.getProject()});
+        }
       }
     }
     return true;

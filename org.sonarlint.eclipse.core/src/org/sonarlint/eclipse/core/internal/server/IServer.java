@@ -19,8 +19,10 @@
  */
 package org.sonarlint.eclipse.core.internal.server;
 
+import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.SonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
@@ -111,5 +113,9 @@ public interface IServer {
   void setVerbose(boolean verbose);
 
   boolean isSynced();
+
+  List<SonarLintProject> getBoundProjects();
+
+  void notifyAllListeners();
 
 }

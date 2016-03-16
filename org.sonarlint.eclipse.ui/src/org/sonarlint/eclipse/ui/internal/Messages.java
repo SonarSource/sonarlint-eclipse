@@ -73,6 +73,7 @@ public final class Messages extends NLS {
   public static String deleteServerDialogTitle;
   public static String deleteServerDialogMessage;
   public static String deleteServerDialogMessageMany;
+  public static String deleteServerDialogBoundProject;
   public static String deleteServerTask;
 
   public static String ServerLocationWizardPage_label_id;

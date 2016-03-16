@@ -116,6 +116,9 @@
 	            <instanceof
 	                  value="org.sonarlint.eclipse.core.internal.server.IServer">
 	            </instanceof>
+	            <instanceof
+	                  value="org.eclipse.core.resources.IProject">
+	            </instanceof>
 	         </or>
 	      </triggerPoints>
 	      <possibleChildren>
@@ -124,7 +127,7 @@
 	                  value="java.lang.Object">
 	            </instanceof>
 	            <instanceof
-	                  value="org.sonarlint.eclipse.core.internal.server.IServer">
+	                  value="org.eclipse.core.resources.IProject">
 	            </instanceof>
 	         </or>
 	      </possibleChildren>

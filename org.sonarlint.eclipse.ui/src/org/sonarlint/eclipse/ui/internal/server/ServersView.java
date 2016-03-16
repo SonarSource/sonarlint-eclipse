@@ -200,7 +200,7 @@ public class ServersView extends CommonNavigator {
           // init the tooltip
           ServerToolTip toolTip = new ServerToolTip(tableViewer.getTree());
           toolTip.setShift(new Point(10, 3));
-          toolTip.setPopupDelay(400); // in ms
+          toolTip.setPopupDelay(400);
           toolTip.setHideOnMouseDown(true);
           toolTip.activate();
 
@@ -226,8 +226,9 @@ public class ServersView extends CommonNavigator {
     Display.getDefault().asyncExec(new Runnable() {
       @Override
       public void run() {
-        if (!tableViewer.getTree().isDisposed())
+        if (!tableViewer.getTree().isDisposed()) {
           tableViewer.refresh(server, true);
+        }
       }
     });
   }
@@ -272,6 +273,7 @@ public class ServersView extends CommonNavigator {
       @Override
       public void serverChanged(IServer server) {
         refreshServerState(server);
+        refreshServerContent(server);
       }
     };
 

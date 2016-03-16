@@ -26,6 +26,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.builder.SonarLintBuilder;
 import org.sonarlint.eclipse.core.internal.server.IServer;
@@ -146,7 +147,7 @@ public class SonarLintProject {
     this.serverId = serverId;
   }
 
-  public void sync() {
+  public void sync(IProgressMonitor monitor) {
     IServer server = ServersManager.getInstance().getServer(getServerId());
     if (server == null) {
       SonarLintCorePlugin.getDefault().error("Unable to sync project '" + project.getName() + "' since it is bound to an unknow server: '" + getServerId() + "'");

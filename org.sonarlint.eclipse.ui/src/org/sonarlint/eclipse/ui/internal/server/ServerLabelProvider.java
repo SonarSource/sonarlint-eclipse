@@ -19,11 +19,13 @@
  */
 package org.sonarlint.eclipse.ui.internal.server;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.ui.internal.Messages;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
@@ -36,11 +38,12 @@ public class ServerLabelProvider extends BaseCellLabelProvider {
   public String getText(Object element) {
     if (element instanceof IServer) {
       IServer server = (IServer) element;
-      return notNull(server.getName());
+      return StringUtils.defaultString(server.getName());
     }
 
-    if (element == ServerContentProvider.INITIALIZING)
-      return Messages.viewInitializing;
+    if (element instanceof IProject) {
+      return ((IProject) element).getName();
+    }
 
     if (element instanceof IWorkspaceRoot) {
       return Platform.getResourceString(SonarLintUiPlugin.getDefault().getBundle(), "%viewServers");
@@ -54,24 +57,21 @@ public class ServerLabelProvider extends BaseCellLabelProvider {
     if (element instanceof IServer) {
       return SonarLintImages.SONAR16_IMG;
     }
+    if (element instanceof IProject) {
+      return PlatformUI.getWorkbench().getSharedImages().getImage(org.eclipse.ui.ide.IDE.SharedImages.IMG_OBJ_PROJECT);
+    }
     return null;
-  }
-
-  protected String notNull(String s) {
-    if (s == null)
-      return "";
-    return s;
   }
 
   @Override
   public Image getColumnImage(Object element, int index) {
-    // TODO Left blank since the CNF doesn't support this
+    // Left blank since the CNF doesn't support this
     return null;
   }
 
   @Override
   public String getColumnText(Object element, int index) {
-    // TODO Left blank since the CNF doesn't support this
+    // Left blank since the CNF doesn't support this
     return null;
   }
 

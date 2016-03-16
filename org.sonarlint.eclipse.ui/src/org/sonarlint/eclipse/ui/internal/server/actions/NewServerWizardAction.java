@@ -54,10 +54,11 @@ public class NewServerWizardAction extends Action {
     ISelection selection = workbenchWindow.getSelectionService().getSelection();
 
     IStructuredSelection selectionToPass;
-    if (selection instanceof IStructuredSelection)
+    if (selection instanceof IStructuredSelection) {
       selectionToPass = (IStructuredSelection) selection;
-    else
+    } else {
       selectionToPass = StructuredSelection.EMPTY;
+    }
 
     IWorkbenchWizard wizard = new NewServerLocationWizard();
     wizard.init(workbench, selectionToPass);

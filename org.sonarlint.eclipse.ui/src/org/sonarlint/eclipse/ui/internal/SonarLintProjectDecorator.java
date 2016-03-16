@@ -21,13 +21,19 @@ package org.sonarlint.eclipse.ui.internal;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
+import org.eclipse.jface.viewers.LabelProviderChangedEvent;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
 public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
+
+  public static final String ID = "org.sonarlint.eclipse.ui.sonarlintDecorator";
+
+  private ListenerList fListeners;
 
   @Override
   public void decorate(Object element, IDecoration decoration) {
@@ -49,13 +55,24 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
   }
 
   @Override
-  public void dispose() {
-    // Nothing to do
+  public void addListener(ILabelProviderListener listener) {
+
+    if (fListeners == null) {
+      fListeners = new ListenerList();
+    }
+
+    fListeners.add(listener);
   }
 
   @Override
-  public void addListener(ILabelProviderListener listener) {
-    // Nothing to do
+  public void dispose() {
+    if (fListeners != null) {
+      Object[] listeners = fListeners.getListeners();
+      for (int i = 0; i < listeners.length; i++) {
+        fListeners.remove(listeners[i]);
+      }
+      fListeners = null;
+    }
   }
 
   @Override
@@ -65,7 +82,21 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
 
   @Override
   public void removeListener(ILabelProviderListener listener) {
-    // Nothing to do
+    if (fListeners == null) {
+      return;
+    }
+
+    fListeners.remove(listener);
+  }
+
+  public void fireChange(IProject[] elements) {
+    if (fListeners != null && !fListeners.isEmpty()) {
+      LabelProviderChangedEvent event = new LabelProviderChangedEvent(this, elements);
+      Object[] listeners = fListeners.getListeners();
+      for (int i = 0; i < listeners.length; i++) {
+        ((ILabelProviderListener) listeners[i]).labelProviderChanged(event);
+      }
+    }
   }
 
 }

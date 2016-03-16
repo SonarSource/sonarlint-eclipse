@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.server;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -33,10 +34,12 @@ public class ServerDecorator extends LabelProvider implements ILightweightLabelD
     if (element instanceof IServer) {
       IServer server = (IServer) element;
       addSuffix(decoration, server.getSonarLintClientState());
+    } else if (element instanceof IProject) {
+      addSuffix(decoration, "test");
     }
   }
 
-  private void addSuffix(IDecoration decoration, String suffix) {
+  private static void addSuffix(IDecoration decoration, String suffix) {
     decoration.addSuffix(" [" + suffix + "]");
   }
 
