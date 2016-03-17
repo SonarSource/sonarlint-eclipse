@@ -15,7 +15,7 @@ function strongEcho {
   echo "================ $1 ================="
 }
 
-#build_snapshot "SonarSource/sonarlint-core"
+build_snapshot "SonarSource/sonarlint-core"
 
 case "$TARGET" in
 
