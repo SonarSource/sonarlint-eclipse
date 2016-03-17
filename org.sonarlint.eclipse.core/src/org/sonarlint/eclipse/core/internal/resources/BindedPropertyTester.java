@@ -34,9 +34,9 @@ public class BindedPropertyTester extends PropertyTester {
     } else if (receiver instanceof IResource) {
       project = ((IResource) receiver).getProject();
     } else if (receiver instanceof IAdaptable) {
-      project = ((IAdaptable) receiver).getAdapter(IProject.class);
+      project = (IProject) ((IAdaptable) receiver).getAdapter(IProject.class);
       if (project == null) {
-        IResource res = ((IAdaptable) receiver).getAdapter(IResource.class);
+        IResource res = (IResource) ((IAdaptable) receiver).getAdapter(IResource.class);
         if (res != null) {
           project = res.getProject();
         }
