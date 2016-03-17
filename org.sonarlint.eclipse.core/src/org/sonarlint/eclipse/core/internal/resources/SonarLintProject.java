@@ -147,13 +147,13 @@ public class SonarLintProject {
     this.serverId = serverId;
   }
 
-  public void sync(IProgressMonitor monitor) {
+  public void update(IProgressMonitor monitor) {
     IServer server = ServersManager.getInstance().getServer(getServerId());
     if (server == null) {
-      SonarLintCorePlugin.getDefault().error("Unable to sync project '" + project.getName() + "' since it is bound to an unknow server: '" + getServerId() + "'");
+      SonarLintCorePlugin.getDefault().error("Unable to update project '" + project.getName() + "' since it is bound to an unknow server: '" + getServerId() + "'");
       return;
     }
-    server.syncProject(moduleKey);
+    server.updateProject(moduleKey);
   }
 
   public boolean isBound() {

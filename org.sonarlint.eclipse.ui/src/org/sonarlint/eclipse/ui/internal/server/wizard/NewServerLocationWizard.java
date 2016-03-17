@@ -20,7 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
 import org.eclipse.core.runtime.jobs.Job;
-import org.sonarlint.eclipse.core.internal.jobs.ServerSyncJob;
+import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
@@ -38,7 +38,7 @@ public class NewServerLocationWizard extends AbstractServerLocationWizard {
   protected void doFinish(IServer server, String username, String password) {
     ServersManager.getInstance().addServer(server, username, password);
 
-    Job j = new ServerSyncJob(server);
+    Job j = new ServerUpdateJob(server);
     j.schedule();
   }
 

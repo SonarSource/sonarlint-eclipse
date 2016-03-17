@@ -23,7 +23,6 @@ import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.SonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
@@ -65,19 +64,13 @@ public interface IServer {
 
   void delete();
 
-  /**
-   * Only if {@link #getSonarLintClientState()} returns {@link State#SYNCED}
-   */
-  String getSyncDate();
+  String getUpdateDate();
 
-  /**
-   * Only if {@link #getSonarLintClientState()} returns {@link State#SYNCED}
-   */
   String getServerVersion();
 
   String getSonarLintClientState();
 
-  void sync(IProgressMonitor monitor);
+  void update(IProgressMonitor monitor);
 
   IStatus testConnection(String username, String password);
 
@@ -108,11 +101,11 @@ public interface IServer {
 
   String getHtmlRuleDescription(String ruleKey);
 
-  void syncProject(String moduleKey);
+  void updateProject(String moduleKey);
 
   void setVerbose(boolean verbose);
 
-  boolean isSynced();
+  boolean isUpdated();
 
   List<SonarLintProject> getBoundProjects();
 

@@ -45,7 +45,7 @@ import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.server.actions.NewServerWizardAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ServerDeleteAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ServerEditAction;
-import org.sonarlint.eclipse.ui.internal.server.actions.ServerSyncAction;
+import org.sonarlint.eclipse.ui.internal.server.actions.ServerUpdateAction;
 
 public class ServerActionProvider extends CommonActionProvider {
   public static final String NEW_MENU_ID = "org.sonarlint.eclipse.ui.server.newMenuId";
@@ -53,7 +53,7 @@ public class ServerActionProvider extends CommonActionProvider {
   private ICommonActionExtensionSite actionSite;
   protected Action deleteAction;
   protected Action editAction;
-  protected Action syncAction;
+  protected Action updateAction;
 
   public ServerActionProvider() {
     super();
@@ -93,7 +93,7 @@ public class ServerActionProvider extends CommonActionProvider {
     Shell shell = tableViewer.getTree().getShell();
     deleteAction = new ServerDeleteAction(shell, provider);
     editAction = new ServerEditAction(shell, provider);
-    syncAction = new ServerSyncAction(shell, provider);
+    updateAction = new ServerUpdateAction(shell, provider);
   }
 
   @Override
@@ -101,7 +101,7 @@ public class ServerActionProvider extends CommonActionProvider {
     actionBars.updateActionBars();
     actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(), deleteAction);
     actionBars.setGlobalActionHandler(ActionFactory.RENAME.getId(), editAction);
-    actionBars.setGlobalActionHandler(ActionFactory.REFRESH.getId(), syncAction);
+    actionBars.setGlobalActionHandler(ActionFactory.REFRESH.getId(), updateAction);
   }
 
   @Override
@@ -136,7 +136,7 @@ public class ServerActionProvider extends CommonActionProvider {
     }
     if (!servers.isEmpty()) {
       menu.add(deleteAction);
-      menu.add(syncAction);
+      menu.add(updateAction);
     }
   }
 

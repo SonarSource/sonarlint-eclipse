@@ -26,21 +26,21 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 
-public class ProjectSyncJob extends Job {
+public class ProjectUpdateJob extends Job {
   private final SonarLintProject project;
 
-  public ProjectSyncJob(SonarLintProject project) {
-    super("Sync project " + project.getProject().getName());
+  public ProjectUpdateJob(SonarLintProject project) {
+    super("Update configuration of project " + project.getProject().getName());
     this.project = project;
   }
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
-      project.sync(monitor);
+      project.update(monitor);
       return Status.OK_STATUS;
     } catch (Exception e) {
-      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to sync project " + project.getProject().getName(), e);
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update project " + project.getProject().getName(), e);
     }
   }
 }

@@ -26,21 +26,21 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 
-public class ServerSyncJob extends Job {
+public class ServerUpdateJob extends Job {
   private final IServer server;
 
-  public ServerSyncJob(IServer server) {
-    super("Sync SonarQube server " + server.getName());
+  public ServerUpdateJob(IServer server) {
+    super("Update data from SonarQube server " + server.getName());
     this.server = server;
   }
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
-      server.sync(monitor);
+      server.update(monitor);
       return Status.OK_STATUS;
     } catch (Exception e) {
-      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to sync server " + server.getName(), e);
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update data from server " + server.getName(), e);
     }
   }
 }

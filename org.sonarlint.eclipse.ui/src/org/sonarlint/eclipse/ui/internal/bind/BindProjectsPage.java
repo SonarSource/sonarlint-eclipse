@@ -69,7 +69,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.part.PageBook;
-import org.sonarlint.eclipse.core.internal.jobs.ProjectSyncJob;
+import org.sonarlint.eclipse.core.internal.jobs.ProjectUpdateJob;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
@@ -265,13 +265,13 @@ public class BindProjectsPage extends WizardPage {
   }
 
   private void updateAutoBindState() {
-    if (selectedServer != null && !selectedServer.isSynced()) {
-      setMessage("Server is not synced", IMessageProvider.WARNING);
+    if (selectedServer != null && !selectedServer.isUpdated()) {
+      setMessage("Server is not updated", IMessageProvider.WARNING);
     } else {
       setMessage("");
     }
     if (autoBindBtn != null) {
-      autoBindBtn.setEnabled(viewer.getCheckedElements().length > 0 && selectedServer != null && selectedServer.isSynced());
+      autoBindBtn.setEnabled(viewer.getCheckedElements().length > 0 && selectedServer != null && selectedServer.isUpdated());
     }
   }
 
@@ -411,7 +411,7 @@ public class BindProjectsPage extends WizardPage {
       if (changed) {
         sonarProject.save();
         if (sonarProject.isBound()) {
-          new ProjectSyncJob(sonarProject).schedule();
+          new ProjectUpdateJob(sonarProject).schedule();
         }
         if (oldServerId != null && !Objects.equals(projectAssociation.getServerId(), oldServerId)) {
           IServer server = ServersManager.getInstance().getServer(oldServerId);

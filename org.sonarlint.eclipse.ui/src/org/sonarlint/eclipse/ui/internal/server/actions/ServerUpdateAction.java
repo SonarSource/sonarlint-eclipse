@@ -27,17 +27,17 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.actions.SelectionProviderAction;
-import org.sonarlint.eclipse.core.internal.jobs.ServerSyncJob;
+import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
-public class ServerSyncAction extends SelectionProviderAction {
+public class ServerUpdateAction extends SelectionProviderAction {
   private List<IServer> servers;
   private Shell shell;
 
-  public ServerSyncAction(Shell shell, ISelectionProvider selectionProvider) {
-    super(selectionProvider, Messages.actionSync);
+  public ServerUpdateAction(Shell shell, ISelectionProvider selectionProvider) {
+    super(selectionProvider, Messages.actionUpdate);
     this.shell = shell;
     setImageDescriptor(SonarLintImages.DOWNLOAD_IMG);
   }
@@ -85,7 +85,7 @@ public class ServerSyncAction extends SelectionProviderAction {
 
     if (servers != null) {
       for (final IServer server : servers) {
-        Job j = new ServerSyncJob(server);
+        Job j = new ServerUpdateJob(server);
         j.schedule();
       }
     }

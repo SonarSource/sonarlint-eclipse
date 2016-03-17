@@ -565,7 +565,7 @@
 	     state="true"  
 	     class="org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator"  
 	     lightweight="true"  
-	     location="TOP_LEFT">
+	     location="TOP_RIGHT">
 	     <description>%sonarlint.decorator.description</description>
 	     <enablement>
 	       <or> 

@@ -61,7 +61,7 @@ public final class Messages extends NLS {
   public static String viewInitializing;
 
   public static String actionDelete;
-  public static String actionSync;
+  public static String actionUpdate;
   public static String actionEdit;
   public static String actionNew;
   public static String actionNewServer;

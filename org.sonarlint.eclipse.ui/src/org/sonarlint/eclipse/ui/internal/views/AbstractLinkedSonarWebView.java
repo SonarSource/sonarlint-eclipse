@@ -122,7 +122,7 @@ public abstract class AbstractLinkedSonarWebView<G> extends AbstractSonarWebView
     public LinkAction() {
       super(LINK_WITH_SELECTION, SWT.TOGGLE);
       setTitleToolTip(LINK_WITH_SELECTION);
-      setImageDescriptor(SonarLintImages.SONARSYNCHRO_IMG);
+      setImageDescriptor(SonarLintImages.SONARLINK_IMG);
       setChecked(isLinkingEnabled());
     }
 

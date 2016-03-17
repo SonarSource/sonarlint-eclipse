@@ -116,6 +116,7 @@ public class ServerToolTip extends ToolTip {
     });
 
     control.getDisplay().asyncExec(new Runnable() {
+      @Override
       public void run() {
         Event event = new Event();
         event.x = x;

@@ -49,7 +49,7 @@ import org.sonarsource.sonarlint.core.client.api.SonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.StateListener;
 import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
-import org.sonarsource.sonarlint.core.client.api.connected.GlobalSyncStatus;
+import org.sonarsource.sonarlint.core.client.api.connected.GlobalUpdateStatus;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration.Builder;
@@ -58,14 +58,14 @@ import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class Server implements IServer, StateListener {
 
-  private static final String NOT_SYNCED = "Not synced";
+  private static final String NEED_UPDATE = "Need update";
   private final String id;
   private final String name;
   private final String host;
   private final boolean hasAuth;
   private final SonarLintEngine client;
   private final List<IServerListener> listeners = new ArrayList<>();
-  private GlobalSyncStatus syncStatus;
+  private GlobalUpdateStatus updateStatus;
 
   public Server(String id, String name, String host, boolean hasAuth) {
     this.id = id;
@@ -81,7 +81,7 @@ public class Server implements IServer, StateListener {
       .build();
     this.client = new SonarLintEngineImpl(globalConfig);
     this.client.addStateListener(this);
-    this.syncStatus = client.getSyncStatus();
+    this.updateStatus = client.getUpdateStatus();
   }
 
   @Override
@@ -117,24 +117,24 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public boolean isSynced() {
-    return syncStatus != null;
+  public boolean isUpdated() {
+    return updateStatus != null;
   }
 
   @Override
   public String getServerVersion() {
-    if (syncStatus == null) {
-      return NOT_SYNCED;
+    if (updateStatus == null) {
+      return NEED_UPDATE;
     }
-    return syncStatus.getServerVersion();
+    return updateStatus.getServerVersion();
   }
 
   @Override
-  public String getSyncDate() {
-    if (syncStatus == null) {
-      return NOT_SYNCED;
+  public String getUpdateDate() {
+    if (updateStatus == null) {
+      return NEED_UPDATE;
     }
-    return new SimpleDateFormat().format(syncStatus.getLastSyncDate());
+    return new SimpleDateFormat().format(updateStatus.getLastUpdateDate());
   }
 
   @Override
@@ -142,12 +142,12 @@ public class Server implements IServer, StateListener {
     switch (client.getState()) {
       case UNKNOW:
         return "Unknown";
-      case NOT_SYNCED:
-        return NOT_SYNCED;
-      case SYNCED:
-        return "Version: " + getServerVersion() + ", Last sync: " + getSyncDate();
-      case SYNCING:
-        return "Synchronizing...";
+      case NEVER_UPDATED:
+        return NEED_UPDATE;
+      case UPDATED:
+        return "Version: " + getServerVersion() + ", Last update: " + getUpdateDate();
+      case UPDATING:
+        return "Updating...";
       default:
         throw new IllegalArgumentException(client.getState().name());
     }
@@ -175,16 +175,16 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public synchronized void sync(IProgressMonitor monitor) {
-    List<SonarLintProject> projectsToSync = getBoundProjects();
-    monitor.beginTask("Sync server and all associated projects", projectsToSync.size() + 1);
-    syncStatus = client.sync(getConfig());
+  public synchronized void update(IProgressMonitor monitor) {
+    List<SonarLintProject> projectsToUpdate = getBoundProjects();
+    monitor.beginTask("Update server and all associated projects", projectsToUpdate.size() + 1);
+    updateStatus = client.update(getConfig());
     monitor.worked(1);
-    for (SonarLintProject projectToSync : projectsToSync) {
+    for (SonarLintProject projectToUpdate : projectsToUpdate) {
       if (monitor.isCanceled()) {
         return;
       }
-      client.syncModule(getConfig(), projectToSync.getModuleKey());
+      client.updateModule(getConfig(), projectToUpdate.getModuleKey());
       monitor.worked(1);
     }
     monitor.done();
@@ -192,21 +192,21 @@ public class Server implements IServer, StateListener {
 
   @Override
   public List<SonarLintProject> getBoundProjects() {
-    List<SonarLintProject> projectsToSync = new ArrayList<>();
+    List<SonarLintProject> result = new ArrayList<>();
     for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
       if (project.isAccessible()) {
         SonarLintProject sonarProject = SonarLintProject.getInstance(project);
         if (Objects.equals(sonarProject.getServerId(), id)) {
-          projectsToSync.add(sonarProject);
+          result.add(sonarProject);
         }
       }
     }
-    return projectsToSync;
+    return result;
   }
 
   @Override
-  public synchronized void syncProject(String moduleKey) {
-    client.syncModule(getConfig(), moduleKey);
+  public synchronized void updateProject(String moduleKey) {
+    client.updateModule(getConfig(), moduleKey);
   }
 
   @Override
