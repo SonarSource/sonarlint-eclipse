@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="SonarLint for Eclipse Product" uid="org.sonarlint.eclipse.site" version="2.0.0.qualifier" useFeatures="true" includeLaunchers="false">
+<product name="SonarLint for Eclipse Product" uid="org.sonarlint.eclipse.site" version="2.0.0.20160317-1103-M1" useFeatures="true" includeLaunchers="false">
 
 
    <configIni use="default">
