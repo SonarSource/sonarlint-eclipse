@@ -93,6 +93,9 @@ public class BindProjectsPage extends WizardPage {
   private Composite serverDropDownPage;
   private ComboViewer serverCombo;
   private Button autoBindBtn;
+  private Button unassociateBtn;
+  private Button checkAll;
+  private Composite container;
 
   public BindProjectsPage(List<IProject> projects) {
     super("bindProjects", "Bind with SonarQube", SonarLintImages.SONARWIZBAN_IMG);
@@ -109,7 +112,7 @@ public class BindProjectsPage extends WizardPage {
 
   @Override
   public void createControl(Composite parent) {
-    Composite container = new Composite(parent, SWT.NONE);
+    container = new Composite(parent, SWT.NONE);
 
     GridLayout layout = new GridLayout();
     layout.numColumns = 1;
@@ -124,7 +127,17 @@ public class BindProjectsPage extends WizardPage {
 
     toggleServerPage();
 
-    // List of projects
+    checkAll = new Button(container, SWT.CHECK);
+    checkAll.addSelectionListener(new SelectionAdapter() {
+
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        viewer.setAllChecked(checkAll.getSelection());
+        updateState();
+      }
+
+    });
+
     viewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.VIRTUAL);
     viewer.getTable().setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1, 3));
 
@@ -169,13 +182,12 @@ public class BindProjectsPage extends WizardPage {
     FillLayout btnLayout = new FillLayout();
     btnContainer.setLayout(btnLayout);
 
-    final Button unassociateBtn = new Button(btnContainer, SWT.PUSH);
+    unassociateBtn = new Button(btnContainer, SWT.PUSH);
     viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
       @Override
       public void selectionChanged(SelectionChangedEvent event) {
-        unassociateBtn.setEnabled(viewer.getCheckedElements().length > 0);
-        updateAutoBindState();
+        updateState();
       }
     });
 
@@ -197,12 +209,12 @@ public class BindProjectsPage extends WizardPage {
 
       @Override
       public void selectionChanged(SelectionChangedEvent event) {
-        updateAutoBindState();
+        updateState();
       }
     });
 
     autoBindBtn.setText("Auto bind selected projects");
-    updateAutoBindState();
+    updateState();
     autoBindBtn.addListener(SWT.Selection, new Listener() {
 
       @Override
@@ -258,21 +270,27 @@ public class BindProjectsPage extends WizardPage {
         IStructuredSelection selection = (IStructuredSelection) event.getSelection();
         selectedServer = (IServer) selection.getFirstElement();
         serverCombo.refresh();
-        updateAutoBindState();
+        updateState();
       }
 
     });
   }
 
-  private void updateAutoBindState() {
+  private void updateState() {
+    boolean hasSelected = viewer.getCheckedElements().length > 0;
+    checkAll.setSelection(hasSelected);
+    checkAll.setGrayed(viewer.getCheckedElements().length < projects.size());
+    checkAll.setText(hasSelected ? "Unselect all" : "Select all");
+    unassociateBtn.setEnabled(hasSelected);
     if (selectedServer != null && !selectedServer.isUpdated()) {
       setMessage("Server is not updated", IMessageProvider.WARNING);
     } else {
       setMessage("");
     }
     if (autoBindBtn != null) {
-      autoBindBtn.setEnabled(viewer.getCheckedElements().length > 0 && selectedServer != null && selectedServer.isUpdated());
+      autoBindBtn.setEnabled(hasSelected && selectedServer != null && selectedServer.isUpdated());
     }
+    container.layout(true, true);
   }
 
   private void createNoServerForm(Composite parent) {
