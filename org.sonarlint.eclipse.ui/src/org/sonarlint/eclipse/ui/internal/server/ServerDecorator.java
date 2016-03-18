@@ -33,7 +33,7 @@ public class ServerDecorator extends LabelProvider implements ILightweightLabelD
   public void decorate(Object element, IDecoration decoration) {
     if (element instanceof IServer) {
       IServer server = (IServer) element;
-      addSuffix(decoration, server.getSonarLintClientState());
+      addSuffix(decoration, server.getSonarLintEngineState());
     } else if (element instanceof IProject) {
       addSuffix(decoration, "test");
     }

@@ -68,7 +68,7 @@ public interface IServer {
 
   String getServerVersion();
 
-  String getSonarLintClientState();
+  String getSonarLintEngineState();
 
   void update(IProgressMonitor monitor);
 
@@ -110,5 +110,7 @@ public interface IServer {
   List<SonarLintProject> getBoundProjects();
 
   void notifyAllListeners();
+
+  boolean isUpdating();
 
 }

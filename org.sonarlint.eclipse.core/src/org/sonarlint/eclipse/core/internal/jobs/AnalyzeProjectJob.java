@@ -226,9 +226,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
 
       if (!inputFiles.isEmpty()) {
-        AnalysisConfiguration config = new AnalysisConfiguration(StringUtils.trimToNull(sonarProject.getModuleKey()), project.getLocation().toFile().toPath(),
-          projectSpecificWorkDir.toFile().toPath(), inputFiles,
-          mergedExtraProps);
+        AnalysisConfiguration config =
+          new AnalysisConfiguration(sonarProject.isBound() ? StringUtils.trimToNull(sonarProject.getModuleKey()) : null, project.getLocation().toFile().toPath(),
+            projectSpecificWorkDir.toFile().toPath(), inputFiles,
+            mergedExtraProps);
         Map<IResource, List<Issue>> issuesPerResource = run(config, sonarProject, monitor);
         updateMarkers(issuesPerResource);
       }

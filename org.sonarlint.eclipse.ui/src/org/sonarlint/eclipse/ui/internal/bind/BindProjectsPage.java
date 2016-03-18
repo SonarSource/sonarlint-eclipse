@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.bind;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -26,10 +27,12 @@ import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.property.value.IValueProperty;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -61,6 +64,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
@@ -96,6 +100,7 @@ public class BindProjectsPage extends WizardPage {
   private Button unassociateBtn;
   private Button checkAll;
   private Composite container;
+  private Link updateServerLink;
 
   public BindProjectsPage(List<IProject> projects) {
     super("bindProjects", "Bind with SonarQube", SonarLintImages.SONARWIZBAN_IMG);
@@ -127,16 +132,7 @@ public class BindProjectsPage extends WizardPage {
 
     toggleServerPage();
 
-    checkAll = new Button(container, SWT.CHECK);
-    checkAll.addSelectionListener(new SelectionAdapter() {
-
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        viewer.setAllChecked(checkAll.getSelection());
-        updateState();
-      }
-
-    });
+    createCheckUncheckAllCb();
 
     viewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.VIRTUAL);
     viewer.getTable().setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1, 3));
@@ -182,7 +178,6 @@ public class BindProjectsPage extends WizardPage {
     FillLayout btnLayout = new FillLayout();
     btnContainer.setLayout(btnLayout);
 
-    unassociateBtn = new Button(btnContainer, SWT.PUSH);
     viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
       @Override
@@ -191,30 +186,17 @@ public class BindProjectsPage extends WizardPage {
       }
     });
 
-    unassociateBtn.setText("Unbind selected projects");
-    unassociateBtn.setEnabled(viewer.getCheckedElements().length > 0);
-    unassociateBtn.addListener(SWT.Selection, new Listener() {
+    createUnassociateBtn(btnContainer);
 
-      @Override
-      public void handleEvent(Event event) {
-        for (Object object : viewer.getCheckedElements()) {
-          ProjectBindModel bind = (ProjectBindModel) object;
-          bind.unassociate();
-        }
-      }
-    });
+    createAutoBindBtn(btnContainer);
 
-    autoBindBtn = new Button(btnContainer, SWT.PUSH);
-    viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-
-      @Override
-      public void selectionChanged(SelectionChangedEvent event) {
-        updateState();
-      }
-    });
-
-    autoBindBtn.setText("Auto bind selected projects");
     updateState();
+    setControl(btnContainer);
+  }
+
+  private void createAutoBindBtn(Composite btnContainer) {
+    autoBindBtn = new Button(btnContainer, SWT.PUSH);
+    autoBindBtn.setText("Auto bind selected projects");
     autoBindBtn.addListener(SWT.Selection, new Listener() {
 
       @Override
@@ -229,8 +211,35 @@ public class BindProjectsPage extends WizardPage {
         }
       }
     });
+  }
 
-    setControl(btnContainer);
+  private void createUnassociateBtn(Composite btnContainer) {
+    unassociateBtn = new Button(btnContainer, SWT.PUSH);
+    unassociateBtn.setText("Unbind selected projects");
+    unassociateBtn.setEnabled(viewer.getCheckedElements().length > 0);
+    unassociateBtn.addListener(SWT.Selection, new Listener() {
+
+      @Override
+      public void handleEvent(Event event) {
+        for (Object object : viewer.getCheckedElements()) {
+          ProjectBindModel bind = (ProjectBindModel) object;
+          bind.unassociate();
+        }
+      }
+    });
+  }
+
+  private void createCheckUncheckAllCb() {
+    checkAll = new Button(container, SWT.CHECK);
+    checkAll.addSelectionListener(new SelectionAdapter() {
+
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        viewer.setAllChecked(checkAll.getSelection());
+        updateState();
+      }
+
+    });
   }
 
   private void createServerDropDown(Composite parent) {
@@ -240,7 +249,7 @@ public class BindProjectsPage extends WizardPage {
     serverDropDownPage.setLayoutData(layoutData);
 
     GridLayout layout = new GridLayout();
-    layout.numColumns = 2;
+    layout.numColumns = 3;
     layout.marginHeight = 0;
     layout.marginWidth = 5;
     serverDropDownPage.setLayout(layout);
@@ -259,8 +268,40 @@ public class BindProjectsPage extends WizardPage {
       }
     });
 
-    serverListener = new ServerChangeListener();
+    updateServerLink = new Link(serverDropDownPage, SWT.NONE);
+    updateServerLink.setText("<a>" + Messages.actionUpdate + "</a>");
+    updateServerLink.setBackground(book.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+    updateServerLink.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        updateServerLink.setEnabled(false);
+        try {
+          final IServer server = (IServer) ((IStructuredSelection) serverCombo.getSelection()).getFirstElement();
+          getContainer().run(true, true, new IRunnableWithProgress() {
 
+            @Override
+            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+              try {
+                server.update(monitor);
+              } finally {
+                Display.getDefault().asyncExec(new Runnable() {
+                  @Override
+                  public void run() {
+                    updateState();
+                  }
+                });
+              }
+            }
+          });
+        } catch (InvocationTargetException ex) {
+          throw new IllegalStateException(ex);
+        } catch (InterruptedException e1) {
+          // Job cancelled, ignore
+        }
+      }
+    });
+
+    serverListener = new ServerChangeListener();
     ServersManager.getInstance().addServerLifecycleListener(serverListener);
 
     /* within the selection event, tell the object it was selected */
@@ -277,6 +318,11 @@ public class BindProjectsPage extends WizardPage {
   }
 
   private void updateState() {
+    if (viewer == null) {
+      return;
+    }
+    updateServerLink.setVisible(selectedServer != null);
+    updateServerLink.setEnabled(selectedServer != null && !selectedServer.isUpdating());
     boolean hasSelected = viewer.getCheckedElements().length > 0;
     checkAll.setSelection(hasSelected);
     checkAll.setGrayed(viewer.getCheckedElements().length < projects.size());

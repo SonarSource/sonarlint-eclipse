@@ -138,7 +138,12 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public String getSonarLintClientState() {
+  public boolean isUpdating() {
+    return State.UPDATING == client.getState();
+  }
+
+  @Override
+  public String getSonarLintEngineState() {
     switch (client.getState()) {
       case UNKNOW:
         return "Unknown";
