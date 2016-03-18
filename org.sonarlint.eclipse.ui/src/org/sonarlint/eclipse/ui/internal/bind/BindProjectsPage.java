@@ -180,7 +180,7 @@ public class BindProjectsPage extends WizardPage {
     });
 
     unassociateBtn.setText("Unbind selected projects");
-    unassociateBtn.setEnabled(!viewer.getStructuredSelection().isEmpty());
+    unassociateBtn.setEnabled(viewer.getCheckedElements().length > 0);
     unassociateBtn.addListener(SWT.Selection, new Listener() {
 
       @Override

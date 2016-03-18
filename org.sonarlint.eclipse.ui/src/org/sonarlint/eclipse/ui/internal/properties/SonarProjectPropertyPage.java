@@ -58,7 +58,6 @@ public class SonarProjectPropertyPage extends PropertyPage {
 
   public SonarProjectPropertyPage() {
     setTitle(Messages.SonarProjectPropertyPage_title);
-    noDefaultButton();
   }
 
   @Override
@@ -160,6 +159,12 @@ public class SonarProjectPropertyPage extends PropertyPage {
     textField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     textField.setText(text);
     return textField;
+  }
+
+  @Override
+  protected void performDefaults() {
+    enabledBtn.setEnabled(true);
+    super.performDefaults();
   }
 
   @Override
