@@ -190,8 +190,11 @@ public class BindProjectsPage extends WizardPage {
 
     createAutoBindBtn(btnContainer);
 
+    container.layout(true, true);
+    viewer.setAllChecked(true);
+
     updateState();
-    setControl(btnContainer);
+    setControl(container);
   }
 
   private void createAutoBindBtn(Composite btnContainer) {
@@ -207,6 +210,8 @@ public class BindProjectsPage extends WizardPage {
           List<RemoteModule> results = moduleIndex.search(bind.getEclipseName());
           if (!results.isEmpty()) {
             bind.associate(selectedServer.getId(), results.get(0).getName(), results.get(0).getKey());
+          } else {
+            bind.setAutoBindFailed(true);
           }
         }
       }

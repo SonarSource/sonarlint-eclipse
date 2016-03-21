@@ -37,6 +37,7 @@ public class ProjectBindModel extends AbstractModelObject {
   private String moduleKey;
   private String serverId;
   private IServer server;
+  private boolean autoBindFailed;
 
   public ProjectBindModel(IProject project) {
     this.project = project;
@@ -56,6 +57,9 @@ public class ProjectBindModel extends AbstractModelObject {
 
   public String getSonarFullName() {
     if (StringUtils.isBlank(moduleKey)) {
+      if (autoBindFailed) {
+        return "<Auto-bind failed. Type here to start searching for a remote SonarQube project...>";
+      }
       return "<Type here to start searching for a remote SonarQube project...>";
     } else if (server == null) {
       return "<Bound to an unknown server: '" + this.serverId + "'>";
@@ -86,6 +90,12 @@ public class ProjectBindModel extends AbstractModelObject {
 
   public String getServerId() {
     return serverId;
+  }
+
+  public void setAutoBindFailed(boolean autoBindFailed) {
+    String oldValue = getSonarFullName();
+    this.autoBindFailed = autoBindFailed;
+    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());
   }
 
 }
