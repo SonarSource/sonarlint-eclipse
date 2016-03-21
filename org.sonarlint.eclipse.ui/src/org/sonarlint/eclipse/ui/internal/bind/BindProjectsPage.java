@@ -270,7 +270,6 @@ public class BindProjectsPage extends WizardPage {
 
     updateServerLink = new Link(serverDropDownPage, SWT.NONE);
     updateServerLink.setText("<a>" + Messages.actionUpdate + "</a>");
-    updateServerLink.setBackground(book.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
     updateServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {

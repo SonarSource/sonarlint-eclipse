@@ -86,7 +86,6 @@ public class SonarProjectPropertyPage extends PropertyPage {
     moduleKeyField = addText(Messages.SonarProjectPropertyBlock_label_key, "", container);
 
     addServerLink = new Link(container, SWT.NONE);
-    addServerLink.setBackground(container.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
     GridData gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
     gd.horizontalSpan = 2;
     addServerLink.setLayoutData(gd);
@@ -103,7 +102,6 @@ public class SonarProjectPropertyPage extends PropertyPage {
     });
 
     bindLink = new Link(container, SWT.NONE);
-    bindLink.setBackground(container.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
     gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
     gd.horizontalSpan = 2;
     bindLink.setLayoutData(gd);
