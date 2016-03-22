@@ -84,7 +84,7 @@ public class ServerEditAction extends SelectionProviderAction {
       }
     }
 
-    if (servers != null || !servers.isEmpty()) {
+    if (servers != null && !servers.isEmpty()) {
 
       openEditWizard(servers.get(0));
     }
