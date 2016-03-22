@@ -27,7 +27,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarsource.sonarlint.core.client.api.analysis.Issue;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 
 public class SonarMarker {
 

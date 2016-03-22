@@ -41,18 +41,18 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintLogOutput;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarsource.sonarlint.core.SonarLintEngineImpl;
-import org.sonarsource.sonarlint.core.client.api.GlobalConfiguration;
-import org.sonarsource.sonarlint.core.client.api.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.SonarLintEngine;
-import org.sonarsource.sonarlint.core.client.api.SonarLintEngine.State;
-import org.sonarsource.sonarlint.core.client.api.StateListener;
-import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
+import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
+import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.GlobalUpdateStatus;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration.Builder;
+import org.sonarsource.sonarlint.core.client.api.connected.StateListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
@@ -63,7 +63,7 @@ public class Server implements IServer, StateListener {
   private final String name;
   private final String host;
   private final boolean hasAuth;
-  private final SonarLintEngine client;
+  private final ConnectedSonarLintEngine client;
   private final List<IServerListener> listeners = new ArrayList<>();
   private GlobalUpdateStatus updateStatus;
 
@@ -72,14 +72,14 @@ public class Server implements IServer, StateListener {
     this.name = name;
     this.host = host;
     this.hasAuth = hasAuth;
-    GlobalConfiguration globalConfig = GlobalConfiguration.builder()
+    ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
       .setServerId(getId())
       .setVerbose(SonarLintCorePlugin.getDefault().isDebugEnabled())
       .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("work").append(getId()).toFile().toPath())
       .setStorageRoot(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("storage").toFile().toPath())
       .setLogOutput(new SonarLintLogOutput())
       .build();
-    this.client = new SonarLintEngineImpl(globalConfig);
+    this.client = new ConnectedSonarLintEngineImpl(globalConfig);
     this.client.addStateListener(this);
     this.updateStatus = client.getUpdateStatus();
   }
@@ -170,7 +170,7 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public void startAnalysis(AnalysisConfiguration config, IssueListener issueListener) {
+  public void startAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener) {
     client.analyze(config, issueListener);
   }
 

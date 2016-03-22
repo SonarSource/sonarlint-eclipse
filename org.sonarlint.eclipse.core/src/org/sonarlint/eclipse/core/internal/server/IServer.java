@@ -23,8 +23,8 @@ import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
@@ -97,7 +97,7 @@ public interface IServer {
 
   TextSearchIndex<RemoteModule> getModuleIndex();
 
-  void startAnalysis(AnalysisConfiguration config, IssueListener issueListener);
+  void startAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener);
 
   String getHtmlRuleDescription(String ruleKey);
 

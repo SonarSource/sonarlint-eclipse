@@ -20,7 +20,7 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarsource.sonarlint.core.client.api.LogOutput;
+import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
 
 public final class SonarLintLogOutput implements LogOutput {
   @Override

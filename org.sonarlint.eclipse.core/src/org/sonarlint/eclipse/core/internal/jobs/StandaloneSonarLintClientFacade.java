@@ -24,31 +24,29 @@ import java.util.Collections;
 import java.util.Enumeration;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarsource.sonarlint.core.SonarLintEngineImpl;
-import org.sonarsource.sonarlint.core.client.api.GlobalConfiguration;
-import org.sonarsource.sonarlint.core.client.api.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.SonarLintEngine;
-import org.sonarsource.sonarlint.core.client.api.analysis.AnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.analysis.IssueListener;
-import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
-import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
+import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
+import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneSonarLintEngine;
 
 public class StandaloneSonarLintClientFacade {
 
-  private SonarLintEngine client;
+  private StandaloneSonarLintEngine client;
 
-  private synchronized SonarLintEngine getClient() {
+  private synchronized StandaloneSonarLintEngine getClient() {
     if (client == null) {
       SonarLintCorePlugin.getDefault().info("Starting standalone SonarLint engine");
       Enumeration<URL> pluginEntries = SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false);
-      GlobalConfiguration globalConfig = GlobalConfiguration.builder()
+      StandaloneGlobalConfiguration globalConfig = StandaloneGlobalConfiguration.builder()
         .addPlugins(pluginEntries != null ? Collections.list(pluginEntries).toArray(new URL[0]) : new URL[0])
         .setVerbose(SonarLintCorePlugin.getDefault().isDebugEnabled())
         .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("default").toFile().toPath())
         .setLogOutput(new SonarLintLogOutput())
         .build();
       try {
-        client = new SonarLintEngineImpl(globalConfig);
+        client = new StandaloneSonarLintEngineImpl(globalConfig);
       } catch (Throwable e) {
         SonarLintCorePlugin.getDefault().error("Unable to start SonarLint engine", e);
         client = null;
@@ -57,7 +55,7 @@ public class StandaloneSonarLintClientFacade {
     return client;
   }
 
-  public void startAnalysis(AnalysisConfiguration config, IssueListener issueListener) {
+  public void startAnalysis(StandaloneAnalysisConfiguration config, IssueListener issueListener) {
     getClient().analyze(config, issueListener);
   }
 
@@ -71,10 +69,6 @@ public class StandaloneSonarLintClientFacade {
       client.stop();
       client = null;
     }
-  }
-
-  public ValidationResult testConnection(ServerConfiguration config) {
-    return getClient().validateCredentials(config);
   }
 
   public void setVerbose(boolean verbose) {
