@@ -29,9 +29,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.eclipse.ui.PlatformUI;
 
 public abstract class AbstractLinkedSonarWebView<G> extends AbstractSonarWebView implements ISelectionListener {
 
@@ -122,7 +123,8 @@ public abstract class AbstractLinkedSonarWebView<G> extends AbstractSonarWebView
     public LinkAction() {
       super(LINK_WITH_SELECTION, SWT.TOGGLE);
       setTitleToolTip(LINK_WITH_SELECTION);
-      setImageDescriptor(SonarLintImages.SONARLINK_IMG);
+      setImageDescriptor(PlatformUI.getWorkbench()
+        .getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_SYNCED));
       setChecked(isLinkingEnabled());
     }
 

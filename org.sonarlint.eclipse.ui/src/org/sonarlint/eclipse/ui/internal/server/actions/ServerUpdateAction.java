@@ -39,7 +39,7 @@ public class ServerUpdateAction extends SelectionProviderAction {
   public ServerUpdateAction(Shell shell, ISelectionProvider selectionProvider) {
     super(selectionProvider, Messages.actionUpdate);
     this.shell = shell;
-    setImageDescriptor(SonarLintImages.DOWNLOAD_IMG);
+    setImageDescriptor(SonarLintImages.UPDATE_IMG);
   }
 
   @Override
