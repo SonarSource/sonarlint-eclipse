@@ -33,7 +33,6 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -196,13 +195,6 @@ public class ServersView extends CommonNavigator {
         try {
           tableViewer = getCommonViewer();
           getSite().setSelectionProvider(tableViewer);
-
-          // init the tooltip
-          ServerToolTip toolTip = new ServerToolTip(tableViewer.getTree());
-          toolTip.setShift(new Point(10, 3));
-          toolTip.setPopupDelay(400);
-          toolTip.setHideOnMouseDown(true);
-          toolTip.activate();
 
           try {
             if (tableViewer.getTree().getItemCount() > 0) {

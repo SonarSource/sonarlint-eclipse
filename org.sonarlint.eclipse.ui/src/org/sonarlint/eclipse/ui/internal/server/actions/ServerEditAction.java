@@ -96,10 +96,11 @@ public class ServerEditAction extends SelectionProviderAction {
     ISelection selection = workbenchWindow.getSelectionService().getSelection();
 
     IStructuredSelection selectionToPass;
-    if (selection instanceof IStructuredSelection)
+    if (selection instanceof IStructuredSelection) {
       selectionToPass = (IStructuredSelection) selection;
-    else
+    } else {
       selectionToPass = StructuredSelection.EMPTY;
+    }
     EditServerLocationWizard wizard = new EditServerLocationWizard(server);
     wizard.init(workbench, selectionToPass);
     WizardDialog dialog = new WizardDialog(workbench.getActiveWorkbenchWindow().getShell(), wizard);

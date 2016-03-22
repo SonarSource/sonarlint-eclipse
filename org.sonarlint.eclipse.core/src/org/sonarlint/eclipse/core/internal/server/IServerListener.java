@@ -40,5 +40,5 @@ public interface IServerListener {
    * 
    * @param event a server event that contains information on the change
    */
-  public void serverChanged(IServer server);
+  void serverChanged(IServer server);
 }

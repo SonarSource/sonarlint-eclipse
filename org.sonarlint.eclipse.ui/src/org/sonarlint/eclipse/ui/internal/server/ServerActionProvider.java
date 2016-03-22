@@ -75,14 +75,15 @@ public class ServerActionProvider extends CommonActionProvider {
     }
   }
 
-  private void addListeners(CommonViewer tableViewer) {
+  private static void addListeners(CommonViewer tableViewer) {
     tableViewer.addOpenListener(new IOpenListener() {
       @Override
       public void open(OpenEvent event) {
         IStructuredSelection sel = (IStructuredSelection) event.getSelection();
         Object data = sel.getFirstElement();
-        if (!(data instanceof IServer))
+        if (!(data instanceof IServer)) {
           return;
+        }
         IServer server = (IServer) data;
         ServerEditAction.openEditWizard(server);
       }
