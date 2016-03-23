@@ -94,7 +94,7 @@ public class AnalyzeCommand extends AbstractHandler {
     return selectedFilesPerProject;
   }
 
-  private void collectFilesPerProject(final Map<IProject, Collection<IFile>> filesToAnalyzePerProject, Object[] elems) {
+  private static void collectFilesPerProject(final Map<IProject, Collection<IFile>> filesToAnalyzePerProject, Object[] elems) {
     for (Object elem : elems) {
       if (elem instanceof IResource) {
         collectChildren(filesToAnalyzePerProject, (IResource) elem);
@@ -107,7 +107,7 @@ public class AnalyzeCommand extends AbstractHandler {
     }
   }
 
-  private void collectChildren(final Map<IProject, Collection<IFile>> filesToAnalyzePerProject, IResource elem) {
+  private static void collectChildren(final Map<IProject, Collection<IFile>> filesToAnalyzePerProject, IResource elem) {
     try {
       elem.accept(new IResourceVisitor() {
 

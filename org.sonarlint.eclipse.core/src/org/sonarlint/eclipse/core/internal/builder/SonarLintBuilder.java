@@ -52,7 +52,7 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
     return null;
   }
 
-  private void incrementalBuild(IResourceDelta delta) {
+  private static void incrementalBuild(IResourceDelta delta) {
     final Map<IProject, Collection<IFile>> filesPerProject = new HashMap<>();
     try {
       delta.accept(new IResourceDeltaVisitor() {
@@ -78,8 +78,8 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error("Error during builder", e);
     }
-    for (IProject project : filesPerProject.keySet()) {
-      AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, filesPerProject.get(project));
+    for (Map.Entry<IProject, Collection<IFile>> entry : filesPerProject.entrySet()) {
+      AnalyzeProjectRequest request = new AnalyzeProjectRequest(entry.getKey(), entry.getValue());
       new AnalyzeProjectJob(request).schedule();
     }
   }

@@ -75,7 +75,7 @@ public class ServerActionProvider extends CommonActionProvider {
     }
   }
 
-  private static void addListeners(CommonViewer tableViewer) {
+  private static void addListeners(final CommonViewer tableViewer) {
     tableViewer.addOpenListener(new IOpenListener() {
       @Override
       public void open(OpenEvent event) {
@@ -85,7 +85,7 @@ public class ServerActionProvider extends CommonActionProvider {
           return;
         }
         IServer server = (IServer) data;
-        ServerEditAction.openEditWizard(server);
+        ServerEditAction.openEditWizard(tableViewer.getTree().getShell(), server);
       }
     });
   }
@@ -94,7 +94,7 @@ public class ServerActionProvider extends CommonActionProvider {
     Shell shell = tableViewer.getTree().getShell();
     deleteAction = new ServerDeleteAction(shell, provider);
     editAction = new ServerEditAction(shell, provider);
-    updateAction = new ServerUpdateAction(shell, provider);
+    updateAction = new ServerUpdateAction(provider);
   }
 
   @Override
@@ -112,7 +112,6 @@ public class ServerActionProvider extends CommonActionProvider {
 
     ICommonViewerSite site = actionSite.getViewSite();
     IStructuredSelection selection = null;
-    Shell shell = actionSite.getViewSite().getShell();
     if (site instanceof ICommonViewerWorkbenchSite) {
       ICommonViewerWorkbenchSite wsSite = (ICommonViewerWorkbenchSite) site;
       selection = (IStructuredSelection) wsSite.getSelectionProvider().getSelection();

@@ -88,7 +88,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
     return null;
   }
 
-  private void processElement(List<IMarker> selectedSonarMarkers, Object elem) throws CoreException {
+  private static void processElement(List<IMarker> selectedSonarMarkers, Object elem) throws CoreException {
     if (elem instanceof IMarker) {
       IMarker marker = (IMarker) elem;
       if (SonarLintCorePlugin.MARKER_ID.equals(marker.getType())) {

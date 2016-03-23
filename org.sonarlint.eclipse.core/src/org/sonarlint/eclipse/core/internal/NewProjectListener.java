@@ -53,7 +53,7 @@ public class NewProjectListener implements IResourceChangeListener {
     }
   }
 
-  private List<IProject> getProjects(IResourceDelta delta) {
+  private static List<IProject> getProjects(IResourceDelta delta) {
     final List<IProject> projects = new ArrayList<>();
     try {
       delta.accept(new IResourceDeltaVisitor() {

@@ -28,13 +28,16 @@ public class StringUtils {
   public static final String EMPTY = "";
   public static final int INDEX_NOT_FOUND = -1;
 
+  private StringUtils() {
+  }
+
   public static boolean isBlank(String str) {
     int strLen;
     if (str == null || (strLen = str.length()) == 0) {
       return true;
     }
     for (int i = 0; i < strLen; i++) {
-      if ((Character.isWhitespace(str.charAt(i)) == false)) {
+      if (!Character.isWhitespace(str.charAt(i))) {
         return false;
       }
     }
@@ -82,7 +85,7 @@ public class StringUtils {
   }
 
   public static String[] split(String str, String separator) {
-    return isEmpty(str) ? new String[0] : str.split(Pattern.quote(separator));
+    return isEmpty(str) ? (new String[0]) : str.split(Pattern.quote(separator));
   }
 
   public static String defaultString(String str, String defaultStr) {
@@ -113,7 +116,7 @@ public class StringUtils {
       return true;
     }
     for (int i = 0; i < strLen; i++) {
-      if (Character.isWhitespace(cs.charAt(i)) == false) {
+      if (!Character.isWhitespace(cs.charAt(i))) {
         return false;
       }
     }

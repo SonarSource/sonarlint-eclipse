@@ -39,9 +39,11 @@ import org.sonarlint.eclipse.ui.internal.server.wizard.EditServerLocationWizard;
 
 public class ServerEditAction extends SelectionProviderAction {
   private List<IServer> servers;
+  private Shell shell;
 
   public ServerEditAction(Shell shell, ISelectionProvider selectionProvider) {
     super(selectionProvider, Messages.actionEdit);
+    this.shell = shell;
     setActionDefinitionId(IWorkbenchCommandConstants.FILE_RENAME);
   }
 
@@ -86,11 +88,11 @@ public class ServerEditAction extends SelectionProviderAction {
 
     if (servers != null && !servers.isEmpty()) {
 
-      openEditWizard(servers.get(0));
+      openEditWizard(shell, servers.get(0));
     }
   }
 
-  public static void openEditWizard(IServer server) {
+  public static void openEditWizard(Shell shell, IServer server) {
     IWorkbench workbench = PlatformUI.getWorkbench();
     IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
     ISelection selection = workbenchWindow.getSelectionService().getSelection();
@@ -103,7 +105,7 @@ public class ServerEditAction extends SelectionProviderAction {
     }
     EditServerLocationWizard wizard = new EditServerLocationWizard(server);
     wizard.init(workbench, selectionToPass);
-    WizardDialog dialog = new WizardDialog(workbench.getActiveWorkbenchWindow().getShell(), wizard);
+    WizardDialog dialog = new WizardDialog(shell, wizard);
     dialog.open();
   }
 

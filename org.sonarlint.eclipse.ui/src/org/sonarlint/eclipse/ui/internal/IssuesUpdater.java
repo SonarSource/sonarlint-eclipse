@@ -46,7 +46,7 @@ public class IssuesUpdater implements IPartListener2 {
     }
   }
 
-  private void scheduleUpdate(IResource resource) {
+  private static void scheduleUpdate(IResource resource) {
     IFile file = (IFile) resource.getAdapter(IFile.class);
     if (file != null) {
       final SonarLintProject sonarProject = SonarLintProject.getInstance(file.getProject());

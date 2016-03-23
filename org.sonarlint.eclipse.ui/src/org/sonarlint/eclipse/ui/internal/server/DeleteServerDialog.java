@@ -79,37 +79,25 @@ public class DeleteServerDialog extends MessageDialog {
 
   @Override
   protected void buttonPressed(int buttonId) {
-    if (buttonId == OK) {
+    if (buttonId == OK && !servers.isEmpty()) {
 
       Job job = new Job(Messages.deleteServerTask) {
         @Override
         protected IStatus run(IProgressMonitor monitor) {
-          if (servers.isEmpty()) {
-            // all servers have been deleted from list
-            return Status.OK_STATUS;
-          }
           try {
-            if (monitor.isCanceled()) {
-              return Status.CANCEL_STATUS;
-            }
-
             for (IServer server : servers) {
+              if (monitor.isCanceled()) {
+                return Status.CANCEL_STATUS;
+              }
               server.delete();
-            }
-
-            if (monitor.isCanceled()) {
-              return Status.CANCEL_STATUS;
             }
           } catch (Exception e) {
             return new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, 0, e.getMessage(), e);
           }
-
           return Status.OK_STATUS;
         }
       };
-
       job.setPriority(Job.BUILD);
-
       job.schedule();
     }
     super.buttonPressed(buttonId);

@@ -74,7 +74,7 @@ public class RemoteSonarProject {
    * The description that will be displayed in Content assist.
    */
   public String getDescription() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("Project/Module name: ").append(name).append("\n");
     sb.append("Server: ").append(serverId).append("\n");
     sb.append("Project/Module key: ").append(key);

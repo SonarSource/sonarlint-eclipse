@@ -200,7 +200,7 @@ public class ServersManager {
     fireServerEvent(server, EVENT_ADDED);
   }
 
-  private void storeCredentials(IServer server, String username, String password) {
+  private static void storeCredentials(IServer server, String username, String password) {
     try {
       ISecurePreferences secureServersNode = SecurePreferencesFactory.getDefault().node(SonarLintCorePlugin.PLUGIN_ID).node(ServersManager.PREF_SERVERS);
       ISecurePreferences secureServerNode = secureServersNode.node(server.getId());

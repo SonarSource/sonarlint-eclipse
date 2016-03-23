@@ -209,36 +209,16 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       IPath projectSpecificWorkDir = project.getWorkingLocation(SonarLintCorePlugin.PLUGIN_ID);
       Map<String, String> mergedExtraProps = new LinkedHashMap<>();
       final List<IFile> filesToAnalyze = new ArrayList<>(request.getFiles().size());
-      filesToAnalyze.addAll(request.getFiles());
+      Collection<ProjectConfigurator> usedConfigurators = populateFilesToAnalyze(monitor, tmpToDelete, project, mergedExtraProps, filesToAnalyze);
 
-      Collection<ProjectConfigurator> usedConfigurators = configure(project, filesToAnalyze, mergedExtraProps, monitor);
-
-      handleLinkedFiles(tmpToDelete, filesToAnalyze);
-
-      List<ClientInputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
-      String allTestPattern = PreferencesUtils.getTestFileRegexps();
-      String[] testPatterns = allTestPattern.split(",");
-      final List<PathMatcher> pathMatchersForTests = createMatchersForTests(testPatterns);
-      for (final IFile file : filesToAnalyze) {
-        final java.nio.file.Path filePath = file.getRawLocation().makeAbsolute().toFile().toPath();
-        inputFiles.add(new EclipseInputFile(pathMatchersForTests, file, filePath));
-      }
+      List<ClientInputFile> inputFiles = buildInputFiles(filesToAnalyze);
 
       for (SonarLintProperty sonarProperty : extraProps) {
         mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue());
       }
 
       if (!inputFiles.isEmpty()) {
-        StandaloneAnalysisConfiguration config;
-        if (sonarProject.isBound()) {
-          config = new ConnectedAnalysisConfiguration(trimToNull(sonarProject.getModuleKey()), project.getLocation().toFile().toPath(),
-            projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
-        } else {
-          config = new StandaloneAnalysisConfiguration(project.getLocation().toFile().toPath(), projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
-        }
-
-        Map<IResource, List<Issue>> issuesPerResource = run(config, sonarProject, monitor);
-        updateMarkers(issuesPerResource);
+        runAnalysisAndUpdateMarkers(monitor, project, sonarProject, projectSpecificWorkDir, mergedExtraProps, inputFiles);
       }
 
       analysisCompleted(usedConfigurators, mergedExtraProps, monitor);
@@ -259,6 +239,42 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     return Status.OK_STATUS;
+  }
+
+  private void runAnalysisAndUpdateMarkers(final IProgressMonitor monitor, IProject project, SonarLintProject sonarProject, IPath projectSpecificWorkDir,
+    Map<String, String> mergedExtraProps,
+    List<ClientInputFile> inputFiles) throws CoreException {
+    StandaloneAnalysisConfiguration config;
+    if (sonarProject.isBound()) {
+      config = new ConnectedAnalysisConfiguration(trimToNull(sonarProject.getModuleKey()), project.getLocation().toFile().toPath(),
+        projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
+    } else {
+      config = new StandaloneAnalysisConfiguration(project.getLocation().toFile().toPath(), projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
+    }
+
+    Map<IResource, List<Issue>> issuesPerResource = run(config, sonarProject, monitor);
+    updateMarkers(issuesPerResource);
+  }
+
+  private List<ClientInputFile> buildInputFiles(final List<IFile> filesToAnalyze) {
+    List<ClientInputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
+    String allTestPattern = PreferencesUtils.getTestFileRegexps();
+    String[] testPatterns = allTestPattern.split(",");
+    final List<PathMatcher> pathMatchersForTests = createMatchersForTests(testPatterns);
+    for (final IFile file : filesToAnalyze) {
+      final java.nio.file.Path filePath = file.getRawLocation().makeAbsolute().toFile().toPath();
+      inputFiles.add(new EclipseInputFile(pathMatchersForTests, file, filePath));
+    }
+    return inputFiles;
+  }
+
+  private Collection<ProjectConfigurator> populateFilesToAnalyze(final IProgressMonitor monitor, Collection<File> tmpToDelete, IProject project,
+    Map<String, String> mergedExtraProps,
+    final List<IFile> filesToAnalyze) {
+    filesToAnalyze.addAll(request.getFiles());
+    Collection<ProjectConfigurator> usedConfigurators = configure(project, filesToAnalyze, mergedExtraProps, monitor);
+    handleLinkedFiles(tmpToDelete, filesToAnalyze);
+    return usedConfigurators;
   }
 
   private static List<PathMatcher> createMatchersForTests(String[] testPatterns) {
@@ -414,7 +430,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private Thread.UncaughtExceptionHandler exceptionHandler() {
+  private static Thread.UncaughtExceptionHandler exceptionHandler() {
     return new Thread.UncaughtExceptionHandler() {
       @Override
       public void uncaughtException(Thread th, Throwable ex) {
@@ -423,7 +439,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     };
   }
 
-  private Input<TrackableMarker> prepareBaseInput(List<IMarker> previous) {
+  private static Input<TrackableMarker> prepareBaseInput(List<IMarker> previous) {
     final List<TrackableMarker> wrapped = wrap(previous);
     return new Input<AnalyzeProjectJob.TrackableMarker>() {
       @Override
@@ -433,7 +449,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     };
   }
 
-  private List<TrackableMarker> wrap(List<IMarker> previous) {
+  private static List<TrackableMarker> wrap(List<IMarker> previous) {
     final List<TrackableMarker> wrapped = new ArrayList<>();
     for (IMarker marker : previous) {
       wrapped.add(new TrackableMarker(marker));
@@ -441,7 +457,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return wrapped;
   }
 
-  private Input<TrackableIssue> prepareRawInput(IDocument iDoc, List<Issue> issues) throws BadLocationException {
+  private static Input<TrackableIssue> prepareRawInput(IDocument iDoc, List<Issue> issues) throws BadLocationException {
     final List<TrackableIssue> wrapped = wrap(iDoc, issues);
     return new Input<AnalyzeProjectJob.TrackableIssue>() {
       @Override
@@ -451,7 +467,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     };
   }
 
-  private List<TrackableIssue> wrap(IDocument iDoc, List<Issue> issues) throws BadLocationException {
+  private static List<TrackableIssue> wrap(IDocument iDoc, List<Issue> issues) throws BadLocationException {
     final List<TrackableIssue> wrapped = new ArrayList<>();
     for (Issue issue : issues) {
       Integer checksum = iDoc != null ? computeChecksum(iDoc, issue) : null;

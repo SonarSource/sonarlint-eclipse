@@ -278,30 +278,7 @@ public class BindProjectsPage extends WizardPage {
     updateServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        updateServerLink.setEnabled(false);
-        try {
-          final IServer server = (IServer) ((IStructuredSelection) serverCombo.getSelection()).getFirstElement();
-          getContainer().run(true, true, new IRunnableWithProgress() {
-
-            @Override
-            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-              try {
-                server.update(monitor);
-              } finally {
-                Display.getDefault().asyncExec(new Runnable() {
-                  @Override
-                  public void run() {
-                    updateState();
-                  }
-                });
-              }
-            }
-          });
-        } catch (InvocationTargetException ex) {
-          throw new IllegalStateException(ex);
-        } catch (InterruptedException e1) {
-          // Job cancelled, ignore
-        }
+        updateSelectedServer();
       }
     });
 
@@ -319,6 +296,33 @@ public class BindProjectsPage extends WizardPage {
       }
 
     });
+  }
+
+  private void updateSelectedServer() {
+    updateServerLink.setEnabled(false);
+    try {
+      final IServer server = (IServer) ((IStructuredSelection) serverCombo.getSelection()).getFirstElement();
+      getContainer().run(true, true, new IRunnableWithProgress() {
+
+        @Override
+        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+          try {
+            server.update(monitor);
+          } finally {
+            Display.getDefault().asyncExec(new Runnable() {
+              @Override
+              public void run() {
+                updateState();
+              }
+            });
+          }
+        }
+      });
+    } catch (InvocationTargetException ex) {
+      throw new IllegalStateException(ex);
+    } catch (InterruptedException e1) {
+      // Job cancelled, ignore
+    }
   }
 
   private void updateState() {
@@ -455,51 +459,51 @@ public class BindProjectsPage extends WizardPage {
   }
 
   /**
-   * Update all Eclipse projects when an association was provided:
-   *   - enable Sonar nature
-   *   - update sonar URL / key
-   *   - refresh issues if necessary
-   * @return
+   * Update all Eclipse projects when a binding was provided:
    */
   public boolean finish() {
-    final ProjectBindModel[] projectAssociations = getProjects();
-    for (ProjectBindModel projectAssociation : projectAssociations) {
-      boolean changed = false;
-      IProject project = projectAssociation.getProject();
-      SonarLintProject sonarProject = SonarLintProject.getInstance(project);
-      String oldServerId = sonarProject.getServerId();
-      if (!Objects.equals(projectAssociation.getServerId(), oldServerId)) {
-        sonarProject.setServerId(projectAssociation.getServerId());
-        changed = true;
-      }
-      if (!Objects.equals(projectAssociation.getModuleKey(), sonarProject.getModuleKey())) {
-        sonarProject.setModuleKey(projectAssociation.getModuleKey());
-        changed = true;
-      }
-      if (changed) {
-        sonarProject.save();
-        if (sonarProject.isBound()) {
-          new ProjectUpdateJob(sonarProject).schedule();
-        }
-        if (oldServerId != null && !Objects.equals(projectAssociation.getServerId(), oldServerId)) {
-          IServer server = ServersManager.getInstance().getServer(oldServerId);
-          if (server != null) {
-            server.notifyAllListeners();
-          }
-        }
-        if (projectAssociation.getServerId() != null) {
-          IServer server = ServersManager.getInstance().getServer(projectAssociation.getServerId());
-          if (server != null) {
-            server.notifyAllListeners();
-          }
-        }
-        IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
-        if (labelProvider != null) {
-          ((SonarLintProjectDecorator) labelProvider).fireChange(new IProject[] {sonarProject.getProject()});
-        }
-      }
+    final ProjectBindModel[] projectBindings = getProjects();
+    for (ProjectBindModel projectBinding : projectBindings) {
+      updateProjectBinding(projectBinding);
     }
     return true;
+  }
+
+  private void updateProjectBinding(ProjectBindModel projectBinding) {
+    boolean changed = false;
+    IProject project = projectBinding.getProject();
+    SonarLintProject sonarProject = SonarLintProject.getInstance(project);
+    String oldServerId = sonarProject.getServerId();
+    if (!Objects.equals(projectBinding.getServerId(), oldServerId)) {
+      sonarProject.setServerId(projectBinding.getServerId());
+      changed = true;
+    }
+    if (!Objects.equals(projectBinding.getModuleKey(), sonarProject.getModuleKey())) {
+      sonarProject.setModuleKey(projectBinding.getModuleKey());
+      changed = true;
+    }
+    if (changed) {
+      sonarProject.save();
+      if (sonarProject.isBound()) {
+        new ProjectUpdateJob(sonarProject).schedule();
+      }
+      if (oldServerId != null && !Objects.equals(projectBinding.getServerId(), oldServerId)) {
+        IServer oldServer = ServersManager.getInstance().getServer(oldServerId);
+        if (oldServer != null) {
+          oldServer.notifyAllListeners();
+        }
+      }
+      if (projectBinding.getServerId() != null) {
+        IServer server = ServersManager.getInstance().getServer(projectBinding.getServerId());
+        if (server != null) {
+          server.notifyAllListeners();
+        }
+      }
+      IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
+      if (labelProvider != null) {
+        ((SonarLintProjectDecorator) labelProvider).fireChange(new IProject[] {sonarProject.getProject()});
+      }
+    }
   }
 
   private ProjectBindModel[] getProjects() {

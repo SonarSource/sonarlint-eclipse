@@ -40,7 +40,7 @@ public class StandaloneSonarLintClientFacade {
       SonarLintCorePlugin.getDefault().info("Starting standalone SonarLint engine");
       Enumeration<URL> pluginEntries = SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false);
       StandaloneGlobalConfiguration globalConfig = StandaloneGlobalConfiguration.builder()
-        .addPlugins(pluginEntries != null ? Collections.list(pluginEntries).toArray(new URL[0]) : new URL[0])
+        .addPlugins(pluginEntries != null ? Collections.list(pluginEntries).toArray(new URL[0]) : (new URL[0]))
         .setVerbose(SonarLintCorePlugin.getDefault().isDebugEnabled())
         .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("default").toFile().toPath())
         .setLogOutput(new SonarLintLogOutput())
