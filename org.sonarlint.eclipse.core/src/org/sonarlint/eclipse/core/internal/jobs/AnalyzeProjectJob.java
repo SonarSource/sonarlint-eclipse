@@ -343,7 +343,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private void issueTracking(IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues, IDocument iDoc) throws BadLocationException, CoreException {
+  private static void issueTracking(IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues, IDocument iDoc) throws BadLocationException, CoreException {
     Input<TrackableMarker> baseInput = prepareBaseInput(previousMarkers);
     Input<TrackableIssue> rawInput = prepareRawInput(iDoc, rawIssues);
     Tracking<TrackableIssue, TrackableMarker> tracking = new Tracker<TrackableIssue, TrackableMarker>().track(rawInput, baseInput);

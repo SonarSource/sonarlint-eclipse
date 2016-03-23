@@ -394,8 +394,8 @@ public class BindProjectsPage extends WizardPage {
         return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
           || event.eventType == ColumnViewerEditorActivationEvent.MOUSE_CLICK_SELECTION
           || event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC
-          || event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == KeyLookupFactory
-            .getDefault().formalKeyLookup(IKeyLookup.F2_NAME);
+          || (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == KeyLookupFactory
+            .getDefault().formalKeyLookup(IKeyLookup.F2_NAME));
       }
     };
     activationSupport.setEnableEditorActivationWithKeyboard(true);
@@ -469,7 +469,7 @@ public class BindProjectsPage extends WizardPage {
     return true;
   }
 
-  private void updateProjectBinding(ProjectBindModel projectBinding) {
+  private static void updateProjectBinding(ProjectBindModel projectBinding) {
     boolean changed = false;
     IProject project = projectBinding.getProject();
     SonarLintProject sonarProject = SonarLintProject.getInstance(project);
