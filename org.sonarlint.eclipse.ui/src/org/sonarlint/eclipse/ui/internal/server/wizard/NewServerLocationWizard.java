@@ -26,12 +26,14 @@ import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
 public class NewServerLocationWizard extends AbstractServerLocationWizard {
 
+  private static final String TITLE = "Connect to a SonarQube Server";
+
   public NewServerLocationWizard() {
-    super(new ServerLocationWizardPage(), "Add SonarQube Server");
+    super(new ServerLocationWizardPage(), TITLE);
   }
 
   public NewServerLocationWizard(String serverId) {
-    super(new ServerLocationWizardPage(serverId), "Add SonarQube Server");
+    super(new ServerLocationWizardPage(serverId), TITLE);
   }
 
   @Override

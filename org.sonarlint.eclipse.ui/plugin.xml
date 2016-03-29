@@ -409,6 +409,20 @@
              </with>
           </visibleWhen>
        </command>
+       <command
+             commandId="org.sonarlint.eclipse.ui.internal.command.UnbindProjectsCommand"
+             style="push">
+          <visibleWhen>
+              <with variable="activeMenuSelection">
+                 <iterate ifEmpty="false">
+                   <and>
+                 	   <adapt type="org.eclipse.core.resources.IProject"/>
+                 	   <test property="org.sonarlint.eclipse.core.isBound" value="true"/>
+                 	 </and>
+                 </iterate>
+             </with>
+          </visibleWhen>
+       </command>
 	</menuContribution>
   </extension>
 
@@ -431,15 +445,21 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
-          description="Bind with a remote SonarQube server"
+          description="Bind to a SonarQube project"
           id="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
-          name="Bind with remote SonarQube server..."
+          name="Bind to a SonarQube project..."
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
           description="Update binding configuration"
           id="org.sonarlint.eclipse.ui.internal.command.UpdateProjectsBindingCommand"
           name="Update binding..."
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
+    <command
+          description="Unbind selected projects"
+          id="org.sonarlint.eclipse.ui.internal.command.UnbindProjectsCommand"
+          name="Unbind project"
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
   </extension>
@@ -460,6 +480,10 @@
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.UpdateProjectsBindingCommand">
+    </handler>
+    <handler
+          class="org.sonarlint.eclipse.ui.internal.command.UnbindProjectsCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.UnbindProjectsCommand">
     </handler>
   </extension>
 

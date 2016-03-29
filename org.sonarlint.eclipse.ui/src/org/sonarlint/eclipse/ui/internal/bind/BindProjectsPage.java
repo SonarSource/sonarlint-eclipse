@@ -103,8 +103,10 @@ public class BindProjectsPage extends WizardPage {
   private Link updateServerLink;
 
   public BindProjectsPage(List<IProject> projects) {
-    super("bindProjects", "Bind with SonarQube", SonarLintImages.SONARWIZBAN_IMG);
-    setDescription("Bind Eclipse project(s) with remote project/module on a SonarQube server");
+    super("bindProjects", "Bind Eclipse projects to SonarQube projects", SonarLintImages.SONARWIZBAN_IMG);
+    setDescription(
+      "SonarQube is an Open Source platform to manage code quality. "
+        + "Bind your Eclipse projects to some SonarQube projects in order to get the same issues in Eclipse and in SonarQube.");
     this.projects = projects;
   }
 
@@ -134,7 +136,7 @@ public class BindProjectsPage extends WizardPage {
 
     createCheckUncheckAllCb();
 
-    viewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.VIRTUAL);
+    viewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
     viewer.getTable().setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1, 3));
 
     viewer.getTable().setHeaderVisible(true);
@@ -190,7 +192,6 @@ public class BindProjectsPage extends WizardPage {
 
     createAutoBindBtn(btnContainer);
 
-    container.layout(true, true);
     viewer.setAllChecked(true);
 
     updateState();
@@ -260,7 +261,7 @@ public class BindProjectsPage extends WizardPage {
     serverDropDownPage.setLayout(layout);
 
     Label labelField = new Label(serverDropDownPage, SWT.NONE);
-    labelField.setText("Select server: ");
+    labelField.setText("Select a SonarQube server: ");
     serverCombo = new ComboViewer(serverDropDownPage, SWT.READ_ONLY);
 
     serverCombo.setContentProvider(ArrayContentProvider.getInstance());
@@ -274,7 +275,7 @@ public class BindProjectsPage extends WizardPage {
     });
 
     updateServerLink = new Link(serverDropDownPage, SWT.NONE);
-    updateServerLink.setText("<a>Update selected server</a>");
+    updateServerLink.setText("<a>Update data from selected server</a>");
     updateServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
@@ -339,7 +340,7 @@ public class BindProjectsPage extends WizardPage {
     if (selectedServer != null && !selectedServer.isUpdated()) {
       setMessage("Server is not updated", IMessageProvider.WARNING);
     } else {
-      setMessage("");
+      setMessage(null);
     }
     if (autoBindBtn != null) {
       autoBindBtn.setEnabled(hasSelected && selectedServer != null && selectedServer.isUpdated());

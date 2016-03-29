@@ -447,7 +447,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
 
   @Override
   public void init(IWorkbench workbench) {
-    setDescription("Edit properties passed to SonarQube Scanner");
+    setDescription("Additional properties passed to SonarLint analyzers");
     setPreferenceStore(SonarLintUiPlugin.getDefault().getPreferenceStore());
   }
 
@@ -462,7 +462,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
           sonarProperties.add(new SonarLintProperty(keyValue[0], keyValue[1]));
         }
       } catch (Exception e) {
-        SonarLintCorePlugin.getDefault().error("Error while loading SonarQube properties" + props, e);
+        SonarLintCorePlugin.getDefault().error("Error while loading SonarLint analyzer properties" + props, e);
       }
     } else {
       sonarProperties.addAll(getSonarProject().getExtraProperties());

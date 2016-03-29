@@ -26,7 +26,7 @@ public class EditServerLocationWizard extends AbstractServerLocationWizard {
   private final IServer sonarServer;
 
   public EditServerLocationWizard(IServer sonarServer) {
-    super(new ServerLocationWizardPage(sonarServer), "Edit SonarQube Server");
+    super(new ServerLocationWizardPage(sonarServer), "Edit connection to a SonarQube Server");
     this.sonarServer = sonarServer;
   }
 
