@@ -70,7 +70,8 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
         htmlDescription = server.getHtmlRuleDescription(ruleKey);
       }
 
-      super.showHtml("<!doctype html><html><head>" + CSS + "</head><body><h1><big>" + ruleName + "</big></h1><div class=\"rule-desc\">" + htmlDescription + "</div></body></html>");
+      super.showHtml("<!doctype html><html><head>" + CSS + "</head><body><h1><big>" + ruleName + "</big> (" + ruleKey + ")</h1><div class=\"rule-desc\">" + htmlDescription
+        + "</div></body></html>");
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error("Unable to open rule description", e);
     }
