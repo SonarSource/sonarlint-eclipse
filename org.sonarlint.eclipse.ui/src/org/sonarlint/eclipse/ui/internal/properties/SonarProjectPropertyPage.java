@@ -33,7 +33,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
@@ -50,11 +49,10 @@ import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
 public class SonarProjectPropertyPage extends PropertyPage {
 
   private Button enabledBtn;
-  private Text serverIdField;
-  private Text moduleKeyField;
   private Link addServerLink;
   private Link bindLink;
   private Composite container;
+  private Label boundDetails;
 
   public SonarProjectPropertyPage() {
     setTitle(Messages.SonarProjectPropertyPage_title);
@@ -82,8 +80,8 @@ public class SonarProjectPropertyPage extends PropertyPage {
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
 
-    serverIdField = addText(Messages.SonarProjectPropertyBlock_label_server, "", container);
-    moduleKeyField = addText(Messages.SonarProjectPropertyBlock_label_key, "", container);
+    boundDetails = new Label(container, SWT.NONE);
+    boundDetails.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
     addServerLink = new Link(container, SWT.NONE);
     GridData gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
@@ -124,16 +122,16 @@ public class SonarProjectPropertyPage extends PropertyPage {
   private void updateState() {
     final SonarLintProject sonarProject = SonarLintProject.getInstance(getProject());
     String moduleKey = sonarProject.getModuleKey();
-    moduleKeyField.setText(moduleKey != null ? moduleKey : "");
     final String serverId = sonarProject.getServerId();
-    serverIdField.setText(serverName(serverId));
     if (moduleKey == null && serverId == null) {
-      bindLink.setText("<a>Bind project</a>");
+      bindLink.setText("<a>Bind this Eclipse project to a SonarQube project</a>");
+      boundDetails.setText("");
     } else {
+      boundDetails.setText("Bound to the project '" + moduleKey + "' on server '" + serverName(serverId) + "'");
       bindLink.setText("<a>Update project binding</a>");
     }
     if (serverId != null && ServersManager.getInstance().getServer(serverId) == null) {
-      addServerLink.setText("<a>Add SonarQube server '" + serverId + "'</a>");
+      addServerLink.setText("<a>Connect to SonarQube server '" + serverId + "'</a>");
       addServerLink.setVisible(true);
     } else {
       addServerLink.setVisible(false);
@@ -147,16 +145,6 @@ public class SonarProjectPropertyPage extends PropertyPage {
     }
     IServer server = ServersManager.getInstance().getServer(serverId);
     return server != null ? server.getName() : ("Unknown server: '" + serverId + "'");
-  }
-
-  private static Text addText(String label, String text, Composite container) {
-    Label labelField = new Label(container, SWT.NONE);
-    labelField.setText(label);
-
-    Text textField = new Text(container, SWT.SINGLE | SWT.READ_ONLY);
-    textField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    textField.setText(text);
-    return textField;
   }
 
   @Override
