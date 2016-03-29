@@ -6,11 +6,11 @@
       provider-name="%provider_name"
       plugin="org.sonarlint.eclipse.ui">
 
-   <description url="http://redirect.sonarsource.com/doc/sonar-eclipse.html">
+   <description url="http://www.sonarlint.org/">
       %description
    </description>
 
-   <copyright url="http://www.sonarsource.com">
+   <copyright url="http://www.sonarlint.org/">
       %copyright
    </copyright>
 
