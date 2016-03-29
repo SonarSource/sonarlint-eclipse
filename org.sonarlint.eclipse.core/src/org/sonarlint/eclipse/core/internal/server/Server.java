@@ -37,7 +37,9 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintLogOutput;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -60,14 +62,14 @@ public class Server implements IServer, StateListener {
 
   private static final String NEED_UPDATE = "Need update";
   private final String id;
-  private final String name;
-  private final String host;
-  private final boolean hasAuth;
+  private String name;
+  private String host;
+  private boolean hasAuth;
   private final ConnectedSonarLintEngine client;
   private final List<IServerListener> listeners = new ArrayList<>();
   private GlobalUpdateStatus updateStatus;
 
-  public Server(String id, String name, String host, boolean hasAuth) {
+  Server(String id, String name, String host, boolean hasAuth) {
     this.id = id;
     this.name = name;
     this.host = host;
@@ -160,13 +162,23 @@ public class Server implements IServer, StateListener {
 
   @Override
   public synchronized void delete() {
-    stop();
+    client.stop(true);
     for (SonarLintProject sonarLintProject : getBoundProjects()) {
       sonarLintProject.setServerId(null);
       sonarLintProject.setModuleKey(null);
       sonarLintProject.save();
     }
     ServersManager.getInstance().removeServer(this);
+  }
+
+  @Override
+  public void updateConfig(String serverName, String url, String username, String password) {
+    this.name = serverName;
+    this.host = url;
+    this.hasAuth = StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
+    ServersManager.getInstance().updateServer(this, username, password);
+    Job j = new ServerUpdateJob(this);
+    j.schedule();
   }
 
   @Override
@@ -181,7 +193,7 @@ public class Server implements IServer, StateListener {
   }
 
   public void stop() {
-    client.stop();
+    client.stop(false);
   }
 
   @Override
@@ -226,11 +238,11 @@ public class Server implements IServer, StateListener {
       if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
         builder.credentials(username, password);
       }
-      ValidationResult testConnection = client.validateCredentials(builder.build());
-      if (testConnection.status()) {
+      ValidationResult testConnection = client.validateConnection(builder.build());
+      if (testConnection.success()) {
         return new Status(IStatus.OK, SonarLintCorePlugin.PLUGIN_ID, "Successfully connected!");
       } else {
-        return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, testConnection.statusCode() + ": " + testConnection.message());
+        return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, testConnection.message());
       }
     } catch (Exception e) {
       if (e.getCause() instanceof UnknownHostException) {

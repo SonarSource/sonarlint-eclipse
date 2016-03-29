@@ -113,4 +113,6 @@ public interface IServer {
 
   boolean isUpdating();
 
+  void updateConfig(String serverName, String url, String username, String password);
+
 }

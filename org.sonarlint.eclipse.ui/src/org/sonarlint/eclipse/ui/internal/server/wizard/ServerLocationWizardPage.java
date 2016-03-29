@@ -50,7 +50,6 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.preferences.SettingsTransfer;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
@@ -256,7 +255,7 @@ public class ServerLocationWizardPage extends WizardPage {
       @Override
       public void widgetSelected(SelectionEvent e) {
         try {
-          ServerConnectionTestJob testJob = new ServerConnectionTestJob(getServer(), getUsername(), getPassword());
+          ServerConnectionTestJob testJob = new ServerConnectionTestJob(transcientServer(), getUsername(), getPassword());
           getWizard().getContainer().run(true, true, testJob);
           status = testJob.getStatus();
         } catch (OperationCanceledException e1) {
@@ -277,25 +276,7 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   private void dialogChanged() {
-    if (StringUtils.isBlank(getServerUrl())) {
-      updateStatus("Server url must be specified");
-      return;
-    }
-    if (StringUtils.isBlank(getServerId())) {
-      updateStatus("Server id must be specified");
-      return;
-    }
-    if (!edit && ServersManager.getInstance().getServer(getServerId()) != null) {
-      updateStatus("Server id already exists");
-      return;
-    }
-    try {
-      getServer();
-    } catch (Exception e) {
-      updateStatus(e.getMessage());
-      return;
-    }
-    updateStatus(null);
+    updateStatus(ServersManager.getInstance().validate(getServerId(), getServerUrl(), edit));
   }
 
   private void updateStatus(String message) {
@@ -323,8 +304,8 @@ public class ServerLocationWizardPage extends WizardPage {
     return StringUtils.defaultIfBlank(serverNameText.getText(), getServerId());
   }
 
-  public IServer getServer() {
-    return new Server(getServerId(), getServerName(), getServerUrl(), StringUtils.isNotBlank(getUsername()) || StringUtils.isNotBlank(getPassword()));
+  private IServer transcientServer() {
+    return ServersManager.getInstance().create(getServerId(), getServerName(), getServerUrl(), getUsername(), getPassword());
   }
 
 }

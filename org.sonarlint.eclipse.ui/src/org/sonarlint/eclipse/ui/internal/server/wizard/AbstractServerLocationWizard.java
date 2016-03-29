@@ -28,7 +28,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.server.IServer;
 
 public abstract class AbstractServerLocationWizard extends Wizard implements INewWizard {
 
@@ -53,16 +52,17 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
 
   @Override
   public boolean performFinish() {
-    final IServer server = page.getServer();
+    final String serverId = page.getServerId();
+    final String serverName = page.getServerName();
+    final String serverUrl = page.getServerUrl();
     final String username = page.getUsername();
     final String password = page.getPassword();
-
     IRunnableWithProgress op = new IRunnableWithProgress() {
       @Override
       public void run(IProgressMonitor monitor) throws InvocationTargetException {
-        monitor.beginTask("Saving " + server.getName(), 1);
+        monitor.beginTask("Saving '" + serverId + "'", 1);
         try {
-          doFinish(server, username, password);
+          doFinish(serverId, serverName, serverUrl, username, password);
         } catch (Exception e) {
           SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
         } finally {
@@ -82,5 +82,5 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
     return true;
   }
 
-  protected abstract void doFinish(IServer server, String username, String password);
+  protected abstract void doFinish(String serverId, String serverName, String url, String username, String password);
 }

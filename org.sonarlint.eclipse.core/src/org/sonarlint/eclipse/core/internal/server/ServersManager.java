@@ -37,6 +37,8 @@ import org.eclipse.equinox.security.storage.StorageException;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
 
 public class ServersManager {
   static final String PREF_SERVERS = "servers";
@@ -181,10 +183,6 @@ public class ServersManager {
   }
 
   public void addServer(IServer server, String username, String password) {
-    if (server == null) {
-      return;
-    }
-
     if (!initialized) {
       init();
     }
@@ -302,6 +300,32 @@ public class ServersManager {
     } catch (StorageException e) {
       throw new IllegalStateException("Unable to read secure credentials", e);
     }
+  }
+
+  public String validate(String serverId, String serverUrl, boolean editExisting) {
+    if (StringUtils.isBlank(serverUrl)) {
+      return "Server url must be specified";
+    }
+    if (StringUtils.isBlank(serverId)) {
+      return "Server id must be specified";
+    }
+    if (!editExisting && serversById.containsKey(serverId)) {
+      return "Server id already exists";
+    }
+
+    try {
+      // Validate server ID format
+      ConnectedGlobalConfiguration.builder()
+        .setServerId(serverId)
+        .build();
+    } catch (Exception e) {
+      return e.getMessage();
+    }
+    return null;
+  }
+
+  public IServer create(String id, String name, String url, String username, String password) {
+    return new Server(id, name, url, StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password));
   }
 
 }
