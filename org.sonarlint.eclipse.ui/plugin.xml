@@ -493,7 +493,7 @@
   <extension point="org.eclipse.ui.commandImages">
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
-      icon="icons/onde-sonar-16-execute.png" />
+      icon="icons/sonarlint-run-16x16.png" />
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
       icon="icons/synced.gif" />
@@ -541,7 +541,7 @@
         point="org.eclipse.ui.console.consoleFactories">
      <consoleFactory
            class="org.sonarlint.eclipse.ui.internal.console.SonarLintConsoleFactory"
-           icon="icons/onde-sonar-16.png"
+           icon="icons/sonarlint-16x16.png"
            label="%consoleFactory.label">
      </consoleFactory>
   </extension>

@@ -55,7 +55,7 @@ public class ServerLabelProvider extends BaseCellLabelProvider {
   @Override
   public Image getImage(Object element) {
     if (element instanceof IServer) {
-      return SonarLintImages.SONAR16_IMG;
+      return SonarLintImages.SERVER_ICON_IMG;
     }
     if (element instanceof IProject) {
       return PlatformUI.getWorkbench().getSharedImages().getImage(org.eclipse.ui.ide.IDE.SharedImages.IMG_OBJ_PROJECT);

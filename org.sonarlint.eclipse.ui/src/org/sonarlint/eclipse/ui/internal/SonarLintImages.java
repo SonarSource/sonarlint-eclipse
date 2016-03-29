@@ -32,12 +32,13 @@ public final class SonarLintImages {
 
   public static final ImageDescriptor SONARWIZBAN_IMG = createImageDescriptor("sonarqube-48x200.png"); //$NON-NLS-1$
   public static final ImageDescriptor IMG_WIZBAN_NEW_SERVER = createImageDescriptor("new_server_wiz.png"); //$NON-NLS-1$
-  public static final ImageDescriptor SONAR16_IMG_DESC = createImageDescriptor("onde-sonar-16.png"); //$NON-NLS-1$
+  public static final ImageDescriptor SONARLINT_CONSOLE_IMG_DESC = createImageDescriptor("sonarlint-16x16.png"); //$NON-NLS-1$
   public static final ImageDescriptor UPDATE_IMG = createImageDescriptor("update.gif"); //$NON-NLS-1$
   public static final ImageDescriptor WIZ_NEW_SERVER = createImageDescriptor("wiz_new_server.gif"); //$NON-NLS-1$
-  public static final ImageDescriptor LABEL_DECORATOR = createImageDescriptor("onde-label-decorator.gif"); //$NON-NLS-1$
+  public static final ImageDescriptor SQ_LABEL_DECORATOR = createImageDescriptor("onde-label-decorator.gif"); //$NON-NLS-1$
+  public static final ImageDescriptor SL_LABEL_DECORATOR = createImageDescriptor("sonarlint-label-decorator.gif"); //$NON-NLS-1$
 
-  public static final Image SONAR16_IMG = createImage("onde-sonar-16.png"); //$NON-NLS-1$
+  public static final Image SERVER_ICON_IMG = createImage("onde-sonar-16.png"); //$NON-NLS-1$
   public static final Image IMG_ISSUE = createImage("issue_annotation.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_CRITICAL = createImage("severity/critical.png"); //$NON-NLS-1$

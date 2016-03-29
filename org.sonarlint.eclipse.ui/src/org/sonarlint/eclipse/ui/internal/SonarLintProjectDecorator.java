@@ -48,8 +48,12 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
       if (!p.isBuilderEnabled()) {
         return;
       }
-      if (p.getServerId() != null && ServersManager.getInstance().getServer(p.getServerId()) != null) {
-        decoration.addOverlay(SonarLintImages.LABEL_DECORATOR);
+      if (p.getServerId() == null) {
+        decoration.addOverlay(SonarLintImages.SL_LABEL_DECORATOR);
+        return;
+      }
+      if (ServersManager.getInstance().getServer(p.getServerId()) != null) {
+        decoration.addOverlay(SonarLintImages.SQ_LABEL_DECORATOR);
       }
     }
   }
