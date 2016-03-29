@@ -36,7 +36,6 @@ public final class SonarLintImages {
   public static final ImageDescriptor UPDATE_IMG = createImageDescriptor("update.gif"); //$NON-NLS-1$
   public static final ImageDescriptor WIZ_NEW_SERVER = createImageDescriptor("wiz_new_server.gif"); //$NON-NLS-1$
   public static final ImageDescriptor SQ_LABEL_DECORATOR = createImageDescriptor("onde-label-decorator.gif"); //$NON-NLS-1$
-  public static final ImageDescriptor SL_LABEL_DECORATOR = createImageDescriptor("sonarlint-label-decorator.gif"); //$NON-NLS-1$
 
   public static final Image SERVER_ICON_IMG = createImage("onde-sonar-16.png"); //$NON-NLS-1$
   public static final Image IMG_ISSUE = createImage("issue_annotation.png"); //$NON-NLS-1$
