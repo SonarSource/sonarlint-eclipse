@@ -24,7 +24,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 
-public class BindedPropertyTester extends PropertyTester {
+public class SonarLintPropertyTester extends PropertyTester {
 
   @Override
   public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -45,6 +45,10 @@ public class BindedPropertyTester extends PropertyTester {
     if (project != null && "isBound".equals(property)) {
       SonarLintProject p = SonarLintProject.getInstance(project);
       return expectedValue.equals(p.isBound());
+    }
+    if (project != null && "isAutoAnalysis".equals(property)) {
+      SonarLintProject p = SonarLintProject.getInstance(project);
+      return expectedValue.equals(p.isBuilderEnabled());
     }
     return false;
   }

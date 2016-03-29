@@ -38,10 +38,10 @@
   <extension
         point="org.eclipse.core.expressions.propertyTesters">
      <propertyTester
-           class="org.sonarlint.eclipse.core.internal.resources.BindedPropertyTester"
+           class="org.sonarlint.eclipse.core.internal.resources.SonarLintPropertyTester"
            id="org.sonarlint.eclipse.core.internal.resources.BindedPropertyTester"
            namespace="org.sonarlint.eclipse.core"
-           properties="isBound"
+           properties="isBound,isAutoAnalysis"
            type="org.eclipse.core.runtime.IAdaptable">
      </propertyTester>
   </extension>
