@@ -136,7 +136,7 @@ public class BindProjectsPage extends WizardPage {
 
     createCheckUncheckAllCb();
 
-    viewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+    viewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
     viewer.getTable().setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true, 1, 3));
 
     viewer.getTable().setHeaderVisible(true);
