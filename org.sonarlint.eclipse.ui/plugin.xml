@@ -39,7 +39,7 @@
 	      class="org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard"
 	      category="org.sonarlint.eclipse"
 	      icon="icons/onde-sonar-16.png">
-	    <description>Register a new SonarQube server</description>
+	    <description>Connect to a new SonarQube server</description>
 	  </wizard>
 	</extension>
 	
@@ -70,7 +70,7 @@
         allowMultiple="false"
         category="org.sonarlint.eclipse"
         class="org.sonarlint.eclipse.ui.internal.views.issues.IssuesView"
-        icon="icons/onde-sonar-16.png"
+        icon="icons/sonarlint-16x16.png"
         id="org.sonarlint.eclipse.ui.views.issues.IssuesView"
         name="%sonar.issues.view.name">
     </view>
@@ -558,7 +558,7 @@
      <menuContribution
            locationURI="popup:org.eclipse.ui.popup.any?after=additions">
         <menu
-              icon="icons/onde-sonar-16.png"
+              icon="icons/sonarlint-16x16.png"
               id="sonar.menu"
               label="%sonar.menu.label">
            <separator
