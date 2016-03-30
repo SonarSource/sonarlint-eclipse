@@ -45,7 +45,7 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
     }
     if (project != null && project.isAccessible()) {
       SonarLintProject p = SonarLintProject.getInstance(project);
-      if (!p.isBuilderEnabled()) {
+      if (!p.isAutoEnabled()) {
         return;
       }
       if (p.getServerId() != null && ServersManager.getInstance().getServer(p.getServerId()) != null) {

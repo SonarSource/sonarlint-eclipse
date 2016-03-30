@@ -24,14 +24,23 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.net.proxy.IProxyService;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 import org.sonarlint.eclipse.core.AbstractPlugin;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
@@ -115,6 +124,36 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   public void start(BundleContext context) {
     super.start(context);
     ResourcesPlugin.getWorkspace().addResourceChangeListener(new NewProjectListener(), IResourceChangeEvent.POST_CHANGE);
+    scheduleStartupJobs();
+  }
+
+  private void scheduleStartupJobs() {
+    final Job job = new Job("Enable SonarLint on all projects") {
+
+      @Override
+      protected IStatus run(final IProgressMonitor monitor) {
+
+        final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        if (workspace != null) {
+          final IWorkspaceRoot root = workspace.getRoot();
+          if (root != null) {
+            final IProject[] projects = root.getProjects(IContainer.INCLUDE_HIDDEN);
+            monitor.beginTask("Enable SonarLint builder...", projects.length);
+            for (final IProject iProject : projects) {
+              monitor.subTask(iProject.getName());
+              SonarLintProject slProject = SonarLintProject.getInstance(iProject);
+              if (slProject != null && slProject.isAutoEnabled() && !slProject.isBuilderEnabled()) {
+                slProject.setBuilderEnabled(true);
+              }
+              monitor.worked(1);
+            }
+          }
+        }
+        return Status.OK_STATUS;
+      }
+    };
+    job.setPriority(Job.LONG);
+    job.schedule();
   }
 
   @Override

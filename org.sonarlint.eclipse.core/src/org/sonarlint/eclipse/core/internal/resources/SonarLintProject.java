@@ -39,6 +39,7 @@ public class SonarLintProject {
   private List<SonarLintProperty> extraProperties = new ArrayList<>();
   private String moduleKey;
   private String serverId;
+  private boolean autoEnabled = true;
 
   public SonarLintProject(IProject project) {
     this.project = project;
@@ -49,11 +50,11 @@ public class SonarLintProject {
     if (project == null || !project.isAccessible()) {
       throw new IllegalStateException("Unable to find project for resource " + resource);
     }
-    return SonarLintCorePlugin.getDefault().getProjectManager().readSonarConfiguration(project);
+    return SonarLintCorePlugin.getDefault().getProjectManager().readSonarLintConfiguration(project);
   }
 
   public void save() {
-    SonarLintCorePlugin.getDefault().getProjectManager().saveSonarConfiguration(project, this);
+    SonarLintCorePlugin.getDefault().getProjectManager().saveSonarLintConfiguration(project, this);
   }
 
   public IProject getProject() {
@@ -158,6 +159,14 @@ public class SonarLintProject {
 
   public boolean isBound() {
     return getServerId() != null && getModuleKey() != null;
+  }
+
+  public boolean isAutoEnabled() {
+    return autoEnabled;
+  }
+
+  public void setAutoEnabled(boolean autoEnabled) {
+    this.autoEnabled = autoEnabled;
   }
 
 }

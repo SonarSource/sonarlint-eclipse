@@ -60,7 +60,7 @@ import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class Server implements IServer, StateListener {
 
-  private static final String NEED_UPDATE = "Need update";
+  private static final String NEED_UPDATE = "Need data update";
   private final String id;
   private String name;
   private String host;
@@ -154,7 +154,7 @@ public class Server implements IServer, StateListener {
       case UPDATED:
         return "Version: " + getServerVersion() + ", Last update: " + getUpdateDate();
       case UPDATING:
-        return "Updating...";
+        return "Updating data...";
       default:
         throw new IllegalArgumentException(client.getState().name());
     }

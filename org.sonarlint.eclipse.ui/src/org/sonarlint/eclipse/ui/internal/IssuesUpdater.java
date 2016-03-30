@@ -50,7 +50,7 @@ public class IssuesUpdater implements IPartListener2 {
     IFile file = (IFile) resource.getAdapter(IFile.class);
     if (file != null) {
       final SonarLintProject sonarProject = SonarLintProject.getInstance(file.getProject());
-      if (!sonarProject.isBuilderEnabled() || !SonarLintBuilder.shouldAnalyze(null, file)) {
+      if (!sonarProject.isAutoEnabled() || !SonarLintBuilder.shouldAnalyze(null, file)) {
         return;
       }
       AnalyzeProjectRequest request = new AnalyzeProjectRequest(resource.getProject(), Arrays.asList(file));

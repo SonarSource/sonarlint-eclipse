@@ -48,7 +48,7 @@ public class SonarLintPropertyTester extends PropertyTester {
     }
     if (project != null && "isAutoAnalysis".equals(property)) {
       SonarLintProject p = SonarLintProject.getInstance(project);
-      return expectedValue.equals(p.isBuilderEnabled());
+      return expectedValue.equals(p.isAutoEnabled());
     }
     return false;
   }

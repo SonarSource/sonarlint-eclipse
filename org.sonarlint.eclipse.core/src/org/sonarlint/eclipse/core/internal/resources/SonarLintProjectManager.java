@@ -34,8 +34,9 @@ public class SonarLintProjectManager {
   private static final String P_EXTRA_PROPS = "extraProperties";
   private static final String P_SERVER_ID = "serverId";
   private static final String P_MODULE_KEY = "moduleKey";
+  private static final String P_AUTO_ENABLED_KEY = "autoEnabled";
 
-  public SonarLintProject readSonarConfiguration(IProject project) {
+  public SonarLintProject readSonarLintConfiguration(IProject project) {
     IScopeContext projectScope = new ProjectScope(project);
     IEclipsePreferences projectNode = projectScope.getNode(SonarLintCorePlugin.PLUGIN_ID);
     if (projectNode == null) {
@@ -59,13 +60,14 @@ public class SonarLintProjectManager {
     sonarProject.setExtraProperties(sonarProperties);
     sonarProject.setModuleKey(projectNode.get(P_MODULE_KEY, ""));
     sonarProject.setServerId(projectNode.get(P_SERVER_ID, ""));
+    sonarProject.setAutoEnabled(projectNode.getBoolean(P_AUTO_ENABLED_KEY, true));
     return sonarProject;
   }
 
   /**
    * @return false, if unable to save configuration
    */
-  public boolean saveSonarConfiguration(IProject project, SonarLintProject configuration) {
+  public boolean saveSonarLintConfiguration(IProject project, SonarLintProject configuration) {
     IScopeContext projectScope = new ProjectScope(project);
     IEclipsePreferences projectNode = projectScope.getNode(SonarLintCorePlugin.PLUGIN_ID);
     if (projectNode == null) {
@@ -92,6 +94,7 @@ public class SonarLintProjectManager {
     } else {
       projectNode.remove(P_SERVER_ID);
     }
+    projectNode.putBoolean(P_AUTO_ENABLED_KEY, configuration.isAutoEnabled());
     try {
       projectNode.flush();
       return true;

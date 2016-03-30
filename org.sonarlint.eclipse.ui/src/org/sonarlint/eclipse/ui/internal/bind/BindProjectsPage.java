@@ -338,7 +338,7 @@ public class BindProjectsPage extends WizardPage {
     checkAll.setText(hasSelected ? "Unselect all" : "Select all");
     unassociateBtn.setEnabled(hasSelected);
     if (selectedServer != null && !selectedServer.isUpdated()) {
-      setMessage("Server is not updated", IMessageProvider.WARNING);
+      setMessage("No data for the selected server", IMessageProvider.WARNING);
     } else {
       setMessage(null);
     }

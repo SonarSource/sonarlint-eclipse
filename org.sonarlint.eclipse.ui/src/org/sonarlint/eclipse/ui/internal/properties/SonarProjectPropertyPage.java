@@ -75,7 +75,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
 
     enabledBtn = new Button(container, SWT.CHECK);
     enabledBtn.setText("Run SonarLint automatically");
-    enabledBtn.setSelection(sonarProject.isBuilderEnabled());
+    enabledBtn.setSelection(sonarProject.isAutoEnabled());
     GridData layoutData = new GridData();
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
@@ -156,7 +156,9 @@ public class SonarProjectPropertyPage extends PropertyPage {
   @Override
   public boolean performOk() {
     final SonarLintProject sonarProject = SonarLintProject.getInstance(getProject());
+    sonarProject.setAutoEnabled(enabledBtn.getSelection());
     sonarProject.setBuilderEnabled(enabledBtn.getSelection());
+    sonarProject.save();
     return super.performOk();
   }
 
