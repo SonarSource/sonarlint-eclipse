@@ -127,33 +127,38 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     scheduleStartupJobs();
   }
 
-  private void scheduleStartupJobs() {
+  private static void scheduleStartupJobs() {
     final Job job = new Job("Enable SonarLint on all projects") {
-
       @Override
       protected IStatus run(final IProgressMonitor monitor) {
-
         final IWorkspace workspace = ResourcesPlugin.getWorkspace();
         if (workspace != null) {
           final IWorkspaceRoot root = workspace.getRoot();
           if (root != null) {
-            final IProject[] projects = root.getProjects(IContainer.INCLUDE_HIDDEN);
-            monitor.beginTask("Enable SonarLint builder...", projects.length);
-            for (final IProject iProject : projects) {
-              monitor.subTask(iProject.getName());
-              SonarLintProject slProject = SonarLintProject.getInstance(iProject);
-              if (slProject != null && slProject.isAutoEnabled() && !slProject.isBuilderEnabled()) {
-                slProject.setBuilderEnabled(true);
-              }
-              monitor.worked(1);
-            }
+            enableAllProjects(monitor, root);
           }
         }
         return Status.OK_STATUS;
       }
+
     };
     job.setPriority(Job.LONG);
     job.schedule();
+  }
+
+  private static void enableAllProjects(final IProgressMonitor monitor, final IWorkspaceRoot root) {
+    final IProject[] projects = root.getProjects(IContainer.INCLUDE_HIDDEN);
+    monitor.beginTask("Enable SonarLint builder...", projects.length);
+    for (final IProject iProject : projects) {
+      if (iProject.isAccessible()) {
+        monitor.subTask(iProject.getName());
+        SonarLintProject slProject = SonarLintProject.getInstance(iProject);
+        if (slProject != null && slProject.isAutoEnabled() && !slProject.isBuilderEnabled()) {
+          slProject.setBuilderEnabled(true);
+        }
+      }
+      monitor.worked(1);
+    }
   }
 
   @Override

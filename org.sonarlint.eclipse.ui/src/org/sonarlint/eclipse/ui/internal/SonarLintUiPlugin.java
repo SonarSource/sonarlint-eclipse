@@ -133,4 +133,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }.schedule();
   }
 
+  public synchronized void disposeConsole() {
+    this.console = null;
+  }
+
 }

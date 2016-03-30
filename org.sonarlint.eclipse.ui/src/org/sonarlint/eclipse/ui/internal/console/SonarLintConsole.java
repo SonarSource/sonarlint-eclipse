@@ -22,9 +22,6 @@ package org.sonarlint.eclipse.ui.internal.console;
 import java.io.IOException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
@@ -40,7 +37,7 @@ import org.sonarlint.eclipse.ui.internal.ISonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
-public class SonarLintConsole extends IOConsole implements LogListener, ISonarLintConsole, IPropertyChangeListener {
+public class SonarLintConsole extends IOConsole implements LogListener, ISonarLintConsole {
 
   public static final String P_DEBUG_OUTPUT = "debugOutput"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE = "showConsole"; //$NON-NLS-1$
@@ -77,9 +74,6 @@ public class SonarLintConsole extends IOConsole implements LogListener, ISonarLi
       getWarnStream().setColor(warnColor);
       getDebugStream().setColor(debugColor);
 
-      // install font
-      setFont(JFaceResources.getFontRegistry().get("pref_console_font")); //$NON-NLS-1$
-
       initialized = true;
     }
   }
@@ -90,6 +84,8 @@ public class SonarLintConsole extends IOConsole implements LogListener, ISonarLi
 
     warnColor.dispose();
     debugColor.dispose();
+
+    SonarLintUiPlugin.getDefault().disposeConsole();
   }
 
   @Override
@@ -177,12 +173,6 @@ public class SonarLintConsole extends IOConsole implements LogListener, ISonarLi
 
   public static boolean isDebugEnabled() {
     return SonarLintUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarLintConsole.P_DEBUG_OUTPUT);
-  }
-
-  @Override
-  public void propertyChange(PropertyChangeEvent event) {
-    // font changed
-    setFont(JFaceResources.getFontRegistry().get("pref_console_font")); //$NON-NLS-1$
   }
 
 }
