@@ -76,7 +76,6 @@ public class Server implements IServer, StateListener {
     this.hasAuth = hasAuth;
     ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
       .setServerId(getId())
-      .setVerbose(SonarLintCorePlugin.getDefault().isDebugEnabled())
       .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("work").append(getId()).toFile().toPath())
       .setStorageRoot(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("storage").toFile().toPath())
       .setLogOutput(new SonarLintLogOutput())
@@ -305,11 +304,6 @@ public class Server implements IServer, StateListener {
   @Override
   public void removeServerListener(IServerListener listener) {
     listeners.remove(listener);
-  }
-
-  @Override
-  public void setVerbose(boolean verbose) {
-    client.setVerbose(verbose);
   }
 
   @Override

@@ -41,7 +41,6 @@ public class StandaloneSonarLintClientFacade {
       Enumeration<URL> pluginEntries = SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false);
       StandaloneGlobalConfiguration globalConfig = StandaloneGlobalConfiguration.builder()
         .addPlugins(pluginEntries != null ? Collections.list(pluginEntries).toArray(new URL[0]) : (new URL[0]))
-        .setVerbose(SonarLintCorePlugin.getDefault().isDebugEnabled())
         .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("default").toFile().toPath())
         .setLogOutput(new SonarLintLogOutput())
         .build();
@@ -68,12 +67,6 @@ public class StandaloneSonarLintClientFacade {
     if (client != null) {
       client.stop();
       client = null;
-    }
-  }
-
-  public void setVerbose(boolean verbose) {
-    if (client != null) {
-      client.setVerbose(verbose);
     }
   }
 

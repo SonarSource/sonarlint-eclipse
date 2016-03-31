@@ -42,8 +42,6 @@ import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
-import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
 public class SonarLintCorePlugin extends AbstractPlugin {
 
@@ -56,7 +54,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   private final List<LogListener> logListeners = new ArrayList<>();
   private StandaloneSonarLintClientFacade sonarlint;
-  private boolean debugEnabled;
   private final ServiceTracker proxyTracker;
 
   public SonarLintCorePlugin() {
@@ -168,18 +165,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     }
     proxyTracker.close();
     super.stop(context);
-  }
-
-  public boolean isDebugEnabled() {
-    return debugEnabled;
-  }
-
-  public void setDebugEnabled(boolean debugEnabled) {
-    this.debugEnabled = debugEnabled;
-    getDefaultSonarLintClientFacade().setVerbose(debugEnabled);
-    for (IServer server : ServersManager.getInstance().getServersNoInit()) {
-      server.setVerbose(debugEnabled);
-    }
   }
 
   public StandaloneSonarLintClientFacade getDefaultSonarLintClientFacade() {

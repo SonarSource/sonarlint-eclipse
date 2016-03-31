@@ -59,8 +59,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     setupIssuesUpdater();
 
-    SonarLintCorePlugin.getDefault().setDebugEnabled(SonarLintConsole.isDebugEnabled());
-
     prefListener = new IPropertyChangeListener() {
       @Override
       public void propertyChange(PropertyChangeEvent event) {
@@ -70,9 +68,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
           } catch (CoreException e) {
             SonarLintCorePlugin.getDefault().error("Unable to update marker severity", e);
           }
-        }
-        if (event.getProperty().equals(SonarLintConsole.P_DEBUG_OUTPUT)) {
-          SonarLintCorePlugin.getDefault().setDebugEnabled(SonarLintConsole.isDebugEnabled());
         }
       }
     };

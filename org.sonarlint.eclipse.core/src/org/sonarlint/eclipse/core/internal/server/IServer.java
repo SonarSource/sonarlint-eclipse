@@ -103,8 +103,6 @@ public interface IServer {
 
   void updateProject(String moduleKey);
 
-  void setVerbose(boolean verbose);
-
   boolean isUpdated();
 
   List<SonarLintProject> getBoundProjects();
