@@ -8,14 +8,10 @@ Bundle-ClassPath: .
 Bundle-Activator: org.sonarlint.eclipse.jdt.internal.SonarJdtPlugin
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
- org.eclipse.ui,
- org.eclipse.ui.navigator,
  org.eclipse.jface.text,
  org.eclipse.core.filebuffers,
  org.eclipse.jdt.core,
- org.eclipse.jdt.ui,
- org.sonarlint.eclipse.core,
- org.sonarlint.eclipse.ui
+ org.sonarlint.eclipse.core
 Export-Package: org.sonarlint.eclipse.jdt.internal;x-friends:="org.son
  ar.ide.eclipse.core.tests"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

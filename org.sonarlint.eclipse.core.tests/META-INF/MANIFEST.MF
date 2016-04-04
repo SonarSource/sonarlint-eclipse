@@ -12,12 +12,11 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt.core,
  org.eclipse.equinox.security,
  org.sonarlint.eclipse.core,
- org.sonarlint.eclipse.ui,
  org.sonarlint.eclipse.jdt,
  org.mockito.mockito-all,
  org.assertj.core,
  org.junit;bundle-version="4.8.2",
  org.eclipse.core.filebuffers,
  org.eclipse.jface.text,
- org.sonarsource.sonarlint.core.sonarlint-client-api;bundle-version="1.1.0"
+ org.sonarsource.sonarlint.core.sonarlint-client-api
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
