@@ -78,7 +78,7 @@
 	        allowMultiple="false"
           category="org.sonarlint.eclipse"
           class="org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView"
-          icon="icons/onde-sonar-16.png"
+          icon="icons/sonarlint-16x16.png"
           id="org.sonarlint.eclipse.ui.views.RuleDescriptionWebView"
           name="SonarLint Rule Description">
     </view>
