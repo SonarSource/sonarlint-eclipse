@@ -19,25 +19,21 @@
  */
 package org.sonarlint.eclipse.ui.internal.console;
 
-import java.io.IOException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.IOConsole;
-import org.eclipse.ui.console.IOConsoleOutputStream;
-import org.sonarlint.eclipse.core.SonarEclipseException;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.jobs.LogListener;
-import org.sonarlint.eclipse.ui.internal.ISonarLintConsole;
+import org.eclipse.ui.console.MessageConsole;
+import org.eclipse.ui.console.MessageConsoleStream;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
-public class SonarLintConsole extends IOConsole implements LogListener, ISonarLintConsole {
+public class SonarLintConsole extends MessageConsole {
 
   public static final String P_DEBUG_OUTPUT = "debugOutput"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE = "showConsole"; //$NON-NLS-1$
@@ -45,50 +41,46 @@ public class SonarLintConsole extends IOConsole implements LogListener, ISonarLi
   public static final String P_SHOW_CONSOLE_ON_OUTPUT = "onOutput"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE_ON_ERROR = "onError"; //$NON-NLS-1$
 
-  private static final String TITLE = Messages.SonarConsole_title;
+  public static final String TITLE = Messages.SonarConsole_title;
 
-  private IOConsoleOutputStream infoStream;
-  private IOConsoleOutputStream warnStream;
-  private IOConsoleOutputStream debugStream;
+  private MessageConsoleStream infoStream;
+  private MessageConsoleStream warnStream;
+  private MessageConsoleStream debugStream;
 
   // Colors must be disposed
   private Color warnColor;
   private Color debugColor;
 
-  private boolean initialized = false;
-
   public SonarLintConsole(ImageDescriptor imageDescriptor) {
     super(TITLE, imageDescriptor);
-    initStreams(Display.getDefault());
   }
 
-  private void initStreams(Display display) {
-    if (!initialized) {
-      this.infoStream = newOutputStream();
-      this.warnStream = newOutputStream();
-      this.debugStream = newOutputStream();
+  @Override
+  protected void init() {
+    Display display = Display.getDefault();
+    this.infoStream = newMessageStream();
+    this.warnStream = newMessageStream();
+    this.debugStream = newMessageStream();
 
-      warnColor = new Color(display, new RGB(255, 0, 0));
-      debugColor = new Color(display, new RGB(0, 0, 255));
+    warnColor = new Color(display, new RGB(255, 0, 0));
+    debugColor = new Color(display, new RGB(0, 0, 255));
 
-      getWarnStream().setColor(warnColor);
-      getDebugStream().setColor(debugColor);
+    getWarnStream().setColor(warnColor);
+    getDebugStream().setColor(debugColor);
+  }
 
-      initialized = true;
+  public void closeConsole() {
+    IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+    manager.removeConsoles(new IConsole[] {this});
+  }
+
+  public void bringConsoleToFront() {
+    if (PlatformUI.isWorkbenchRunning()) {
+      IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+      manager.showConsoleView(this);
     }
   }
 
-  @Override
-  protected void dispose() {
-    super.dispose();
-
-    warnColor.dispose();
-    debugColor.dispose();
-
-    SonarLintUiPlugin.getDefault().disposeConsole();
-  }
-
-  @Override
   public void info(String msg) {
     if (isShowConsoleOnOutput()) {
       bringConsoleToFront();
@@ -96,7 +88,6 @@ public class SonarLintConsole extends IOConsole implements LogListener, ISonarLi
     write(getInfoStream(), msg);
   }
 
-  @Override
   public void error(String msg) {
     if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
       bringConsoleToFront();
@@ -104,7 +95,6 @@ public class SonarLintConsole extends IOConsole implements LogListener, ISonarLi
     write(getWarnStream(), msg);
   }
 
-  @Override
   public void debug(String msg) {
     if (isDebugEnabled()) {
       if (isShowConsoleOnOutput()) {
@@ -114,48 +104,22 @@ public class SonarLintConsole extends IOConsole implements LogListener, ISonarLi
     }
   }
 
-  private static void write(IOConsoleOutputStream stream, String msg) {
+  private static void write(MessageConsoleStream stream, String msg) {
     if (msg == null) {
       return;
     }
-    try {
-      stream.write(msg + System.lineSeparator());
-    } catch (IOException e) {
-      throw new SonarEclipseException("Unable to write in console", e);
-    }
+    stream.println(msg);
   }
 
-  public void bringConsoleToFront() {
-    showConsole();
-  }
-
-  public void showConsole() {
-    IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
-    for (IConsole console : manager.getConsoles()) {
-      if (this == console) {
-        manager.showConsoleView(this);
-        return;
-      }
-    }
-    // not found - create a new one
-    manager.addConsoles(new IConsole[] {this});
-  }
-
-  public void closeConsole() {
-    SonarLintCorePlugin.getDefault().removeLogListener(this);
-    IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
-    manager.removeConsoles(new IConsole[] {this});
-  }
-
-  private IOConsoleOutputStream getInfoStream() {
+  private MessageConsoleStream getInfoStream() {
     return infoStream;
   }
 
-  private IOConsoleOutputStream getWarnStream() {
+  private MessageConsoleStream getWarnStream() {
     return warnStream;
   }
 
-  public IOConsoleOutputStream getDebugStream() {
+  public MessageConsoleStream getDebugStream() {
     return debugStream;
   }
 

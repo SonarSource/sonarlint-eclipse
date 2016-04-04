@@ -27,12 +27,15 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.UIJob;
 import org.osgi.framework.BundleContext;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 
@@ -45,6 +48,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private IPropertyChangeListener prefListener;
 
+  private LogListener logListener;
+
   public SonarLintUiPlugin() {
     plugin = this;
   }
@@ -53,9 +58,24 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public void start(final BundleContext context) throws Exception {
     super.start(context);
 
-    if (getSonarConsole() != null) {
-      SonarLintCorePlugin.getDefault().addLogListener(getSonarConsole());
-    }
+    logListener = new LogListener() {
+
+      @Override
+      public void info(String msg) {
+        getSonarConsole().info(msg);
+      }
+
+      @Override
+      public void error(String msg) {
+        getSonarConsole().error(msg);
+      }
+
+      @Override
+      public void debug(String msg) {
+        getSonarConsole().debug(msg);
+      }
+    };
+    SonarLintCorePlugin.getDefault().addLogListener(logListener);
 
     setupIssuesUpdater();
 
@@ -77,10 +97,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   @Override
   public void stop(final BundleContext context) throws Exception {
+    SonarLintCorePlugin.getDefault().removeLogListener(logListener);
     try {
-      if (getSonarConsole() != null) {
-        SonarLintCorePlugin.getDefault().removeLogListener(getSonarConsole());
-      }
       getPreferenceStore().removePropertyChangeListener(prefListener);
     } finally {
       super.stop(context);
@@ -94,14 +112,18 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     return plugin;
   }
 
-  private SonarLintConsole console;
-
-  public synchronized SonarLintConsole getSonarConsole() {
-    // Don't try to initialize console without actual UI - it will cause headless tests failure
-    if ((console == null) && PlatformUI.isWorkbenchRunning()) {
-      console = new SonarLintConsole(SonarLintImages.SONARLINT_CONSOLE_IMG_DESC);
+  public static synchronized SonarLintConsole getSonarConsole() {
+    IConsoleManager conMan = ConsolePlugin.getDefault().getConsoleManager();
+    IConsole[] existing = conMan.getConsoles();
+    for (int i = 0; i < existing.length; i++) {
+      if (SonarLintConsole.TITLE.equals(existing[i].getName())) {
+        return (SonarLintConsole) existing[i];
+      }
     }
-    return console;
+    // no console found, so create a new one
+    SonarLintConsole myConsole = new SonarLintConsole(SonarLintImages.SONARLINT_CONSOLE_IMG_DESC);
+    conMan.addConsoles(new IConsole[] {myConsole});
+    return myConsole;
   }
 
   /**
@@ -126,10 +148,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         return Status.OK_STATUS;
       }
     }.schedule();
-  }
-
-  public synchronized void disposeConsole() {
-    this.console = null;
   }
 
 }

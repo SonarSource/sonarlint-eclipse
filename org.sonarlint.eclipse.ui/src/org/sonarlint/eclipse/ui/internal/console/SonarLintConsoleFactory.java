@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.console;
 
 import org.eclipse.ui.console.IConsoleFactory;
-import org.sonarlint.eclipse.ui.internal.ISonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 /**
@@ -32,8 +31,8 @@ public class SonarLintConsoleFactory implements IConsoleFactory {
 
   @Override
   public void openConsole() {
-    ISonarLintConsole console = SonarLintUiPlugin.getDefault().getSonarConsole();
-    ((SonarLintConsole) console).showConsole();
+    SonarLintConsole console = SonarLintUiPlugin.getSonarConsole();
+    console.bringConsoleToFront();
   }
 
 }
