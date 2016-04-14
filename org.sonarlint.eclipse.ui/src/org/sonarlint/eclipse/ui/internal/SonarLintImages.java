@@ -37,6 +37,7 @@ public final class SonarLintImages {
   public static final ImageDescriptor WIZ_NEW_SERVER = createImageDescriptor("wiz_new_server.gif"); //$NON-NLS-1$
   public static final ImageDescriptor SQ_LABEL_DECORATOR = createImageDescriptor("onde-label-decorator.gif"); //$NON-NLS-1$
 
+  public static final Image BALLOON_IMG = createImage("sonarlint-16x16.png"); //$NON-NLS-1$
   public static final Image SERVER_ICON_IMG = createImage("onde-sonar-16.png"); //$NON-NLS-1$
   public static final Image IMG_ISSUE = createImage("issue_annotation.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.png"); //$NON-NLS-1$
@@ -44,6 +45,9 @@ public final class SonarLintImages {
   public static final Image IMG_SEVERITY_MAJOR = createImage("severity/major.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_MINOR = createImage("severity/minor.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_INFO = createImage("severity/info.png"); //$NON-NLS-1$
+
+  public static final Image NOTIFICATION_CLOSE = createImage("popup/notification-close.gif"); //$NON-NLS-1$
+  public static final Image NOTIFICATION_CLOSE_HOVER = createImage("popup/notification-close-active.gif"); //$NON-NLS-1$
 
   public static final ImageDescriptor DEBUG = createImageDescriptor("debug.gif"); //$NON-NLS-1$
   public static final ImageDescriptor SHOW_CONSOLE = createImageDescriptor("showConsole.gif"); //$NON-NLS-1$

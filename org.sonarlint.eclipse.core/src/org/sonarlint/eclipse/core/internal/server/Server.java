@@ -44,6 +44,7 @@ import org.sonarlint.eclipse.core.internal.jobs.SonarLintLogOutput;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
+import org.sonarsource.sonarlint.core.WsHelperImpl;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
@@ -56,6 +57,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration.Builder;
 import org.sonarsource.sonarlint.core.client.api.connected.StateListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
+import org.sonarsource.sonarlint.core.client.api.connected.WsHelper;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class Server implements IServer, StateListener {
@@ -119,12 +121,12 @@ public class Server implements IServer, StateListener {
 
   @Override
   public boolean isUpdated() {
-    return updateStatus != null;
+    return client.getState() == State.UPDATED;
   }
 
   @Override
   public String getServerVersion() {
-    if (updateStatus == null) {
+    if (!isUpdated()) {
       return NEED_UPDATE;
     }
     return updateStatus.getServerVersion();
@@ -132,7 +134,7 @@ public class Server implements IServer, StateListener {
 
   @Override
   public String getUpdateDate() {
-    if (updateStatus == null) {
+    if (!isUpdated()) {
       return NEED_UPDATE;
     }
     return new SimpleDateFormat().format(updateStatus.getLastUpdateDate());
@@ -149,6 +151,7 @@ public class Server implements IServer, StateListener {
       case UNKNOW:
         return "Unknown";
       case NEVER_UPDATED:
+      case NEED_UPDATE:
         return NEED_UPDATE;
       case UPDATED:
         return "Version: " + getServerVersion() + ", Last update: " + getUpdateDate();
@@ -237,7 +240,8 @@ public class Server implements IServer, StateListener {
       if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
         builder.credentials(username, password);
       }
-      ValidationResult testConnection = client.validateConnection(builder.build());
+      WsHelper helper = new WsHelperImpl();
+      ValidationResult testConnection = helper.validateConnection(builder.build());
       if (testConnection.success()) {
         return new Status(IStatus.OK, SonarLintCorePlugin.PLUGIN_ID, "Successfully connected!");
       } else {

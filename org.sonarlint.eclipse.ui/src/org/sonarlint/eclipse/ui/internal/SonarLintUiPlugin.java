@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
@@ -37,7 +38,10 @@ import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
+import org.sonarlint.eclipse.ui.internal.popup.ServerNeedUpdatePopup;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
 
@@ -93,6 +97,26 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     };
 
     getPreferenceStore().addPropertyChangeListener(prefListener);
+
+    checkServersStatus();
+  }
+
+  private void checkServersStatus() {
+    for (IServer server : ServersManager.getInstance().getServers()) {
+      if (!server.isUpdated()) {
+        ServerNeedUpdatePopup popup = new ServerNeedUpdatePopup(getDisplay(), server);
+        popup.create();
+        popup.open();
+      }
+    }
+  }
+
+  public Display getDisplay() {
+    Display display = Display.getCurrent();
+    if (display == null) {
+      display = Display.getDefault();
+    }
+    return display;
   }
 
   @Override

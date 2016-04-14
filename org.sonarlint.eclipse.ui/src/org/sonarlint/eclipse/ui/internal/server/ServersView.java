@@ -57,12 +57,15 @@ import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
 import org.sonarlint.eclipse.core.internal.server.IServerListener;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.ui.internal.Messages;
+import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
 
 /**
  * A view of servers, their modules, and status.
  */
 public class ServersView extends CommonNavigator {
+  public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".ServersView";
+
   private static final String SERVERS_VIEW_CONTEXT = "org.eclipse.ui.sonarlintServerViewScope";
 
   protected CommonViewer tableViewer;
