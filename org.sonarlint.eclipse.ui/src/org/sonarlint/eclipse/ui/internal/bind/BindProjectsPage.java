@@ -275,7 +275,7 @@ public class BindProjectsPage extends WizardPage {
     });
 
     updateServerLink = new Link(serverDropDownPage, SWT.NONE);
-    updateServerLink.setText("<a>Update data from selected server</a>");
+    updateServerLink.setText("<a>Refresh project list</a>");
     updateServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
