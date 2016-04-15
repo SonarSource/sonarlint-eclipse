@@ -399,7 +399,7 @@
           </visibleWhen>
        </command>
       <command
-             commandId="org.sonarlint.eclipse.ui.internal.command.UpdateProjectsBindingCommand"
+             commandId="org.sonarlint.eclipse.ui.internal.command.ChangeProjectsBindingCommand"
              style="push">
           <visibleWhen>
               <with variable="activeMenuSelection">
@@ -454,9 +454,9 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
-          description="Update binding configuration"
-          id="org.sonarlint.eclipse.ui.internal.command.UpdateProjectsBindingCommand"
-          name="Update binding..."
+          description="Change binding configuration"
+          id="org.sonarlint.eclipse.ui.internal.command.ChangeProjectsBindingCommand"
+          name="Change binding..."
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
@@ -482,7 +482,7 @@
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
-          commandId="org.sonarlint.eclipse.ui.internal.command.UpdateProjectsBindingCommand">
+          commandId="org.sonarlint.eclipse.ui.internal.command.ChangeProjectsBindingCommand">
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.UnbindProjectsCommand"
@@ -498,7 +498,7 @@
       commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
       icon="icons/synced.gif" />
     <image
-      commandId="org.sonarlint.eclipse.ui.internal.command.UpdateProjectsBindingCommand"
+      commandId="org.sonarlint.eclipse.ui.internal.command.ChangeProjectsBindingCommand"
       icon="icons/synced.gif" />
   </extension>
 
