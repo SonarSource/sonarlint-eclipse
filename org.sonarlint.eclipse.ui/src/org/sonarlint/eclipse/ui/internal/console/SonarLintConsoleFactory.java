@@ -31,7 +31,7 @@ public class SonarLintConsoleFactory implements IConsoleFactory {
 
   @Override
   public void openConsole() {
-    SonarLintConsole console = SonarLintUiPlugin.getSonarConsole();
+    SonarLintConsole console = SonarLintUiPlugin.getDefault().getSonarConsole();
     console.bringConsoleToFront();
   }
 

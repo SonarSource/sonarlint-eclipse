@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.console;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
@@ -53,10 +52,6 @@ public class SonarLintConsole extends MessageConsole {
 
   public SonarLintConsole(ImageDescriptor imageDescriptor) {
     super(TITLE, imageDescriptor);
-  }
-
-  @Override
-  protected void init() {
     Display display = Display.getDefault();
     this.infoStream = newMessageStream();
     this.warnStream = newMessageStream();
@@ -69,16 +64,25 @@ public class SonarLintConsole extends MessageConsole {
     getDebugStream().setColor(debugColor);
   }
 
-  public void closeConsole() {
-    IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
-    manager.removeConsoles(new IConsole[] {this});
-  }
-
   public void bringConsoleToFront() {
     if (PlatformUI.isWorkbenchRunning()) {
       IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+      if (!isVisible()) {
+        manager.addConsoles(new IConsole[] {this});
+      }
       manager.showConsoleView(this);
     }
+  }
+
+  private static boolean isVisible() {
+    IConsoleManager conMan = ConsolePlugin.getDefault().getConsoleManager();
+    IConsole[] existing = conMan.getConsoles();
+    for (int i = 0; i < existing.length; i++) {
+      if (SonarLintConsole.TITLE.equals(existing[i].getName())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public void info(String msg) {
@@ -124,7 +128,7 @@ public class SonarLintConsole extends MessageConsole {
   }
 
   private static String getShowConsolePreference() {
-    return Platform.getPreferencesService().getString(SonarLintUiPlugin.PLUGIN_ID, P_SHOW_CONSOLE, P_SHOW_CONSOLE_ON_OUTPUT, null);
+    return SonarLintUiPlugin.getDefault().getPreferenceStore().getString(SonarLintConsole.P_SHOW_CONSOLE);
   }
 
   private static boolean isShowConsoleOnOutput() {

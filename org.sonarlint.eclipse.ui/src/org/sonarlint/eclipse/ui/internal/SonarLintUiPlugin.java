@@ -54,6 +54,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private LogListener logListener;
 
+  private SonarLintConsole console;
+
   public SonarLintUiPlugin() {
     plugin = this;
   }
@@ -136,18 +138,21 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     return plugin;
   }
 
-  public static synchronized SonarLintConsole getSonarConsole() {
-    IConsoleManager conMan = ConsolePlugin.getDefault().getConsoleManager();
-    IConsole[] existing = conMan.getConsoles();
-    for (int i = 0; i < existing.length; i++) {
-      if (SonarLintConsole.TITLE.equals(existing[i].getName())) {
-        return (SonarLintConsole) existing[i];
-      }
+  public synchronized SonarLintConsole getSonarConsole() {
+    if (console != null) {
+      return console;
     }
     // no console found, so create a new one
-    SonarLintConsole myConsole = new SonarLintConsole(SonarLintImages.SONARLINT_CONSOLE_IMG_DESC);
-    conMan.addConsoles(new IConsole[] {myConsole});
-    return myConsole;
+    console = new SonarLintConsole(SonarLintImages.SONARLINT_CONSOLE_IMG_DESC);
+    return console;
+  }
+
+  public synchronized void closeSonarConsole() {
+    if (console != null) {
+      IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+      manager.removeConsoles(new IConsole[] {console});
+      this.console = null;
+    }
   }
 
   /**

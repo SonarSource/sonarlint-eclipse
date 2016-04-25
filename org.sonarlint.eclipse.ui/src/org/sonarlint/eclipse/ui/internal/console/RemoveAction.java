@@ -34,7 +34,7 @@ public class RemoveAction extends Action {
 
   @Override
   public void run() {
-    SonarLintUiPlugin.getSonarConsole().closeConsole();
+    SonarLintUiPlugin.getDefault().closeSonarConsole();
   }
 
 }
