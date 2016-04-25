@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.builder;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFile;
@@ -52,8 +51,8 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
     return null;
   }
 
-  private static void incrementalBuild(IResourceDelta delta) {
-    final Map<IProject, Collection<IFile>> filesPerProject = new HashMap<>();
+  private void incrementalBuild(IResourceDelta delta) {
+    final Collection<IFile> filesToAnalyze = new ArrayList<>();
     try {
       delta.accept(new IResourceDeltaVisitor() {
         @Override
@@ -67,21 +66,19 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
             // visit children too
             return true;
           }
-          IProject project = resource.getProject();
-          if (!filesPerProject.containsKey(project)) {
-            filesPerProject.put(project, new ArrayList<IFile>());
-          }
-          filesPerProject.get(project).add(file);
+          filesToAnalyze.add(file);
           return true;
         }
       });
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error("Error during builder", e);
     }
-    for (Map.Entry<IProject, Collection<IFile>> entry : filesPerProject.entrySet()) {
-      AnalyzeProjectRequest request = new AnalyzeProjectRequest(entry.getKey(), entry.getValue());
-      new AnalyzeProjectJob(request).schedule();
+    if (filesToAnalyze.size() > 10) {
+      SonarLintCorePlugin.getDefault().debug("Too many files to analyze in project " + getProject().getName() + " (" + filesToAnalyze.size() + "). Skipping.");
+      return;
     }
+    AnalyzeProjectRequest request = new AnalyzeProjectRequest(getProject(), filesToAnalyze);
+    new AnalyzeProjectJob(request).schedule();
   }
 
   public static boolean shouldAnalyze(IResourceDelta delta, IResource resource) {
