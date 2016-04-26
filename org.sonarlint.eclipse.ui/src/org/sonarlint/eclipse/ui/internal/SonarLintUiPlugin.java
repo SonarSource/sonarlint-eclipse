@@ -104,21 +104,18 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   }
 
   private void checkServersStatus() {
-    for (IServer server : ServersManager.getInstance().getServers()) {
+    for (final IServer server : ServersManager.getInstance().getServers()) {
       if (!server.isUpdated()) {
-        ServerNeedUpdatePopup popup = new ServerNeedUpdatePopup(getDisplay(), server);
-        popup.create();
-        popup.open();
+        Display.getDefault().asyncExec(new Runnable() {
+          @Override
+          public void run() {
+            ServerNeedUpdatePopup popup = new ServerNeedUpdatePopup(Display.getCurrent(), server);
+            popup.create();
+            popup.open();
+          }
+        });
       }
     }
-  }
-
-  public Display getDisplay() {
-    Display display = Display.getCurrent();
-    if (display == null) {
-      display = Display.getDefault();
-    }
-    return display;
   }
 
   @Override
