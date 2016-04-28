@@ -86,15 +86,15 @@ public class SonarLintProject {
     return false;
   }
 
-  public void setBuilderEnabled(boolean enabled) {
+  public void setBuilderEnabled(boolean enabled, IProgressMonitor monitor) {
     if (enabled && !isBuilderEnabled()) {
-      addBuilder();
+      addBuilder(monitor);
     } else if (!enabled && isBuilderEnabled()) {
-      removeBuilder();
+      removeBuilder(monitor);
     }
   }
 
-  private void removeBuilder() {
+  private void removeBuilder(IProgressMonitor monitor) {
     try {
       IProjectDescription desc = project.getDescription();
       ICommand[] commands = desc.getBuildSpec();
@@ -107,13 +107,13 @@ public class SonarLintProject {
         }
       }
       desc.setBuildSpec(newCommands);
-      project.setDescription(desc, null);
+      project.setDescription(desc, monitor);
     } catch (CoreException e) {
       throw new IllegalStateException("Unable to add builder", e);
     }
   }
 
-  private void addBuilder() {
+  private void addBuilder(final IProgressMonitor monitor) {
     try {
       IProjectDescription desc = project.getDescription();
       ICommand[] commands = desc.getBuildSpec();
@@ -126,7 +126,7 @@ public class SonarLintProject {
       System.arraycopy(commands, 0, newCommands, 0, commands.length);
       newCommands[commands.length] = command;
       desc.setBuildSpec(newCommands);
-      project.setDescription(desc, null);
+      project.setDescription(desc, monitor);
     } catch (CoreException e) {
       throw new IllegalStateException("Unable to add builder", e);
     }

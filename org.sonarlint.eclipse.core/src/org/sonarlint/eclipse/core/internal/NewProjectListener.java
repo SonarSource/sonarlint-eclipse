@@ -27,12 +27,13 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.sonarlint.eclipse.core.internal.builder.SonarLintBuilder;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 
 public class NewProjectListener implements IResourceChangeListener {
 
@@ -41,14 +42,16 @@ public class NewProjectListener implements IResourceChangeListener {
     if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
       List<IProject> projects = getProjects(event.getDelta());
       for (final IProject p : projects) {
-        new WorkspaceJob("Enable SonarLint builder") {
+        WorkspaceJob job = new WorkspaceJob("Enable SonarLint builder") {
 
           @Override
           public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-            SonarLintBuilder.addBuilder(p);
+            SonarLintProject.getInstance(p).setBuilderEnabled(true, monitor);
             return Status.OK_STATUS;
           }
-        }.schedule();
+        };
+        job.setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
+        job.schedule();
       }
     }
   }

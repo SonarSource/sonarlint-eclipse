@@ -151,7 +151,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
         monitor.subTask(iProject.getName());
         SonarLintProject slProject = SonarLintProject.getInstance(iProject);
         if (slProject != null && slProject.isAutoEnabled() && !slProject.isBuilderEnabled()) {
-          slProject.setBuilderEnabled(true);
+          slProject.setBuilderEnabled(true, monitor);
         }
       }
       monitor.worked(1);
