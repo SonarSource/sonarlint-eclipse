@@ -534,7 +534,7 @@
               textStylePreferenceKey="org.sonarlint.eclipse.ui.issue.text.style"
               textStylePreferenceValue="SQUIGGLES"
               verticalRulerPreferenceKey="org.sonarlint.eclipse.ui.issue.verticalruler"
-              verticalRulerPreferenceValue="true"/>
+              verticalRulerPreferenceValue="false"/>
   </extension>
 
   <extension
