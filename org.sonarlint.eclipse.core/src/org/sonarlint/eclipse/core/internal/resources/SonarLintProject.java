@@ -21,14 +21,10 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.builder.SonarLintBuilder;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
@@ -68,69 +64,6 @@ public class SonarLintProject {
 
   public void setExtraProperties(List<SonarLintProperty> extraProperties) {
     this.extraProperties = extraProperties;
-  }
-
-  public boolean isBuilderEnabled() {
-    IProjectDescription desc;
-    try {
-      desc = project.getDescription();
-    } catch (CoreException e) {
-      throw new IllegalStateException("Unable to read project description", e);
-    }
-    ICommand[] commands = desc.getBuildSpec();
-
-    for (int i = 0; i < commands.length; ++i) {
-      if (commands[i].getBuilderName().equals(SonarLintBuilder.BUILDER_ID)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public void setBuilderEnabled(boolean enabled, IProgressMonitor monitor) {
-    if (enabled && !isBuilderEnabled()) {
-      addBuilder(monitor);
-    } else if (!enabled && isBuilderEnabled()) {
-      removeBuilder(monitor);
-    }
-  }
-
-  private void removeBuilder(IProgressMonitor monitor) {
-    try {
-      IProjectDescription desc = project.getDescription();
-      ICommand[] commands = desc.getBuildSpec();
-      ICommand[] newCommands = new ICommand[commands.length - 1];
-      int i = 0;
-      for (ICommand previousCommand : commands) {
-        if (!previousCommand.getBuilderName().equals(SonarLintBuilder.BUILDER_ID)) {
-          newCommands[i] = previousCommand;
-          i++;
-        }
-      }
-      desc.setBuildSpec(newCommands);
-      project.setDescription(desc, monitor);
-    } catch (CoreException e) {
-      throw new IllegalStateException("Unable to add builder", e);
-    }
-  }
-
-  private void addBuilder(final IProgressMonitor monitor) {
-    try {
-      IProjectDescription desc = project.getDescription();
-      ICommand[] commands = desc.getBuildSpec();
-      // add builder to project
-      ICommand command = desc.newCommand();
-      command.setBuilderName(SonarLintBuilder.BUILDER_ID);
-      ICommand[] newCommands = new ICommand[commands.length + 1];
-
-      // Add it after other builders.
-      System.arraycopy(commands, 0, newCommands, 0, commands.length);
-      newCommands[commands.length] = command;
-      desc.setBuildSpec(newCommands);
-      project.setDescription(desc, monitor);
-    } catch (CoreException e) {
-      throw new IllegalStateException("Unable to add builder", e);
-    }
   }
 
   public String getModuleKey() {

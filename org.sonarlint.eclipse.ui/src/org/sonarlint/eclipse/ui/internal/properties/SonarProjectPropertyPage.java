@@ -157,7 +157,6 @@ public class SonarProjectPropertyPage extends PropertyPage {
   public boolean performOk() {
     final SonarLintProject sonarProject = SonarLintProject.getInstance(getProject());
     sonarProject.setAutoEnabled(enabledBtn.getSelection());
-    sonarProject.setBuilderEnabled(enabledBtn.getSelection(), null);
     sonarProject.save();
     return super.performOk();
   }

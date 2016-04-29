@@ -28,13 +28,6 @@
       </attribute>
    </extension>
 
-  <extension id="sonarlintBuilder" name="SonarLint Builder" point="org.eclipse.core.resources.builders">
-      <builder hasNature="false">
-         <run class="org.sonarlint.eclipse.core.internal.builder.SonarLintBuilder">
-         </run>
-      </builder>
-   </extension>
-
   <extension
         point="org.eclipse.core.expressions.propertyTesters">
      <propertyTester

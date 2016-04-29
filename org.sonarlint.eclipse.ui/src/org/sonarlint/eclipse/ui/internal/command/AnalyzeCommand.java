@@ -49,7 +49,7 @@ import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.sonarlint.eclipse.core.internal.builder.SonarLintBuilder;
+import org.sonarlint.eclipse.core.internal.SonarLintChangeListener;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -112,7 +112,7 @@ public class AnalyzeCommand extends AbstractHandler {
 
         @Override
         public boolean visit(IResource resource) throws CoreException {
-          if (!SonarLintBuilder.shouldAnalyze(resource)) {
+          if (!SonarLintChangeListener.shouldAnalyze(resource)) {
             return false;
           }
           IFile file = (IFile) resource.getAdapter(IFile.class);

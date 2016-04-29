@@ -86,12 +86,13 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   private final AnalyzeProjectRequest request;
 
-  static final ISchedulingRule SONAR_ANALYSIS_RULE = ResourcesPlugin.getWorkspace().getRuleFactory().buildRule();
+  static final ISchedulingRule SONARLINT_ANALYSIS_RULE = ResourcesPlugin.getWorkspace().getRuleFactory().buildRule();
 
   public AnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), SonarLintProject.getInstance(request.getProject()));
     this.request = request;
     this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(request.getProject());
+    setRule(SONARLINT_ANALYSIS_RULE);
   }
 
   private static String jobTitle(AnalyzeProjectRequest request) {
