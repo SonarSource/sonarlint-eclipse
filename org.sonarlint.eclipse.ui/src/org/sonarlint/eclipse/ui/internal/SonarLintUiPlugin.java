@@ -27,7 +27,9 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -83,7 +85,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     };
     SonarLintCorePlugin.getDefault().addLogListener(logListener);
 
-    setupIssuesUpdater();
+    addSonarLintPartListener();
 
     prefListener = new IPropertyChangeListener() {
       @Override
@@ -164,14 +166,53 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     store.setDefault(PreferencesUtils.PREF_TEST_FILE_REGEXPS, PreferencesUtils.PREF_TEST_FILE_REGEXPS_DEFAULT);
   }
 
-  public static void setupIssuesUpdater() {
-    final IssuesUpdater issuesUpdater = new IssuesUpdater();
-    new UIJob("Prepare issues updater") {
+  public static void addSonarLintPartListener() {
+    new UIJob("Register SonarLint part listener") {
+      private SonarLintPartListener sonarlintPartListener = new SonarLintPartListener();
+
       @Override
       public IStatus runInUIThread(IProgressMonitor monitor) {
-        final IWorkbenchPage page = SonarLintUiPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        page.addPartListener(issuesUpdater);
+        for (IWorkbenchWindow window : SonarLintUiPlugin.getDefault().getWorkbench().getWorkbenchWindows()) {
+          addListenerToAllPages(window);
+        }
+
+        // Handle future opened/closed windows
+        SonarLintUiPlugin.getDefault().getWorkbench().addWindowListener(new IWindowListener() {
+
+          @Override
+          public void windowOpened(IWorkbenchWindow window) {
+            addListenerToAllPages(window);
+          }
+
+          @Override
+          public void windowDeactivated(IWorkbenchWindow window) {
+            // Nothing to do
+          }
+
+          @Override
+          public void windowClosed(IWorkbenchWindow window) {
+            removeListenerToAllPages(window);
+          }
+
+          @Override
+          public void windowActivated(IWorkbenchWindow window) {
+            // Nothing to do
+          }
+        });
+
         return Status.OK_STATUS;
+      }
+
+      private void addListenerToAllPages(IWorkbenchWindow window) {
+        for (IWorkbenchPage page : window.getPages()) {
+          page.addPartListener(sonarlintPartListener);
+        }
+      }
+
+      private void removeListenerToAllPages(IWorkbenchWindow window) {
+        for (IWorkbenchPage page : window.getPages()) {
+          page.removePartListener(sonarlintPartListener);
+        }
       }
     }.schedule();
   }

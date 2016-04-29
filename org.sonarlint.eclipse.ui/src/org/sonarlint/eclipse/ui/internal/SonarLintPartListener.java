@@ -33,7 +33,7 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 
-public class IssuesUpdater implements IPartListener2 {
+public class SonarLintPartListener implements IPartListener2 {
   @Override
   public void partOpened(IWorkbenchPartReference partRef) {
     IWorkbenchPart part = partRef.getPart(true);
