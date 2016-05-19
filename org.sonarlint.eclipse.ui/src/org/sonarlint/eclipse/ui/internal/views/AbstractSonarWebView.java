@@ -27,8 +27,11 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -43,12 +46,22 @@ public abstract class AbstractSonarWebView extends ViewPart {
 
   @Override
   public void createPartControl(Composite parent) {
-    browser = new Browser(parent, SWT.NONE);
+    try {
+      browser = new Browser(parent, SWT.FILL);
+    } catch (SWTError e) {
+      // Browser is probably not available but it will be partially initialized in parent
+      for (Control c : parent.getChildren()) {
+        c.dispose();
+      }
+      new Label(parent, SWT.WRAP).setText("Unable to create SWT Browser:\n " + e.getMessage());
+    }
   }
 
   @Override
   public final void setFocus() {
-    browser.setFocus();
+    if (browser != null) {
+      browser.setFocus();
+    }
   }
 
   protected Browser getBrowser() {
@@ -56,15 +69,21 @@ public abstract class AbstractSonarWebView extends ViewPart {
   }
 
   protected void open(SonarLintProject sonarProject, String url) {
-    browser.setUrl(url);
+    if (browser != null) {
+      browser.setUrl(url);
+    }
   }
 
   protected void showMessage(String message) {
-    browser.setText("<p style=\"font: 13px arial,helvetica,clean,sans-serif;\">" + message + "</p>");
+    if (browser != null) {
+      browser.setText("<p style=\"font: 13px arial,helvetica,clean,sans-serif;\">" + message + "</p>");
+    }
   }
 
   protected void showHtml(String html) {
-    browser.setText(html);
+    if (browser != null) {
+      browser.setText(html);
+    }
   }
 
   protected IMarker findSelectedSonarIssue(IWorkbenchPart part, ISelection selection) {
