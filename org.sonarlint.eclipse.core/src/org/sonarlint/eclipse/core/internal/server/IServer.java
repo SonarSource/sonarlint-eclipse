@@ -31,16 +31,6 @@ import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 public interface IServer {
 
   /**
-   * Returns the displayable name for this server.
-   * <p>
-   * Note that this name is appropriate for the current locale.
-   * </p>
-   *
-   * @return a displayable name
-   */
-  String getName();
-
-  /**
    * Returns the id of this server.
    * Each server (of a given type) has a distinct id, fixed for
    * its lifetime. Ids are intended to be used internally as keys;
@@ -111,6 +101,6 @@ public interface IServer {
 
   boolean isUpdating();
 
-  void updateConfig(String serverName, String url, String username, String password);
+  void updateConfig(String url, String username, String password);
 
 }

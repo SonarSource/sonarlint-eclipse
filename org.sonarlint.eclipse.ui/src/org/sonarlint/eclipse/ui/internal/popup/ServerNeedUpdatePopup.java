@@ -49,10 +49,10 @@ public class ServerNeedUpdatePopup extends AbstractNotificationPopup {
     Label messageLabel = new Label(composite, SWT.WRAP);
     messageLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-    messageLabel.setText("Local configuration from SonarQube server '" + server.getName() + "' is missing or outdated.");
+    messageLabel.setText("Local configuration from SonarQube server '" + server.getId() + "' is missing or outdated.");
     messageLabel.setBackground(composite.getBackground());
     Link updateServerLink = new Link(composite, SWT.NONE);
-    updateServerLink.setText("<a>Update all project bindings from '" + server.getName() + "'</a>");
+    updateServerLink.setText("<a>Update all project bindings from '" + server.getId() + "'</a>");
     updateServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {

@@ -53,7 +53,6 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
   @Override
   public boolean performFinish() {
     final String serverId = page.getServerId();
-    final String serverName = page.getServerName();
     final String serverUrl = page.getServerUrl();
     final String username = page.getUsername();
     final String password = page.getPassword();
@@ -62,7 +61,7 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
       public void run(IProgressMonitor monitor) throws InvocationTargetException {
         monitor.beginTask("Saving '" + serverId + "'", 1);
         try {
-          doFinish(serverId, serverName, serverUrl, username, password);
+          doFinish(serverId, serverUrl, username, password);
         } catch (Exception e) {
           SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
         } finally {
@@ -82,5 +81,5 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
     return true;
   }
 
-  protected abstract void doFinish(String serverId, String serverName, String url, String username, String password);
+  protected abstract void doFinish(String serverId, String url, String username, String password);
 }

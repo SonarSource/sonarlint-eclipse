@@ -270,7 +270,7 @@ public class BindProjectsPage extends WizardPage {
       @Override
       public String getText(Object element) {
         IServer current = (IServer) element;
-        return current.getName();
+        return current.getId();
       }
     });
 

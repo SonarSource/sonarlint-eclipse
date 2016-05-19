@@ -31,7 +31,7 @@ public class EditServerLocationWizard extends AbstractServerLocationWizard {
   }
 
   @Override
-  protected void doFinish(String serverId, String serverName, String url, String username, String password) {
-    sonarServer.updateConfig(serverName, url, username, password);
+  protected void doFinish(String serverId, String url, String username, String password) {
+    sonarServer.updateConfig(url, username, password);
   }
 }

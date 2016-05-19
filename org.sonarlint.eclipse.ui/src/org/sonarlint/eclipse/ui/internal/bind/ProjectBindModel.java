@@ -64,7 +64,7 @@ public class ProjectBindModel extends AbstractModelObject {
     } else if (server == null) {
       return "<Bound to an unknown server: '" + this.serverId + "'>";
     } else {
-      return "'" + moduleKey + "' on server '" + server.getName() + "'";
+      return "'" + moduleKey + "' on server '" + server.getId() + "'";
     }
   }
 

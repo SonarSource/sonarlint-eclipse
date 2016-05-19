@@ -43,7 +43,6 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfig
 public class ServersManager {
   static final String PREF_SERVERS = "servers";
   private static final String INITIALIZED_ATTRIBUTE = "initialized";
-  private static final String NAME_ATTRIBUTE = "name";
   private static final String AUTH_ATTRIBUTE = "auth";
   private static final String URL_ATTRIBUTE = "url";
   private static final String USERNAME_ATTRIBUTE = "username";
@@ -154,7 +153,6 @@ public class ServersManager {
       serversNode.put(INITIALIZED_ATTRIBUTE, "true");
       for (IServer server : serversById.values()) {
         Preferences serverNode = serversNode.node(server.getId());
-        serverNode.put(NAME_ATTRIBUTE, server.getName());
         serverNode.put(URL_ATTRIBUTE, server.getHost());
         serverNode.putBoolean(AUTH_ATTRIBUTE, server.hasAuth());
       }
@@ -172,9 +170,8 @@ public class ServersManager {
       for (String serverId : serversNode.childrenNames()) {
         Preferences serverNode = serversNode.node(serverId);
         boolean auth = serverNode.getBoolean(AUTH_ATTRIBUTE, false);
-        String name = serverNode.get(NAME_ATTRIBUTE, "");
         String url = serverNode.get(URL_ATTRIBUTE, "");
-        Server sonarServer = new Server(serverId, name, url, auth);
+        Server sonarServer = new Server(serverId, url, auth);
         serversById.put(serverId, sonarServer);
       }
     } catch (BackingStoreException e) {
@@ -324,8 +321,8 @@ public class ServersManager {
     return null;
   }
 
-  public IServer create(String id, String name, String url, String username, String password) {
-    return new Server(id, name, url, StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password));
+  public IServer create(String id, String url, String username, String password) {
+    return new Server(id, url, StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password));
   }
 
 }

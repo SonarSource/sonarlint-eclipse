@@ -63,7 +63,7 @@ public class DeleteServerDialog extends MessageDialog {
   private static String getMessage(List<IServer> servers) {
     StringBuilder sb = new StringBuilder();
     if (servers.size() == 1) {
-      sb.append(NLS.bind(Messages.deleteServerDialogMessage, servers.get(0).getName()));
+      sb.append(NLS.bind(Messages.deleteServerDialogMessage, servers.get(0).getId()));
     } else {
       sb.append(NLS.bind(Messages.deleteServerDialogMessageMany, Integer.toString(servers.size())));
     }

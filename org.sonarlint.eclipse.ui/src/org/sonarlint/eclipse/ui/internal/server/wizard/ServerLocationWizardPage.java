@@ -25,9 +25,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -36,19 +34,14 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.forms.events.ExpansionAdapter;
-import org.eclipse.ui.forms.events.ExpansionEvent;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.eclipse.ui.preferences.SettingsTransfer;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -60,7 +53,6 @@ public class ServerLocationWizardPage extends WizardPage {
   private final IServer server;
 
   private Text serverIdText;
-  private Text serverNameText;
   private Text serverUrlText;
   private Text serverUsernameText;
   private Text serverPasswordText;
@@ -144,14 +136,7 @@ public class ServerLocationWizardPage extends WizardPage {
       }
     });
 
-    // Sonar Server Name
-    Label labelName = new Label(form.getBody(), SWT.NULL);
-    labelName.setText(Messages.ServerLocationWizardPage_label_name);
-    serverNameText = new Text(form.getBody(), SWT.BORDER | SWT.SINGLE);
-    serverNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    if (edit) {
-      serverNameText.setText(StringUtils.defaultString(server.getName()));
-    }
+    createServerIdField(form);
 
     // Sonar Server Username
     Label labelUsername = new Label(form.getBody(), SWT.NULL);
@@ -174,8 +159,6 @@ public class ServerLocationWizardPage extends WizardPage {
     // Test connection button
     createTestConnectionButton(form.getBody());
 
-    createServerIdField(form);
-
     if (edit) {
       dialogChanged();
     }
@@ -184,41 +167,10 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   private void createServerIdField(final ScrolledForm form) {
-    ExpandableComposite excomposite = new ExpandableComposite(form.getBody(), SWT.NONE, ExpandableComposite.TWISTIE | ExpandableComposite.CLIENT_INDENT);
-    excomposite.setText("Advanced");
-    excomposite.setExpanded(false);
-    excomposite.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
-    excomposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
-    excomposite.addExpansionListener(new ExpansionAdapter() {
-      boolean notExpanded = true;
-
-      @Override
-      public void expansionStateChanged(ExpansionEvent e) {
-        super.expansionStateChanged(e);
-        form.reflow(true);
-        if (e.getState() && notExpanded) {
-          getShell().setRedraw(false);
-          Rectangle shellBounds = getShell().getBounds();
-          int entriesToShow = Math.min(4, SettingsTransfer.getSettingsTransfers().length);
-
-          shellBounds.height += convertHeightInCharsToPixels(entriesToShow) + IDialogConstants.VERTICAL_SPACING;
-          getShell().setBounds(shellBounds);
-          getShell().setRedraw(true);
-          notExpanded = false;
-        }
-      }
-    });
-
-    Composite container = new Composite(excomposite, SWT.NONE);
-    GridLayout layout = new GridLayout();
-    container.setLayout(layout);
-    layout.numColumns = 2;
-    layout.verticalSpacing = 9;
-
     boolean isEditable = !edit;
-    Label labelId = new Label(container, SWT.NULL);
+    Label labelId = new Label(form.getBody(), SWT.NULL);
     labelId.setText(Messages.ServerLocationWizardPage_label_id);
-    serverIdText = new Text(container, isEditable ? (SWT.BORDER | SWT.SINGLE) : (SWT.BORDER | SWT.READ_ONLY));
+    serverIdText = new Text(form.getBody(), isEditable ? (SWT.BORDER | SWT.SINGLE) : (SWT.BORDER | SWT.READ_ONLY));
     GridData gdId = new GridData(GridData.FILL_HORIZONTAL);
     serverIdText.setLayoutData(gdId);
     serverIdText.setEnabled(isEditable);
@@ -241,7 +193,6 @@ public class ServerLocationWizardPage extends WizardPage {
       }
     };
     serverIdText.addModifyListener(idModifyListener);
-    excomposite.setClient(container);
   }
 
   private void createTestConnectionButton(Composite container) {
@@ -300,12 +251,8 @@ public class ServerLocationWizardPage extends WizardPage {
     return serverPasswordText.getText();
   }
 
-  public String getServerName() {
-    return StringUtils.defaultIfBlank(serverNameText.getText(), getServerId());
-  }
-
   private IServer transcientServer() {
-    return ServersManager.getInstance().create(getServerId(), getServerName(), getServerUrl(), getUsername(), getPassword());
+    return ServersManager.getInstance().create(getServerId(), getServerUrl(), getUsername(), getPassword());
   }
 
 }

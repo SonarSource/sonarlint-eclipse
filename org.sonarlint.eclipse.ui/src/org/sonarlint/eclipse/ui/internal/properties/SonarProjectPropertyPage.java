@@ -144,7 +144,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
       return "";
     }
     IServer server = ServersManager.getInstance().getServer(serverId);
-    return server != null ? server.getName() : ("Unknown server: '" + serverId + "'");
+    return server != null ? server.getId() : ("Unknown server: '" + serverId + "'");
   }
 
   @Override

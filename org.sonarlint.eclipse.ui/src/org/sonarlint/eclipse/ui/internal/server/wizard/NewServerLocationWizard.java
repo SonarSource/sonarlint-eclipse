@@ -37,8 +37,8 @@ public class NewServerLocationWizard extends AbstractServerLocationWizard {
   }
 
   @Override
-  protected void doFinish(String serverId, String serverName, String url, String username, String password) {
-    IServer newServer = ServersManager.getInstance().create(serverId, serverName, url, username, password);
+  protected void doFinish(String serverId, String url, String username, String password) {
+    IServer newServer = ServersManager.getInstance().create(serverId, url, username, password);
     ServersManager.getInstance().addServer(newServer, username, password);
 
     Job j = new ServerUpdateJob(newServer);

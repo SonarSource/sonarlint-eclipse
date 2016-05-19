@@ -30,7 +30,7 @@ public class ServerUpdateJob extends Job {
   private final IServer server;
 
   public ServerUpdateJob(IServer server) {
-    super("Update data from SonarQube server '" + server.getName() + "'");
+    super("Update data from SonarQube server '" + server.getId() + "'");
     this.server = server;
   }
 
@@ -40,7 +40,7 @@ public class ServerUpdateJob extends Job {
       server.update(monitor);
       return Status.OK_STATUS;
     } catch (Exception e) {
-      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update data from server '" + server.getName() + "'", e);
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update data from server '" + server.getId() + "'", e);
     }
   }
 }

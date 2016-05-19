@@ -69,7 +69,7 @@ public class SearchEngineProvider implements IContentProposalProvider {
         list.add(new ContentProposal(prj.asString(), m.getName(), prj.getDescription()));
       }
     } catch (Exception e) {
-      SonarLintCorePlugin.getDefault().debug("Unable to search modules from server " + server.getName(), e);
+      SonarLintCorePlugin.getDefault().debug("Unable to search modules from server " + server.getId(), e);
     }
     if (!list.isEmpty()) {
       parentPage.setMessage("", IMessageProvider.NONE);

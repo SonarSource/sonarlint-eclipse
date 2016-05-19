@@ -64,16 +64,14 @@ public class Server implements IServer, StateListener {
 
   private static final String NEED_UPDATE = "Need data update";
   private final String id;
-  private String name;
   private String host;
   private boolean hasAuth;
   private final ConnectedSonarLintEngine client;
   private final List<IServerListener> listeners = new ArrayList<>();
   private GlobalUpdateStatus updateStatus;
 
-  Server(String id, String name, String host, boolean hasAuth) {
+  Server(String id, String host, boolean hasAuth) {
     this.id = id;
-    this.name = name;
     this.host = host;
     this.hasAuth = hasAuth;
     ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
@@ -97,11 +95,6 @@ public class Server implements IServer, StateListener {
     for (IServerListener listener : listeners) {
       listener.serverChanged(this);
     }
-  }
-
-  @Override
-  public String getName() {
-    return name;
   }
 
   @Override
@@ -174,8 +167,7 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public void updateConfig(String serverName, String url, String username, String password) {
-    this.name = serverName;
+  public void updateConfig(String url, String username, String password) {
     this.host = url;
     this.hasAuth = StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
     ServersManager.getInstance().updateServer(this, username, password);

@@ -38,7 +38,7 @@ public class ServerLabelProvider extends BaseCellLabelProvider {
   public String getText(Object element) {
     if (element instanceof IServer) {
       IServer server = (IServer) element;
-      return StringUtils.defaultString(server.getName());
+      return StringUtils.defaultString(server.getId());
     }
 
     if (element instanceof IProject) {

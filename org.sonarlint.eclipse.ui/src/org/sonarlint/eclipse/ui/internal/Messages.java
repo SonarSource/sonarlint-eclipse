@@ -78,7 +78,6 @@ public final class Messages extends NLS {
 
   public static String ServerLocationWizardPage_label_id;
   public static String ServerLocationWizardPage_label_host;
-  public static String ServerLocationWizardPage_label_name;
   public static String ServerLocationWizardPage_label_username;
   public static String ServerLocationWizardPage_label_password;
   public static String ServerLocationWizardPage_action_test;
