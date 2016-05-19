@@ -19,12 +19,9 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
@@ -201,7 +198,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   protected IStatus doRun(final IProgressMonitor monitor) {
 
     // Analyze
-    Collection<File> tmpToDelete = new ArrayList<>();
     try {
       // Configure
       IProject project = request.getProject();
@@ -209,7 +205,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       IPath projectSpecificWorkDir = project.getWorkingLocation(SonarLintCorePlugin.PLUGIN_ID);
       Map<String, String> mergedExtraProps = new LinkedHashMap<>();
       final List<IFile> filesToAnalyze = new ArrayList<>(request.getFiles().size());
-      Collection<ProjectConfigurator> usedConfigurators = populateFilesToAnalyze(monitor, tmpToDelete, project, mergedExtraProps, filesToAnalyze);
+      Collection<ProjectConfigurator> usedConfigurators = populateFilesToAnalyze(monitor, project, mergedExtraProps, filesToAnalyze);
 
       List<ClientInputFile> inputFiles = buildInputFiles(filesToAnalyze);
 
@@ -225,14 +221,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     } catch (Exception e) {
       SonarLintCorePlugin.getDefault().error("Error during execution of SonarLint analysis", e);
       return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
-    } finally {
-      for (File f : tmpToDelete) {
-        try {
-          f.delete();
-        } catch (Exception e) {
-          SonarLintCorePlugin.getDefault().error("Unable to delete temporary file", e);
-        }
-      }
     }
     if (monitor.isCanceled()) {
       return Status.CANCEL_STATUS;
@@ -242,8 +230,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private void runAnalysisAndUpdateMarkers(final IProgressMonitor monitor, IProject project, SonarLintProject sonarProject, IPath projectSpecificWorkDir,
-    Map<String, String> mergedExtraProps,
-    List<ClientInputFile> inputFiles) throws CoreException {
+    Map<String, String> mergedExtraProps, List<ClientInputFile> inputFiles) throws CoreException {
     StandaloneAnalysisConfiguration config;
     if (sonarProject.isBound()) {
       config = new ConnectedAnalysisConfiguration(trimToNull(sonarProject.getModuleKey()), project.getLocation().toFile().toPath(),
@@ -268,13 +255,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return inputFiles;
   }
 
-  private Collection<ProjectConfigurator> populateFilesToAnalyze(final IProgressMonitor monitor, Collection<File> tmpToDelete, IProject project,
-    Map<String, String> mergedExtraProps,
-    final List<IFile> filesToAnalyze) {
+  private Collection<ProjectConfigurator> populateFilesToAnalyze(final IProgressMonitor monitor, IProject project,
+    Map<String, String> mergedExtraProps, final List<IFile> filesToAnalyze) {
     filesToAnalyze.addAll(request.getFiles());
-    Collection<ProjectConfigurator> usedConfigurators = configure(project, filesToAnalyze, mergedExtraProps, monitor);
-    handleLinkedFiles(tmpToDelete, filesToAnalyze);
-    return usedConfigurators;
+    return configure(project, filesToAnalyze, mergedExtraProps, monitor);
   }
 
   private static List<PathMatcher> createMatchersForTests(String[] testPatterns) {
@@ -363,22 +347,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       p.analysisComplete(Collections.unmodifiableMap(properties), monitor);
     }
 
-  }
-
-  private static void handleLinkedFiles(Collection<File> tmpToDelete, List<IFile> filesToAnalyze) {
-    // Handle linked files
-    for (IFile file : filesToAnalyze) {
-      if (file.isLinked()) {
-        File tmp = new File(file.getProject().getLocation().makeAbsolute().toFile(), file.getProjectRelativePath().toString());
-        SonarLintCorePlugin.getDefault().debug(file.getName() + " is a linked resource. Will create a temporary copy");
-        try {
-          Files.copy(file.getContents(), tmp.toPath());
-          tmpToDelete.add(tmp);
-        } catch (IOException | CoreException e) {
-          SonarLintCorePlugin.getDefault().error("Unable to create temporary copy for linked resource", e);
-        }
-      }
-    }
   }
 
   public Map<IResource, List<Issue>> run(final StandaloneAnalysisConfiguration config, final SonarLintProject project, final IProgressMonitor monitor) {

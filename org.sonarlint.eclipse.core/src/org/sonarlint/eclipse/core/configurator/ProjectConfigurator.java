@@ -32,8 +32,7 @@ public abstract class ProjectConfigurator {
   public static final String SEPARATOR = ",";
 
   /**
-   * Tell if this project configurator can configure the given project. It is already assumed
-   * that the project has the SonarLint nature.
+   * Tell if this project configurator can configure the given project.
    */
   public abstract boolean canConfigure(IProject project);
 

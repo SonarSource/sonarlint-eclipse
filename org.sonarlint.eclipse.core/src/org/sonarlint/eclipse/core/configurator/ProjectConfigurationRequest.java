@@ -48,7 +48,7 @@ public class ProjectConfigurationRequest {
   }
 
   /**
-   * List of files to analyze. The project configurator can decide to exclude some of them.
+   * List of files to analyze. The project configurator can decide to exclude some of them, or replace virtual files with real files.
    */
   public Collection<IFile> getFilesToAnalyze() {
     return filesToAnalyze;
