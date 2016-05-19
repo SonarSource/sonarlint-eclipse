@@ -108,6 +108,9 @@ public class BindProjectsPage extends WizardPage {
       "SonarQube is an Open Source platform to manage code quality. "
         + "Bind your Eclipse projects to some SonarQube projects in order to get the same issues in Eclipse and in SonarQube.");
     this.projects = projects;
+    if (!projects.isEmpty()) {
+      selectedServer = ServersManager.getInstance().getServer(SonarLintProject.getInstance(projects.get(0)).getServerId());
+    }
   }
 
   @Override
@@ -384,7 +387,10 @@ public class BindProjectsPage extends WizardPage {
     } else {
       book.showPage(serverDropDownPage);
       serverCombo.setInput(servers.toArray());
-      serverCombo.setSelection(new StructuredSelection(servers.contains(selectedServer) ? selectedServer : servers.get(0)));
+      if (!servers.contains(selectedServer)) {
+        selectedServer = servers.get(0);
+      }
+      serverCombo.setSelection(new StructuredSelection(selectedServer));
     }
   }
 
