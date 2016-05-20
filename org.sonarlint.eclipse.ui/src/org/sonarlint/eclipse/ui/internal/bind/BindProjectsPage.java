@@ -74,6 +74,7 @@ import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.part.PageBook;
 import org.sonarlint.eclipse.core.internal.jobs.ProjectUpdateJob;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
@@ -491,6 +492,7 @@ public class BindProjectsPage extends WizardPage {
     }
     if (changed) {
       sonarProject.save();
+      MarkerUtils.deleteIssuesMarkers(project);
       if (sonarProject.isBound()) {
         new ProjectUpdateJob(sonarProject).schedule();
       }
