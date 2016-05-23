@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %bundle_name
 Bundle-SymbolicName: org.sonarlint.eclipse.ui;singleton:=true
-Bundle-Version: 2.1.0.qualifier
+Bundle-Version: 2.1.0.20160523-0915-M1
 Bundle-Vendor: %bundle_vendor
 Bundle-ClassPath: .
 Bundle-Activator: org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin
