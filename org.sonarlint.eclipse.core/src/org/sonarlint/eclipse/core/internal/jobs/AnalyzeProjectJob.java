@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -36,6 +37,8 @@ import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -207,7 +210,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       final List<IFile> filesToAnalyze = new ArrayList<>(request.getFiles().size());
       Collection<ProjectConfigurator> usedConfigurators = populateFilesToAnalyze(monitor, project, mergedExtraProps, filesToAnalyze);
 
-      List<ClientInputFile> inputFiles = buildInputFiles(filesToAnalyze);
+      List<ClientInputFile> inputFiles = buildInputFiles(filesToAnalyze, monitor);
 
       for (SonarLintProperty sonarProperty : extraProps) {
         mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue());
@@ -243,14 +246,20 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     updateMarkers(issuesPerResource);
   }
 
-  private List<ClientInputFile> buildInputFiles(final List<IFile> filesToAnalyze) {
+  private List<ClientInputFile> buildInputFiles(final List<IFile> filesToAnalyze, IProgressMonitor monitor) {
     List<ClientInputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
     String allTestPattern = PreferencesUtils.getTestFileRegexps();
     String[] testPatterns = allTestPattern.split(",");
     final List<PathMatcher> pathMatchersForTests = createMatchersForTests(testPatterns);
     for (final IFile file : filesToAnalyze) {
-      final java.nio.file.Path filePath = file.getRawLocation().makeAbsolute().toFile().toPath();
-      inputFiles.add(new EclipseInputFile(pathMatchersForTests, file, filePath));
+      try {
+        IFileStore fileStore = EFS.getStore(file.getLocationURI());
+        File localFile = fileStore.toLocalFile(EFS.NONE, monitor);
+        final java.nio.file.Path filePath = localFile.toPath();
+        inputFiles.add(new EclipseInputFile(pathMatchersForTests, file, filePath));
+      } catch (CoreException e) {
+        SonarLintCorePlugin.getDefault().error("Error building input file for SonarLint analysis", e);
+      }
     }
     return inputFiles;
   }
@@ -308,7 +317,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     markerCache.deleteUnmatched();
   }
 
-  private void issueTrackingOnFile(ITextFileBufferManager iTextFileBufferManager, IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues)
+  private static void issueTrackingOnFile(ITextFileBufferManager iTextFileBufferManager, IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues)
     throws CoreException, BadLocationException {
     IFile iFile = (IFile) r;
     try {

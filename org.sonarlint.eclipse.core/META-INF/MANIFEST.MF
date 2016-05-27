@@ -30,6 +30,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.jface.text,
  org.sonarsource.sonarlint.core.sonarlint-client-api;bundle-version="2.1.0",
  org.sonarsource.sonarlint.core.sonarlint-core;bundle-version="2.1.0",
- org.eclipse.core.net
+ org.eclipse.core.net,
+ org.eclipse.core.filesystem
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
