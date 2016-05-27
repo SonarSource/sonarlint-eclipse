@@ -28,8 +28,8 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.expressions,
  org.eclipse.core.filebuffers,
  org.eclipse.jface.text,
- org.sonarsource.sonarlint.core.sonarlint-client-api;bundle-version="2.1.0",
- org.sonarsource.sonarlint.core.sonarlint-core;bundle-version="2.1.0",
+ org.sonarsource.sonarlint.core.sonarlint-client-api;bundle-version="2.3.1",
+ org.sonarsource.sonarlint.core.sonarlint-core;bundle-version="2.3.1",
  org.eclipse.core.net,
  org.eclipse.core.filesystem
 Bundle-ActivationPolicy: lazy
