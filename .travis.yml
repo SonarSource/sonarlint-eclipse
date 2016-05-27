@@ -11,9 +11,10 @@ env:
     - TARGET=IT TARGET_PLATFORM=e43
     - TARGET=IT TARGET_PLATFORM=e44
     - TARGET=IT TARGET_PLATFORM=e45
+    - TARGET=IT TARGET_PLATFORM=e46
 
 jdk:
-  - oraclejdk7
+  - oraclejdk8
 
 script:
   - ./travis.sh

@@ -78,9 +78,9 @@
     <license.year>2015</license.year>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>0.24.0</tycho.version>
+    <tycho.version>0.25.0</tycho.version>
     <tycho-extras-version>${tycho.version}</tycho-extras-version>
-    <target.platform>e45</target.platform>
+    <target.platform>e46</target.platform>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->
