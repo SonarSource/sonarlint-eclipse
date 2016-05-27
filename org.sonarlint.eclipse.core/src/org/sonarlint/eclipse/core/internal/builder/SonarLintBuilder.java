@@ -73,10 +73,10 @@ public class SonarLintBuilder extends IncrementalProjectBuilder {
     }
     if (filesToAnalyze.size() > 10) {
       SonarLintCorePlugin.getDefault().debug("Too many files to analyze in project " + getProject().getName() + " (" + filesToAnalyze.size() + "). Skipping.");
-      return;
+    } else if (!filesToAnalyze.isEmpty()) {
+      AnalyzeProjectRequest request = new AnalyzeProjectRequest(getProject(), filesToAnalyze);
+      new AnalyzeProjectJob(request).schedule();
     }
-    AnalyzeProjectRequest request = new AnalyzeProjectRequest(getProject(), filesToAnalyze);
-    new AnalyzeProjectJob(request).schedule();
   }
 
   public static boolean shouldAnalyze(IResourceDelta delta, IResource resource) {
