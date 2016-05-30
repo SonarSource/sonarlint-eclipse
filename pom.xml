@@ -80,7 +80,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho.version>0.25.0</tycho.version>
     <tycho-extras-version>${tycho.version}</tycho-extras-version>
-    <target.platform>e46</target.platform>
+    <target.platform>e45</target.platform>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->
