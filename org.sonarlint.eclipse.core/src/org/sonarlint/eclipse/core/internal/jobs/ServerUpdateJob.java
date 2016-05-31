@@ -19,11 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 
 public class ServerUpdateJob extends Job {
@@ -36,11 +38,28 @@ public class ServerUpdateJob extends Job {
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
+    List<SonarLintProject> projectsToUpdate = server.getBoundProjects();
+    monitor.beginTask("Update server and all associated projects", projectsToUpdate.size() + 1);
     try {
       server.update(monitor);
-      return Status.OK_STATUS;
     } catch (Exception e) {
       return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update data from server '" + server.getId() + "'", e);
     }
+    monitor.worked(1);
+    for (SonarLintProject projectToUpdate : projectsToUpdate) {
+      if (monitor.isCanceled()) {
+        return Status.CANCEL_STATUS;
+      }
+      try {
+        server.updateProject(projectToUpdate.getModuleKey());
+      } catch (Exception e) {
+        // TODO if module is not found on server side we should probably automatically unbing the project and warn user
+        return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding for project '" + projectToUpdate.getProject().getName() + "'", e);
+      }
+      monitor.worked(1);
+    }
+    monitor.done();
+    server.update(monitor);
+    return Status.OK_STATUS;
   }
 }

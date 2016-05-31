@@ -192,18 +192,7 @@ public class Server implements IServer, StateListener {
 
   @Override
   public synchronized void update(IProgressMonitor monitor) {
-    List<SonarLintProject> projectsToUpdate = getBoundProjects();
-    monitor.beginTask("Update server and all associated projects", projectsToUpdate.size() + 1);
     updateStatus = client.update(getConfig());
-    monitor.worked(1);
-    for (SonarLintProject projectToUpdate : projectsToUpdate) {
-      if (monitor.isCanceled()) {
-        return;
-      }
-      client.updateModule(getConfig(), projectToUpdate.getModuleKey());
-      monitor.worked(1);
-    }
-    monitor.done();
   }
 
   @Override
