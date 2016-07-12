@@ -33,4 +33,4 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.net,
  org.eclipse.core.filesystem
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8

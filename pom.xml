@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.sonarsource.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>32</version>
+    <version>36</version>
     <relativePath />
   </parent>
 
@@ -85,8 +85,8 @@
     <!-- ================== -->
     <!-- For SonarQube analysis -->
     <!-- ================== -->
-    <sonar.java.source>1.7</sonar.java.source>
-    <sonar.java.target>1.7</sonar.java.target>
+    <sonar.java.source>1.8</sonar.java.source>
+    <sonar.java.target>1.8</sonar.java.target>
     <sonar.scm.ignoreLocalModifications>true</sonar.scm.ignoreLocalModifications>
     <sonar.jacoco.reportPath>../target/jacoco.exec</sonar.jacoco.reportPath>
     <jarsigner.skip>true</jarsigner.skip>
@@ -97,12 +97,12 @@
     <dependency>
       <groupId>org.sonarsource.sonarlint.core</groupId>
       <artifactId>sonarlint-core</artifactId>
-      <version>2.3.2</version>
+      <version>2.4-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.sonarsource.sonarlint.core</groupId>
       <artifactId>sonarlint-client-api</artifactId>
-      <version>2.3.2</version>
+      <version>2.4-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
@@ -190,8 +190,8 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>com.mycila.maven-license-plugin</groupId>
-        <artifactId>maven-license-plugin</artifactId>
+        <groupId>com.mycila</groupId>
+        <artifactId>license-maven-plugin</artifactId>
         <configuration>
           <includes>
             <include>src/**/*.java</include>

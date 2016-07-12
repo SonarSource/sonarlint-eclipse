@@ -66,7 +66,6 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.tracking.Input;
-import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.tracking.Tracker;
 import org.sonarlint.eclipse.core.internal.tracking.Tracking;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -418,7 +417,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   private static Input<TrackableMarker> prepareBaseInput(List<IMarker> previous) {
     final List<TrackableMarker> wrapped = wrap(previous);
-    return new Input<AnalyzeProjectJob.TrackableMarker>() {
+    return new Input<TrackableMarker>() {
       @Override
       public Collection<TrackableMarker> getIssues() {
         return wrapped;
@@ -436,7 +435,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   private static Input<TrackableIssue> prepareRawInput(IDocument iDoc, List<Issue> issues) throws BadLocationException {
     final List<TrackableIssue> wrapped = wrap(iDoc, issues);
-    return new Input<AnalyzeProjectJob.TrackableIssue>() {
+    return new Input<TrackableIssue>() {
       @Override
       public Collection<TrackableIssue> getIssues() {
         return wrapped;
@@ -463,78 +462,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       checksum = SonarMarker.checksum(rangeInFile.getContent());
     }
     return checksum;
-  }
-
-  private static class TrackableIssue implements Trackable {
-
-    private final Issue issue;
-    private final Integer lineHash;
-
-    public TrackableIssue(Issue issue, Integer lineHash) {
-      this.issue = issue;
-      this.lineHash = lineHash;
-    }
-
-    public Issue getWrapped() {
-      return issue;
-    }
-
-    @Override
-    public Integer getLine() {
-      return issue.getStartLine();
-    }
-
-    @Override
-    public String getMessage() {
-      return SonarMarker.getMessage(issue);
-    }
-
-    @Override
-    public Integer getLineHash() {
-      return lineHash;
-    }
-
-    @Override
-    public String getRuleKey() {
-      return issue.getRuleKey();
-    }
-
-  }
-
-  private static class TrackableMarker implements Trackable {
-
-    private final IMarker marker;
-
-    public TrackableMarker(IMarker marker) {
-      this.marker = marker;
-    }
-
-    public IMarker getWrapped() {
-      return marker;
-    }
-
-    @Override
-    public Integer getLine() {
-      int line = marker.getAttribute(IMarker.LINE_NUMBER, 0);
-      return line != 0 ? line : null;
-    }
-
-    @Override
-    public String getMessage() {
-      return marker.getAttribute(IMarker.MESSAGE, "");
-    }
-
-    @Override
-    public Integer getLineHash() {
-      int attribute = marker.getAttribute(MarkerUtils.SONAR_MARKER_CHECKSUM_ATTR, 0);
-      return attribute != 0 ? attribute : null;
-    }
-
-    @Override
-    public String getRuleKey() {
-      return marker.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "");
-    }
-
   }
 
 }
