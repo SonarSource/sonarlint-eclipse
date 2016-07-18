@@ -72,6 +72,12 @@
                   <version>2.8</version>
                   <type>jar</type>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>org.sonarsource.python</groupId>
+                  <artifactId>sonar-python-plugin</artifactId>
+                  <version>1.6</version>
+                  <type>jar</type>
+                </artifactItem>
               </artifactItems>
               <outputDirectory>${project.basedir}/plugins</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
