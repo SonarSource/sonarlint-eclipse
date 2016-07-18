@@ -46,6 +46,7 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.WsHelperImpl;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
@@ -176,8 +177,8 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public void startAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener) {
-    client.analyze(config, issueListener);
+  public AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener) {
+    return client.analyze(config, issueListener);
   }
 
   @Override

@@ -77,7 +77,6 @@ public class AnalyzeCommand extends AbstractHandler {
   private void runAnalysisJobs(Map<IProject, Collection<IFile>> filesPerProject) {
     for (Map.Entry<IProject, Collection<IFile>> entry : filesPerProject.entrySet()) {
       AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(entry.getKey(), entry.getValue()));
-      job.schedule();
       showIssuesViewAfterJobSuccess(job);
     }
   }

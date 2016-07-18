@@ -33,6 +33,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
@@ -69,6 +71,7 @@ import org.sonarlint.eclipse.core.internal.tracking.Input;
 import org.sonarlint.eclipse.core.internal.tracking.Tracker;
 import org.sonarlint.eclipse.core.internal.tracking.Tracking;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
@@ -99,6 +102,29 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       return "SonarLint analysis of file " + request.getFiles().iterator().next().getProjectRelativePath().toString() + " (Project " + request.getProject().getName() + ")";
     }
     return "SonarLint analysis of project " + request.getProject().getName() + " (" + request.getFiles().size() + " files)";
+  }
+
+  private final class AnalysisThread extends Thread {
+    private final Map<IResource, List<Issue>> issuesPerResource;
+    private final StandaloneAnalysisConfiguration config;
+    private final SonarLintProject project;
+    private volatile AnalysisResults result;
+
+    private AnalysisThread(Map<IResource, List<Issue>> issuesPerResource, StandaloneAnalysisConfiguration config, SonarLintProject project) {
+      super("SonarLint analysis");
+      this.issuesPerResource = issuesPerResource;
+      this.config = config;
+      this.project = project;
+    }
+
+    @Override
+    public void run() {
+      result = AnalyzeProjectJob.this.run(config, project, issuesPerResource);
+    }
+
+    public AnalysisResults getResult() {
+      return result;
+    }
   }
 
   private final class SonarLintIssueListener implements IssueListener {
@@ -168,10 +194,12 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private static class PreviousMarkerCache {
     Map<IResource, List<IMarker>> markersByResource = new HashMap<>();
 
-    public PreviousMarkerCache(AnalyzeProjectRequest request) {
+    public PreviousMarkerCache(AnalyzeProjectRequest request, Set<IFile> failedFiles) {
       if (request.getFiles() != null) {
         for (IFile file : request.getFiles()) {
-          markersByResource.put(file, new ArrayList<IMarker>(MarkerUtils.findMarkers(file)));
+          if (!failedFiles.contains(file)) {
+            markersByResource.put(file, new ArrayList<IMarker>(MarkerUtils.findMarkers(file)));
+          }
         }
       } else {
         for (IMarker m : MarkerUtils.findMarkers(request.getProject())) {
@@ -241,8 +269,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       config = new StandaloneAnalysisConfiguration(project.getLocation().toFile().toPath(), projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
     }
 
-    Map<IResource, List<Issue>> issuesPerResource = run(config, sonarProject, monitor);
-    updateMarkers(issuesPerResource);
+    Map<IResource, List<Issue>> issuesPerResource = new LinkedHashMap<>();
+    AnalysisResults result = runAndCheckCancellation(config, sonarProject, issuesPerResource, monitor);
+    if (!monitor.isCanceled() && result != null) {
+      updateMarkers(issuesPerResource, result);
+    }
   }
 
   private List<ClientInputFile> buildInputFiles(final List<IFile> filesToAnalyze, IProgressMonitor monitor) {
@@ -293,14 +324,18 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return usedConfigurators;
   }
 
-  private void updateMarkers(Map<IResource, List<Issue>> issuesPerResource) throws CoreException {
+  private void updateMarkers(Map<IResource, List<Issue>> issuesPerResource, AnalysisResults result) throws CoreException {
     ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
     if (iTextFileBufferManager == null) {
       return;
     }
-    PreviousMarkerCache markerCache = new PreviousMarkerCache(this.request);
+    Set<IFile> failedFiles = result.failedAnalysisFiles().stream().map(f -> f.<IFile>getClientObject()).collect(Collectors.toSet());
+    PreviousMarkerCache markerCache = new PreviousMarkerCache(this.request, failedFiles);
     for (Entry<IResource, List<Issue>> resourceEntry : issuesPerResource.entrySet()) {
       IResource r = resourceEntry.getKey();
+      if (failedFiles.contains(r)) {
+        continue;
+      }
       try {
         List<IMarker> previousMarkers = markerCache.getPrevious(r);
         List<Issue> rawIssues = resourceEntry.getValue();
@@ -357,31 +392,15 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   }
 
-  public Map<IResource, List<Issue>> run(final StandaloneAnalysisConfiguration config, final SonarLintProject project, final IProgressMonitor monitor) {
+  public AnalysisResults runAndCheckCancellation(final StandaloneAnalysisConfiguration config, final SonarLintProject project, final Map<IResource, List<Issue>> issuesPerResource,
+    final IProgressMonitor monitor) {
     SonarLintCorePlugin.getDefault().debug("Start analysis with configuration:\n" + config.toString());
-    Thread.UncaughtExceptionHandler h = exceptionHandler();
-    final Map<IResource, List<Issue>> issuesPerResource = new HashMap<>();
-    Thread t = new Thread("SonarLint analysis") {
-      @Override
-      public void run() {
-        if (StringUtils.isNotBlank(project.getServerId())) {
-          IServer server = ServersManager.getInstance().getServer(project.getServerId());
-          if (server == null) {
-            throw new IllegalStateException(
-              "Project '" + project.getProject().getName() + "' is linked to an unknow server: '" + project.getServerId() + "'. Please bind project again.");
-          }
-          server.startAnalysis((ConnectedAnalysisConfiguration) config, new SonarLintIssueListener(issuesPerResource));
-        } else {
-          StandaloneSonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade();
-          facadeToUse.startAnalysis(config, new SonarLintIssueListener(issuesPerResource));
-        }
-      }
-    };
+    AnalysisThread t = new AnalysisThread(issuesPerResource, config, project);
     t.setDaemon(true);
-    t.setUncaughtExceptionHandler(h);
+    t.setUncaughtExceptionHandler((th, ex) -> SonarLintCorePlugin.getDefault().error("Error during analysis", ex));
     t.start();
     waitForThread(monitor, t);
-    return issuesPerResource;
+    return t.getResult();
   }
 
   private static void waitForThread(final IProgressMonitor monitor, Thread t) {
@@ -406,23 +425,23 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private static Thread.UncaughtExceptionHandler exceptionHandler() {
-    return new Thread.UncaughtExceptionHandler() {
-      @Override
-      public void uncaughtException(Thread th, Throwable ex) {
-        SonarLintCorePlugin.getDefault().error("Error during analysis", ex);
+  // Visible for testing
+  public AnalysisResults run(final StandaloneAnalysisConfiguration config, final SonarLintProject project, final Map<IResource, List<Issue>> issuesPerResource) {
+    if (StringUtils.isNotBlank(project.getServerId())) {
+      IServer server = ServersManager.getInstance().getServer(project.getServerId());
+      if (server == null) {
+        throw new IllegalStateException(
+          "Project '" + project.getProject().getName() + "' is linked to an unknow server: '" + project.getServerId() + "'. Please bind project again.");
       }
-    };
+      return server.runAnalysis((ConnectedAnalysisConfiguration) config, new SonarLintIssueListener(issuesPerResource));
+    } else {
+      StandaloneSonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade();
+      return facadeToUse.runAnalysis(config, new SonarLintIssueListener(issuesPerResource));
+    }
   }
 
   private static Input<TrackableMarker> prepareBaseInput(List<IMarker> previous) {
-    final List<TrackableMarker> wrapped = wrap(previous);
-    return new Input<TrackableMarker>() {
-      @Override
-      public Collection<TrackableMarker> getIssues() {
-        return wrapped;
-      }
-    };
+    return () -> wrap(previous);
   }
 
   private static List<TrackableMarker> wrap(List<IMarker> previous) {
@@ -433,17 +452,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return wrapped;
   }
 
-  private static Input<TrackableIssue> prepareRawInput(IDocument iDoc, List<Issue> issues) throws BadLocationException {
-    final List<TrackableIssue> wrapped = wrap(iDoc, issues);
-    return new Input<TrackableIssue>() {
-      @Override
-      public Collection<TrackableIssue> getIssues() {
-        return wrapped;
-      }
-    };
+  private static Input<TrackableIssue> prepareRawInput(IDocument iDoc, List<Issue> issues) {
+    return () -> wrap(iDoc, issues);
   }
 
-  private static List<TrackableIssue> wrap(IDocument iDoc, List<Issue> issues) throws BadLocationException {
+  private static List<TrackableIssue> wrap(IDocument iDoc, List<Issue> issues) {
     final List<TrackableIssue> wrapped = new ArrayList<>();
     for (Issue issue : issues) {
       Integer checksum = iDoc != null ? computeChecksum(iDoc, issue) : null;
@@ -452,14 +465,19 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return wrapped;
   }
 
-  private static Integer computeChecksum(IDocument iDoc, Issue issue) throws BadLocationException {
+  private static Integer computeChecksum(IDocument iDoc, Issue issue) {
     Integer checksum;
     Integer startLine = issue.getStartLine();
     if (startLine == null) {
       checksum = null;
     } else {
-      Range rangeInFile = SonarMarker.findRangeInFile(issue, iDoc);
-      checksum = SonarMarker.checksum(rangeInFile.getContent());
+      Range rangeInFile;
+      try {
+        rangeInFile = SonarMarker.findRangeInFile(issue, iDoc);
+        checksum = SonarMarker.checksum(rangeInFile.getContent());
+      } catch (BadLocationException e) {
+        checksum = null;
+      }
     }
     return checksum;
   }

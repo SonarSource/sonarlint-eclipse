@@ -26,6 +26,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
@@ -54,8 +55,8 @@ public class StandaloneSonarLintClientFacade {
     return client;
   }
 
-  public void startAnalysis(StandaloneAnalysisConfiguration config, IssueListener issueListener) {
-    getClient().analyze(config, issueListener);
+  public AnalysisResults runAnalysis(StandaloneAnalysisConfiguration config, IssueListener issueListener) {
+    return getClient().analyze(config, issueListener);
   }
 
   public String getHtmlRuleDescription(String ruleKey) {

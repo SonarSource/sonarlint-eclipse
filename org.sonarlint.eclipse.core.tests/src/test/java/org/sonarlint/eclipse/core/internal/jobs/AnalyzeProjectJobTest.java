@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.core.resources.IFile;
@@ -35,11 +35,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
@@ -47,8 +51,7 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisCo
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -104,7 +107,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     IFile file = project.getFile("src/Findbugs.java");
     AnalyzeProjectJob job = job(project, Arrays.asList(file));
     job = spy(job);
-    Map<IResource, List<Issue>> result = new HashMap<>();
     Issue issue1 = mock(Issue.class);
     when(issue1.getRuleKey()).thenReturn("foo:bar");
     when(issue1.getSeverity()).thenReturn("BLOCKER");
@@ -116,8 +118,24 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     ClientInputFile inputFile = mock(ClientInputFile.class);
     when(inputFile.getClientObject()).thenReturn(file);
     when(issue1.getInputFile()).thenReturn(inputFile);
-    result.put(file, Arrays.asList(issue1));
-    doReturn(result).when(job).run(any(StandaloneAnalysisConfiguration.class), any(SonarLintProject.class), eq(MONITOR));
+    doAnswer(new Answer<AnalysisResults>() {
+      public AnalysisResults answer(InvocationOnMock invocation) {
+        Map<IResource, List<Issue>> issuesPerResource = (Map<IResource, List<Issue>>) invocation.getArguments()[2];
+        issuesPerResource.put(file, Arrays.asList(issue1));
+        return new AnalysisResults() {
+
+          @Override
+          public int fileCount() {
+            return 1;
+          }
+
+          @Override
+          public Collection<ClientInputFile> failedAnalysisFiles() {
+            return Collections.emptyList();
+          }
+        };
+      }
+    }).when(job).run(any(StandaloneAnalysisConfiguration.class), any(SonarLintProject.class), Matchers.any(Map.class));
     job.runInWorkspace(MONITOR);
 
     IMarker[] markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
@@ -135,7 +153,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     IFile file = project.getFile("src/Findbugs.java");
     AnalyzeProjectJob job = job(project, Arrays.asList(file));
     job = spy(job);
-    Map<IResource, List<Issue>> result = new HashMap<>();
     Issue issue1 = mock(Issue.class);
     when(issue1.getRuleKey()).thenReturn("foo:bar");
     when(issue1.getSeverity()).thenReturn("BLOCKER");
@@ -147,8 +164,24 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     ClientInputFile inputFile = mock(ClientInputFile.class);
     when(inputFile.getClientObject()).thenReturn(file);
     when(issue1.getInputFile()).thenReturn(inputFile);
-    result.put(file, Arrays.asList(issue1));
-    doReturn(result).when(job).run(any(StandaloneAnalysisConfiguration.class), any(SonarLintProject.class), eq(MONITOR));
+    doAnswer(new Answer<AnalysisResults>() {
+      public AnalysisResults answer(InvocationOnMock invocation) {
+        Map<IResource, List<Issue>> issuesPerResource = (Map<IResource, List<Issue>>) invocation.getArguments()[2];
+        issuesPerResource.put(file, Arrays.asList(issue1));
+        return new AnalysisResults() {
+
+          @Override
+          public int fileCount() {
+            return 1;
+          }
+
+          @Override
+          public Collection<ClientInputFile> failedAnalysisFiles() {
+            return Collections.emptyList();
+          }
+        };
+      }
+    }).when(job).run(any(StandaloneAnalysisConfiguration.class), any(SonarLintProject.class), Matchers.any(Map.class));
     job.runInWorkspace(MONITOR);
     IMarker[] markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertThat(markers).hasSize(1);
@@ -176,7 +209,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(5);
 
     // Third execution with modified file content
-    result = new HashMap<>();
     Issue issue1Updated = mock(Issue.class);
     when(issue1Updated.getRuleKey()).thenReturn("foo:bar");
     when(issue1Updated.getSeverity()).thenReturn("BLOCKER");
@@ -186,8 +218,24 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     when(issue1Updated.getEndLine()).thenReturn(7);
     when(issue1Updated.getEndLineOffset()).thenReturn(14);
     when(issue1Updated.getInputFile()).thenReturn(inputFile);
-    result.put(file, Arrays.asList(issue1Updated));
-    doReturn(result).when(job).run(any(StandaloneAnalysisConfiguration.class), any(SonarLintProject.class), eq(MONITOR));
+    doAnswer(new Answer<AnalysisResults>() {
+      public AnalysisResults answer(InvocationOnMock invocation) {
+        Map<IResource, List<Issue>> issuesPerResource = (Map<IResource, List<Issue>>) invocation.getArguments()[2];
+        issuesPerResource.put(file, Arrays.asList(issue1Updated));
+        return new AnalysisResults() {
+
+          @Override
+          public int fileCount() {
+            return 1;
+          }
+
+          @Override
+          public Collection<ClientInputFile> failedAnalysisFiles() {
+            return Collections.emptyList();
+          }
+        };
+      }
+    }).when(job).run(any(StandaloneAnalysisConfiguration.class), any(SonarLintProject.class), Matchers.any(Map.class));
     job.runInWorkspace(MONITOR);
 
     markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
