@@ -43,6 +43,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
+import org.sonarlint.eclipse.tests.common.WorkspaceHelpers;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
@@ -85,6 +86,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
   @Before
   public void cleanup() throws Exception {
     errors.clear();
+    WorkspaceHelpers.cleanWorkspace();
     project = importEclipseProject("reference");
     MarkerUtils.deleteIssuesMarkers(project);
 
@@ -92,7 +94,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
 
   @After
   public void checkErrorsInLog() throws Exception {
-    project.delete(true, null);
     if (!errors.isEmpty()) {
       fail(StringUtils.joinSkipNull(errors, "\n"));
     }

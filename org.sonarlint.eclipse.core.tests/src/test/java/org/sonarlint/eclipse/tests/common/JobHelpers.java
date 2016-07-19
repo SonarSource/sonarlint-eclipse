@@ -19,49 +19,129 @@
  */
 package org.sonarlint.eclipse.tests.common;
 
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
+import org.junit.Assert;
 
 /**
- * @author Evgeny Mandrikov
+ * Inspired by m2e
+ *
  */
-public final class JobHelpers {
+@SuppressWarnings("restriction")
+public class JobHelpers {
 
-  /**
-   * Inspired by http://fisheye.jboss.org/browse/JBossTools/trunk/vpe/tests/org.jboss.tools.vpe.ui.test/src/org/jboss/tools/vpe/ui/test/TestUtil.java?r=HEAD
-   */
+  private static final int POLLING_DELAY = 10;
+
   public static void waitForJobsToComplete() {
-    waitForIdle();
+    try {
+      waitForJobsToComplete(new NullProgressMonitor());
+    } catch (Exception ex) {
+      throw new IllegalStateException(ex);
+    }
   }
 
-  private static final long MAX_IDLE = 20 * 60 * 1000L;
+  public static void waitForJobsToComplete(IProgressMonitor monitor) throws InterruptedException, CoreException {
+    waitForBuildJobs();
 
-  private static void waitForIdle() {
-    waitForIdle(MAX_IDLE);
-  }
-
-  private static void waitForIdle(long maxIdle) {
-    final long start = System.currentTimeMillis();
-    while (!Job.getJobManager().isIdle()) {
-      delay(500);
-      if ((System.currentTimeMillis() - start) > maxIdle) {
-        Job[] jobs = Job.getJobManager().find(null);
-        StringBuffer jobsList = new StringBuffer("A long running job detected\n");
-        for (Job job : jobs) {
-          jobsList.append("\t").append(job.getName()).append("\n");
+    /*
+     * First, make sure refresh job gets all resource change events
+     * 
+     * Resource change events are delivered after WorkspaceJob#runInWorkspace returns
+     * and during IWorkspace#run. Each change notification is delivered by
+     * only one thread/job, so we make sure no other workspaceJob is running then
+     * call IWorkspace#run from this thread.
+     * 
+     * Unfortunately, this does not catch other jobs and threads that call IWorkspace#run
+     * so we have to hard-code workarounds
+     * 
+     * See http://www.eclipse.org/articles/Article-Resource-deltas/resource-deltas.html
+     */
+    IWorkspace workspace = ResourcesPlugin.getWorkspace();
+    IJobManager jobManager = Job.getJobManager();
+    jobManager.suspend();
+    try {
+      Job[] jobs = jobManager.find(null);
+      for (int i = 0; i < jobs.length; i++) {
+        if (jobs[i] instanceof WorkspaceJob || jobs[i].getClass().getName().endsWith("JREUpdateJob")) {
+          jobs[i].join();
         }
-        throw new RuntimeException(jobsList.toString());
+      }
+      workspace.run(new IWorkspaceRunnable() {
+        public void run(IProgressMonitor monitor) {
+        }
+      }, workspace.getRoot(), 0, monitor);
+
+    } finally {
+      jobManager.resume();
+    }
+
+    waitForBuildJobs();
+  }
+
+  private static void waitForBuildJobs() {
+    waitForJobs(BuildJobMatcher.INSTANCE, 60 * 1000);
+  }
+
+  public static void waitForJobs(IJobMatcher matcher, int maxWaitMillis) {
+    final long limit = System.currentTimeMillis() + maxWaitMillis;
+    while (true) {
+      Job job = getJob(matcher);
+      if (job == null) {
+        return;
+      }
+      boolean timeout = System.currentTimeMillis() > limit;
+      Assert.assertFalse("Timeout while waiting for completion of job: " + job, timeout);
+      job.wakeUp();
+      try {
+        Thread.sleep(POLLING_DELAY);
+      } catch (InterruptedException e) {
+        // ignore and keep waiting
       }
     }
   }
 
-  private static void delay(long waitTimeMillis) {
-    try {
-      Thread.sleep(waitTimeMillis);
-    } catch (InterruptedException e) {
-      // ignore
+  private static Job getJob(IJobMatcher matcher) {
+    Job[] jobs = Job.getJobManager().find(null);
+    for (Job job : jobs) {
+      if (matcher.matches(job)) {
+        return job;
+      }
     }
+    return null;
   }
 
-  private JobHelpers() {
+  public static interface IJobMatcher {
+
+    boolean matches(Job job);
+
   }
+
+  static class LaunchJobMatcher implements IJobMatcher {
+
+    public static final IJobMatcher INSTANCE = new LaunchJobMatcher();
+
+    public boolean matches(Job job) {
+      return job.getClass().getName().matches("(.*\\.DebugUIPlugin.*)");
+    }
+
+  }
+
+  static class BuildJobMatcher implements IJobMatcher {
+
+    public static final IJobMatcher INSTANCE = new BuildJobMatcher();
+
+    public boolean matches(Job job) {
+      return (job instanceof WorkspaceJob) || job.getClass().getName().matches("(.*\\.AutoBuild.*)")
+        || job.getClass().getName().endsWith("JREUpdateJob");
+    }
+
+  }
+
 }
