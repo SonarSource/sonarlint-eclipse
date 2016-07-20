@@ -19,9 +19,11 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -46,6 +48,7 @@ public class ServerUpdateJob extends Job {
       return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update data from server '" + server.getId() + "'", e);
     }
     monitor.worked(1);
+    List<IStatus> failures = new ArrayList<>();
     for (SonarLintProject projectToUpdate : projectsToUpdate) {
       if (monitor.isCanceled()) {
         return Status.CANCEL_STATUS;
@@ -53,13 +56,15 @@ public class ServerUpdateJob extends Job {
       try {
         server.updateProject(projectToUpdate.getModuleKey());
       } catch (Exception e) {
-        // TODO if module is not found on server side we should probably automatically unbing the project and warn user
-        return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding for project '" + projectToUpdate.getProject().getName() + "'", e);
+        failures.add(new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding for project '" + projectToUpdate.getProject().getName() + "'", e));
       }
       monitor.worked(1);
     }
     monitor.done();
-    server.update(monitor);
+    if (!failures.isEmpty()) {
+      return new MultiStatus(SonarLintCorePlugin.PLUGIN_ID, IStatus.ERROR, failures.toArray(new IStatus[0]), "Failed to update binding for " + failures.size() + " project(s)",
+        null);
+    }
     return Status.OK_STATUS;
   }
 }
