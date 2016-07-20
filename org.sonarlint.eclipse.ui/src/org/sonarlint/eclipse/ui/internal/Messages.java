@@ -61,7 +61,9 @@ public final class Messages extends NLS {
   public static String viewInitializing;
 
   public static String actionDelete;
+  public static String actionUnbind;
   public static String actionUpdate;
+  public static String actionUpdateBinding;
   public static String actionEdit;
   public static String actionNew;
   public static String actionNewServer;
@@ -75,6 +77,11 @@ public final class Messages extends NLS {
   public static String deleteServerDialogMessageMany;
   public static String deleteServerDialogBoundProject;
   public static String deleteServerTask;
+
+  public static String unbindProjectDialogTitle;
+  public static String unbindProjectDialogMessage;
+  public static String unbindProjectDialogMessageMany;
+  public static String unbindProjectTask;
 
   public static String ServerLocationWizardPage_label_id;
   public static String ServerLocationWizardPage_label_host;

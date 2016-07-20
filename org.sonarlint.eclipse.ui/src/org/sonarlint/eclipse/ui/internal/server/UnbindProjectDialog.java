@@ -28,61 +28,49 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 /**
- * Dialog that prompts a user to delete server(s).
+ * Dialog that prompts a user to unbind project(s).
  */
-public class DeleteServerDialog extends MessageDialog {
-  protected List<IServer> servers;
+public class UnbindProjectDialog extends MessageDialog {
+  protected List<SonarLintProject> projects;
 
-  public DeleteServerDialog(Shell parentShell, List<IServer> servers) {
-    super(parentShell, Messages.deleteServerDialogTitle, null, getMessage(servers), getImage(servers), new String[] {IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL}, 0);
-    this.servers = servers;
+  public UnbindProjectDialog(Shell parentShell, List<SonarLintProject> projects) {
+    super(parentShell, Messages.unbindProjectDialogTitle, null, getMessage(projects), QUESTION, new String[] {IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL}, 0);
+    this.projects = projects;
 
   }
 
-  private static int getImage(List<IServer> servers) {
-    for (IServer iServer : servers) {
-      if (!iServer.getBoundProjects().isEmpty()) {
-        return WARNING;
-      }
-    }
-    return QUESTION;
-  }
-
-  private static String getMessage(List<IServer> servers) {
+  private static String getMessage(List<SonarLintProject> projects) {
     StringBuilder sb = new StringBuilder();
-    if (servers.size() == 1) {
-      sb.append(NLS.bind(Messages.deleteServerDialogMessage, servers.get(0).getId()));
+    if (projects.size() == 1) {
+      sb.append(NLS.bind(Messages.unbindProjectDialogMessage, projects.get(0).getProject().getName()));
     } else {
-      sb.append(NLS.bind(Messages.deleteServerDialogMessageMany, Integer.toString(servers.size())));
-    }
-    int boundCount = 0;
-    for (IServer iServer : servers) {
-      boundCount += iServer.getBoundProjects().size();
-    }
-    if (boundCount > 0) {
-      sb.append("\n").append(NLS.bind(Messages.deleteServerDialogBoundProject, boundCount));
+      sb.append(NLS.bind(Messages.unbindProjectDialogMessageMany, Integer.toString(projects.size())));
     }
     return sb.toString();
   }
 
   @Override
   protected void buttonPressed(int buttonId) {
-    if (buttonId == OK && !servers.isEmpty()) {
+    if (buttonId == OK && !projects.isEmpty()) {
 
-      Job job = new Job(Messages.deleteServerTask) {
+      Job job = new Job(Messages.unbindProjectTask) {
         @Override
         protected IStatus run(IProgressMonitor monitor) {
           try {
-            for (IServer server : servers) {
+            for (SonarLintProject project : projects) {
               if (monitor.isCanceled()) {
                 return Status.CANCEL_STATUS;
               }
-              server.delete();
+              IServer oldServer = ServersManager.getInstance().getServer(project.getServerId());
+              project.unbind();
+              oldServer.notifyAllListeners();
             }
           } catch (Exception e) {
             return new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, 0, e.getMessage(), e);

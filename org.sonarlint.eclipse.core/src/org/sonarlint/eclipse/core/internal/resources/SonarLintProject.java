@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.builder.SonarLintBuilder;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -167,6 +168,13 @@ public class SonarLintProject {
 
   public void setAutoEnabled(boolean autoEnabled) {
     this.autoEnabled = autoEnabled;
+  }
+
+  public void unbind() {
+    setServerId(null);
+    setModuleKey(null);
+    save();
+    MarkerUtils.deleteIssuesMarkers(getProject());
   }
 
 }

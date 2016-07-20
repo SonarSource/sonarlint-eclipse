@@ -35,7 +35,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
 
@@ -75,10 +74,7 @@ public class UnbindProjectsCommand extends AbstractHandler {
         monitor.beginTask("Unbind projects", selectedProjects.size());
         for (IProject p : selectedProjects) {
           SonarLintProject sonarLintProject = SonarLintProject.getInstance(p);
-          sonarLintProject.setServerId(null);
-          sonarLintProject.setModuleKey(null);
-          sonarLintProject.save();
-          MarkerUtils.deleteIssuesMarkers(p);
+          sonarLintProject.unbind();
           monitor.worked(1);
         }
         IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);

@@ -160,9 +160,7 @@ public class Server implements IServer, StateListener {
   public synchronized void delete() {
     client.stop(true);
     for (SonarLintProject sonarLintProject : getBoundProjects()) {
-      sonarLintProject.setServerId(null);
-      sonarLintProject.setModuleKey(null);
-      sonarLintProject.save();
+      sonarLintProject.unbind();
     }
     ServersManager.getInstance().removeServer(this);
   }

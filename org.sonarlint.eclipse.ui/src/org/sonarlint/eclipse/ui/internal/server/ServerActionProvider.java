@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.server;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import org.eclipse.jface.action.Action;
@@ -32,6 +33,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.actions.ActionFactory;
@@ -40,11 +42,14 @@ import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 import org.eclipse.ui.navigator.ICommonViewerSite;
 import org.eclipse.ui.navigator.ICommonViewerWorkbenchSite;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
+import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
 import org.sonarlint.eclipse.ui.internal.server.actions.NewServerWizardAction;
-import org.sonarlint.eclipse.ui.internal.server.actions.ServerDeleteAction;
+import org.sonarlint.eclipse.ui.internal.server.actions.ProjectUpdateBindingAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ServerEditAction;
+import org.sonarlint.eclipse.ui.internal.server.actions.ServerOrProjectDeleteAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ServerUpdateAction;
 
 public class ServerActionProvider extends CommonActionProvider {
@@ -54,6 +59,7 @@ public class ServerActionProvider extends CommonActionProvider {
   protected Action deleteAction;
   protected Action editAction;
   protected Action updateAction;
+  protected Action updateBindingAction;
 
   public ServerActionProvider() {
     super();
@@ -81,20 +87,25 @@ public class ServerActionProvider extends CommonActionProvider {
       public void open(OpenEvent event) {
         IStructuredSelection sel = (IStructuredSelection) event.getSelection();
         Object data = sel.getFirstElement();
-        if (!(data instanceof IServer)) {
-          return;
+        if (data instanceof IServer) {
+          IServer server = (IServer) data;
+          ServerEditAction.openEditWizard(tableViewer.getTree().getShell(), server);
+        } else if (data instanceof SonarLintProject) {
+          BindProjectsWizard wizard = new BindProjectsWizard(Arrays.asList(((SonarLintProject) data).getProject()));
+          final WizardDialog dialog = new WizardDialog(tableViewer.getTree().getShell(), wizard);
+          dialog.setHelpAvailable(true);
+          dialog.open();
         }
-        IServer server = (IServer) data;
-        ServerEditAction.openEditWizard(tableViewer.getTree().getShell(), server);
       }
     });
   }
 
   private void makeServerActions(CommonViewer tableViewer, ISelectionProvider provider) {
     Shell shell = tableViewer.getTree().getShell();
-    deleteAction = new ServerDeleteAction(shell, provider);
+    deleteAction = new ServerOrProjectDeleteAction(shell, provider);
     editAction = new ServerEditAction(shell, provider);
     updateAction = new ServerUpdateAction(provider);
+    updateBindingAction = new ProjectUpdateBindingAction(shell, provider);
   }
 
   @Override
@@ -118,25 +129,35 @@ public class ServerActionProvider extends CommonActionProvider {
     }
 
     List<IServer> servers = new ArrayList<>();
+    List<SonarLintProject> projects = new ArrayList<>();
     if (selection != null && !selection.isEmpty()) {
       Iterator iterator = selection.iterator();
       while (iterator.hasNext()) {
         Object obj = iterator.next();
         if (obj instanceof IServer) {
           servers.add((IServer) obj);
+        } else if (obj instanceof SonarLintProject) {
+          projects.add((SonarLintProject) obj);
         }
       }
     }
 
-    addTopSection(menu);
-    menu.add(new Separator());
+    if (projects.isEmpty()) {
+      addTopSection(menu);
+      menu.add(new Separator());
+    }
 
-    if (servers.size() == 1) {
+    if (servers.size() == 1 && projects.isEmpty()) {
       menu.add(editAction);
     }
-    if (!servers.isEmpty()) {
-      menu.add(deleteAction);
+    if (!servers.isEmpty() && projects.isEmpty()) {
       menu.add(updateAction);
+    }
+    if (servers.isEmpty() && !projects.isEmpty()) {
+      menu.add(updateBindingAction);
+    }
+    if (servers.isEmpty() != projects.isEmpty()) {
+      menu.add(deleteAction);
     }
   }
 

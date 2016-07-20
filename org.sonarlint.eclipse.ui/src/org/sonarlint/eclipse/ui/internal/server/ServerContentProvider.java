@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.server;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
@@ -37,11 +35,7 @@ public class ServerContentProvider extends BaseContentProvider implements ITreeC
   @Override
   public Object[] getChildren(Object element) {
     if (element instanceof IServer) {
-      List<IProject> projects = new ArrayList<>();
-      for (SonarLintProject p : ((IServer) element).getBoundProjects()) {
-        projects.add(p.getProject());
-      }
-      return projects.toArray();
+      return ((IServer) element).getBoundProjects().toArray();
     }
     return new Object[0];
   }

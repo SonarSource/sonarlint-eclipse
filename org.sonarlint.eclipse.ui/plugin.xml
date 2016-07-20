@@ -54,9 +54,14 @@
          location="BOTTOM_RIGHT"
          state="true">
       <enablement>
+          <or>
             <objectClass
                   name="org.sonarlint.eclipse.core.internal.server.IServer">
             </objectClass>
+            <objectClass
+                  name="org.sonarlint.eclipse.core.internal.resources.SonarLintProject">
+            </objectClass>
+          </or>
       </enablement>
    </decorator>
 </extension>
@@ -117,7 +122,7 @@
 	                  value="org.sonarlint.eclipse.core.internal.server.IServer">
 	            </instanceof>
 	            <instanceof
-	                  value="org.eclipse.core.resources.IProject">
+	                  value="org.sonarlint.eclipse.core.internal.resources.SonarLintProject">
 	            </instanceof>
 	         </or>
 	      </triggerPoints>
@@ -127,7 +132,7 @@
 	                  value="java.lang.Object">
 	            </instanceof>
 	            <instanceof
-	                  value="org.eclipse.core.resources.IProject">
+	                  value="org.sonarlint.eclipse.core.internal.resources.SonarLintProject">
 	            </instanceof>
 	         </or>
 	      </possibleChildren>
@@ -139,6 +144,9 @@
 		             <or>
 		                <instanceof
 		                      value="org.sonarlint.eclipse.core.internal.server.IServer">
+		                </instanceof>
+		                <instanceof
+		                      value="org.sonarlint.eclipse.core.internal.resources.SonarLintProject">
 		                </instanceof>
 		                <instanceof
 		                      value="org.eclipse.core.resources.IWorkspaceRoot">
