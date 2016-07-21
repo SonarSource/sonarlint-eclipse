@@ -20,14 +20,12 @@
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
 import java.lang.reflect.InvocationTargetException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
 public abstract class AbstractServerLocationWizard extends Wizard implements INewWizard {
 
@@ -56,17 +54,12 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
     final String serverUrl = page.getServerUrl();
     final String username = page.getUsername();
     final String password = page.getPassword();
-    IRunnableWithProgress op = new IRunnableWithProgress() {
-      @Override
-      public void run(IProgressMonitor monitor) throws InvocationTargetException {
-        monitor.beginTask("Saving '" + serverId + "'", 1);
-        try {
-          doFinish(serverId, serverUrl, username, password);
-        } catch (Exception e) {
-          SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
-        } finally {
-          monitor.done();
-        }
+    IRunnableWithProgress op = monitor -> {
+      monitor.beginTask("Saving '" + serverId + "'", 1);
+      try {
+        doFinish(serverId, serverUrl, username, password);
+      } finally {
+        monitor.done();
       }
     };
     try {

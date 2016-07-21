@@ -187,11 +187,11 @@ public class ServersManager {
     if (serversById.containsKey(server.getId())) {
       throw new IllegalStateException("There is already a server with id '" + server.getId() + "'");
     }
-    serversById.put(server.getId(), server);
-    saveServersList();
     if (server.hasAuth()) {
       storeCredentials(server, username, password);
     }
+    serversById.put(server.getId(), server);
+    saveServersList();
     fireServerEvent(server, EVENT_ADDED);
   }
 
@@ -203,7 +203,7 @@ public class ServersManager {
       secureServerNode.put(PASSWORD_ATTRIBUTE, password, true);
       secureServersNode.flush();
     } catch (StorageException | IOException e) {
-      throw new IllegalStateException("Unable to save secure credentials", e);
+      throw new IllegalStateException("Unable to store server credentials in secure storage: " + e.getMessage(), e);
     }
   }
 
@@ -272,31 +272,27 @@ public class ServersManager {
     ((Server) serversById.get(server.getId())).stop();
     serversById.put(server.getId(), server);
     saveServersList();
+    fireServerEvent(server, EVENT_CHANGED);
     if (server.hasAuth()) {
       storeCredentials(server, username, password);
     }
-    fireServerEvent(server, EVENT_CHANGED);
   }
 
-  public static String getUsername(IServer server) {
+  public static String getUsername(IServer server) throws StorageException {
     return getFromSecure(server, USERNAME_ATTRIBUTE);
   }
 
-  public static String getPassword(IServer server) {
+  public static String getPassword(IServer server) throws StorageException {
     return getFromSecure(server, PASSWORD_ATTRIBUTE);
   }
 
-  private static String getFromSecure(IServer server, String attribute) {
-    try {
-      ISecurePreferences secureServersNode = SecurePreferencesFactory.getDefault().node(SonarLintCorePlugin.PLUGIN_ID).node(ServersManager.PREF_SERVERS);
-      if (!secureServersNode.nodeExists(server.getId())) {
-        return null;
-      }
-      ISecurePreferences secureServerNode = secureServersNode.node(server.getId());
-      return secureServerNode.get(attribute, null);
-    } catch (StorageException e) {
-      throw new IllegalStateException("Unable to read secure credentials", e);
+  private static String getFromSecure(IServer server, String attribute) throws StorageException {
+    ISecurePreferences secureServersNode = SecurePreferencesFactory.getDefault().node(SonarLintCorePlugin.PLUGIN_ID).node(ServersManager.PREF_SERVERS);
+    if (!secureServersNode.nodeExists(server.getId())) {
+      return null;
     }
+    ISecurePreferences secureServerNode = secureServersNode.node(server.getId());
+    return secureServerNode.get(attribute, null);
   }
 
   public String validate(String serverId, String serverUrl, boolean editExisting) {

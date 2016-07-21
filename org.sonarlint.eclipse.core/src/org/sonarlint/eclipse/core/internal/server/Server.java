@@ -38,6 +38,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.equinox.security.storage.StorageException;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintLogOutput;
@@ -240,7 +241,11 @@ public class Server implements IServer, StateListener {
     Builder builder = getConfigBuilderNoCredentials();
 
     if (hasAuth()) {
-      builder.credentials(ServersManager.getUsername(this), ServersManager.getPassword(this));
+      try {
+        builder.credentials(ServersManager.getUsername(this), ServersManager.getPassword(this));
+      } catch (StorageException e) {
+        throw new IllegalStateException("Unable to read server credentials from storage: " + e.getMessage(), e);
+      }
     }
     return builder.build();
   }

@@ -24,8 +24,10 @@ import java.net.URL;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -144,7 +146,13 @@ public class ServerLocationWizardPage extends WizardPage {
     serverUsernameText = new Text(form.getBody(), SWT.BORDER | SWT.SINGLE);
     serverUsernameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     if (edit) {
-      serverUsernameText.setText(StringUtils.defaultString(ServersManager.getUsername(server)));
+      String previousUsername;
+      try {
+        previousUsername = ServersManager.getUsername(server);
+        serverUsernameText.setText(previousUsername);
+      } catch (StorageException e) {
+        MessageDialog.openError(parent.getDisplay().getActiveShell(), "Error reading secure storage", "Unable to read username from secure storage: " + e.getMessage());
+      }
     }
 
     // Sonar Server password
@@ -153,7 +161,13 @@ public class ServerLocationWizardPage extends WizardPage {
     serverPasswordText = new Text(form.getBody(), SWT.BORDER | SWT.SINGLE | SWT.PASSWORD);
     serverPasswordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     if (edit) {
-      serverPasswordText.setText(StringUtils.defaultString(ServersManager.getPassword(server)));
+      String previousPassword;
+      try {
+        previousPassword = ServersManager.getPassword(server);
+        serverPasswordText.setText(previousPassword);
+      } catch (StorageException e) {
+        MessageDialog.openError(parent.getDisplay().getActiveShell(), "Error reading secure storage", "Unable to read password from secure storage: " + e.getMessage());
+      }
     }
 
     // Test connection button
