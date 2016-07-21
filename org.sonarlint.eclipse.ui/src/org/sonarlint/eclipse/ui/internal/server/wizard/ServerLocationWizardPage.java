@@ -44,6 +44,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -52,6 +53,8 @@ import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 public class ServerLocationWizardPage extends WizardPage {
+  private static final String ERROR_READING_SECURE_STORAGE = "Error reading secure storage";
+
   private final IServer server;
 
   private Text serverIdText;
@@ -151,7 +154,8 @@ public class ServerLocationWizardPage extends WizardPage {
         previousUsername = ServersManager.getUsername(server);
         serverUsernameText.setText(previousUsername);
       } catch (StorageException e) {
-        MessageDialog.openError(parent.getDisplay().getActiveShell(), "Error reading secure storage", "Unable to read username from secure storage: " + e.getMessage());
+        SonarLintCorePlugin.getDefault().error(ERROR_READING_SECURE_STORAGE, e);
+        MessageDialog.openError(parent.getDisplay().getActiveShell(), ERROR_READING_SECURE_STORAGE, "Unable to read username from secure storage: " + e.getMessage());
       }
     }
 
@@ -166,7 +170,8 @@ public class ServerLocationWizardPage extends WizardPage {
         previousPassword = ServersManager.getPassword(server);
         serverPasswordText.setText(previousPassword);
       } catch (StorageException e) {
-        MessageDialog.openError(parent.getDisplay().getActiveShell(), "Error reading secure storage", "Unable to read password from secure storage: " + e.getMessage());
+        SonarLintCorePlugin.getDefault().error(ERROR_READING_SECURE_STORAGE, e);
+        MessageDialog.openError(parent.getDisplay().getActiveShell(), ERROR_READING_SECURE_STORAGE, "Unable to read password from secure storage: " + e.getMessage());
       }
     }
 

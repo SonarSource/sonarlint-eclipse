@@ -29,7 +29,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
@@ -42,32 +41,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
     if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
       final Map<IProject, Collection<IFile>> changedFilesPerProject = new HashMap<>();
       try {
-        event.getDelta().accept(new IResourceDeltaVisitor() {
-
-          @Override
-          public boolean visit(IResourceDelta delta) throws CoreException {
-            if (delta.getResource().getProject() == null) {
-              // Workspace root
-              return true;
-            }
-            final SonarLintProject sonarProject = SonarLintProject.getInstance(delta.getResource().getProject());
-            if (!sonarProject.isAutoEnabled()) {
-              return false;
-            }
-            if (delta.getResource().getType() == IResource.FILE) {
-              IFile file = (IFile) delta.getResource();
-              if (delta.getKind() == IResourceDelta.CHANGED
-                && (delta.getFlags() & IResourceDelta.CONTENT) != 0
-                && shouldAnalyze(file)) {
-                if (!changedFilesPerProject.containsKey(file.getProject())) {
-                  changedFilesPerProject.put(file.getProject(), new ArrayList<IFile>());
-                }
-                changedFilesPerProject.get(file.getProject()).add(file);
-              }
-            }
-            return shouldAnalyze(delta.getResource());
-          }
-        });
+        event.getDelta().accept(delta -> visitDelta(changedFilesPerProject, delta));
       } catch (CoreException e) {
         SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
       }
@@ -82,6 +56,29 @@ public class SonarLintChangeListener implements IResourceChangeListener {
         new AnalyzeProjectJob(request).schedule();
       }
     }
+  }
+
+  private static boolean visitDelta(final Map<IProject, Collection<IFile>> changedFilesPerProject, IResourceDelta delta) {
+    if (delta.getResource().getProject() == null) {
+      // Workspace root
+      return true;
+    }
+    final SonarLintProject sonarProject = SonarLintProject.getInstance(delta.getResource().getProject());
+    if (!sonarProject.isAutoEnabled()) {
+      return false;
+    }
+    if (delta.getResource().getType() == IResource.FILE) {
+      IFile file = (IFile) delta.getResource();
+      if (delta.getKind() == IResourceDelta.CHANGED
+        && (delta.getFlags() & IResourceDelta.CONTENT) != 0
+        && shouldAnalyze(file)) {
+        if (!changedFilesPerProject.containsKey(file.getProject())) {
+          changedFilesPerProject.put(file.getProject(), new ArrayList<IFile>());
+        }
+        changedFilesPerProject.get(file.getProject()).add(file);
+      }
+    }
+    return shouldAnalyze(delta.getResource());
   }
 
   public static boolean shouldAnalyze(IResource resource) {

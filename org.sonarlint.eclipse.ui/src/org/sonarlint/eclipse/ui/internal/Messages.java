@@ -29,9 +29,6 @@ public final class Messages extends NLS {
     NLS.initializeMessages(BUNDLE_NAME, Messages.class);
   }
 
-  private Messages() {
-  }
-
   public static String SonarConsole_title;
 
   public static String SonarProjectPropertyPage_title;
@@ -93,5 +90,8 @@ public final class Messages extends NLS {
 
   public static String SonarProjectPropertyBlock_label_server;
   public static String SonarProjectPropertyBlock_label_key;
+
+  private Messages() {
+  }
 
 }

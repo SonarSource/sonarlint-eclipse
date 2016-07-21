@@ -21,8 +21,9 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.Collection;
 
-public interface Input<ISSUE extends Trackable> {
+@FunctionalInterface
+public interface Input<T extends Trackable> {
 
-  Collection<ISSUE> getIssues();
+  Collection<T> getIssues();
 
 }

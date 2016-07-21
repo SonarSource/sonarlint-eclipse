@@ -167,7 +167,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     @Override
-    public java.nio.file.Path getPath() {
+    public Path getPath() {
       return filePath;
     }
 
@@ -290,7 +290,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       try {
         IFileStore fileStore = EFS.getStore(file.getLocationURI());
         File localFile = fileStore.toLocalFile(EFS.NONE, monitor);
-        final java.nio.file.Path filePath = localFile.toPath();
+        final Path filePath = localFile.toPath();
         inputFiles.add(new EclipseInputFile(pathMatchersForTests, file, filePath));
       } catch (CoreException e) {
         SonarLintCorePlugin.getDefault().error("Error building input file for SonarLint analysis", e);

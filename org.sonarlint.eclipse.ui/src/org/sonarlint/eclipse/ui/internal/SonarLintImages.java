@@ -53,6 +53,9 @@ public final class SonarLintImages {
   public static final ImageDescriptor DEBUG = createImageDescriptor("debug.gif"); //$NON-NLS-1$
   public static final ImageDescriptor SHOW_CONSOLE = createImageDescriptor("showConsole.gif"); //$NON-NLS-1$
 
+  private SonarLintImages() {
+  }
+
   private static URL getUrl(String key) throws MalformedURLException {
     return new URL(BASE_URL, key);
   }
@@ -88,6 +91,4 @@ public final class SonarLintImages {
     return null;
   }
 
-  private SonarLintImages() {
-  }
 }

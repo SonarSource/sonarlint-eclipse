@@ -20,8 +20,10 @@
 package org.sonarlint.eclipse.core.internal.utils;
 
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Objects;
 import java.util.regex.Pattern;
+
+import static java.util.stream.Collectors.joining;
 
 public class StringUtils {
 
@@ -67,21 +69,9 @@ public class StringUtils {
   }
 
   public static String joinSkipNull(Collection<String> values, String separator) {
-    Iterator<String> iter = values.iterator();
-    StringBuilder sb = new StringBuilder();
-    while (iter.hasNext()) {
-      String next = iter.next();
-      if (next != null) {
-        sb.append(next);
-        while (iter.hasNext()) {
-          next = iter.next();
-          if (next != null) {
-            sb.append(separator).append(next);
-          }
-        }
-      }
-    }
-    return sb.toString();
+    return values.stream()
+      .filter(Objects::nonNull)
+      .collect(joining(separator));
   }
 
   public static String[] split(String str, String separator) {
