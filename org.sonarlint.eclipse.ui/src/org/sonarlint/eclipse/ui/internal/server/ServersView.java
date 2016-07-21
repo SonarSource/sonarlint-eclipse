@@ -23,8 +23,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -140,13 +138,10 @@ public class ServersView extends CommonNavigator {
           commonViewer, commonViewer.getNavigatorContentService());
 
         MenuManager menuManager = new MenuManager("#PopupMenu");
-        menuManager.addMenuListener(new IMenuListener() {
-          @Override
-          public void menuAboutToShow(IMenuManager mgr) {
-            ISelection selection = commonViewer.getSelection();
-            actionService.setContext(new ActionContext(selection));
-            actionService.fillContextMenu(mgr);
-          }
+        menuManager.addMenuListener(mgr -> {
+          ISelection selection = commonViewer.getSelection();
+          actionService.setContext(new ActionContext(selection));
+          actionService.fillContextMenu(mgr);
         });
         Menu menu = menuManager.createContextMenu(body);
 
@@ -192,51 +187,42 @@ public class ServersView extends CommonNavigator {
   protected void deferredInitialize() {
     addListener();
 
-    Display.getDefault().asyncExec(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          tableViewer = getCommonViewer();
-          getSite().setSelectionProvider(tableViewer);
+    Display.getDefault().asyncExec(() -> {
+      try {
+        tableViewer = getCommonViewer();
+        getSite().setSelectionProvider(tableViewer);
 
-          try {
-            if (tableViewer.getTree().getItemCount() > 0) {
-              Object obj = tableViewer.getTree().getItem(0).getData();
-              tableViewer.setSelection(new StructuredSelection(obj));
-            } else {
-              toggleDefaultPage();
-            }
-          } catch (Exception e) {
-            throw new IllegalStateException("Unable to update servers", e);
+        try {
+          if (tableViewer.getTree().getItemCount() > 0) {
+            Object obj = tableViewer.getTree().getItem(0).getData();
+            tableViewer.setSelection(new StructuredSelection(obj));
+          } else {
+            toggleDefaultPage();
           }
-        } catch (Exception e) {
-          // ignore - view has already been closed
+        } catch (Exception e1) {
+          throw new IllegalStateException("Unable to update servers", e1);
         }
+      } catch (Exception e2) {
+        // ignore - view has already been closed
       }
     });
 
   }
 
   protected void refreshServerContent(final IServer server) {
-    Display.getDefault().asyncExec(new Runnable() {
-      @Override
-      public void run() {
-        if (!tableViewer.getTree().isDisposed()) {
-          tableViewer.refresh(server, true);
-        }
+    Display.getDefault().asyncExec(() -> {
+      if (!tableViewer.getTree().isDisposed()) {
+        tableViewer.refresh(server, true);
       }
     });
   }
 
   protected void refreshServerState(final IServer server) {
-    Display.getDefault().asyncExec(new Runnable() {
-      @Override
-      public void run() {
-        IDecoratorManager dm = PlatformUI.getWorkbench().getDecoratorManager();
-        dm.update(ServerDecorator.ID);
-        if (tableViewer != null) {
-          tableViewer.setSelection(tableViewer.getSelection());
-        }
+    Display.getDefault().asyncExec(() -> {
+      IDecoratorManager dm = PlatformUI.getWorkbench().getDecoratorManager();
+      dm.update(ServerDecorator.ID);
+      if (tableViewer != null) {
+        tableViewer.setSelection(tableViewer.getSelection());
       }
     });
   }
@@ -263,13 +249,9 @@ public class ServersView extends CommonNavigator {
     };
     ServersManager.getInstance().addServerLifecycleListener(serverResourceListener);
 
-    serverListener = new IServerListener() {
-
-      @Override
-      public void serverChanged(IServer server) {
-        refreshServerState(server);
-        refreshServerContent(server);
-      }
+    serverListener = server -> {
+      refreshServerState(server);
+      refreshServerContent(server);
     };
 
     // add listeners to servers
@@ -280,22 +262,16 @@ public class ServersView extends CommonNavigator {
   }
 
   protected void addServer(final IServer server) {
-    Display.getDefault().asyncExec(new Runnable() {
-      @Override
-      public void run() {
-        tableViewer.add(tableViewer.getInput(), server);
-        toggleDefaultPage();
-      }
+    Display.getDefault().asyncExec(() -> {
+      tableViewer.add(tableViewer.getInput(), server);
+      toggleDefaultPage();
     });
   }
 
   protected void removeServer(final IServer server) {
-    Display.getDefault().asyncExec(new Runnable() {
-      @Override
-      public void run() {
-        tableViewer.remove(server);
-        toggleDefaultPage();
-      }
+    Display.getDefault().asyncExec(() -> {
+      tableViewer.remove(server);
+      toggleDefaultPage();
     });
   }
 

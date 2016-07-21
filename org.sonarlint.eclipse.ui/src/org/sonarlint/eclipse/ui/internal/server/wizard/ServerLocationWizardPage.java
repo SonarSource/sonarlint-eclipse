@@ -30,9 +30,6 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -94,12 +91,7 @@ public class ServerLocationWizardPage extends WizardPage {
   @Override
   public void createControl(Composite parent) {
     final FormToolkit toolkit = new FormToolkit(parent.getDisplay());
-    parent.addDisposeListener(new DisposeListener() {
-      @Override
-      public void widgetDisposed(DisposeEvent e) {
-        toolkit.dispose();
-      }
-    });
+    parent.addDisposeListener(e -> toolkit.dispose());
     final ScrolledForm form = toolkit.createScrolledForm(parent);
     form.setBackground(parent.getBackground());
 
@@ -124,21 +116,18 @@ public class ServerLocationWizardPage extends WizardPage {
     }
     serverUrlText.setFocus();
     serverUrlText.setSelection(serverUrlText.getText().length());
-    serverUrlText.addModifyListener(new ModifyListener() {
-      @Override
-      public void modifyText(ModifyEvent e) {
-        if (!edit && !serverIdManuallyChanged) {
-          try {
-            URL url = new URL(serverUrlText.getText());
-            serverIdText.removeModifyListener(idModifyListener);
-            serverIdText.setText(StringUtils.substringBefore(url.getHost(), "."));
-            serverIdText.addModifyListener(idModifyListener);
-          } catch (MalformedURLException e1) {
-            // Ignore
-          }
+    serverUrlText.addModifyListener(e -> {
+      if (!edit && !serverIdManuallyChanged) {
+        try {
+          URL url = new URL(serverUrlText.getText());
+          serverIdText.removeModifyListener(idModifyListener);
+          serverIdText.setText(StringUtils.substringBefore(url.getHost(), "."));
+          serverIdText.addModifyListener(idModifyListener);
+        } catch (MalformedURLException e1) {
+          // Ignore
         }
-        dialogChanged();
       }
+      dialogChanged();
     });
 
     createServerIdField(form);
@@ -204,12 +193,9 @@ public class ServerLocationWizardPage extends WizardPage {
         serverIdManuallyChanged = false;
       }
     }
-    idModifyListener = new ModifyListener() {
-      @Override
-      public void modifyText(ModifyEvent e) {
-        serverIdManuallyChanged = true;
-        dialogChanged();
-      }
+    idModifyListener = e -> {
+      serverIdManuallyChanged = true;
+      dialogChanged();
     };
     serverIdText.addModifyListener(idModifyListener);
   }

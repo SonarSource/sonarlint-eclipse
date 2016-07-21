@@ -26,7 +26,6 @@ import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
@@ -122,14 +121,6 @@ public class SonarLintConsolePageParticipant implements IConsolePageParticipant 
       return null;
     }
 
-    private static IPreferenceStore getPreferenceStore() {
-      return SonarLintUiPlugin.getDefault().getPreferenceStore();
-    }
-
-    private static String getCurrentValue() {
-      return getPreferenceStore().getString(SonarLintConsole.P_SHOW_CONSOLE);
-    }
-
     static class MyAction extends Action {
       private final String value;
 
@@ -137,6 +128,14 @@ public class SonarLintConsolePageParticipant implements IConsolePageParticipant 
         super(name, IAction.AS_RADIO_BUTTON);
         this.value = value;
         setChecked(value.equals(getCurrentValue()));
+      }
+
+      private static String getCurrentValue() {
+        return getPreferenceStore().getString(SonarLintConsole.P_SHOW_CONSOLE);
+      }
+
+      private static IPreferenceStore getPreferenceStore() {
+        return SonarLintUiPlugin.getDefault().getPreferenceStore();
       }
 
       @Override
@@ -147,12 +146,9 @@ public class SonarLintConsolePageParticipant implements IConsolePageParticipant 
   }
 
   static class DebugAction extends Action {
-    private final IPropertyChangeListener listener = new IPropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent event) {
-        if (SonarLintConsole.P_DEBUG_OUTPUT.equals(event.getProperty())) {
-          setChecked(SonarLintConsole.isDebugEnabled());
-        }
+    private final IPropertyChangeListener listener = event -> {
+      if (SonarLintConsole.P_DEBUG_OUTPUT.equals(event.getProperty())) {
+        setChecked(SonarLintConsole.isDebugEnabled());
       }
     };
 

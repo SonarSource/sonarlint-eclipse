@@ -24,6 +24,9 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 
 public final class SelectionUtils {
 
+  private SelectionUtils() {
+  }
+
   /**
    * Returns the selected element if the selection consists of a single
    * element only.
@@ -40,9 +43,6 @@ public final class SelectionUtils {
       return null;
     }
     return selection.getFirstElement();
-  }
-
-  private SelectionUtils() {
   }
 
 }

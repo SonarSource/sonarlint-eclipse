@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbenchPage;
@@ -87,15 +86,12 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     addSonarLintPartListener();
 
-    prefListener = new IPropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent event) {
-        if (event.getProperty().equals(PreferencesUtils.PREF_MARKER_SEVERITY)) {
-          try {
-            MarkerUtils.updateAllSonarMarkerSeverity();
-          } catch (CoreException e) {
-            SonarLintCorePlugin.getDefault().error("Unable to update marker severity", e);
-          }
+    prefListener = event -> {
+      if (event.getProperty().equals(PreferencesUtils.PREF_MARKER_SEVERITY)) {
+        try {
+          MarkerUtils.updateAllSonarMarkerSeverity();
+        } catch (CoreException e) {
+          SonarLintCorePlugin.getDefault().error("Unable to update marker severity", e);
         }
       }
     };
@@ -108,13 +104,10 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private void checkServersStatus() {
     for (final IServer server : ServersManager.getInstance().getServers()) {
       if (!server.isUpdated()) {
-        Display.getDefault().asyncExec(new Runnable() {
-          @Override
-          public void run() {
-            ServerNeedUpdatePopup popup = new ServerNeedUpdatePopup(Display.getCurrent(), server);
-            popup.create();
-            popup.open();
-          }
+        Display.getDefault().asyncExec(() -> {
+          ServerNeedUpdatePopup popup = new ServerNeedUpdatePopup(Display.getCurrent(), server);
+          popup.create();
+          popup.open();
         });
       }
     }

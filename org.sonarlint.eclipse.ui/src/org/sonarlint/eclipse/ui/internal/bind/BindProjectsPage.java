@@ -287,7 +287,7 @@ public class BindProjectsPage extends WizardPage {
         try {
           server.update(monitor);
         } finally {
-          Display.getDefault().asyncExec(() -> updateState());
+          Display.getDefault().asyncExec(this::updateState);
         }
       });
     } catch (InvocationTargetException ex) {
