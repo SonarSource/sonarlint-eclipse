@@ -27,14 +27,10 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ColumnWeightData;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -49,9 +45,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbench;
@@ -115,7 +109,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
    */
   private static class SonarPropertiesContentProvider implements IStructuredContentProvider {
 
-    private java.util.List<SonarLintProperty> sonarProperties;
+    private List<SonarLintProperty> sonarProperties;
 
     @Override
     public Object[] getElements(Object input) {
@@ -134,7 +128,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
 
   }
 
-  private java.util.List<SonarLintProperty> sonarProperties;
+  private List<SonarLintProperty> sonarProperties;
 
   /**
    * The Remove button.
@@ -221,19 +215,9 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
 
     fTableViewer.setComparator(null);
 
-    fTableViewer.addDoubleClickListener(new IDoubleClickListener() {
-      @Override
-      public void doubleClick(DoubleClickEvent e) {
-        edit();
-      }
-    });
+    fTableViewer.addDoubleClickListener(e -> edit());
 
-    fTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-      @Override
-      public void selectionChanged(SelectionChangedEvent e) {
-        updateButtons();
-      }
-    });
+    fTableViewer.addSelectionChangedListener(e -> updateButtons());
 
     createButtons(innerParent);
 
@@ -258,52 +242,27 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     Button addButton = new Button(buttons, SWT.PUSH);
     addButton.setText("New...");
     addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    addButton.addListener(SWT.Selection, new Listener() {
-      @Override
-      public void handleEvent(Event e) {
-        add();
-      }
-    });
+    addButton.addListener(SWT.Selection, e -> add());
 
     editButton = new Button(buttons, SWT.PUSH);
     editButton.setText("Edit...");
     editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    editButton.addListener(SWT.Selection, new Listener() {
-      @Override
-      public void handleEvent(Event e) {
-        edit();
-      }
-    });
+    editButton.addListener(SWT.Selection, e -> edit());
 
     removeButton = new Button(buttons, SWT.PUSH);
     removeButton.setText("Remove");
     removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    removeButton.addListener(SWT.Selection, new Listener() {
-      @Override
-      public void handleEvent(Event e) {
-        remove();
-      }
-    });
+    removeButton.addListener(SWT.Selection, e -> remove());
 
     upButton = new Button(buttons, SWT.PUSH);
     upButton.setText("Up");
     upButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    upButton.addListener(SWT.Selection, new Listener() {
-      @Override
-      public void handleEvent(Event e) {
-        upPressed();
-      }
-    });
+    upButton.addListener(SWT.Selection, e -> upPressed());
 
     downButton = new Button(buttons, SWT.PUSH);
     downButton.setText("Down");
     downButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    downButton.addListener(SWT.Selection, new Listener() {
-      @Override
-      public void handleEvent(Event e) {
-        downPressed();
-      }
-    });
+    downButton.addListener(SWT.Selection, e -> downPressed());
   }
 
   private static void createLinkToGlobal(final Composite ancestor, Composite parent) {

@@ -30,7 +30,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Status;
@@ -108,25 +107,21 @@ public class AnalyzeCommand extends AbstractHandler {
 
   private static void collectChildren(final Map<IProject, Collection<IFile>> filesToAnalyzePerProject, IResource elem) {
     try {
-      elem.accept(new IResourceVisitor() {
-
-        @Override
-        public boolean visit(IResource resource) throws CoreException {
-          if (!SonarLintChangeListener.shouldAnalyze(resource)) {
-            return false;
-          }
-          IFile file = (IFile) resource.getAdapter(IFile.class);
-          if (file == null) {
-            // visit children too
-            return true;
-          }
-          IProject project = resource.getProject();
-          if (!filesToAnalyzePerProject.containsKey(project)) {
-            filesToAnalyzePerProject.put(project, new ArrayList<IFile>());
-          }
-          filesToAnalyzePerProject.get(project).add(file);
+      elem.accept(resource -> {
+        if (!SonarLintChangeListener.shouldAnalyze(resource)) {
+          return false;
+        }
+        IFile file = (IFile) resource.getAdapter(IFile.class);
+        if (file == null) {
+          // visit children too
           return true;
         }
+        IProject project = resource.getProject();
+        if (!filesToAnalyzePerProject.containsKey(project)) {
+          filesToAnalyzePerProject.put(project, new ArrayList<IFile>());
+        }
+        filesToAnalyzePerProject.get(project).add(file);
+        return true;
       });
     } catch (CoreException e) {
       throw new IllegalStateException("Unable to collect files to analyze", e);
@@ -148,15 +143,12 @@ public class AnalyzeCommand extends AbstractHandler {
       @Override
       public void done(IJobChangeEvent event) {
         if (Status.OK_STATUS == event.getResult()) {
-          Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-              IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-              try {
-                iw.getActivePage().showView(IssuesView.ID, null, IWorkbenchPage.VIEW_VISIBLE);
-              } catch (PartInitException e) {
-                SonarLintUiPlugin.getDefault().getLog().log(new Status(Status.ERROR, SonarLintUiPlugin.PLUGIN_ID, Status.OK, "Unable to open Issues View", e));
-              }
+          Display.getDefault().asyncExec(() -> {
+            IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            try {
+              iw.getActivePage().showView(IssuesView.ID, null, IWorkbenchPage.VIEW_VISIBLE);
+            } catch (PartInitException e) {
+              SonarLintUiPlugin.getDefault().getLog().log(new Status(Status.ERROR, SonarLintUiPlugin.PLUGIN_ID, Status.OK, "Unable to open Issues View", e));
             }
           });
         }

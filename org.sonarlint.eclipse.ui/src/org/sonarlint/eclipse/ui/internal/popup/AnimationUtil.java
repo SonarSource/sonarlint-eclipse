@@ -102,11 +102,9 @@ public class AnimationUtil {
         return;
       }
       cancel();
-      Display.getDefault().syncExec(new Runnable() {
-        public void run() {
-          if (setAlpha) {
-            shell.setAlpha(getLastAlpha());
-          }
+      Display.getDefault().syncExec(() -> {
+        if (setAlpha) {
+          shell.setAlpha(getLastAlpha());
         }
       });
     }
@@ -124,23 +122,20 @@ public class AnimationUtil {
         currentAlpha = 255;
       }
 
-      Display.getDefault().syncExec(new Runnable() {
-        @Override
-        public void run() {
-          if (stopped) {
-            return;
-          }
+      Display.getDefault().syncExec(() -> {
+        if (stopped) {
+          return;
+        }
 
-          if (shell.isDisposed()) {
-            stopped = true;
-            return;
-          }
+        if (shell.isDisposed()) {
+          stopped = true;
+          return;
+        }
 
-          shell.setAlpha(currentAlpha);
+        shell.setAlpha(currentAlpha);
 
-          if (fadeListener != null) {
-            fadeListener.faded(shell, currentAlpha);
-          }
+        if (fadeListener != null) {
+          fadeListener.faded(shell, currentAlpha);
         }
       });
 
@@ -158,6 +153,7 @@ public class AnimationUtil {
 
   }
 
+  @FunctionalInterface
   public static interface IFadeListener {
 
     void faded(Shell shell, int alpha);

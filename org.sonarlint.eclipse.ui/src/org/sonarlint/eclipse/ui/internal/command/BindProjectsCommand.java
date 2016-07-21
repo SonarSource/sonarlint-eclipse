@@ -67,12 +67,7 @@ public class BindProjectsCommand extends AbstractHandler {
     final Display display = getDisplay();
     final WizardDialog dialog = new WizardDialog(display.getActiveShell(), wizard);
     dialog.setHelpAvailable(true);
-    BusyIndicator.showWhile(display, new Runnable() {
-      @Override
-      public void run() {
-        dialog.open();
-      }
-    });
+    BusyIndicator.showWhile(display, () -> dialog.open());
 
     return null;
   }

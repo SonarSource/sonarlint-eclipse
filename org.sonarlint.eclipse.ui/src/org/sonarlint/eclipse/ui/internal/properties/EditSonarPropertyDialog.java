@@ -25,8 +25,6 @@ import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -132,14 +130,10 @@ public class EditSonarPropertyDialog extends StatusDialog {
     fValueText.setText(sonarProperty.getValue());
     fNameText.setText(sonarProperty.getName());
     if (fIsNameModifiable) {
-      ModifyListener listener = new ModifyListener() {
-        @Override
-        public void modifyText(ModifyEvent e) {
-          fSuppressError = false;
-          updateStatusAndButtons();
-        }
-      };
-      fNameText.addModifyListener(listener);
+      fNameText.addModifyListener(e -> {
+        fSuppressError = false;
+        updateStatusAndButtons();
+      });
     }
 
     applyDialogFont(parent);

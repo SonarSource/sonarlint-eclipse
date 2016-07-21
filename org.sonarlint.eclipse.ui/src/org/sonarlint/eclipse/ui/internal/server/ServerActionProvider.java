@@ -28,10 +28,8 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.viewers.IOpenListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
@@ -82,20 +80,17 @@ public class ServerActionProvider extends CommonActionProvider {
   }
 
   private static void addListeners(final CommonViewer tableViewer) {
-    tableViewer.addOpenListener(new IOpenListener() {
-      @Override
-      public void open(OpenEvent event) {
-        IStructuredSelection sel = (IStructuredSelection) event.getSelection();
-        Object data = sel.getFirstElement();
-        if (data instanceof IServer) {
-          IServer server = (IServer) data;
-          ServerEditAction.openEditWizard(tableViewer.getTree().getShell(), server);
-        } else if (data instanceof SonarLintProject) {
-          BindProjectsWizard wizard = new BindProjectsWizard(Arrays.asList(((SonarLintProject) data).getProject()));
-          final WizardDialog dialog = new WizardDialog(tableViewer.getTree().getShell(), wizard);
-          dialog.setHelpAvailable(true);
-          dialog.open();
-        }
+    tableViewer.addOpenListener(event -> {
+      IStructuredSelection sel = (IStructuredSelection) event.getSelection();
+      Object data = sel.getFirstElement();
+      if (data instanceof IServer) {
+        IServer server = (IServer) data;
+        ServerEditAction.openEditWizard(tableViewer.getTree().getShell(), server);
+      } else if (data instanceof SonarLintProject) {
+        BindProjectsWizard wizard = new BindProjectsWizard(Arrays.asList(((SonarLintProject) data).getProject()));
+        final WizardDialog dialog = new WizardDialog(tableViewer.getTree().getShell(), wizard);
+        dialog.setHelpAvailable(true);
+        dialog.open();
       }
     });
   }

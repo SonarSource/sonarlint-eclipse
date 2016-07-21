@@ -48,7 +48,6 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.popup.AnimationUtil.FadeJob;
-import org.sonarlint.eclipse.ui.internal.popup.AnimationUtil.IFadeListener;
 
 /**
  * A popup window with a title bar and message area for displaying notifications.
@@ -88,22 +87,18 @@ public abstract class AbstractNotificationPopup extends Window {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
       if (!display.isDisposed()) {
-        display.asyncExec(new Runnable() {
-          @Override
-          public void run() {
-            Shell shell = AbstractNotificationPopup.this.getShell();
-            if (shell == null || shell.isDisposed()) {
-              return;
-            }
-
-            if (isMouseOver(shell)) {
-              scheduleAutoClose();
-              return;
-            }
-
-            AbstractNotificationPopup.this.closeFade();
+        display.asyncExec(() -> {
+          Shell shell = AbstractNotificationPopup.this.getShell();
+          if (shell == null || shell.isDisposed()) {
+            return;
           }
 
+          if (isMouseOver(shell)) {
+            scheduleAutoClose();
+            return;
+          }
+
+          AbstractNotificationPopup.this.closeFade();
         });
       }
       if (monitor.isCanceled()) {
@@ -290,16 +285,13 @@ public abstract class AbstractNotificationPopup extends Window {
       shell.setAlpha(0);
     }
     shell.setVisible(true);
-    fadeJob = AnimationUtil.fadeIn(shell, new IFadeListener() {
-      @Override
-      public void faded(Shell shell, int alpha) {
-        if (shell.isDisposed()) {
-          return;
-        }
+    fadeJob = AnimationUtil.fadeIn(shell, (shell, alpha) -> {
+      if (shell.isDisposed()) {
+        return;
+      }
 
-        if (alpha == 255) {
-          scheduleAutoClose();
-        }
+      if (alpha == 255) {
+        scheduleAutoClose();
       }
     });
 
@@ -486,29 +478,23 @@ public abstract class AbstractNotificationPopup extends Window {
     if (fadeJob != null) {
       fadeJob.cancelAndWait(false);
     }
-    fadeJob = AnimationUtil.fadeOut(getShell(), new IFadeListener() {
-      @Override
-      public void faded(Shell shell, int alpha) {
-        if (!shell.isDisposed()) {
-          if (alpha == 0) {
-            shell.close();
-          } else if (isMouseOver(shell)) {
-            if (fadeJob != null) {
-              fadeJob.cancelAndWait(false);
-            }
-            fadeJob = AnimationUtil.fastFadeIn(shell, new IFadeListener() {
-              @Override
-              public void faded(Shell shell, int alpha) {
-                if (shell.isDisposed()) {
-                  return;
-                }
-
-                if (alpha == 255) {
-                  scheduleAutoClose();
-                }
-              }
-            });
+    fadeJob = AnimationUtil.fadeOut(getShell(), (shell, alpha) -> {
+      if (!shell.isDisposed()) {
+        if (alpha == 0) {
+          shell.close();
+        } else if (isMouseOver(shell)) {
+          if (fadeJob != null) {
+            fadeJob.cancelAndWait(false);
           }
+          fadeJob = AnimationUtil.fastFadeIn(shell, (shell1, alpha1) -> {
+            if (shell1.isDisposed()) {
+              return;
+            }
+
+            if (alpha1 == 255) {
+              scheduleAutoClose();
+            }
+          });
         }
       }
     });

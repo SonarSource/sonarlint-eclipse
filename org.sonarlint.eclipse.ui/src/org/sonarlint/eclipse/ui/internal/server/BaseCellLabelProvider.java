@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.ui.internal.server;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ILabelProviderListener;
-import org.eclipse.jface.viewers.LabelProviderChangedEvent;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -34,21 +33,6 @@ import org.eclipse.ui.PlatformUI;
 public abstract class BaseCellLabelProvider extends ColumnLabelProvider {
   private ILabelDecorator decorator;
   protected ILabelProviderListener providerListener;
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.eclipse.jface.viewers.ColumnLabelProvider#update(org.eclipse.jface.viewers.ViewerCell)
-   */
-  @Override
-  public void update(ViewerCell cell) {
-    super.update(cell);
-    Object element = cell.getElement();
-    int index = cell.getColumnIndex();
-    cell.setText(getColumnText(element, index));
-    Image image = getColumnImage(element, index);
-    cell.setImage(image);
-  }
 
   /**
    * Create a BaseCellLabelProvider
@@ -63,8 +47,22 @@ public abstract class BaseCellLabelProvider extends ColumnLabelProvider {
    */
   public BaseCellLabelProvider(ILabelDecorator decorator) {
     super();
+    this.decorator = decorator;
+  }
 
-    this.decorator = getDecorator();
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.eclipse.jface.viewers.ColumnLabelProvider#update(org.eclipse.jface.viewers.ViewerCell)
+   */
+  @Override
+  public void update(ViewerCell cell) {
+    super.update(cell);
+    Object element = cell.getElement();
+    int index = cell.getColumnIndex();
+    cell.setText(getColumnText(element, index));
+    Image image = getColumnImage(element, index);
+    cell.setImage(image);
   }
 
   @Override
@@ -93,13 +91,7 @@ public abstract class BaseCellLabelProvider extends ColumnLabelProvider {
   public ILabelDecorator getDecorator() {
     if (decorator == null) {
       decorator = PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator();
-      providerListener = new ILabelProviderListener() {
-        @SuppressWarnings("synthetic-access")
-        @Override
-        public void labelProviderChanged(LabelProviderChangedEvent event) {
-          fireLabelProviderChanged(event);
-        }
-      };
+      providerListener = this::fireLabelProviderChanged;
       decorator.addListener(providerListener);
     }
     return decorator;

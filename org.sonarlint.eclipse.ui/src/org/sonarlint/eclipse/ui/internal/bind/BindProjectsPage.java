@@ -27,12 +27,10 @@ import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.property.value.IValueProperty;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -44,10 +42,8 @@ import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.FocusCellHighlighter;
 import org.eclipse.jface.viewers.FocusCellOwnerDrawHighlighter;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -65,10 +61,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -184,13 +178,7 @@ public class BindProjectsPage extends WizardPage {
     FillLayout btnLayout = new FillLayout();
     btnContainer.setLayout(btnLayout);
 
-    viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-
-      @Override
-      public void selectionChanged(SelectionChangedEvent event) {
-        updateState();
-      }
-    });
+    viewer.addSelectionChangedListener(event -> updateState());
 
     createUnassociateBtn(btnContainer);
 
@@ -205,19 +193,15 @@ public class BindProjectsPage extends WizardPage {
   private void createAutoBindBtn(Composite btnContainer) {
     autoBindBtn = new Button(btnContainer, SWT.PUSH);
     autoBindBtn.setText("Auto bind selected projects");
-    autoBindBtn.addListener(SWT.Selection, new Listener() {
-
-      @Override
-      public void handleEvent(Event event) {
-        TextSearchIndex<RemoteModule> moduleIndex = selectedServer.getModuleIndex();
-        for (Object object : viewer.getCheckedElements()) {
-          ProjectBindModel bind = (ProjectBindModel) object;
-          List<RemoteModule> results = moduleIndex.search(bind.getEclipseName());
-          if (!results.isEmpty()) {
-            bind.associate(selectedServer.getId(), results.get(0).getName(), results.get(0).getKey());
-          } else {
-            bind.setAutoBindFailed(true);
-          }
+    autoBindBtn.addListener(SWT.Selection, event -> {
+      TextSearchIndex<RemoteModule> moduleIndex = selectedServer.getModuleIndex();
+      for (Object object : viewer.getCheckedElements()) {
+        ProjectBindModel bind = (ProjectBindModel) object;
+        List<RemoteModule> results = moduleIndex.search(bind.getEclipseName());
+        if (!results.isEmpty()) {
+          bind.associate(selectedServer.getId(), results.get(0).getName(), results.get(0).getKey());
+        } else {
+          bind.setAutoBindFailed(true);
         }
       }
     });
@@ -227,14 +211,10 @@ public class BindProjectsPage extends WizardPage {
     unassociateBtn = new Button(btnContainer, SWT.PUSH);
     unassociateBtn.setText("Unbind selected projects");
     unassociateBtn.setEnabled(viewer.getCheckedElements().length > 0);
-    unassociateBtn.addListener(SWT.Selection, new Listener() {
-
-      @Override
-      public void handleEvent(Event event) {
-        for (Object object : viewer.getCheckedElements()) {
-          ProjectBindModel bind = (ProjectBindModel) object;
-          bind.unassociate();
-        }
+    unassociateBtn.addListener(SWT.Selection, event -> {
+      for (Object object : viewer.getCheckedElements()) {
+        ProjectBindModel bind = (ProjectBindModel) object;
+        bind.unassociate();
       }
     });
   }
@@ -291,15 +271,11 @@ public class BindProjectsPage extends WizardPage {
     ServersManager.getInstance().addServerLifecycleListener(serverListener);
 
     /* within the selection event, tell the object it was selected */
-    serverCombo.addSelectionChangedListener(new ISelectionChangedListener() {
-      @Override
-      public void selectionChanged(SelectionChangedEvent event) {
-        IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-        selectedServer = (IServer) selection.getFirstElement();
-        serverCombo.refresh();
-        updateState();
-      }
-
+    serverCombo.addSelectionChangedListener(event -> {
+      IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+      selectedServer = (IServer) selection.getFirstElement();
+      serverCombo.refresh();
+      updateState();
     });
   }
 
@@ -307,20 +283,11 @@ public class BindProjectsPage extends WizardPage {
     updateServerLink.setEnabled(false);
     try {
       final IServer server = (IServer) ((IStructuredSelection) serverCombo.getSelection()).getFirstElement();
-      getContainer().run(true, true, new IRunnableWithProgress() {
-
-        @Override
-        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-          try {
-            server.update(monitor);
-          } finally {
-            Display.getDefault().asyncExec(new Runnable() {
-              @Override
-              public void run() {
-                updateState();
-              }
-            });
-          }
+      getContainer().run(true, true, monitor -> {
+        try {
+          server.update(monitor);
+        } finally {
+          Display.getDefault().asyncExec(() -> updateState());
         }
       });
     } catch (InvocationTargetException ex) {
@@ -428,12 +395,9 @@ public class BindProjectsPage extends WizardPage {
     }
 
     private void updateServerPage() {
-      getContainer().getShell().getDisplay().asyncExec(new Runnable() {
-        @Override
-        public void run() {
-          toggleServerPage();
-          getContainer().getShell().layout(true, true);
-        }
+      getContainer().getShell().getDisplay().asyncExec(() -> {
+        toggleServerPage();
+        getContainer().getShell().layout(true, true);
       });
     }
   }
