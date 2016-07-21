@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
@@ -38,7 +39,7 @@ public class StandaloneSonarLintClientFacade {
 
   private synchronized StandaloneSonarLintEngine getClient() {
     if (client == null) {
-      SonarLintCorePlugin.getDefault().info("Starting standalone SonarLint engine");
+      SonarLintCorePlugin.getDefault().info("Starting standalone SonarLint engine " + FrameworkUtil.getBundle(this.getClass()).getVersion().toString());
       Enumeration<URL> pluginEntries = SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false);
       StandaloneGlobalConfiguration globalConfig = StandaloneGlobalConfiguration.builder()
         .addPlugins(pluginEntries != null ? Collections.list(pluginEntries).toArray(new URL[0]) : (new URL[0]))
@@ -48,7 +49,7 @@ public class StandaloneSonarLintClientFacade {
       try {
         client = new StandaloneSonarLintEngineImpl(globalConfig);
       } catch (Throwable e) {
-        SonarLintCorePlugin.getDefault().error("Unable to start SonarLint engine", e);
+        SonarLintCorePlugin.getDefault().error("Unable to start standalone SonarLint engine", e);
         client = null;
       }
     }
