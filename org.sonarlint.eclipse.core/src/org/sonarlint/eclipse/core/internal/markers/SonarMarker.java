@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import java.util.Date;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -34,10 +33,12 @@ public class SonarMarker {
   private SonarMarker() {
   }
 
-  public static IMarker create(final IDocument iDoc, final IResource resource, final Issue issue) throws CoreException {
+  public static IMarker create(final IDocument iDoc, final IResource resource, final Issue issue, final Long creationTimeStamp) throws CoreException {
     IMarker marker = resource.createMarker(SonarLintCorePlugin.MARKER_ID);
     updateAttributes(marker, issue, iDoc);
-    marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(new Date().getTime()));
+    if (creationTimeStamp != null) {
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(creationTimeStamp.longValue()));
+    }
     return marker;
   }
 

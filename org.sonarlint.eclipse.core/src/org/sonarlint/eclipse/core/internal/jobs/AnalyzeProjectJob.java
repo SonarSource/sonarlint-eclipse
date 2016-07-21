@@ -28,6 +28,7 @@ import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,6 +52,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jface.text.BadLocationException;
@@ -81,6 +83,8 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisCo
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.trimToNull;
 
 public class AnalyzeProjectJob extends AbstractSonarProjectJob {
+
+  private static final QualifiedName LAST_ANALYSIS_PROP_NAME = new QualifiedName(SonarLintCorePlugin.PLUGIN_ID, "lastAnalysis");
 
   private List<SonarLintProperty> extraProps;
 
@@ -332,27 +336,37 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
     Set<IFile> failedFiles = result.failedAnalysisFiles().stream().map(f -> f.<IFile>getClientObject()).collect(Collectors.toSet());
     PreviousMarkerCache markerCache = new PreviousMarkerCache(this.request, failedFiles);
+    long now = new Date().getTime();
     for (Entry<IResource, List<Issue>> resourceEntry : issuesPerResource.entrySet()) {
       IResource r = resourceEntry.getKey();
       if (failedFiles.contains(r)) {
         continue;
       }
+      List<IMarker> previousMarkers = markerCache.getPrevious(r);
+      Object lastAnalysis = r.getSessionProperty(LAST_ANALYSIS_PROP_NAME);
+      Long creationTimeStampForNewIssues;
+      if (previousMarkers.isEmpty() && lastAnalysis == null) {
+        creationTimeStampForNewIssues = null;
+      } else {
+        creationTimeStampForNewIssues = now;
+      }
+      List<Issue> rawIssues = resourceEntry.getValue();
       try {
-        List<IMarker> previousMarkers = markerCache.getPrevious(r);
-        List<Issue> rawIssues = resourceEntry.getValue();
         if (r instanceof IFile) {
-          issueTrackingOnFile(iTextFileBufferManager, r, previousMarkers, rawIssues);
+          issueTrackingOnFile(iTextFileBufferManager, r, previousMarkers, rawIssues, creationTimeStampForNewIssues);
         } else {
-          issueTracking(r, previousMarkers, rawIssues, null);
+          issueTracking(r, previousMarkers, rawIssues, null, creationTimeStampForNewIssues);
         }
       } catch (Exception e) {
         SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarLint marker on resource " + r.getName(), e);
       }
+      r.setSessionProperty(LAST_ANALYSIS_PROP_NAME, now);
     }
     markerCache.deleteUnmatched();
   }
 
-  private static void issueTrackingOnFile(ITextFileBufferManager iTextFileBufferManager, IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues)
+  private static void issueTrackingOnFile(ITextFileBufferManager iTextFileBufferManager, IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues,
+    Long creationTimeStampForNewIssues)
     throws CoreException, BadLocationException {
     IFile iFile = (IFile) r;
     try {
@@ -360,7 +374,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(iFile.getFullPath(), LocationKind.IFILE);
       IDocument iDoc = iTextFileBuffer.getDocument();
 
-      issueTracking(r, previousMarkers, rawIssues, iDoc);
+      issueTracking(r, previousMarkers, rawIssues, iDoc, creationTimeStampForNewIssues);
 
     } finally {
       try {
@@ -371,7 +385,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private static void issueTracking(IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues, IDocument iDoc) throws BadLocationException, CoreException {
+  private static void issueTracking(IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues, IDocument iDoc, Long creationTimeStampForNewIssues)
+    throws BadLocationException, CoreException {
     Input<TrackableMarker> baseInput = prepareBaseInput(previousMarkers);
     Input<TrackableIssue> rawInput = prepareRawInput(iDoc, rawIssues);
     Tracking<TrackableIssue, TrackableMarker> tracking = new Tracker<TrackableIssue, TrackableMarker>().track(rawInput, baseInput);
@@ -382,7 +397,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       SonarMarker.updateAttributes(marker, issue, iDoc);
     }
     for (TrackableIssue newIssue : tracking.getUnmatchedRaws()) {
-      SonarMarker.create(iDoc, r, newIssue.getWrapped());
+      SonarMarker.create(iDoc, r, newIssue.getWrapped(), creationTimeStampForNewIssues);
     }
   }
 

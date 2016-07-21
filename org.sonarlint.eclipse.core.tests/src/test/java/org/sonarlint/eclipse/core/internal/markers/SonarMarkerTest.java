@@ -65,7 +65,7 @@ public class SonarMarkerTest extends SonarTestCase {
     when(issue.getEndLine()).thenReturn(null);
     when(issue.getEndLineOffset()).thenReturn(null);
 
-    IMarker marker = SonarMarker.create(iDoc, file, issue);
+    IMarker marker = SonarMarker.create(iDoc, file, issue, null);
     assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(31);
     assertThat(marker.getAttribute(IMarker.CHAR_END, 0)).isEqualTo(63);
 
@@ -92,7 +92,7 @@ public class SonarMarkerTest extends SonarTestCase {
     when(issue.getEndLine()).thenReturn(null);
     when(issue.getEndLineOffset()).thenReturn(null);
 
-    IMarker marker = SonarMarker.create(iDoc, file, issue);
+    IMarker marker = SonarMarker.create(iDoc, file, issue, null);
     assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(32);
     assertThat(marker.getAttribute(IMarker.CHAR_END, 0)).isEqualTo(64);
 
@@ -113,7 +113,7 @@ public class SonarMarkerTest extends SonarTestCase {
     ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
     IDocument iDoc = iTextFileBuffer.getDocument();
 
-    IMarker marker = SonarMarker.create(iDoc, file, issue);
+    IMarker marker = SonarMarker.create(iDoc, file, issue, null);
     assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(54);
     assertThat(marker.getAttribute(IMarker.CHAR_END, 0)).isEqualTo(62);
 
@@ -134,7 +134,7 @@ public class SonarMarkerTest extends SonarTestCase {
     ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
     IDocument iDoc = iTextFileBuffer.getDocument();
 
-    IMarker marker = SonarMarker.create(iDoc, file, issue);
+    IMarker marker = SonarMarker.create(iDoc, file, issue, null);
     assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(101);
     assertThat(marker.getAttribute(IMarker.CHAR_END, 0)).isEqualTo(119);
 

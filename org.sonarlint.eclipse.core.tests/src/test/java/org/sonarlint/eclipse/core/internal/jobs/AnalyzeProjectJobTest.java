@@ -146,7 +146,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     assertThat(markers[0].getAttribute(IMarker.CHAR_END)).isEqualTo(88);
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CHECKSUM_ATTR)).isEqualTo("this.x=x".hashCode());
     String timestamp = (String) markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR);
-    assertThat(timestamp).isNotNull();
+    assertThat(timestamp).isNull();
   }
 
   @Test
@@ -186,7 +186,6 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     job.runInWorkspace(MONITOR);
     IMarker[] markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertThat(markers).hasSize(1);
-    String timestamp = (String) markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR);
 
     // Second execution same file, same issue
     job.runInWorkspace(MONITOR);
@@ -197,7 +196,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     assertThat(markers[0].getAttribute(IMarker.CHAR_START)).isEqualTo(78);
     assertThat(markers[0].getAttribute(IMarker.CHAR_END)).isEqualTo(88);
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CHECKSUM_ATTR)).isEqualTo("this.x=x".hashCode());
-    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isEqualTo(timestamp);
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isNull();
 
     InputStream is = file.getContents();
     java.util.Scanner s = new java.util.Scanner(is, file.getCharset()).useDelimiter("\\A");
@@ -209,7 +208,7 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     // Here marker was not notified of the file change
     assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(5);
 
-    // Third execution with modified file content
+    // Third execution with modified file content and one more issue
     Issue issue1Updated = mock(Issue.class);
     when(issue1Updated.getRuleKey()).thenReturn("foo:bar");
     when(issue1Updated.getSeverity()).thenReturn("BLOCKER");
@@ -219,10 +218,19 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     when(issue1Updated.getEndLine()).thenReturn(7);
     when(issue1Updated.getEndLineOffset()).thenReturn(14);
     when(issue1Updated.getInputFile()).thenReturn(inputFile);
+    Issue issue2 = mock(Issue.class);
+    when(issue2.getRuleKey()).thenReturn("foo:bar2");
+    when(issue2.getSeverity()).thenReturn("BLOCKER");
+    when(issue2.getMessage()).thenReturn("Self assignment of field 2");
+    when(issue2.getStartLine()).thenReturn(8);
+    when(issue2.getStartLineOffset()).thenReturn(4);
+    when(issue2.getEndLine()).thenReturn(8);
+    when(issue2.getEndLineOffset()).thenReturn(13);
+    when(issue2.getInputFile()).thenReturn(inputFile);
     doAnswer(new Answer<AnalysisResults>() {
       public AnalysisResults answer(InvocationOnMock invocation) {
         Map<IResource, List<Issue>> issuesPerResource = (Map<IResource, List<Issue>>) invocation.getArguments()[2];
-        issuesPerResource.put(file, Arrays.asList(issue1Updated));
+        issuesPerResource.put(file, Arrays.asList(issue1Updated, issue2));
         return new AnalysisResults() {
 
           @Override
@@ -240,12 +248,28 @@ public class AnalyzeProjectJobTest extends SonarTestCase {
     job.runInWorkspace(MONITOR);
 
     markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
-    assertThat(markers).hasSize(1);
+    assertThat(markers).hasSize(2);
     assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(7);
     assertThat(markers[0].getAttribute(IMarker.CHAR_START)).isEqualTo(80);
     assertThat(markers[0].getAttribute(IMarker.CHAR_END)).isEqualTo(90);
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CHECKSUM_ATTR)).isEqualTo("this.x=x".hashCode());
-    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isEqualTo(timestamp);
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isNull();
+
+    assertThat(markers[1].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(8);
+    assertThat(markers[1].getAttribute(IMarker.CHAR_START)).isEqualTo(145);
+    assertThat(markers[1].getAttribute(IMarker.CHAR_END)).isEqualTo(154);
+    assertThat(markers[1].getAttribute(MarkerUtils.SONAR_MARKER_CHECKSUM_ATTR)).isEqualTo("returnx;".hashCode());
+    Object timestampIssue2 = markers[1].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR);
+    assertThat(timestampIssue2).isNotNull();
+
+    // Fourth analysis to check issue date is preserved
+    job.runInWorkspace(MONITOR);
+
+    markers = file.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+    assertThat(markers).hasSize(2);
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isNull();
+
+    assertThat(markers[1].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isEqualTo(timestampIssue2);
   }
 
 }
