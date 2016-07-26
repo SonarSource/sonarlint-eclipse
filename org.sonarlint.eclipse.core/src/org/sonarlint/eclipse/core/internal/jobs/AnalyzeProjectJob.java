@@ -202,7 +202,9 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     public PreviousMarkerCache(AnalyzeProjectRequest request, Set<IFile> failedFiles) {
       if (request.getFiles() != null) {
         for (IFile file : request.getFiles()) {
-          if (!failedFiles.contains(file)) {
+          if (failedFiles.contains(file)) {
+            SonarLintCorePlugin.getDefault().info("File won't be refreshed because there were errors during analysis: " + file.getFullPath().toOSString());
+          } else {
             markersByResource.put(file, new ArrayList<IMarker>(MarkerUtils.findMarkers(file)));
           }
         }
