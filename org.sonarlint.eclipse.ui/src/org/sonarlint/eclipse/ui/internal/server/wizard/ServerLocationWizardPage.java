@@ -137,11 +137,13 @@ public class ServerLocationWizardPage extends WizardPage {
     labelUsername.setText(Messages.ServerLocationWizardPage_label_username);
     serverUsernameText = new Text(form.getBody(), SWT.BORDER | SWT.SINGLE);
     serverUsernameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    if (edit) {
+    if (edit && server.hasAuth()) {
       String previousUsername;
       try {
         previousUsername = ServersManager.getUsername(server);
-        serverUsernameText.setText(previousUsername);
+        if (previousUsername != null) {
+          serverUsernameText.setText(previousUsername);
+        }
       } catch (StorageException e) {
         SonarLintCorePlugin.getDefault().error(ERROR_READING_SECURE_STORAGE, e);
         MessageDialog.openError(parent.getDisplay().getActiveShell(), ERROR_READING_SECURE_STORAGE, "Unable to read username from secure storage: " + e.getMessage());
@@ -153,11 +155,13 @@ public class ServerLocationWizardPage extends WizardPage {
     labelPassword.setText(Messages.ServerLocationWizardPage_label_password);
     serverPasswordText = new Text(form.getBody(), SWT.BORDER | SWT.SINGLE | SWT.PASSWORD);
     serverPasswordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    if (edit) {
+    if (edit && server.hasAuth()) {
       String previousPassword;
       try {
         previousPassword = ServersManager.getPassword(server);
-        serverPasswordText.setText(previousPassword);
+        if (previousPassword != null) {
+          serverPasswordText.setText(previousPassword);
+        }
       } catch (StorageException e) {
         SonarLintCorePlugin.getDefault().error(ERROR_READING_SECURE_STORAGE, e);
         MessageDialog.openError(parent.getDisplay().getActiveShell(), ERROR_READING_SECURE_STORAGE, "Unable to read password from secure storage: " + e.getMessage());
