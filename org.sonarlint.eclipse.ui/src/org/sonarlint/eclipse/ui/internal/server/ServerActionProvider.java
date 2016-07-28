@@ -45,7 +45,7 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
 import org.sonarlint.eclipse.ui.internal.server.actions.NewServerWizardAction;
-import org.sonarlint.eclipse.ui.internal.server.actions.ProjectUpdateBindingAction;
+import org.sonarlint.eclipse.ui.internal.server.actions.ProjectChangeBindingAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ServerEditAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ServerOrProjectDeleteAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ServerUpdateAction;
@@ -100,7 +100,7 @@ public class ServerActionProvider extends CommonActionProvider {
     deleteAction = new ServerOrProjectDeleteAction(shell, provider);
     editAction = new ServerEditAction(shell, provider);
     updateAction = new ServerUpdateAction(provider);
-    updateBindingAction = new ProjectUpdateBindingAction(shell, provider);
+    updateBindingAction = new ProjectChangeBindingAction(shell, provider);
   }
 
   @Override

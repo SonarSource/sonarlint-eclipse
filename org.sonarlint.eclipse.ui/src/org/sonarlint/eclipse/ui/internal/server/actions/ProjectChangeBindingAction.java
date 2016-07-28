@@ -33,12 +33,12 @@ import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
 
-public class ProjectUpdateBindingAction extends SelectionProviderAction {
+public class ProjectChangeBindingAction extends SelectionProviderAction {
   private final Shell shell;
   private List<SonarLintProject> selectedProjects;
 
-  public ProjectUpdateBindingAction(Shell shell, ISelectionProvider selectionProvider) {
-    super(selectionProvider, Messages.actionUpdateBinding);
+  public ProjectChangeBindingAction(Shell shell, ISelectionProvider selectionProvider) {
+    super(selectionProvider, Messages.actionChangeBinding);
     this.shell = shell;
     setImageDescriptor(SonarLintImages.SYNCED_IMG);
   }
