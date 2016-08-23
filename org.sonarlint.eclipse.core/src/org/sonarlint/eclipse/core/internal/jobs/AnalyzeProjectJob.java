@@ -269,11 +269,13 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private void runAnalysisAndUpdateMarkers(final IProgressMonitor monitor, IProject project, SonarLintProject sonarProject, IPath projectSpecificWorkDir,
     Map<String, String> mergedExtraProps, List<ClientInputFile> inputFiles) throws CoreException {
     StandaloneAnalysisConfiguration config;
+    IPath projectLocation = project.getLocation();
+    // In some unfrequent cases the project may be virtual and don't have physical location
+    Path projectBaseDir = projectLocation != null ? projectLocation.toFile().toPath() : ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
     if (sonarProject.isBound()) {
-      config = new ConnectedAnalysisConfiguration(trimToNull(sonarProject.getModuleKey()), project.getLocation().toFile().toPath(),
-        projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
+      config = new ConnectedAnalysisConfiguration(trimToNull(sonarProject.getModuleKey()), projectBaseDir, projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
     } else {
-      config = new StandaloneAnalysisConfiguration(project.getLocation().toFile().toPath(), projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
+      config = new StandaloneAnalysisConfiguration(projectBaseDir, projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
     }
 
     Map<IResource, List<Issue>> issuesPerResource = new LinkedHashMap<>();
