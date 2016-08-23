@@ -292,10 +292,14 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       try {
         IFileStore fileStore = EFS.getStore(file.getLocationURI());
         File localFile = fileStore.toLocalFile(EFS.NONE, monitor);
+        if (localFile == null) {
+          // Try to get a cached copy (for virtual file systems)
+          localFile = fileStore.toLocalFile(EFS.CACHE, monitor);
+        }
         final Path filePath = localFile.toPath();
         inputFiles.add(new EclipseInputFile(pathMatchersForTests, file, filePath));
       } catch (CoreException e) {
-        SonarLintCorePlugin.getDefault().error("Error building input file for SonarLint analysis", e);
+        SonarLintCorePlugin.getDefault().error("Error building input file for SonarLint analysis: " + file.getName(), e);
       }
     }
     return inputFiles;
