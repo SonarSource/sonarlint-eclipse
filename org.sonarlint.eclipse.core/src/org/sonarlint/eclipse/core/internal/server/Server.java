@@ -183,7 +183,15 @@ public class Server implements IServer, StateListener {
   @Override
   public synchronized String getHtmlRuleDescription(String ruleKey) {
     RuleDetails ruleDetails = client.getRuleDetails(ruleKey);
-    return ruleDetails != null ? ruleDetails.getHtmlDescription() : "Not found";
+    if (ruleDetails == null) {
+      return "Not found";
+    }
+    String htmlDescription = ruleDetails.getHtmlDescription();
+    String extendedDescription = ruleDetails.getExtendedDescription();
+    if (extendedDescription.isEmpty()) {
+      return htmlDescription;
+    }
+    return htmlDescription + "<div>" + extendedDescription + "</div>";
   }
 
   public void stop() {

@@ -6,4 +6,9 @@ target/
 .project
 .settings
 
+# IntelliJ
+*.iml
+.idea/
+
+# build products
 org.sonarlint.eclipse.core/plugins/*.jar
