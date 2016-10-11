@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.views;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -39,18 +40,24 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.RuleDescriptionWebView";
 
-  private static final String CSS = "<style type=\"text/css\">"
-    + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: 13px; line-height: 1.23076923;}"
-    + "h1 { color: #444;font-size: 14px;font-weight: 500; }"
-    + "h2 { line-height: 24px; color: #444;}"
-    + "a { border-bottom: 1px solid #cae3f2; color: #236a97; cursor: pointer; outline: none; text-decoration: none; transition: all .2s ease;}"
-    + ".rule-desc { line-height: 1.5;}"
-    + ".rule-desc { line-height: 1.5;}"
-    + ".rule-desc h2 { font-size: 16px; font-weight: 400;}"
-    + ".rule-desc code { padding: .2em .45em; margin: 0; background-color: rgba(0,0,0,.04); border-radius: 3px; white-space: nowrap;}"
-    + ".rule-desc pre { padding: 10px; border-top: 1px solid #e6e6e6; border-bottom: 1px solid #e6e6e6; line-height: 18px; overflow: auto;}"
-    + ".rule-desc code, .rule-desc pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace; font-size: 12px;}"
-    + ".rule-desc ul { padding-left: 40px; list-style: disc;}</style>";
+  private String css() {
+    return "<style type=\"text/css\">"
+      + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: 13px; line-height: 1.23076923; "
+      + "color: " + hexColor(getBrowser().getForeground()) + ";background-color: " + hexColor(getBrowser().getBackground())
+      + "}"
+      + "h1 { color: " + hexColor(getBrowser().getForeground()) + ";font-size: 14px;font-weight: 500; }"
+      + "h2 { line-height: 24px; color: " + hexColor(getBrowser().getForeground()) + ";}"
+      + "a { border-bottom: 1px solid #cae3f2; color: #236a97; cursor: pointer; outline: none; text-decoration: none; transition: all .2s ease;}"
+      + ".rule-desc { line-height: 1.5;}"
+      + ".rule-desc { line-height: 1.5;}"
+      + ".rule-desc h2 { font-size: 16px; font-weight: 400;}"
+      + ".rule-desc code { padding: .2em .45em; margin: 0; background-color: " + hexColor(getBrowser().getForeground(), 20) + "; border-radius: 3px; white-space: nowrap;}"
+      + ".rule-desc pre { padding: 10px; border-top: 1px solid " + hexColor(getBrowser().getForeground(), 100) + "; border-bottom: 1px solid "
+      + hexColor(getBrowser().getForeground(), 100)
+      + "; line-height: 18px; overflow: auto;}"
+      + ".rule-desc code, .rule-desc pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace; font-size: 12px;}"
+      + ".rule-desc ul { padding-left: 40px; list-style: disc;}</style>";
+  }
 
   @Override
   protected void open(IMarker element) {
@@ -70,11 +77,21 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
         htmlDescription = server.getHtmlRuleDescription(ruleKey);
       }
 
-      super.showHtml("<!doctype html><html><head>" + CSS + "</head><body><h1><big>" + ruleName + "</big> (" + ruleKey + ")</h1><div class=\"rule-desc\">" + htmlDescription
+      super.showHtml("<!doctype html><html><head>" + css() + "</head><body><h1><big>"
+        + ruleName + "</big> (" + ruleKey
+        + ")</h1><div class=\"rule-desc\">" + htmlDescription
         + "</div></body></html>");
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error("Unable to open rule description", e);
     }
+  }
+
+  private static String hexColor(Color color) {
+    return hexColor(color, color.getAlpha());
+  }
+
+  private static String hexColor(Color color, Integer alpha) {
+    return "rgba(" + color.getRed() + ", " + color.getGreen() + ", " + color.getBlue() + ", " + alpha / 255.0 + ")";
   }
 
   @Override
