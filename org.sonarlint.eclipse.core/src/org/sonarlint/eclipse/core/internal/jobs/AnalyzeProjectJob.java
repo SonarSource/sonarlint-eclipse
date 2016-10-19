@@ -363,7 +363,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         if (r instanceof IFile) {
           issueTrackingOnFile(iTextFileBufferManager, r, previousMarkers, rawIssues, creationTimeStampForNewIssues);
         } else {
-          issueTracking(r, previousMarkers, rawIssues, null, creationTimeStampForNewIssues);
+          matchWithPreviousIssues(r, previousMarkers, rawIssues, null, creationTimeStampForNewIssues);
         }
       } catch (Exception e) {
         SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarLint marker on resource " + r.getName(), e);
@@ -382,7 +382,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(iFile.getFullPath(), LocationKind.IFILE);
       IDocument iDoc = iTextFileBuffer.getDocument();
 
-      issueTracking(r, previousMarkers, rawIssues, iDoc, creationTimeStampForNewIssues);
+      matchWithPreviousIssues(r, previousMarkers, rawIssues, iDoc, creationTimeStampForNewIssues);
 
     } finally {
       try {
@@ -393,19 +393,19 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private static void issueTracking(IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues, IDocument iDoc, Long creationTimeStampForNewIssues)
+  private static void matchWithPreviousIssues(IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues, IDocument doc, Long creationTimeStampForNewIssues)
     throws BadLocationException, CoreException {
     Input<TrackableMarker> baseInput = prepareBaseInput(previousMarkers);
-    Input<TrackableIssue> rawInput = prepareRawInput(iDoc, rawIssues);
+    Input<TrackableIssue> rawInput = prepareRawInput(doc, rawIssues);
     Tracking<TrackableIssue, TrackableMarker> tracking = new Tracker<TrackableIssue, TrackableMarker>().track(rawInput, baseInput);
     for (Entry<TrackableIssue, TrackableMarker> entry : tracking.getMatchedRaws().entrySet()) {
       Issue issue = entry.getKey().getWrapped();
       IMarker marker = entry.getValue().getWrapped();
       previousMarkers.remove(marker);
-      SonarMarker.updateAttributes(marker, issue, iDoc);
+      SonarMarker.updateAttributes(marker, issue, doc);
     }
     for (TrackableIssue newIssue : tracking.getUnmatchedRaws()) {
-      SonarMarker.create(iDoc, r, newIssue.getWrapped(), creationTimeStampForNewIssues);
+      SonarMarker.create(doc, r, newIssue.getWrapped(), creationTimeStampForNewIssues);
     }
   }
 
