@@ -57,4 +57,21 @@ class TrackableMarker implements Trackable {
     return marker.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "");
   }
 
+  public Long getCreationDate() {
+    String attribute = marker.getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, null);
+    return attribute != null ? Long.parseLong(attribute) : null;
+  }
+
+  public String getServerIssueKey() {
+    return marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
+  }
+
+  public boolean isResolved() {
+    return marker.getAttribute(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, false);
+  }
+
+  public String getAssignee() {
+    return marker.getAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, "");
+  }
+
 }
