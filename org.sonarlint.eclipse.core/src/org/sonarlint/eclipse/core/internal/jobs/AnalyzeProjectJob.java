@@ -25,7 +25,9 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -364,6 +366,16 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           issueTrackingOnFile(iTextFileBufferManager, r, previousMarkers, rawIssues, creationTimeStampForNewIssues);
         } else {
           matchWithPreviousIssues(r, previousMarkers, rawIssues, null, creationTimeStampForNewIssues);
+
+          Instant date = Instant.ofEpochSecond(1476805310);
+          ServerIssueTrackable.Builder builder = ServerIssueTrackable.newBuilder()
+            .date(date);
+          List<ServerIssueTrackable> serverIssues = Arrays.asList(
+            builder.key("1").assignee("a1").checksum("192ed4c09118e861b48569e62273ea01").build(),
+            builder.key("2").assignee("a2").checksum("0dd578d50cfa4265d49d2164f357a42b").build(),
+            builder.key("3").assignee("a3").build()
+            );
+          matchWithServerIssues(previousMarkers, serverIssues);
         }
       } catch (Exception e) {
         SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarLint marker on resource " + r.getName(), e);
@@ -393,6 +405,30 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
+  private static void matchWithServerIssues(List<IMarker> previousMarkers, List<ServerIssueTrackable> serverIssues) throws CoreException {
+    Input<ServerIssueTrackable> baseInput = () -> serverIssues;
+    Input<TrackableMarker> rawInput = () -> wrap(previousMarkers);
+    Tracking<TrackableMarker, ServerIssueTrackable> tracking = new Tracker<TrackableMarker, ServerIssueTrackable>().track(rawInput, baseInput);
+    for (Entry<TrackableMarker, ServerIssueTrackable> entry : tracking.getMatchedRaws().entrySet()) {
+      IMarker marker = entry.getKey().getWrapped();
+      ServerIssueTrackable issue = entry.getValue();
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, issue.getCreationDate());
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, issue.getServerIssueKey());
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, issue.isResolved());
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, issue.getAssignee());
+    }
+    for (TrackableMarker newIssue : tracking.getUnmatchedRaws()) {
+      if (newIssue.getServerIssueKey() != null) {
+        IMarker marker = newIssue.getWrapped();
+        // TODO think again what should happen to the creation date
+        marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, null);
+        marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
+        marker.setAttribute(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, false);
+        marker.setAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, "");
+      }
+    }
+  }
+
   private static void matchWithPreviousIssues(IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues, IDocument doc, Long creationTimeStampForNewIssues)
     throws BadLocationException, CoreException {
     Input<TrackableMarker> baseInput = prepareBaseInput(previousMarkers);
@@ -401,6 +437,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     for (Entry<TrackableIssue, TrackableMarker> entry : tracking.getMatchedRaws().entrySet()) {
       Issue issue = entry.getKey().getWrapped();
       IMarker marker = entry.getValue().getWrapped();
+      // TODO why? why remove elements from an input list?
       previousMarkers.remove(marker);
       SonarMarker.updateAttributes(marker, issue, doc);
     }
