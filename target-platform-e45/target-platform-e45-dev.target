@@ -8,8 +8,8 @@
 </location>
 <location path="${M2_REPO}/org/mockito/mockito-all/1.9.5" type="Directory"/>
 <location path="${M2_REPO}/org/assertj/assertj-core/2.1.0" type="Directory"/>
-<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/2.5.0.774" type="Directory"/>
-<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/2.5.0.774" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/2.5.0.782" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/2.5.0.782" type="Directory"/>
 <location path="${M2_REPO}/com/google/code/findbugs/jsr305/3.0.1" type="Directory"/>
 <!--
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
