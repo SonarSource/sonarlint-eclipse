@@ -29,6 +29,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.jface.text,
  org.sonarsource.sonarlint.core.sonarlint-client-api;bundle-version="2.4.0",
  org.sonarsource.sonarlint.core.sonarlint-core;bundle-version="2.4.0",
+ org.jsr-305;resolution:=optional,
  org.eclipse.core.net,
  org.eclipse.core.filesystem
 Bundle-ActivationPolicy: lazy
