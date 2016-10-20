@@ -47,9 +47,15 @@ class TrackableMarker implements Trackable {
   }
 
   @Override
-  public Integer getLineHash() {
+  public Integer getTextRangeHash() {
     int attribute = marker.getAttribute(MarkerUtils.SONAR_MARKER_CHECKSUM_ATTR, 0);
     return attribute != 0 ? attribute : null;
+  }
+
+  @Override
+  public Integer getLineHash() {
+    // TODO
+    return null;
   }
 
   @Override

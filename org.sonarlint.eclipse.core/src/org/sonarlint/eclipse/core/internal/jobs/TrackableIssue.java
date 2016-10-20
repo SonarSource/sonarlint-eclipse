@@ -26,11 +26,13 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 class TrackableIssue implements Trackable {
 
   private final Issue issue;
-  private final Integer lineHash;
+  private final Integer textRangeHash;
 
-  public TrackableIssue(Issue issue, Integer lineHash) {
+  // TODO verify the param is really text range hash
+  // TODO add line hash too
+  public TrackableIssue(Issue issue, Integer textRangeHash) {
     this.issue = issue;
-    this.lineHash = lineHash;
+    this.textRangeHash = textRangeHash;
   }
 
   public Issue getWrapped() {
@@ -48,13 +50,25 @@ class TrackableIssue implements Trackable {
   }
 
   @Override
+  public Integer getTextRangeHash() {
+    return textRangeHash;
+  }
+
+  @Override
   public Integer getLineHash() {
-    return lineHash;
+    // TODO
+    return null;
   }
 
   @Override
   public String getRuleKey() {
     return issue.getRuleKey();
+  }
+
+  @Override
+  public String getServerIssueKey() {
+    // TODO
+    return null;
   }
 
 }

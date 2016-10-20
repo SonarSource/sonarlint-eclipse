@@ -188,4 +188,9 @@ public class ServerIssueTrackable implements Trackable {
       return this;
     }
   }
+
+  @Override
+  public Integer getTextRangeHash() {
+    return null;
+  }
 }
