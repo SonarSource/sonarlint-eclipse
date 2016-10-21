@@ -74,13 +74,13 @@ public class ServerIssueTrackable implements Trackable {
   }
 
   public static class Builder {
-    private String ruleKey;
-    private String resolution;
-    private String message;
+    private String ruleKey = "";
+    private String resolution = "";
+    private String message = "";
     private int line;
-    private String key;
+    private String key = "";
     private Instant date;
-    private String checksum;
+    private String checksum = "";
     private String assignee;
 
     public ServerIssueTrackable build() {
