@@ -363,19 +363,21 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       List<Issue> rawIssues = resourceEntry.getValue();
       try {
         if (r instanceof IFile) {
+          List<IMarker> origMarkers = new ArrayList<>(previousMarkers);
           issueTrackingOnFile(iTextFileBufferManager, r, previousMarkers, rawIssues, creationTimeStampForNewIssues);
-        } else {
-          matchWithPreviousIssues(r, previousMarkers, rawIssues, null, creationTimeStampForNewIssues);
 
+          // TODO exploring only, delete me
           Instant date = Instant.ofEpochSecond(1476805310);
           ServerIssueTrackable.Builder builder = ServerIssueTrackable.newBuilder()
             .date(date);
           List<ServerIssueTrackable> serverIssues = Arrays.asList(
             builder.key("1").assignee("a1").checksum("192ed4c09118e861b48569e62273ea01").build(),
             builder.key("2").assignee("a2").checksum("0dd578d50cfa4265d49d2164f357a42b").build(),
-            builder.key("3").assignee("a3").build()
+            builder.key("3").assignee("a3").ruleKey("squid:UnusedPrivateMethod").line(50).message("Remove this unused private \"reset2\" method.").build()
             );
-          matchWithServerIssues(previousMarkers, serverIssues);
+          matchWithServerIssues(origMarkers, serverIssues);
+        } else {
+          matchWithPreviousIssues(r, previousMarkers, rawIssues, null, creationTimeStampForNewIssues);
         }
       } catch (Exception e) {
         SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarLint marker on resource " + r.getName(), e);
@@ -412,7 +414,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     for (Entry<TrackableMarker, ServerIssueTrackable> entry : tracking.getMatchedRaws().entrySet()) {
       IMarker marker = entry.getKey().getWrapped();
       ServerIssueTrackable issue = entry.getValue();
-      marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, issue.getCreationDate());
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(issue.getCreationDate().longValue()));
       marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, issue.getServerIssueKey());
       marker.setAttribute(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, issue.isResolved());
       marker.setAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, issue.getAssignee());
