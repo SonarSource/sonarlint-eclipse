@@ -220,6 +220,9 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
     }
 
+    // TODO "unmatched"? Seems a bit magical. Try to clean up.
+    // The tracker removes from the underlying list the markers it matched = the markers to keep on display.
+    // Markers not removed by the tracker should be removed from the display.
     public void deleteUnmatched() throws CoreException {
       for (List<IMarker> entry : markersByResource.values()) {
         for (IMarker m : entry) {
@@ -439,7 +442,9 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     for (Entry<TrackableIssue, TrackableMarker> entry : tracking.getMatchedRaws().entrySet()) {
       Issue issue = entry.getKey().getWrapped();
       IMarker marker = entry.getValue().getWrapped();
-      // TODO why? why remove elements from an input list?
+      // TODO removing elements from an input list... dodgy? -> try to improve
+      // The previousMarkers come from PreviousMarkerCache, populated before matching and updating.
+      // After matching and updating, markers left in the cache will be deleted.
       previousMarkers.remove(marker);
       SonarMarker.updateAttributes(marker, issue, doc);
     }
