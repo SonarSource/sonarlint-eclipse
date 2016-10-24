@@ -384,23 +384,23 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private void trackServerIssues(IResource resource) {
-    // TODO check if in connected mode -> could be: can get server id or not?
-
-    // TODO FIXME
     String serverId = SonarLintProject.getInstance(resource).getServerId();
-    IServer server0 = ServersManager.getInstance().getServer(serverId);
-    Server server = (Server) ServersManager.getInstance().getServers().get(0);
+    if (serverId == null) {
+      // TODO log it: not bound to a server
+      return;
+    }
+    Server server = (Server) ServersManager.getInstance().getServer(serverId);
     ServerConfiguration serverConfiguration = server.getConfig();
-
-    ConnectedSonarLintEngine engine = server.getEngine();
 
     SonarLintProject project = SonarLintCorePlugin.getDefault().getProjectManager().readSonarLintConfiguration(resource.getProject());
     String moduleKey = project.getModuleKey();
-    // TODO FIXME
-    moduleKey = "sonar-scanner-cli";
+    if (moduleKey == null) {
+      // TODO log it: not bound to a module
+      return;
+    }
 
+    ConnectedSonarLintEngine engine = server.getEngine();
     String relativePath = resource.getProjectRelativePath().toString();
-
     SonarLintCorePlugin.getDefault().getServerIssueUpdater().updateFor(serverConfiguration, engine, moduleKey, relativePath);
   }
 
