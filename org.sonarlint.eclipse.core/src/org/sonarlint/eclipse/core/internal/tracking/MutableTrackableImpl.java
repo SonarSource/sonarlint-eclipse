@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-public class MutableTrackableImpl implements MutableTrackable {
+public abstract class MutableTrackableImpl implements MutableTrackable {
 
   private static final Long DEFAULT_CREATION_DATE = null;
   private static final String DEFAULT_SERVER_ISSUE_KEY = null;
@@ -32,57 +32,23 @@ public class MutableTrackableImpl implements MutableTrackable {
   private String assignee = DEFAULT_ASSIGNEE;
 
   @Override
-  public Integer getLine() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public String getMessage() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public Integer getTextRangeHash() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public Integer getLineHash() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public String getRuleKey() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public String getServerIssueKey() {
-    // TODO Auto-generated method stub
-    return null;
+    return serverIssueKey;
   }
 
   @Override
   public Long getCreationDate() {
-    // TODO Auto-generated method stub
-    return null;
+    return creationDate;
   }
 
   @Override
   public boolean isResolved() {
-    // TODO Auto-generated method stub
-    return false;
+    return resolved;
   }
 
   @Override
   public String getAssignee() {
-    // TODO Auto-generated method stub
-    return null;
+    return assignee;
   }
 
   @Override
