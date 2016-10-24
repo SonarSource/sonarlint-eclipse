@@ -19,14 +19,62 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class IssueTracker {
-  
-  // TODO on store change, trigger event queue, on which ui should listen to apply changes to markers
 
-  public void matchAndTrackAsBase(String relativePath, Collection<Trackable> serverIssuesTrackable) {
-    // TODO Auto-generated method stub
+  private final TrackingChangeSubmitter changeSubmitter;
+
+  // TODO replace with persistent cache
+  private final Map<String, Collection<MutableTrackable>> cache;
+
+  public IssueTracker(TrackingChangeSubmitter changeSubmitter) {
+    this.changeSubmitter = changeSubmitter;
+    this.cache = new ConcurrentHashMap<>();
   }
 
+  private Collection<MutableTrackable> getCurrentTrackables(String file) {
+    return cache.get(file);
+  }
+
+  public synchronized void matchAndTrackAsBase(String file, Collection<Trackable> trackables) {
+    matchAndTrack(file, trackables, getCurrentTrackables(file));
+  }
+
+  public synchronized void matchAndTrackAsNew(String file, Collection<MutableTrackable> trackables) {
+    Collection<MutableTrackable> current = getCurrentTrackables(file);
+    if (current == null) {
+      updateTrackedIssues(file, current);
+    } else {
+      matchAndTrack(file, current, trackables);
+    }
+  }
+
+  // note: the base issues are sometimes mutable, sometimes not (for example server issues)
+  private <T extends Trackable> void matchAndTrack(String file, Collection<T> baseIssues, Collection<MutableTrackable> nextIssues) {
+    Collection<MutableTrackable> trackedIssues = new ArrayList<>();
+    Tracking<MutableTrackable, T> tracking = new Tracker<MutableTrackable, T>().track(() -> nextIssues, () -> baseIssues);
+    for (Map.Entry<MutableTrackable, T> entry : tracking.getMatchedRaws().entrySet()) {
+      Trackable base = entry.getValue();
+      MutableTrackable next = entry.getKey();
+      next.copy(base);
+      trackedIssues.add(next);
+    }
+    for (MutableTrackable next : tracking.getUnmatchedRaws()) {
+      if (next.getServerIssueKey() != null) {
+        next.reset();
+      }
+      next.setCreationDate(System.currentTimeMillis());
+      trackedIssues.add(next);
+    }
+    updateTrackedIssues(file, trackedIssues);
+  }
+
+  private void updateTrackedIssues(String file, Collection<MutableTrackable> trackedIssues) {
+    cache.put(file, trackedIssues);
+    changeSubmitter.submit(file, trackedIssues);
+  }
 }
