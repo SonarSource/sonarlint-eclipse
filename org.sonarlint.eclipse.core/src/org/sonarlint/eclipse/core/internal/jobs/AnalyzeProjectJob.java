@@ -25,9 +25,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -73,6 +71,8 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.tracking.Input;
+import org.sonarlint.eclipse.core.internal.tracking.IssueTrackable;
+import org.sonarlint.eclipse.core.internal.tracking.MutableTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.Tracker;
 import org.sonarlint.eclipse.core.internal.tracking.Tracking;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -370,6 +370,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       try {
         if (r instanceof IFile) {
           issueTrackingOnFile(iTextFileBufferManager, r, previousMarkers, rawIssues, creationTimeStampForNewIssues);
+          trackLocalIssues(r, rawIssues);
 
           trackServerIssues(r);
         } else {
@@ -381,6 +382,13 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       r.setSessionProperty(LAST_ANALYSIS_PROP_NAME, now);
     }
     markerCache.deleteUnmatched();
+  }
+
+  private void trackLocalIssues(IResource resource, List<Issue> rawIssues) {
+    String moduleKey = resource.getProject().getName();
+    String relativePath = resource.getProjectRelativePath().toString();
+    Collection<MutableTrackable> trackables = rawIssues.stream().map(IssueTrackable::new).collect(Collectors.toList());
+    SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(moduleKey).matchAndTrackAsNew(relativePath, trackables);
   }
 
   private void trackServerIssues(IResource resource) {

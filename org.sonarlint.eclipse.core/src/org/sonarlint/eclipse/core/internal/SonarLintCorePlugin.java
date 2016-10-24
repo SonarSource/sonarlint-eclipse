@@ -161,4 +161,8 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   public ServerIssueUpdater getServerIssueUpdater() {
     return serverIssueUpdater;
   }
+
+  public IssueTrackerRegistry getIssueTrackerRegistry() {
+    return issueTrackerRegistry;
+  }
 }
