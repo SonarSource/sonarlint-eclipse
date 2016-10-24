@@ -245,7 +245,7 @@ public class Server implements IServer, StateListener {
     }
   }
 
-  private ServerConfiguration getConfig() {
+  public ServerConfiguration getConfig() {
     Builder builder = getConfigBuilderNoCredentials();
 
     if (hasAuth()) {
@@ -314,6 +314,10 @@ public class Server implements IServer, StateListener {
   @Override
   public int hashCode() {
     return getId().hashCode();
+  }
+
+  public ConnectedSonarLintEngine getEngine() {
+    return client;
   }
 
 }
