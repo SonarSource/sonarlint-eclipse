@@ -35,6 +35,8 @@ import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerRegistry;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
+import org.sonarlint.eclipse.core.internal.tracking.TrackingChangeQueueManager;
+import org.sonarlint.eclipse.core.internal.tracking.TrackingChangeQueueManagerImpl;
 
 public class SonarLintCorePlugin extends AbstractPlugin {
 
@@ -45,6 +47,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectManager projectManager;
 
+  private TrackingChangeQueueManager trackingChangeQueueManager;
   private IssueTrackerRegistry issueTrackerRegistry;
   private ServerIssueUpdater serverIssueUpdater;
 
@@ -120,7 +123,9 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     sonarLintChangeListener = new SonarLintChangeListener();
     ResourcesPlugin.getWorkspace().addResourceChangeListener(sonarLintChangeListener, IResourceChangeEvent.POST_CHANGE);
 
-    issueTrackerRegistry = new IssueTrackerRegistry();
+    trackingChangeQueueManager = new TrackingChangeQueueManagerImpl();
+
+    issueTrackerRegistry = new IssueTrackerRegistry(trackingChangeQueueManager);
 
     serverIssueUpdater = new ServerIssueUpdater(issueTrackerRegistry);
   }
@@ -134,6 +139,8 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     proxyTracker.close();
 
     serverIssueUpdater.shutdown();
+
+    trackingChangeQueueManager.shutdown();
 
     super.stop(context);
   }
