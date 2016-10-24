@@ -19,29 +19,20 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
 
-public class IssueTrackerRegistry {
-
-  private final Map<String, IssueTracker> registry = new HashMap<>();
+public class TrackingChangeSubmitter {
 
   private final TrackingChangeQueueManager queueManager;
+  private final String moduleKey;
 
-  public IssueTrackerRegistry(TrackingChangeQueueManager queueManager) {
+  public TrackingChangeSubmitter(TrackingChangeQueueManager queueManager, String moduleKey) {
     this.queueManager = queueManager;
+    this.moduleKey = moduleKey;
   }
 
-  public synchronized IssueTracker get(String moduleKey) {
-    IssueTracker tracker = registry.get(moduleKey);
-    if (tracker == null) {
-      registry.put(moduleKey, newTracker(moduleKey));
-    }
-    return null;
-  }
-
-  private IssueTracker newTracker(String moduleKey) {
-    return new IssueTracker(new TrackingChangeSubmitter(queueManager, moduleKey));
+  public void submit(String file, Collection<MutableTrackable> issues) {
+    queueManager.post(moduleKey, file, issues);
   }
 
 }

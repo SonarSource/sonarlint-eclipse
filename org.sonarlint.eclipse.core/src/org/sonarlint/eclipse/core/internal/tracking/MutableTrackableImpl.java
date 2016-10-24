@@ -17,57 +17,53 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.core.internal.tracking;
 
-import org.sonarlint.eclipse.core.internal.markers.SonarMarker;
-import org.sonarlint.eclipse.core.internal.tracking.Trackable;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+public class MutableTrackableImpl implements MutableTrackable {
 
-class TrackableIssue implements Trackable {
+  private static final Long DEFAULT_CREATION_DATE = null;
+  private static final String DEFAULT_SERVER_ISSUE_KEY = null;
+  private static final boolean DEFAULT_RESOLVED = false;
+  private static final String DEFAULT_ASSIGNEE = "";
 
-  private final Issue issue;
-  private final Integer textRangeHash;
-
-  // TODO verify the param is really text range hash
-  // TODO add line hash too
-  public TrackableIssue(Issue issue, Integer textRangeHash) {
-    this.issue = issue;
-    this.textRangeHash = textRangeHash;
-  }
-
-  public Issue getWrapped() {
-    return issue;
-  }
+  private Long creationDate = DEFAULT_CREATION_DATE;
+  private String serverIssueKey = DEFAULT_SERVER_ISSUE_KEY;
+  private boolean resolved = DEFAULT_RESOLVED;
+  private String assignee = DEFAULT_ASSIGNEE;
 
   @Override
   public Integer getLine() {
-    return issue.getStartLine();
+    // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
   public String getMessage() {
-    return SonarMarker.getMessage(issue);
+    // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
   public Integer getTextRangeHash() {
-    return textRangeHash;
+    // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
   public Integer getLineHash() {
-    // TODO
+    // TODO Auto-generated method stub
     return null;
   }
 
   @Override
   public String getRuleKey() {
-    return issue.getRuleKey();
+    // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
   public String getServerIssueKey() {
-    // TODO
+    // TODO Auto-generated method stub
     return null;
   }
 
@@ -89,4 +85,24 @@ class TrackableIssue implements Trackable {
     return null;
   }
 
+  @Override
+  public void copy(Trackable base) {
+    creationDate = base.getCreationDate();
+    serverIssueKey = base.getServerIssueKey();
+    resolved = base.isResolved();
+    assignee = base.getAssignee();
+  }
+
+  @Override
+  public void reset() {
+    creationDate = DEFAULT_CREATION_DATE;
+    serverIssueKey = DEFAULT_SERVER_ISSUE_KEY;
+    resolved = DEFAULT_RESOLVED;
+    assignee = DEFAULT_ASSIGNEE;
+  }
+
+  @Override
+  public void setCreationDate(long currentTimeMillis) {
+    creationDate = currentTimeMillis;
+  }
 }

@@ -43,4 +43,11 @@ public interface Trackable {
   @CheckForNull
   String getServerIssueKey();
 
+  @CheckForNull
+  Long getCreationDate();
+
+  boolean isResolved();
+
+  // empty if none
+  String getAssignee();
 }
