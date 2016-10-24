@@ -41,16 +41,24 @@ public class IssueTracker {
   }
 
   public synchronized void matchAndTrackAsBase(String file, Collection<Trackable> trackables) {
+    Collection<MutableTrackable> current = getCurrentTrackables(file);
+    if (current == null || current.isEmpty()) {
+      // whatever is the base, if current is missing or empty, then nothing to do
+      return;
+    }
     matchAndTrack(file, trackables, getCurrentTrackables(file));
   }
 
   public synchronized void matchAndTrackAsNew(String file, Collection<MutableTrackable> trackables) {
-    Collection<MutableTrackable> current = getCurrentTrackables(file);
-    if (current == null) {
-      updateTrackedIssues(file, current);
+    if (isFirstAnalysis(file)) {
+      updateTrackedIssues(file, trackables);
     } else {
-      matchAndTrack(file, current, trackables);
+      matchAndTrack(file, getCurrentTrackables(file), trackables);
     }
+  }
+
+  private boolean isFirstAnalysis(String file) {
+    return !cache.containsKey(file);
   }
 
   // note: the base issues are sometimes mutable, sometimes not (for example server issues)
