@@ -37,7 +37,7 @@ public class IssueTrackerRegistry {
     if (tracker == null) {
       registry.put(moduleKey, newTracker(moduleKey));
     }
-    return null;
+    return tracker;
   }
 
   private IssueTracker newTracker(String moduleKey) {
