@@ -70,6 +70,7 @@ import org.sonarlint.eclipse.core.internal.markers.SonarMarker.Range;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.tracking.Input;
 import org.sonarlint.eclipse.core.internal.tracking.Tracker;
@@ -80,6 +81,8 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
+import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.trimToNull;
@@ -366,19 +369,9 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       List<Issue> rawIssues = resourceEntry.getValue();
       try {
         if (r instanceof IFile) {
-          List<IMarker> origMarkers = new ArrayList<>(previousMarkers);
           issueTrackingOnFile(iTextFileBufferManager, r, previousMarkers, rawIssues, creationTimeStampForNewIssues);
 
-          // TODO exploring only, delete me
-          Instant date = Instant.ofEpochSecond(1476805310);
-          ServerIssueTrackable.Builder builder = ServerIssueTrackable.newBuilder()
-            .date(date);
-          List<ServerIssueTrackable> serverIssues = Arrays.asList(
-            builder.key("1").assignee("a1").checksum("192ed4c09118e861b48569e62273ea01").build(),
-            builder.key("2").assignee("a2").checksum("0dd578d50cfa4265d49d2164f357a42b").build(),
-            builder.key("3").assignee("a3").ruleKey("squid:UnusedPrivateMethod").line(50).message("Remove this unused private \"reset2\" method.").build()
-            );
-          matchWithServerIssues(origMarkers, serverIssues);
+          trackServerIssues(r);
         } else {
           matchWithPreviousIssues(r, previousMarkers, rawIssues, null, creationTimeStampForNewIssues);
         }
@@ -388,6 +381,27 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       r.setSessionProperty(LAST_ANALYSIS_PROP_NAME, now);
     }
     markerCache.deleteUnmatched();
+  }
+
+  private void trackServerIssues(IResource resource) {
+    // TODO check if in connected mode -> could be: can get server id or not?
+
+    // TODO FIXME
+    String serverId = SonarLintProject.getInstance(resource).getServerId();
+    IServer server0 = ServersManager.getInstance().getServer(serverId);
+    Server server = (Server) ServersManager.getInstance().getServers().get(0);
+    ServerConfiguration serverConfiguration = server.getConfig();
+
+    ConnectedSonarLintEngine engine = server.getEngine();
+
+    SonarLintProject project = SonarLintCorePlugin.getDefault().getProjectManager().readSonarLintConfiguration(resource.getProject());
+    String moduleKey = project.getModuleKey();
+    // TODO FIXME
+    moduleKey = "sonar-scanner-cli";
+
+    String relativePath = resource.getProjectRelativePath().toString();
+
+    SonarLintCorePlugin.getDefault().getServerIssueUpdater().updateFor(serverConfiguration, engine, moduleKey, relativePath);
   }
 
   private static void issueTrackingOnFile(ITextFileBufferManager iTextFileBufferManager, IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues,

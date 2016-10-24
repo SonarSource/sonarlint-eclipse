@@ -33,6 +33,8 @@ import org.sonarlint.eclipse.core.AbstractPlugin;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
+import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerRegistry;
+import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
 
 public class SonarLintCorePlugin extends AbstractPlugin {
 
@@ -42,6 +44,9 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectManager projectManager;
+
+  private IssueTrackerRegistry issueTrackerRegistry;
+  private ServerIssueUpdater serverIssueUpdater;
 
   private final List<LogListener> logListeners = new ArrayList<>();
   private StandaloneSonarLintClientFacade sonarlint;
@@ -114,6 +119,10 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     super.start(context);
     sonarLintChangeListener = new SonarLintChangeListener();
     ResourcesPlugin.getWorkspace().addResourceChangeListener(sonarLintChangeListener, IResourceChangeEvent.POST_CHANGE);
+
+    issueTrackerRegistry = new IssueTrackerRegistry();
+
+    serverIssueUpdater = new ServerIssueUpdater(issueTrackerRegistry);
   }
 
   @Override
@@ -123,6 +132,9 @@ public class SonarLintCorePlugin extends AbstractPlugin {
       sonarlint.stop();
     }
     proxyTracker.close();
+
+    serverIssueUpdater.shutdown();
+
     super.stop(context);
   }
 
@@ -135,5 +147,9 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   public IProxyService getProxyService() {
     return (IProxyService) proxyTracker.getService();
+  }
+
+  public ServerIssueUpdater getServerIssueUpdater() {
+    return serverIssueUpdater;
   }
 }
