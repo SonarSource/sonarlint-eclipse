@@ -22,26 +22,15 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class IssueTracker {
 
+  private final IssueTrackerCache cache;
   private final TrackingChangeSubmitter changeSubmitter;
 
-  // TODO replace with persistent cache
-  private final Map<String, Collection<MutableTrackable>> cache;
-
-  public IssueTracker(TrackingChangeSubmitter changeSubmitter) {
+  public IssueTracker(IssueTrackerCache cache, TrackingChangeSubmitter changeSubmitter) {
     this.changeSubmitter = changeSubmitter;
-    this.cache = new ConcurrentHashMap<>();
-  }
-
-  private boolean isFirstAnalysis(String file) {
-    return !cache.containsKey(file);
-  }
-
-  private Collection<MutableTrackable> getCurrentTrackables(String file) {
-    return cache.get(file);
+    this.cache = cache;
   }
 
   /**
@@ -52,10 +41,10 @@ public class IssueTracker {
    * @param trackables
    */
   public synchronized void matchAndTrackAsNew(String file, Collection<MutableTrackable> trackables) {
-    if (isFirstAnalysis(file)) {
+    if (cache.isFirstAnalysis(file)) {
       updateTrackedIssues(file, trackables);
     } else {
-      matchAndTrack(file, getCurrentTrackables(file), trackables);
+      matchAndTrack(file, cache.getCurrentTrackables(file), trackables);
     }
   }
 
@@ -66,7 +55,7 @@ public class IssueTracker {
    * @param trackables
    */
   public synchronized void matchAndTrackAsBase(String file, Collection<Trackable> trackables) {
-    Collection<MutableTrackable> current = getCurrentTrackables(file);
+    Collection<MutableTrackable> current = cache.getCurrentTrackables(file);
     if (current.isEmpty()) {
       // whatever is the base, if current is empty, then nothing to do
       return;
