@@ -42,7 +42,7 @@ public class IssueTrackerRegistry {
   }
 
   private IssueTracker newTracker(String moduleKey) {
-    return new IssueTracker(new TrackingChangeSubmitter(queueManager, moduleKey));
+    return new IssueTracker(new IssueTrackerCache(moduleKey), new TrackingChangeSubmitter(queueManager, moduleKey));
   }
 
 }

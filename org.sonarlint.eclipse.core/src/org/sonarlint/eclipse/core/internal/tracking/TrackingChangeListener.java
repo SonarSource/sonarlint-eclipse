@@ -23,6 +23,6 @@ import java.util.Collection;
 
 public interface TrackingChangeListener {
 
-  void onTrackingChange(String moduleKey, String file, Collection<? extends Trackable> issues);
+  void onTrackingChange(String moduleKey, String relativePath, Collection<? extends Trackable> issues);
 
 }
