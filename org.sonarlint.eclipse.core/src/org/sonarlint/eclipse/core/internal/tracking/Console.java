@@ -19,14 +19,16 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+
 public class Console {
 
   public void info(String message) {
-    // TODO Auto-generated method stub
+    SonarLintCorePlugin.getDefault().info(message);
   }
 
-  public void error(String string, Throwable t) {
-    // TODO Auto-generated method stub
+  public void error(String message, Throwable t) {
+    SonarLintCorePlugin.getDefault().error(message, t);
   }
 
 }
