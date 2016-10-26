@@ -29,8 +29,8 @@ public class IssueTracker {
   private final TrackingChangeSubmitter changeSubmitter;
 
   public IssueTracker(IssueTrackerCache cache, TrackingChangeSubmitter changeSubmitter) {
-    this.changeSubmitter = changeSubmitter;
     this.cache = cache;
+    this.changeSubmitter = changeSubmitter;
   }
 
   /**
@@ -63,7 +63,7 @@ public class IssueTracker {
     matchAndTrack(file, trackables, current);
   }
 
-  // note: the base issues are sometimes mutable, sometimes not (for example server issues)
+  // note: the base issues are type T: sometimes mutable, sometimes not (for example server issues)
   private <T extends Trackable> void matchAndTrack(String file, Collection<T> baseIssues, Collection<MutableTrackable> nextIssues) {
     Collection<MutableTrackable> trackedIssues = new ArrayList<>();
     Tracking<MutableTrackable, T> tracking = new Tracker<MutableTrackable, T>().track(() -> nextIssues, () -> baseIssues);

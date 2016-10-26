@@ -27,8 +27,6 @@ public interface TrackingChangeQueueManager {
 
   void subscribe(TrackingChangeListener listener);
 
-  // TODO unsubscribe?
-
   void shutdown();
 
 }

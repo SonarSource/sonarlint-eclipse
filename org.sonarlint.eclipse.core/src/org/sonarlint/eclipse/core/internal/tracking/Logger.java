@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
-// TODO replace with a real logger or find a solution
 public class Logger {
 
   public void debug(String message, Exception e) {
