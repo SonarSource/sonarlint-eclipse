@@ -36,19 +36,21 @@ public class IssueTracker {
     this.cache = new ConcurrentHashMap<>();
   }
 
+  private boolean isFirstAnalysis(String file) {
+    return !cache.containsKey(file);
+  }
+
   private Collection<MutableTrackable> getCurrentTrackables(String file) {
     return cache.get(file);
   }
 
-  public synchronized void matchAndTrackAsBase(String file, Collection<Trackable> trackables) {
-    Collection<MutableTrackable> current = getCurrentTrackables(file);
-    if (current == null || current.isEmpty()) {
-      // whatever is the base, if current is missing or empty, then nothing to do
-      return;
-    }
-    matchAndTrack(file, trackables, getCurrentTrackables(file));
-  }
-
+  /**
+   * Match a new set of trackables to current state.
+   * If this is the first analysis, leave creation date as null.
+   *
+   * @param file
+   * @param trackables
+   */
   public synchronized void matchAndTrackAsNew(String file, Collection<MutableTrackable> trackables) {
     if (isFirstAnalysis(file)) {
       updateTrackedIssues(file, trackables);
@@ -57,8 +59,19 @@ public class IssueTracker {
     }
   }
 
-  private boolean isFirstAnalysis(String file) {
-    return !cache.containsKey(file);
+  /**
+   * "Rebase" current trackables against given trackables.
+   *
+   * @param file
+   * @param trackables
+   */
+  public synchronized void matchAndTrackAsBase(String file, Collection<Trackable> trackables) {
+    Collection<MutableTrackable> current = getCurrentTrackables(file);
+    if (current.isEmpty()) {
+      // whatever is the base, if current is empty, then nothing to do
+      return;
+    }
+    matchAndTrack(file, trackables, current);
   }
 
   // note: the base issues are sometimes mutable, sometimes not (for example server issues)
