@@ -52,7 +52,7 @@ public abstract class MutableTrackableImpl implements MutableTrackable {
   }
 
   @Override
-  public void copy(Trackable base) {
+  public void copyServerIssueDetails(Trackable base) {
     creationDate = base.getCreationDate();
     serverIssueKey = base.getServerIssueKey();
     resolved = base.isResolved();
@@ -60,7 +60,7 @@ public abstract class MutableTrackableImpl implements MutableTrackable {
   }
 
   @Override
-  public void reset() {
+  public void resetServerIssueDetails() {
     creationDate = DEFAULT_CREATION_DATE;
     serverIssueKey = DEFAULT_SERVER_ISSUE_KEY;
     resolved = DEFAULT_RESOLVED;
