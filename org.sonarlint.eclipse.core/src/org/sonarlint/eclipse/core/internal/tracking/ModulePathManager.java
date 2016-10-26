@@ -23,6 +23,9 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Manage a mapping of local module keys to their physical filesystem paths.
+ */
 public class ModulePathManager {
 
   private final Map<String, String> modulePaths = new ConcurrentHashMap<>();
