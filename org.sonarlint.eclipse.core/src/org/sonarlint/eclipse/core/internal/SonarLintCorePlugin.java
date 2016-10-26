@@ -35,6 +35,7 @@ import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerRegistry;
 import org.sonarlint.eclipse.core.internal.tracking.MarkerUpdater;
+import org.sonarlint.eclipse.core.internal.tracking.ModulePathManager;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
 import org.sonarlint.eclipse.core.internal.tracking.TrackingChangeQueueManager;
 import org.sonarlint.eclipse.core.internal.tracking.TrackingChangeQueueManagerImpl;
@@ -48,6 +49,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectManager projectManager;
 
+  private ModulePathManager modulePathManager;
   private TrackingChangeQueueManager trackingChangeQueueManager;
   private IssueTrackerRegistry issueTrackerRegistry;
   private ServerIssueUpdater serverIssueUpdater;
@@ -124,8 +126,9 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     sonarLintChangeListener = new SonarLintChangeListener();
     ResourcesPlugin.getWorkspace().addResourceChangeListener(sonarLintChangeListener, IResourceChangeEvent.POST_CHANGE);
 
+    modulePathManager = new ModulePathManager();
     trackingChangeQueueManager = new TrackingChangeQueueManagerImpl();
-    trackingChangeQueueManager.subscribe(new MarkerUpdater());
+    trackingChangeQueueManager.subscribe(new MarkerUpdater(modulePathManager));
 
     issueTrackerRegistry = new IssueTrackerRegistry(trackingChangeQueueManager);
 
@@ -164,5 +167,9 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   public IssueTrackerRegistry getIssueTrackerRegistry() {
     return issueTrackerRegistry;
+  }
+
+  public ModulePathManager getModulePathManager() {
+    return modulePathManager;
   }
 }

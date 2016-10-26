@@ -34,10 +34,15 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 
 public class MarkerUpdater implements TrackingChangeListener {
 
+  private final ModulePathManager modulePathManager;
+
+  public MarkerUpdater(ModulePathManager modulePathManager) {
+    this.modulePathManager = modulePathManager;
+  }
+
   @Override
   public void onTrackingChange(String moduleKey, String relativePath, Collection<? extends Trackable> issues) {
-    // TODO find the absolute path from moduleKey and file (relative path)
-    String absolutePath = "/home/janosgyerik/dev/git/sonar/sonar-scanner-cli/" + relativePath;
+    String absolutePath = modulePathManager.getFilePath(moduleKey, relativePath);
 
     IWorkspace workspace = ResourcesPlugin.getWorkspace();
     IPath location = Path.fromOSString(absolutePath);

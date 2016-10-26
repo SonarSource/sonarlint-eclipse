@@ -39,7 +39,6 @@ import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -63,7 +62,6 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
-import org.sonarlint.eclipse.core.internal.tracking.Input;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.MutableTrackable;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -301,6 +299,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     if (iTextFileBufferManager == null) {
       return;
     }
+
     Set<IFile> failedFiles = result.failedAnalysisFiles().stream().map(f -> f.<IFile>getClientObject()).collect(Collectors.toSet());
     for (Entry<IResource, List<Issue>> resourceEntry : issuesPerResource.entrySet()) {
       IResource r = resourceEntry.getKey();
@@ -310,6 +309,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       List<Issue> rawIssues = resourceEntry.getValue();
       try {
         if (r instanceof IFile) {
+          IProject project = r.getProject();
+          SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(project.getName(), project.getLocation().toString());
           trackLocalIssues(r, rawIssues);
           trackServerIssues(r);
         } else {
