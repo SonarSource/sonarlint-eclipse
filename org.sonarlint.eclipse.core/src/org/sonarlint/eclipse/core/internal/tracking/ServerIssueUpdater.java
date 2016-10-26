@@ -57,12 +57,12 @@ public class ServerIssueUpdater {
     this.issueTrackerRegistry = issueTrackerRegistry;
   }
 
-  public void updateFor(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String moduleKey, String relativePath) {
-    Runnable task = new IssueUpdateRunnable(serverConfiguration, engine, moduleKey, relativePath);
+  public void updateFor(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String localModuleKey, String serverModuleKey, String relativePath) {
+    Runnable task = new IssueUpdateRunnable(serverConfiguration, engine, localModuleKey, serverModuleKey, relativePath);
     try {
       this.executorService.submit(task);
     } catch (RejectedExecutionException e) {
-      LOGGER.debug("fetch and match server issues rejected for moduleKey=" + moduleKey + ", filepath=" + relativePath, e);
+      LOGGER.debug("fetch and match server issues rejected for moduleKey=" + serverModuleKey + ", filepath=" + relativePath, e);
     }
   }
 
@@ -76,13 +76,15 @@ public class ServerIssueUpdater {
   private class IssueUpdateRunnable implements Runnable {
     private final ServerConfiguration serverConfiguration;
     private final ConnectedSonarLintEngine engine;
-    private final String moduleKey;
+    private final String localModuleKey;
+    private final String serverModuleKey;
     private final String relativePath;
 
-    private IssueUpdateRunnable(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String moduleKey, String relativePath) {
+    private IssueUpdateRunnable(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String localModuleKey, String serverModuleKey, String relativePath) {
       this.serverConfiguration = serverConfiguration;
       this.engine = engine;
-      this.moduleKey = moduleKey;
+      this.localModuleKey = localModuleKey;
+      this.serverModuleKey = serverModuleKey;
       this.relativePath = relativePath;
     }
 
@@ -90,10 +92,10 @@ public class ServerIssueUpdater {
     public void run() {
       try {
         ConnectedSonarLintEngine.class.getProtectionDomain().getCodeSource().getLocation();
-        Iterator<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, moduleKey, relativePath);
+        Iterator<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, relativePath);
         Collection<Trackable> serverIssuesTrackable = toStream(serverIssues).map(ServerIssueTrackable::new).collect(Collectors.toList());
 
-        issueTrackerRegistry.get(moduleKey).matchAndTrackAsBase(relativePath, serverIssuesTrackable);
+        issueTrackerRegistry.get(localModuleKey).matchAndTrackAsBase(relativePath, serverIssuesTrackable);
       } catch (Throwable t) {
         // note: without catching Throwable, any exceptions raised in the thread will not be visible
         console.error("error while fetching and matching server issues", t);

@@ -302,53 +302,54 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
     Set<IFile> failedFiles = result.failedAnalysisFiles().stream().map(f -> f.<IFile>getClientObject()).collect(Collectors.toSet());
     for (Entry<IResource, List<Issue>> resourceEntry : issuesPerResource.entrySet()) {
-      IResource r = resourceEntry.getKey();
-      if (failedFiles.contains(r)) {
+      IResource resource = resourceEntry.getKey();
+      if (failedFiles.contains(resource)) {
         continue;
       }
       List<Issue> rawIssues = resourceEntry.getValue();
       try {
-        if (r instanceof IFile) {
-          IProject project = r.getProject();
-          SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(project.getName(), project.getLocation().toString());
+        if (resource instanceof IFile) {
+          IProject project = resource.getProject();
+          String moduleKey = project.getName();
+          SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(moduleKey, project.getLocation().toString());
 
-          String relativePath = r.getProjectRelativePath().toString();
-          trackLocalIssues(r, relativePath, rawIssues);
-          trackServerIssues(r, relativePath);
+          String relativePath = resource.getProjectRelativePath().toString();
+          trackLocalIssues(moduleKey, resource, relativePath, rawIssues);
+          trackServerIssues(moduleKey, resource, relativePath);
         } else {
           // TODO delete if this never happens, or else handle it better
           throw new IllegalStateException("updateMarkers for not an IFile?");
         }
       } catch (Exception e) {
-        SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarLint marker on resource " + r.getName(), e);
+        SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarLint marker on resource " + resource.getName(), e);
       }
     }
   }
 
-  private void trackLocalIssues(IResource resource, String relativePath, List<Issue> rawIssues) {
-    String moduleKey = resource.getProject().getName();
+  private void trackLocalIssues(String moduleKey, IResource resource, String relativePath, List<Issue> rawIssues) {
     Collection<MutableTrackable> trackables = rawIssues.stream().map(IssueTrackable::new).collect(Collectors.toList());
     SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(moduleKey).matchAndTrackAsNew(relativePath, trackables);
   }
 
-  private void trackServerIssues(IResource resource, String relativePath) {
+  private void trackServerIssues(String localModuleKey, IResource resource, String relativePath) {
     String serverId = SonarLintProject.getInstance(resource).getServerId();
     if (serverId == null) {
       // TODO log it: not bound to a server
       return;
     }
-    Server server = (Server) ServersManager.getInstance().getServer(serverId);
-    ServerConfiguration serverConfiguration = server.getConfig();
 
     SonarLintProject project = SonarLintCorePlugin.getDefault().getProjectManager().readSonarLintConfiguration(resource.getProject());
-    String moduleKey = project.getModuleKey();
-    if (moduleKey == null) {
+    String serverModuleKey = project.getModuleKey();
+    if (serverModuleKey == null) {
       // TODO log it: not bound to a module
       return;
     }
 
+    // TODO probably not cool, this cast... better way?
+    Server server = (Server) ServersManager.getInstance().getServer(serverId);
+    ServerConfiguration serverConfiguration = server.getConfig();
     ConnectedSonarLintEngine engine = server.getEngine();
-    SonarLintCorePlugin.getDefault().getServerIssueUpdater().updateFor(serverConfiguration, engine, moduleKey, relativePath);
+    SonarLintCorePlugin.getDefault().getServerIssueUpdater().updateFor(serverConfiguration, engine, localModuleKey, serverModuleKey, relativePath);
   }
 
   private static void analysisCompleted(Collection<ProjectConfigurator> usedConfigurators, Map<String, String> properties, final IProgressMonitor monitor) {
