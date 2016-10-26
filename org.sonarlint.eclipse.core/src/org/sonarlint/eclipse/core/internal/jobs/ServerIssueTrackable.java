@@ -72,4 +72,9 @@ public class ServerIssueTrackable implements Trackable {
   public String getAssignee() {
     return serverIssue.assigneeLogin();
   }
+
+  @Override
+  public String getSeverity() {
+    return serverIssue.severity();
+  }
 }
