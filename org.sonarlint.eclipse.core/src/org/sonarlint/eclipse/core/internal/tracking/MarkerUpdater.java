@@ -79,8 +79,9 @@ public class MarkerUpdater implements TrackingChangeListener {
     marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, issue.getServerIssueKey());
     marker.setAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, issue.getAssignee());
 
-    if (issue.getCreationDate() != null) {
-      marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(issue.getCreationDate().longValue()));
+    Long creationDate = issue.getCreationDate();
+    if (creationDate != null) {
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(creationDate.longValue()));
     }
   }
 
