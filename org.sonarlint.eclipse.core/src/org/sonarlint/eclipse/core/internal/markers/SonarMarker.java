@@ -44,7 +44,7 @@ public class SonarMarker {
 
   public static void updateAttributes(final IMarker marker, final Issue issue, final IDocument iDoc) throws CoreException {
     Integer startLine = issue.getStartLine();
-    marker.setAttribute(IMarker.PRIORITY, getPriority(issue.getSeverity()));
+    //marker.setAttribute(IMarker.PRIORITY, getPriority(issue.getSeverity()));
     marker.setAttribute(IMarker.SEVERITY, PreferencesUtils.getMarkerSeverity());
     // File level issues (line == null) are displayed on line 1
     marker.setAttribute(IMarker.LINE_NUMBER, startLine != null ? startLine : 1);
@@ -122,25 +122,6 @@ public class SonarMarker {
 
   public static String getMessage(final Issue issue) {
     return issue.getMessage();
-  }
-
-  /**
-   * @return Priority marker attribute. A number from the set of high, normal and low priorities defined by the platform.
-   *
-   * @see IMarker.PRIORITY_HIGH
-   * @see IMarker.PRIORITY_NORMAL
-   * @see IMarker.PRIORITY_LOW
-   */
-  private static Integer getPriority(final String severity) {
-    int result = IMarker.PRIORITY_LOW;
-    if ("blocker".equalsIgnoreCase(severity) || "critical".equalsIgnoreCase(severity)) {
-      result = IMarker.PRIORITY_HIGH;
-    } else if ("major".equalsIgnoreCase(severity)) {
-      result = IMarker.PRIORITY_NORMAL;
-    } else if ("minor".equalsIgnoreCase(severity) || "info".equalsIgnoreCase(severity)) {
-      result = IMarker.PRIORITY_LOW;
-    }
-    return result;
   }
 
   public static int checksum(String content) {

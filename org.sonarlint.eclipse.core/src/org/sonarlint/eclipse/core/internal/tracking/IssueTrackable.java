@@ -55,4 +55,9 @@ public class IssueTrackable extends MutableTrackableImpl {
   public String getRuleKey() {
     return issue.getRuleKey();
   }
+
+  @Override
+  public String getSeverity() {
+    return issue.getSeverity();
+  }
 }

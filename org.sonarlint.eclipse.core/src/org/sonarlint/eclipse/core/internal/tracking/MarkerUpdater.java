@@ -66,23 +66,41 @@ public class MarkerUpdater implements TrackingChangeListener {
     }
   }
 
-  private void createMarker(IFile file, Trackable issue) throws CoreException {
+  private void createMarker(IFile file, Trackable trackable) throws CoreException {
     IMarker marker = file.createMarker(SonarLintCorePlugin.MARKER_ID);
 
-    // TODO
-    // marker.setAttribute(IMarker.PRIORITY, getPriority(issue.getSeverity()));
+    marker.setAttribute(IMarker.PRIORITY, getPriority(trackable.getSeverity()));
     marker.setAttribute(IMarker.SEVERITY, PreferencesUtils.getMarkerSeverity());
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, trackable.getSeverity());
 
     // File level issues (line == null) are displayed on line 1
-    marker.setAttribute(IMarker.LINE_NUMBER, issue.getLine() != null ? issue.getLine() : 1);
-    marker.setAttribute(IMarker.MESSAGE, issue.getMessage());
-    marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, issue.getServerIssueKey());
-    marker.setAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, issue.getAssignee());
+    marker.setAttribute(IMarker.LINE_NUMBER, trackable.getLine() != null ? trackable.getLine() : 1);
+    marker.setAttribute(IMarker.MESSAGE, trackable.getMessage());
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, trackable.getServerIssueKey());
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, trackable.getAssignee());
 
-    Long creationDate = issue.getCreationDate();
+    Long creationDate = trackable.getCreationDate();
     if (creationDate != null) {
       marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(creationDate.longValue()));
     }
   }
 
+  /**
+   * @return Priority marker attribute. A number from the set of high, normal and low priorities defined by the platform.
+   *
+   * @see IMarker.PRIORITY_HIGH
+   * @see IMarker.PRIORITY_NORMAL
+   * @see IMarker.PRIORITY_LOW
+   */
+  private static Integer getPriority(final String severity) {
+    int result = IMarker.PRIORITY_LOW;
+    if ("blocker".equalsIgnoreCase(severity) || "critical".equalsIgnoreCase(severity)) {
+      result = IMarker.PRIORITY_HIGH;
+    } else if ("major".equalsIgnoreCase(severity)) {
+      result = IMarker.PRIORITY_NORMAL;
+    } else if ("minor".equalsIgnoreCase(severity) || "info".equalsIgnoreCase(severity)) {
+      result = IMarker.PRIORITY_LOW;
+    }
+    return result;
+  }
 }
