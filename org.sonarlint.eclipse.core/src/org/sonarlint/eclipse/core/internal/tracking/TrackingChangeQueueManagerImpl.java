@@ -19,9 +19,9 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -34,7 +34,7 @@ public class TrackingChangeQueueManagerImpl implements TrackingChangeQueueManage
 
   private final ExecutorService executor;
 
-  private final List<TrackingChangeListener> listeners = new ArrayList<>();
+  private final Set<TrackingChangeListener> listeners = new HashSet<>();
 
   public TrackingChangeQueueManagerImpl() {
     BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<>(QUEUE_LIMIT);
