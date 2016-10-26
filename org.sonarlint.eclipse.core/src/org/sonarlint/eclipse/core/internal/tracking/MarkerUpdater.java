@@ -53,7 +53,6 @@ public class MarkerUpdater implements TrackingChangeListener {
     marker.setAttribute(IMarker.LINE_NUMBER, issue.getLine() != null ? issue.getLine() : 1);
     marker.setAttribute(IMarker.MESSAGE, issue.getMessage());
     marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, issue.getServerIssueKey());
-    marker.setAttribute(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, issue.isResolved());
     marker.setAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, issue.getAssignee());
 
     if (issue.getCreationDate() != null) {
