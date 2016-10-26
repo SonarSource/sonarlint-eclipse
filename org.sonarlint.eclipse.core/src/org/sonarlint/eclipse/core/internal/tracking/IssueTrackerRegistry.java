@@ -35,7 +35,8 @@ public class IssueTrackerRegistry {
   public synchronized IssueTracker get(String moduleKey) {
     IssueTracker tracker = registry.get(moduleKey);
     if (tracker == null) {
-      registry.put(moduleKey, newTracker(moduleKey));
+      tracker = newTracker(moduleKey);
+      registry.put(moduleKey, tracker);
     }
     return tracker;
   }
