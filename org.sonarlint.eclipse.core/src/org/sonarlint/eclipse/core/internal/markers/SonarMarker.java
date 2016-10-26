@@ -33,15 +33,6 @@ public class SonarMarker {
   private SonarMarker() {
   }
 
-  public static IMarker create(final IDocument iDoc, final IResource resource, final Issue issue, final Long creationTimeStamp) throws CoreException {
-    IMarker marker = resource.createMarker(SonarLintCorePlugin.MARKER_ID);
-    updateAttributes(marker, issue, iDoc);
-    if (creationTimeStamp != null) {
-      marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(creationTimeStamp.longValue()));
-    }
-    return marker;
-  }
-
   public static void updateAttributes(final IMarker marker, final Issue issue, final IDocument iDoc) throws CoreException {
     Integer startLine = issue.getStartLine();
     //marker.setAttribute(IMarker.PRIORITY, getPriority(issue.getSeverity()));
