@@ -311,8 +311,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         if (r instanceof IFile) {
           IProject project = r.getProject();
           SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(project.getName(), project.getLocation().toString());
-          trackLocalIssues(r, rawIssues);
-          trackServerIssues(r);
+
+          String relativePath = r.getProjectRelativePath().toString();
+          trackLocalIssues(r, relativePath, rawIssues);
+          trackServerIssues(r, relativePath);
         } else {
           // TODO delete if this never happens, or else handle it better
           throw new IllegalStateException("updateMarkers for not an IFile?");
@@ -323,14 +325,13 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private void trackLocalIssues(IResource resource, List<Issue> rawIssues) {
+  private void trackLocalIssues(IResource resource, String relativePath, List<Issue> rawIssues) {
     String moduleKey = resource.getProject().getName();
-    String relativePath = resource.getProjectRelativePath().toString();
     Collection<MutableTrackable> trackables = rawIssues.stream().map(IssueTrackable::new).collect(Collectors.toList());
     SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(moduleKey).matchAndTrackAsNew(relativePath, trackables);
   }
 
-  private void trackServerIssues(IResource resource) {
+  private void trackServerIssues(IResource resource, String relativePath) {
     String serverId = SonarLintProject.getInstance(resource).getServerId();
     if (serverId == null) {
       // TODO log it: not bound to a server
@@ -347,7 +348,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     ConnectedSonarLintEngine engine = server.getEngine();
-    String relativePath = resource.getProjectRelativePath().toString();
     SonarLintCorePlugin.getDefault().getServerIssueUpdater().updateFor(serverConfiguration, engine, moduleKey, relativePath);
   }
 
