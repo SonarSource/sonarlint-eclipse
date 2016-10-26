@@ -334,18 +334,16 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private void trackServerIssues(String localModuleKey, IResource resource, String relativePath) {
     String serverId = SonarLintProject.getInstance(resource).getServerId();
     if (serverId == null) {
-      // TODO log it: not bound to a server
+      // not bound to a server -> nothing to do
       return;
     }
 
-    SonarLintProject project = SonarLintCorePlugin.getDefault().getProjectManager().readSonarLintConfiguration(resource.getProject());
-    String serverModuleKey = project.getModuleKey();
+    String serverModuleKey = SonarLintCorePlugin.getDefault().getProjectManager().readSonarLintConfiguration(resource.getProject()).getModuleKey();
     if (serverModuleKey == null) {
-      // TODO log it: not bound to a module
+      // not bound to a module -> nothing to do
       return;
     }
 
-    // TODO probably not cool, this cast... better way?
     Server server = (Server) ServersManager.getInstance().getServer(serverId);
     ServerConfiguration serverConfiguration = server.getConfig();
     ConnectedSonarLintEngine engine = server.getEngine();

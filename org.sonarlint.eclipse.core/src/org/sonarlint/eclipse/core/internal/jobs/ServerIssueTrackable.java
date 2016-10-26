@@ -43,6 +43,7 @@ public class ServerIssueTrackable implements Trackable {
 
   @Override
   public Integer getTextRangeHash() {
+    // note: not available from server API
     return null;
   }
 

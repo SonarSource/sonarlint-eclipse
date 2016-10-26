@@ -22,6 +22,9 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Registry of per-module IssueTracker instances.
+ */
 public class IssueTrackerRegistry {
 
   private final Map<String, IssueTracker> registry = new HashMap<>();

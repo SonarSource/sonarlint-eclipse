@@ -73,7 +73,6 @@ public class TrackingChangeQueueManagerImpl implements TrackingChangeQueueManage
 
   @Override
   public void shutdown() {
-    // TODO log this?
     executor.shutdownNow();
   }
 
