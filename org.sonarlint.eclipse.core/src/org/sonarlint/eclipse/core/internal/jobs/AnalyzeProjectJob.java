@@ -28,8 +28,6 @@ import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +35,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.eclipse.core.filebuffers.FileBuffers;
-import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
-import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
@@ -51,8 +47,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jface.text.BadLocationException;
@@ -62,7 +56,6 @@ import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.configurator.ConfiguratorUtils;
-import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.SonarMarker;
 import org.sonarlint.eclipse.core.internal.markers.SonarMarker.Range;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
@@ -73,8 +66,6 @@ import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.tracking.Input;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.MutableTrackable;
-import org.sonarlint.eclipse.core.internal.tracking.Tracker;
-import org.sonarlint.eclipse.core.internal.tracking.Tracking;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
@@ -88,8 +79,6 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisCo
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.trimToNull;
 
 public class AnalyzeProjectJob extends AbstractSonarProjectJob {
-
-  private static final QualifiedName LAST_ANALYSIS_PROP_NAME = new QualifiedName(SonarLintCorePlugin.PLUGIN_ID, "lastAnalysis");
 
   private List<SonarLintProperty> extraProps;
 
@@ -198,44 +187,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     @Override
     public <G> G getClientObject() {
       return (G) file;
-    }
-  }
-
-  private static class PreviousMarkerCache {
-    Map<IResource, List<IMarker>> markersByResource = new HashMap<>();
-
-    public PreviousMarkerCache(AnalyzeProjectRequest request, Set<IFile> failedFiles) {
-      if (request.getFiles() != null) {
-        for (IFile file : request.getFiles()) {
-          if (failedFiles.contains(file)) {
-            SonarLintCorePlugin.getDefault().info("File won't be refreshed because there were errors during analysis: " + file.getFullPath().toOSString());
-          } else {
-            markersByResource.put(file, new ArrayList<IMarker>(MarkerUtils.findMarkers(file)));
-          }
-        }
-      } else {
-        for (IMarker m : MarkerUtils.findMarkers(request.getProject())) {
-          if (!markersByResource.containsKey(m.getResource())) {
-            markersByResource.put(m.getResource(), new ArrayList<IMarker>());
-          }
-          markersByResource.get(m.getResource()).add(m);
-        }
-      }
-    }
-
-    // TODO "unmatched"? Seems a bit magical. Try to clean up.
-    // The tracker removes from the underlying list the markers it matched = the markers to keep on display.
-    // Markers not removed by the tracker should be removed from the display.
-    public void deleteUnmatched() throws CoreException {
-      for (List<IMarker> entry : markersByResource.values()) {
-        for (IMarker m : entry) {
-          m.delete();
-        }
-      }
-    }
-
-    public List<IMarker> getPrevious(IResource r) {
-      return markersByResource.containsKey(r) ? markersByResource.get(r) : Collections.<IMarker>emptyList();
     }
   }
 
@@ -351,37 +302,24 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       return;
     }
     Set<IFile> failedFiles = result.failedAnalysisFiles().stream().map(f -> f.<IFile>getClientObject()).collect(Collectors.toSet());
-    PreviousMarkerCache markerCache = new PreviousMarkerCache(this.request, failedFiles);
-    long now = new Date().getTime();
     for (Entry<IResource, List<Issue>> resourceEntry : issuesPerResource.entrySet()) {
       IResource r = resourceEntry.getKey();
       if (failedFiles.contains(r)) {
         continue;
       }
-      List<IMarker> previousMarkers = markerCache.getPrevious(r);
-      Object lastAnalysis = r.getSessionProperty(LAST_ANALYSIS_PROP_NAME);
-      Long creationTimeStampForNewIssues;
-      if (previousMarkers.isEmpty() && lastAnalysis == null) {
-        creationTimeStampForNewIssues = null;
-      } else {
-        creationTimeStampForNewIssues = now;
-      }
       List<Issue> rawIssues = resourceEntry.getValue();
       try {
         if (r instanceof IFile) {
-          issueTrackingOnFile(iTextFileBufferManager, r, previousMarkers, rawIssues, creationTimeStampForNewIssues);
           trackLocalIssues(r, rawIssues);
-
           trackServerIssues(r);
         } else {
-          matchWithPreviousIssues(r, previousMarkers, rawIssues, null, creationTimeStampForNewIssues);
+          // TODO delete if this never happens, or else handle it better
+          throw new IllegalStateException("updateMarkers for not an IFile?");
         }
       } catch (Exception e) {
         SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarLint marker on resource " + r.getName(), e);
       }
-      r.setSessionProperty(LAST_ANALYSIS_PROP_NAME, now);
     }
-    markerCache.deleteUnmatched();
   }
 
   private void trackLocalIssues(IResource resource, List<Issue> rawIssues) {
@@ -410,69 +348,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     ConnectedSonarLintEngine engine = server.getEngine();
     String relativePath = resource.getProjectRelativePath().toString();
     SonarLintCorePlugin.getDefault().getServerIssueUpdater().updateFor(serverConfiguration, engine, moduleKey, relativePath);
-  }
-
-  private static void issueTrackingOnFile(ITextFileBufferManager iTextFileBufferManager, IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues,
-    Long creationTimeStampForNewIssues)
-    throws CoreException, BadLocationException {
-    IFile iFile = (IFile) r;
-    try {
-      iTextFileBufferManager.connect(iFile.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
-      ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(iFile.getFullPath(), LocationKind.IFILE);
-      IDocument iDoc = iTextFileBuffer.getDocument();
-
-      matchWithPreviousIssues(r, previousMarkers, rawIssues, iDoc, creationTimeStampForNewIssues);
-
-    } finally {
-      try {
-        iTextFileBufferManager.disconnect(iFile.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
-      } catch (CoreException e) {
-        // Ignore
-      }
-    }
-  }
-
-  private static void matchWithServerIssues(List<IMarker> previousMarkers, List<ServerIssueTrackable> serverIssues) throws CoreException {
-    Input<ServerIssueTrackable> baseInput = () -> serverIssues;
-    Input<TrackableMarker> rawInput = () -> wrap(previousMarkers);
-    Tracking<TrackableMarker, ServerIssueTrackable> tracking = new Tracker<TrackableMarker, ServerIssueTrackable>().track(rawInput, baseInput);
-    for (Entry<TrackableMarker, ServerIssueTrackable> entry : tracking.getMatchedRaws().entrySet()) {
-      IMarker marker = entry.getKey().getWrapped();
-      ServerIssueTrackable issue = entry.getValue();
-      marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(issue.getCreationDate().longValue()));
-      marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, issue.getServerIssueKey());
-      marker.setAttribute(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, issue.isResolved());
-      marker.setAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, issue.getAssignee());
-    }
-    for (TrackableMarker newIssue : tracking.getUnmatchedRaws()) {
-      if (newIssue.getServerIssueKey() != null) {
-        IMarker marker = newIssue.getWrapped();
-        // TODO think again what should happen to the creation date
-        marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, null);
-        marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, null);
-        marker.setAttribute(MarkerUtils.SONAR_MARKER_RESOLVED_ATTR, false);
-        marker.setAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, "");
-      }
-    }
-  }
-
-  private static void matchWithPreviousIssues(IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues, IDocument doc, Long creationTimeStampForNewIssues)
-    throws BadLocationException, CoreException {
-    Input<TrackableMarker> baseInput = prepareBaseInput(previousMarkers);
-    Input<TrackableIssue> rawInput = prepareRawInput(doc, rawIssues);
-    Tracking<TrackableIssue, TrackableMarker> tracking = new Tracker<TrackableIssue, TrackableMarker>().track(rawInput, baseInput);
-    for (Entry<TrackableIssue, TrackableMarker> entry : tracking.getMatchedRaws().entrySet()) {
-      Issue issue = entry.getKey().getWrapped();
-      IMarker marker = entry.getValue().getWrapped();
-      // TODO removing elements from an input list... dodgy? -> try to improve
-      // The previousMarkers come from PreviousMarkerCache, populated before matching and updating.
-      // After matching and updating, markers left in the cache will be deleted.
-      previousMarkers.remove(marker);
-      SonarMarker.updateAttributes(marker, issue, doc);
-    }
-    for (TrackableIssue newIssue : tracking.getUnmatchedRaws()) {
-      SonarMarker.create(doc, r, newIssue.getWrapped(), creationTimeStampForNewIssues);
-    }
   }
 
   private static void analysisCompleted(Collection<ProjectConfigurator> usedConfigurators, Map<String, String> properties, final IProgressMonitor monitor) {
@@ -530,31 +405,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private static Input<TrackableMarker> prepareBaseInput(List<IMarker> previous) {
-    return () -> wrap(previous);
-  }
-
-  private static List<TrackableMarker> wrap(List<IMarker> previous) {
-    final List<TrackableMarker> wrapped = new ArrayList<>();
-    for (IMarker marker : previous) {
-      wrapped.add(new TrackableMarker(marker));
-    }
-    return wrapped;
-  }
-
-  private static Input<TrackableIssue> prepareRawInput(IDocument iDoc, List<Issue> issues) {
-    return () -> wrap(iDoc, issues);
-  }
-
-  private static List<TrackableIssue> wrap(IDocument iDoc, List<Issue> issues) {
-    final List<TrackableIssue> wrapped = new ArrayList<>();
-    for (Issue issue : issues) {
-      Integer checksum = iDoc != null ? computeChecksum(iDoc, issue) : null;
-      wrapped.add(new TrackableIssue(issue, checksum));
-    }
-    return wrapped;
-  }
-
+  // TODO use this
   private static Integer computeChecksum(IDocument iDoc, Issue issue) {
     Integer checksum;
     Integer startLine = issue.getStartLine();
