@@ -42,6 +42,11 @@ public class ServerIssueTrackable implements Trackable {
   }
 
   @Override
+  public Integer getTextRangeHash() {
+    return null;
+  }
+
+  @Override
   public Integer getLineHash() {
     return serverIssue.checksum().hashCode();
   }
@@ -65,132 +70,5 @@ public class ServerIssueTrackable implements Trackable {
 
   public String getAssignee() {
     return serverIssue.assigneeLogin();
-  }
-
-  // TODO remove all this crap before PR
-
-  public static Builder newBuilder() {
-    return new Builder();
-  }
-
-  public static class Builder {
-    private String ruleKey = "";
-    private String resolution = "";
-    private String message = "";
-    private int line;
-    private String key = "";
-    private Instant date;
-    private String checksum = "";
-    private String assignee;
-
-    public ServerIssueTrackable build() {
-      ServerIssue serverIssue = new ServerIssue() {
-        @Override
-        public String severity() {
-          throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String ruleKey() {
-          return ruleKey;
-        }
-
-        @Override
-        public String resolution() {
-          return resolution;
-        }
-
-        @Override
-        public String moduleKey() {
-          throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String message() {
-          return message;
-        }
-
-        @Override
-        public boolean manualSeverity() {
-          throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int line() {
-          return line;
-        }
-
-        @Override
-        public String key() {
-          return key;
-        }
-
-        @Override
-        public String filePath() {
-          throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Instant creationDate() {
-          return date;
-        }
-
-        @Override
-        public String checksum() {
-          return checksum;
-        }
-
-        @Override
-        public String assigneeLogin() {
-          return assignee;
-        }
-      };
-      return new ServerIssueTrackable(serverIssue);
-    }
-
-    public Builder ruleKey(String ruleKey) {
-      this.ruleKey = ruleKey;
-      return this;
-    }
-
-    public Builder resolution(String resolution) {
-      this.resolution = resolution;
-      return this;
-    }
-
-    public Builder message(String message) {
-      this.message = message;
-      return this;
-    }
-
-    public Builder line(int line) {
-      this.line = line;
-      return this;
-    }
-
-    public Builder key(String key) {
-      this.key = key;
-      return this;
-    }
-
-    public Builder date(Instant date) {
-      this.date = date;
-      return this;
-    }
-
-    public Builder checksum(String checksum) {
-      this.checksum = checksum;
-      return this;
-    }
-
-    public Builder assignee(String assignee) {
-      this.assignee = assignee;
-      return this;
-    }
-  }
-
-  @Override
-  public Integer getTextRangeHash() {
-    return null;
   }
 }
