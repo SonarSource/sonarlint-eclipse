@@ -33,7 +33,9 @@ public class MarkerUpdater implements TrackingChangeListener {
 
     try {
       for (Trackable issue : issues) {
-        createMarker(file, issue);
+        if (!issue.isResolved()) {
+          createMarker(file, issue);
+        }
       }
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
