@@ -74,7 +74,7 @@ public final class MarkerUtils {
   }
 
   public static FlatTextRange toFlatTextRange(final IDocument document, TextRange textRange) {
-    if (textRange.getStartLine() == null) {
+    if (textRange == null || textRange.getStartLine() == null) {
       return null;
     }
     if (textRange.getStartLineOffset() == null) {
