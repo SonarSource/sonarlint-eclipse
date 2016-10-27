@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
@@ -66,13 +64,6 @@ public class MarkerUtilsTest extends SonarTestCase {
   @Test
   public void testLineStartEndCrLf() throws Exception {
     IFile file = project.getFile("src/main/java/ViolationOnFileCrLf.java");
-    String content;
-    try (InputStream is = file.getContents()) {
-      java.util.Scanner s = new java.util.Scanner(is, file.getCharset()).useDelimiter("\\A");
-      content = s.hasNext() ? s.next() : "";
-    }
-    content.replaceAll("\n", "\r\n");
-    file.setContents(new ByteArrayInputStream(content.getBytes()), IFile.FORCE, new NullProgressMonitor());
     ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
     iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
     ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
