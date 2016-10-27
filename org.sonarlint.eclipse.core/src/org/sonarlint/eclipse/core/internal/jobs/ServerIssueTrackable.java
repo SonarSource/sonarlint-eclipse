@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import java.time.Instant;
+import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 
@@ -76,5 +76,10 @@ public class ServerIssueTrackable implements Trackable {
   @Override
   public String getSeverity() {
     return serverIssue.severity();
+  }
+
+  @Override
+  public TextRange getTextRange() {
+    return new TextRange(serverIssue.line());
   }
 }

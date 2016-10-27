@@ -19,14 +19,17 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 
 public class IssueTrackable extends MutableTrackableImpl {
 
   private final Issue issue;
+  private final TextRange textRange;
 
   public IssueTrackable(Issue issue) {
     this.issue = issue;
+    this.textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
   }
 
   @Override
@@ -59,5 +62,10 @@ public class IssueTrackable extends MutableTrackableImpl {
   @Override
   public String getSeverity() {
     return issue.getSeverity();
+  }
+
+  @Override
+  public TextRange getTextRange() {
+    return textRange;
   }
 }

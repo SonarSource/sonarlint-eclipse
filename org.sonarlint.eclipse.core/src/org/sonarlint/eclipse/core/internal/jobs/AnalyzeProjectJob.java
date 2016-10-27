@@ -48,15 +48,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.configurator.ConfiguratorUtils;
-import org.sonarlint.eclipse.core.internal.markers.SonarMarker;
-import org.sonarlint.eclipse.core.internal.markers.SonarMarker.Range;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.server.IServer;
@@ -314,7 +310,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(moduleKey, project.getLocation().toString());
 
           String relativePath = resource.getProjectRelativePath().toString();
-          trackLocalIssues(moduleKey, resource, relativePath, rawIssues);
+          trackLocalIssues(moduleKey, relativePath, rawIssues);
           trackServerIssues(moduleKey, resource, relativePath);
         } else {
           // TODO delete if this never happens, or else handle it better
@@ -326,7 +322,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private void trackLocalIssues(String moduleKey, IResource resource, String relativePath, List<Issue> rawIssues) {
+  private void trackLocalIssues(String moduleKey, String relativePath, List<Issue> rawIssues) {
     Collection<MutableTrackable> trackables = rawIssues.stream().map(IssueTrackable::new).collect(Collectors.toList());
     SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(moduleKey).matchAndTrackAsNew(relativePath, trackables);
   }
@@ -404,23 +400,4 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       return facadeToUse.runAnalysis(config, new SonarLintIssueListener(issuesPerResource));
     }
   }
-
-  // TODO use this
-  private static Integer computeChecksum(IDocument iDoc, Issue issue) {
-    Integer checksum;
-    Integer startLine = issue.getStartLine();
-    if (startLine == null) {
-      checksum = null;
-    } else {
-      Range rangeInFile;
-      try {
-        rangeInFile = SonarMarker.findRangeInFile(issue, iDoc);
-        checksum = SonarMarker.checksum(rangeInFile.getContent());
-      } catch (BadLocationException e) {
-        checksum = null;
-      }
-    }
-    return checksum;
-  }
-
 }
