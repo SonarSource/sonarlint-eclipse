@@ -25,6 +25,8 @@ import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.junit.BeforeClass;
@@ -45,67 +47,63 @@ public class MarkerUtilsTest extends SonarTestCase {
     SonarLintProject.getInstance(project);
   }
 
+  private static class TextFileContext implements AutoCloseable {
+    private final IPath path;
+    private final ITextFileBufferManager textFileBufferManager;
+    private final IDocument document;
+
+    TextFileContext(String filepath) throws CoreException {
+      IFile file = project.getFile(filepath);
+      this.path = file.getFullPath();
+      this.textFileBufferManager = FileBuffers.getTextFileBufferManager();
+      textFileBufferManager.connect(path, LocationKind.IFILE, new NullProgressMonitor());
+      ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
+      document = textFileBuffer.getDocument();
+    }
+
+    @Override
+    public void close() throws Exception {
+      textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
+    }
+  }
+
   @Test
   public void testLineStartEnd() throws Exception {
-    IFile file = project.getFile("src/main/java/ViolationOnFile.java");
-    ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
-    iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
-    ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
-    IDocument iDoc = iTextFileBuffer.getDocument();
-
-    TextRange textRange = new TextRange(2);
-    FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(iDoc, textRange);
-    assertThat(flatTextRange.getStart()).isEqualTo(31);
-    assertThat(flatTextRange.getEnd()).isEqualTo(63);
-
-    iTextFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
+    try (TextFileContext context = new TextFileContext("src/main/java/ViolationOnFile.java")) {
+      TextRange textRange = new TextRange(2);
+      FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(context.document, textRange);
+      assertThat(flatTextRange.getStart()).isEqualTo(31);
+      assertThat(flatTextRange.getEnd()).isEqualTo(63);
+    }
   }
 
   @Test
   public void testLineStartEndCrLf() throws Exception {
-    IFile file = project.getFile("src/main/java/ViolationOnFileCrLf.java");
-    ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
-    iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
-    ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
-    IDocument iDoc = iTextFileBuffer.getDocument();
-
-    TextRange textRange = new TextRange(2);
-    FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(iDoc, textRange);
-    assertThat(flatTextRange.getStart()).isEqualTo(32);
-    assertThat(flatTextRange.getEnd()).isEqualTo(64);
-
-    iTextFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
+    try (TextFileContext context = new TextFileContext("src/main/java/ViolationOnFileCrLf.java")) {
+      TextRange textRange = new TextRange(2);
+      FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(context.document, textRange);
+      assertThat(flatTextRange.getStart()).isEqualTo(32);
+      assertThat(flatTextRange.getEnd()).isEqualTo(64);
+    }
   }
 
   @Test
   public void testPreciseIssueLocationSingleLine() throws Exception {
-    IFile file = project.getFile("src/main/java/ViolationOnFile.java");
-    ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
-    iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
-    ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
-    IDocument iDoc = iTextFileBuffer.getDocument();
-
-    TextRange textRange = new TextRange(2, 23, 2, 31);
-    FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(iDoc, textRange);
-    assertThat(flatTextRange.getStart()).isEqualTo(54);
-    assertThat(flatTextRange.getEnd()).isEqualTo(62);
-
-    iTextFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
+    try (TextFileContext context = new TextFileContext("src/main/java/ViolationOnFile.java")) {
+      TextRange textRange = new TextRange(2, 23, 2, 31);
+      FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(context.document, textRange);
+      assertThat(flatTextRange.getStart()).isEqualTo(54);
+      assertThat(flatTextRange.getEnd()).isEqualTo(62);
+    }
   }
 
   @Test
   public void testPreciseIssueLocationMultiLine() throws Exception {
-    IFile file = project.getFile("src/main/java/ViolationOnFile.java");
-    ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
-    iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
-    ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
-    IDocument iDoc = iTextFileBuffer.getDocument();
-
-    TextRange textRange = new TextRange(4, 34, 5, 12);
-    FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(iDoc, textRange);
-    assertThat(flatTextRange.getStart()).isEqualTo(101);
-    assertThat(flatTextRange.getEnd()).isEqualTo(119);
-
-    iTextFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
+    try (TextFileContext context = new TextFileContext("src/main/java/ViolationOnFile.java")) {
+      TextRange textRange = new TextRange(4, 34, 5, 12);
+      FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(context.document, textRange);
+      assertThat(flatTextRange.getStart()).isEqualTo(101);
+      assertThat(flatTextRange.getEnd()).isEqualTo(119);
+    }
   }
 }
