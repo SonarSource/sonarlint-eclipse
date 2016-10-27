@@ -20,6 +20,10 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.Collection;
+import org.eclipse.core.filebuffers.FileBuffers;
+import org.eclipse.core.filebuffers.ITextFileBuffer;
+import org.eclipse.core.filebuffers.ITextFileBufferManager;
+import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -27,9 +31,12 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.markers.FlatTextRange;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 
 public class MarkerUpdater implements TrackingChangeListener {
@@ -55,18 +62,34 @@ public class MarkerUpdater implements TrackingChangeListener {
       return;
     }
 
+    ITextFileBufferManager textFileBufferManager = FileBuffers.getTextFileBufferManager();
+    if (textFileBufferManager == null) {
+      return;
+    }
+
+    IPath path = file.getFullPath();
     try {
+      textFileBufferManager.connect(path, LocationKind.IFILE, new NullProgressMonitor());
+      ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
+      IDocument document = textFileBuffer.getDocument();
+
       for (Trackable issue : issues) {
         if (!issue.isResolved()) {
-          createMarker(file, issue);
+          createMarker(document, file, issue);
         }
       }
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+    } finally {
+      try {
+        textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
+      } catch (CoreException e) {
+        // ignore
+      }
     }
   }
 
-  private void createMarker(IFile file, Trackable trackable) throws CoreException {
+  private static void createMarker(IDocument document, IFile file, Trackable trackable) throws CoreException {
     IMarker marker = file.createMarker(SonarLintCorePlugin.MARKER_ID);
 
     marker.setAttribute(IMarker.PRIORITY, getPriority(trackable.getSeverity()));
@@ -82,6 +105,12 @@ public class MarkerUpdater implements TrackingChangeListener {
     Long creationDate = trackable.getCreationDate();
     if (creationDate != null) {
       marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(creationDate.longValue()));
+    }
+
+    FlatTextRange textRange = MarkerUtils.toFlatTextRange(document, trackable.getTextRange());
+    if (textRange != null) {
+      marker.setAttribute(IMarker.CHAR_START, textRange.getStart());
+      marker.setAttribute(IMarker.CHAR_END, textRange.getEnd());
     }
   }
 

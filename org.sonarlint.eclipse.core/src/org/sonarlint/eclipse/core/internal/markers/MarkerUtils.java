@@ -27,6 +27,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
@@ -71,4 +73,47 @@ public final class MarkerUtils {
     }
   }
 
+  public static FlatTextRange toFlatTextRange(final IDocument document, TextRange textRange) {
+    if (textRange.getStartLine() == null) {
+      return null;
+    }
+    if (textRange.getStartLineOffset() == null) {
+      return toFlatTextRange(document, textRange.getStartLine());
+    }
+    return toFlatTextRange(document, textRange.getStartLine(), textRange.getStartLineOffset(), textRange.getEndLine(), textRange.getEndLineOffset());
+  }
+
+  public static FlatTextRange toFlatTextRange(final IDocument document, int startLine) {
+    int startLineStartOffset;
+    int length;
+    String lineDelimiter;
+    try {
+      startLineStartOffset = document.getLineOffset(startLine - 1);
+      length = document.getLineLength(startLine - 1);
+      lineDelimiter = document.getLineDelimiter(startLine - 1);
+    } catch (BadLocationException e) {
+      return null;
+    }
+
+    int lineDelimiterLength = lineDelimiter != null ? lineDelimiter.length() : 0;
+
+    int start = startLineStartOffset;
+    int end = startLineStartOffset + length - lineDelimiterLength;
+    return new FlatTextRange(start, end);
+  }
+
+  private static FlatTextRange toFlatTextRange(final IDocument document, int startLine, int startLineOffset, int endLine, int endLineOffset) {
+    int startLineStartOffset;
+    int endLineStartOffset;
+    try {
+      startLineStartOffset = document.getLineOffset(startLine - 1);
+      endLineStartOffset = endLine != startLine ? document.getLineOffset(endLine - 1) : startLineStartOffset;
+    } catch (BadLocationException e) {
+      return null;
+    }
+
+    int start = startLineStartOffset + startLineOffset;
+    int end = endLineStartOffset + endLineOffset;
+    return new FlatTextRange(start, end);
+  }
 }
