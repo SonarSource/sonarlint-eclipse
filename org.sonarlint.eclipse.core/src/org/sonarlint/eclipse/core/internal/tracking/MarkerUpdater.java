@@ -96,21 +96,22 @@ public class MarkerUpdater implements TrackingChangeListener {
     marker.setAttribute(IMarker.SEVERITY, PreferencesUtils.getMarkerSeverity());
     marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, trackable.getSeverity());
 
-    // File level issues (line == null) are displayed on line 1
-    marker.setAttribute(IMarker.LINE_NUMBER, trackable.getLine() != null ? trackable.getLine() : 1);
     marker.setAttribute(IMarker.MESSAGE, trackable.getMessage());
     marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, trackable.getServerIssueKey());
     marker.setAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, trackable.getAssignee());
 
-    Long creationDate = trackable.getCreationDate();
-    if (creationDate != null) {
-      marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(creationDate.longValue()));
-    }
+    // File level issues (line == null) are displayed on line 1
+    marker.setAttribute(IMarker.LINE_NUMBER, trackable.getLine() != null ? trackable.getLine() : 1);
 
     FlatTextRange textRange = MarkerUtils.toFlatTextRange(document, trackable.getTextRange());
     if (textRange != null) {
       marker.setAttribute(IMarker.CHAR_START, textRange.getStart());
       marker.setAttribute(IMarker.CHAR_END, textRange.getEnd());
+    }
+
+    Long creationDate = trackable.getCreationDate();
+    if (creationDate != null) {
+      marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(creationDate.longValue()));
     }
   }
 
@@ -121,7 +122,7 @@ public class MarkerUpdater implements TrackingChangeListener {
    * @see IMarker.PRIORITY_NORMAL
    * @see IMarker.PRIORITY_LOW
    */
-  private static Integer getPriority(final String severity) {
+  private static int getPriority(final String severity) {
     int result = IMarker.PRIORITY_LOW;
     if ("blocker".equalsIgnoreCase(severity) || "critical".equalsIgnoreCase(severity)) {
       result = IMarker.PRIORITY_HIGH;
