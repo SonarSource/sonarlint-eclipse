@@ -27,7 +27,7 @@ public class TextRange {
   private final Integer endLineOffset;
 
   public TextRange(int line) {
-    this(line, 0, line, 0);
+    this(line, null, null, null);
   }
 
   public TextRange(Integer startLine, Integer startLineOffset, Integer endLine, Integer endLineOffset) {
