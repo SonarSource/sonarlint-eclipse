@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.views;
 
+import java.lang.reflect.Method;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
@@ -87,7 +88,16 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
   }
 
   private static String hexColor(Color color) {
-    return hexColor(color, color.getAlpha());
+    return hexColor(color, getAlpha(color));
+  }
+
+  private static int getAlpha(Color c) {
+    try {
+      Method m = Color.class.getMethod("getAlpha");
+      return (int) m.invoke(c);
+    } catch (Exception e) {
+      return 255;
+    }
   }
 
   private static String hexColor(Color color, Integer alpha) {
