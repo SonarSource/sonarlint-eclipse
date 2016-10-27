@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.markers;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.HashMap;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
@@ -34,13 +33,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-public class SonarMarkerTest extends SonarTestCase {
+public class MarkerUtilsTest extends SonarTestCase {
 
   private static IProject project;
 
@@ -58,16 +54,11 @@ public class SonarMarkerTest extends SonarTestCase {
     iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
     ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
     IDocument iDoc = iTextFileBuffer.getDocument();
-    Issue issue = mock(Issue.class);
-    when(issue.getStartLine()).thenReturn(2);
-    when(issue.getStartLineOffset()).thenReturn(null);
-    when(issue.getEndLine()).thenReturn(null);
-    when(issue.getEndLineOffset()).thenReturn(null);
 
-    // TODO this is in fact a test of translating to text range from startLine=2, endLine=null
-    //IMarker marker = SonarMarker.create(iDoc, file, issue, null);
-    //assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(31);
-    //assertThat(marker.getAttribute(IMarker.CHAR_END, 0)).isEqualTo(63);
+    TextRange textRange = new TextRange(2);
+    FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(iDoc, textRange);
+    assertThat(flatTextRange.getStart()).isEqualTo(31);
+    assertThat(flatTextRange.getEnd()).isEqualTo(63);
 
     iTextFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
   }
@@ -86,16 +77,11 @@ public class SonarMarkerTest extends SonarTestCase {
     iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
     ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
     IDocument iDoc = iTextFileBuffer.getDocument();
-    Issue issue = mock(Issue.class);
-    when(issue.getStartLine()).thenReturn(2);
-    when(issue.getStartLineOffset()).thenReturn(null);
-    when(issue.getEndLine()).thenReturn(null);
-    when(issue.getEndLineOffset()).thenReturn(null);
 
-    // TODO this is in fact a test of translating to text range from startLine=2, endLine=null
-    //IMarker marker = SonarMarker.create(iDoc, file, issue, null);
-    //assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(32);
-    //assertThat(marker.getAttribute(IMarker.CHAR_END, 0)).isEqualTo(64);
+    TextRange textRange = new TextRange(2);
+    FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(iDoc, textRange);
+    assertThat(flatTextRange.getStart()).isEqualTo(32);
+    assertThat(flatTextRange.getEnd()).isEqualTo(64);
 
     iTextFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
   }
@@ -103,21 +89,15 @@ public class SonarMarkerTest extends SonarTestCase {
   @Test
   public void testPreciseIssueLocationSingleLine() throws Exception {
     IFile file = project.getFile("src/main/java/ViolationOnFile.java");
-    HashMap<String, Object> markers = new HashMap<String, Object>();
-    Issue issue = mock(Issue.class);
-    when(issue.getStartLine()).thenReturn(2);
-    when(issue.getStartLineOffset()).thenReturn(23);
-    when(issue.getEndLine()).thenReturn(2);
-    when(issue.getEndLineOffset()).thenReturn(31);
     ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
     iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
     ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
     IDocument iDoc = iTextFileBuffer.getDocument();
 
-    // TODO this is in fact a test of translating to text range from (2, 23, 2, 31)
-    //IMarker marker = SonarMarker.create(iDoc, file, issue, null);
-    //assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(54);
-    //assertThat(marker.getAttribute(IMarker.CHAR_END, 0)).isEqualTo(62);
+    TextRange textRange = new TextRange(2, 23, 2, 31);
+    FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(iDoc, textRange);
+    assertThat(flatTextRange.getStart()).isEqualTo(54);
+    assertThat(flatTextRange.getEnd()).isEqualTo(62);
 
     iTextFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
   }
@@ -125,20 +105,15 @@ public class SonarMarkerTest extends SonarTestCase {
   @Test
   public void testPreciseIssueLocationMultiLine() throws Exception {
     IFile file = project.getFile("src/main/java/ViolationOnFile.java");
-    Issue issue = mock(Issue.class);
-    when(issue.getStartLine()).thenReturn(4);
-    when(issue.getStartLineOffset()).thenReturn(34);
-    when(issue.getEndLine()).thenReturn(5);
-    when(issue.getEndLineOffset()).thenReturn(12);
     ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
     iTextFileBufferManager.connect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
     ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
     IDocument iDoc = iTextFileBuffer.getDocument();
 
-    // TODO this is in fact a test of translating to text range from (4, 34, 5, 12)
-    //IMarker marker = SonarMarker.create(iDoc, file, issue, null);
-    //assertThat(marker.getAttribute(IMarker.CHAR_START, 0)).isEqualTo(101);
-    //assertThat(marker.getAttribute(IMarker.CHAR_END, 0)).isEqualTo(119);
+    TextRange textRange = new TextRange(4, 34, 5, 12);
+    FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(iDoc, textRange);
+    assertThat(flatTextRange.getStart()).isEqualTo(101);
+    assertThat(flatTextRange.getEnd()).isEqualTo(119);
 
     iTextFileBufferManager.disconnect(file.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
   }
