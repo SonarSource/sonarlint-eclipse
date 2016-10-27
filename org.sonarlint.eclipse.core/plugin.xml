@@ -23,9 +23,6 @@
       <attribute
             name="creationdate">
       </attribute>
-      <attribute
-            name="checksum">
-      </attribute>
    </extension>
 
   <extension
