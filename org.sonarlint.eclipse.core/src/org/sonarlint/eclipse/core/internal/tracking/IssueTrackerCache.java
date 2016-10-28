@@ -28,7 +28,7 @@ public class IssueTrackerCache {
 
   private final Map<String, Collection<MutableTrackable>> cache;
 
-  public IssueTrackerCache(String moduleKey) {
+  public IssueTrackerCache(String localModuleKey) {
     this.cache = new ConcurrentHashMap<>();
   }
 

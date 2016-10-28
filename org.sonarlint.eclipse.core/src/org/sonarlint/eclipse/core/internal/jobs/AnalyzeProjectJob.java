@@ -317,8 +317,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         IPath path = resource.getFullPath();
 
         IProject project = resource.getProject();
-        String moduleKey = project.getName();
-        SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(moduleKey, project.getLocation().toString());
+        String localModuleKey = project.getName();
+        SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(localModuleKey, project.getLocation().toString());
         String relativePath = resource.getProjectRelativePath().toString();
 
         try {
@@ -326,9 +326,9 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
           IDocument document = textFileBuffer.getDocument();
 
-          trackLocalIssues(moduleKey, relativePath, document, rawIssues);
+          trackLocalIssues(localModuleKey, relativePath, document, rawIssues);
           if (shouldUpdateServerIssues(triggerType)) {
-            trackServerIssues(moduleKey, relativePath, resource);
+            trackServerIssues(localModuleKey, relativePath, resource);
           }
         } finally {
           textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
@@ -343,7 +343,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return getSonarProject().isBound() && (trigger == TriggerType.EDITOR_OPEN || trigger == TriggerType.ACTION);
   }
 
-  private static void trackLocalIssues(String moduleKey, String relativePath, @Nullable IDocument document, List<Issue> rawIssues) {
+  private static void trackLocalIssues(String localModuleKey, String relativePath, @Nullable IDocument document, List<Issue> rawIssues) {
     List<MutableTrackable> trackables = rawIssues.stream().map(issue -> {
       TextRange textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
       String content = null;
@@ -359,7 +359,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
       return new IssueTrackable(issue, textRange, content);
     }).collect(Collectors.toList());
-    SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(moduleKey).matchAndTrackAsNew(relativePath, trackables);
+    SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(localModuleKey).matchAndTrackAsNew(relativePath, trackables);
   }
 
   private static void trackServerIssues(String localModuleKey, String relativePath, IResource resource) {

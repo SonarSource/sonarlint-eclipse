@@ -30,12 +30,12 @@ public class ModulePathManager {
 
   private final Map<String, String> modulePaths = new ConcurrentHashMap<>();
 
-  public void setModulePath(String moduleKey, String path) {
-    modulePaths.put(moduleKey, path);
+  public void setModulePath(String localModuleKey, String path) {
+    modulePaths.put(localModuleKey, path);
   }
 
-  public String getFilePath(String moduleKey, String relativePath) {
-    return new File(modulePaths.get(moduleKey), relativePath).getAbsolutePath();
+  public String getFilePath(String localModuleKey, String relativePath) {
+    return new File(modulePaths.get(localModuleKey), relativePath).getAbsolutePath();
   }
 
 }

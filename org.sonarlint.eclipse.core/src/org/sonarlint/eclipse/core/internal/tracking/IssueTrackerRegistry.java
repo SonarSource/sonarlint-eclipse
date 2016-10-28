@@ -35,17 +35,17 @@ public class IssueTrackerRegistry {
     this.queueManager = queueManager;
   }
 
-  public synchronized IssueTracker get(String moduleKey) {
-    IssueTracker tracker = registry.get(moduleKey);
+  public synchronized IssueTracker get(String localModuleKey) {
+    IssueTracker tracker = registry.get(localModuleKey);
     if (tracker == null) {
-      tracker = newTracker(moduleKey);
-      registry.put(moduleKey, tracker);
+      tracker = newTracker(localModuleKey);
+      registry.put(localModuleKey, tracker);
     }
     return tracker;
   }
 
-  private IssueTracker newTracker(String moduleKey) {
-    return new IssueTracker(new IssueTrackerCache(moduleKey), new TrackingChangeSubmitter(queueManager, moduleKey));
+  private IssueTracker newTracker(String localModuleKey) {
+    return new IssueTracker(new IssueTrackerCache(localModuleKey), new TrackingChangeSubmitter(queueManager, localModuleKey));
   }
 
 }

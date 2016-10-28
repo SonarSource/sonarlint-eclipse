@@ -88,14 +88,14 @@ public class MarkerUpdaterTest extends SonarTestCase {
   }
 
   private IMarker processTrackable(Trackable trackable) throws CoreException {
-    String moduleKey = "dummy";
+    String localModuleKey = "dummy";
     ModulePathManager modulePathManager = new ModulePathManager();
-    modulePathManager.setModulePath(moduleKey, project.getLocation().toString());
+    modulePathManager.setModulePath(localModuleKey, project.getLocation().toString());
     MarkerUpdater markerUpdater = new MarkerUpdater(modulePathManager);
 
     String relativePath = "src/Findbugs.java";
     Collection<? extends Trackable> issues = Collections.singletonList(trackable);
-    markerUpdater.onTrackingChange(moduleKey, relativePath, issues);
+    markerUpdater.onTrackingChange(localModuleKey, relativePath, issues);
 
     IMarker[] markers = project.getFile(relativePath).findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertThat(markers).hasSize(1);
