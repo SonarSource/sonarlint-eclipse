@@ -53,6 +53,7 @@
     <module>target-platform-e44</module>
     <module>target-platform-e45</module>
     <module>target-platform-e46</module>
+    <module>target-platform-e47</module>
 
     <module>org.sonarlint.eclipse.core.tests</module>
   </modules>
@@ -77,9 +78,9 @@
     <license.year>2015</license.year>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>0.25.0</tycho.version>
+    <tycho.version>0.26.0</tycho.version>
     <tycho-extras-version>${tycho.version}</tycho-extras-version>
-    <target.platform>e45</target.platform>
+    <target.platform>e46</target.platform>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->
@@ -105,13 +106,30 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.9.5</version>
+      <artifactId>mockito-core</artifactId>
+      <version>2.2.9</version>
     </dependency>
+    <!-- Needed by Mockito, Tycho doesn't support transitive deps -->
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy</artifactId>
+      <version>1.5.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy-agent</artifactId>
+      <version>1.5.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.objenesis</groupId>
+      <artifactId>objenesis</artifactId>
+      <version>2.4</version>
+    </dependency>
+    <!-- End of Mockito deps -->
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>2.1.0</version>
+      <version>3.5.2</version>
     </dependency>
   </dependencies>
 
