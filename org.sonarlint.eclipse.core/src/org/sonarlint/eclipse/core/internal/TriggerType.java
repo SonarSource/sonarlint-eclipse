@@ -17,35 +17,20 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.core.internal;
 
-import java.util.Collection;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.sonarlint.eclipse.core.internal.TriggerType;
+public enum TriggerType {
+  EDITOR_OPEN("Editor open"),
+  ACTION("Action"),
+  EDITOR_CHANGE("Editor change");
 
-public class AnalyzeProjectRequest {
+  private final String name;
 
-  private final IProject project;
-  private final Collection<IFile> files;
-  private final TriggerType triggerType;
-
-  public AnalyzeProjectRequest(IProject project, Collection<IFile> files, TriggerType triggerType) {
-    this.project = project;
-    this.files = files;
-    this.triggerType = triggerType;
+  TriggerType(String name) {
+    this.name = name;
   }
 
-  public IProject getProject() {
-    return project;
+  public String getName() {
+    return name;
   }
-
-  public Collection<IFile> getFiles() {
-    return files;
-  }
-
-  public TriggerType getTriggerType() {
-    return triggerType;
-  }
-
 }
