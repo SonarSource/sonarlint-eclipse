@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
+import javax.annotation.CheckForNull;
+
 public class TextRange {
 
   private final Integer startLine;
@@ -37,18 +39,22 @@ public class TextRange {
     this.endLineOffset = endLineOffset;
   }
 
+  @CheckForNull
   public Integer getStartLine() {
     return startLine;
   }
 
+  @CheckForNull
   public Integer getStartLineOffset() {
     return startLineOffset;
   }
 
+  @CheckForNull
   public Integer getEndLine() {
     return endLine;
   }
 
+  @CheckForNull
   public Integer getEndLineOffset() {
     return endLineOffset;
   }
