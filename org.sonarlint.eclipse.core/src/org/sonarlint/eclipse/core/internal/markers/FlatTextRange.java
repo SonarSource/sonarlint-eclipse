@@ -20,19 +20,25 @@
 package org.sonarlint.eclipse.core.internal.markers;
 
 public class FlatTextRange {
-  private final Integer start;
-  private final Integer end;
+  private final int start;
+  private final int end;
+  private final int length;
 
-  public FlatTextRange(Integer start, Integer end) {
+  public FlatTextRange(int start, int end) {
     this.start = start;
     this.end = end;
+    this.length = end - start;
   }
 
-  public Integer getStart() {
+  public int getStart() {
     return start;
   }
 
-  public Integer getEnd() {
+  public int getEnd() {
     return end;
+  }
+
+  public int getLength() {
+    return length;
   }
 }
