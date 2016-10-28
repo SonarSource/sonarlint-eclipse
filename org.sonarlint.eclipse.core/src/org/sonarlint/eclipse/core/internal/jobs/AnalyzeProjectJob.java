@@ -335,8 +335,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private static void trackLocalIssues(String moduleKey, String relativePath, IDocument document, List<Issue> rawIssues) {
-    List<MutableTrackable> trackables = new ArrayList<>(rawIssues.size());
-    for (Issue issue : rawIssues) {
+    List<MutableTrackable> trackables = rawIssues.stream().map(issue -> {
       TextRange textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
       String content = null;
       FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(document, textRange);
@@ -347,8 +346,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           SonarLintCorePlugin.getDefault().error("failed to get text range content of file " + relativePath, e);
         }
       }
-      trackables.add(new IssueTrackable(issue, textRange, content));
-    }
+      return new IssueTrackable(issue, textRange, content);
+    }).collect(Collectors.toList());
     SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(moduleKey).matchAndTrackAsNew(relativePath, trackables);
   }
 
