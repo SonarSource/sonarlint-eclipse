@@ -59,11 +59,15 @@ public class SonarLintChangeListener implements IResourceChangeListener {
   }
 
   private static boolean visitDelta(final Map<IProject, Collection<IFile>> changedFilesPerProject, IResourceDelta delta) {
-    if (delta.getResource().getProject() == null) {
+    IProject project = delta.getResource().getProject();
+    if (project == null) {
       // Workspace root
       return true;
     }
-    final SonarLintProject sonarProject = SonarLintProject.getInstance(delta.getResource().getProject());
+    if (!project.isAccessible()) {
+      return false;
+    }
+    final SonarLintProject sonarProject = SonarLintProject.getInstance(project);
     if (!sonarProject.isAutoEnabled()) {
       return false;
     }
