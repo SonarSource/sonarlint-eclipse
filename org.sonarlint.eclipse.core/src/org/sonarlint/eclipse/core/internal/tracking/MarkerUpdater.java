@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.Collection;
+import java.util.Locale;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
@@ -125,14 +126,16 @@ public class MarkerUpdater implements TrackingChangeListener {
    * @see IMarker.PRIORITY_LOW
    */
   private static int getPriority(final String severity) {
-    int result = IMarker.PRIORITY_LOW;
-    if ("blocker".equalsIgnoreCase(severity) || "critical".equalsIgnoreCase(severity)) {
-      result = IMarker.PRIORITY_HIGH;
-    } else if ("major".equalsIgnoreCase(severity)) {
-      result = IMarker.PRIORITY_NORMAL;
-    } else if ("minor".equalsIgnoreCase(severity) || "info".equalsIgnoreCase(severity)) {
-      result = IMarker.PRIORITY_LOW;
+    switch (severity.toLowerCase(Locale.ENGLISH)) {
+      case "blocker":
+      case "critical":
+        return IMarker.PRIORITY_HIGH;
+      case "major":
+        return IMarker.PRIORITY_NORMAL;
+      case "minor":
+      case "info":
+      default:
+        return IMarker.PRIORITY_LOW;
     }
-    return result;
   }
 }
