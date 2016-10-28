@@ -106,6 +106,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
   @Test
   public void test_marker_of_ordinary_trackable() throws Exception {
     Trackable trackable = mock(Trackable.class);
+    when(trackable.getTextRange()).thenReturn(new TextRange(1));
 
     int priority = 2;
     String severity = "BLOCKER";
@@ -166,18 +167,18 @@ public class MarkerUpdaterTest extends SonarTestCase {
   @Test
   public void test_marker_of_trackable_without_line() throws Exception {
     Trackable trackable = mock(Trackable.class);
+    when(trackable.getTextRange()).thenReturn(new TextRange(1));
     when(trackable.getLine()).thenReturn(null);
 
     IMarker marker = processTrackable(trackable);
 
     assertThat(marker.getAttribute(IMarker.LINE_NUMBER)).isEqualTo(1);
-    assertThat(marker.getAttribute(IMarker.CHAR_START)).isEqualTo(null);
-    assertThat(marker.getAttribute(IMarker.CHAR_END)).isEqualTo(null);
   }
 
   @Test
   public void test_marker_of_trackable_with_creation_date() throws Exception {
     Trackable trackable = mock(Trackable.class);
+    when(trackable.getTextRange()).thenReturn(new TextRange(1));
     long creationDate = System.currentTimeMillis();
     when(trackable.getCreationDate()).thenReturn(creationDate);
 
@@ -188,6 +189,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
   @Test
   public void test_marker_of_trackable_without_creation_date() throws Exception {
     Trackable trackable = mock(Trackable.class);
+    when(trackable.getTextRange()).thenReturn(new TextRange(1));
     when(trackable.getCreationDate()).thenReturn(null);
 
     IMarker marker = processTrackable(trackable);
