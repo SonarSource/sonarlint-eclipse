@@ -103,10 +103,26 @@ public class MarkerUpdaterTest extends SonarTestCase {
     return markers[0];
   }
 
+  /**
+   * Create a mock trackable with valid mandatory values and correct defaults.
+   *
+   * @return a mock trackable
+   */
+  private Trackable newMockTrackable() {
+    Trackable trackable = mock(Trackable.class);
+    // mandatory non-nulls
+    when(trackable.getTextRange()).thenReturn(new TextRange(1));
+    when(trackable.getSeverity()).thenReturn("");
+
+    // explicit nulls, because Mockito uses 0 values otherwise
+    when(trackable.getLine()).thenReturn(null);
+    when(trackable.getCreationDate()).thenReturn(null);
+    return trackable;
+  }
+
   @Test
   public void test_marker_of_ordinary_trackable() throws Exception {
-    Trackable trackable = mock(Trackable.class);
-    when(trackable.getTextRange()).thenReturn(new TextRange(1));
+    Trackable trackable = newMockTrackable();
 
     int priority = 2;
     String severity = "BLOCKER";
@@ -122,9 +138,6 @@ public class MarkerUpdaterTest extends SonarTestCase {
     String assignee = "admin";
     when(trackable.getAssignee()).thenReturn(assignee);
 
-    when(trackable.getLine()).thenReturn(null);
-    when(trackable.getCreationDate()).thenReturn(null);
-
     IMarker marker = processTrackable(trackable);
     assertThat(marker.getAttribute(IMarker.PRIORITY)).isEqualTo(priority);
     assertThat(marker.getAttribute(IMarker.SEVERITY)).isEqualTo(eclipseSeverity);
@@ -136,7 +149,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
 
   @Test
   public void test_marker_of_trackable_with_text_range() throws Exception {
-    Trackable trackable = mock(Trackable.class);
+    Trackable trackable = newMockTrackable();
 
     int line = 5;
     when(trackable.getLine()).thenReturn(line);
@@ -151,7 +164,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
 
   @Test
   public void test_marker_of_trackable_with_line() throws Exception {
-    Trackable trackable = mock(Trackable.class);
+    Trackable trackable = newMockTrackable();
 
     int line = 5;
     when(trackable.getLine()).thenReturn(line);
@@ -166,19 +179,15 @@ public class MarkerUpdaterTest extends SonarTestCase {
 
   @Test
   public void test_marker_of_trackable_without_line() throws Exception {
-    Trackable trackable = mock(Trackable.class);
-    when(trackable.getTextRange()).thenReturn(new TextRange(1));
-    when(trackable.getLine()).thenReturn(null);
-
+    Trackable trackable = newMockTrackable();
     IMarker marker = processTrackable(trackable);
-
     assertThat(marker.getAttribute(IMarker.LINE_NUMBER)).isEqualTo(1);
   }
 
   @Test
   public void test_marker_of_trackable_with_creation_date() throws Exception {
-    Trackable trackable = mock(Trackable.class);
-    when(trackable.getTextRange()).thenReturn(new TextRange(1));
+    Trackable trackable = newMockTrackable();
+
     long creationDate = System.currentTimeMillis();
     when(trackable.getCreationDate()).thenReturn(creationDate);
 
@@ -188,10 +197,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
 
   @Test
   public void test_marker_of_trackable_without_creation_date() throws Exception {
-    Trackable trackable = mock(Trackable.class);
-    when(trackable.getTextRange()).thenReturn(new TextRange(1));
-    when(trackable.getCreationDate()).thenReturn(null);
-
+    Trackable trackable = newMockTrackable();
     IMarker marker = processTrackable(trackable);
     assertThat(marker.getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isNull();
   }
