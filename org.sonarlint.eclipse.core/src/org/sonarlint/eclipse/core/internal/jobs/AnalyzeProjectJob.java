@@ -340,7 +340,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       TextRange textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
       String content = null;
       if (document != null) {
-        FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(document, textRange);
+        FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(document, textRange);
         if (flatTextRange != null) {
           try {
             content = document.get(flatTextRange.getStart(), flatTextRange.getLength());

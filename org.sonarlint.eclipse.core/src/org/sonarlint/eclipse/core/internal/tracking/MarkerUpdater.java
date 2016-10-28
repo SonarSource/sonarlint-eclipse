@@ -105,7 +105,7 @@ public class MarkerUpdater implements TrackingChangeListener {
     // File level issues (line == null) are displayed on line 1
     marker.setAttribute(IMarker.LINE_NUMBER, trackable.getLine() != null ? trackable.getLine() : 1);
 
-    FlatTextRange textRange = MarkerUtils.toFlatTextRange(document, trackable.getTextRange());
+    FlatTextRange textRange = MarkerUtils.getFlatTextRange(document, trackable.getTextRange());
     if (textRange != null) {
       marker.setAttribute(IMarker.CHAR_START, textRange.getStart());
       marker.setAttribute(IMarker.CHAR_END, textRange.getEnd());

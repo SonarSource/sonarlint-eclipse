@@ -71,7 +71,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   public void testLineStartEnd() throws Exception {
     try (TextFileContext context = new TextFileContext("src/main/java/ViolationOnFile.java")) {
       TextRange textRange = new TextRange(2);
-      FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(context.document, textRange);
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.document, textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(31);
       assertThat(flatTextRange.getEnd()).isEqualTo(63);
     }
@@ -81,7 +81,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   public void testLineStartEndCrLf() throws Exception {
     try (TextFileContext context = new TextFileContext("src/main/java/ViolationOnFileCrLf.java")) {
       TextRange textRange = new TextRange(2);
-      FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(context.document, textRange);
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.document, textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(32);
       assertThat(flatTextRange.getEnd()).isEqualTo(64);
     }
@@ -91,7 +91,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   public void testPreciseIssueLocationSingleLine() throws Exception {
     try (TextFileContext context = new TextFileContext("src/main/java/ViolationOnFile.java")) {
       TextRange textRange = new TextRange(2, 23, 2, 31);
-      FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(context.document, textRange);
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.document, textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(54);
       assertThat(flatTextRange.getEnd()).isEqualTo(62);
     }
@@ -101,7 +101,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   public void testPreciseIssueLocationMultiLine() throws Exception {
     try (TextFileContext context = new TextFileContext("src/main/java/ViolationOnFile.java")) {
       TextRange textRange = new TextRange(4, 34, 5, 12);
-      FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(context.document, textRange);
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.document, textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(101);
       assertThat(flatTextRange.getEnd()).isEqualTo(119);
     }
