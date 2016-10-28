@@ -329,8 +329,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
         }
       } else {
-        // TODO delete if this never happens, or else handle it better
-        throw new IllegalStateException("updateMarkers for not an IFile?");
+        // TODO handle non-file-level issues
       }
     }
   }
