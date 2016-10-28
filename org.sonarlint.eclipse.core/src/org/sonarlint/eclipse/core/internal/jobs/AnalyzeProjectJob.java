@@ -298,7 +298,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return usedConfigurators;
   }
 
-  private void updateMarkers(Map<IResource, List<Issue>> issuesPerResource, AnalysisResults result) throws CoreException {
+  private static void updateMarkers(Map<IResource, List<Issue>> issuesPerResource, AnalysisResults result) throws CoreException {
     ITextFileBufferManager textFileBufferManager = FileBuffers.getTextFileBufferManager();
     if (textFileBufferManager == null) {
       return;
