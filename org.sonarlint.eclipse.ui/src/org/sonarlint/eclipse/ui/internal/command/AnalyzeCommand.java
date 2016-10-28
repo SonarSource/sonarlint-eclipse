@@ -49,6 +49,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonarlint.eclipse.core.internal.SonarLintChangeListener;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -75,7 +76,7 @@ public class AnalyzeCommand extends AbstractHandler {
 
   private void runAnalysisJobs(Map<IProject, Collection<IFile>> filesPerProject) {
     for (Map.Entry<IProject, Collection<IFile>> entry : filesPerProject.entrySet()) {
-      AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(entry.getKey(), entry.getValue()));
+      AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(entry.getKey(), entry.getValue(), TriggerType.ACTION));
       showIssuesViewAfterJobSuccess(job);
     }
   }

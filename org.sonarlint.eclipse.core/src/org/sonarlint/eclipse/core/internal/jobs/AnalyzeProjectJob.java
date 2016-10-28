@@ -58,6 +58,7 @@ import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.configurator.ConfiguratorUtils;
 import org.sonarlint.eclipse.core.internal.markers.FlatTextRange;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
@@ -83,7 +84,7 @@ import static org.sonarlint.eclipse.core.internal.utils.StringUtils.trimToNull;
 
 public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
-  private List<SonarLintProperty> extraProps;
+  private final List<SonarLintProperty> extraProps;
 
   private final AnalyzeProjectRequest request;
 
@@ -243,7 +244,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     Map<IResource, List<Issue>> issuesPerResource = new LinkedHashMap<>();
     AnalysisResults result = runAndCheckCancellation(config, sonarProject, issuesPerResource, monitor);
     if (!monitor.isCanceled() && result != null) {
-      updateMarkers(issuesPerResource, result);
+      updateMarkers(issuesPerResource, result, request.getTriggerType());
     }
   }
 
@@ -299,7 +300,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return usedConfigurators;
   }
 
-  private static void updateMarkers(Map<IResource, List<Issue>> issuesPerResource, AnalysisResults result) throws CoreException {
+  private void updateMarkers(Map<IResource, List<Issue>> issuesPerResource, AnalysisResults result, TriggerType triggerType) throws CoreException {
     ITextFileBufferManager textFileBufferManager = FileBuffers.getTextFileBufferManager();
     if (textFileBufferManager == null) {
       return;
@@ -314,18 +315,21 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       if (resource instanceof IFile) {
         List<Issue> rawIssues = resourceEntry.getValue();
         IPath path = resource.getFullPath();
+
+        IProject project = resource.getProject();
+        String moduleKey = project.getName();
+        SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(moduleKey, project.getLocation().toString());
+        String relativePath = resource.getProjectRelativePath().toString();
+
         try {
           textFileBufferManager.connect(path, LocationKind.IFILE, new NullProgressMonitor());
           ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
           IDocument document = textFileBuffer.getDocument();
 
-          IProject project = resource.getProject();
-          String moduleKey = project.getName();
-          SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(moduleKey, project.getLocation().toString());
-
-          String relativePath = resource.getProjectRelativePath().toString();
           trackLocalIssues(moduleKey, relativePath, document, rawIssues);
-          trackServerIssues(moduleKey, relativePath, resource);
+          if (shouldUpdateServerIssues(triggerType)) {
+            trackServerIssues(moduleKey, relativePath, resource);
+          }
         } finally {
           textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
         }
@@ -333,6 +337,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         // TODO handle non-file-level issues
       }
     }
+  }
+
+  private boolean shouldUpdateServerIssues(TriggerType trigger) {
+    return getSonarProject().isBound() && (trigger == TriggerType.EDITOR_OPEN || trigger == TriggerType.ACTION);
   }
 
   private static void trackLocalIssues(String moduleKey, String relativePath, @Nullable IDocument document, List<Issue> rawIssues) {
