@@ -359,7 +359,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
       return new IssueTrackable(issue, textRange, content);
     }).collect(Collectors.toList());
-    SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(localModuleKey).matchAndTrackAsNew(relativePath, trackables);
+    SonarLintCorePlugin.getIssueTracker(localModuleKey).matchAndTrackAsNew(relativePath, trackables);
   }
 
   private static void trackServerIssues(String localModuleKey, String relativePath, IResource resource) {

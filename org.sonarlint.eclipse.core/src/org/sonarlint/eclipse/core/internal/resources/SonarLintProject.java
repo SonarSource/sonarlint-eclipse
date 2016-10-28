@@ -108,7 +108,7 @@ public class SonarLintProject {
     setModuleKey(null);
     save();
     MarkerUtils.deleteIssuesMarkers(project);
-    SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(project.getName()).clear();
+    SonarLintCorePlugin.getIssueTracker(project.getName()).clear();
   }
 
 }

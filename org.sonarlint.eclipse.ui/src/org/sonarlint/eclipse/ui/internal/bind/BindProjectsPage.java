@@ -458,7 +458,7 @@ public class BindProjectsPage extends WizardPage {
     if (changed) {
       sonarProject.save();
       MarkerUtils.deleteIssuesMarkers(project);
-      SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(project.getName()).clear();
+      SonarLintCorePlugin.getIssueTracker(project.getName()).clear();
       if (sonarProject.isBound()) {
         new ProjectUpdateJob(sonarProject).schedule();
       }
