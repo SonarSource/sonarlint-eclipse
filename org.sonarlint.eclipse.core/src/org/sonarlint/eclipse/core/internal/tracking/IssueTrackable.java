@@ -30,7 +30,7 @@ public class IssueTrackable extends MutableTrackableImpl {
 
   public IssueTrackable(Issue issue, TextRange textRange, String textRangeContent) {
     this.issue = issue;
-    this.textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
+    this.textRange = textRange;
     this.textRangeHash = textRangeContent != null ? textRangeContent.replaceAll("[\\s]", "").hashCode() : null;
   }
 
