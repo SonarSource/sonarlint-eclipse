@@ -323,8 +323,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(moduleKey, project.getLocation().toString());
 
           String relativePath = resource.getProjectRelativePath().toString();
-          trackLocalIssues(document, moduleKey, relativePath, rawIssues);
-          trackServerIssues(moduleKey, resource, relativePath);
+          trackLocalIssues(moduleKey, relativePath, document, rawIssues);
+          trackServerIssues(moduleKey, relativePath, resource);
         } finally {
           textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
         }
@@ -335,7 +335,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private static void trackLocalIssues(IDocument document, String moduleKey, String relativePath, List<Issue> rawIssues) {
+  private static void trackLocalIssues(String moduleKey, String relativePath, IDocument document, List<Issue> rawIssues) {
     List<MutableTrackable> trackables = new ArrayList<>(rawIssues.size());
     for (Issue issue : rawIssues) {
       TextRange textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
@@ -353,7 +353,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(moduleKey).matchAndTrackAsNew(relativePath, trackables);
   }
 
-  private static void trackServerIssues(String localModuleKey, IResource resource, String relativePath) {
+  private static void trackServerIssues(String localModuleKey, String relativePath, IResource resource) {
     String serverId = SonarLintProject.getInstance(resource).getServerId();
     if (serverId == null) {
       // not bound to a server -> nothing to do
