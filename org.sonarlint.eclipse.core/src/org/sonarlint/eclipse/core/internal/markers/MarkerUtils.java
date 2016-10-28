@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.markers;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -72,17 +73,19 @@ public final class MarkerUtils {
     }
   }
 
-  public static FlatTextRange toFlatTextRange(final IDocument document, TextRange textRange) {
-    if (textRange == null || textRange.getStartLine() == null) {
+  @CheckForNull
+  public static FlatTextRange getFlatTextRange(final IDocument document, TextRange textRange) {
+    if (textRange.getStartLine() == null) {
       return null;
     }
     if (textRange.getStartLineOffset() == null) {
-      return toFlatTextRange(document, textRange.getStartLine());
+      return getFlatTextRange(document, textRange.getStartLine());
     }
-    return toFlatTextRange(document, textRange.getStartLine(), textRange.getStartLineOffset(), textRange.getEndLine(), textRange.getEndLineOffset());
+    return getFlatTextRange(document, textRange.getStartLine(), textRange.getStartLineOffset(), textRange.getEndLine(), textRange.getEndLineOffset());
   }
 
-  public static FlatTextRange toFlatTextRange(final IDocument document, int startLine) {
+  @CheckForNull
+  private static FlatTextRange getFlatTextRange(final IDocument document, int startLine) {
     int startLineStartOffset;
     int length;
     String lineDelimiter;
@@ -91,6 +94,7 @@ public final class MarkerUtils {
       length = document.getLineLength(startLine - 1);
       lineDelimiter = document.getLineDelimiter(startLine - 1);
     } catch (BadLocationException e) {
+      SonarLintCorePlugin.getDefault().error("failed to compute flat text range for line " + startLine, e);
       return null;
     }
 
@@ -101,13 +105,15 @@ public final class MarkerUtils {
     return new FlatTextRange(start, end);
   }
 
-  private static FlatTextRange toFlatTextRange(final IDocument document, int startLine, int startLineOffset, int endLine, int endLineOffset) {
+  @CheckForNull
+  private static FlatTextRange getFlatTextRange(final IDocument document, int startLine, int startLineOffset, int endLine, int endLineOffset) {
     int startLineStartOffset;
     int endLineStartOffset;
     try {
       startLineStartOffset = document.getLineOffset(startLine - 1);
       endLineStartOffset = endLine != startLine ? document.getLineOffset(endLine - 1) : startLineStartOffset;
     } catch (BadLocationException e) {
+      SonarLintCorePlugin.getDefault().error("failed to compute line offsets for start, end = " + startLine + ", " + endLine, e);
       return null;
     }
 

@@ -26,10 +26,12 @@ public class IssueTrackable extends MutableTrackableImpl {
 
   private final Issue issue;
   private final TextRange textRange;
+  private final Integer textRangeHash;
 
-  public IssueTrackable(Issue issue) {
+  public IssueTrackable(Issue issue, TextRange textRange, String textRangeContent) {
     this.issue = issue;
-    this.textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
+    this.textRange = textRange;
+    this.textRangeHash = textRangeContent != null ? textRangeContent.replaceAll("[\\s]", "").hashCode() : null;
   }
 
   @Override
@@ -44,8 +46,7 @@ public class IssueTrackable extends MutableTrackableImpl {
 
   @Override
   public Integer getTextRangeHash() {
-    // TODO Auto-generated method stub
-    return null;
+    return textRangeHash;
   }
 
   @Override

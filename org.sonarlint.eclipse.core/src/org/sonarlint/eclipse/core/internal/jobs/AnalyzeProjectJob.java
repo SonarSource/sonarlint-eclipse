@@ -34,8 +34,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.eclipse.core.filebuffers.FileBuffers;
+import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
+import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
@@ -46,13 +49,19 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.configurator.ConfiguratorUtils;
+import org.sonarlint.eclipse.core.internal.markers.FlatTextRange;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.server.IServer;
@@ -290,9 +299,9 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return usedConfigurators;
   }
 
-  private void updateMarkers(Map<IResource, List<Issue>> issuesPerResource, AnalysisResults result) throws CoreException {
-    ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
-    if (iTextFileBufferManager == null) {
+  private static void updateMarkers(Map<IResource, List<Issue>> issuesPerResource, AnalysisResults result) throws CoreException {
+    ITextFileBufferManager textFileBufferManager = FileBuffers.getTextFileBufferManager();
+    if (textFileBufferManager == null) {
       return;
     }
 
@@ -302,32 +311,50 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       if (failedFiles.contains(resource)) {
         continue;
       }
-      List<Issue> rawIssues = resourceEntry.getValue();
-      try {
-        if (resource instanceof IFile) {
+      if (resource instanceof IFile) {
+        List<Issue> rawIssues = resourceEntry.getValue();
+        IPath path = resource.getFullPath();
+        try {
+          textFileBufferManager.connect(path, LocationKind.IFILE, new NullProgressMonitor());
+          ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
+          IDocument document = textFileBuffer.getDocument();
+
           IProject project = resource.getProject();
           String moduleKey = project.getName();
           SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(moduleKey, project.getLocation().toString());
 
           String relativePath = resource.getProjectRelativePath().toString();
-          trackLocalIssues(moduleKey, relativePath, rawIssues);
-          trackServerIssues(moduleKey, resource, relativePath);
-        } else {
-          // TODO delete if this never happens, or else handle it better
-          throw new IllegalStateException("updateMarkers for not an IFile?");
+          trackLocalIssues(moduleKey, relativePath, document, rawIssues);
+          trackServerIssues(moduleKey, relativePath, resource);
+        } finally {
+          textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
         }
-      } catch (Exception e) {
-        SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarLint marker on resource " + resource.getName(), e);
+      } else {
+        // TODO handle non-file-level issues
       }
     }
   }
 
-  private static void trackLocalIssues(String moduleKey, String relativePath, List<Issue> rawIssues) {
-    Collection<MutableTrackable> trackables = rawIssues.stream().map(IssueTrackable::new).collect(Collectors.toList());
+  private static void trackLocalIssues(String moduleKey, String relativePath, @Nullable IDocument document, List<Issue> rawIssues) {
+    List<MutableTrackable> trackables = rawIssues.stream().map(issue -> {
+      TextRange textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
+      String content = null;
+      if (document != null) {
+        FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(document, textRange);
+        if (flatTextRange != null) {
+          try {
+            content = document.get(flatTextRange.getStart(), flatTextRange.getLength());
+          } catch (BadLocationException e) {
+            SonarLintCorePlugin.getDefault().error("failed to get text range content of file " + relativePath, e);
+          }
+        }
+      }
+      return new IssueTrackable(issue, textRange, content);
+    }).collect(Collectors.toList());
     SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(moduleKey).matchAndTrackAsNew(relativePath, trackables);
   }
 
-  private void trackServerIssues(String localModuleKey, IResource resource, String relativePath) {
+  private static void trackServerIssues(String localModuleKey, String relativePath, IResource resource) {
     String serverId = SonarLintProject.getInstance(resource).getServerId();
     if (serverId == null) {
       // not bound to a server -> nothing to do

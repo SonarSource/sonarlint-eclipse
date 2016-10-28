@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.Collection;
+import java.util.Locale;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
@@ -73,9 +74,11 @@ public class MarkerUpdater implements TrackingChangeListener {
       ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
       IDocument document = textFileBuffer.getDocument();
 
-      for (Trackable issue : issues) {
-        if (!issue.isResolved()) {
-          createMarker(document, file, issue);
+      if (document != null) {
+        for (Trackable issue : issues) {
+          if (!issue.isResolved()) {
+            createMarker(document, file, issue);
+          }
         }
       }
     } catch (CoreException e) {
@@ -103,7 +106,7 @@ public class MarkerUpdater implements TrackingChangeListener {
     // File level issues (line == null) are displayed on line 1
     marker.setAttribute(IMarker.LINE_NUMBER, trackable.getLine() != null ? trackable.getLine() : 1);
 
-    FlatTextRange textRange = MarkerUtils.toFlatTextRange(document, trackable.getTextRange());
+    FlatTextRange textRange = MarkerUtils.getFlatTextRange(document, trackable.getTextRange());
     if (textRange != null) {
       marker.setAttribute(IMarker.CHAR_START, textRange.getStart());
       marker.setAttribute(IMarker.CHAR_END, textRange.getEnd());
@@ -123,14 +126,16 @@ public class MarkerUpdater implements TrackingChangeListener {
    * @see IMarker.PRIORITY_LOW
    */
   private static int getPriority(final String severity) {
-    int result = IMarker.PRIORITY_LOW;
-    if ("blocker".equalsIgnoreCase(severity) || "critical".equalsIgnoreCase(severity)) {
-      result = IMarker.PRIORITY_HIGH;
-    } else if ("major".equalsIgnoreCase(severity)) {
-      result = IMarker.PRIORITY_NORMAL;
-    } else if ("minor".equalsIgnoreCase(severity) || "info".equalsIgnoreCase(severity)) {
-      result = IMarker.PRIORITY_LOW;
+    switch (severity.toLowerCase(Locale.ENGLISH)) {
+      case "blocker":
+      case "critical":
+        return IMarker.PRIORITY_HIGH;
+      case "major":
+        return IMarker.PRIORITY_NORMAL;
+      case "minor":
+      case "info":
+      default:
+        return IMarker.PRIORITY_LOW;
     }
-    return result;
   }
 }
