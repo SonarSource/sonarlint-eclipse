@@ -78,6 +78,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
     WorkspaceHelpers.cleanWorkspace();
     project = importEclipseProject("reference");
     MarkerUtils.deleteIssuesMarkers(project);
+    SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(project.getName()).clear();
   }
 
   @After
