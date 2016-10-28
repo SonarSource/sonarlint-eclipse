@@ -73,9 +73,11 @@ public class MarkerUpdater implements TrackingChangeListener {
       ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
       IDocument document = textFileBuffer.getDocument();
 
-      for (Trackable issue : issues) {
-        if (!issue.isResolved()) {
-          createMarker(document, file, issue);
+      if (document != null) {
+        for (Trackable issue : issues) {
+          if (!issue.isResolved()) {
+            createMarker(document, file, issue);
+          }
         }
       }
     } catch (CoreException e) {

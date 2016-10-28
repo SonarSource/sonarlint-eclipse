@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
@@ -334,16 +335,18 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private static void trackLocalIssues(String moduleKey, String relativePath, IDocument document, List<Issue> rawIssues) {
+  private static void trackLocalIssues(String moduleKey, String relativePath, @Nullable IDocument document, List<Issue> rawIssues) {
     List<MutableTrackable> trackables = rawIssues.stream().map(issue -> {
       TextRange textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
       String content = null;
-      FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(document, textRange);
-      if (flatTextRange != null) {
-        try {
-          content = document.get(flatTextRange.getStart(), flatTextRange.getLength());
-        } catch (BadLocationException e) {
-          SonarLintCorePlugin.getDefault().error("failed to get text range content of file " + relativePath, e);
+      if (document != null) {
+        FlatTextRange flatTextRange = MarkerUtils.toFlatTextRange(document, textRange);
+        if (flatTextRange != null) {
+          try {
+            content = document.get(flatTextRange.getStart(), flatTextRange.getLength());
+          } catch (BadLocationException e) {
+            SonarLintCorePlugin.getDefault().error("failed to get text range content of file " + relativePath, e);
+          }
         }
       }
       return new IssueTrackable(issue, textRange, content);
