@@ -87,4 +87,8 @@ public class IssueTracker {
     cache.put(file, trackedIssues);
     changeSubmitter.submit(file, trackedIssues);
   }
+
+  public void clear() {
+    cache.clear();
+  }
 }

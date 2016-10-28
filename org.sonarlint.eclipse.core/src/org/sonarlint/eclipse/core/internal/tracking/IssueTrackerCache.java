@@ -44,4 +44,8 @@ public class IssueTrackerCache {
     cache.put(file, trackables);
   }
 
+  public void clear() {
+    cache.clear();
+  }
+
 }
