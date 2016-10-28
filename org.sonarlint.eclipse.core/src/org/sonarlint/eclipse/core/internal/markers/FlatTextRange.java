@@ -25,6 +25,9 @@ public class FlatTextRange {
   private final int length;
 
   public FlatTextRange(int start, int end) {
+    if (end < start) {
+      throw new IllegalArgumentException("start must be < end");
+    }
     this.start = start;
     this.end = end;
     this.length = end - start;
