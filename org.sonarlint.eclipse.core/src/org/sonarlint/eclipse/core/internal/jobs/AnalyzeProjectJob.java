@@ -353,7 +353,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     SonarLintCorePlugin.getDefault().getIssueTrackerRegistry().get(moduleKey).matchAndTrackAsNew(relativePath, trackables);
   }
 
-  private void trackServerIssues(String localModuleKey, IResource resource, String relativePath) {
+  private static void trackServerIssues(String localModuleKey, IResource resource, String relativePath) {
     String serverId = SonarLintProject.getInstance(resource).getServerId();
     if (serverId == null) {
       // not bound to a server -> nothing to do
