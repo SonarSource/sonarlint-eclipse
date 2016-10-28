@@ -57,18 +57,22 @@ public class ServerIssueTrackable implements Trackable {
     return serverIssue.ruleKey();
   }
 
+  @Override
   public Long getCreationDate() {
     return serverIssue.creationDate().toEpochMilli();
   }
 
+  @Override
   public String getServerIssueKey() {
     return serverIssue.key();
   }
 
+  @Override
   public boolean isResolved() {
     return !serverIssue.resolution().isEmpty();
   }
 
+  @Override
   public String getAssignee() {
     return serverIssue.assigneeLogin();
   }
