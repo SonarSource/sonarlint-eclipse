@@ -82,7 +82,7 @@ public final class MarkerUtils {
     return toFlatTextRange(document, textRange.getStartLine(), textRange.getStartLineOffset(), textRange.getEndLine(), textRange.getEndLineOffset());
   }
 
-  public static FlatTextRange toFlatTextRange(final IDocument document, int startLine) {
+  private static FlatTextRange toFlatTextRange(final IDocument document, int startLine) {
     int startLineStartOffset;
     int length;
     String lineDelimiter;
