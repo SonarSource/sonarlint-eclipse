@@ -42,18 +42,18 @@ public class TrackingChangeQueueManagerImpl implements TrackingChangeQueueManage
   }
 
   @Override
-  public void post(String moduleKey, String file, Collection<MutableTrackable> issues) {
-    Runnable task = new NotifyListenersRunnable(moduleKey, file, issues);
+  public void post(String localModuleKey, String file, Collection<MutableTrackable> issues) {
+    Runnable task = new NotifyListenersRunnable(localModuleKey, file, issues);
     this.executor.execute(task);
   }
 
   private class NotifyListenersRunnable implements Runnable {
-    private final String moduleKey;
+    private final String localModuleKey;
     private final String file;
     private final Collection<MutableTrackable> issues;
 
-    public NotifyListenersRunnable(String moduleKey, String file, Collection<MutableTrackable> issues) {
-      this.moduleKey = moduleKey;
+    public NotifyListenersRunnable(String localModuleKey, String file, Collection<MutableTrackable> issues) {
+      this.localModuleKey = localModuleKey;
       this.file = file;
       this.issues = issues;
     }
@@ -61,7 +61,7 @@ public class TrackingChangeQueueManagerImpl implements TrackingChangeQueueManage
     @Override
     public void run() {
       for (TrackingChangeListener listener : listeners) {
-        listener.onTrackingChange(moduleKey, file, issues);
+        listener.onTrackingChange(localModuleKey, file, issues);
       }
     }
   }

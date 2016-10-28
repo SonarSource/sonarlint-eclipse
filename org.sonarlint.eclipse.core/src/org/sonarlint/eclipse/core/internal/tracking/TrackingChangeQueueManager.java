@@ -23,7 +23,7 @@ import java.util.Collection;
 
 public interface TrackingChangeQueueManager {
 
-  void post(String moduleKey, String file, Collection<MutableTrackable> issues);
+  void post(String localModuleKey, String file, Collection<MutableTrackable> issues);
 
   void subscribe(TrackingChangeListener listener);
 

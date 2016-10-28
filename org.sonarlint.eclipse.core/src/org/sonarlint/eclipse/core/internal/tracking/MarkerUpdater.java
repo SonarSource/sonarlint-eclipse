@@ -49,8 +49,8 @@ public class MarkerUpdater implements TrackingChangeListener {
   }
 
   @Override
-  public void onTrackingChange(String moduleKey, String relativePath, Collection<? extends Trackable> issues) {
-    String absolutePath = modulePathManager.getFilePath(moduleKey, relativePath);
+  public void onTrackingChange(String localModuleKey, String relativePath, Collection<? extends Trackable> issues) {
+    String absolutePath = modulePathManager.getFilePath(localModuleKey, relativePath);
 
     IWorkspace workspace = ResourcesPlugin.getWorkspace();
     IPath location = Path.fromOSString(absolutePath);
