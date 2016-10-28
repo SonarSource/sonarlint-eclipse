@@ -91,6 +91,7 @@ public final class MarkerUtils {
       length = document.getLineLength(startLine - 1);
       lineDelimiter = document.getLineDelimiter(startLine - 1);
     } catch (BadLocationException e) {
+      SonarLintCorePlugin.getDefault().error("failed to compute flat text range for line " + startLine, e);
       return null;
     }
 
@@ -108,6 +109,7 @@ public final class MarkerUtils {
       startLineStartOffset = document.getLineOffset(startLine - 1);
       endLineStartOffset = endLine != startLine ? document.getLineOffset(endLine - 1) : startLineStartOffset;
     } catch (BadLocationException e) {
+      SonarLintCorePlugin.getDefault().error("failed to compute line offsets for start, end = " + startLine + ", " + endLine, e);
       return null;
     }
 
