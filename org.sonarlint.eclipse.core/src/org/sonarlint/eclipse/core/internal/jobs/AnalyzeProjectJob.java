@@ -36,9 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.eclipse.core.filebuffers.FileBuffers;
-import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
-import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
@@ -49,7 +47,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jface.text.BadLocationException;
@@ -62,6 +59,7 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.configurator.ConfiguratorUtils;
 import org.sonarlint.eclipse.core.internal.markers.FlatTextRange;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.markers.TextFileContext;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
@@ -328,17 +326,13 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(localModuleKey, project.getLocation().toString());
     String relativePath = resource.getProjectRelativePath().toString();
 
-    try {
-      textFileBufferManager.connect(path, LocationKind.IFILE, new NullProgressMonitor());
-      ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
-      IDocument document = textFileBuffer.getDocument();
+    try (TextFileContext context = new TextFileContext((IFile) resource)) {
+      IDocument document = context.getDocument();
 
       trackLocalIssues(localModuleKey, relativePath, document, rawIssues);
       if (shouldUpdateServerIssues(triggerType)) {
         trackServerIssues(localModuleKey, relativePath, resource);
       }
-    } finally {
-      textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
     }
   }
 
