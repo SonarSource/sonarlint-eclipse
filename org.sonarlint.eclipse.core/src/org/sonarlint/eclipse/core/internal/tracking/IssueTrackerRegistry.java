@@ -30,9 +30,11 @@ public class IssueTrackerRegistry {
   private final Map<String, IssueTracker> registry = new HashMap<>();
 
   private final TrackingChangeQueueManager queueManager;
+  private final IssueTrackerCacheFactory cacheFactory;
 
-  public IssueTrackerRegistry(TrackingChangeQueueManager queueManager) {
+  public IssueTrackerRegistry(TrackingChangeQueueManager queueManager, IssueTrackerCacheFactory cacheFactory) {
     this.queueManager = queueManager;
+    this.cacheFactory = cacheFactory;
   }
 
   public synchronized IssueTracker get(String localModuleKey) {
@@ -45,7 +47,7 @@ public class IssueTrackerRegistry {
   }
 
   private IssueTracker newTracker(String localModuleKey) {
-    return new IssueTracker(new IssueTrackerCache(localModuleKey), new TrackingChangeSubmitter(queueManager, localModuleKey));
+    return new IssueTracker(cacheFactory.apply(localModuleKey), new TrackingChangeSubmitter(queueManager, localModuleKey));
   }
 
 }

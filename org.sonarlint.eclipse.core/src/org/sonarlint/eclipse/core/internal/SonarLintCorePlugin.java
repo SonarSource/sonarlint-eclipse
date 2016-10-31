@@ -33,6 +33,7 @@ import org.sonarlint.eclipse.core.AbstractPlugin;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
+import org.sonarlint.eclipse.core.internal.tracking.InMemoryIssueTrackerCache;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerRegistry;
 import org.sonarlint.eclipse.core.internal.tracking.MarkerUpdater;
@@ -131,7 +132,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     trackingChangeQueueManager = new TrackingChangeQueueManagerImpl();
     trackingChangeQueueManager.subscribe(new MarkerUpdater(modulePathManager));
 
-    issueTrackerRegistry = new IssueTrackerRegistry(trackingChangeQueueManager);
+    issueTrackerRegistry = new IssueTrackerRegistry(trackingChangeQueueManager, k -> new InMemoryIssueTrackerCache());
 
     serverIssueUpdater = new ServerIssueUpdater(issueTrackerRegistry);
   }

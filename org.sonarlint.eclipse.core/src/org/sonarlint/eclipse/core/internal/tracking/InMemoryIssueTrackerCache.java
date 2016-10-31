@@ -20,15 +20,31 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public interface IssueTrackerCache {
+public class InMemoryIssueTrackerCache implements IssueTrackerCache {
 
-  boolean isFirstAnalysis(String file);
+  private final Map<String, Collection<MutableTrackable>> cache;
 
-  Collection<MutableTrackable> getCurrentTrackables(String file);
+  public InMemoryIssueTrackerCache() {
+    this.cache = new ConcurrentHashMap<>();
+  }
 
-  void put(String file, Collection<MutableTrackable> trackables);
+  public boolean isFirstAnalysis(String file) {
+    return !cache.containsKey(file);
+  }
 
-  void clear();
+  public Collection<MutableTrackable> getCurrentTrackables(String file) {
+    return cache.get(file);
+  }
+
+  public void put(String file, Collection<MutableTrackable> trackables) {
+    cache.put(file, trackables);
+  }
+
+  public void clear() {
+    cache.clear();
+  }
 
 }

@@ -19,16 +19,9 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import java.util.Collection;
+import java.util.function.Function;
 
-public interface IssueTrackerCache {
-
-  boolean isFirstAnalysis(String file);
-
-  Collection<MutableTrackable> getCurrentTrackables(String file);
-
-  void put(String file, Collection<MutableTrackable> trackables);
-
-  void clear();
-
+@FunctionalInterface
+public interface IssueTrackerCacheFactory extends Function<String, IssueTrackerCache> {
+  IssueTrackerCache apply(String localModuleKey);
 }
