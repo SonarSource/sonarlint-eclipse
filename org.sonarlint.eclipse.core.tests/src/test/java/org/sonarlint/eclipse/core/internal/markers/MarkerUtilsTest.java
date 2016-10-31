@@ -19,16 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import org.eclipse.core.filebuffers.FileBuffers;
-import org.eclipse.core.filebuffers.ITextFileBuffer;
-import org.eclipse.core.filebuffers.ITextFileBufferManager;
-import org.eclipse.core.filebuffers.LocationKind;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.text.IDocument;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
@@ -47,31 +38,11 @@ public class MarkerUtilsTest extends SonarTestCase {
     SonarLintProject.getInstance(project);
   }
 
-  private static class TextFileContext implements AutoCloseable {
-    private final IPath path;
-    private final ITextFileBufferManager textFileBufferManager;
-    private final IDocument document;
-
-    TextFileContext(String filepath) throws CoreException {
-      IFile file = project.getFile(filepath);
-      this.path = file.getFullPath();
-      this.textFileBufferManager = FileBuffers.getTextFileBufferManager();
-      textFileBufferManager.connect(path, LocationKind.IFILE, new NullProgressMonitor());
-      ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
-      document = textFileBuffer.getDocument();
-    }
-
-    @Override
-    public void close() throws Exception {
-      textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
-    }
-  }
-
   @Test
   public void testLineStartEnd() throws Exception {
-    try (TextFileContext context = new TextFileContext("src/main/java/ViolationOnFile.java")) {
+    try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
       TextRange textRange = new TextRange(2);
-      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.document, textRange);
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(31);
       assertThat(flatTextRange.getEnd()).isEqualTo(63);
     }
@@ -79,9 +50,9 @@ public class MarkerUtilsTest extends SonarTestCase {
 
   @Test
   public void testLineStartEndCrLf() throws Exception {
-    try (TextFileContext context = new TextFileContext("src/main/java/ViolationOnFileCrLf.java")) {
+    try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFileCrLf.java"))) {
       TextRange textRange = new TextRange(2);
-      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.document, textRange);
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(32);
       assertThat(flatTextRange.getEnd()).isEqualTo(64);
     }
@@ -89,9 +60,9 @@ public class MarkerUtilsTest extends SonarTestCase {
 
   @Test
   public void testPreciseIssueLocationSingleLine() throws Exception {
-    try (TextFileContext context = new TextFileContext("src/main/java/ViolationOnFile.java")) {
+    try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
       TextRange textRange = new TextRange(2, 23, 2, 31);
-      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.document, textRange);
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(54);
       assertThat(flatTextRange.getEnd()).isEqualTo(62);
     }
@@ -99,9 +70,9 @@ public class MarkerUtilsTest extends SonarTestCase {
 
   @Test
   public void testPreciseIssueLocationMultiLine() throws Exception {
-    try (TextFileContext context = new TextFileContext("src/main/java/ViolationOnFile.java")) {
+    try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
       TextRange textRange = new TextRange(4, 34, 5, 12);
-      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.document, textRange);
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(101);
       assertThat(flatTextRange.getEnd()).isEqualTo(119);
     }
