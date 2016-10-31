@@ -313,29 +313,32 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         continue;
       }
       if (resource instanceof IFile) {
-        List<Issue> rawIssues = resourceEntry.getValue();
-        IPath path = resource.getFullPath();
-
-        IProject project = resource.getProject();
-        String localModuleKey = project.getName();
-        SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(localModuleKey, project.getLocation().toString());
-        String relativePath = resource.getProjectRelativePath().toString();
-
-        try {
-          textFileBufferManager.connect(path, LocationKind.IFILE, new NullProgressMonitor());
-          ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
-          IDocument document = textFileBuffer.getDocument();
-
-          trackLocalIssues(localModuleKey, relativePath, document, rawIssues);
-          if (shouldUpdateServerIssues(triggerType)) {
-            trackServerIssues(localModuleKey, relativePath, resource);
-          }
-        } finally {
-          textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
-        }
+        trackIssues(resource, textFileBufferManager, resourceEntry.getValue(), triggerType);
       } else {
         // TODO handle non-file-level issues
       }
+    }
+  }
+
+  private void trackIssues(IResource resource, ITextFileBufferManager textFileBufferManager, List<Issue> rawIssues, TriggerType triggerType) throws CoreException {
+    IPath path = resource.getFullPath();
+
+    IProject project = resource.getProject();
+    String localModuleKey = project.getName();
+    SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(localModuleKey, project.getLocation().toString());
+    String relativePath = resource.getProjectRelativePath().toString();
+
+    try {
+      textFileBufferManager.connect(path, LocationKind.IFILE, new NullProgressMonitor());
+      ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
+      IDocument document = textFileBuffer.getDocument();
+
+      trackLocalIssues(localModuleKey, relativePath, document, rawIssues);
+      if (shouldUpdateServerIssues(triggerType)) {
+        trackServerIssues(localModuleKey, relativePath, resource);
+      }
+    } finally {
+      textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
     }
   }
 
