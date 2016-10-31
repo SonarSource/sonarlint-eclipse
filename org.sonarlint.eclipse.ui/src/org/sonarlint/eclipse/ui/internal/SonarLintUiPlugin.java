@@ -81,6 +81,11 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       public void debug(String msg) {
         getSonarConsole().debug(msg);
       }
+
+      @Override
+      public void warn(String msg) {
+        getSonarConsole().warn(msg);
+      }
     };
     SonarLintCorePlugin.getDefault().addLogListener(logListener);
 

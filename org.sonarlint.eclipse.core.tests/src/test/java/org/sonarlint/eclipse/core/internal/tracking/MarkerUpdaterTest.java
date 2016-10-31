@@ -69,6 +69,10 @@ public class MarkerUpdaterTest extends SonarTestCase {
       @Override
       public void debug(String msg) {
       }
+
+      @Override
+      public void warn(String msg) {
+      }
     });
   }
 
