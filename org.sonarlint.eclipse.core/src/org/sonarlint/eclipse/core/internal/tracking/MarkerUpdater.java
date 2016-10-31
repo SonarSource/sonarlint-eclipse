@@ -75,11 +75,7 @@ public class MarkerUpdater implements TrackingChangeListener {
       IDocument document = textFileBuffer.getDocument();
 
       if (document != null) {
-        for (Trackable issue : issues) {
-          if (!issue.isResolved()) {
-            createMarker(document, file, issue);
-          }
-        }
+        createMarkers(document, file, issues);
       }
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
@@ -88,6 +84,14 @@ public class MarkerUpdater implements TrackingChangeListener {
         textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
       } catch (CoreException e) {
         // ignore
+      }
+    }
+  }
+
+  private static void createMarkers(IDocument document, IFile file, Collection<? extends Trackable> issues) throws CoreException {
+    for (Trackable issue : issues) {
+      if (!issue.isResolved()) {
+        createMarker(document, file, issue);
       }
     }
   }
