@@ -115,6 +115,15 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     }
   }
 
+  public void warn(String msg, Throwable t) {
+    for (LogListener listener : logListeners) {
+      listener.warn(msg);
+      StringWriter stack = new StringWriter();
+      t.printStackTrace(new PrintWriter(stack));
+      listener.warn(stack.toString());
+    }
+  }
+
   public synchronized SonarLintProjectManager getProjectManager() {
     if (projectManager == null) {
       projectManager = new SonarLintProjectManager();

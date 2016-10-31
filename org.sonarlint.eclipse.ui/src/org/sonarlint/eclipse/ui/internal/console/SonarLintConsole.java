@@ -108,6 +108,13 @@ public class SonarLintConsole extends MessageConsole {
     }
   }
 
+  public void warn(String msg) {
+    if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
+      bringConsoleToFront();
+    }
+    write(getWarnStream(), msg);
+  }
+
   private static void write(MessageConsoleStream stream, String msg) {
     if (msg == null) {
       return;

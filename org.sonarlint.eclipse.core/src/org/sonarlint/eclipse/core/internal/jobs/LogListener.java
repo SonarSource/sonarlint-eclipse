@@ -27,4 +27,6 @@ public interface LogListener {
 
   void debug(String msg);
 
+  void warn(String msg);
+
 }

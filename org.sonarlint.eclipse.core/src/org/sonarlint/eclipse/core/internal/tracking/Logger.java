@@ -31,4 +31,8 @@ public class Logger {
     SonarLintCorePlugin.getDefault().debug(message);
   }
 
+  public void warn(String message, Throwable t) {
+    SonarLintCorePlugin.getDefault().warn(message, t);
+  }
+
 }
