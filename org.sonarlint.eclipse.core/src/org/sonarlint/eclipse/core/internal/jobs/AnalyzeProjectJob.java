@@ -311,16 +311,14 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         continue;
       }
       if (resource instanceof IFile) {
-        trackIssues(resource, textFileBufferManager, resourceEntry.getValue(), triggerType);
+        trackIssues(resource, resourceEntry.getValue(), triggerType);
       } else {
         // TODO handle non-file-level issues
       }
     }
   }
 
-  private void trackIssues(IResource resource, ITextFileBufferManager textFileBufferManager, List<Issue> rawIssues, TriggerType triggerType) throws CoreException {
-    IPath path = resource.getFullPath();
-
+  private void trackIssues(IResource resource, List<Issue> rawIssues, TriggerType triggerType) throws CoreException {
     IProject project = resource.getProject();
     String localModuleKey = project.getName();
     SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(localModuleKey, project.getLocation().toString());
