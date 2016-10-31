@@ -22,9 +22,7 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.util.Collection;
 import java.util.Locale;
 import org.eclipse.core.filebuffers.FileBuffers;
-import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
-import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -32,13 +30,13 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.FlatTextRange;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.markers.TextFileContext;
 
 public class MarkerUpdater implements TrackingChangeListener {
 
@@ -68,23 +66,13 @@ public class MarkerUpdater implements TrackingChangeListener {
       return;
     }
 
-    IPath path = file.getFullPath();
-    try {
-      textFileBufferManager.connect(path, LocationKind.IFILE, new NullProgressMonitor());
-      ITextFileBuffer textFileBuffer = textFileBufferManager.getTextFileBuffer(path, LocationKind.IFILE);
-      IDocument document = textFileBuffer.getDocument();
-
+    try (TextFileContext context = new TextFileContext(file)) {
+      IDocument document = context.getDocument();
       if (document != null) {
         createMarkers(document, file, issues);
       }
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
-    } finally {
-      try {
-        textFileBufferManager.disconnect(path, LocationKind.IFILE, new NullProgressMonitor());
-      } catch (CoreException e) {
-        // ignore
-      }
     }
   }
 
