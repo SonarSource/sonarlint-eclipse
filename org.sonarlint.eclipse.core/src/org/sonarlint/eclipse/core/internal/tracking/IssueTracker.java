@@ -91,4 +91,8 @@ public class IssueTracker {
   public void clear() {
     cache.clear();
   }
+
+  public void shutdown() {
+    cache.shutdown();
+  }
 }

@@ -155,7 +155,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     proxyTracker.close();
 
     serverIssueUpdater.shutdown();
-
+    issueTrackerRegistry.shutdown();
     trackingChangeQueueManager.shutdown();
 
     super.stop(context);
