@@ -81,6 +81,7 @@
     <tycho-extras-version>${tycho.version}</tycho-extras-version>
     <target.platform>e45</target.platform>
     <sonarlint.version>2.5.0.809</sonarlint.version>
+    <protobuf.version>3.1.0</protobuf.version>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->
@@ -118,6 +119,16 @@
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
       <version>3.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>${protobuf.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.diffplug.osgi</groupId>
+      <artifactId>com.diffplug.osgi.extension.sun.misc</artifactId>
+      <version>0.0.0</version>
     </dependency>
   </dependencies>
 
