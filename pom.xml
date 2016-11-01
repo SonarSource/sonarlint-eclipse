@@ -46,6 +46,9 @@
 
     <module>org.sonarlint.eclipse.jdt</module>
     <module>org.sonarlint.eclipse.jdt.feature</module>
+    
+    <module>org.sonarlint.eclipse.cdt</module>
+    <module>org.sonarlint.eclipse.cdt.feature</module>
 
     <module>org.sonarlint.eclipse.site</module>
 
@@ -81,7 +84,7 @@
     <tycho.version>0.25.0</tycho.version>
     <tycho-extras-version>${tycho.version}</tycho-extras-version>
     <target.platform>e46</target.platform>
-    <sonarlint.version>2.5.0.854</sonarlint.version>
+    <sonarlint.version>2.5.0.857</sonarlint.version>
     <protobuf.version>3.1.0</protobuf.version>
 
     <!-- ================== -->

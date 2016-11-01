@@ -3,6 +3,7 @@
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.platform.ide" version="0.0.0"/>
+<unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/mars"/>
 </location>
@@ -12,8 +13,8 @@
 <location path="${M2_REPO}/org/objenesis/objenesis/2.4" type="Directory"/>
 <location path="${M2_REPO}/org/assertj/assertj-core/3.5.2" type="Directory"/>
 <location path="${M2_REPO}/com/google/code/findbugs/jsr305/3.0.1" type="Directory"/>
-<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/2.5.0.854" type="Directory"/>
-<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/2.5.0.854" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/2.5.0.857" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/2.5.0.857" type="Directory"/>
 <location path="${M2_REPO}/com/google/protobuf/protobuf-java/3.1.0" type="Directory"/>
 <location path="${M2_REPO}/com/diffplug/osgi/com.diffplug.osgi.extension.sun.misc/0.0.0" type="Directory"/>
 </locations>
