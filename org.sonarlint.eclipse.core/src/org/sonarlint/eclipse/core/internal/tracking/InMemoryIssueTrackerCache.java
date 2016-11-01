@@ -51,4 +51,8 @@ public class InMemoryIssueTrackerCache implements IssueTrackerCache {
     cache.clear();
   }
 
+  @Override
+  public void shutdown() {
+    // nothing to do
+  }
 }
