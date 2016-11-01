@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package sonarlint;
+
+// The java package can be changed without breaking compatibility.
+// it impacts only the generated Java code.
+option java_package = "org.sonarlint.eclipse.core.internal.proto";
+option optimize_for = SPEED;
+
+message Issues {
+    repeated Issue issue = 1;
+
+    message Issue {
+        // used for matching
+        string serverIssueKey = 1;
+        string ruleKey = 2;
+        int32 line = 3;
+        string message = 4;
+        int32 checksum = 5;
+
+        // values carried forward
+        string assignee = 6;
+        int64 creationDate = 7;
+        bool resolved = 8;
+    }
+}
+
+message StorageIndex {
+    map<string,string> mapped_path_by_key = 1;
+}
