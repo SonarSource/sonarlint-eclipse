@@ -23,6 +23,10 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
 public class Logger {
 
+  public void error(String message, Exception e) {
+    SonarLintCorePlugin.getDefault().error(message, e);
+  }
+
   public void debug(String message, Exception e) {
     SonarLintCorePlugin.getDefault().debug(message, e);
   }
