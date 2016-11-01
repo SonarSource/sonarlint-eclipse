@@ -20,11 +20,13 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.Collection;
+import javax.annotation.CheckForNull;
 
 public interface IssueTrackerCache {
 
   boolean isFirstAnalysis(String file);
 
+  @CheckForNull
   Collection<MutableTrackable> getCurrentTrackables(String file);
 
   void put(String file, Collection<MutableTrackable> trackables);
