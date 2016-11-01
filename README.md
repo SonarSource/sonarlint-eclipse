@@ -15,7 +15,11 @@ Install `m2eclipse` and then Tycho extension to `m2eclipse`:
 1. Window -> Preferences -> Maven -> Discovery -> Open Catalog
 2. Install **Tycho Configurator**
 3. Import everything as Maven project
-4. Activate `target-platform-e46-dev.target` as current target platform
+4. Run `mvn compile` on the command line to fetch artifacts referenced in the parent pom
+5. Open `target-platform-e46-dev.target`
+    - Click on **Environment** tab and add `M2_REPO` variable pointing to your local maven repo (for example `/home/youruser/.m2/repository`)
+    - On the **Definitions** tab, if there are problems with the **Locations** entries, click **Reload**
+    - Click **Set as Target Platform** in the top-right corner
 
 Running
 -------
