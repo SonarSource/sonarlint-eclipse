@@ -70,7 +70,7 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
   }
 
   /**
-   * Read issues from a file that are cached. On cache miss, it won't fallback to the persistent store.
+   * Read issues from a file that is cached. On cache miss, it won't fallback to the persistent store.
    */
   @Override
   public synchronized Collection<MutableTrackable> getCurrentTrackables(String file) {
@@ -103,6 +103,7 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
     });
   }
 
+  @Override
   public synchronized void shutdown() {
     flushAll();
   }

@@ -31,6 +31,14 @@ public interface IssueTrackerCache {
 
   void put(String file, Collection<MutableTrackable> trackables);
 
+  /**
+   * Empty the cache, delete everything.
+   */
   void clear();
+
+  /**
+   * Shutdown the cache. This is the time for persistent implementations to flush everything to storage.
+   */
+  void shutdown();
 
 }

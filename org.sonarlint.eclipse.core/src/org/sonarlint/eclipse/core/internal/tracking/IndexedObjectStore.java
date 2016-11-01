@@ -68,7 +68,7 @@ class IndexedObjectStore<K, V> implements ObjectStore<K, V> {
   }
 
   /**
-   * Deletes all entries in the index are no longer valid.
+   * Deletes all entries in the index that are no longer valid.
    */
   public void deleteInvalid() {
     int counter = 0;
