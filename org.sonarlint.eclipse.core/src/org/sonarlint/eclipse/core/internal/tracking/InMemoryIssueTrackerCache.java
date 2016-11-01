@@ -31,18 +31,22 @@ public class InMemoryIssueTrackerCache implements IssueTrackerCache {
     this.cache = new ConcurrentHashMap<>();
   }
 
+  @Override
   public boolean isFirstAnalysis(String file) {
     return !cache.containsKey(file);
   }
 
+  @Override
   public Collection<MutableTrackable> getCurrentTrackables(String file) {
     return cache.get(file);
   }
 
+  @Override
   public void put(String file, Collection<MutableTrackable> trackables) {
     cache.put(file, trackables);
   }
 
+  @Override
   public void clear() {
     cache.clear();
   }
