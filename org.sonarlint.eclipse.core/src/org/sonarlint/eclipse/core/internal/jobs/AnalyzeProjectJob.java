@@ -19,8 +19,12 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -163,8 +167,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     @Override
-    public Path getPath() {
-      return filePath;
+    public String getPath() {
+      return filePath.toString();
     }
 
     @Override
@@ -189,6 +193,30 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     @Override
     public <G> G getClientObject() {
       return (G) file;
+    }
+
+    @Override
+    public String contents() throws IOException {
+      try (TextFileContext context = new TextFileContext(file)) {
+        return context.getDocument().get();
+      } catch (CoreException e) {
+        // ignore
+      }
+      return null;
+    }
+
+    @Override
+    public InputStream inputStream() throws IOException {
+      Charset charset = getCharset();
+      if (charset == null) {
+        charset = StandardCharsets.UTF_8;
+      }
+      try (TextFileContext context = new TextFileContext(file)) {
+        return new ByteArrayInputStream(contents().getBytes(charset));
+      } catch (CoreException e) {
+        // ignore
+      }
+      return null;
     }
   }
 
