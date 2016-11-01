@@ -6,6 +6,9 @@
    <feature url="features/org.sonarlint.eclipse.jdt.feature_0.0.0.jar" id="org.sonarlint.eclipse.jdt.feature" version="0.0.0">
       <category name="SonarLint for Eclipse Optional Configuration Helpers"/>
    </feature>
+   <feature url="features/org.sonarlint.eclipse.cdt.feature_0.0.0.jar" id="org.sonarlint.eclipse.cdt.feature" version="0.0.0">
+      <category name="SonarLint for Eclipse Optional Configuration Helpers"/>
+   </feature>
    <feature url="features/org.sonarlint.eclipse.feature_0.0.0.qualifier.jar" id="org.sonarlint.eclipse.feature" version="0.0.0">
       <category name="SonarLint for Eclipse"/>
    </feature>

@@ -33,6 +33,7 @@
    <features>
       <feature id="org.sonarlint.eclipse.feature"/>
       <feature id="org.sonarlint.eclipse.jdt.feature"/>
+      <feature id="org.sonarlint.eclipse.cdt.feature"/>   
    </features>
 
 

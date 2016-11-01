@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+     <extension
+         point="org.sonarlint.eclipse.core.projectConfigurators">
+      <configurator
+            class="org.sonarlint.eclipse.cdt.internal.CProjectConfigurator">
+      </configurator>
+   </extension>
+</plugin>

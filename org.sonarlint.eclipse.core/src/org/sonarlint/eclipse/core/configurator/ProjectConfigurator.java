@@ -27,6 +27,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.internal.resources.ResourceUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
+/**
+ * Implemented by components that configure the analysis on certain environments.
+ * For example, we have configurators for C/C++ projects in Eclipse CDT and for Java projects.
+ * 
+ * Other products also use this interface, so <b>it should be kept stable</b>.
+ */
 public abstract class ProjectConfigurator {
 
   public static final String SEPARATOR = ",";

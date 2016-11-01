@@ -47,6 +47,9 @@
     <module>org.sonarlint.eclipse.jdt</module>
     <module>org.sonarlint.eclipse.jdt.feature</module>
     
+    <module>org.sonarlint.eclipse.cdt</module>
+    <module>org.sonarlint.eclipse.cdt.feature</module>
+
     <module>org.sonarlint.eclipse.site</module>
 
     <module>target-platform-e43</module>
