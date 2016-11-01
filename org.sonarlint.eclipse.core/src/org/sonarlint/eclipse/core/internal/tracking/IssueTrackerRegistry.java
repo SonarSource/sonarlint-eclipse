@@ -50,4 +50,10 @@ public class IssueTrackerRegistry {
     return new IssueTracker(cacheFactory.apply(localModuleKey), new TrackingChangeSubmitter(queueManager, localModuleKey));
   }
 
+  public void shutdown() {
+    for (IssueTracker issueTracker : registry.values()) {
+      issueTracker.shutdown();
+    }
+  }
+
 }
