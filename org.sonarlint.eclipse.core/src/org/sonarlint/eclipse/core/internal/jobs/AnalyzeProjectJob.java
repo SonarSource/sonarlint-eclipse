@@ -71,7 +71,7 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackable;
-import org.sonarlint.eclipse.core.internal.tracking.MutableTrackable;
+import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
@@ -367,7 +367,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private static void trackLocalIssues(String localModuleKey, String relativePath, @Nullable IDocument document, List<Issue> rawIssues) {
-    List<MutableTrackable> trackables = rawIssues.stream().map(issue -> {
+    List<Trackable> trackables = rawIssues.stream().map(issue -> {
       TextRange textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
       String content = null;
       if (document != null) {

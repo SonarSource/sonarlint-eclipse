@@ -31,7 +31,7 @@ public class TrackingChangeSubmitter {
     this.moduleKey = moduleKey;
   }
 
-  public void submit(String file, Collection<MutableTrackable> issues) {
+  public void submit(String file, Collection<Trackable> issues) {
     queueManager.post(moduleKey, file, issues);
   }
 

@@ -47,7 +47,7 @@ public class MarkerUpdater implements TrackingChangeListener {
   }
 
   @Override
-  public void onTrackingChange(String localModuleKey, String relativePath, Collection<? extends Trackable> issues) {
+  public void onTrackingChange(String localModuleKey, String relativePath, Collection<Trackable> issues) {
     String absolutePath = modulePathManager.getFilePath(localModuleKey, relativePath);
 
     IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -76,7 +76,7 @@ public class MarkerUpdater implements TrackingChangeListener {
     }
   }
 
-  private static void createMarkers(IDocument document, IFile file, Collection<? extends Trackable> issues) throws CoreException {
+  private static void createMarkers(IDocument document, IFile file, Collection<Trackable> issues) throws CoreException {
     for (Trackable issue : issues) {
       if (!issue.isResolved()) {
         createMarker(document, file, issue);

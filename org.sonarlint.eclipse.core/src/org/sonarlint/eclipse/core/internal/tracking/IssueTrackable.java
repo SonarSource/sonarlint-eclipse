@@ -22,7 +22,7 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 
-public class IssueTrackable extends MutableTrackableImpl {
+public class IssueTrackable implements Trackable {
 
   private final Issue issue;
   private final TextRange textRange;
@@ -68,5 +68,25 @@ public class IssueTrackable extends MutableTrackableImpl {
   @Override
   public TextRange getTextRange() {
     return textRange;
+  }
+
+  @Override
+  public String getServerIssueKey() {
+    return null;
+  }
+
+  @Override
+  public Long getCreationDate() {
+    return null;
+  }
+
+  @Override
+  public boolean isResolved() {
+    return false;
+  }
+
+  @Override
+  public String getAssignee() {
+    return "";
   }
 }

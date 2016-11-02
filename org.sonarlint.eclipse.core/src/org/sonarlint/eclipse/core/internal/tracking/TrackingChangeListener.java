@@ -24,6 +24,6 @@ import java.util.Collection;
 @FunctionalInterface
 public interface TrackingChangeListener {
 
-  void onTrackingChange(String moduleKey, String relativePath, Collection<? extends Trackable> issues);
+  void onTrackingChange(String moduleKey, String relativePath, Collection<Trackable> issues);
 
 }
