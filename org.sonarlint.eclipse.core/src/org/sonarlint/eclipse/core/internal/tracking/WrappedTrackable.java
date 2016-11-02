@@ -20,68 +20,83 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
-import org.sonarlint.eclipse.core.internal.proto.Sonarlint.Issues.Issue;
 
-public class ProtobufIssueTrackable implements Trackable {
+public class WrappedTrackable implements MutableTrackable {
 
-  private final Issue issue;
+  private final Trackable trackable;
 
-  public ProtobufIssueTrackable(Issue issue) {
-    this.issue = issue;
+  public WrappedTrackable(Trackable trackable) {
+    this.trackable = trackable;
   }
 
   @Override
   public Integer getLine() {
-    return issue.getLine() != 0 ? issue.getLine() : null;
+    return trackable.getLine();
   }
 
   @Override
   public String getMessage() {
-    return issue.getMessage();
+    return trackable.getMessage();
   }
 
   @Override
   public Integer getTextRangeHash() {
-    return null;
+    return trackable.getTextRangeHash();
   }
 
   @Override
   public Integer getLineHash() {
-    return issue.getChecksum();
+    return trackable.getLineHash();
   }
 
   @Override
   public String getRuleKey() {
-    return issue.getRuleKey();
-  }
-
-  @Override
-  public String getServerIssueKey() {
-    return issue.getServerIssueKey() != null ? issue.getServerIssueKey() : null;
-  }
-
-  @Override
-  public Long getCreationDate() {
-    return issue.getCreationDate() != 0 ? issue.getCreationDate() : null;
-  }
-
-  @Override
-  public boolean isResolved() {
-    return issue.getResolved();
-  }
-
-  @Override
-  public String getAssignee() {
-    return issue.getAssignee();
+    return trackable.getRuleKey();
   }
 
   @Override
   public String getSeverity() {
-    throw new UnsupportedOperationException();
+    return trackable.getSeverity();
   }
 
   @Override
   public TextRange getTextRange() {
-    return null;
+    return trackable.getTextRange();
   }
+
+  @Override
+  public String getServerIssueKey() {
+    return trackable.getServerIssueKey();
+  }
+
+  @Override
+  public Long getCreationDate() {
+    return trackable.getCreationDate();
+  }
+
+  @Override
+  public boolean isResolved() {
+    return trackable.isResolved();
+  }
+
+  @Override
+  public String getAssignee() {
+    return trackable.getAssignee();
+  }
+
+  @Override
+  public void copyServerIssueDetails(Trackable base) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void resetServerIssueDetails() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void setCreationDate(long currentTimeMillis) {
+    throw new UnsupportedOperationException();
+  }
+
 }

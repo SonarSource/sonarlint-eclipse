@@ -34,6 +34,10 @@ public class ModulePathManager {
     modulePaths.put(localModuleKey, path);
   }
 
+  public String getModulePath(String localModuleKey) {
+    return modulePaths.get(localModuleKey);
+  }
+
   public String getFilePath(String localModuleKey, String relativePath) {
     return new File(modulePaths.get(localModuleKey), relativePath).getAbsolutePath();
   }

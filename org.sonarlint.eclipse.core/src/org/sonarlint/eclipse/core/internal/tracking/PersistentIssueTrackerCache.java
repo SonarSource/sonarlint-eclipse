@@ -21,8 +21,10 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class PersistentIssueTrackerCache implements IssueTrackerCache {
 
@@ -66,7 +68,7 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
 
   @Override
   public boolean isFirstAnalysis(String file) {
-    return !cache.containsKey(file);
+    return !cache.containsKey(file) && !store.contains(file);
   }
 
   /**
@@ -74,7 +76,20 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
    */
   @Override
   public synchronized Collection<MutableTrackable> getCurrentTrackables(String file) {
-    return cache.get(file);
+    Collection<MutableTrackable> liveTrackables = cache.get(file);
+    if (liveTrackables != null) {
+      return liveTrackables;
+    }
+
+    try {
+      Collection<Trackable> storedTrackables = store.read(file);
+      if (storedTrackables != null) {
+        return Collections.unmodifiableCollection(storedTrackables.stream().map(WrappedTrackable::new).collect(Collectors.toList()));
+      }
+    } catch (IOException e) {
+      LOGGER.error(String.format("Failed to read issues from store for file %s", file), e);
+    }
+    return Collections.emptyList();
   }
 
   @Override
