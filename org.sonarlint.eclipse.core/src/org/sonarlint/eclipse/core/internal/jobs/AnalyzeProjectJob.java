@@ -200,9 +200,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       try (TextFileContext context = new TextFileContext(file)) {
         return context.getDocument().get();
       } catch (CoreException e) {
-        // ignore
+        throw new IOException("error while reading file: " + file.getFullPath(), e);
       }
-      return null;
     }
 
     @Override
@@ -214,9 +213,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       try (TextFileContext context = new TextFileContext(file)) {
         return new ByteArrayInputStream(contents().getBytes(charset));
       } catch (CoreException e) {
-        // ignore
+        throw new IOException("error while streaming file: " + file.getFullPath(), e);
       }
-      return null;
     }
   }
 
