@@ -85,12 +85,12 @@ public class WrappedTrackable implements MutableTrackable {
   }
 
   @Override
-  public void copyServerIssueDetails(Trackable base) {
+  public void copyTrackedDetails(Trackable base) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void resetServerIssueDetails() {
+  public void resetTrackedDetails() {
     throw new UnsupportedOperationException();
   }
 

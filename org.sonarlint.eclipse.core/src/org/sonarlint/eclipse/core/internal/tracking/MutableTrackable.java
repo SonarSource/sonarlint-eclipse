@@ -21,9 +21,9 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 public interface MutableTrackable extends Trackable {
 
-  void copyServerIssueDetails(Trackable base);
+  void copyTrackedDetails(Trackable base);
 
-  void resetServerIssueDetails();
+  void resetTrackedDetails();
 
   void setCreationDate(long currentTimeMillis);
 
