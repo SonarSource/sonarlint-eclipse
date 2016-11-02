@@ -70,12 +70,12 @@ public class IssueTracker {
     for (Map.Entry<MutableTrackable, T> entry : tracking.getMatchedRaws().entrySet()) {
       Trackable base = entry.getValue();
       MutableTrackable next = entry.getKey();
-      next.copyServerIssueDetails(base);
+      next.copyTrackedDetails(base);
       trackedIssues.add(next);
     }
     for (MutableTrackable next : tracking.getUnmatchedRaws()) {
       if (next.getServerIssueKey() != null) {
-        next.resetServerIssueDetails();
+        next.resetTrackedDetails();
       }
       next.setCreationDate(System.currentTimeMillis());
       trackedIssues.add(next);
