@@ -35,12 +35,8 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
-import org.sonarlint.eclipse.core.internal.tracking.MarkerUpdater;
-import org.sonarlint.eclipse.core.internal.tracking.ModulePathManager;
-import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
-import org.sonarlint.eclipse.tests.common.WorkspaceHelpers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -49,14 +45,12 @@ import static org.mockito.Mockito.when;
 
 public class MarkerUpdaterTest extends SonarTestCase {
 
-  private IProject project;
+  private static IProject project;
   private static final List<String> errors = new ArrayList<>();
 
   @BeforeClass
   public static void prepare() throws Exception {
-
     SonarLintCorePlugin.getDefault().addLogListener(new LogListener() {
-
       @Override
       public void info(String msg) {
       }
@@ -74,14 +68,12 @@ public class MarkerUpdaterTest extends SonarTestCase {
       public void warn(String msg) {
       }
     });
+    project = importEclipseProject("reference");
   }
 
   @Before
   public void cleanup() throws Exception {
     errors.clear();
-    WorkspaceHelpers.cleanWorkspace();
-    project = importEclipseProject("reference");
-    MarkerUtils.deleteIssuesMarkers(project);
   }
 
   @After
