@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class PersistentIssueTrackerCache implements IssueTrackerCache {
 
@@ -33,7 +32,7 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
   static final int MAX_ENTRIES = 100;
 
   private final IssueStore store;
-  private final Map<String, Collection<MutableTrackable>> cache;
+  private final Map<String, Collection<Trackable>> cache;
 
   public PersistentIssueTrackerCache(IssueStore store) {
     this.store = store;
@@ -44,13 +43,13 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
    * Keeps a maximum number of entries in the map. On insertion, if the limit is passed, the entry accessed the longest time ago
    * is flushed into cache and removed from the map.
    */
-  private class LimitedSizeLinkedHashMap extends LinkedHashMap<String, Collection<MutableTrackable>> {
+  private class LimitedSizeLinkedHashMap extends LinkedHashMap<String, Collection<Trackable>> {
     LimitedSizeLinkedHashMap() {
       super(MAX_ENTRIES, 0.75f, true);
     }
 
     @Override
-    protected boolean removeEldestEntry(Map.Entry<String, Collection<MutableTrackable>> eldest) {
+    protected boolean removeEldestEntry(Map.Entry<String, Collection<Trackable>> eldest) {
       if (size() <= MAX_ENTRIES) {
         return false;
       }
@@ -75,8 +74,8 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
    * Read issues from a file that is cached. On cache miss, it won't fallback to the persistent store.
    */
   @Override
-  public synchronized Collection<MutableTrackable> getCurrentTrackables(String file) {
-    Collection<MutableTrackable> liveTrackables = cache.get(file);
+  public synchronized Collection<Trackable> getCurrentTrackables(String file) {
+    Collection<Trackable> liveTrackables = cache.get(file);
     if (liveTrackables != null) {
       return liveTrackables;
     }
@@ -84,7 +83,7 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
     try {
       Collection<Trackable> storedTrackables = store.read(file);
       if (storedTrackables != null) {
-        return Collections.unmodifiableCollection(storedTrackables.stream().map(WrappedTrackable::new).collect(Collectors.toList()));
+        return Collections.unmodifiableCollection(storedTrackables);
       }
     } catch (IOException e) {
       LOGGER.error(String.format("Failed to read issues from store for file %s", file), e);
@@ -93,7 +92,7 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
   }
 
   @Override
-  public synchronized void put(String file, Collection<MutableTrackable> trackables) {
+  public synchronized void put(String file, Collection<Trackable> trackables) {
     cache.put(file, trackables);
   }
 

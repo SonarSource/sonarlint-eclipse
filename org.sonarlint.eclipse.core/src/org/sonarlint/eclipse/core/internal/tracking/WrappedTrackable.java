@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 
-public class WrappedTrackable implements MutableTrackable {
+public class WrappedTrackable implements Trackable {
 
   private final Trackable trackable;
 
@@ -83,20 +83,4 @@ public class WrappedTrackable implements MutableTrackable {
   public String getAssignee() {
     return trackable.getAssignee();
   }
-
-  @Override
-  public void copyTrackedDetails(Trackable base) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void resetTrackedDetails() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void setCreationDate(long currentTimeMillis) {
-    throw new UnsupportedOperationException();
-  }
-
 }

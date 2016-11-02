@@ -40,7 +40,7 @@ public class IssueTracker {
    * @param file
    * @param trackables
    */
-  public synchronized void matchAndTrackAsNew(String file, Collection<MutableTrackable> trackables) {
+  public synchronized void matchAndTrackAsNew(String file, Collection<Trackable> trackables) {
     if (cache.isFirstAnalysis(file)) {
       updateTrackedIssues(file, trackables);
     } else {
@@ -55,7 +55,7 @@ public class IssueTracker {
    * @param trackables
    */
   public synchronized void matchAndTrackAsBase(String file, Collection<Trackable> trackables) {
-    Collection<MutableTrackable> current = cache.getCurrentTrackables(file);
+    Collection<Trackable> current = cache.getCurrentTrackables(file);
     if (current.isEmpty()) {
       // whatever is the base, if current is empty, then nothing to do
       return;
@@ -64,26 +64,25 @@ public class IssueTracker {
   }
 
   // note: the base issues are type T: sometimes mutable, sometimes not (for example server issues)
-  private <T extends Trackable> void matchAndTrack(String file, Collection<T> baseIssues, Collection<MutableTrackable> nextIssues) {
-    Collection<MutableTrackable> trackedIssues = new ArrayList<>();
-    Tracking<MutableTrackable, T> tracking = new Tracker<MutableTrackable, T>().track(() -> nextIssues, () -> baseIssues);
-    for (Map.Entry<MutableTrackable, T> entry : tracking.getMatchedRaws().entrySet()) {
-      Trackable base = entry.getValue();
-      MutableTrackable next = entry.getKey();
-      next.copyTrackedDetails(base);
+  private void matchAndTrack(String file, Collection<Trackable> baseIssues, Collection<Trackable> nextIssues) {
+    Collection<Trackable> trackedIssues = new ArrayList<>();
+    Tracking<Trackable, Trackable> tracking = new Tracker<Trackable, Trackable>().track(() -> nextIssues, () -> baseIssues);
+    for (Map.Entry<Trackable, Trackable> entry : tracking.getMatchedRaws().entrySet()) {
+      Trackable next = new CombinedTrackable(entry.getValue(), entry.getKey());
       trackedIssues.add(next);
     }
-    for (MutableTrackable next : tracking.getUnmatchedRaws()) {
+    for (Trackable next : tracking.getUnmatchedRaws()) {
       if (next.getServerIssueKey() != null) {
-        next.resetTrackedDetails();
+        next = new DisconnectedTrackable(next);
+      } else {
+        next = new LeakedTrackable(next);
       }
-      next.setCreationDate(System.currentTimeMillis());
       trackedIssues.add(next);
     }
     updateTrackedIssues(file, trackedIssues);
   }
 
-  private void updateTrackedIssues(String file, Collection<MutableTrackable> trackedIssues) {
+  private void updateTrackedIssues(String file, Collection<Trackable> trackedIssues) {
     cache.put(file, trackedIssues);
     changeSubmitter.submit(file, trackedIssues);
   }

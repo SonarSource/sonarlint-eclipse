@@ -27,9 +27,9 @@ public interface IssueTrackerCache {
   boolean isFirstAnalysis(String file);
 
   @CheckForNull
-  Collection<MutableTrackable> getCurrentTrackables(String file);
+  Collection<Trackable> getCurrentTrackables(String file);
 
-  void put(String file, Collection<MutableTrackable> trackables);
+  void put(String file, Collection<Trackable> trackables);
 
   /**
    * Empty the cache, delete everything.

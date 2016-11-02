@@ -19,17 +19,25 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-public abstract class MutableTrackableImpl implements MutableTrackable {
+/**
+ * Combine a new Trackable ("next") with a previous state ("base")
+ */
+public class CombinedTrackable extends WrappedTrackable {
 
-  private static final Long DEFAULT_CREATION_DATE = null;
-  private static final String DEFAULT_SERVER_ISSUE_KEY = null;
-  private static final boolean DEFAULT_RESOLVED = false;
-  private static final String DEFAULT_ASSIGNEE = "";
+  private final String serverIssueKey;
+  private final Long creationDate;
+  private final boolean resolved;
+  private final String assignee;
 
-  private Long creationDate = DEFAULT_CREATION_DATE;
-  private String serverIssueKey = DEFAULT_SERVER_ISSUE_KEY;
-  private boolean resolved = DEFAULT_RESOLVED;
-  private String assignee = DEFAULT_ASSIGNEE;
+  public CombinedTrackable(Trackable base, Trackable next) {
+    super(next);
+
+    // Warning: do not store a reference to base, as it might never get garbage collected
+    this.serverIssueKey = base.getServerIssueKey();
+    this.creationDate = base.getCreationDate();
+    this.resolved = base.isResolved();
+    this.assignee = base.getAssignee();
+  }
 
   @Override
   public String getServerIssueKey() {
@@ -49,26 +57,5 @@ public abstract class MutableTrackableImpl implements MutableTrackable {
   @Override
   public String getAssignee() {
     return assignee;
-  }
-
-  @Override
-  public void copyTrackedDetails(Trackable base) {
-    creationDate = base.getCreationDate();
-    serverIssueKey = base.getServerIssueKey();
-    resolved = base.isResolved();
-    assignee = base.getAssignee();
-  }
-
-  @Override
-  public void resetTrackedDetails() {
-    creationDate = DEFAULT_CREATION_DATE;
-    serverIssueKey = DEFAULT_SERVER_ISSUE_KEY;
-    resolved = DEFAULT_RESOLVED;
-    assignee = DEFAULT_ASSIGNEE;
-  }
-
-  @Override
-  public void setCreationDate(long currentTimeMillis) {
-    creationDate = currentTimeMillis;
   }
 }

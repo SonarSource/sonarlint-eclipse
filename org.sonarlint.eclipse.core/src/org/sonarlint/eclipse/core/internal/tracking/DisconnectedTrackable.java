@@ -19,12 +19,27 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-public interface MutableTrackable extends Trackable {
+/**
+ * A trackable that used to match a server issue but it no longer does.
+ */
+public class DisconnectedTrackable extends LeakedTrackable {
 
-  void copyTrackedDetails(Trackable base);
+  public DisconnectedTrackable(Trackable trackable) {
+    super(trackable);
+  }
 
-  void resetTrackedDetails();
+  @Override
+  public String getServerIssueKey() {
+    return null;
+  }
 
-  void setCreationDate(long currentTimeMillis);
+  @Override
+  public boolean isResolved() {
+    return false;
+  }
 
+  @Override
+  public String getAssignee() {
+    return "";
+  }
 }

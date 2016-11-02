@@ -99,7 +99,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
     MarkerUpdater markerUpdater = new MarkerUpdater(modulePathManager);
 
     String relativePath = "src/Findbugs.java";
-    Collection<? extends Trackable> issues = Collections.singletonList(trackable);
+    Collection<Trackable> issues = Collections.singletonList(trackable);
     markerUpdater.onTrackingChange(localModuleKey, relativePath, issues);
 
     IMarker[] markers = project.getFile(relativePath).findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);

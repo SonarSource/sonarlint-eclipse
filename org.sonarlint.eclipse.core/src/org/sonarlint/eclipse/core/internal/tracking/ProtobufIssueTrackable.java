@@ -82,6 +82,6 @@ public class ProtobufIssueTrackable implements Trackable {
 
   @Override
   public TextRange getTextRange() {
-    return null;
+    throw new UnsupportedOperationException();
   }
 }

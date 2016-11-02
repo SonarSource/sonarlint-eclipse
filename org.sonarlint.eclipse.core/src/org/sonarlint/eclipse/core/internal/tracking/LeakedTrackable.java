@@ -19,40 +19,20 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+/**
+ * A new leak
+ */
+public class LeakedTrackable extends WrappedTrackable {
 
-public class InMemoryIssueTrackerCache implements IssueTrackerCache {
+  private final Long creationDate;
 
-  private final Map<String, Collection<Trackable>> cache;
-
-  public InMemoryIssueTrackerCache() {
-    this.cache = new ConcurrentHashMap<>();
+  public LeakedTrackable(Trackable trackable) {
+    super(trackable);
+    this.creationDate = System.currentTimeMillis();
   }
 
   @Override
-  public boolean isFirstAnalysis(String file) {
-    return !cache.containsKey(file);
-  }
-
-  @Override
-  public Collection<Trackable> getCurrentTrackables(String file) {
-    return cache.get(file);
-  }
-
-  @Override
-  public void put(String file, Collection<Trackable> trackables) {
-    cache.put(file, trackables);
-  }
-
-  @Override
-  public void clear() {
-    cache.clear();
-  }
-
-  @Override
-  public void shutdown() {
-    // nothing to do
+  public Long getCreationDate() {
+    return creationDate;
   }
 }

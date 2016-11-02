@@ -65,7 +65,7 @@ public class IssueStore {
     return store.contains(key);
   }
 
-  public void save(String key, Collection<? extends Trackable> issues) throws IOException {
+  public void save(String key, Collection<Trackable> issues) throws IOException {
     store.write(key, transform(issues));
   }
 
@@ -94,7 +94,7 @@ public class IssueStore {
       .collect(Collectors.toList());
   }
 
-  private static Sonarlint.Issues transform(Collection<? extends Trackable> localIssues) {
+  private static Sonarlint.Issues transform(Collection<Trackable> localIssues) {
     Sonarlint.Issues.Builder builder = Sonarlint.Issues.newBuilder();
     localIssues.stream()
       .map(IssueStore::transform)
