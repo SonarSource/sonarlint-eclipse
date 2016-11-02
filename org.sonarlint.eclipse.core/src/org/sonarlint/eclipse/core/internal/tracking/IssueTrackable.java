@@ -51,7 +51,7 @@ public class IssueTrackable implements Trackable {
 
   @Override
   public Integer getLineHash() {
-    // TODO Auto-generated method stub
+    // TODO implement using same algorithm as used by SonarQube
     return null;
   }
 
