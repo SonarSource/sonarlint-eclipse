@@ -61,32 +61,33 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     plugin = this;
   }
 
+  private class SonarLintConsoleLogger implements LogListener {
+    @Override
+    public void info(String msg) {
+      getSonarConsole().info(msg);
+    }
+
+    @Override
+    public void error(String msg) {
+      getSonarConsole().error(msg);
+    }
+
+    @Override
+    public void debug(String msg) {
+      getSonarConsole().debug(msg);
+    }
+
+    @Override
+    public void warn(String msg) {
+      getSonarConsole().warn(msg);
+    }
+  }
+
   @Override
   public void start(final BundleContext context) throws Exception {
     super.start(context);
 
-    logListener = new LogListener() {
-
-      @Override
-      public void info(String msg) {
-        getSonarConsole().info(msg);
-      }
-
-      @Override
-      public void error(String msg) {
-        getSonarConsole().error(msg);
-      }
-
-      @Override
-      public void debug(String msg) {
-        getSonarConsole().debug(msg);
-      }
-
-      @Override
-      public void warn(String msg) {
-        getSonarConsole().warn(msg);
-      }
-    };
+    logListener = new SonarLintConsoleLogger();
     SonarLintCorePlugin.getDefault().addLogListener(logListener);
 
     addSonarLintPartListener();
