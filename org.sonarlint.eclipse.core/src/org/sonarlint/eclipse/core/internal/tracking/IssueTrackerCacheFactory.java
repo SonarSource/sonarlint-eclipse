@@ -23,5 +23,6 @@ import java.util.function.Function;
 
 @FunctionalInterface
 public interface IssueTrackerCacheFactory extends Function<String, IssueTrackerCache> {
+  @Override
   IssueTrackerCache apply(String localModuleKey);
 }
