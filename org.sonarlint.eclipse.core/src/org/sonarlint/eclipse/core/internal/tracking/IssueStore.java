@@ -37,12 +37,12 @@ public class IssueStore {
   private Path basePath;
   private IndexedObjectStore<String, Sonarlint.Issues> store;
 
-  protected IssueStore(Path basePath) {
-    this.basePath = basePath;
-    FileUtils.forceMkDirs(basePath);
-    StoreIndex<String> index = new StringStoreIndex(basePath);
-    PathMapper<String> mapper = new HashingPathMapper(basePath, 2);
-    StoreKeyValidator<String> validator = new PathStoreKeyValidator(basePath);
+  public IssueStore(Path storeBasePath, Path projectBasePath) {
+    this.basePath = storeBasePath;
+    FileUtils.forceMkDirs(storeBasePath);
+    StoreIndex<String> index = new StringStoreIndex(storeBasePath);
+    PathMapper<String> mapper = new HashingPathMapper(storeBasePath, 2);
+    StoreKeyValidator<String> validator = new PathStoreKeyValidator(projectBasePath);
     Reader<Sonarlint.Issues> reader = is -> {
       try {
         return Sonarlint.Issues.parseFrom(is);
