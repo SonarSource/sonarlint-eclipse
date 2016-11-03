@@ -204,9 +204,6 @@
               id="org.sonarlint.eclipse.ui.views.issues.issueRuleNameField"
               visible="false"/>
         <markerFieldReference
-              id="org.sonarlint.eclipse.ui.views.issues.assigneeField"
-              visible="false"/>
-        <markerFieldReference
               id="org.sonarlint.eclipse.ui.views.issues.serverIssueKeyField"
               visible="false"/>
         <markerFieldReference
@@ -303,11 +300,6 @@
         class="org.sonarlint.eclipse.ui.internal.views.issues.CreationDateField"
         id="org.sonarlint.eclipse.ui.views.issues.issueCreationDateField"
         name="Date">
-    </markerField>
-    <markerField
-        class="org.sonarlint.eclipse.ui.internal.views.issues.AssigneeField"
-        id="org.sonarlint.eclipse.ui.views.issues.assigneeField"
-        name="%sonar.issues.view.assigneefield">
     </markerField>
     <markerField
         class="org.sonarlint.eclipse.ui.internal.views.issues.ServerIssueKeyField"
