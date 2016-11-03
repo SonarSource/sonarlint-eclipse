@@ -22,15 +22,18 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.util.Collection;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 
 public class AnalyzeProjectRequest {
 
   private final IProject project;
   private final Collection<IFile> files;
+  private final TriggerType triggerType;
 
-  public AnalyzeProjectRequest(IProject project, Collection<IFile> files) {
+  public AnalyzeProjectRequest(IProject project, Collection<IFile> files, TriggerType triggerType) {
     this.project = project;
     this.files = files;
+    this.triggerType = triggerType;
   }
 
   public IProject getProject() {
@@ -39,6 +42,10 @@ public class AnalyzeProjectRequest {
 
   public Collection<IFile> getFiles() {
     return files;
+  }
+
+  public TriggerType getTriggerType() {
+    return triggerType;
   }
 
 }

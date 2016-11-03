@@ -19,41 +19,14 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import javax.annotation.CheckForNull;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import java.util.Collection;
 
-public interface Trackable {
+public interface TrackingChangeQueueManager {
 
-  /**
-   * The line index, starting with 1. Null means that
-   * issue does not relate to a line (file issue for example).
-   */
-  @CheckForNull
-  Integer getLine();
+  void post(String localModuleKey, String file, Collection<Trackable> trackables);
 
-  String getMessage();
+  void subscribe(TrackingChangeListener listener);
 
-  @CheckForNull
-  Integer getTextRangeHash();
+  void shutdown();
 
-  @CheckForNull
-  Integer getLineHash();
-
-  String getRuleKey();
-
-  @CheckForNull
-  Long getCreationDate();
-
-  @CheckForNull
-  String getServerIssueKey();
-
-  boolean isResolved();
-
-  // empty if none
-  String getAssignee();
-
-  String getSeverity();
-
-  @CheckForNull
-  TextRange getTextRange();
 }

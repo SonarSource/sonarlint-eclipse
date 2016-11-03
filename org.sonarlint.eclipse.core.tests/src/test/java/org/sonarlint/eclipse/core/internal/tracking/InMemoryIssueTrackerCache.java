@@ -17,44 +17,42 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.core.internal.tracking;
 
-import org.eclipse.core.resources.IMarker;
-import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.tracking.Trackable;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-class TrackableMarker implements Trackable {
+public class InMemoryIssueTrackerCache implements IssueTrackerCache {
 
-  private final IMarker marker;
+  private final Map<String, Collection<Trackable>> cache;
 
-  public TrackableMarker(IMarker marker) {
-    this.marker = marker;
-  }
-
-  public IMarker getWrapped() {
-    return marker;
+  public InMemoryIssueTrackerCache() {
+    this.cache = new ConcurrentHashMap<>();
   }
 
   @Override
-  public Integer getLine() {
-    int line = marker.getAttribute(IMarker.LINE_NUMBER, 0);
-    return line != 0 ? line : null;
+  public boolean isFirstAnalysis(String file) {
+    return !cache.containsKey(file);
   }
 
   @Override
-  public String getMessage() {
-    return marker.getAttribute(IMarker.MESSAGE, "");
+  public Collection<Trackable> getCurrentTrackables(String file) {
+    return cache.get(file);
   }
 
   @Override
-  public Integer getLineHash() {
-    int attribute = marker.getAttribute(MarkerUtils.SONAR_MARKER_CHECKSUM_ATTR, 0);
-    return attribute != 0 ? attribute : null;
+  public void put(String file, Collection<Trackable> trackables) {
+    cache.put(file, trackables);
   }
 
   @Override
-  public String getRuleKey() {
-    return marker.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "");
+  public void clear() {
+    cache.clear();
   }
 
+  @Override
+  public void shutdown() {
+    // nothing to do
+  }
 }

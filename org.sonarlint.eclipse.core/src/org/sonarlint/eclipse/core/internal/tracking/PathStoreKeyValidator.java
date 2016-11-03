@@ -19,41 +19,17 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import javax.annotation.CheckForNull;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import java.nio.file.Path;
 
-public interface Trackable {
+class PathStoreKeyValidator implements StoreKeyValidator<String> {
+  private final Path projectBaseDir;
 
-  /**
-   * The line index, starting with 1. Null means that
-   * issue does not relate to a line (file issue for example).
-   */
-  @CheckForNull
-  Integer getLine();
+  PathStoreKeyValidator(Path projectBaseDir) {
+    this.projectBaseDir = projectBaseDir;
+  }
 
-  String getMessage();
-
-  @CheckForNull
-  Integer getTextRangeHash();
-
-  @CheckForNull
-  Integer getLineHash();
-
-  String getRuleKey();
-
-  @CheckForNull
-  Long getCreationDate();
-
-  @CheckForNull
-  String getServerIssueKey();
-
-  boolean isResolved();
-
-  // empty if none
-  String getAssignee();
-
-  String getSeverity();
-
-  @CheckForNull
-  TextRange getTextRange();
+  @Override
+  public Boolean apply(String relativeFilePath) {
+    return projectBaseDir.resolve(relativeFilePath).toFile().exists();
+  }
 }

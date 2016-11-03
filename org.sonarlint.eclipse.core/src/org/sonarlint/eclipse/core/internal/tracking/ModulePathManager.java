@@ -19,41 +19,27 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import javax.annotation.CheckForNull;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import java.io.File;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public interface Trackable {
+/**
+ * Manage a mapping of local module keys to their physical filesystem paths.
+ */
+public class ModulePathManager {
 
-  /**
-   * The line index, starting with 1. Null means that
-   * issue does not relate to a line (file issue for example).
-   */
-  @CheckForNull
-  Integer getLine();
+  private final Map<String, String> modulePaths = new ConcurrentHashMap<>();
 
-  String getMessage();
+  public void setModulePath(String localModuleKey, String path) {
+    modulePaths.put(localModuleKey, path);
+  }
 
-  @CheckForNull
-  Integer getTextRangeHash();
+  public String getModulePath(String localModuleKey) {
+    return modulePaths.get(localModuleKey);
+  }
 
-  @CheckForNull
-  Integer getLineHash();
+  public String getFilePath(String localModuleKey, String relativePath) {
+    return new File(modulePaths.get(localModuleKey), relativePath).getAbsolutePath();
+  }
 
-  String getRuleKey();
-
-  @CheckForNull
-  Long getCreationDate();
-
-  @CheckForNull
-  String getServerIssueKey();
-
-  boolean isResolved();
-
-  // empty if none
-  String getAssignee();
-
-  String getSeverity();
-
-  @CheckForNull
-  TextRange getTextRange();
 }

@@ -17,43 +17,45 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.tracking;
+package org.sonarlint.eclipse.core.internal.markers;
 
 import javax.annotation.CheckForNull;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
 
-public interface Trackable {
+public class TextRange {
 
-  /**
-   * The line index, starting with 1. Null means that
-   * issue does not relate to a line (file issue for example).
-   */
-  @CheckForNull
-  Integer getLine();
+  private final Integer startLine;
+  private final Integer startLineOffset;
+  private final Integer endLine;
+  private final Integer endLineOffset;
 
-  String getMessage();
+  public TextRange(int line) {
+    this(line, null, null, null);
+  }
 
-  @CheckForNull
-  Integer getTextRangeHash();
-
-  @CheckForNull
-  Integer getLineHash();
-
-  String getRuleKey();
+  public TextRange(Integer startLine, Integer startLineOffset, Integer endLine, Integer endLineOffset) {
+    this.startLine = startLine;
+    this.startLineOffset = startLineOffset;
+    this.endLine = endLine;
+    this.endLineOffset = endLineOffset;
+  }
 
   @CheckForNull
-  Long getCreationDate();
+  public Integer getStartLine() {
+    return startLine;
+  }
 
   @CheckForNull
-  String getServerIssueKey();
-
-  boolean isResolved();
-
-  // empty if none
-  String getAssignee();
-
-  String getSeverity();
+  public Integer getStartLineOffset() {
+    return startLineOffset;
+  }
 
   @CheckForNull
-  TextRange getTextRange();
+  public Integer getEndLine() {
+    return endLine;
+  }
+
+  @CheckForNull
+  public Integer getEndLineOffset() {
+    return endLineOffset;
+  }
 }

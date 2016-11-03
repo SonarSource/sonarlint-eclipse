@@ -17,43 +17,31 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.tracking;
+package org.sonarlint.eclipse.core.internal.markers;
 
-import javax.annotation.CheckForNull;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
+public class FlatTextRange {
+  private final int start;
+  private final int end;
+  private final int length;
 
-public interface Trackable {
+  public FlatTextRange(int start, int end) {
+    if (end < start) {
+      throw new IllegalArgumentException("start must be < end");
+    }
+    this.start = start;
+    this.end = end;
+    this.length = end - start;
+  }
 
-  /**
-   * The line index, starting with 1. Null means that
-   * issue does not relate to a line (file issue for example).
-   */
-  @CheckForNull
-  Integer getLine();
+  public int getStart() {
+    return start;
+  }
 
-  String getMessage();
+  public int getEnd() {
+    return end;
+  }
 
-  @CheckForNull
-  Integer getTextRangeHash();
-
-  @CheckForNull
-  Integer getLineHash();
-
-  String getRuleKey();
-
-  @CheckForNull
-  Long getCreationDate();
-
-  @CheckForNull
-  String getServerIssueKey();
-
-  boolean isResolved();
-
-  // empty if none
-  String getAssignee();
-
-  String getSeverity();
-
-  @CheckForNull
-  TextRange getTextRange();
+  public int getLength() {
+    return length;
+  }
 }

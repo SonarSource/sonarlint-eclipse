@@ -29,6 +29,7 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.sonarlint.eclipse.core.internal.SonarLintChangeListener;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
@@ -53,7 +54,7 @@ public class SonarLintPartListener implements IPartListener2 {
       if (!sonarProject.isAutoEnabled() || !SonarLintChangeListener.shouldAnalyze(file)) {
         return;
       }
-      AnalyzeProjectRequest request = new AnalyzeProjectRequest(resource.getProject(), Arrays.asList(file));
+      AnalyzeProjectRequest request = new AnalyzeProjectRequest(resource.getProject(), Arrays.asList(file), TriggerType.EDITOR_OPEN);
       new AnalyzeProjectJob(request).schedule();
     }
   }

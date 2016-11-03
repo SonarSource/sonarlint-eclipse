@@ -52,7 +52,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
           SonarLintCorePlugin.getDefault().debug("Too many files to analyze in project " + project.getName() + " (" + filesToAnalyze.size() + "). Skipping.");
           return;
         }
-        AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, filesToAnalyze);
+        AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.EDITOR_CHANGE);
         new AnalyzeProjectJob(request).schedule();
       }
     }

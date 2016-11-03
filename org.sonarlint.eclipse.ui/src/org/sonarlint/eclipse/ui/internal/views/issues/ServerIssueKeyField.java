@@ -17,43 +17,20 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.tracking;
+package org.sonarlint.eclipse.ui.internal.views.issues;
 
-import javax.annotation.CheckForNull;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import org.eclipse.ui.views.markers.MarkerField;
+import org.eclipse.ui.views.markers.MarkerItem;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 
-public interface Trackable {
+public class ServerIssueKeyField extends MarkerField {
 
-  /**
-   * The line index, starting with 1. Null means that
-   * issue does not relate to a line (file issue for example).
-   */
-  @CheckForNull
-  Integer getLine();
+  @Override
+  public String getValue(MarkerItem item) {
+    if (item == null) {
+      return null;
+    }
+    return item.getAttributeValue(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, "");
+  }
 
-  String getMessage();
-
-  @CheckForNull
-  Integer getTextRangeHash();
-
-  @CheckForNull
-  Integer getLineHash();
-
-  String getRuleKey();
-
-  @CheckForNull
-  Long getCreationDate();
-
-  @CheckForNull
-  String getServerIssueKey();
-
-  boolean isResolved();
-
-  // empty if none
-  String getAssignee();
-
-  String getSeverity();
-
-  @CheckForNull
-  TextRange getTextRange();
 }

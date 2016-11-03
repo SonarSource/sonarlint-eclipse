@@ -19,41 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import javax.annotation.CheckForNull;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import java.nio.file.Path;
+import java.util.Collection;
 
-public interface Trackable {
+interface StoreIndex<T> {
+  Collection<T> keys();
 
-  /**
-   * The line index, starting with 1. Null means that
-   * issue does not relate to a line (file issue for example).
-   */
-  @CheckForNull
-  Integer getLine();
+  void save(T key, Path path);
 
-  String getMessage();
-
-  @CheckForNull
-  Integer getTextRangeHash();
-
-  @CheckForNull
-  Integer getLineHash();
-
-  String getRuleKey();
-
-  @CheckForNull
-  Long getCreationDate();
-
-  @CheckForNull
-  String getServerIssueKey();
-
-  boolean isResolved();
-
-  // empty if none
-  String getAssignee();
-
-  String getSeverity();
-
-  @CheckForNull
-  TextRange getTextRange();
+  void delete(T key);
 }

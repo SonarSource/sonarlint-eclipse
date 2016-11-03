@@ -22,11 +22,14 @@ package org.sonarlint.eclipse.core.internal.markers;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
@@ -36,7 +39,9 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_RULE_NAME_ATTR = "rulename";
   public static final String SONAR_MARKER_ISSUE_SEVERITY_ATTR = "sonarseverity";
   public static final String SONAR_MARKER_CREATION_DATE_ATTR = "creationdate";
-  public static final String SONAR_MARKER_CHECKSUM_ATTR = "checksum";
+
+  public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";
+  public static final String SONAR_MARKER_ASSIGNEE_ATTR = "assignee";
 
   private MarkerUtils() {
   }
@@ -68,4 +73,52 @@ public final class MarkerUtils {
     }
   }
 
+  @CheckForNull
+  public static FlatTextRange getFlatTextRange(final IDocument document, TextRange textRange) {
+    if (textRange.getStartLine() == null) {
+      return null;
+    }
+    if (textRange.getStartLineOffset() == null) {
+      return getFlatTextRange(document, textRange.getStartLine());
+    }
+    return getFlatTextRange(document, textRange.getStartLine(), textRange.getStartLineOffset(), textRange.getEndLine(), textRange.getEndLineOffset());
+  }
+
+  @CheckForNull
+  private static FlatTextRange getFlatTextRange(final IDocument document, int startLine) {
+    int startLineStartOffset;
+    int length;
+    String lineDelimiter;
+    try {
+      startLineStartOffset = document.getLineOffset(startLine - 1);
+      length = document.getLineLength(startLine - 1);
+      lineDelimiter = document.getLineDelimiter(startLine - 1);
+    } catch (BadLocationException e) {
+      SonarLintCorePlugin.getDefault().error("failed to compute flat text range for line " + startLine, e);
+      return null;
+    }
+
+    int lineDelimiterLength = lineDelimiter != null ? lineDelimiter.length() : 0;
+
+    int start = startLineStartOffset;
+    int end = startLineStartOffset + length - lineDelimiterLength;
+    return new FlatTextRange(start, end);
+  }
+
+  @CheckForNull
+  private static FlatTextRange getFlatTextRange(final IDocument document, int startLine, int startLineOffset, int endLine, int endLineOffset) {
+    int startLineStartOffset;
+    int endLineStartOffset;
+    try {
+      startLineStartOffset = document.getLineOffset(startLine - 1);
+      endLineStartOffset = endLine != startLine ? document.getLineOffset(endLine - 1) : startLineStartOffset;
+    } catch (BadLocationException e) {
+      SonarLintCorePlugin.getDefault().error("failed to compute line offsets for start, end = " + startLine + ", " + endLine, e);
+      return null;
+    }
+
+    int start = startLineStartOffset + startLineOffset;
+    int end = endLineStartOffset + endLineOffset;
+    return new FlatTextRange(start, end);
+  }
 }

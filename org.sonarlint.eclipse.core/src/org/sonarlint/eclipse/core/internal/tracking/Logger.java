@@ -17,44 +17,26 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.core.internal.tracking;
 
-import org.sonarlint.eclipse.core.internal.markers.SonarMarker;
-import org.sonarlint.eclipse.core.internal.tracking.Trackable;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
-class TrackableIssue implements Trackable {
+public class Logger {
 
-  private final Issue issue;
-  private final Integer lineHash;
-
-  public TrackableIssue(Issue issue, Integer lineHash) {
-    this.issue = issue;
-    this.lineHash = lineHash;
+  public void error(String message, Exception e) {
+    SonarLintCorePlugin.getDefault().error(message, e);
   }
 
-  public Issue getWrapped() {
-    return issue;
+  public void debug(String message, Exception e) {
+    SonarLintCorePlugin.getDefault().debug(message, e);
   }
 
-  @Override
-  public Integer getLine() {
-    return issue.getStartLine();
+  public void debug(String message) {
+    SonarLintCorePlugin.getDefault().debug(message);
   }
 
-  @Override
-  public String getMessage() {
-    return SonarMarker.getMessage(issue);
-  }
-
-  @Override
-  public Integer getLineHash() {
-    return lineHash;
-  }
-
-  @Override
-  public String getRuleKey() {
-    return issue.getRuleKey();
+  public void warn(String message, Throwable t) {
+    SonarLintCorePlugin.getDefault().warn(message, t);
   }
 
 }

@@ -19,41 +19,20 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import javax.annotation.CheckForNull;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
+/**
+ * A new leak
+ */
+public class LeakedTrackable extends WrappedTrackable {
 
-public interface Trackable {
+  private final Long creationDate;
 
-  /**
-   * The line index, starting with 1. Null means that
-   * issue does not relate to a line (file issue for example).
-   */
-  @CheckForNull
-  Integer getLine();
+  public LeakedTrackable(Trackable trackable) {
+    super(trackable);
+    this.creationDate = System.currentTimeMillis();
+  }
 
-  String getMessage();
-
-  @CheckForNull
-  Integer getTextRangeHash();
-
-  @CheckForNull
-  Integer getLineHash();
-
-  String getRuleKey();
-
-  @CheckForNull
-  Long getCreationDate();
-
-  @CheckForNull
-  String getServerIssueKey();
-
-  boolean isResolved();
-
-  // empty if none
-  String getAssignee();
-
-  String getSeverity();
-
-  @CheckForNull
-  TextRange getTextRange();
+  @Override
+  public Long getCreationDate() {
+    return creationDate;
+  }
 }

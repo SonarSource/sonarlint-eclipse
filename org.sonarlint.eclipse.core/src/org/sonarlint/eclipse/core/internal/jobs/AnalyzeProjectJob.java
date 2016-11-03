@@ -19,8 +19,12 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -28,22 +32,18 @@ import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.eclipse.core.filebuffers.FileBuffers;
-import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
-import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -51,8 +51,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jface.text.BadLocationException;
@@ -61,32 +59,34 @@ import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.configurator.ConfiguratorUtils;
+import org.sonarlint.eclipse.core.internal.markers.FlatTextRange;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.markers.SonarMarker;
-import org.sonarlint.eclipse.core.internal.markers.SonarMarker.Range;
+import org.sonarlint.eclipse.core.internal.markers.TextFileContext;
+import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
-import org.sonarlint.eclipse.core.internal.tracking.Input;
-import org.sonarlint.eclipse.core.internal.tracking.Tracker;
-import org.sonarlint.eclipse.core.internal.tracking.Tracking;
+import org.sonarlint.eclipse.core.internal.tracking.IssueTrackable;
+import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
+import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.trimToNull;
 
 public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
-  private static final QualifiedName LAST_ANALYSIS_PROP_NAME = new QualifiedName(SonarLintCorePlugin.PLUGIN_ID, "lastAnalysis");
-
-  private List<SonarLintProperty> extraProps;
+  private final List<SonarLintProperty> extraProps;
 
   private final AnalyzeProjectRequest request;
 
@@ -167,8 +167,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     @Override
-    public Path getPath() {
-      return filePath;
+    public String getPath() {
+      return filePath.toString();
     }
 
     @Override
@@ -194,40 +194,27 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     public <G> G getClientObject() {
       return (G) file;
     }
-  }
 
-  private static class PreviousMarkerCache {
-    Map<IResource, List<IMarker>> markersByResource = new HashMap<>();
-
-    public PreviousMarkerCache(AnalyzeProjectRequest request, Set<IFile> failedFiles) {
-      if (request.getFiles() != null) {
-        for (IFile file : request.getFiles()) {
-          if (failedFiles.contains(file)) {
-            SonarLintCorePlugin.getDefault().info("File won't be refreshed because there were errors during analysis: " + file.getFullPath().toOSString());
-          } else {
-            markersByResource.put(file, new ArrayList<IMarker>(MarkerUtils.findMarkers(file)));
-          }
-        }
-      } else {
-        for (IMarker m : MarkerUtils.findMarkers(request.getProject())) {
-          if (!markersByResource.containsKey(m.getResource())) {
-            markersByResource.put(m.getResource(), new ArrayList<IMarker>());
-          }
-          markersByResource.get(m.getResource()).add(m);
-        }
+    @Override
+    public String contents() throws IOException {
+      try (TextFileContext context = new TextFileContext(file)) {
+        return context.getDocument().get();
+      } catch (CoreException e) {
+        throw new IOException("error while reading file: " + file.getFullPath(), e);
       }
     }
 
-    public void deleteUnmatched() throws CoreException {
-      for (List<IMarker> entry : markersByResource.values()) {
-        for (IMarker m : entry) {
-          m.delete();
-        }
+    @Override
+    public InputStream inputStream() throws IOException {
+      Charset charset = getCharset();
+      if (charset == null) {
+        charset = StandardCharsets.UTF_8;
       }
-    }
-
-    public List<IMarker> getPrevious(IResource r) {
-      return markersByResource.containsKey(r) ? markersByResource.get(r) : Collections.<IMarker>emptyList();
+      try (TextFileContext context = new TextFileContext(file)) {
+        return new ByteArrayInputStream(contents().getBytes(charset));
+      } catch (CoreException e) {
+        throw new IOException("error while streaming file: " + file.getFullPath(), e);
+      }
     }
   }
 
@@ -281,7 +268,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     Map<IResource, List<Issue>> issuesPerResource = new LinkedHashMap<>();
     AnalysisResults result = runAndCheckCancellation(config, sonarProject, issuesPerResource, monitor);
     if (!monitor.isCanceled() && result != null) {
-      updateMarkers(issuesPerResource, result);
+      updateMarkers(issuesPerResource, result, request.getTriggerType());
     }
   }
 
@@ -337,76 +324,82 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return usedConfigurators;
   }
 
-  private void updateMarkers(Map<IResource, List<Issue>> issuesPerResource, AnalysisResults result) throws CoreException {
-    ITextFileBufferManager iTextFileBufferManager = FileBuffers.getTextFileBufferManager();
-    if (iTextFileBufferManager == null) {
+  private void updateMarkers(Map<IResource, List<Issue>> issuesPerResource, AnalysisResults result, TriggerType triggerType) throws CoreException {
+    ITextFileBufferManager textFileBufferManager = FileBuffers.getTextFileBufferManager();
+    if (textFileBufferManager == null) {
       return;
     }
+
     Set<IFile> failedFiles = result.failedAnalysisFiles().stream().map(f -> f.<IFile>getClientObject()).collect(Collectors.toSet());
-    PreviousMarkerCache markerCache = new PreviousMarkerCache(this.request, failedFiles);
-    long now = new Date().getTime();
     for (Entry<IResource, List<Issue>> resourceEntry : issuesPerResource.entrySet()) {
-      IResource r = resourceEntry.getKey();
-      if (failedFiles.contains(r)) {
+      IResource resource = resourceEntry.getKey();
+      if (failedFiles.contains(resource)) {
         continue;
       }
-      List<IMarker> previousMarkers = markerCache.getPrevious(r);
-      Object lastAnalysis = r.getSessionProperty(LAST_ANALYSIS_PROP_NAME);
-      Long creationTimeStampForNewIssues;
-      if (previousMarkers.isEmpty() && lastAnalysis == null) {
-        creationTimeStampForNewIssues = null;
+      if (resource instanceof IFile) {
+        trackIssues(resource, resourceEntry.getValue(), triggerType);
       } else {
-        creationTimeStampForNewIssues = now;
+        // TODO handle non-file-level issues
       }
-      List<Issue> rawIssues = resourceEntry.getValue();
-      try {
-        if (r instanceof IFile) {
-          issueTrackingOnFile(iTextFileBufferManager, r, previousMarkers, rawIssues, creationTimeStampForNewIssues);
-        } else {
-          issueTracking(r, previousMarkers, rawIssues, null, creationTimeStampForNewIssues);
+    }
+  }
+
+  private void trackIssues(IResource resource, List<Issue> rawIssues, TriggerType triggerType) throws CoreException {
+    IProject project = resource.getProject();
+    String localModuleKey = project.getName();
+    SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(localModuleKey, project.getLocation().toString());
+    String relativePath = resource.getProjectRelativePath().toString();
+
+    try (TextFileContext context = new TextFileContext((IFile) resource)) {
+      IDocument document = context.getDocument();
+
+      trackLocalIssues(localModuleKey, relativePath, document, rawIssues);
+      if (shouldUpdateServerIssues(triggerType)) {
+        trackServerIssues(localModuleKey, relativePath, resource);
+      }
+    }
+  }
+
+  private boolean shouldUpdateServerIssues(TriggerType trigger) {
+    return getSonarProject().isBound() && (trigger == TriggerType.EDITOR_OPEN || trigger == TriggerType.ACTION);
+  }
+
+  private static void trackLocalIssues(String localModuleKey, String relativePath, @Nullable IDocument document, List<Issue> rawIssues) {
+    List<Trackable> trackables = rawIssues.stream().map(issue -> {
+      TextRange textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
+      String content = null;
+      if (document != null) {
+        FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(document, textRange);
+        if (flatTextRange != null) {
+          try {
+            content = document.get(flatTextRange.getStart(), flatTextRange.getLength());
+          } catch (BadLocationException e) {
+            SonarLintCorePlugin.getDefault().error("failed to get text range content of file " + relativePath, e);
+          }
         }
-      } catch (Exception e) {
-        SonarLintCorePlugin.getDefault().error("Unable to compute position of SonarLint marker on resource " + r.getName(), e);
       }
-      r.setSessionProperty(LAST_ANALYSIS_PROP_NAME, now);
-    }
-    markerCache.deleteUnmatched();
+      return new IssueTrackable(issue, textRange, content);
+    }).collect(Collectors.toList());
+    SonarLintCorePlugin.getIssueTracker(localModuleKey).matchAndTrackAsNew(relativePath, trackables);
   }
 
-  private static void issueTrackingOnFile(ITextFileBufferManager iTextFileBufferManager, IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues,
-    Long creationTimeStampForNewIssues)
-    throws CoreException, BadLocationException {
-    IFile iFile = (IFile) r;
-    try {
-      iTextFileBufferManager.connect(iFile.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
-      ITextFileBuffer iTextFileBuffer = iTextFileBufferManager.getTextFileBuffer(iFile.getFullPath(), LocationKind.IFILE);
-      IDocument iDoc = iTextFileBuffer.getDocument();
-
-      issueTracking(r, previousMarkers, rawIssues, iDoc, creationTimeStampForNewIssues);
-
-    } finally {
-      try {
-        iTextFileBufferManager.disconnect(iFile.getFullPath(), LocationKind.IFILE, new NullProgressMonitor());
-      } catch (CoreException e) {
-        // Ignore
-      }
+  private static void trackServerIssues(String localModuleKey, String relativePath, IResource resource) {
+    String serverId = SonarLintProject.getInstance(resource).getServerId();
+    if (serverId == null) {
+      // not bound to a server -> nothing to do
+      return;
     }
-  }
 
-  private static void issueTracking(IResource r, List<IMarker> previousMarkers, List<Issue> rawIssues, IDocument iDoc, Long creationTimeStampForNewIssues)
-    throws BadLocationException, CoreException {
-    Input<TrackableMarker> baseInput = prepareBaseInput(previousMarkers);
-    Input<TrackableIssue> rawInput = prepareRawInput(iDoc, rawIssues);
-    Tracking<TrackableIssue, TrackableMarker> tracking = new Tracker<TrackableIssue, TrackableMarker>().track(rawInput, baseInput);
-    for (Entry<TrackableIssue, TrackableMarker> entry : tracking.getMatchedRaws().entrySet()) {
-      Issue issue = entry.getKey().getWrapped();
-      IMarker marker = entry.getValue().getWrapped();
-      previousMarkers.remove(marker);
-      SonarMarker.updateAttributes(marker, issue, iDoc);
+    String serverModuleKey = SonarLintCorePlugin.getDefault().getProjectManager().readSonarLintConfiguration(resource.getProject()).getModuleKey();
+    if (serverModuleKey == null) {
+      // not bound to a module -> nothing to do
+      return;
     }
-    for (TrackableIssue newIssue : tracking.getUnmatchedRaws()) {
-      SonarMarker.create(iDoc, r, newIssue.getWrapped(), creationTimeStampForNewIssues);
-    }
+
+    Server server = (Server) ServersManager.getInstance().getServer(serverId);
+    ServerConfiguration serverConfiguration = server.getConfig();
+    ConnectedSonarLintEngine engine = server.getEngine();
+    SonarLintCorePlugin.getDefault().getServerIssueUpdater().updateFor(serverConfiguration, engine, localModuleKey, serverModuleKey, relativePath);
   }
 
   private static void analysisCompleted(Collection<ProjectConfigurator> usedConfigurators, Map<String, String> properties, final IProgressMonitor monitor) {
@@ -463,47 +456,4 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       return facadeToUse.runAnalysis(config, new SonarLintIssueListener(issuesPerResource));
     }
   }
-
-  private static Input<TrackableMarker> prepareBaseInput(List<IMarker> previous) {
-    return () -> wrap(previous);
-  }
-
-  private static List<TrackableMarker> wrap(List<IMarker> previous) {
-    final List<TrackableMarker> wrapped = new ArrayList<>();
-    for (IMarker marker : previous) {
-      wrapped.add(new TrackableMarker(marker));
-    }
-    return wrapped;
-  }
-
-  private static Input<TrackableIssue> prepareRawInput(IDocument iDoc, List<Issue> issues) {
-    return () -> wrap(iDoc, issues);
-  }
-
-  private static List<TrackableIssue> wrap(IDocument iDoc, List<Issue> issues) {
-    final List<TrackableIssue> wrapped = new ArrayList<>();
-    for (Issue issue : issues) {
-      Integer checksum = iDoc != null ? computeChecksum(iDoc, issue) : null;
-      wrapped.add(new TrackableIssue(issue, checksum));
-    }
-    return wrapped;
-  }
-
-  private static Integer computeChecksum(IDocument iDoc, Issue issue) {
-    Integer checksum;
-    Integer startLine = issue.getStartLine();
-    if (startLine == null) {
-      checksum = null;
-    } else {
-      Range rangeInFile;
-      try {
-        rangeInFile = SonarMarker.findRangeInFile(issue, iDoc);
-        checksum = SonarMarker.checksum(rangeInFile.getContent());
-      } catch (BadLocationException e) {
-        checksum = null;
-      }
-    }
-    return checksum;
-  }
-
 }

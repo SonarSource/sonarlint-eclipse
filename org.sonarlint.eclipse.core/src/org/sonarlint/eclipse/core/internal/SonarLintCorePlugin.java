@@ -21,6 +21,8 @@ package org.sonarlint.eclipse.core.internal;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.net.proxy.IProxyService;
@@ -33,6 +35,16 @@ import org.sonarlint.eclipse.core.AbstractPlugin;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
+import org.sonarlint.eclipse.core.internal.tracking.IssueStore;
+import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
+import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerCacheFactory;
+import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerRegistry;
+import org.sonarlint.eclipse.core.internal.tracking.MarkerUpdater;
+import org.sonarlint.eclipse.core.internal.tracking.ModulePathManager;
+import org.sonarlint.eclipse.core.internal.tracking.PersistentIssueTrackerCache;
+import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
+import org.sonarlint.eclipse.core.internal.tracking.TrackingChangeQueueManager;
+import org.sonarlint.eclipse.core.internal.tracking.TrackingChangeQueueManagerImpl;
 
 public class SonarLintCorePlugin extends AbstractPlugin {
 
@@ -42,6 +54,11 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectManager projectManager;
+
+  private ModulePathManager modulePathManager;
+  private TrackingChangeQueueManager trackingChangeQueueManager;
+  private IssueTrackerRegistry issueTrackerRegistry;
+  private ServerIssueUpdater serverIssueUpdater;
 
   private final List<LogListener> logListeners = new ArrayList<>();
   private StandaloneSonarLintClientFacade sonarlint;
@@ -102,6 +119,15 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     }
   }
 
+  public void warn(String msg, Throwable t) {
+    for (LogListener listener : logListeners) {
+      listener.warn(msg);
+      StringWriter stack = new StringWriter();
+      t.printStackTrace(new PrintWriter(stack));
+      listener.warn(stack.toString());
+    }
+  }
+
   public synchronized SonarLintProjectManager getProjectManager() {
     if (projectManager == null) {
       projectManager = new SonarLintProjectManager();
@@ -114,6 +140,21 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     super.start(context);
     sonarLintChangeListener = new SonarLintChangeListener();
     ResourcesPlugin.getWorkspace().addResourceChangeListener(sonarLintChangeListener, IResourceChangeEvent.POST_CHANGE);
+
+    modulePathManager = new ModulePathManager();
+    trackingChangeQueueManager = new TrackingChangeQueueManagerImpl();
+    trackingChangeQueueManager.subscribe(new MarkerUpdater(modulePathManager));
+
+    IssueTrackerCacheFactory factory = localModuleKey -> {
+      // TODO find a better way to get to the .settings dir of an Eclipse project
+      Path projectBasePath = Paths.get(modulePathManager.getModulePath(localModuleKey));
+      Path storeBasePath = projectBasePath.resolve(".settings/sonarlint").resolve(localModuleKey);
+      IssueStore issueStore = new IssueStore(storeBasePath, projectBasePath);
+      return new PersistentIssueTrackerCache(issueStore);
+    };
+    issueTrackerRegistry = new IssueTrackerRegistry(trackingChangeQueueManager, factory);
+
+    serverIssueUpdater = new ServerIssueUpdater(issueTrackerRegistry);
   }
 
   @Override
@@ -123,6 +164,11 @@ public class SonarLintCorePlugin extends AbstractPlugin {
       sonarlint.stop();
     }
     proxyTracker.close();
+
+    serverIssueUpdater.shutdown();
+    issueTrackerRegistry.shutdown();
+    trackingChangeQueueManager.shutdown();
+
     super.stop(context);
   }
 
@@ -135,5 +181,17 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   public IProxyService getProxyService() {
     return (IProxyService) proxyTracker.getService();
+  }
+
+  public ServerIssueUpdater getServerIssueUpdater() {
+    return serverIssueUpdater;
+  }
+
+  public static IssueTracker getIssueTracker(String localModuleKey) {
+    return getDefault().issueTrackerRegistry.get(localModuleKey);
+  }
+
+  public ModulePathManager getModulePathManager() {
+    return modulePathManager;
   }
 }

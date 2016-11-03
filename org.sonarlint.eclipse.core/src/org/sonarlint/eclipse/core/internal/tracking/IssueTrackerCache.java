@@ -19,41 +19,24 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import javax.annotation.CheckForNull;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import java.util.Collection;
 
-public interface Trackable {
+public interface IssueTrackerCache {
+
+  boolean isFirstAnalysis(String file);
+
+  Collection<Trackable> getCurrentTrackables(String file);
+
+  void put(String file, Collection<Trackable> trackables);
 
   /**
-   * The line index, starting with 1. Null means that
-   * issue does not relate to a line (file issue for example).
+   * Empty the cache, delete everything.
    */
-  @CheckForNull
-  Integer getLine();
+  void clear();
 
-  String getMessage();
+  /**
+   * Shutdown the cache. This is the time for persistent implementations to flush everything to storage.
+   */
+  void shutdown();
 
-  @CheckForNull
-  Integer getTextRangeHash();
-
-  @CheckForNull
-  Integer getLineHash();
-
-  String getRuleKey();
-
-  @CheckForNull
-  Long getCreationDate();
-
-  @CheckForNull
-  String getServerIssueKey();
-
-  boolean isResolved();
-
-  // empty if none
-  String getAssignee();
-
-  String getSeverity();
-
-  @CheckForNull
-  TextRange getTextRange();
 }
