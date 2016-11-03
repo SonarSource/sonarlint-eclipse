@@ -42,10 +42,10 @@ public interface Trackable {
   String getRuleKey();
 
   @CheckForNull
-  String getServerIssueKey();
+  Long getCreationDate();
 
   @CheckForNull
-  Long getCreationDate();
+  String getServerIssueKey();
 
   boolean isResolved();
 
