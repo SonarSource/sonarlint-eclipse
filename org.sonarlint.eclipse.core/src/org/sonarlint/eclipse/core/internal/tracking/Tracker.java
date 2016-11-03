@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 // TODO this entire class should be shared with IntelliJ
 public class Tracker<RAW extends Trackable, BASE extends Trackable> {
@@ -387,7 +388,7 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
 
       ServerIssueSearchKey that = (ServerIssueSearchKey) o;
 
-      return Objects.equals(serverIssueKey, that.serverIssueKey);
+      return !StringUtils.isBlank(serverIssueKey) && !StringUtils.isBlank(that.serverIssueKey) && serverIssueKey.equals(that.serverIssueKey);
     }
 
     @Override
