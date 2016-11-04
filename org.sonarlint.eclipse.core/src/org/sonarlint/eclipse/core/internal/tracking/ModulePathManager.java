@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.CheckForNull;
 
 /**
  * Manage a mapping of local module keys to their physical filesystem paths.
@@ -34,6 +35,7 @@ public class ModulePathManager {
     modulePaths.put(localModuleKey, path);
   }
 
+  @CheckForNull
   public String getModulePath(String localModuleKey) {
     return modulePaths.get(localModuleKey);
   }
