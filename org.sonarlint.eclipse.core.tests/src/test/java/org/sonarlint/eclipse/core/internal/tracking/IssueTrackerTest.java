@@ -29,7 +29,6 @@ import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.mock;
@@ -355,7 +354,7 @@ public class IssueTrackerTest {
     ServerIssue serverIssue = mock(ServerIssue.class);
     when(serverIssue.ruleKey()).thenReturn(ruleKey);
     when(serverIssue.message()).thenReturn(message);
-    when(serverIssue.checksum()).thenReturn(DigestUtils.encodeHexString(DigestUtils.getMd5Digest().digest(lineContent.replaceAll("[\\s]", "").getBytes(UTF_8))));
+    when(serverIssue.checksum()).thenReturn(DigestUtils.digest(lineContent));
     when(serverIssue.line()).thenReturn(newLine + 3);
     when(serverIssue.creationDate()).thenReturn(Instant.now());
     when(serverIssue.key()).thenReturn(serverIssueKey);

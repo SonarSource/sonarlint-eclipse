@@ -22,15 +22,27 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class DigestUtils {
 
   private static final char[] DIGITS = "0123456789abcdef".toCharArray();
 
-  public static MessageDigest getMd5Digest() {
+  private static final MessageDigest MD5_DIGEST = DigestUtils.getMd5Digest();
+
+  private DigestUtils() {
+    // utility class, forbidden constructor
+  }
+
+  public static String digest(String content) {
+    return encodeHexString(MD5_DIGEST.digest(content.replaceAll("[\\s]", "").getBytes(UTF_8)));
+  }
+
+  private static MessageDigest getMd5Digest() {
     return getDigest("MD5");
   }
 
-  public static MessageDigest getDigest(String algorithm) {
+  private static MessageDigest getDigest(String algorithm) {
     try {
       return MessageDigest.getInstance(algorithm);
     } catch (NoSuchAlgorithmException e) {
@@ -38,7 +50,7 @@ public class DigestUtils {
     }
   }
 
-  public static String encodeHexString(byte[] data) {
+  private static String encodeHexString(byte[] data) {
     int l = data.length;
     char[] out = new char[l << 1];
     int i = 0;
