@@ -20,6 +20,15 @@ Install `m2eclipse` and then Tycho extension to `m2eclipse`:
     - Click on **Environment** tab and add `M2_REPO` variable pointing to your local maven repo (for example `/home/youruser/.m2/repository`)
     - On the **Definitions** tab, if there are problems with the **Locations** entries, click **Reload**
     - Click **Set as Target Platform** in the top-right corner
+6. Run `mvn compile` on the command line to generate and compile protobuf classes
+
+### Eclipse quirks
+
+Strange issues in Eclipse and their remedies.
+
+- Sometimes, for no apparent reason, the generated protobuf classes may disappear,
+  and Eclipse may report compilation errors when resolving these class names, symbols.
+  The workaround is to run `mvn compile` and refresh the views in Eclipse (click on the project and press `F5`).
 
 Running
 -------
