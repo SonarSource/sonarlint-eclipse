@@ -2,8 +2,8 @@
 <?pde version="3.8"?><target name="sonar-eclipse-e46" sequenceNumber="2">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
-<unit id="org.eclipse.cdt.feature.group" version="9.1.0.201609211603"/>
-<unit id="org.eclipse.jdt.feature.group" version="3.13.0.v20160915-0230"/>
+<unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/oxygen/"/>
 </location>
 </locations>
