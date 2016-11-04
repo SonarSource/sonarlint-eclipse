@@ -22,16 +22,24 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 
+import static org.sonarlint.eclipse.core.internal.tracking.DigestUtils.digest;
+
 public class IssueTrackable implements Trackable {
 
   private final Issue issue;
   private final TextRange textRange;
   private final Integer textRangeHash;
+  private final Integer lineHash;
 
-  public IssueTrackable(Issue issue, TextRange textRange, String textRangeContent) {
+  public IssueTrackable(Issue issue, TextRange textRange, String textRangeContent, String lineContent) {
     this.issue = issue;
     this.textRange = textRange;
-    this.textRangeHash = textRangeContent != null ? textRangeContent.replaceAll("[\\s]", "").hashCode() : null;
+    this.textRangeHash = textRangeContent != null ? checksum(textRangeContent) : null;
+    this.lineHash = lineContent != null ? checksum(lineContent) : null;
+  }
+
+  private static int checksum(String content) {
+    return digest(content).hashCode();
   }
 
   @Override
@@ -51,8 +59,7 @@ public class IssueTrackable implements Trackable {
 
   @Override
   public Integer getLineHash() {
-    // TODO implement using same algorithm as used by SonarQube
-    return null;
+    return lineHash;
   }
 
   @Override

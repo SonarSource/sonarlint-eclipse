@@ -298,22 +298,34 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private static void trackLocalIssues(String localModuleKey, String relativePath, @Nullable IDocument document, List<Issue> rawIssues) {
-    List<Trackable> trackables = rawIssues.stream().map(issue -> {
-      TextRange textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
-      String content = null;
-      if (document != null) {
-        FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(document, textRange);
-        if (flatTextRange != null) {
-          try {
-            content = document.get(flatTextRange.getStart(), flatTextRange.getLength());
-          } catch (BadLocationException e) {
-            SonarLintCorePlugin.getDefault().error("failed to get text range content of file " + relativePath, e);
-          }
+    List<Trackable> trackables = rawIssues.stream().map(issue -> transform(issue, relativePath, document)).collect(Collectors.toList());
+    SonarLintCorePlugin.getIssueTracker(localModuleKey).matchAndTrackAsNew(relativePath, trackables);
+  }
+
+  private static IssueTrackable transform(Issue issue, String relativePath, @Nullable IDocument document) {
+    TextRange textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
+    String textRangeContent = null;
+    String lineContent = null;
+    if (document != null) {
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(document, textRange);
+      if (flatTextRange != null) {
+        try {
+          textRangeContent = document.get(flatTextRange.getStart(), flatTextRange.getLength());
+        } catch (BadLocationException e) {
+          SonarLintCorePlugin.getDefault().error("failed to get text range content of file " + relativePath, e);
         }
       }
-      return new IssueTrackable(issue, textRange, content);
-    }).collect(Collectors.toList());
-    SonarLintCorePlugin.getIssueTracker(localModuleKey).matchAndTrackAsNew(relativePath, trackables);
+
+      FlatTextRange lineTextRange = MarkerUtils.getFlatTextRange(document, issue.getStartLine());
+      if (lineTextRange != null) {
+        try {
+          lineContent = document.get(lineTextRange.getStart(), lineTextRange.getLength());
+        } catch (BadLocationException e) {
+          SonarLintCorePlugin.getDefault().error("failed to get line content of file " + relativePath, e);
+        }
+      }
+    }
+    return new IssueTrackable(issue, textRange, textRangeContent, lineContent);
   }
 
   private static void trackServerIssues(String localModuleKey, String relativePath, IResource resource) {

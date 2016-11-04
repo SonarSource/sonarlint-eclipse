@@ -19,11 +19,15 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
+import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -143,6 +147,13 @@ public class IssueTrackerTest {
 
   private static MockTrackableBuilder builder() {
     return new MockTrackableBuilder();
+  }
+
+  private Issue mockIssue() {
+    Issue issue = mock(Issue.class);
+    when(issue.getRuleKey()).thenReturn("dummy ruleKey");
+    when(issue.getMessage()).thenReturn("dummy message");
+    return issue;
   }
 
   @Before
@@ -292,6 +303,74 @@ public class IssueTrackerTest {
     tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.line(newLine).build()));
 
     assertThat(cache.getCurrentTrackables(file1)).extracting("line", "assignee").containsExactly(tuple(newLine, id));
+  }
+
+  @Test
+  public void should_match_local_issues_by_line_hash() {
+    String lineContent = "dummy content";
+    int newLine = 7;
+
+    Issue issue = mockIssue();
+    when(issue.getStartLine()).thenReturn(newLine + 3);
+
+    Issue movedIssue = mockIssue();
+    when(movedIssue.getStartLine()).thenReturn(newLine);
+
+    Trackable trackable = new IssueTrackable(issue, mock(TextRange.class), null, lineContent);
+    Trackable movedTrackable = new IssueTrackable(movedIssue, mock(TextRange.class), null, lineContent);
+    Trackable nonMatchingTrackable = new IssueTrackable(mockIssue(), mock(TextRange.class), null, lineContent + "x");
+
+    tracker.matchAndTrackAsNew(file1, Collections.singletonList(trackable));
+    tracker.matchAndTrackAsNew(file1, Arrays.asList(movedTrackable, nonMatchingTrackable));
+
+    assertThat(movedTrackable.getLineHash()).isEqualTo(trackable.getLineHash());
+    assertThat(movedTrackable.getLineHash()).isNotEqualTo(nonMatchingTrackable.getLineHash());
+
+    Collection<Trackable> next = cache.getCurrentTrackables(file1);
+
+    // matched trackable has no date
+    assertThat(next.stream().filter(t -> t.getCreationDate() == null)).extracting("line", "lineHash").containsOnly(
+      tuple(movedTrackable.getLine(), movedTrackable.getLineHash()));
+
+    // unmatched trackable has a date -> it is a leak
+    assertThat(next.stream().filter(t -> t.getCreationDate() != null)).extracting("line", "lineHash").containsOnly(
+      tuple(nonMatchingTrackable.getLine(), nonMatchingTrackable.getLineHash()));
+  }
+
+  @Test
+  public void should_match_server_issues_by_line_hash() {
+    String ruleKey = "dummy ruleKey";
+    String message = "dummy message";
+    String lineContent = "dummy content";
+    int newLine = 7;
+    String serverIssueKey = "dummy serverIssueKey";
+
+    Issue issue = mock(Issue.class);
+    when(issue.getRuleKey()).thenReturn(ruleKey);
+    when(issue.getMessage()).thenReturn(message);
+    when(issue.getStartLine()).thenReturn(newLine);
+    Trackable trackable = new IssueTrackable(issue, mock(TextRange.class), null, lineContent);
+
+    ServerIssue serverIssue = mock(ServerIssue.class);
+    when(serverIssue.ruleKey()).thenReturn(ruleKey);
+    when(serverIssue.message()).thenReturn(message);
+    when(serverIssue.checksum()).thenReturn(DigestUtils.digest(lineContent));
+    when(serverIssue.line()).thenReturn(newLine + 3);
+    when(serverIssue.creationDate()).thenReturn(Instant.now());
+    when(serverIssue.key()).thenReturn(serverIssueKey);
+    when(serverIssue.resolution()).thenReturn("fixed");
+    Trackable movedTrackable = new ServerIssueTrackable(serverIssue);
+
+    Trackable nonMatchingTrackable = new IssueTrackable(mockIssue(), mock(TextRange.class), null, lineContent + "x");
+
+    tracker.matchAndTrackAsNew(file1, Collections.singletonList(trackable));
+    tracker.matchAndTrackAsBase(file1, Arrays.asList(movedTrackable, nonMatchingTrackable));
+
+    assertThat(movedTrackable.getLineHash()).isEqualTo(trackable.getLineHash());
+    assertThat(movedTrackable.getLineHash()).isNotEqualTo(nonMatchingTrackable.getLineHash());
+
+    assertThat(cache.getCurrentTrackables(file1)).extracting("line", "lineHash", "serverIssueKey", "resolved").containsOnly(
+      tuple(newLine, movedTrackable.getLineHash(), movedTrackable.getServerIssueKey(), movedTrackable.isResolved()));
   }
 
   @Test

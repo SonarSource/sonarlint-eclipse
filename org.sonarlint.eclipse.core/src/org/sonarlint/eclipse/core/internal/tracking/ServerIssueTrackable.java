@@ -17,10 +17,9 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.core.internal.tracking;
 
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
-import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 
 public class ServerIssueTrackable implements Trackable {
