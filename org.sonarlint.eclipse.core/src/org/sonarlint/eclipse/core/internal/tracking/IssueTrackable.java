@@ -38,7 +38,7 @@ public class IssueTrackable implements Trackable {
     this.lineHash = lineContent != null ? checksum(lineContent) : null;
   }
 
-  private int checksum(String content) {
+  private static int checksum(String content) {
     return digest(content).hashCode();
   }
 
