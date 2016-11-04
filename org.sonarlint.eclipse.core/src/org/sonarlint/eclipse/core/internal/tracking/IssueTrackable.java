@@ -19,19 +19,30 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import java.security.MessageDigest;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class IssueTrackable implements Trackable {
+
+  private static final MessageDigest MD5_DIGEST = DigestUtils.getMd5Digest();
 
   private final Issue issue;
   private final TextRange textRange;
   private final Integer textRangeHash;
+  private final Integer lineHash;
 
-  public IssueTrackable(Issue issue, TextRange textRange, String textRangeContent) {
+  public IssueTrackable(Issue issue, TextRange textRange, String textRangeContent, String lineContent) {
     this.issue = issue;
     this.textRange = textRange;
-    this.textRangeHash = textRangeContent != null ? textRangeContent.replaceAll("[\\s]", "").hashCode() : null;
+    this.textRangeHash = textRangeContent != null ? checksum(textRangeContent) : null;
+    this.lineHash = lineContent != null ? checksum(lineContent) : null;
+  }
+
+  private static int checksum(String content) {
+    return DigestUtils.encodeHexString(MD5_DIGEST.digest(content.replaceAll("[\\s]", "").getBytes(UTF_8))).hashCode();
   }
 
   @Override
@@ -51,8 +62,7 @@ public class IssueTrackable implements Trackable {
 
   @Override
   public Integer getLineHash() {
-    // TODO implement using same algorithm as used by SonarQube
-    return null;
+    return lineHash;
   }
 
   @Override

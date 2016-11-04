@@ -85,7 +85,7 @@ public final class MarkerUtils {
   }
 
   @CheckForNull
-  private static FlatTextRange getFlatTextRange(final IDocument document, int startLine) {
+  public static FlatTextRange getFlatTextRange(final IDocument document, int startLine) {
     int startLineStartOffset;
     int length;
     String lineDelimiter;
