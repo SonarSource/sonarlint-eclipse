@@ -51,13 +51,12 @@ public class DigestUtils {
   }
 
   private static String encodeHexString(byte[] data) {
-    int l = data.length;
-    char[] out = new char[l << 1];
-    int i = 0;
+    int length = data.length;
+    char[] out = new char[length << 1];
 
-    for (int j = 0; i < l; ++i) {
-      out[j++] = DIGITS[(240 & data[i]) >>> 4];
-      out[j++] = DIGITS[15 & data[i]];
+    for (int i = 0, j = 0; i < length; ++i, j += 2) {
+      out[j] = DIGITS[(240 & data[i]) >>> 4];
+      out[j + 1] = DIGITS[15 & data[i]];
     }
 
     return new String(out);
