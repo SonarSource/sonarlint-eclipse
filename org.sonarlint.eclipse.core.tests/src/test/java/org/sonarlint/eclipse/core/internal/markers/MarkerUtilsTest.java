@@ -45,6 +45,7 @@ public class MarkerUtilsTest extends SonarTestCase {
       FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(31);
       assertThat(flatTextRange.getEnd()).isEqualTo(63);
+      assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("  public static String INSTANCE;");
     }
   }
 
@@ -55,6 +56,7 @@ public class MarkerUtilsTest extends SonarTestCase {
       FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(32);
       assertThat(flatTextRange.getEnd()).isEqualTo(64);
+      assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("  public static String INSTANCE;");
     }
   }
 
@@ -65,6 +67,7 @@ public class MarkerUtilsTest extends SonarTestCase {
       FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(54);
       assertThat(flatTextRange.getEnd()).isEqualTo(62);
+      assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("INSTANCE");
     }
   }
 
@@ -75,6 +78,7 @@ public class MarkerUtilsTest extends SonarTestCase {
       FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(101);
       assertThat(flatTextRange.getEnd()).isEqualTo(119);
+      assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("\"foo\"\n     + \"bar\"");
     }
   }
 }
