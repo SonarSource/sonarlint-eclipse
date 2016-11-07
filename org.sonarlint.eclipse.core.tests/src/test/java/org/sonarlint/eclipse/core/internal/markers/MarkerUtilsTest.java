@@ -81,4 +81,31 @@ public class MarkerUtilsTest extends SonarTestCase {
       assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("\"foo\"\n     + \"bar\"");
     }
   }
+
+  @Test
+  public void testNonexistentLine() throws Exception {
+    try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
+      int nonexistentLine = context.getDocument().getNumberOfLines() + 1;
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), nonexistentLine);
+      assertThat(flatTextRange).isNull();
+    }
+  }
+
+  @Test
+  public void testNonexistentTextRange() throws Exception {
+    try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
+      int nonexistentLine = context.getDocument().getNumberOfLines() + 1;
+      TextRange textRange = new TextRange(nonexistentLine, 5, nonexistentLine, 12);
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
+      assertThat(flatTextRange).isNull();
+    }
+  }
+
+  @Test
+  public void testTextRangeWithoutLine() throws Exception {
+    try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), new TextRange(null));
+      assertThat(flatTextRange).isNull();
+    }
+  }
 }
