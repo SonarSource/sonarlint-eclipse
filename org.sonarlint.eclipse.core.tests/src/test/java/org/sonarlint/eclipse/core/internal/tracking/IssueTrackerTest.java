@@ -439,4 +439,17 @@ public class IssueTrackerTest {
 
     assertThat(cache.getCurrentTrackables(file1)).extracting("serverIssueKey", "resolved", "assignee").containsExactly(tuple(serverIssueKey, resolved, assignee));
   }
+
+  @Test
+  public void should_clear_server_issue_details_if_disappeared() {
+    String serverIssueKey = "dummy serverIssueKey";
+    boolean resolved = true;
+    String assignee = "dummy assignee";
+    MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").serverIssueKey(serverIssueKey).resolved(resolved).assignee(assignee);
+
+    tracker.matchAndTrackAsNew(file1, Collections.emptyList());
+    tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.build()));
+
+    assertThat(cache.getCurrentTrackables(file1)).extracting("serverIssueKey", "resolved", "assignee").containsExactly(tuple(null, !resolved, ""));
+  }
 }
