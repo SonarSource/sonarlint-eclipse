@@ -452,4 +452,17 @@ public class IssueTrackerTest {
 
     assertThat(cache.getCurrentTrackables(file1)).extracting("serverIssueKey", "resolved", "assignee").containsExactly(tuple(null, !resolved, ""));
   }
+
+  @Test
+  public void should_ignore_server_issues_when_there_are_no_local() {
+    String serverIssueKey = "dummy serverIssueKey";
+    boolean resolved = true;
+    String assignee = "dummy assignee";
+    MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").serverIssueKey(serverIssueKey).resolved(resolved).assignee(assignee);
+
+    tracker.matchAndTrackAsNew(file1, Collections.emptyList());
+    tracker.matchAndTrackAsBase(file1, Collections.singletonList(base.build()));
+
+    assertThat(cache.getCurrentTrackables(file1)).isEmpty();
+  }
 }
