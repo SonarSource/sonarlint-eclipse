@@ -1,6 +1,5 @@
 SonarLint Eclipse Plugin
 =============
-[![Build Status](https://travis-ci.org/SonarSource/sonarlint-eclipse.svg?branch=master)](https://travis-ci.org/SonarSource/sonarlint-eclipse)
 
 Building
 --------

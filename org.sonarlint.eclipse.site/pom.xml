@@ -27,33 +27,4 @@
     </plugins>
   </build>
 
-  <profiles>
-    <profile>
-      <id>publish-site</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>wagon-maven-plugin</artifactId>
-            <version>1.0-beta-4</version>
-            <executions>
-              <execution>
-                <id>publish-site</id>
-                <phase>install</phase>
-                <goals>
-                  <goal>upload</goal>
-                </goals>
-                <configuration>
-                  <serverId>sonar-ide</serverId>
-                  <fromDir>${project.basedir}/target/repository</fromDir>
-                  <includes>**</includes>
-                  <url>${sonar-ide.site}</url>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
