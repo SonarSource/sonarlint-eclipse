@@ -199,6 +199,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     Map<IResource, List<Issue>> issuesPerResource = new LinkedHashMap<>();
+    request.getFiles().forEach(file -> issuesPerResource.put(file, new ArrayList<>()));
+
     AnalysisResults result = runAndCheckCancellation(config, sonarProject, issuesPerResource, monitor);
     if (!monitor.isCanceled() && result != null) {
       updateMarkers(issuesPerResource, result, request.getTriggerType());
@@ -299,7 +301,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   private static void trackLocalIssues(String localModuleKey, String relativePath, @Nullable IDocument document, List<Issue> rawIssues) {
     List<Trackable> trackables = rawIssues.stream().map(issue -> transform(issue, relativePath, document)).collect(Collectors.toList());
-    SonarLintCorePlugin.getIssueTracker(localModuleKey).matchAndTrackAsNew(relativePath, trackables);
+    SonarLintCorePlugin.getOrCreateIssueTracker(localModuleKey).matchAndTrackAsNew(relativePath, trackables);
   }
 
   private static IssueTrackable transform(Issue issue, String relativePath, @Nullable IDocument document) {
