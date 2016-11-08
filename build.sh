@@ -6,6 +6,8 @@ CURRENT_VERSION=`mvn help:evaluate -Dtycho.mode=maven -Dexpression="project.vers
 RELEASE_VERSION=`echo $CURRENT_VERSION | sed "s/-.*//g"`
 
 NEW_VERSION="$RELEASE_VERSION.$BUILD_ID"
+echo "NEW_VERSION=$NEW_VERSION" >> build.properties
+
 
 echo "Replacing version $CURRENT_VERSION with $NEW_VERSION"
 
