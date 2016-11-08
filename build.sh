@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-BUILD_ID=`date -u +%Y%m%d%H%M`
 CURRENT_VERSION=`mvn help:evaluate -Dtycho.mode=maven -Dexpression="project.version" | grep -v '^\[\|Download\w\+\:'`
 RELEASE_VERSION=`echo $CURRENT_VERSION | sed "s/-.*//g"`
 
