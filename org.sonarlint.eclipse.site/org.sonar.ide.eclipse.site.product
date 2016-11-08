@@ -26,14 +26,21 @@
    <vm>
    </vm>
 
+
    <plugins>
    </plugins>
 
    <features>
       <feature id="org.sonarlint.eclipse.feature"/>
       <feature id="org.sonarlint.eclipse.jdt.feature"/>
-      <feature id="org.sonarlint.eclipse.cdt.feature"/>   
    </features>
 
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
 
 </product>
