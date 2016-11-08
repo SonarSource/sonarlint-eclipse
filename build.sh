@@ -2,13 +2,10 @@
 
 set -euo pipefail
 
-BUILD_ID=`date -u +%Y%m%d%H%M`
 CURRENT_VERSION=`mvn help:evaluate -Dtycho.mode=maven -Dexpression="project.version" | grep -v '^\[\|Download\w\+\:'`
 RELEASE_VERSION=`echo $CURRENT_VERSION | sed "s/-.*//g"`
 
 NEW_VERSION="$RELEASE_VERSION.$BUILD_ID"
-
-echo "CI_BUILD_NUMBER=$BUILD_ID" > build.properties
 
 echo "Replacing version $CURRENT_VERSION with $NEW_VERSION"
 
