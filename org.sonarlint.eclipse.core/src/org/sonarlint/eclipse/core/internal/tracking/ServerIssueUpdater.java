@@ -94,7 +94,7 @@ public class ServerIssueUpdater {
         Iterator<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, relativePath);
         Collection<Trackable> serverIssuesTrackable = toStream(serverIssues).map(ServerIssueTrackable::new).collect(Collectors.toList());
 
-        issueTrackerRegistry.get(localModuleKey).matchAndTrackAsBase(relativePath, serverIssuesTrackable);
+        issueTrackerRegistry.getOrCreate(localModuleKey).matchAndTrackAsBase(relativePath, serverIssuesTrackable);
       } catch (Throwable t) {
         // note: without catching Throwable, any exceptions raised in the thread will not be visible
         console.error("error while fetching and matching server issues", t);

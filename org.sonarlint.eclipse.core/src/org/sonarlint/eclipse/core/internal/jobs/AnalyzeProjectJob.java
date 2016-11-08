@@ -301,7 +301,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   private static void trackLocalIssues(String localModuleKey, String relativePath, @Nullable IDocument document, List<Issue> rawIssues) {
     List<Trackable> trackables = rawIssues.stream().map(issue -> transform(issue, relativePath, document)).collect(Collectors.toList());
-    SonarLintCorePlugin.getIssueTracker(localModuleKey).matchAndTrackAsNew(relativePath, trackables);
+    SonarLintCorePlugin.getOrCreateIssueTracker(localModuleKey).matchAndTrackAsNew(relativePath, trackables);
   }
 
   private static IssueTrackable transform(Issue issue, String relativePath, @Nullable IDocument document) {

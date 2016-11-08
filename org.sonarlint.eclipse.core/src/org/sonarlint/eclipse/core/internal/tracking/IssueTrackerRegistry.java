@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Registry of per-module IssueTracker instances.
@@ -37,13 +38,17 @@ public class IssueTrackerRegistry {
     this.cacheFactory = cacheFactory;
   }
 
-  public synchronized IssueTracker get(String localModuleKey) {
+  public synchronized IssueTracker getOrCreate(String localModuleKey) {
     IssueTracker tracker = registry.get(localModuleKey);
     if (tracker == null) {
       tracker = newTracker(localModuleKey);
       registry.put(localModuleKey, tracker);
     }
     return tracker;
+  }
+
+  public synchronized Optional<IssueTracker> get(String localModuleKey) {
+    return Optional.ofNullable(registry.get(localModuleKey));
   }
 
   private IssueTracker newTracker(String localModuleKey) {
