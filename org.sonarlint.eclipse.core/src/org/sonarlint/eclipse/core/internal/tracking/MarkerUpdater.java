@@ -88,6 +88,7 @@ public class MarkerUpdater implements TrackingChangeListener {
     IMarker marker = file.createMarker(SonarLintCorePlugin.MARKER_ID);
 
     marker.setAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, trackable.getRuleName());
     marker.setAttribute(IMarker.PRIORITY, getPriority(trackable.getSeverity()));
     marker.setAttribute(IMarker.SEVERITY, PreferencesUtils.getMarkerSeverity());
     marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, trackable.getSeverity());

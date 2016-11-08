@@ -68,6 +68,11 @@ public class IssueTrackable implements Trackable {
   }
 
   @Override
+  public String getRuleName() {
+    return issue.getRuleName();
+  }
+
+  @Override
   public String getSeverity() {
     return issue.getSeverity();
   }

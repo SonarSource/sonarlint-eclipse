@@ -57,6 +57,11 @@ public class ServerIssueTrackable implements Trackable {
   }
 
   @Override
+  public String getRuleName() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Long getCreationDate() {
     return serverIssue.creationDate().toEpochMilli();
   }
