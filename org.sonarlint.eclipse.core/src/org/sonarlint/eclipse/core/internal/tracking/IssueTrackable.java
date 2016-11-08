@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import javax.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 
@@ -31,7 +32,11 @@ public class IssueTrackable implements Trackable {
   private final Integer textRangeHash;
   private final Integer lineHash;
 
-  public IssueTrackable(Issue issue, TextRange textRange, String textRangeContent, String lineContent) {
+  public IssueTrackable(Issue issue) {
+    this(issue, null, null, null);
+  }
+
+  public IssueTrackable(Issue issue, @Nullable TextRange textRange, @Nullable String textRangeContent, @Nullable String lineContent) {
     this.issue = issue;
     this.textRange = textRange;
     this.textRangeHash = textRangeContent != null ? checksum(textRangeContent) : null;

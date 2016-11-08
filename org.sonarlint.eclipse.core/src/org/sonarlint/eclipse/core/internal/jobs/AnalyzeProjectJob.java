@@ -305,7 +305,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private static IssueTrackable transform(Issue issue, String relativePath, @Nullable IDocument document) {
-    TextRange textRange = new TextRange(issue.getStartLine(), issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
+    Integer startLine = issue.getStartLine();
+    if (startLine == null) {
+      return new IssueTrackable(issue);
+    }
+    TextRange textRange = new TextRange(startLine, issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
     String textRangeContent = null;
     String lineContent = null;
     if (document != null) {
@@ -318,7 +322,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         }
       }
 
-      FlatTextRange lineTextRange = MarkerUtils.getFlatTextRange(document, issue.getStartLine());
+      FlatTextRange lineTextRange = MarkerUtils.getFlatTextRange(document, startLine);
       if (lineTextRange != null) {
         try {
           lineContent = document.get(lineTextRange.getStart(), lineTextRange.getLength());
