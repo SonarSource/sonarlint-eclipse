@@ -45,6 +45,7 @@ public class MarkerUtilsTest extends SonarTestCase {
       FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(31);
       assertThat(flatTextRange.getEnd()).isEqualTo(63);
+      assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("  public static String INSTANCE;");
     }
   }
 
@@ -55,6 +56,7 @@ public class MarkerUtilsTest extends SonarTestCase {
       FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(32);
       assertThat(flatTextRange.getEnd()).isEqualTo(64);
+      assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("  public static String INSTANCE;");
     }
   }
 
@@ -65,6 +67,7 @@ public class MarkerUtilsTest extends SonarTestCase {
       FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(54);
       assertThat(flatTextRange.getEnd()).isEqualTo(62);
+      assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("INSTANCE");
     }
   }
 
@@ -75,6 +78,34 @@ public class MarkerUtilsTest extends SonarTestCase {
       FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
       assertThat(flatTextRange.getStart()).isEqualTo(101);
       assertThat(flatTextRange.getEnd()).isEqualTo(119);
+      assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("\"foo\"\n     + \"bar\"");
+    }
+  }
+
+  @Test
+  public void testNonexistentLine() throws Exception {
+    try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
+      int nonexistentLine = context.getDocument().getNumberOfLines() + 1;
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), nonexistentLine);
+      assertThat(flatTextRange).isNull();
+    }
+  }
+
+  @Test
+  public void testNonexistentTextRange() throws Exception {
+    try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
+      int nonexistentLine = context.getDocument().getNumberOfLines() + 1;
+      TextRange textRange = new TextRange(nonexistentLine, 5, nonexistentLine, 12);
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
+      assertThat(flatTextRange).isNull();
+    }
+  }
+
+  @Test
+  public void testTextRangeWithoutLine() throws Exception {
+    try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
+      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), new TextRange(null));
+      assertThat(flatTextRange).isNull();
     }
   }
 }

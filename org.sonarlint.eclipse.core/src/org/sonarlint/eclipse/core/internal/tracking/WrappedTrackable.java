@@ -55,6 +55,11 @@ public class WrappedTrackable implements Trackable {
   }
 
   @Override
+  public String getRuleName() {
+    return trackable.getRuleName();
+  }
+
+  @Override
   public String getSeverity() {
     return trackable.getSeverity();
   }

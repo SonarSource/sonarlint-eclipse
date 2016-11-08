@@ -41,6 +41,8 @@ public interface Trackable {
 
   String getRuleKey();
 
+  String getRuleName();
+
   @CheckForNull
   Long getCreationDate();
 
