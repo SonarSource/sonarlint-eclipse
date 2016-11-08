@@ -199,6 +199,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     Map<IResource, List<Issue>> issuesPerResource = new LinkedHashMap<>();
+    request.getFiles().forEach(file -> issuesPerResource.put(file, new ArrayList<>()));
+
     AnalysisResults result = runAndCheckCancellation(config, sonarProject, issuesPerResource, monitor);
     if (!monitor.isCanceled() && result != null) {
       updateMarkers(issuesPerResource, result, request.getTriggerType());
