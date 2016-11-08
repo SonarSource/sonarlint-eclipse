@@ -1,0 +1,9 @@
+# QA pipeline at SonarSource
+# Based on https://wiki.jenkins-ci.org/display/JENKINS/Yaml+Axis+Plugin
+
+TARGET_PLATFORM:
+  - e43
+  - e44
+  - e45
+  - e46
+  - e47
