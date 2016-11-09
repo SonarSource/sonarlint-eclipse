@@ -27,6 +27,7 @@ import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -212,6 +213,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     String allTestPattern = PreferencesUtils.getTestFileRegexps();
     String[] testPatterns = allTestPattern.split(",");
     final List<PathMatcher> pathMatchersForTests = createMatchersForTests(testPatterns);
+    Set<String> uniqueFilePaths = new HashSet<>();
+    
     for (final IFile file : filesToAnalyze) {
       try {
         IFileStore fileStore = EFS.getStore(file.getLocationURI());
@@ -220,7 +223,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           // Try to get a cached copy (for virtual file systems)
           localFile = fileStore.toLocalFile(EFS.CACHE, monitor);
         }
-        final Path filePath = localFile.toPath();
+        final Path filePath = localFile.toPath().toAbsolutePath();
+        if(uniqueFilePaths.contains(filePath.toString())) {
+          continue;
+        }
+        uniqueFilePaths.add(filePath.toString());
         inputFiles.add(new EclipseInputFile(pathMatchersForTests, file, filePath));
       } catch (CoreException e) {
         SonarLintCorePlugin.getDefault().error("Error building input file for SonarLint analysis: " + file.getName(), e);
