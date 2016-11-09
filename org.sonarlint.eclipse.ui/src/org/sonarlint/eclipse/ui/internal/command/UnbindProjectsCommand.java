@@ -37,6 +37,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
+import org.sonarlint.eclipse.ui.internal.bind.BindUtils;
 
 public class UnbindProjectsCommand extends AbstractHandler {
 
@@ -76,6 +77,10 @@ public class UnbindProjectsCommand extends AbstractHandler {
           SonarLintProject sonarLintProject = SonarLintProject.getInstance(p);
           sonarLintProject.unbind();
           monitor.worked(1);
+
+          // Need to wrap call in a Display, otherwise the active window is not available
+          // See: http://stackoverflow.com/questions/1265174/nullpointerexception-in-platformui-getworkbench-getactiveworkbenchwindow-get
+          Display.getDefault().asyncExec(() -> BindUtils.scheduleAnalysisOfOpenFiles(p));
         }
         IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
         if (labelProvider != null) {
