@@ -30,6 +30,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 
 public class SonarLintUtils {
+
+  private SonarLintUtils() {
+    // utility class, forbidden constructor
+  }
+
   /**
    * Remove files that are already included in a more specific fileset.
    *
