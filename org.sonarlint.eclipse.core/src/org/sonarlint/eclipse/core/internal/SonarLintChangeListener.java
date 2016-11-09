@@ -34,6 +34,8 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 
+import static org.sonarlint.eclipse.core.internal.utils.SonarLintUtils.removeAggregatedDuplicates;
+
 public class SonarLintChangeListener implements IResourceChangeListener {
 
   @Override
@@ -45,6 +47,9 @@ public class SonarLintChangeListener implements IResourceChangeListener {
       } catch (CoreException e) {
         SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
       }
+
+      removeAggregatedDuplicates(changedFilesPerProject);
+
       for (Map.Entry<IProject, Collection<IFile>> entry : changedFilesPerProject.entrySet()) {
         IProject project = entry.getKey();
         Collection<IFile> filesToAnalyze = entry.getValue();
