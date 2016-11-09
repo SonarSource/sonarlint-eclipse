@@ -296,7 +296,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private boolean shouldUpdateServerIssues(TriggerType trigger) {
-    return getSonarProject().isBound() && (trigger == TriggerType.EDITOR_OPEN || trigger == TriggerType.ACTION);
+    return getSonarProject().isBound() && (trigger == TriggerType.EDITOR_OPEN || trigger == TriggerType.ACTION || trigger == TriggerType.BINDING_CHANGE);
   }
 
   private static void trackLocalIssues(String localModuleKey, String relativePath, @Nullable IDocument document, List<Issue> rawIssues) {

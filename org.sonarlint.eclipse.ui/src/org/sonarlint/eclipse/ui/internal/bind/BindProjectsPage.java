@@ -459,6 +459,7 @@ public class BindProjectsPage extends WizardPage {
       sonarProject.save();
       MarkerUtils.deleteIssuesMarkers(project);
       SonarLintCorePlugin.clearIssueTracker(project.getName());
+      BindUtils.scheduleAnalysisOfOpenFiles(project);
       if (sonarProject.isBound()) {
         new ProjectUpdateJob(sonarProject).schedule();
       }
@@ -485,5 +486,4 @@ public class BindProjectsPage extends WizardPage {
     WritableList projectAssociations = (WritableList) viewer.getInput();
     return (ProjectBindModel[]) projectAssociations.toArray(new ProjectBindModel[projectAssociations.size()]);
   }
-
 }
