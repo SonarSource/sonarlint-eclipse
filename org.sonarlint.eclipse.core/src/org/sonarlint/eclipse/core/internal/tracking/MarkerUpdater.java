@@ -20,7 +20,9 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.resources.IFile;
@@ -85,31 +87,34 @@ public class MarkerUpdater implements TrackingChangeListener {
   }
 
   private static void createMarker(IDocument document, IFile file, Trackable trackable) throws CoreException {
-    IMarker marker = file.createMarker(SonarLintCorePlugin.MARKER_ID);
+    Map<String, Object> attributes = new HashMap<>();
 
-    marker.setAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());
-    marker.setAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, trackable.getRuleName());
-    marker.setAttribute(IMarker.PRIORITY, getPriority(trackable.getSeverity()));
-    marker.setAttribute(IMarker.SEVERITY, PreferencesUtils.getMarkerSeverity());
-    marker.setAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, trackable.getSeverity());
+    attributes.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());
+    attributes.put(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR, trackable.getRuleName());
+    attributes.put(IMarker.PRIORITY, getPriority(trackable.getSeverity()));
+    attributes.put(IMarker.SEVERITY, PreferencesUtils.getMarkerSeverity());
+    attributes.put(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, trackable.getSeverity());
 
-    marker.setAttribute(IMarker.MESSAGE, trackable.getMessage());
-    marker.setAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, trackable.getServerIssueKey());
-    marker.setAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, trackable.getAssignee());
+    attributes.put(IMarker.MESSAGE, trackable.getMessage());
+    attributes.put(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, trackable.getServerIssueKey());
+    attributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, trackable.getAssignee());
 
     // File level issues (line == null) are displayed on line 1
-    marker.setAttribute(IMarker.LINE_NUMBER, trackable.getLine() != null ? trackable.getLine() : 1);
+    attributes.put(IMarker.LINE_NUMBER, trackable.getLine() != null ? trackable.getLine() : 1);
 
     FlatTextRange textRange = MarkerUtils.getFlatTextRange(document, trackable.getTextRange());
     if (textRange != null) {
-      marker.setAttribute(IMarker.CHAR_START, textRange.getStart());
-      marker.setAttribute(IMarker.CHAR_END, textRange.getEnd());
+      attributes.put(IMarker.CHAR_START, textRange.getStart());
+      attributes.put(IMarker.CHAR_END, textRange.getEnd());
     }
 
     Long creationDate = trackable.getCreationDate();
     if (creationDate != null) {
-      marker.setAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(creationDate.longValue()));
+      attributes.put(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(creationDate.longValue()));
     }
+
+    IMarker marker = file.createMarker(SonarLintCorePlugin.MARKER_ID);
+    marker.setAttributes(attributes);
   }
 
   /**
