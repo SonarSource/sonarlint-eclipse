@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -74,7 +75,7 @@ public final class MarkerUtils {
   }
 
   @CheckForNull
-  public static FlatTextRange getFlatTextRange(final IDocument document, TextRange textRange) {
+  public static FlatTextRange getFlatTextRange(final IDocument document, @Nullable TextRange textRange) {
     if (textRange == null || textRange.getStartLine() == null) {
       return null;
     }
