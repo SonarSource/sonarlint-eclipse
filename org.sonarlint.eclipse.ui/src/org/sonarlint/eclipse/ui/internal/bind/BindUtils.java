@@ -26,6 +26,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -39,10 +40,18 @@ public class BindUtils {
     // utility class, forbidden constructor
   }
 
+  // Make sure you only call this from within a Display, otherwise the workbench is not available
+  // See: http://stackoverflow.com/questions/1265174/nullpointerexception-in-platformui-getworkbench-getactiveworkbenchwindow-get
   public static void scheduleAnalysisOfOpenFiles(IProject project) {
     List<IFile> files = new ArrayList<>();
 
-    for (IEditorReference ref : PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getEditorReferences()) {
+    IWorkbenchWindow workbench = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+    if (workbench == null) {
+      SonarLintCorePlugin.getDefault().debug("possible attempt to get workbench window outside of a Display");
+      return;
+    }
+
+    for (IEditorReference ref : workbench.getActivePage().getEditorReferences()) {
       IEditorInput input;
       try {
         input = ref.getEditorInput();
@@ -56,8 +65,8 @@ public class BindUtils {
     }
 
     if (!files.isEmpty()) {
-       AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, files, TriggerType.BINDING_CHANGE);
-       new AnalyzeProjectJob(request).schedule();
+      AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, files, TriggerType.BINDING_CHANGE);
+      new AnalyzeProjectJob(request).schedule();
     }
   }
 

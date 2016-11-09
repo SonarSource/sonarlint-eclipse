@@ -77,9 +77,6 @@ public class UnbindProjectsCommand extends AbstractHandler {
           SonarLintProject sonarLintProject = SonarLintProject.getInstance(p);
           sonarLintProject.unbind();
           monitor.worked(1);
-
-          // Need to wrap call in a Display, otherwise the active window is not available
-          // See: http://stackoverflow.com/questions/1265174/nullpointerexception-in-platformui-getworkbench-getactiveworkbenchwindow-get
           Display.getDefault().asyncExec(() -> BindUtils.scheduleAnalysisOfOpenFiles(p));
         }
         IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
