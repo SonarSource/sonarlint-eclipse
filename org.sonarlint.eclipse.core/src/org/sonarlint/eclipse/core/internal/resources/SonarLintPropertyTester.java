@@ -28,29 +28,38 @@ public class SonarLintPropertyTester extends PropertyTester {
 
   @Override
   public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-    IProject project = null;
+    IProject project = getProject(receiver);
+    if (project == null) {
+      return false;
+    }
+
+    SonarLintProject p = SonarLintProject.getInstance(project);
+    if ("isBound".equals(property)) {
+      return expectedValue.equals(p.isBound());
+    }
+    if ("isAutoAnalysis".equals(property)) {
+      return expectedValue.equals(p.isAutoEnabled());
+    }
+    return false;
+  }
+
+  private static IProject getProject(Object receiver) {
     if (receiver instanceof IProject) {
-      project = (IProject) receiver;
-    } else if (receiver instanceof IResource) {
-      project = ((IResource) receiver).getProject();
-    } else if (receiver instanceof IAdaptable) {
-      project = ((IAdaptable) receiver).getAdapter(IProject.class);
+      return (IProject) receiver;
+    }
+    if (receiver instanceof IResource) {
+      return ((IResource) receiver).getProject();
+    }
+    if (receiver instanceof IAdaptable) {
+      IProject project = ((IAdaptable) receiver).getAdapter(IProject.class);
       if (project == null) {
         IResource res = ((IAdaptable) receiver).getAdapter(IResource.class);
         if (res != null) {
           project = res.getProject();
         }
       }
+      return project;
     }
-    if (project != null && "isBound".equals(property)) {
-      SonarLintProject p = SonarLintProject.getInstance(project);
-      return expectedValue.equals(p.isBound());
-    }
-    if (project != null && "isAutoAnalysis".equals(property)) {
-      SonarLintProject p = SonarLintProject.getInstance(project);
-      return expectedValue.equals(p.isAutoEnabled());
-    }
-    return false;
+    return null;
   }
-
 }
