@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.properties;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.TableColumnLayout;
@@ -424,7 +425,10 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
         SonarLintCorePlugin.getDefault().error("Error while loading SonarLint analyzer properties" + props, e);
       }
     } else {
-      sonarProperties.addAll(getSonarProject().getExtraProperties());
+      SonarLintProject sonarProject = getSonarProject();
+      if (sonarProject != null) {
+        sonarProperties.addAll(sonarProject.getExtraProperties());
+      }
     }
   }
 
@@ -439,8 +443,10 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
       getPreferenceStore().setValue(PreferencesUtils.PREF_EXTRA_ARGS, props);
     } else {
       SonarLintProject sonarProject = getSonarProject();
-      sonarProject.setExtraProperties(sonarProperties);
-      sonarProject.save();
+      if (sonarProject != null) {
+        sonarProject.setExtraProperties(sonarProperties);
+        sonarProject.save();
+      }
     }
     return true;
   }
@@ -452,9 +458,10 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
   }
 
   private IProject getProject() {
-    return (IProject) getElement().getAdapter(IProject.class);
+    return getElement().getAdapter(IProject.class);
   }
 
+  @CheckForNull
   private SonarLintProject getSonarProject() {
     IProject project = getProject();
     if (project != null) {

@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -37,6 +38,7 @@ public class StandaloneSonarLintClientFacade {
 
   private StandaloneSonarLintEngine client;
 
+  @CheckForNull
   private synchronized StandaloneSonarLintEngine getClient() {
     if (client == null) {
       SonarLintCorePlugin.getDefault().info("Starting standalone SonarLint engine " + FrameworkUtil.getBundle(this.getClass()).getVersion().toString());
@@ -56,13 +58,24 @@ public class StandaloneSonarLintClientFacade {
     return client;
   }
 
+  @CheckForNull
   public AnalysisResults runAnalysis(StandaloneAnalysisConfiguration config, IssueListener issueListener) {
-    return getClient().analyze(config, issueListener);
+    StandaloneSonarLintEngine engine = getClient();
+    if (engine != null) {
+      return engine.analyze(config, issueListener);
+    }
+    return null;
   }
 
   public String getHtmlRuleDescription(String ruleKey) {
-    RuleDetails ruleDetails = getClient().getRuleDetails(ruleKey);
-    return ruleDetails != null ? ruleDetails.getHtmlDescription() : "Not found";
+    StandaloneSonarLintEngine engine = getClient();
+    if (engine != null) {
+      RuleDetails ruleDetails = engine.getRuleDetails(ruleKey);
+      if (ruleDetails != null) {
+        return ruleDetails.getHtmlDescription();
+      }
+    }
+    return "Not found";
   }
 
   public synchronized void stop() {
