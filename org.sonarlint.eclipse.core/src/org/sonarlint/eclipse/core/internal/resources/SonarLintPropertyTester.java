@@ -51,9 +51,11 @@ public class SonarLintPropertyTester extends PropertyTester {
       return ((IResource) receiver).getProject();
     }
     if (receiver instanceof IAdaptable) {
-      IProject project = ((IAdaptable) receiver).getAdapter(IProject.class);
+      // note: the cast to IProject is necessary for e43 and e44
+      IProject project = (IProject) ((IAdaptable) receiver).getAdapter(IProject.class);
       if (project == null) {
-        IResource res = ((IAdaptable) receiver).getAdapter(IResource.class);
+        // note: the cast to IResource is necessary for e43 and e44
+        IResource res = (IResource) ((IAdaptable) receiver).getAdapter(IResource.class);
         if (res != null) {
           project = res.getProject();
         }
