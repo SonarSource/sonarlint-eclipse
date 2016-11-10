@@ -95,7 +95,7 @@ public class Server implements IServer, StateListener {
   @Override
   public void notifyAllListeners() {
     for (IServerListener listener : listeners) {
-      listener.serverChanged(this);
+      listener.accept(this);
     }
   }
 
