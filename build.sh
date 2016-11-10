@@ -40,9 +40,7 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
   echo '======= Build and analyze pull request'
   echo '======= with deploy'
     mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy sonar:sonar \
-      -Pdeploy-sonarsource,sign \
-      -Dsonarsource.keystore.path=$SONARSOURCE_KEYSTORE_PATH \
-      -Dsonarsource.keystore.password=$SONARSOURCE_KEYSTORE_PASS \
+      -Pdeploy-sonarsource \
       -Dtycho.disableP2Mirrors=true \
       -Dmaven.test.redirectTestOutputToFile=false \
       -Dsonar.analysis.mode=issues \
