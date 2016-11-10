@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
@@ -109,6 +110,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     private final Map<IResource, List<Issue>> issuesPerResource;
     private final StandaloneAnalysisConfiguration config;
     private final SonarLintProject project;
+    @Nullable
     private volatile AnalysisResults result;
 
     private AnalysisThread(Map<IResource, List<Issue>> issuesPerResource, StandaloneAnalysisConfiguration config, SonarLintProject project) {
@@ -123,6 +125,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       result = AnalyzeProjectJob.this.run(config, project, issuesPerResource);
     }
 
+    @CheckForNull
     public AnalysisResults getResult() {
       return result;
     }
@@ -367,6 +370,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   }
 
+  @CheckForNull
   public AnalysisResults runAndCheckCancellation(final StandaloneAnalysisConfiguration config, final SonarLintProject project, final Map<IResource, List<Issue>> issuesPerResource,
     final IProgressMonitor monitor) {
     SonarLintCorePlugin.getDefault().debug("Start analysis with configuration:\n" + config.toString());
@@ -401,6 +405,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   // Visible for testing
+  @CheckForNull
   public AnalysisResults run(final StandaloneAnalysisConfiguration config, final SonarLintProject project, final Map<IResource, List<Issue>> issuesPerResource) {
     if (StringUtils.isNotBlank(project.getServerId())) {
       IServer server = ServersManager.getInstance().getServer(project.getServerId());

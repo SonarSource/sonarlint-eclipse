@@ -58,8 +58,13 @@ public class StandaloneSonarLintClientFacade {
     return client;
   }
 
+  @CheckForNull
   public AnalysisResults runAnalysis(StandaloneAnalysisConfiguration config, IssueListener issueListener) {
-    return getClient().analyze(config, issueListener);
+    StandaloneSonarLintEngine engine = getClient();
+    if (engine != null) {
+      return engine.analyze(config, issueListener);
+    }
+    return null;
   }
 
   public String getHtmlRuleDescription(String ruleKey) {
