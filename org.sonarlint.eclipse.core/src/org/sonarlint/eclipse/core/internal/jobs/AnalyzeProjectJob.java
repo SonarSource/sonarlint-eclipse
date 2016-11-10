@@ -217,7 +217,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     String[] testPatterns = allTestPattern.split(",");
     final List<PathMatcher> pathMatchersForTests = createMatchersForTests(testPatterns);
     Set<String> uniqueFilePaths = new HashSet<>();
-    
+
     for (final IFile file : filesToAnalyze) {
       try {
         IFileStore fileStore = EFS.getStore(file.getLocationURI());
@@ -227,7 +227,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           localFile = fileStore.toLocalFile(EFS.CACHE, monitor);
         }
         final Path filePath = localFile.toPath().toAbsolutePath();
-        if(uniqueFilePaths.contains(filePath.toString())) {
+        if (uniqueFilePaths.contains(filePath.toString())) {
           continue;
         }
         uniqueFilePaths.add(filePath.toString());
@@ -323,25 +323,36 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     String textRangeContent = null;
     String lineContent = null;
     if (document != null) {
-      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(document, textRange);
-      if (flatTextRange != null) {
-        try {
-          textRangeContent = document.get(flatTextRange.getStart(), flatTextRange.getLength());
-        } catch (BadLocationException e) {
-          SonarLintCorePlugin.getDefault().error("failed to get text range content of file " + relativePath, e);
-        }
-      }
-
-      FlatTextRange lineTextRange = MarkerUtils.getFlatTextRange(document, startLine);
-      if (lineTextRange != null) {
-        try {
-          lineContent = document.get(lineTextRange.getStart(), lineTextRange.getLength());
-        } catch (BadLocationException e) {
-          SonarLintCorePlugin.getDefault().error("failed to get line content of file " + relativePath, e);
-        }
-      }
+      textRangeContent = readTextRangeContent(relativePath, document, textRange);
+      lineContent = readLineContent(relativePath, document, startLine);
     }
     return new IssueTrackable(issue, textRange, textRangeContent, lineContent);
+  }
+
+  @CheckForNull
+  private static String readTextRangeContent(String relativePath, IDocument document, TextRange textRange) {
+    FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(document, textRange);
+    if (flatTextRange != null) {
+      try {
+        return document.get(flatTextRange.getStart(), flatTextRange.getLength());
+      } catch (BadLocationException e) {
+        SonarLintCorePlugin.getDefault().error("failed to get text range content of file " + relativePath, e);
+      }
+    }
+    return null;
+  }
+
+  @CheckForNull
+  private static String readLineContent(String relativePath, IDocument document, int startLine) {
+    FlatTextRange lineTextRange = MarkerUtils.getFlatTextRange(document, startLine);
+    if (lineTextRange != null) {
+      try {
+        return document.get(lineTextRange.getStart(), lineTextRange.getLength());
+      } catch (BadLocationException e) {
+        SonarLintCorePlugin.getDefault().error("failed to get line content of file " + relativePath, e);
+      }
+    }
+    return null;
   }
 
   private static void trackServerIssues(String localModuleKey, String relativePath, IResource resource) {
