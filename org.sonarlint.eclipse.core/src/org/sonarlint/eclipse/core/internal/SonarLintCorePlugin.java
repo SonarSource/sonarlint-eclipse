@@ -25,7 +25,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.CheckForNull;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -188,7 +187,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     return serverIssueUpdater;
   }
 
-  @CheckForNull
   public static IssueTracker getOrCreateIssueTracker(String localModuleKey) {
     return getDefault().issueTrackerRegistry.getOrCreate(localModuleKey);
   }
