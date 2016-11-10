@@ -192,7 +192,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   }
 
   public static void clearIssueTracker(String localModuleKey) {
-    getDefault().issueTrackerRegistry.get(localModuleKey).ifPresent(t -> t.clear());
+    getDefault().issueTrackerRegistry.get(localModuleKey).ifPresent(IssueTracker::clear);
   }
 
   public ModulePathManager getModulePathManager() {
