@@ -26,7 +26,9 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
   git fetch --unshallow || true
 
   mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy sonar:sonar \
-      -Pdeploy-sonarsource,coverage \
+      -Pdeploy-sonarsource,coverage,sign \
+      -Dsonarsource.keystore.path=$SONARSOURCE_KEYSTORE_PATH \
+      -Dsonarsource.keystore.pass=$SONARSOURCE_KEYSTORE_PASS \
       -Dtycho.disableP2Mirrors=true \
       -Dmaven.test.redirectTestOutputToFile=false \
       -Dsonar.host.url=$SONAR_HOST_URL \
@@ -38,7 +40,9 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
   echo '======= Build and analyze pull request'
   echo '======= with deploy'
     mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy sonar:sonar \
-      -Pdeploy-sonarsource \
+      -Pdeploy-sonarsource,sign \
+      -Dsonarsource.keystore.path=$SONARSOURCE_KEYSTORE_PATH \
+      -Dsonarsource.keystore.pass=$SONARSOURCE_KEYSTORE_PASS \
       -Dtycho.disableP2Mirrors=true \
       -Dmaven.test.redirectTestOutputToFile=false \
       -Dsonar.analysis.mode=issues \
