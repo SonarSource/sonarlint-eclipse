@@ -69,11 +69,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
       // Workspace root
       return true;
     }
-    if (!project.isAccessible()) {
-      return false;
-    }
-    final SonarLintProject sonarProject = SonarLintProject.getInstance(project);
-    if (!sonarProject.isAutoEnabled()) {
+    if (!project.isAccessible() || !SonarLintProject.getInstance(project).isAutoEnabled()) {
       return false;
     }
     if (isChangedFile(delta) && shouldAnalyze(delta.getResource())) {
