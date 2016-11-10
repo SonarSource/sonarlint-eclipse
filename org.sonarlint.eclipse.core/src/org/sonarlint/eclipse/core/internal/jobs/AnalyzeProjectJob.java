@@ -211,7 +211,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private List<ClientInputFile> buildInputFiles(final List<IFile> filesToAnalyze, IProgressMonitor monitor) {
+  private static List<ClientInputFile> buildInputFiles(final List<IFile> filesToAnalyze, IProgressMonitor monitor) {
     List<ClientInputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
     String allTestPattern = PreferencesUtils.getTestFileRegexps();
     String[] testPatterns = allTestPattern.split(",");
