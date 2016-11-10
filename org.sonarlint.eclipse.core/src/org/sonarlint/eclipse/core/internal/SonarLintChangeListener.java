@@ -72,7 +72,9 @@ public class SonarLintChangeListener implements IResourceChangeListener {
     if (!project.isAccessible() || !SonarLintProject.getInstance(project).isAutoEnabled()) {
       return false;
     }
-    if (isChangedFile(delta) && shouldAnalyze(delta.getResource())) {
+
+    boolean shouldAnalyzeResource = shouldAnalyze(delta.getResource());
+    if (isChangedFile(delta) && shouldAnalyzeResource) {
       Collection<IFile> files = changedFilesPerProject.get(project);
       if (files == null) {
         files = new ArrayList<>();
@@ -81,7 +83,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
       files.add((IFile) delta.getResource());
       return true;
     }
-    return shouldAnalyze(delta.getResource());
+    return shouldAnalyzeResource;
   }
 
   private static boolean isChangedFile(IResourceDelta delta) {
