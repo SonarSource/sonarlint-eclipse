@@ -110,9 +110,9 @@ public abstract class AbstractNotificationPopup extends Window {
     }
   };
 
-  private final boolean respectDisplayBounds = true;
+  private static final boolean RESPECT_DISPLAY_BOUNDS = true;
 
-  private final boolean respectMonitorBounds = true;
+  private static final boolean RESPECT_MONITOR_BOUNDS = true;
 
   private FadeJob fadeJob;
 
@@ -528,14 +528,14 @@ public abstract class AbstractNotificationPopup extends Window {
   }
 
   private Point fixupDisplayBounds(Point tipSize, Point location) {
-    if (!respectDisplayBounds) {
+    if (!RESPECT_DISPLAY_BOUNDS) {
       return location;
     }
 
     Rectangle bounds;
     Point rightBounds = new Point(tipSize.x + location.x, tipSize.y + location.y);
 
-    if (respectMonitorBounds) {
+    if (RESPECT_MONITOR_BOUNDS) {
       bounds = shell.getDisplay().getPrimaryMonitor().getBounds();
     } else {
       bounds = getPrimaryClientArea();
