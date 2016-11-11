@@ -48,6 +48,7 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.popup.AnimationUtil.FadeJob;
+import org.sonarlint.eclipse.ui.internal.popup.AnimationUtil.IFadeListener;
 
 /**
  * A popup window with a title bar and message area for displaying notifications.
@@ -478,26 +479,32 @@ public abstract class AbstractNotificationPopup extends Window {
     if (fadeJob != null) {
       fadeJob.cancelAndWait(false);
     }
-    fadeJob = AnimationUtil.fadeOut(getShell(), (shell, alpha) -> {
-      if (!shell.isDisposed()) {
-        if (alpha == 0) {
-          shell.close();
-        } else if (isMouseOver(shell)) {
-          if (fadeJob != null) {
-            fadeJob.cancelAndWait(false);
-          }
-          fadeJob = AnimationUtil.fastFadeIn(shell, (shell1, alpha1) -> {
-            if (shell1.isDisposed()) {
-              return;
-            }
+    fadeJob = AnimationUtil.fadeOut(getShell(), new FadeOutListener());
+  }
 
-            if (alpha1 == 255) {
-              scheduleAutoClose();
-            }
-          });
-        }
+  class FadeOutListener implements IFadeListener {
+    @Override
+    public void faded(Shell shell, int alpha) {
+      if (shell.isDisposed()) {
+        return;
       }
-    });
+      if (alpha == 0) {
+        shell.close();
+      } else if (isMouseOver(shell)) {
+        if (fadeJob != null) {
+          fadeJob.cancelAndWait(false);
+        }
+        fadeJob = AnimationUtil.fastFadeIn(shell, (shell1, alpha1) -> {
+          if (shell1.isDisposed()) {
+            return;
+          }
+
+          if (alpha1 == 255) {
+            scheduleAutoClose();
+          }
+        });
+      }
+    }
   }
 
   @Override
