@@ -487,7 +487,7 @@ public abstract class AbstractNotificationPopup extends Window {
     fadeJob = AnimationUtil.fadeOut(getShell(), new FadeOutListener());
   }
 
-  class FadeOutListener implements IFadeListener {
+  private class FadeOutListener implements IFadeListener {
     @Override
     public void faded(Shell shell, int alpha) {
       if (shell.isDisposed()) {
