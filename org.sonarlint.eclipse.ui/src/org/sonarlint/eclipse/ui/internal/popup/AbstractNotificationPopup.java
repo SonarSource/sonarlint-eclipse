@@ -83,7 +83,12 @@ public abstract class AbstractNotificationPopup extends Window {
 
   private Image lastUsedBgImage;
 
-  private final Job closeJob = new Job(LABEL_JOB_CLOSE) {
+  private final Job closeJob = new CloseJob();
+
+  private class CloseJob extends Job {
+    private CloseJob() {
+      super(LABEL_JOB_CLOSE);
+    }
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
@@ -108,7 +113,7 @@ public abstract class AbstractNotificationPopup extends Window {
 
       return Status.OK_STATUS;
     }
-  };
+  }
 
   private static final boolean RESPECT_DISPLAY_BOUNDS = true;
 
