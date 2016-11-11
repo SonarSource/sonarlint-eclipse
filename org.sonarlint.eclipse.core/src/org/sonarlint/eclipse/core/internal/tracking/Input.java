@@ -20,10 +20,8 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 @FunctionalInterface
-public interface Input<T extends Trackable> {
-
-  Collection<T> getIssues();
-
+public interface Input<T extends Trackable> extends Supplier<Collection<T>> {
 }
