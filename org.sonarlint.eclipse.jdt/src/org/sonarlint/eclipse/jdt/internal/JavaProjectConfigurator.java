@@ -82,9 +82,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     for (IClasspathEntry entry : classPath) {
       switch (entry.getEntryKind()) {
         case IClasspathEntry.CPE_SOURCE:
-          if (!isSourceExcluded(entry)) {
-            processSourceEntry(entry, javaProject, context, topProject);
-          }
+          processSourceEntry(entry, javaProject, context, topProject);
           break;
         case IClasspathEntry.CPE_LIBRARY:
           if (topProject || entry.isExported()) {
@@ -126,6 +124,9 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
   }
 
   private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
+    if (isSourceExcluded(entry)) {
+      return;
+    }
     String srcDir = getRelativePath(javaProject.getPath(), entry.getPath());
     if (srcDir == null) {
       SonarLintCorePlugin.getDefault().info("Skipping non existing source entry: " + entry.getPath().toOSString());
