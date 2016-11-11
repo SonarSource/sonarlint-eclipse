@@ -489,7 +489,7 @@ public abstract class AbstractNotificationPopup extends Window {
 
   private class FadeOutListener implements IFadeListener {
     @Override
-    public void faded(Shell shell, int alpha) {
+    public void accept(Shell shell, int alpha) {
       if (shell.isDisposed()) {
         return;
       }

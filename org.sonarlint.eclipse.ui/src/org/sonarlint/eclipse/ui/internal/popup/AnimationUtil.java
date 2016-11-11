@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
+import java.util.function.ObjIntConsumer;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -135,7 +136,7 @@ public class AnimationUtil {
         shell.setAlpha(currentAlpha);
 
         if (fadeListener != null) {
-          fadeListener.faded(shell, currentAlpha);
+          fadeListener.accept(shell, currentAlpha);
         }
       });
 
@@ -154,10 +155,7 @@ public class AnimationUtil {
   }
 
   @FunctionalInterface
-  public static interface IFadeListener {
-
-    void faded(Shell shell, int alpha);
-
+  public static interface IFadeListener extends ObjIntConsumer<Shell> {
   }
 
 }
