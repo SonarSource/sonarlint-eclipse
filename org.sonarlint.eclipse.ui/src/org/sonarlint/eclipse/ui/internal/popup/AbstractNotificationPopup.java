@@ -528,32 +528,34 @@ public abstract class AbstractNotificationPopup extends Window {
   }
 
   private Point fixupDisplayBounds(Point tipSize, Point location) {
-    if (respectDisplayBounds) {
-      Rectangle bounds;
-      Point rightBounds = new Point(tipSize.x + location.x, tipSize.y + location.y);
+    if (!respectDisplayBounds) {
+      return location;
+    }
 
-      if (respectMonitorBounds) {
-        bounds = shell.getDisplay().getPrimaryMonitor().getBounds();
-      } else {
-        bounds = getPrimaryClientArea();
+    Rectangle bounds;
+    Point rightBounds = new Point(tipSize.x + location.x, tipSize.y + location.y);
+
+    if (respectMonitorBounds) {
+      bounds = shell.getDisplay().getPrimaryMonitor().getBounds();
+    } else {
+      bounds = getPrimaryClientArea();
+    }
+
+    if (!(bounds.contains(location) && bounds.contains(rightBounds))) {
+      if (rightBounds.x > bounds.x + bounds.width) {
+        location.x -= rightBounds.x - (bounds.x + bounds.width);
       }
 
-      if (!(bounds.contains(location) && bounds.contains(rightBounds))) {
-        if (rightBounds.x > bounds.x + bounds.width) {
-          location.x -= rightBounds.x - (bounds.x + bounds.width);
-        }
+      if (rightBounds.y > bounds.y + bounds.height) {
+        location.y -= rightBounds.y - (bounds.y + bounds.height);
+      }
 
-        if (rightBounds.y > bounds.y + bounds.height) {
-          location.y -= rightBounds.y - (bounds.y + bounds.height);
-        }
+      if (location.x < bounds.x) {
+        location.x = bounds.x;
+      }
 
-        if (location.x < bounds.x) {
-          location.x = bounds.x;
-        }
-
-        if (location.y < bounds.y) {
-          location.y = bounds.y;
-        }
+      if (location.y < bounds.y) {
+        location.y = bounds.y;
       }
     }
 
