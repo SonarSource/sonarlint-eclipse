@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -56,8 +55,7 @@ public class ServerNeedUpdatePopup extends AbstractNotificationPopup {
     updateServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        Job j = new ServerUpdateJob(server);
-        j.schedule();
+        new ServerUpdateJob(server).schedule();
         ServerNeedUpdatePopup.this.close();
       }
     });
