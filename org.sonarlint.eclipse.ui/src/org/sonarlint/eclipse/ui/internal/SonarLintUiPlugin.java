@@ -107,7 +107,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     checkServersStatus();
   }
 
-  private void checkServersStatus() {
+  private static void checkServersStatus() {
     for (final IServer server : ServersManager.getInstance().getServers()) {
       if (!server.isUpdated()) {
         Display.getDefault().asyncExec(() -> {
@@ -165,47 +165,44 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     store.setDefault(PreferencesUtils.PREF_TEST_FILE_REGEXPS, PreferencesUtils.PREF_TEST_FILE_REGEXPS_DEFAULT);
   }
 
-  public static void addSonarLintPartListener() {
-    new UIJob("Register SonarLint part listener") {
-      private SonarLintPartListener sonarlintPartListener = new SonarLintPartListener();
+  private static class RegisterSonarLintPartListenerJob extends UIJob {
+    private SonarLintPartListener sonarlintPartListener = new SonarLintPartListener();
 
-      @Override
-      public IStatus runInUIThread(IProgressMonitor monitor) {
-        for (IWorkbenchWindow window : SonarLintUiPlugin.getDefault().getWorkbench().getWorkbenchWindows()) {
-          addListenerToAllPages(window);
-        }
+    RegisterSonarLintPartListenerJob() {
+      super("Register SonarLint part listener");
+    }
 
-        // Handle future opened/closed windows
-        SonarLintUiPlugin.getDefault().getWorkbench().addWindowListener(new IWindowListener() {
-
-          @Override
-          public void windowOpened(IWorkbenchWindow window) {
-            addListenerToAllPages(window);
-          }
-
-          @Override
-          public void windowDeactivated(IWorkbenchWindow window) {
-            // Nothing to do
-          }
-
-          @Override
-          public void windowClosed(IWorkbenchWindow window) {
-            removeListenerToAllPages(window);
-          }
-
-          @Override
-          public void windowActivated(IWorkbenchWindow window) {
-            // Nothing to do
-          }
-        });
-
-        return Status.OK_STATUS;
+    @Override
+    public IStatus runInUIThread(IProgressMonitor monitor) {
+      for (IWorkbenchWindow window : SonarLintUiPlugin.getDefault().getWorkbench().getWorkbenchWindows()) {
+        addListenerToAllPages(window);
       }
 
-      private void addListenerToAllPages(IWorkbenchWindow window) {
-        for (IWorkbenchPage page : window.getPages()) {
-          page.addPartListener(sonarlintPartListener);
-        }
+      // Handle future opened/closed windows
+      SonarLintUiPlugin.getDefault().getWorkbench().addWindowListener(new WindowOpenCloseListener());
+
+      return Status.OK_STATUS;
+    }
+
+    class WindowOpenCloseListener implements IWindowListener {
+      @Override
+      public void windowOpened(IWorkbenchWindow window) {
+        addListenerToAllPages(window);
+      }
+
+      @Override
+      public void windowDeactivated(IWorkbenchWindow window) {
+        // Nothing to do
+      }
+
+      @Override
+      public void windowClosed(IWorkbenchWindow window) {
+        removeListenerToAllPages(window);
+      }
+
+      @Override
+      public void windowActivated(IWorkbenchWindow window) {
+        // Nothing to do
       }
 
       private void removeListenerToAllPages(IWorkbenchWindow window) {
@@ -213,7 +210,17 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
           page.removePartListener(sonarlintPartListener);
         }
       }
-    }.schedule();
+    }
+
+    private void addListenerToAllPages(IWorkbenchWindow window) {
+      for (IWorkbenchPage page : window.getPages()) {
+        page.addPartListener(sonarlintPartListener);
+      }
+    }
+  }
+
+  public static void addSonarLintPartListener() {
+    new RegisterSonarLintPartListenerJob().schedule();
   }
 
 }
