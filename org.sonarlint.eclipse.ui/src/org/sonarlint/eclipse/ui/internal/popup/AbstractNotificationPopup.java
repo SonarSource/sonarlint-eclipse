@@ -94,12 +94,12 @@ public abstract class AbstractNotificationPopup extends Window {
     protected IStatus run(IProgressMonitor monitor) {
       if (!display.isDisposed()) {
         display.asyncExec(() -> {
-          Shell shell = AbstractNotificationPopup.this.getShell();
-          if (shell == null || shell.isDisposed()) {
+          Shell shell2 = AbstractNotificationPopup.this.getShell();
+          if (shell2 == null || shell2.isDisposed()) {
             return;
           }
 
-          if (isMouseOver(shell)) {
+          if (isMouseOver(shell2)) {
             scheduleAutoClose();
             return;
           }
