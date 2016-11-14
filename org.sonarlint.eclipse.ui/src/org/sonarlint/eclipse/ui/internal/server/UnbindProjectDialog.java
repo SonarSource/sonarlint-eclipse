@@ -59,28 +59,33 @@ public class UnbindProjectDialog extends MessageDialog {
   @Override
   protected void buttonPressed(int buttonId) {
     if (buttonId == OK && !projects.isEmpty()) {
-
-      Job job = new Job(Messages.unbindProjectTask) {
-        @Override
-        protected IStatus run(IProgressMonitor monitor) {
-          try {
-            for (SonarLintProject project : projects) {
-              if (monitor.isCanceled()) {
-                return Status.CANCEL_STATUS;
-              }
-              IServer oldServer = ServersManager.getInstance().getServer(project.getServerId());
-              project.unbind();
-              oldServer.notifyAllListeners();
-            }
-          } catch (Exception e) {
-            return new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, 0, e.getMessage(), e);
-          }
-          return Status.OK_STATUS;
-        }
-      };
+      Job job = new UnbindProjectJob();
       job.setPriority(Job.BUILD);
       job.schedule();
     }
     super.buttonPressed(buttonId);
+  }
+
+  private class UnbindProjectJob extends Job {
+    UnbindProjectJob() {
+      super(Messages.unbindProjectTask);
+    }
+
+    @Override
+    protected IStatus run(IProgressMonitor monitor) {
+      try {
+        for (SonarLintProject project : projects) {
+          if (monitor.isCanceled()) {
+            return Status.CANCEL_STATUS;
+          }
+          IServer oldServer = ServersManager.getInstance().getServer(project.getServerId());
+          project.unbind();
+          oldServer.notifyAllListeners();
+        }
+      } catch (Exception e) {
+        return new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, 0, e.getMessage(), e);
+      }
+      return Status.OK_STATUS;
+    }
   }
 }
