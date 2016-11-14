@@ -200,7 +200,7 @@ public class BindProjectsPage extends WizardPage {
         ProjectBindModel bind = (ProjectBindModel) object;
         List<RemoteModule> results = moduleIndex.search(bind.getEclipseName());
         if (!results.isEmpty()) {
-          bind.associate(selectedServer.getId(), results.get(0).getName(), results.get(0).getKey());
+          bind.associate(selectedServer.getId(), results.get(0).getKey());
         } else {
           bind.setAutoBindFailed(true);
         }

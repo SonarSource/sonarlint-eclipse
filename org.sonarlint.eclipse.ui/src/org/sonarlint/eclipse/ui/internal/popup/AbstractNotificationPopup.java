@@ -94,12 +94,12 @@ public abstract class AbstractNotificationPopup extends Window {
     protected IStatus run(IProgressMonitor monitor) {
       if (!display.isDisposed()) {
         display.asyncExec(() -> {
-          Shell shell = AbstractNotificationPopup.this.getShell();
-          if (shell == null || shell.isDisposed()) {
+          Shell shell2 = AbstractNotificationPopup.this.getShell();
+          if (shell2 == null || shell2.isDisposed()) {
             return;
           }
 
-          if (isMouseOver(shell)) {
+          if (isMouseOver(shell2)) {
             scheduleAutoClose();
             return;
           }
@@ -291,8 +291,8 @@ public abstract class AbstractNotificationPopup extends Window {
       shell.setAlpha(0);
     }
     shell.setVisible(true);
-    fadeJob = AnimationUtil.fadeIn(shell, (shell, alpha) -> {
-      if (shell.isDisposed()) {
+    fadeJob = AnimationUtil.fadeIn(shell, (shell2, alpha) -> {
+      if (shell2.isDisposed()) {
         return;
       }
 
@@ -310,6 +310,74 @@ public abstract class AbstractNotificationPopup extends Window {
     }
   }
 
+  private class ResizeControlAdapter extends ControlAdapter {
+    private final Composite outerCircle;
+
+    private ResizeControlAdapter(Composite outerCircle) {
+      this.outerCircle = outerCircle;
+    }
+
+    @Override
+    public void controlResized(ControlEvent e) {
+      Rectangle clArea = outerCircle.getClientArea();
+      lastUsedBgImage = new Image(outerCircle.getDisplay(), clArea.width, clArea.height);
+      GC gc = new GC(lastUsedBgImage);
+
+      /* Gradient */
+      drawGradient(gc, clArea);
+
+      /* Fix Region Shape */
+      fixRegion(gc, clArea);
+
+      gc.dispose();
+
+      Image oldBGImage = outerCircle.getBackgroundImage();
+      outerCircle.setBackgroundImage(lastUsedBgImage);
+
+      if (oldBGImage != null) {
+        oldBGImage.dispose();
+      }
+    }
+
+    private void drawGradient(GC gc, Rectangle clArea) {
+      gc.setForeground(color.getGradientBegin());
+      gc.setBackground(color.getGradientEnd());
+      gc.fillGradientRectangle(clArea.x, clArea.y, clArea.width, clArea.height, true);
+    }
+
+    private void fixRegion(GC gc, Rectangle clArea) {
+      gc.setForeground(color.getBorder());
+
+      /* Fill Top Left */
+      gc.drawPoint(2, 0);
+      gc.drawPoint(3, 0);
+      gc.drawPoint(1, 1);
+      gc.drawPoint(0, 2);
+      gc.drawPoint(0, 3);
+
+      /* Fill Top Right */
+      gc.drawPoint(clArea.width - 4, 0);
+      gc.drawPoint(clArea.width - 3, 0);
+      gc.drawPoint(clArea.width - 2, 1);
+      gc.drawPoint(clArea.width - 1, 2);
+      gc.drawPoint(clArea.width - 1, 3);
+
+      /* Fill Bottom Left */
+      gc.drawPoint(2, clArea.height - 0);
+      gc.drawPoint(3, clArea.height - 0);
+      gc.drawPoint(1, clArea.height - 1);
+      gc.drawPoint(0, clArea.height - 2);
+      gc.drawPoint(0, clArea.height - 3);
+
+      /* Fill Bottom Right */
+      gc.drawPoint(clArea.width - 4, clArea.height - 0);
+      gc.drawPoint(clArea.width - 3, clArea.height - 0);
+      gc.drawPoint(clArea.width - 2, clArea.height - 1);
+      gc.drawPoint(clArea.width - 1, clArea.height - 2);
+      gc.drawPoint(clArea.width - 1, clArea.height - 3);
+    }
+  }
+
   @Override
   protected Control createContents(Composite parent) {
     ((GridLayout) parent.getLayout()).marginWidth = 1;
@@ -319,69 +387,7 @@ public abstract class AbstractNotificationPopup extends Window {
     final Composite outerCircle = new Composite(parent, SWT.NO_FOCUS);
     outerCircle.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     outerCircle.setBackgroundMode(SWT.INHERIT_FORCE);
-
-    outerCircle.addControlListener(new ControlAdapter() {
-
-      @Override
-      public void controlResized(ControlEvent e) {
-        Rectangle clArea = outerCircle.getClientArea();
-        lastUsedBgImage = new Image(outerCircle.getDisplay(), clArea.width, clArea.height);
-        GC gc = new GC(lastUsedBgImage);
-
-        /* Gradient */
-        drawGradient(gc, clArea);
-
-        /* Fix Region Shape */
-        fixRegion(gc, clArea);
-
-        gc.dispose();
-
-        Image oldBGImage = outerCircle.getBackgroundImage();
-        outerCircle.setBackgroundImage(lastUsedBgImage);
-
-        if (oldBGImage != null) {
-          oldBGImage.dispose();
-        }
-      }
-
-      private void drawGradient(GC gc, Rectangle clArea) {
-        gc.setForeground(color.getGradientBegin());
-        gc.setBackground(color.getGradientEnd());
-        gc.fillGradientRectangle(clArea.x, clArea.y, clArea.width, clArea.height, true);
-      }
-
-      private void fixRegion(GC gc, Rectangle clArea) {
-        gc.setForeground(color.getBorder());
-
-        /* Fill Top Left */
-        gc.drawPoint(2, 0);
-        gc.drawPoint(3, 0);
-        gc.drawPoint(1, 1);
-        gc.drawPoint(0, 2);
-        gc.drawPoint(0, 3);
-
-        /* Fill Top Right */
-        gc.drawPoint(clArea.width - 4, 0);
-        gc.drawPoint(clArea.width - 3, 0);
-        gc.drawPoint(clArea.width - 2, 1);
-        gc.drawPoint(clArea.width - 1, 2);
-        gc.drawPoint(clArea.width - 1, 3);
-
-        /* Fill Bottom Left */
-        gc.drawPoint(2, clArea.height - 0);
-        gc.drawPoint(3, clArea.height - 0);
-        gc.drawPoint(1, clArea.height - 1);
-        gc.drawPoint(0, clArea.height - 2);
-        gc.drawPoint(0, clArea.height - 3);
-
-        /* Fill Bottom Right */
-        gc.drawPoint(clArea.width - 4, clArea.height - 0);
-        gc.drawPoint(clArea.width - 3, clArea.height - 0);
-        gc.drawPoint(clArea.width - 2, clArea.height - 1);
-        gc.drawPoint(clArea.width - 1, clArea.height - 2);
-        gc.drawPoint(clArea.width - 1, clArea.height - 3);
-      }
-    });
+    outerCircle.addControlListener(new ResizeControlAdapter(outerCircle));
 
     GridLayout layout = new GridLayout(1, false);
     layout.marginWidth = 0;

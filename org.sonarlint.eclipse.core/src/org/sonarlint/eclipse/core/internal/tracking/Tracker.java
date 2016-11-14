@@ -29,7 +29,6 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
-// TODO this entire class should be shared with IntelliJ
 public class Tracker<RAW extends Trackable, BASE extends Trackable> {
 
   public Tracking<RAW, BASE> track(Input<RAW> rawInput, Input<BASE> baseInput) {

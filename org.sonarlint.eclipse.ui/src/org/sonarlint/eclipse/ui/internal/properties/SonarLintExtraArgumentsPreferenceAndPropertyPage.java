@@ -458,7 +458,8 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
   }
 
   private IProject getProject() {
-    return getElement().getAdapter(IProject.class);
+    // note: the cast to IResource is necessary for e43 and e44
+    return (IProject) getElement().getAdapter(IProject.class);
   }
 
   @CheckForNull

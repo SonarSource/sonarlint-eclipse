@@ -32,10 +32,8 @@ import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 
 /**
  * Open Sonar server URL in an embedded browser
@@ -68,7 +66,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
     return browser;
   }
 
-  protected void open(SonarLintProject sonarProject, String url) {
+  protected void open(String url) {
     if (browser != null) {
       browser.setUrl(url);
     }
@@ -86,7 +84,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
     }
   }
 
-  protected IMarker findSelectedSonarIssue(IWorkbenchPart part, ISelection selection) {
+  protected IMarker findSelectedSonarIssue(ISelection selection) {
     try {
       if (selection instanceof IStructuredSelection) {
         List<IMarker> selectedSonarMarkers = new ArrayList<>();
