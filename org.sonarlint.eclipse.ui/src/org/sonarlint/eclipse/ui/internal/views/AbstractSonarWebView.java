@@ -68,7 +68,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
     return browser;
   }
 
-  protected void open(SonarLintProject sonarProject, String url) {
+  protected void open(String url) {
     if (browser != null) {
       browser.setUrl(url);
     }
