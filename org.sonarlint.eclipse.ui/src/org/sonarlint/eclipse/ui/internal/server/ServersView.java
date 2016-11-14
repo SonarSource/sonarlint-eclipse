@@ -217,7 +217,7 @@ public class ServersView extends CommonNavigator {
     });
   }
 
-  protected void refreshServerState(final IServer server) {
+  protected void refreshServerState() {
     Display.getDefault().asyncExec(() -> {
       IDecoratorManager dm = PlatformUI.getWorkbench().getDecoratorManager();
       dm.update(ServerDecorator.ID);
@@ -250,7 +250,7 @@ public class ServersView extends CommonNavigator {
     ServersManager.getInstance().addServerLifecycleListener(serverResourceListener);
 
     serverListener = server -> {
-      refreshServerState(server);
+      refreshServerState();
       refreshServerContent(server);
     };
 
