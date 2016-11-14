@@ -106,7 +106,7 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
 
   @Override
   protected IMarker findSelectedElement(IWorkbenchPart part, ISelection selection) {
-    return findSelectedSonarIssue(part, selection);
+    return findSelectedSonarIssue(selection);
   }
 
 }
