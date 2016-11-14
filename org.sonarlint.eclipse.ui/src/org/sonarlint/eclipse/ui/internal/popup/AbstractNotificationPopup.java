@@ -291,8 +291,8 @@ public abstract class AbstractNotificationPopup extends Window {
       shell.setAlpha(0);
     }
     shell.setVisible(true);
-    fadeJob = AnimationUtil.fadeIn(shell, (shell, alpha) -> {
-      if (shell.isDisposed()) {
+    fadeJob = AnimationUtil.fadeIn(shell, (shell2, alpha) -> {
+      if (shell2.isDisposed()) {
         return;
       }
 
