@@ -125,17 +125,7 @@ public class ServerActionProvider extends CommonActionProvider {
 
     List<IServer> servers = new ArrayList<>();
     List<SonarLintProject> projects = new ArrayList<>();
-    if (selection != null && !selection.isEmpty()) {
-      Iterator iterator = selection.iterator();
-      while (iterator.hasNext()) {
-        Object obj = iterator.next();
-        if (obj instanceof IServer) {
-          servers.add((IServer) obj);
-        } else if (obj instanceof SonarLintProject) {
-          projects.add((SonarLintProject) obj);
-        }
-      }
-    }
+    populateServersAndProjects(selection, servers, projects);
 
     if (projects.isEmpty()) {
       addTopSection(menu);
@@ -153,6 +143,20 @@ public class ServerActionProvider extends CommonActionProvider {
     }
     if (servers.isEmpty() != projects.isEmpty()) {
       menu.add(deleteAction);
+    }
+  }
+
+  private static void populateServersAndProjects(IStructuredSelection selection, List<IServer> servers, List<SonarLintProject> projects) {
+    if (selection != null && !selection.isEmpty()) {
+      Iterator iterator = selection.iterator();
+      while (iterator.hasNext()) {
+        Object obj = iterator.next();
+        if (obj instanceof IServer) {
+          servers.add((IServer) obj);
+        } else if (obj instanceof SonarLintProject) {
+          projects.add((SonarLintProject) obj);
+        }
+      }
     }
   }
 

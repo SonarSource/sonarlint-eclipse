@@ -48,6 +48,7 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.popup.AnimationUtil.FadeJob;
+import org.sonarlint.eclipse.ui.internal.popup.AnimationUtil.IFadeListener;
 
 /**
  * A popup window with a title bar and message area for displaying notifications.
@@ -82,7 +83,12 @@ public abstract class AbstractNotificationPopup extends Window {
 
   private Image lastUsedBgImage;
 
-  private final Job closeJob = new Job(LABEL_JOB_CLOSE) {
+  private final Job closeJob = new CloseJob();
+
+  private class CloseJob extends Job {
+    private CloseJob() {
+      super(LABEL_JOB_CLOSE);
+    }
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
@@ -107,11 +113,11 @@ public abstract class AbstractNotificationPopup extends Window {
 
       return Status.OK_STATUS;
     }
-  };
+  }
 
-  private final boolean respectDisplayBounds = true;
+  private static final boolean RESPECT_DISPLAY_BOUNDS = true;
 
-  private final boolean respectMonitorBounds = true;
+  private static final boolean RESPECT_MONITOR_BOUNDS = true;
 
   private FadeJob fadeJob;
 
@@ -478,26 +484,32 @@ public abstract class AbstractNotificationPopup extends Window {
     if (fadeJob != null) {
       fadeJob.cancelAndWait(false);
     }
-    fadeJob = AnimationUtil.fadeOut(getShell(), (shell, alpha) -> {
-      if (!shell.isDisposed()) {
-        if (alpha == 0) {
-          shell.close();
-        } else if (isMouseOver(shell)) {
-          if (fadeJob != null) {
-            fadeJob.cancelAndWait(false);
-          }
-          fadeJob = AnimationUtil.fastFadeIn(shell, (shell1, alpha1) -> {
-            if (shell1.isDisposed()) {
-              return;
-            }
+    fadeJob = AnimationUtil.fadeOut(getShell(), new FadeOutListener());
+  }
 
-            if (alpha1 == 255) {
-              scheduleAutoClose();
-            }
-          });
-        }
+  private class FadeOutListener implements IFadeListener {
+    @Override
+    public void accept(Shell shell, int alpha) {
+      if (shell.isDisposed()) {
+        return;
       }
-    });
+      if (alpha == 0) {
+        shell.close();
+      } else if (isMouseOver(shell)) {
+        if (fadeJob != null) {
+          fadeJob.cancelAndWait(false);
+        }
+        fadeJob = AnimationUtil.fastFadeIn(shell, (shell1, alpha1) -> {
+          if (shell1.isDisposed()) {
+            return;
+          }
+
+          if (alpha1 == 255) {
+            scheduleAutoClose();
+          }
+        });
+      }
+    }
   }
 
   @Override
@@ -521,32 +533,34 @@ public abstract class AbstractNotificationPopup extends Window {
   }
 
   private Point fixupDisplayBounds(Point tipSize, Point location) {
-    if (respectDisplayBounds) {
-      Rectangle bounds;
-      Point rightBounds = new Point(tipSize.x + location.x, tipSize.y + location.y);
+    if (!RESPECT_DISPLAY_BOUNDS) {
+      return location;
+    }
 
-      if (respectMonitorBounds) {
-        bounds = shell.getDisplay().getPrimaryMonitor().getBounds();
-      } else {
-        bounds = getPrimaryClientArea();
+    Rectangle bounds;
+    Point rightBounds = new Point(tipSize.x + location.x, tipSize.y + location.y);
+
+    if (RESPECT_MONITOR_BOUNDS) {
+      bounds = shell.getDisplay().getPrimaryMonitor().getBounds();
+    } else {
+      bounds = getPrimaryClientArea();
+    }
+
+    if (!(bounds.contains(location) && bounds.contains(rightBounds))) {
+      if (rightBounds.x > bounds.x + bounds.width) {
+        location.x -= rightBounds.x - (bounds.x + bounds.width);
       }
 
-      if (!(bounds.contains(location) && bounds.contains(rightBounds))) {
-        if (rightBounds.x > bounds.x + bounds.width) {
-          location.x -= rightBounds.x - (bounds.x + bounds.width);
-        }
+      if (rightBounds.y > bounds.y + bounds.height) {
+        location.y -= rightBounds.y - (bounds.y + bounds.height);
+      }
 
-        if (rightBounds.y > bounds.y + bounds.height) {
-          location.y -= rightBounds.y - (bounds.y + bounds.height);
-        }
+      if (location.x < bounds.x) {
+        location.x = bounds.x;
+      }
 
-        if (location.x < bounds.x) {
-          location.x = bounds.x;
-        }
-
-        if (location.y < bounds.y) {
-          location.y = bounds.y;
-        }
+      if (location.y < bounds.y) {
+        location.y = bounds.y;
       }
     }
 

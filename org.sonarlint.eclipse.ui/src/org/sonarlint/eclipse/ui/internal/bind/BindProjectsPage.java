@@ -456,29 +456,33 @@ public class BindProjectsPage extends WizardPage {
       changed = true;
     }
     if (changed) {
-      sonarProject.save();
-      MarkerUtils.deleteIssuesMarkers(project);
-      SonarLintCorePlugin.clearIssueTracker(project.getName());
-      BindUtils.scheduleAnalysisOfOpenFiles(project);
-      if (sonarProject.isBound()) {
-        new ProjectUpdateJob(sonarProject).schedule();
+      updateProjectBinding(projectBinding, project, sonarProject, oldServerId);
+    }
+  }
+
+  private static void updateProjectBinding(ProjectBindModel projectBinding, IProject project, SonarLintProject sonarProject, String oldServerId) {
+    sonarProject.save();
+    MarkerUtils.deleteIssuesMarkers(project);
+    SonarLintCorePlugin.clearIssueTracker(project.getName());
+    BindUtils.scheduleAnalysisOfOpenFiles(project);
+    if (sonarProject.isBound()) {
+      new ProjectUpdateJob(sonarProject).schedule();
+    }
+    if (oldServerId != null && !Objects.equals(projectBinding.getServerId(), oldServerId)) {
+      IServer oldServer = ServersManager.getInstance().getServer(oldServerId);
+      if (oldServer != null) {
+        oldServer.notifyAllListeners();
       }
-      if (oldServerId != null && !Objects.equals(projectBinding.getServerId(), oldServerId)) {
-        IServer oldServer = ServersManager.getInstance().getServer(oldServerId);
-        if (oldServer != null) {
-          oldServer.notifyAllListeners();
-        }
+    }
+    if (projectBinding.getServerId() != null) {
+      IServer server = ServersManager.getInstance().getServer(projectBinding.getServerId());
+      if (server != null) {
+        server.notifyAllListeners();
       }
-      if (projectBinding.getServerId() != null) {
-        IServer server = ServersManager.getInstance().getServer(projectBinding.getServerId());
-        if (server != null) {
-          server.notifyAllListeners();
-        }
-      }
-      IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
-      if (labelProvider != null) {
-        ((SonarLintProjectDecorator) labelProvider).fireChange(new IProject[] {sonarProject.getProject()});
-      }
+    }
+    IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
+    if (labelProvider != null) {
+      ((SonarLintProjectDecorator) labelProvider).fireChange(new IProject[] {sonarProject.getProject()});
     }
   }
 

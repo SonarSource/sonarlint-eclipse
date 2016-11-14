@@ -77,30 +77,18 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
    * @param topProject indicate we are working on the project to be analysed and not on a dependent project
    * @throws JavaModelException see {@link IJavaProject#getResolvedClasspath(boolean)}
    */
-  private void addClassPathToSonarProject(IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
+  private static void addClassPathToSonarProject(IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
     IClasspathEntry[] classPath = javaProject.getResolvedClasspath(true);
     for (IClasspathEntry entry : classPath) {
       switch (entry.getEntryKind()) {
         case IClasspathEntry.CPE_SOURCE:
-          if (!isSourceExcluded(entry)) {
-            processSourceEntry(entry, javaProject, context, topProject);
-          }
+          processSourceEntry(entry, javaProject, context, topProject);
           break;
         case IClasspathEntry.CPE_LIBRARY:
-          if (topProject || entry.isExported()) {
-            final String libPath = resolveLibrary(javaProject, entry);
-            if (libPath != null) {
-              context.libraries().add(libPath);
-            }
-          }
+          processLibraryEntry(entry, javaProject, context, topProject);
           break;
         case IClasspathEntry.CPE_PROJECT:
-          IJavaModel javaModel = javaProject.getJavaModel();
-          IJavaProject referredProject = javaModel.getJavaProject(entry.getPath().segment(0));
-          if (!context.dependentProjects().contains(referredProject)) {
-            context.dependentProjects().add(referredProject);
-            addClassPathToSonarProject(referredProject, context, false);
-          }
+          processProjectEntry(entry, javaProject, context);
           break;
         default:
           SonarLintCorePlugin.getDefault().info("Unhandled ClassPathEntry : " + entry);
@@ -125,7 +113,10 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     }
   }
 
-  private void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
+  private static void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
+    if (isSourceExcluded(entry)) {
+      return;
+    }
     String srcDir = getRelativePath(javaProject.getPath(), entry.getPath());
     if (srcDir == null) {
       SonarLintCorePlugin.getDefault().info("Skipping non existing source entry: " + entry.getPath().toOSString());
@@ -133,6 +124,24 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     }
     if (entry.getOutputLocation() != null) {
       processOutputDir(entry.getOutputLocation(), context, topProject);
+    }
+  }
+
+  private static void processLibraryEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
+    if (topProject || entry.isExported()) {
+      final String libPath = resolveLibrary(javaProject, entry);
+      if (libPath != null) {
+        context.libraries().add(libPath);
+      }
+    }
+  }
+
+  private static void processProjectEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context) throws JavaModelException {
+    IJavaModel javaModel = javaProject.getJavaModel();
+    IJavaProject referredProject = javaModel.getJavaProject(entry.getPath().segment(0));
+    if (!context.dependentProjects().contains(referredProject)) {
+      context.dependentProjects().add(referredProject);
+      addClassPathToSonarProject(referredProject, context, false);
     }
   }
 

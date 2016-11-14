@@ -37,8 +37,8 @@ public class Tracking<RAW extends Trackable, BASE extends Trackable> {
   private final Collection<BASE> bases;
 
   public Tracking(Input<RAW> rawInput, Input<BASE> baseInput) {
-    this.raws = rawInput.getIssues();
-    this.bases = baseInput.getIssues();
+    this.raws = rawInput.get();
+    this.bases = baseInput.get();
   }
 
   /**

@@ -140,7 +140,6 @@ public class MarkerUpdaterTest extends SonarTestCase {
     assertThat(marker.getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR)).isEqualTo(severity);
     assertThat(marker.getAttribute(IMarker.MESSAGE)).isEqualTo(message);
     assertThat(marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR)).isEqualTo(serverIssueKey);
-    assertThat(marker.getAttribute(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR)).isEqualTo(assignee);
   }
 
   @Test
