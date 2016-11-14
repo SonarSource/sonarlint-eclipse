@@ -39,7 +39,7 @@ public class RemoteProjectTextContentAdapter extends TextContentAdapter {
   @Override
   public void insertControlContents(Control control, String text, int cursorPosition) {
     RemoteSonarProject prj = RemoteSonarProject.fromString(text);
-    project.associate(prj.getServerId(), prj.getName(), prj.getKey());
+    project.associate(prj.getServerId(), prj.getKey());
     // Don't insert but instead replace
     super.setControlContents(control, prj.getName(), cursorPosition);
   }
@@ -47,7 +47,7 @@ public class RemoteProjectTextContentAdapter extends TextContentAdapter {
   @Override
   public void setControlContents(Control control, String text, int cursorPosition) {
     RemoteSonarProject prj = RemoteSonarProject.fromString(text);
-    project.associate(prj.getServerId(), prj.getName(), prj.getKey());
+    project.associate(prj.getServerId(), prj.getKey());
     super.setControlContents(control, prj.getName(), cursorPosition);
   }
 

@@ -72,7 +72,7 @@ public class ProjectBindModel extends AbstractModelObject {
     return moduleKey;
   }
 
-  public void associate(String serverId, String sonarProjectName, String key) {
+  public void associate(String serverId, String key) {
     String oldValue = getSonarFullName();
     this.moduleKey = key;
     this.serverId = serverId;
