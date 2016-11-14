@@ -146,7 +146,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     trackingChangeQueueManager.subscribe(new MarkerUpdater(modulePathManager));
 
     IssueTrackerCacheFactory factory = localModuleKey -> {
-      // TODO find a better way to get to the .settings dir of an Eclipse project
       Path projectBasePath = Paths.get(modulePathManager.getModulePath(localModuleKey));
       Path storeBasePath = projectBasePath.resolve(".settings/sonarlint").resolve(localModuleKey);
       IssueStore issueStore = new IssueStore(storeBasePath, projectBasePath);
