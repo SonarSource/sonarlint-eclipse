@@ -97,7 +97,6 @@ public class MarkerUpdater implements TrackingChangeListener {
 
     attributes.put(IMarker.MESSAGE, trackable.getMessage());
     attributes.put(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, trackable.getServerIssueKey());
-    attributes.put(MarkerUtils.SONAR_MARKER_ASSIGNEE_ATTR, trackable.getAssignee());
 
     // File level issues (line == null) are displayed on line 1
     attributes.put(IMarker.LINE_NUMBER, trackable.getLine() != null ? trackable.getLine() : 1);

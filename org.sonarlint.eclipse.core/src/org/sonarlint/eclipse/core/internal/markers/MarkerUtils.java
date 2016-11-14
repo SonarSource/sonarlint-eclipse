@@ -42,7 +42,6 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_CREATION_DATE_ATTR = "creationdate";
 
   public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";
-  public static final String SONAR_MARKER_ASSIGNEE_ATTR = "assignee";
 
   private MarkerUtils() {
   }
