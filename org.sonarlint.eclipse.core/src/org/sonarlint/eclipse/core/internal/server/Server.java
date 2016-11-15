@@ -171,8 +171,8 @@ public class Server implements IServer, StateListener {
     this.host = url;
     this.hasAuth = StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
     ServersManager.getInstance().updateServer(this, username, password);
-    Job j = new ServerUpdateJob(this);
-    j.schedule();
+    Job job = new ServerUpdateJob(this);
+    job.schedule();
   }
 
   @Override

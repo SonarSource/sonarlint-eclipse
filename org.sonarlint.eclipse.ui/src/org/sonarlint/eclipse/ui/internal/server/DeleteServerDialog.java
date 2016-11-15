@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
 /**
  * Dialog that prompts a user to delete server(s).
@@ -95,6 +96,7 @@ public class DeleteServerDialog extends MessageDialog {
   protected void buttonPressed(int buttonId) {
     if (buttonId == OK && !servers.isEmpty()) {
       Job job = new DeleteServerJob();
+      servers.forEach(server -> JobUtils.scheduleAnalysisOfOpenFiles(job, server.getBoundProjects()));
       job.setPriority(Job.BUILD);
       job.schedule();
     }

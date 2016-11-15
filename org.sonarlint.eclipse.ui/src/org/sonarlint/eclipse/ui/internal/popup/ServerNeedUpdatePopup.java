@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Link;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
 public class ServerNeedUpdatePopup extends AbstractNotificationPopup {
 
@@ -56,8 +57,9 @@ public class ServerNeedUpdatePopup extends AbstractNotificationPopup {
     updateServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        Job j = new ServerUpdateJob(server);
-        j.schedule();
+        Job job = new ServerUpdateJob(server);
+        JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server);
+        job.schedule();
         ServerNeedUpdatePopup.this.close();
       }
     });

@@ -78,6 +78,7 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
+import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
@@ -464,7 +465,7 @@ public class BindProjectsPage extends WizardPage {
     sonarProject.save();
     MarkerUtils.deleteIssuesMarkers(project);
     SonarLintCorePlugin.clearIssueTracker(project.getName());
-    BindUtils.scheduleAnalysisOfOpenFiles(project);
+    JobUtils.scheduleAnalysisOfOpenFiles(project);
     if (sonarProject.isBound()) {
       new ProjectUpdateJob(sonarProject).schedule();
     }

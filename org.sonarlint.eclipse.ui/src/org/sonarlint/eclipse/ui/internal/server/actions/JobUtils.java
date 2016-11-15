@@ -17,12 +17,16 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.bind;
+package org.sonarlint.eclipse.ui.internal.server.actions;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
@@ -33,10 +37,12 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.server.IServer;
 
-public class BindUtils {
+public class JobUtils {
 
-  private BindUtils() {
+  private JobUtils() {
     // utility class, forbidden constructor
   }
 
@@ -74,7 +80,65 @@ public class BindUtils {
     if (input instanceof IFileEditorInput) {
       return ((IFileEditorInput) input).getFile();
     }
-
     return null;
+  }
+
+  public static void scheduleAnalysisOfOpenFiles(SonarLintProject project) {
+    Runnable runnable = () -> scheduleAnalysisOfOpenFiles(project.getProject());
+    if (Display.getCurrent() != null) {
+      runnable.run();
+    } else {
+      Display.getDefault().asyncExec(runnable);
+    }
+  }
+
+  public static void scheduleAnalysisOfOpenFiles(List<SonarLintProject> projects) {
+    projects.forEach(JobUtils::scheduleAnalysisOfOpenFiles);
+  }
+
+  public static void scheduleAnalysisOfOpenFilesInBoundProjects(IServer server) {
+    scheduleAnalysisOfOpenFiles(server.getBoundProjects());
+  }
+
+  public static void scheduleAnalysisOfOpenFiles(Job job, List<SonarLintProject> projects) {
+    job.addJobChangeListener(new JobCompletionListener() {
+      @Override
+      public void done(IJobChangeEvent event) {
+        if (event.getResult().isOK()) {
+          scheduleAnalysisOfOpenFiles(projects);
+        }
+      }
+    });
+  }
+
+  public static void scheduleAnalysisOfOpenFilesInBoundProjects(Job job, IServer server) {
+    scheduleAnalysisOfOpenFiles(job, server.getBoundProjects());
+  }
+
+  abstract static class JobCompletionListener implements IJobChangeListener {
+    @Override
+    public void aboutToRun(IJobChangeEvent event) {
+      // nothing to do
+    }
+
+    @Override
+    public void awake(IJobChangeEvent event) {
+      // nothing to do
+    }
+
+    @Override
+    public void running(IJobChangeEvent event) {
+      // nothing to do
+    }
+
+    @Override
+    public void scheduled(IJobChangeEvent event) {
+      // nothing to do
+    }
+
+    @Override
+    public void sleeping(IJobChangeEvent event) {
+      // nothing to do
+    }
   }
 }

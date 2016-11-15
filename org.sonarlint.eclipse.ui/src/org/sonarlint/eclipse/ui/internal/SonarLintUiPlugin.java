@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
+import java.util.Collections;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -26,9 +28,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
@@ -37,6 +42,9 @@ import org.eclipse.ui.progress.UIJob;
 import org.osgi.framework.BundleContext;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.server.IServer;
@@ -181,7 +189,20 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       // Handle future opened/closed windows
       SonarLintUiPlugin.getDefault().getWorkbench().addWindowListener(new WindowOpenCloseListener());
 
+      analyzeCurrentFile();
+
       return Status.OK_STATUS;
+    }
+
+    private static void analyzeCurrentFile() {
+      IWorkbenchPart workbenchPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
+      IEditorPart editor = workbenchPart.getSite().getPage().getActiveEditor();
+      if (editor != null) {
+        // note: the cast is necessary for e43 and e44
+        IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
+        AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Collections.singletonList(file), TriggerType.EDITOR_OPEN);
+        new AnalyzeProjectJob(request).schedule();
+      }
     }
 
     class WindowOpenCloseListener implements IWindowListener {

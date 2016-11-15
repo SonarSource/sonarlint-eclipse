@@ -73,7 +73,6 @@ public class ServerUpdateAction extends SelectionProviderAction {
     // To handle the case where servers is null, the selectionChanged method is called
     // to ensure servers will be populated.
     if (servers == null) {
-
       IStructuredSelection sel = getStructuredSelection();
       if (sel != null) {
         selectionChanged(sel);
@@ -82,10 +81,10 @@ public class ServerUpdateAction extends SelectionProviderAction {
 
     if (servers != null) {
       for (final IServer server : servers) {
-        Job j = new ServerUpdateJob(server);
-        j.schedule();
+        Job job = new ServerUpdateJob(server);
+        JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server);
+        job.schedule();
       }
     }
   }
-
 }

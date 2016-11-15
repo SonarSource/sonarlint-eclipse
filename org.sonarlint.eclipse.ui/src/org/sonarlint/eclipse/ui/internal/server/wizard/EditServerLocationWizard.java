@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
 public class EditServerLocationWizard extends AbstractServerLocationWizard {
 
@@ -33,5 +34,6 @@ public class EditServerLocationWizard extends AbstractServerLocationWizard {
   @Override
   protected void doFinish(String serverId, String url, String username, String password) {
     sonarServer.updateConfig(url, username, password);
+    JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(sonarServer);
   }
 }
