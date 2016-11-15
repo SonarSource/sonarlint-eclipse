@@ -22,14 +22,19 @@ package org.sonarlint.eclipse.ui.internal.server.actions;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.actions.SelectionProviderAction;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.bind.BindUtils;
 
 public class ServerUpdateAction extends SelectionProviderAction {
   private List<IServer> servers;
@@ -82,10 +87,52 @@ public class ServerUpdateAction extends SelectionProviderAction {
 
     if (servers != null) {
       for (final IServer server : servers) {
-        Job j = new ServerUpdateJob(server);
-        j.schedule();
+        Job serverUpdateJob = new ServerUpdateJob(server);
+        serverUpdateJob.addJobChangeListener(new ServerUpdateJobListener(server));
+        serverUpdateJob.schedule();
       }
     }
   }
 
+  abstract static class JobCompletionListener implements IJobChangeListener {
+    @Override
+    public void aboutToRun(IJobChangeEvent event) {
+      // nothing to do
+    }
+
+    @Override
+    public void awake(IJobChangeEvent event) {
+      // nothing to do
+    }
+
+    @Override
+    public void running(IJobChangeEvent event) {
+      // nothing to do
+    }
+
+    @Override
+    public void scheduled(IJobChangeEvent event) {
+      // nothing to do
+    }
+
+    @Override
+    public void sleeping(IJobChangeEvent event) {
+      // nothing to do
+    }
+  }
+
+  static class ServerUpdateJobListener extends JobCompletionListener {
+    private final IServer server;
+
+    private ServerUpdateJobListener(IServer server) {
+      this.server = server;
+    }
+
+    @Override
+    public void done(IJobChangeEvent event) {
+      for (SonarLintProject project : server.getBoundProjects()) {
+        Display.getDefault().asyncExec(() -> BindUtils.scheduleAnalysisOfOpenFiles(project.getProject()));
+      }
+    }
+  }
 }
