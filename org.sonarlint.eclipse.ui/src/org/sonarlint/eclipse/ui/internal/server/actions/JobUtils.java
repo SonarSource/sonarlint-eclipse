@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
-import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.bind.BindUtils;
@@ -35,31 +34,34 @@ public class JobUtils {
     // utility class, forbidden constructor
   }
 
-  public static Job createServerUpdateJobWithAnalysis(IServer server) {
-    Job serverUpdateJob = new ServerUpdateJob(server);
-    serverUpdateJob.addJobChangeListener(new ServerUpdateJobListener(server));
-    return serverUpdateJob;
-  }
-  
-  public static void scheduleAnalysisOfOpenFilesInBoundProjects(IServer server) {
-    for (SonarLintProject project : server.getBoundProjects()) {
-      if (Display.getCurrent() != null) {
-        BindUtils.scheduleAnalysisOfOpenFiles(project.getProject());
-      } else {
-        Display.getDefault().asyncExec(() -> BindUtils.scheduleAnalysisOfOpenFiles(project.getProject()));
-      }
+  public static void scheduleAnalysisOfOpenFiles(SonarLintProject project) {
+    Runnable runnable = () -> BindUtils.scheduleAnalysisOfOpenFiles(project.getProject());
+    if (Display.getCurrent() != null) {
+      runnable.run();
+    } else {
+      Display.getDefault().asyncExec(runnable);
     }
   }
 
-  public static void scheduleAnalysisAfter(Job job, List<SonarLintProject> projects) {
+  public static void scheduleAnalysisOfOpenFiles(List<SonarLintProject> projects) {
+    projects.forEach(JobUtils::scheduleAnalysisOfOpenFiles);
+  }
+
+  public static void scheduleAnalysisOfOpenFilesInBoundProjects(IServer server) {
+    scheduleAnalysisOfOpenFiles(server.getBoundProjects());
+  }
+
+  public static void scheduleAnalysisOfOpenFilesAfter(Job job, List<SonarLintProject> projects) {
     job.addJobChangeListener(new JobCompletionListener() {
       @Override
       public void done(IJobChangeEvent event) {
-        for (SonarLintProject project : projects) {
-          Display.getDefault().asyncExec(() -> BindUtils.scheduleAnalysisOfOpenFiles(project.getProject()));
-        }
+        scheduleAnalysisOfOpenFiles(projects);
       }
     });
+  }
+
+  public static void scheduleAnalysisOfOpenFilesInBoundProjectsAfter(Job job, IServer server) {
+    scheduleAnalysisOfOpenFilesAfter(job, server.getBoundProjects());
   }
 
   static class ServerUpdateJobListener extends JobCompletionListener {

@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.actions.SelectionProviderAction;
+import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -81,7 +82,8 @@ public class ServerUpdateAction extends SelectionProviderAction {
 
     if (servers != null) {
       for (final IServer server : servers) {
-        Job job = JobUtils.createServerUpdateJobWithAnalysis(server);
+        Job job = new ServerUpdateJob(server);
+        JobUtils.scheduleAnalysisOfOpenFilesInBoundProjectsAfter(job, server);
         job.schedule();
       }
     }

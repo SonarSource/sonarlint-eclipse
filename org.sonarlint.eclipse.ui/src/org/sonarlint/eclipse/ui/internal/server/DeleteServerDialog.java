@@ -96,7 +96,7 @@ public class DeleteServerDialog extends MessageDialog {
   protected void buttonPressed(int buttonId) {
     if (buttonId == OK && !servers.isEmpty()) {
       Job job = new DeleteServerJob();
-      servers.forEach(server -> JobUtils.scheduleAnalysisAfter(job, server.getBoundProjects()));
+      servers.forEach(server -> JobUtils.scheduleAnalysisOfOpenFilesAfter(job, server.getBoundProjects()));
       job.setPriority(Job.BUILD);
       job.schedule();
     }
