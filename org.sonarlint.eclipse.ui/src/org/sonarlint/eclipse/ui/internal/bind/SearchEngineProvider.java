@@ -49,7 +49,7 @@ public class SearchEngineProvider implements IContentProposalProvider {
   }
 
   public TextSearchIndex<RemoteModule> getModuleIndex() {
-    if (moduleIndex == null && server.isUpdated()) {
+    if (moduleIndex == null && server.isStorageUpdated()) {
       moduleIndex = server.getModuleIndex();
     }
     return moduleIndex;
@@ -57,8 +57,8 @@ public class SearchEngineProvider implements IContentProposalProvider {
 
   @Override
   public IContentProposal[] getProposals(String contents, int position) {
-    if (!server.isUpdated()) {
-      parentPage.setMessage("Please update server first", IMessageProvider.INFORMATION);
+    if (!server.isStorageUpdated()) {
+      parentPage.setMessage("Please refresh project list from server first", IMessageProvider.INFORMATION);
       return new IContentProposal[0];
     }
     List<IContentProposal> list = new ArrayList<>();

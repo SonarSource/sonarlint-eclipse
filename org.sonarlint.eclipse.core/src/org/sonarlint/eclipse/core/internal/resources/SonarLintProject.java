@@ -88,7 +88,7 @@ public class SonarLintProject {
       SonarLintCorePlugin.getDefault().error("Unable to update project '" + project.getName() + "' since it is bound to an unknow server: '" + getServerId() + "'");
       return;
     }
-    server.updateProject(moduleKey);
+    server.updateProjectStorage(moduleKey);
   }
 
   public boolean isBound() {

@@ -287,7 +287,7 @@ public class BindProjectsPage extends WizardPage {
       final IServer server = (IServer) ((IStructuredSelection) serverCombo.getSelection()).getFirstElement();
       getContainer().run(true, true, monitor -> {
         try {
-          server.update(monitor);
+          server.updateStorage(monitor);
         } finally {
           Display.getDefault().asyncExec(this::updateState);
         }
@@ -310,13 +310,13 @@ public class BindProjectsPage extends WizardPage {
     checkAll.setGrayed(viewer.getCheckedElements().length < projects.size());
     checkAll.setText(hasSelected ? "Unselect all" : "Select all");
     unassociateBtn.setEnabled(hasSelected);
-    if (selectedServer != null && !selectedServer.isUpdated()) {
+    if (selectedServer != null && !selectedServer.isStorageUpdated()) {
       setMessage("No data for the selected server", IMessageProvider.WARNING);
     } else {
       setMessage(null);
     }
     if (autoBindBtn != null) {
-      autoBindBtn.setEnabled(hasSelected && selectedServer != null && selectedServer.isUpdated());
+      autoBindBtn.setEnabled(hasSelected && selectedServer != null && selectedServer.isStorageUpdated());
     }
     container.layout(true, true);
   }

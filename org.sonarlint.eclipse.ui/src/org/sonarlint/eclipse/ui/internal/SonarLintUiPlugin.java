@@ -50,7 +50,8 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
-import org.sonarlint.eclipse.ui.internal.popup.ServerNeedUpdatePopup;
+import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
+import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
 
@@ -113,13 +114,16 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     getPreferenceStore().addPropertyChangeListener(prefListener);
 
     checkServersStatus();
+
+    new CheckForUpdatesJob().schedule();
+
   }
 
   private static void checkServersStatus() {
     for (final IServer server : ServersManager.getInstance().getServers()) {
-      if (!server.isUpdated()) {
+      if (!server.isStorageUpdated()) {
         Display.getDefault().asyncExec(() -> {
-          ServerNeedUpdatePopup popup = new ServerNeedUpdatePopup(Display.getCurrent(), server);
+          ServerStorageNeedUpdatePopup popup = new ServerStorageNeedUpdatePopup(Display.getCurrent(), server);
           popup.create();
           popup.open();
         });

@@ -43,7 +43,7 @@ public class ServerUpdateJob extends Job {
     List<SonarLintProject> projectsToUpdate = server.getBoundProjects();
     monitor.beginTask("Update server and all associated projects", projectsToUpdate.size() + 1);
     try {
-      server.update(monitor);
+      server.updateStorage(monitor);
     } catch (Exception e) {
       return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update data from server '" + server.getId() + "'", e);
     }
@@ -54,7 +54,7 @@ public class ServerUpdateJob extends Job {
         return Status.CANCEL_STATUS;
       }
       try {
-        server.updateProject(projectToUpdate.getModuleKey());
+        server.updateProjectStorage(projectToUpdate.getModuleKey());
       } catch (Exception e) {
         failures.add(new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding for project '" + projectToUpdate.getProject().getName() + "'", e));
       }
