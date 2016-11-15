@@ -104,7 +104,9 @@ public class JobUtils {
     job.addJobChangeListener(new JobCompletionListener() {
       @Override
       public void done(IJobChangeEvent event) {
-        scheduleAnalysisOfOpenFiles(projects);
+        if (event.getResult().isOK()) {
+          scheduleAnalysisOfOpenFiles(projects);
+        }
       }
     });
   }
