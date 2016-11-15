@@ -80,7 +80,6 @@ public class JobUtils {
     if (input instanceof IFileEditorInput) {
       return ((IFileEditorInput) input).getFile();
     }
-
     return null;
   }
 
