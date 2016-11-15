@@ -35,13 +35,15 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
-public class ServerNeedUpdatePopup extends AbstractNotificationPopup {
+public class ServerStorageNeedUpdatePopup extends AbstractNotificationPopup {
 
   private final IServer server;
 
-  public ServerNeedUpdatePopup(Display display, IServer server) {
+  public ServerStorageNeedUpdatePopup(Display display, IServer server) {
     super(display);
     this.server = server;
+    // Don't close this popup
+    setDelayClose(0);
   }
 
   @Override
@@ -50,7 +52,7 @@ public class ServerNeedUpdatePopup extends AbstractNotificationPopup {
     Label messageLabel = new Label(composite, SWT.WRAP);
     messageLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-    messageLabel.setText("Local configuration from SonarQube server '" + server.getId() + "' is missing or outdated.");
+    messageLabel.setText("Configuration stored from SonarQube server '" + server.getId() + "' is missing or outdated.");
     messageLabel.setBackground(composite.getBackground());
     Link updateServerLink = new Link(composite, SWT.NONE);
     updateServerLink.setText("<a>Update all project bindings from '" + server.getId() + "'</a>");
@@ -60,14 +62,14 @@ public class ServerNeedUpdatePopup extends AbstractNotificationPopup {
         Job job = new ServerUpdateJob(server);
         JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server);
         job.schedule();
-        ServerNeedUpdatePopup.this.close();
+        ServerStorageNeedUpdatePopup.this.close();
       }
     });
   }
 
   @Override
   protected String getPopupShellTitle() {
-    return "Local SonarQube configuration outdated";
+    return "SonarLint stored configuration outdated";
   }
 
   @Override

@@ -27,6 +27,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,6 +47,7 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.WsHelperImpl;
+import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
@@ -53,7 +55,8 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConf
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
-import org.sonarsource.sonarlint.core.client.api.connected.GlobalUpdateStatus;
+import org.sonarsource.sonarlint.core.client.api.connected.GlobalStorageStatus;
+import org.sonarsource.sonarlint.core.client.api.connected.GlobalStorageUpdateCheckResult;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration.Builder;
@@ -70,7 +73,8 @@ public class Server implements IServer, StateListener {
   private boolean hasAuth;
   private final ConnectedSonarLintEngine client;
   private final List<IServerListener> listeners = new ArrayList<>();
-  private GlobalUpdateStatus updateStatus;
+  private GlobalStorageStatus updateStatus;
+  private GlobalStorageUpdateCheckResult checkForUpdateResult;
 
   Server(String id, String host, boolean hasAuth) {
     this.id = id;
@@ -84,7 +88,7 @@ public class Server implements IServer, StateListener {
       .build();
     this.client = new ConnectedSonarLintEngineImpl(globalConfig);
     this.client.addStateListener(this);
-    this.updateStatus = client.getUpdateStatus();
+    this.updateStatus = client.getGlobalStorageStatus();
   }
 
   @Override
@@ -115,13 +119,65 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public boolean isUpdated() {
+  public boolean isStorageUpdated() {
     return client.getState() == State.UPDATED;
   }
 
   @Override
+  public void checkForUpdates(IProgressMonitor progress) {
+    this.checkForUpdateResult = client.checkIfGlobalStorageNeedUpdate(getConfig(),
+      new WrappedProgressMonitor(progress, "Check for configuration updates on server '" + getId() + "'"));
+    if (checkForUpdateResult.needUpdate()) {
+      SonarLintCorePlugin.getDefault().debug("Following configuration changes found on server '" + getId() + "' compared to local storage:");
+      for (String change : checkForUpdateResult.changelog()) {
+        SonarLintCorePlugin.getDefault().debug("  *  " + change);
+      }
+    }
+    notifyAllListeners();
+  }
+
+  @Override
+  public boolean hasUpdates() {
+    return this.checkForUpdateResult != null && this.checkForUpdateResult.needUpdate();
+  }
+
+  @Override
+  public List<String> changelog() {
+    return this.checkForUpdateResult != null ? checkForUpdateResult.changelog() : Collections.emptyList();
+  }
+
+  private static class WrappedProgressMonitor extends ProgressMonitor {
+
+    private final IProgressMonitor wrapped;
+    private int worked = 0;
+
+    public WrappedProgressMonitor(IProgressMonitor wrapped, String taskName) {
+      this.wrapped = wrapped;
+      wrapped.beginTask(taskName, 100);
+    }
+
+    @Override
+    public boolean isCanceled() {
+      return wrapped.isCanceled();
+    }
+
+    @Override
+    public void setFraction(float fraction) {
+      int total = (int) (fraction * 100);
+      wrapped.worked(total - worked);
+      this.worked = total;
+    }
+
+    @Override
+    public void setMessage(String msg) {
+      wrapped.subTask(msg);
+    }
+
+  }
+
+  @Override
   public String getServerVersion() {
-    if (!isUpdated()) {
+    if (!isStorageUpdated()) {
       return NEED_UPDATE;
     }
     return updateStatus.getServerVersion();
@@ -129,7 +185,7 @@ public class Server implements IServer, StateListener {
 
   @Override
   public String getUpdateDate() {
-    if (!isUpdated()) {
+    if (!isStorageUpdated()) {
       return NEED_UPDATE;
     }
     return new SimpleDateFormat().format(updateStatus.getLastUpdateDate());
@@ -149,7 +205,15 @@ public class Server implements IServer, StateListener {
       case NEED_UPDATE:
         return NEED_UPDATE;
       case UPDATED:
-        return "Version: " + getServerVersion() + ", Last update: " + getUpdateDate();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Version: ");
+        sb.append(getServerVersion());
+        sb.append(", Last update: ");
+        sb.append(getUpdateDate());
+        if (checkForUpdateResult != null && checkForUpdateResult.needUpdate()) {
+          sb.append(", New updates available");
+        }
+        return sb.toString();
       case UPDATING:
         return "Updating data...";
       default:
@@ -199,8 +263,9 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public synchronized void update(IProgressMonitor monitor) {
-    updateStatus = client.update(getConfig());
+  public synchronized void updateStorage(IProgressMonitor monitor) {
+    updateStatus = client.update(getConfig(), new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "'"));
+    checkForUpdateResult = null;
   }
 
   @Override
@@ -218,7 +283,7 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public synchronized void updateProject(String moduleKey) {
+  public synchronized void updateProjectStorage(String moduleKey) {
     client.updateModule(getConfig(), moduleKey);
   }
 

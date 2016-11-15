@@ -61,7 +61,7 @@ public interface IServer {
 
   String getSonarLintEngineState();
 
-  void update(IProgressMonitor monitor);
+  void updateStorage(IProgressMonitor monitor);
 
   IStatus testConnection(String username, String password);
 
@@ -92,9 +92,9 @@ public interface IServer {
 
   String getHtmlRuleDescription(String ruleKey);
 
-  void updateProject(String moduleKey);
+  void updateProjectStorage(String moduleKey);
 
-  boolean isUpdated();
+  boolean isStorageUpdated();
 
   List<SonarLintProject> getBoundProjects();
 
@@ -104,4 +104,9 @@ public interface IServer {
 
   void updateConfig(String url, String username, String password);
 
+  void checkForUpdates(IProgressMonitor progress);
+
+  boolean hasUpdates();
+
+  List<String> changelog();
 }
