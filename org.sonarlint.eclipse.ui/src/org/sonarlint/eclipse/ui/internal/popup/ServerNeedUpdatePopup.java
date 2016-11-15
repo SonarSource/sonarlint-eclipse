@@ -58,7 +58,7 @@ public class ServerNeedUpdatePopup extends AbstractNotificationPopup {
       @Override
       public void widgetSelected(SelectionEvent e) {
         Job job = new ServerUpdateJob(server);
-        JobUtils.scheduleAnalysisOfOpenFilesInBoundProjectsAfter(job, server);
+        JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server);
         job.schedule();
         ServerNeedUpdatePopup.this.close();
       }

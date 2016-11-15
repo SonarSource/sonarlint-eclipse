@@ -51,7 +51,7 @@ public class JobUtils {
     scheduleAnalysisOfOpenFiles(server.getBoundProjects());
   }
 
-  public static void scheduleAnalysisOfOpenFilesAfter(Job job, List<SonarLintProject> projects) {
+  public static void scheduleAnalysisOfOpenFiles(Job job, List<SonarLintProject> projects) {
     job.addJobChangeListener(new JobCompletionListener() {
       @Override
       public void done(IJobChangeEvent event) {
@@ -60,23 +60,8 @@ public class JobUtils {
     });
   }
 
-  public static void scheduleAnalysisOfOpenFilesInBoundProjectsAfter(Job job, IServer server) {
-    scheduleAnalysisOfOpenFilesAfter(job, server.getBoundProjects());
-  }
-
-  static class ServerUpdateJobListener extends JobCompletionListener {
-    private final IServer server;
-
-    private ServerUpdateJobListener(IServer server) {
-      this.server = server;
-    }
-
-    @Override
-    public void done(IJobChangeEvent event) {
-      for (SonarLintProject project : server.getBoundProjects()) {
-        Display.getDefault().asyncExec(() -> BindUtils.scheduleAnalysisOfOpenFiles(project.getProject()));
-      }
-    }
+  public static void scheduleAnalysisOfOpenFilesInBoundProjects(Job job, IServer server) {
+    scheduleAnalysisOfOpenFiles(job, server.getBoundProjects());
   }
 
   abstract static class JobCompletionListener implements IJobChangeListener {
