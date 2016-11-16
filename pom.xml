@@ -56,6 +56,7 @@
     <module>target-platform-e47</module>
 
     <module>org.sonarlint.eclipse.core.tests</module>
+    <module>its</module>
   </modules>
 
   <scm>

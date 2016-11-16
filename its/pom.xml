@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonarsource.sonarlint.eclipse</groupId>
+    <artifactId>sonarlint-eclipse-parent</artifactId>
+    <version>2.3.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>sonarlint-eclipse-its</artifactId>
+
+  <name>ITs for SonarLint Eclipse</name>
+  <description></description>
+  <url>http://eclipse.sonarlint.org</url>
+  <inceptionYear>2015</inceptionYear>
+  <organization>
+    <name>SonarSource</name>
+    <url>http://www.sonarsource.com</url>
+  </organization>
+
+  <prerequisites>
+    <maven>3.0</maven>
+  </prerequisites>
+
+
+  <properties>
+    <license.title>SonarLint for Eclipse</license.title>
+    <license.year>2015</license.year>
+    <license.mailto>sonarlint@sonarsource.com</license.mailto>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <target.platform>e46</target.platform>
+    <sonarlint.version>2.5.0.874</sonarlint.version>
+    <protobuf.version>3.1.0</protobuf.version>
+
+    <!-- ================== -->
+    <!-- For SonarQube analysis -->
+    <!-- ================== -->
+    <sonar.java.source>1.8</sonar.java.source>
+    <sonar.java.target>1.8</sonar.java.target>
+    <sonar.scm.ignoreLocalModifications>true</sonar.scm.ignoreLocalModifications>
+    <sonar.jacoco.reportPath>../target/jacoco.exec</sonar.jacoco.reportPath>
+    <jarsigner.skip>true</jarsigner.skip>
+    
+    <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
+  </properties>
+
+  <!-- These dependencies will be added to the target platform -->
+  <dependencies>
+    <dependency>
+      <groupId>org.sonarsource.sonarlint.core</groupId>
+      <artifactId>sonarlint-core</artifactId>
+      <version>${sonarlint.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonarsource.sonarlint.core</groupId>
+      <artifactId>sonarlint-client-api</artifactId>
+      <version>${sonarlint.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>2.2.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.5.2</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+    </dependency>
+  </dependencies>
+</project>
