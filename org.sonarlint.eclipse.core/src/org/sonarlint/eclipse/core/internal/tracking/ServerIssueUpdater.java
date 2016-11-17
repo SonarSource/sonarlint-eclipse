@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -28,9 +29,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
@@ -39,6 +42,8 @@ import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
 public class ServerIssueUpdater {
 
   private static final Logger LOGGER = new Logger();
+
+  public static final String PATH_SEPARATOR_PATTERN = Pattern.quote(File.separator);
 
   private static final int THREADS_NUM = 5;
   private static final int QUEUE_LIMIT = 20;
@@ -109,11 +114,25 @@ public class ServerIssueUpdater {
     private Iterator<ServerIssue> fetchServerIssues(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String moduleKey, String relativePath) {
       try {
         LOGGER.debug("fetchServerIssues moduleKey=" + moduleKey + ", filepath=" + relativePath);
-        return engine.downloadServerIssues(serverConfiguration, moduleKey, relativePath);
+        String fileKey = toFileKey(relativePath);
+        return engine.downloadServerIssues(serverConfiguration, moduleKey, fileKey);
       } catch (DownloadException e) {
         console.info(e.getMessage());
         return engine.getServerIssues(moduleKey, relativePath);
       }
     }
+  }
+
+  /**
+   * Convert relative path to SonarQube file key
+   *
+   * @param relativePath relative path string in the local OS
+   * @return SonarQube file key
+   */
+  public static String toFileKey(String relativePath) {
+    if (File.separatorChar != '/') {
+      return relativePath.replaceAll(PATH_SEPARATOR_PATTERN, "/");
+    }
+    return relativePath;
   }
 }
