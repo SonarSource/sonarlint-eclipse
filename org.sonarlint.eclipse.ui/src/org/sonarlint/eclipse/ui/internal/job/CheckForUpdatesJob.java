@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.job;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.internal.server.IServer;
@@ -31,26 +32,47 @@ import org.sonarlint.eclipse.ui.internal.popup.ServerUpdateAvailablePopup;
 public class CheckForUpdatesJob extends Job {
 
   public CheckForUpdatesJob() {
-    super("Check for configuration update on SonarQube servers");
+    super("Check for configuration updates on SonarQube servers");
+    setPriority(DECORATE);
   }
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
-    for (final IServer server : ServersManager.getInstance().getServers()) {
-      // No need to check for remote updates if local storage is already outdated
-      if (server.isStorageUpdated()) {
-        server.checkForUpdates(monitor);
-        if (server.hasUpdates()) {
-          Display.getDefault().asyncExec(() -> {
-            ServerUpdateAvailablePopup popup = new ServerUpdateAvailablePopup(Display.getCurrent(), server);
-            popup.create();
-            popup.open();
-          });
+    try {
+      SubMonitor subMonitor = SubMonitor.convert(monitor, ServersManager.getInstance().getServers().size());
+      subMonitor.setTaskName("Checking for configuration updates on SonarQube servers");
+      for (final IServer server : ServersManager.getInstance().getServers()) {
+        subMonitor.subTask("Checking for updates from server '" + server.getId() + "'");
+        SubMonitor serverMonitor = subMonitor.split(1);
+
+        IStatus status = checkForUpdates(server, serverMonitor);
+        if (status.matches(Status.CANCEL)) {
+          return status;
         }
+
+        serverMonitor.done();
       }
+      return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+    } finally {
+      // Reschedule in 24H
+      schedule((long) 24 * 60 * 60 * 1000);
     }
-    // Reschedule in 24H
-    schedule(24 * 60 * 60 * 1000);
+  }
+
+  private static IStatus checkForUpdates(final IServer server, SubMonitor monitor) {
+    // No need to check for remote updates if local storage is already outdated
+    if (server.isStorageUpdated()) {
+      server.checkForUpdates(monitor);
+
+      if (server.hasUpdates()) {
+        Display.getDefault().asyncExec(() -> {
+          ServerUpdateAvailablePopup popup = new ServerUpdateAvailablePopup(Display.getCurrent(), server);
+          popup.create();
+          popup.open();
+        });
+      }
+
+    }
     return Status.OK_STATUS;
   }
 
