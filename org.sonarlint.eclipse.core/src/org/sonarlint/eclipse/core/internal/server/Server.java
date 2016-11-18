@@ -63,6 +63,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.StateListener;
 import org.sonarsource.sonarlint.core.client.api.connected.StorageUpdateCheckResult;
 import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
 import org.sonarsource.sonarlint.core.client.api.connected.WsHelper;
+import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class Server implements IServer, StateListener {
@@ -151,6 +152,9 @@ public class Server implements IServer, StateListener {
           this.changelog.addAll(moduleUpdateCheckResult.changelog());
         }
       }
+    } catch (DownloadException e) {
+      // If server is not reachable, just ignore
+      SonarLintCorePlugin.getDefault().debug("Unable to check for update on server '" + getId() + "'", e);
     } finally {
       notifyAllListeners();
     }
