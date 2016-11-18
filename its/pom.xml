@@ -31,7 +31,7 @@
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <target.platform>e46</target.platform>
-    <sonarlint.version>2.5.0.874</sonarlint.version>
+    <sonarlint.version>2.5.1.74</sonarlint.version>
     <protobuf.version>3.1.0</protobuf.version>
 
     <!-- ================== -->
