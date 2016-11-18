@@ -43,7 +43,7 @@ public class CheckForUpdatesJob extends Job {
       subMonitor.setTaskName("Checking for configuration updates on SonarQube servers");
       for (final IServer server : ServersManager.getInstance().getServers()) {
         subMonitor.subTask("Checking for updates from server '" + server.getId() + "'");
-        SubMonitor serverMonitor = subMonitor.split(1);
+        SubMonitor serverMonitor = subMonitor.newChild(1);
 
         IStatus status = checkForUpdates(server, serverMonitor);
         if (status.matches(Status.CANCEL)) {

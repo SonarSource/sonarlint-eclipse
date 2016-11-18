@@ -131,7 +131,7 @@ public class Server implements IServer, StateListener {
     this.changelog.clear();
     try {
       SubMonitor subMonitor = SubMonitor.convert(progress, getBoundProjects().size() + 1);
-      SubMonitor globalMonitor = subMonitor.split(1);
+      SubMonitor globalMonitor = subMonitor.newChild(1);
       StorageUpdateCheckResult checkForUpdateResult = client.checkIfGlobalStorageNeedUpdate(getConfig(),
         new WrappedProgressMonitor(globalMonitor, "Check for configuration updates on server '" + getId() + "'"));
       if (checkForUpdateResult.needUpdate()) {
@@ -140,7 +140,7 @@ public class Server implements IServer, StateListener {
       }
 
       for (SonarLintProject boundProject : getBoundProjects()) {
-        SubMonitor projectMonitor = subMonitor.split(1);
+        SubMonitor projectMonitor = subMonitor.newChild(1);
         if (progress.isCanceled()) {
           return;
         }
