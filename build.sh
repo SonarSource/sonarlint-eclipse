@@ -36,6 +36,16 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
       -Dsonar.projectVersion=$CURRENT_VERSION \
       -B -e -V $*
 
+elif [[ "${TRAVIS_BRANCH}" == "branch-"* ]] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+  echo '======= Build and deploy'
+  mvn deploy \
+      -Pdeploy-sonarsource,sign \
+      -Dsonarsource.keystore.path=$SONARSOURCE_KEYSTORE_PATH \
+      -Dsonarsource.keystore.password=$SONARSOURCE_KEYSTORE_PASS \
+      -Dtycho.disableP2Mirrors=true \
+      -Dmaven.test.redirectTestOutputToFile=false \
+      -B -e -V $*
+
 elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
   echo '======= Build and analyze pull request'
   echo '======= with deploy'
