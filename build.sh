@@ -13,7 +13,7 @@ echo "Replacing version $CURRENT_VERSION with $NEW_VERSION"
 
 mvn org.eclipse.tycho:tycho-versions-plugin:0.26.0:set-version -Dtycho.mode=maven -DnewVersion=$NEW_VERSION -B -e
 
-PROJECT_VERSION=$NEW_VERSION
+export PROJECT_VERSION=$NEW_VERSION
 
 if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
   echo '======= Build, deploy and analyze master'
