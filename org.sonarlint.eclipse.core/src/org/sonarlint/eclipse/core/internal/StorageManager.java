@@ -43,4 +43,8 @@ public class StorageManager {
   public static Path getServerStorageRoot() {
     return getSonarLintUserHome().append("storage").toFile().toPath();
   }
+
+  public static Path getIssuesDir(String localModuleKey) {
+    return getSonarLintUserHome().append("modules").append(localModuleKey).append("issues").toFile().toPath();
+  }
 }
