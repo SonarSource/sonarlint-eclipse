@@ -147,7 +147,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
     IssueTrackerCacheFactory factory = localModuleKey -> {
       Path projectBasePath = Paths.get(modulePathManager.getModulePath(localModuleKey));
-      Path storeBasePath = projectBasePath.resolve(".settings/sonarlint").resolve(localModuleKey);
+      Path storeBasePath = StorageManager.getIssuesDir(localModuleKey);
       IssueStore issueStore = new IssueStore(storeBasePath, projectBasePath);
       return new PersistentIssueTrackerCache(issueStore);
     };
