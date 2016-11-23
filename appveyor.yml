@@ -8,5 +8,5 @@ install:
   - set JAVA_HOME=C:\Program Files (x86)\Java\jdk1.8.0
 
 build_script:
-  - mvn verify
+  - ps: ./appveyor.ps1
 
