@@ -115,7 +115,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     checkServersStatus();
 
-    new CheckForUpdatesJob().schedule();
+    new CheckForUpdatesJob().schedule((long) 10 * 1000);
 
   }
 

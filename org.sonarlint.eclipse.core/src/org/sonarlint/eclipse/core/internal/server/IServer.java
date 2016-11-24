@@ -108,5 +108,4 @@ public interface IServer {
 
   boolean hasUpdates();
 
-  List<String> changelog();
 }

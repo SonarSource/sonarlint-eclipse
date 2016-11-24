@@ -65,7 +65,7 @@ public abstract class AbstractNotificationPopup extends Window {
 
   private static final int MIN_HEIGHT = 100;
 
-  private static final long DEFAULT_DELAY_CLOSE = 8 * (long) 1000;
+  private static final long DEFAULT_DELAY_CLOSE = 10 * (long) 1000;
 
   private static final int PADDING_EDGE = 5;
 

@@ -77,7 +77,6 @@ public class Server implements IServer, StateListener {
   private final List<IServerListener> listeners = new ArrayList<>();
   private GlobalStorageStatus updateStatus;
   private boolean hasUpdates;
-  private List<String> changelog = new ArrayList<>();
 
   Server(String id, String host, boolean hasAuth) {
     this.id = id;
@@ -129,15 +128,15 @@ public class Server implements IServer, StateListener {
   @Override
   public void checkForUpdates(IProgressMonitor progress) {
     this.hasUpdates = false;
-    this.changelog.clear();
     try {
       SubMonitor subMonitor = SubMonitor.convert(progress, getBoundProjects().size() + 1);
       SubMonitor globalMonitor = subMonitor.newChild(1);
+      SonarLintCorePlugin.getDefault().info("Check for updates from server '" + getId() + "'");
       StorageUpdateCheckResult checkForUpdateResult = client.checkIfGlobalStorageNeedUpdate(getConfig(),
         new WrappedProgressMonitor(globalMonitor, "Check for configuration updates on server '" + getId() + "'"));
       if (checkForUpdateResult.needUpdate()) {
         this.hasUpdates = true;
-        checkForUpdateResult.changelog().forEach(line -> this.changelog.add("  - " + line));
+        checkForUpdateResult.changelog().forEach(line -> SonarLintCorePlugin.getDefault().info("  - " + line));
       }
 
       for (SonarLintProject boundProject : getBoundProjects()) {
@@ -145,12 +144,13 @@ public class Server implements IServer, StateListener {
         if (progress.isCanceled()) {
           return;
         }
+        SonarLintCorePlugin.getDefault().info("Check for updates from server '" + getId() + "' for project '" + boundProject.getProject().getName() + "'");
         StorageUpdateCheckResult moduleUpdateCheckResult = client.checkIfModuleStorageNeedUpdate(getConfig(), boundProject.getModuleKey(),
           new WrappedProgressMonitor(projectMonitor, "Checking for configuration update for project '" + boundProject.getProject().getName() + "'"));
         if (moduleUpdateCheckResult.needUpdate()) {
           this.hasUpdates = true;
-          this.changelog.add("On project '" + boundProject.getProject().getName() + "':");
-          moduleUpdateCheckResult.changelog().forEach(line -> this.changelog.add("  - " + line));
+          SonarLintCorePlugin.getDefault().info("On project '" + boundProject.getProject().getName() + "':");
+          moduleUpdateCheckResult.changelog().forEach(line -> SonarLintCorePlugin.getDefault().info("  - " + line));
         }
       }
     } catch (DownloadException e) {
@@ -164,11 +164,6 @@ public class Server implements IServer, StateListener {
   @Override
   public boolean hasUpdates() {
     return hasUpdates;
-  }
-
-  @Override
-  public List<String> changelog() {
-    return changelog;
   }
 
   private static class WrappedProgressMonitor extends ProgressMonitor {
@@ -291,7 +286,6 @@ public class Server implements IServer, StateListener {
   public synchronized void updateStorage(IProgressMonitor monitor) {
     updateStatus = client.update(getConfig(), new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "'"));
     hasUpdates = false;
-    changelog.clear();
   }
 
   @Override
