@@ -137,7 +137,7 @@ public class Server implements IServer, StateListener {
         new WrappedProgressMonitor(globalMonitor, "Check for configuration updates on server '" + getId() + "'"));
       if (checkForUpdateResult.needUpdate()) {
         this.hasUpdates = true;
-        this.changelog.addAll(checkForUpdateResult.changelog());
+        checkForUpdateResult.changelog().forEach(line -> this.changelog.add("  - " + line));
       }
 
       for (SonarLintProject boundProject : getBoundProjects()) {
@@ -150,7 +150,7 @@ public class Server implements IServer, StateListener {
         if (moduleUpdateCheckResult.needUpdate()) {
           this.hasUpdates = true;
           this.changelog.add("On project '" + boundProject.getProject().getName() + "':");
-          this.changelog.addAll(moduleUpdateCheckResult.changelog());
+          moduleUpdateCheckResult.changelog().forEach(line -> this.changelog.add("  - " + line));
         }
       }
     } catch (DownloadException e) {

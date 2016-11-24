@@ -50,19 +50,31 @@ public class ServerUpdateAvailablePopup extends AbstractNotificationPopup {
 
   @Override
   protected void createContentArea(Composite composite) {
-    composite.setLayout(new GridLayout(1, true));
+    composite.setLayout(new GridLayout(2, true));
     Label messageLabel = new Label(composite, SWT.WRAP);
-    messageLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    GridData layoutData = new GridData(GridData.FILL_HORIZONTAL);
+    layoutData.horizontalSpan = 2;
+    messageLabel.setLayoutData(layoutData);
 
-    messageLabel.setText("Some updates are available on SonarQube server '" + server.getId() + "':");
+    messageLabel.setText(
+      "Updates are available on SonarQube server '" + server.getId() + "'\nDo you want to download and update them now? Changes will be automatically applied on next analysis.");
     messageLabel.setBackground(composite.getBackground());
     Link detailsLink = new Link(composite, SWT.NONE);
-    detailsLink.setText("<a>Show details...</a>");
+    detailsLink.setText("<a>See details...</a>");
     detailsLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
         ServerUpdateAvailablePopup.this.close();
         new UpdateDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), server).open();
+      }
+    });
+    Link updateLink = new Link(composite, SWT.NONE);
+    updateLink.setText("<a>Update now</a>");
+    updateLink.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        ServerUpdateAvailablePopup.this.close();
+        new ServerUpdateJob(server).schedule();
       }
     });
   }
@@ -85,14 +97,21 @@ public class ServerUpdateAvailablePopup extends AbstractNotificationPopup {
     }
 
     @Override
+    protected boolean isResizable() {
+      return true;
+    }
+
+    @Override
     protected Control createDialogArea(Composite parent) {
       Composite container = (Composite) super.createDialogArea(parent);
       Label txt = new Label(container, SWT.NONE);
-      txt.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+      GridData layoutData = new GridData(SWT.CENTER, SWT.CENTER, true, true);
+      layoutData.minimumWidth = 500;
+      txt.setLayoutData(layoutData);
       StringBuilder sb = new StringBuilder();
-      sb.append("Apply these changes?\n");
+      sb.append("Do you want to apply the following changes now?\n");
       for (String change : server.changelog()) {
-        sb.append("  - " + change + "\n");
+        sb.append(change + "\n");
       }
       txt.setText(sb.toString());
 
