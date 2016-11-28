@@ -117,6 +117,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     new CheckForUpdatesJob().schedule((long) 10 * 1000);
 
+    analyzeCurrentFile();
+
   }
 
   private static void checkServersStatus() {
@@ -242,6 +244,54 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         page.addPartListener(sonarlintPartListener);
       }
     }
+  }
+
+  private static class AnalyzeCurrentFileJob extends UIJob {
+
+    AnalyzeCurrentFileJob() {
+      super("Analyze current file");
+    }
+
+    @Override
+    public IStatus runInUIThread(IProgressMonitor monitor) {
+
+      analyzeCurrentFile();
+
+      return Status.OK_STATUS;
+    }
+
+    private static void analyzeCurrentFile() {
+      // Super defensing programming because we don't really understand what is initialized at startup (SLE-122)
+      IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+      if (window == null) {
+        return;
+      }
+      IWorkbenchPage page = window.getActivePage();
+      if (page == null) {
+        return;
+      }
+      IWorkbenchPart workbenchPart = page.getActivePart();
+      if (workbenchPart == null) {
+        return;
+      }
+      IEditorPart editor = workbenchPart.getSite().getPage().getActiveEditor();
+      if (editor == null) {
+        return;
+      }
+      // note: the cast is necessary for e43 and e44
+      IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
+      if (file == null) {
+        return;
+      }
+      AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Collections.singletonList(file), TriggerType.EDITOR_OPEN);
+      new AnalyzeProjectJob(request).schedule();
+    }
+
+  }
+
+  public static void analyzeCurrentFile() {
+    // SLE-122 Delay a little bit to let the time to the workspace to initialize (and avoid NPE)
+    new AnalyzeCurrentFileJob().schedule(2000);
   }
 
   public static void addSonarLintPartListener() {
