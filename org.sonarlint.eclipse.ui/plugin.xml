@@ -387,15 +387,24 @@
 	      <visibleWhen>
 	         <with variable="activeMenuSelection">
 	            <iterate ifEmpty="false">
-	              <and>
-		              <or>
-								    <adapt type="org.eclipse.core.resources.IFile"/>
-								    <adapt type="org.eclipse.core.resources.IResource">
-					      			<instanceof value="org.eclipse.core.resources.IFile"/>
-					    			</adapt>
-					  			</or>
-                 	<test property="org.sonarlint.eclipse.core.isAutoAnalysis" value="false"/>
-				  			</and>
+	              <or>
+	            		<and>
+			              		<adapt type="org.eclipse.core.resources.IProject"/>
+			              			<adapt type="org.eclipse.core.resources.IResource">
+						      			<instanceof value="org.eclipse.core.resources.IProject"/>
+						    	</adapt>
+						    	<test property="org.sonarlint.eclipse.core.isBound" value="true"/>
+					  	</and>
+	            		<and>
+		              		<or>
+			              		<adapt type="org.eclipse.core.resources.IFile"/>
+			              			<adapt type="org.eclipse.core.resources.IResource">
+						      			<instanceof value="org.eclipse.core.resources.IFile"/>
+						    	</adapt>
+					  		</or>
+                 			<test property="org.sonarlint.eclipse.core.isAutoAnalysis" value="false"/>
+				  		</and>
+	            	</or>
 	            </iterate>
 	         </with>
 	      </visibleWhen>
