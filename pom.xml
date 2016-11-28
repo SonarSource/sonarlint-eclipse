@@ -84,7 +84,7 @@
     <tycho.version>0.25.0</tycho.version>
     <tycho-extras-version>${tycho.version}</tycho-extras-version>
     <target.platform>e46</target.platform>
-    <sonarlint.version>2.6.0.136</sonarlint.version>
+    <sonarlint.version>2.6.0.138</sonarlint.version>
     <protobuf.version>3.1.0</protobuf.version>
 
     <!-- ================== -->

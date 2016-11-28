@@ -37,32 +37,36 @@ import org.eclipse.cdt.core.parser.IScannerInfoProvider;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
 
 public class CProjectConfigurator extends ProjectConfigurator {
+  private static final String CFAMILY_USE_CACHE = "sonar.cfamily.useCache";
   private static final String BUILD_WRAPPER_OUTPUT_PROP = "sonar.cfamily.build-wrapper-output";
-  private static final String BUILD_WRAPPER_OUTPUT_DIRNAME = "bw-outputs";
   private static final String BUILD_WRAPPER_OUTPUT_FILENAME = "build-wrapper-dump.json";
   private static final Charset BUILD_WRAPPER_OUTPUT_CHARSET = StandardCharsets.UTF_8;
   private final BuildWrapperJsonFactory jsonFactory;
   private final CCorePlugin cCorePlugin;
   private final Predicate<IFile> fileValidator;
   private final SonarLintCorePlugin core;
+  private final FilePathResolver filePathResolver;
 
   public CProjectConfigurator() {
-    this(new BuildWrapperJsonFactory(), CCorePlugin.getDefault(), CoreModel::isTranslationUnit, SonarLintCorePlugin.getDefault());
+    this(new BuildWrapperJsonFactory(), CCorePlugin.getDefault(), CoreModel::isTranslationUnit, SonarLintCorePlugin.getDefault(),
+      new FilePathResolver());
   }
 
-  public CProjectConfigurator(BuildWrapperJsonFactory jsonFactory, CCorePlugin cCorePlugin, Predicate<IFile> fileValidator, SonarLintCorePlugin core) {
+  public CProjectConfigurator(BuildWrapperJsonFactory jsonFactory, CCorePlugin cCorePlugin, Predicate<IFile> fileValidator, 
+    SonarLintCorePlugin core, FilePathResolver filePathResolver) {
     this.jsonFactory = jsonFactory;
     this.cCorePlugin = cCorePlugin;
     this.fileValidator = fileValidator;
     this.core = core;
+    this.filePathResolver = filePathResolver;
   }
 
   @Override
@@ -79,7 +83,7 @@ public class CProjectConfigurator extends ProjectConfigurator {
     try {
       Path jsonPath = configureCProject(request.getProject(), filesToAnalyze, jsonFactory);
       core.debug("Wrote build info to: " + jsonPath.toString());
-      cleanCppCache(request.getProject());
+      request.getSonarProjectProperties().put(CFAMILY_USE_CACHE, Boolean.FALSE.toString());
       request.getSonarProjectProperties().put(BUILD_WRAPPER_OUTPUT_PROP, jsonPath.getParent().toString());
     } catch (Exception e) {
       core.error(e.getMessage(), e);
@@ -92,36 +96,30 @@ public class CProjectConfigurator extends ProjectConfigurator {
     return projectLocation != null ? projectLocation.toFile().toPath() : ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
   }
 
-  private void cleanCppCache(IProject project) {
-    IPath projectSpecificWorkDir = project.getWorkingLocation(SonarLintCorePlugin.PLUGIN_ID);
-    Path cppCacheDir = projectSpecificWorkDir.toFile().toPath().resolve("cfamily").resolve("pph");
-    if (Files.exists(cppCacheDir)) {
-      core.debug("Deleting cache: " + cppCacheDir.toString());
-      FileUtils.deleteDirectory(cppCacheDir);
-    }
-  }
-
   private Path configureCProject(IProject project, Collection<IFile> filesToAnalyze, BuildWrapperJsonFactory jsonFactory) throws IOException {
     Map<String, IScannerInfo> filesInfo = new HashMap<>();
     IScannerInfoProvider infoProvider = cCorePlugin.getScannerInfoProvider(project);
 
     for (IFile file : filesToAnalyze) {
-      String relativePath = file.getProjectRelativePath().toOSString();
-      IScannerInfo fileInfo = infoProvider.getScannerInformation(file);
-      filesInfo.put(relativePath, fileInfo);
+      try {
+        Path path = filePathResolver.getPath(file);
+        IScannerInfo fileInfo = infoProvider.getScannerInformation(file);
+        filesInfo.put(path.toString(), fileInfo);
+      } catch (CoreException e) {
+        core.error("Error building input file for SonarLint analysis: " + file.getName(), e);
+      }
     }
 
     Path projectBaseDir = getProjectBaseDir(project);
     String json = jsonFactory.create(filesInfo, projectBaseDir.toString());
 
-    return createJsonFile(projectBaseDir, json);
+    return createJsonFile(filePathResolver.getWorkDir(), json);
 
   }
 
-  private static Path createJsonFile(Path projectBaseDir, String content) throws IOException {
-    Path dir = projectBaseDir.resolve(BUILD_WRAPPER_OUTPUT_DIRNAME);
-    Path jsonFilePath = dir.resolve(BUILD_WRAPPER_OUTPUT_FILENAME);
-    Files.createDirectories(dir);
+  private static Path createJsonFile(Path workDir, String content) throws IOException {
+    Path jsonFilePath = workDir.resolve(BUILD_WRAPPER_OUTPUT_FILENAME);
+    Files.createDirectories(workDir);
     Files.write(jsonFilePath, content.getBytes(BUILD_WRAPPER_OUTPUT_CHARSET));
     return jsonFilePath;
   }

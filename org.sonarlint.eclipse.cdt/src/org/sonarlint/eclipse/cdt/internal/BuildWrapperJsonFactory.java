@@ -24,7 +24,6 @@ import org.eclipse.cdt.core.parser.IScannerInfo;
 
 public class BuildWrapperJsonFactory {
   private static final String COMPILER = "clang";
-  private static final String EXE_ID = "uniqueid";
 
   public String create(Map<String, IScannerInfo> fileInfo, String baseDirPath) {
     StringBuilder builder = new StringBuilder();
@@ -32,12 +31,13 @@ public class BuildWrapperJsonFactory {
       + "\"version\":0,"
       + "\"captures\":[");
 
-    writeCompiler(builder);
-    builder.append(",");
-    writeCompiler(builder);
-
+    boolean first = true;
     for (Map.Entry<String, IScannerInfo> f : fileInfo.entrySet()) {
-      builder.append(",");
+      if (first) {
+        first = false;
+      } else {
+        builder.append(",");
+      }
       writeFile(builder, baseDirPath, f.getKey(), f.getValue().getIncludePaths(), f.getValue().getDefinedSymbols());
     }
 
@@ -45,48 +45,51 @@ public class BuildWrapperJsonFactory {
     return builder.toString();
   }
 
-  private static void writeFile(StringBuilder builder, String baseDirPath, String relativeFilePath, String[] includes,
-    Map<String, String> symbols) {
-    builder.append("{"
-      + "\"compiler\":\"" + COMPILER + "\","
-      + "\"cwd\":" + quote(baseDirPath) + ","
-      + "\"executable\":\"" + EXE_ID + "\","
-      + "\"cmd\":["
-      + "\"clang\"");
-
-    writeSymbols(builder, symbols);
-    writeIncludes(builder, includes);
-    builder
-      .append(",\"" + relativeFilePath + "\"")
+  private static void writeFile(StringBuilder builder, String baseDirPath, String relativeFilePath, String[] includes, Map<String, String> symbols) {
+    String probeStdout = probeStdout(symbols);
+    String probeStderr = probeStderr(includes);
+    writeCompilerProbe(builder, relativeFilePath, probeStdout, probeStderr);
+    builder.append(",");
+    writeCompilerProbe(builder, relativeFilePath, probeStdout, probeStderr);
+    builder.append(",");
+    builder.append("{")
+      .append("\"compiler\":\"" + COMPILER + "\",")
+      .append("\"cwd\":" + quote(baseDirPath) + ",")
+      .append("\"executable\":" + quote(relativeFilePath) + ",")
+      .append("\"cmd\":[")
+      .append("\"clang\"")
+      .append("," + quote(relativeFilePath) + "")
       .append("]}");
 
   }
 
-  private static void writeIncludes(StringBuilder builder, String[] includes) {
+  private static String probeStderr(String[] includes) {
+    StringBuilder builder = new StringBuilder("#include <...> search starts here:\n");
     for (String include : includes) {
-      builder.append(",\"-I\"," + quote(include) + "");
+      builder.append(" ").append(include).append("\n");
     }
+    builder.append("End of search list.\n");
+    return builder.toString();
   }
 
-  private static void writeSymbols(StringBuilder builder, Map<String, String> symbols) {
+  private static String probeStdout(Map<String, String> symbols) {
+    StringBuilder builder = new StringBuilder();
     for (Map.Entry<String, String> symbol : symbols.entrySet()) {
-      builder.append(",");
-      builder.append(quote("-D" + symbol.getKey() + "=" + symbol.getValue()));
+      builder.append("#define " + symbol.getKey() + " " + symbol.getValue()).append("\n");
     }
+    return builder.toString();
   }
 
-  private static void writeCompiler(StringBuilder builder) {
-    builder.append("{"
-      + "\"compiler\":\"" + COMPILER + "\","
-      + "\"executable\":\"" + EXE_ID + "\","
-      + "\"stdout\":\"\","
-      + "\"stderr\":\"\""
-      + "}");
+  private static void writeCompilerProbe(StringBuilder builder, String compilerKey, String stdout, String stderr) {
+    builder
+      .append("{")
+      .append("\"compiler\":\"").append(COMPILER).append("\",")
+      .append("\"executable\":").append(quote(compilerKey)).append(",")
+      .append("\"stdout\":").append(quote(stdout)).append(",")
+      .append("\"stderr\":").append(quote(stderr))
+      .append("}");
   }
 
-  /**
-   * Copied from Jettison
-   */
   private static String quote(String string) {
     if (string == null || string.length() == 0) {
       return "\"\"";
@@ -104,7 +107,6 @@ public class BuildWrapperJsonFactory {
       switch (c) {
         case '\\':
         case '"':
-        case '/':
           sb.append('\\');
           sb.append(c);
           break;

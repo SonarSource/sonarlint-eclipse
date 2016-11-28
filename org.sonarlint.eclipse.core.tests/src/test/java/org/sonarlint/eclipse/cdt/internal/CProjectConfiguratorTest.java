@@ -30,6 +30,7 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.anyMap;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +42,7 @@ import org.eclipse.cdt.core.parser.IScannerInfo;
 import org.eclipse.cdt.core.parser.IScannerInfoProvider;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -59,6 +61,7 @@ public class CProjectConfiguratorTest {
   private CCorePlugin cCorePlugin;
   private Predicate<IFile> fileValidator;
   private SonarLintCorePlugin core;
+  private FilePathResolver filePathResolver;
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
@@ -69,7 +72,9 @@ public class CProjectConfiguratorTest {
     jsonFactory = mock(BuildWrapperJsonFactory.class);
     fileValidator = mock(Predicate.class);
     core = mock(SonarLintCorePlugin.class);
-    configurator = new CProjectConfigurator(jsonFactory, cCorePlugin, fileValidator, core);
+    filePathResolver = mock(FilePathResolver.class);
+    when(filePathResolver.getWorkDir()).thenReturn(temp.getRoot().toPath());
+    configurator = new CProjectConfigurator(jsonFactory, cCorePlugin, fileValidator, core, filePathResolver);
   }
 
   @Test
@@ -80,7 +85,7 @@ public class CProjectConfiguratorTest {
   }
 
   @Test
-  public void should_configure() {
+  public void should_configure() throws CoreException {
     IProject project = mock(IProject.class);
     IFile file = mock(IFile.class);
     IProgressMonitor monitor = mock(IProgressMonitor.class);
@@ -92,7 +97,7 @@ public class CProjectConfiguratorTest {
     when(project.getWorkingLocation(anyString())).thenReturn(Path.fromOSString(temp.getRoot().getAbsolutePath()));
     when(infoProvider.getScannerInformation(file)).thenReturn(info);
     when(fileValidator.test(file)).thenReturn(true);
-    when(file.getProjectRelativePath()).thenReturn(Path.fromOSString("file1"));
+    when(filePathResolver.getPath(file)).thenReturn(Paths.get("file1"));
     when(jsonFactory.create(anyMap(), anyString())).thenReturn("json");
 
     Map<String, String> props = new HashMap<>();
@@ -105,10 +110,12 @@ public class CProjectConfiguratorTest {
     verify(jsonFactory).create(anyMap(), eq(temp.getRoot().getAbsolutePath()));
 
     // json written
-    assertThat(temp.getRoot().toPath().resolve("bw-outputs").resolve("build-wrapper-dump.json")).hasContent("json");
+    assertThat(temp.getRoot().toPath().resolve("build-wrapper-dump.json")).hasContent("json");
 
     // property created
-    assertThat(props).containsOnly(entry("sonar.cfamily.build-wrapper-output", temp.getRoot().toPath().resolve("bw-outputs").toString()));
+    assertThat(props).containsOnly(
+      entry("sonar.cfamily.build-wrapper-output", temp.getRoot().toPath().toString()),
+      entry("sonar.cfamily.useCache", "false"));
 
     // no errors
     verify(core, never()).error(Mockito.any(), Mockito.any());
