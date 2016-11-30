@@ -47,6 +47,7 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
@@ -280,7 +281,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       }
       // note: the cast is necessary for e43 and e44
       IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
-      if (file == null) {
+      if (file == null || !SonarLintProject.getInstance(file.getProject()).isAutoEnabled()) {
         return;
       }
       AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Collections.singletonList(file), TriggerType.EDITOR_OPEN);
