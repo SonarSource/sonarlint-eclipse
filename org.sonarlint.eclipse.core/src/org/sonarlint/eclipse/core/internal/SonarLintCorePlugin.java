@@ -48,6 +48,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   public static final String PLUGIN_ID = "org.sonarlint.eclipse.core";
   public static final String UI_PLUGIN_ID = "org.sonarlint.eclipse.ui";
   public static final String MARKER_ID = PLUGIN_ID + ".sonarlintProblem";
+  public static final String MARKER_CHANGESET_ID = PLUGIN_ID + ".sonarlintChangeSetProblem";
 
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectManager projectManager;

@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -35,6 +34,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.jobs.MarkerUpdaterCallable;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
@@ -92,7 +92,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
     String absolutePath = project.getLocation().toString() + "/" + relativePath;
     IPath location = Path.fromOSString(absolutePath);
     IFile file = workspace.getRoot().getFileForLocation(location);
-    MarkerUpdaterCallable markerUpdater = new MarkerUpdaterCallable(file, Collections.singletonList(trackable));
+    MarkerUpdaterCallable markerUpdater = new MarkerUpdaterCallable(file, Collections.singletonList(trackable), TriggerType.EDITOR_CHANGE);
 
     markerUpdater.call();
 

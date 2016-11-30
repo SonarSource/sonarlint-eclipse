@@ -464,6 +464,7 @@ public class BindProjectsPage extends WizardPage {
   private static void updateProjectBinding(ProjectBindModel projectBinding, IProject project, SonarLintProject sonarProject, String oldServerId) {
     sonarProject.save();
     MarkerUtils.deleteIssuesMarkers(project);
+    MarkerUtils.deleteChangeSetIssuesMarkers(project);
     SonarLintCorePlugin.clearIssueTracker(project);
     JobUtils.scheduleAnalysisOfOpenFiles(project);
     if (sonarProject.isBound()) {

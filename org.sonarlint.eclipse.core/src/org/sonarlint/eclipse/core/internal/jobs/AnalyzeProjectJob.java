@@ -157,6 +157,9 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   @Override
   protected IStatus doRun(final IProgressMonitor monitor) {
+    if (monitor.isCanceled()) {
+      return Status.CANCEL_STATUS;
+    }
     long startTime = System.currentTimeMillis();
     SonarLintCorePlugin.getDefault().info(this.getName());
     SonarLintCorePlugin.getDefault().debug("Trigger type: " + request.getTriggerType().name());
@@ -186,11 +189,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       SonarLintCorePlugin.getDefault().error("Error during execution of SonarLint analysis", e);
       return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
     }
-    if (monitor.isCanceled()) {
-      return Status.CANCEL_STATUS;
-    }
 
-    return Status.OK_STATUS;
+    return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
   }
 
   private void runAnalysisAndUpdateMarkers(final IProgressMonitor monitor, IProject project, SonarLintProject sonarProject, IPath projectSpecificWorkDir,
@@ -285,13 +285,13 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       .filter(e -> e.getKey() instanceof IFile)
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
-    trackIssues(successfulFiles);
+    trackIssues(successfulFiles, triggerType);
     if (shouldUpdateServerIssues(triggerType)) {
-      trackServerIssues(issuesPerResource.keySet());
+      trackServerIssues(issuesPerResource.keySet(), triggerType);
     }
   }
 
-  private void trackIssues(Map<IResource, List<Issue>> rawIssuesPerResource) throws CoreException {
+  private void trackIssues(Map<IResource, List<Issue>> rawIssuesPerResource, TriggerType triggerType) throws CoreException {
 
     String localModuleKey = getSonarProject().getProject().getName();
 
@@ -299,7 +299,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       try (TextFileContext context = new TextFileContext((IFile) entry.getKey())) {
         IDocument document = context.getDocument();
 
-        trackLocalIssues(localModuleKey, entry.getKey(), document, entry.getValue());
+        trackLocalIssues(localModuleKey, entry.getKey(), document, entry.getValue(), triggerType);
       }
     }
   }
@@ -308,12 +308,12 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return getSonarProject().isBound() && (trigger == TriggerType.EDITOR_OPEN || trigger == TriggerType.ACTION || trigger == TriggerType.BINDING_CHANGE);
   }
 
-  private void trackLocalIssues(String localModuleKey, IResource resource, @Nullable IDocument document, List<Issue> rawIssues) {
+  private void trackLocalIssues(String localModuleKey, IResource resource, @Nullable IDocument document, List<Issue> rawIssues, TriggerType triggerType) {
     List<Trackable> trackables = rawIssues.stream().map(issue -> transform(issue, resource, document)).collect(Collectors.toList());
     IssueTracker issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(getSonarProject().getProject(), localModuleKey);
     String relativePath = resource.getProjectRelativePath().toString();
     Collection<Trackable> tracked = issueTracker.matchAndTrackAsNew(relativePath, trackables);
-    new MarkerUpdaterCallable(resource, tracked).call();
+    new MarkerUpdaterCallable(resource, tracked, triggerType).call();
   }
 
   private static IssueTrackable transform(Issue issue, IResource resource, @Nullable IDocument document) {
@@ -357,7 +357,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return null;
   }
 
-  private void trackServerIssues(Collection<IResource> resources) {
+  private void trackServerIssues(Collection<IResource> resources, TriggerType triggerType) {
     String serverId = getSonarProject().getServerId();
 
     if (serverId == null) {
@@ -375,7 +375,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     ServerConfiguration serverConfiguration = server.getConfig();
     ConnectedSonarLintEngine engine = server.getEngine();
     String localModuleKey = getSonarProject().getProject().getName();
-    SonarLintCorePlugin.getDefault().getServerIssueUpdater().update(serverConfiguration, engine, getSonarProject(), localModuleKey, serverModuleKey, resources);
+    SonarLintCorePlugin.getDefault().getServerIssueUpdater().update(serverConfiguration, engine, getSonarProject(), localModuleKey, serverModuleKey, resources, triggerType);
   }
 
   private static void analysisCompleted(Collection<ProjectConfigurator> usedConfigurators, Map<String, String> properties, final IProgressMonitor monitor) {

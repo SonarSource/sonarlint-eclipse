@@ -21,26 +21,28 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.Collection;
 import java.util.Map;
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 
 public class MarkerUpdaterJob extends AbstractSonarProjectJob {
-  private Map<IResource, Collection<Trackable>> issuesPerResource;
+  private final Map<IResource, Collection<Trackable>> issuesPerResource;
+  private final TriggerType triggerType;
 
-  public MarkerUpdaterJob(String title, SonarLintProject project, Map<IResource, Collection<Trackable>> issuesPerResource) {
+  public MarkerUpdaterJob(String title, SonarLintProject project, Map<IResource, Collection<Trackable>> issuesPerResource, TriggerType triggerType) {
     super(title, project);
     this.issuesPerResource = issuesPerResource;
+    this.triggerType = triggerType;
   }
 
   @Override
   protected IStatus doRun(IProgressMonitor monitor) {
     for (Map.Entry<IResource, Collection<Trackable>> entry : issuesPerResource.entrySet()) {
-      new MarkerUpdaterCallable(entry.getKey(), entry.getValue()).call();
+      new MarkerUpdaterCallable(entry.getKey(), entry.getValue(), triggerType).call();
     }
     return Status.OK_STATUS;
   }
