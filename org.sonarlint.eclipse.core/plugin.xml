@@ -24,6 +24,27 @@
             name="creationdate">
       </attribute>
    </extension>
+   
+   <extension
+        id="sonarlintChangeSetProblem"
+        name="SonarLint Issue on Changed Files"
+        point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="false">
+      </persistent>
+      <attribute
+            name="rulename">
+      </attribute>
+      <attribute
+            name="rulekey">
+      </attribute>
+      <attribute
+            name="creationdate">
+      </attribute>
+   </extension>
 
   <extension
         point="org.eclipse.core.expressions.propertyTesters">

@@ -108,6 +108,7 @@ public class SonarLintProject {
     setModuleKey(null);
     save();
     MarkerUtils.deleteIssuesMarkers(project);
+    MarkerUtils.deleteChangeSetIssuesMarkers(project);
     SonarLintCorePlugin.clearIssueTracker(project);
   }
 

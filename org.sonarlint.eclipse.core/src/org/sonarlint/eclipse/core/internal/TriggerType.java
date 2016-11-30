@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal;
 public enum TriggerType {
   EDITOR_OPEN("Editor open"),
   ACTION("Action"),
+  CHANGESET("Action changeset"),
   EDITOR_CHANGE("Editor change"),
   BINDING_CHANGE("Binding change");
 

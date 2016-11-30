@@ -47,8 +47,16 @@ public final class MarkerUtils {
   }
 
   public static void deleteIssuesMarkers(IResource resource) {
+    deleteMarkers(resource, SonarLintCorePlugin.MARKER_ID);
+  }
+
+  public static void deleteChangeSetIssuesMarkers(IResource resource) {
+    deleteMarkers(resource, SonarLintCorePlugin.MARKER_CHANGESET_ID);
+  }
+
+  public static void deleteMarkers(IResource resource, String markerId) {
     try {
-      resource.deleteMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+      resource.deleteMarkers(markerId, true, IResource.DEPTH_INFINITE);
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
     }
@@ -121,4 +129,5 @@ public final class MarkerUtils {
     int end = endLineStartOffset + endLineOffset;
     return new FlatTextRange(start, end);
   }
+
 }

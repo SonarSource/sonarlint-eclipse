@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
-
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.resources.IMarker;
@@ -35,6 +34,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.markers.FlatTextRange;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextFileContext;
@@ -43,19 +43,20 @@ import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 public class MarkerUpdaterCallable implements Callable<IStatus> {
   private final IResource resource;
   private final Collection<Trackable> issues;
+  private final TriggerType triggerType;
 
-  public MarkerUpdaterCallable(IResource resource, Collection<Trackable> issues) {
+  public MarkerUpdaterCallable(IResource resource, Collection<Trackable> issues, TriggerType triggerType) {
     this.resource = resource;
     this.issues = issues;
+    this.triggerType = triggerType;
   }
 
   @Override
   public IStatus call() {
-    try {
-      resource.deleteMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
-    } catch (CoreException e) {
-      SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
-      return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error updating SonarLint markers", e);
+    if (triggerType == TriggerType.CHANGESET) {
+      MarkerUtils.deleteChangeSetIssuesMarkers(resource);
+    } else {
+      MarkerUtils.deleteIssuesMarkers(resource);
     }
 
     ITextFileBufferManager textFileBufferManager = FileBuffers.getTextFileBufferManager();
@@ -66,7 +67,7 @@ public class MarkerUpdaterCallable implements Callable<IStatus> {
     try (TextFileContext context = new TextFileContext(resource)) {
       IDocument document = context.getDocument();
       if (document != null) {
-        createMarkers(document, resource, issues);
+        createMarkers(document, resource, issues, triggerType);
       }
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
@@ -75,15 +76,15 @@ public class MarkerUpdaterCallable implements Callable<IStatus> {
     return Status.OK_STATUS;
   }
 
-  private static void createMarkers(IDocument document, IResource file, Collection<Trackable> issues) throws CoreException {
+  private static void createMarkers(IDocument document, IResource file, Collection<Trackable> issues, TriggerType triggerType) throws CoreException {
     for (Trackable issue : issues) {
       if (!issue.isResolved()) {
-        createMarker(document, file, issue);
+        createMarker(document, file, issue, triggerType);
       }
     }
   }
 
-  private static void createMarker(IDocument document, IResource file, Trackable trackable) throws CoreException {
+  private static void createMarker(IDocument document, IResource file, Trackable trackable, TriggerType triggerType) throws CoreException {
     Map<String, Object> attributes = new HashMap<>();
 
     attributes.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());
@@ -109,7 +110,7 @@ public class MarkerUpdaterCallable implements Callable<IStatus> {
       attributes.put(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, String.valueOf(creationDate.longValue()));
     }
 
-    IMarker marker = file.createMarker(SonarLintCorePlugin.MARKER_ID);
+    IMarker marker = file.createMarker(triggerType == TriggerType.CHANGESET ? SonarLintCorePlugin.MARKER_CHANGESET_ID : SonarLintCorePlugin.MARKER_ID);
     marker.setAttributes(attributes);
   }
 

@@ -80,6 +80,14 @@
         name="%sonar.issues.view.name">
     </view>
     <view
+        allowMultiple="false"
+        category="org.sonarlint.eclipse"
+        class="org.sonarlint.eclipse.ui.internal.views.issues.ChangeSetIssuesView"
+        icon="icons/sonarlint-16x16.png"
+        id="org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView"
+        name="%sonar.changesetissues.view.name">
+    </view>
+    <view
 	        allowMultiple="false"
           category="org.sonarlint.eclipse"
           class="org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView"
@@ -279,6 +287,99 @@
          </markerAttributeGrouping>
       </markerGrouping>
     </markerContentGenerator>
+    <markerContentGenerator
+         id="org.sonarlint.eclipse.ui.views.issues.changeSetIssueMarkerGenerator"
+         name="SonarLint ChangeSet Issue Marker Generator">
+        <markerTypeReference
+              id="org.sonarlint.eclipse.core.sonarlintChangeSetProblem"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.issueCreationDateField"
+              visible="true"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.issueDescriptionField"
+              visible="true"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.issueRuleKeyField"
+              visible="false"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.issueRuleNameField"
+              visible="false"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.serverIssueKeyField"
+              visible="false"/>
+        <markerFieldReference
+              id="org.eclipse.ui.ide.resourceField"
+              visible="true"/>
+        <markerFieldReference
+              id="org.eclipse.ui.ide.pathField"
+              visible="false"/>
+        <!-- Default Filtering -->
+        <markerFieldConfiguration
+              enabled="true"
+              id="org.sonarlint.eclipse.ui.issues.allIssuesOnChangeSet"
+              name="All Issues on Changed Files"
+              scope="ON_ANY">
+        </markerFieldConfiguration>
+
+      <markerGrouping
+            id="org.sonarlint.eclipse.ui.issues.severityGrouping"
+            label="Severity">
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
+               label="Blocker"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="5">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.critical"
+               label="Critical"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="4">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.major"
+               label="Major"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="3">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.minor"
+               label="Minor"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="2">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.info"
+               label="Info"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="1">
+         </markerGroupingEntry>
+         <markerAttributeGrouping
+               attribute="sonarseverity"
+               markerType="org.sonarlint.eclipse.core.sonarlintProblem">
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
+                  value="BLOCKER">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.critical"
+                  value="CRITICAL">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.major"
+                  value="MAJOR">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.minor"
+                  value="MINOR">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.info"
+                  value="INFO">
+            </markerAttributeMapping>
+         </markerAttributeGrouping>
+      </markerGrouping>
+    </markerContentGenerator>
     <markerField
         class="org.sonarlint.eclipse.ui.internal.views.issues.IssueDescriptionField"
         filterClass="org.eclipse.ui.internal.views.markers.DescriptionFieldFilter"
@@ -373,11 +474,11 @@
          </command>
       </menuContribution>
       <menuContribution
-            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
+            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
            <command
-                 commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"
+                 commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
                  style="push"
-                 mnemonic="%command.correctionAssistProposals.mnemonic">
+                 mnemonic="R">
          </command>
       </menuContribution>
 	<menuContribution locationURI="popup:sonar.menu?after=group1">
@@ -395,6 +496,19 @@
 					    			</adapt>
 					  			</or>
                  	<test property="org.sonarlint.eclipse.core.isAutoAnalysis" value="false"/>
+				  			</and>
+	            </iterate>
+	         </with>
+	      </visibleWhen>
+	   </command>
+	   <command
+	         commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeChangeSetCommand"
+	         style="push">
+	      <visibleWhen>
+	         <with variable="activeMenuSelection">
+	            <iterate ifEmpty="false">
+	              <and>
+							    <adapt type="org.eclipse.core.resources.IResource"/>
 				  			</and>
 	            </iterate>
 	         </with>
@@ -464,6 +578,12 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
+          description="Analyze changed files with SonarLint"
+          id="org.sonarlint.eclipse.ui.internal.command.AnalyzeChangeSetCommand"
+          name="Analyze changed files"
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
+    <command
           description="Bind to a SonarQube project"
           id="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
           name="Bind to a SonarQube project..."
@@ -504,11 +624,18 @@
           class="org.sonarlint.eclipse.ui.internal.command.UnbindProjectsCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.UnbindProjectsCommand">
     </handler>
+    <handler
+          class="org.sonarlint.eclipse.ui.internal.command.AnalyzeChangeSetCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeChangeSetCommand">
+    </handler>
   </extension>
 
   <extension point="org.eclipse.ui.commandImages">
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
+      icon="icons/sonarlint-run-16x16.png" />
+    <image
+      commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeChangeSetCommand"
       icon="icons/sonarlint-run-16x16.png" />
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
@@ -523,6 +650,13 @@
         <type
             name="org.sonarlint.eclipse.issueAnnotationType"
             markerType="org.sonarlint.eclipse.core.sonarlintProblem"/>
+    </extension>
+    
+    <extension
+        point="org.eclipse.ui.editors.annotationTypes">
+        <type
+            name="org.sonarlint.eclipse.changeSetIssueAnnotationType"
+            markerType="org.sonarlint.eclipse.core.sonarlintChangeSetProblem"/>
     </extension>
 
     <extension

@@ -108,15 +108,19 @@ public abstract class AbstractSonarWebView extends ViewPart {
   private static void processElement(List<IMarker> selectedSonarMarkers, Object elem) throws CoreException {
     if (elem instanceof IMarker) {
       IMarker marker = (IMarker) elem;
-      if (SonarLintCorePlugin.MARKER_ID.equals(marker.getType())) {
+      if (isSonarLintMarker(marker)) {
         selectedSonarMarkers.add(marker);
       }
     } else if (elem instanceof IAdaptable) {
       IMarker marker = (IMarker) ((IAdaptable) elem).getAdapter(IMarker.class);
-      if (marker != null && (SonarLintCorePlugin.MARKER_ID.equals(marker.getType()))) {
+      if (marker != null && isSonarLintMarker(marker)) {
         selectedSonarMarkers.add(marker);
       }
     }
+  }
+
+  private static boolean isSonarLintMarker(IMarker marker) throws CoreException {
+    return SonarLintCorePlugin.MARKER_ID.equals(marker.getType()) || SonarLintCorePlugin.MARKER_CHANGESET_ID.equals(marker.getType());
   }
 
 }

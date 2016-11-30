@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IResource;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.MarkerUpdaterJob;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
@@ -62,8 +63,8 @@ public class ServerIssueUpdater {
   }
 
   public void update(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, SonarLintProject project, String localModuleKey, String serverModuleKey,
-    Collection<IResource> resources) {
-    Runnable task = new IssueUpdateRunnable(serverConfiguration, engine, project, localModuleKey, serverModuleKey, resources);
+    Collection<IResource> resources, TriggerType triggerType) {
+    Runnable task = new IssueUpdateRunnable(serverConfiguration, engine, project, localModuleKey, serverModuleKey, resources, triggerType);
     try {
       this.executorService.submit(task);
     } catch (RejectedExecutionException e) {
@@ -85,15 +86,17 @@ public class ServerIssueUpdater {
     private final String serverModuleKey;
     private final Collection<IResource> resources;
     private final SonarLintProject project;
+    private final TriggerType triggerType;
 
     private IssueUpdateRunnable(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, SonarLintProject project, String localModuleKey,
-      String serverModuleKey, Collection<IResource> resources) {
+      String serverModuleKey, Collection<IResource> resources, TriggerType triggerType) {
       this.serverConfiguration = serverConfiguration;
       this.engine = engine;
       this.project = project;
       this.localModuleKey = localModuleKey;
       this.serverModuleKey = serverModuleKey;
       this.resources = resources;
+      this.triggerType = triggerType;
     }
 
     @Override
@@ -109,7 +112,7 @@ public class ServerIssueUpdater {
           Collection<Trackable> tracked = issueTracker.matchAndTrackAsBase(relativePath, serverIssuesTrackable);
           trackedIssues.put(resource, tracked);
         }
-        new MarkerUpdaterJob("Update SonarLint markers", project, trackedIssues).schedule();
+        new MarkerUpdaterJob("Update SonarLint markers", project, trackedIssues, triggerType).schedule();
       } catch (Throwable t) {
         // note: without catching Throwable, any exceptions raised in the thread will not be visible
         console.error("error while fetching and matching server issues", t);
