@@ -68,6 +68,7 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackable;
+import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
@@ -276,31 +277,27 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     Set<IFile> failedFiles = result.failedAnalysisFiles().stream().map(f -> f.<IFile>getClientObject()).collect(Collectors.toSet());
-    for (Entry<IResource, List<Issue>> resourceEntry : issuesPerResource.entrySet()) {
-      IResource resource = resourceEntry.getKey();
-      if (failedFiles.contains(resource)) {
-        continue;
-      }
-      if (resource instanceof IFile) {
-        trackIssues(resource, resourceEntry.getValue(), triggerType);
-      } else {
-        // TODO handle non-file-level issues
-      }
+    Map<IResource, List<Issue>> successfulFiles = issuesPerResource.entrySet().stream()
+      .filter(e -> !failedFiles.contains(e.getKey()))
+      // TODO handle non-file-level issues
+      .filter(e -> e.getKey() instanceof IFile)
+      .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
+    trackIssues(successfulFiles);
+    if (shouldUpdateServerIssues(triggerType)) {
+      trackServerIssues(issuesPerResource.keySet());
     }
   }
 
-  private void trackIssues(IResource resource, List<Issue> rawIssues, TriggerType triggerType) throws CoreException {
-    IProject project = resource.getProject();
-    String localModuleKey = project.getName();
-    SonarLintCorePlugin.getDefault().getModulePathManager().setModulePath(localModuleKey, project.getLocation().toString());
-    String relativePath = resource.getProjectRelativePath().toString();
+  private void trackIssues(Map<IResource, List<Issue>> rawIssuesPerResource) throws CoreException {
 
-    try (TextFileContext context = new TextFileContext((IFile) resource)) {
-      IDocument document = context.getDocument();
+    String localModuleKey = getSonarProject().getProject().getName();
 
-      trackLocalIssues(localModuleKey, relativePath, document, rawIssues);
-      if (shouldUpdateServerIssues(triggerType)) {
-        trackServerIssues(localModuleKey, relativePath, resource);
+    for (Map.Entry<IResource, List<Issue>> entry : rawIssuesPerResource.entrySet()) {
+      try (TextFileContext context = new TextFileContext((IFile) entry.getKey())) {
+        IDocument document = context.getDocument();
+
+        trackLocalIssues(localModuleKey, entry.getKey(), document, entry.getValue());
       }
     }
   }
@@ -309,12 +306,15 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return getSonarProject().isBound() && (trigger == TriggerType.EDITOR_OPEN || trigger == TriggerType.ACTION || trigger == TriggerType.BINDING_CHANGE);
   }
 
-  private static void trackLocalIssues(String localModuleKey, String relativePath, @Nullable IDocument document, List<Issue> rawIssues) {
-    List<Trackable> trackables = rawIssues.stream().map(issue -> transform(issue, relativePath, document)).collect(Collectors.toList());
-    SonarLintCorePlugin.getOrCreateIssueTracker(localModuleKey).matchAndTrackAsNew(relativePath, trackables);
+  private void trackLocalIssues(String localModuleKey, IResource resource, @Nullable IDocument document, List<Issue> rawIssues) {
+    List<Trackable> trackables = rawIssues.stream().map(issue -> transform(issue, resource, document)).collect(Collectors.toList());
+    IssueTracker issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(getSonarProject().getProject(), localModuleKey);
+    String relativePath = resource.getProjectRelativePath().toString();
+    Collection<Trackable> tracked = issueTracker.matchAndTrackAsNew(relativePath, trackables);
+    new MarkerUpdaterCallable(resource, tracked).call();
   }
 
-  private static IssueTrackable transform(Issue issue, String relativePath, @Nullable IDocument document) {
+  private static IssueTrackable transform(Issue issue, IResource resource, @Nullable IDocument document) {
     Integer startLine = issue.getStartLine();
     if (startLine == null) {
       return new IssueTrackable(issue);
@@ -323,46 +323,47 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     String textRangeContent = null;
     String lineContent = null;
     if (document != null) {
-      textRangeContent = readTextRangeContent(relativePath, document, textRange);
-      lineContent = readLineContent(relativePath, document, startLine);
+      textRangeContent = readTextRangeContent(resource, document, textRange);
+      lineContent = readLineContent(resource, document, startLine);
     }
     return new IssueTrackable(issue, textRange, textRangeContent, lineContent);
   }
 
   @CheckForNull
-  private static String readTextRangeContent(String relativePath, IDocument document, TextRange textRange) {
+  private static String readTextRangeContent(IResource resource, IDocument document, TextRange textRange) {
     FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(document, textRange);
     if (flatTextRange != null) {
       try {
         return document.get(flatTextRange.getStart(), flatTextRange.getLength());
       } catch (BadLocationException e) {
-        SonarLintCorePlugin.getDefault().error("failed to get text range content of file " + relativePath, e);
+        SonarLintCorePlugin.getDefault().error("failed to get text range content of resource " + resource.getFullPath(), e);
       }
     }
     return null;
   }
 
   @CheckForNull
-  private static String readLineContent(String relativePath, IDocument document, int startLine) {
+  private static String readLineContent(IResource resource, IDocument document, int startLine) {
     FlatTextRange lineTextRange = MarkerUtils.getFlatTextRange(document, startLine);
     if (lineTextRange != null) {
       try {
         return document.get(lineTextRange.getStart(), lineTextRange.getLength());
       } catch (BadLocationException e) {
-        SonarLintCorePlugin.getDefault().error("failed to get line content of file " + relativePath, e);
+        SonarLintCorePlugin.getDefault().error("failed to get line content of resource " + resource.getFullPath(), e);
       }
     }
     return null;
   }
 
-  private static void trackServerIssues(String localModuleKey, String relativePath, IResource resource) {
-    String serverId = SonarLintProject.getInstance(resource).getServerId();
+  private void trackServerIssues(Collection<IResource> resources) {
+    String serverId = getSonarProject().getServerId();
+
     if (serverId == null) {
       // not bound to a server -> nothing to do
       return;
     }
 
-    String serverModuleKey = SonarLintCorePlugin.getDefault().getProjectManager().readSonarLintConfiguration(resource.getProject()).getModuleKey();
+    String serverModuleKey = SonarLintCorePlugin.getDefault().getProjectManager().readSonarLintConfiguration(this.getSonarProject().getProject()).getModuleKey();
     if (serverModuleKey == null) {
       // not bound to a module -> nothing to do
       return;
@@ -371,7 +372,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     Server server = (Server) ServersManager.getInstance().getServer(serverId);
     ServerConfiguration serverConfiguration = server.getConfig();
     ConnectedSonarLintEngine engine = server.getEngine();
-    SonarLintCorePlugin.getDefault().getServerIssueUpdater().updateFor(serverConfiguration, engine, localModuleKey, serverModuleKey, relativePath);
+    String localModuleKey = getSonarProject().getProject().getName();
+    SonarLintCorePlugin.getDefault().getServerIssueUpdater().update(serverConfiguration, engine, getSonarProject(), localModuleKey, serverModuleKey, resources);
   }
 
   private static void analysisCompleted(Collection<ProjectConfigurator> usedConfigurators, Map<String, String> properties, final IProgressMonitor monitor) {

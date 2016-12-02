@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.net.proxy.IProxyService;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.osgi.framework.BundleContext;
@@ -39,12 +40,8 @@ import org.sonarlint.eclipse.core.internal.tracking.IssueStore;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerCacheFactory;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerRegistry;
-import org.sonarlint.eclipse.core.internal.tracking.MarkerUpdater;
-import org.sonarlint.eclipse.core.internal.tracking.ModulePathManager;
 import org.sonarlint.eclipse.core.internal.tracking.PersistentIssueTrackerCache;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
-import org.sonarlint.eclipse.core.internal.tracking.TrackingChangeQueueManager;
-import org.sonarlint.eclipse.core.internal.tracking.TrackingChangeQueueManagerImpl;
 
 public class SonarLintCorePlugin extends AbstractPlugin {
 
@@ -55,8 +52,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectManager projectManager;
 
-  private ModulePathManager modulePathManager;
-  private TrackingChangeQueueManager trackingChangeQueueManager;
   private IssueTrackerRegistry issueTrackerRegistry;
   private ServerIssueUpdater serverIssueUpdater;
 
@@ -141,17 +136,13 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     sonarLintChangeListener = new SonarLintChangeListener();
     ResourcesPlugin.getWorkspace().addResourceChangeListener(sonarLintChangeListener, IResourceChangeEvent.POST_CHANGE);
 
-    modulePathManager = new ModulePathManager();
-    trackingChangeQueueManager = new TrackingChangeQueueManagerImpl();
-    trackingChangeQueueManager.subscribe(new MarkerUpdater(modulePathManager));
-
-    IssueTrackerCacheFactory factory = localModuleKey -> {
-      Path projectBasePath = Paths.get(modulePathManager.getModulePath(localModuleKey));
+    IssueTrackerCacheFactory factory = (project, localModuleKey) -> {
+      Path projectBasePath = Paths.get(project.getLocation().toString());
       Path storeBasePath = StorageManager.getIssuesDir(localModuleKey);
       IssueStore issueStore = new IssueStore(storeBasePath, projectBasePath);
       return new PersistentIssueTrackerCache(issueStore);
     };
-    issueTrackerRegistry = new IssueTrackerRegistry(trackingChangeQueueManager, factory);
+    issueTrackerRegistry = new IssueTrackerRegistry(factory);
 
     serverIssueUpdater = new ServerIssueUpdater(issueTrackerRegistry);
   }
@@ -166,7 +157,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
     serverIssueUpdater.shutdown();
     issueTrackerRegistry.shutdown();
-    trackingChangeQueueManager.shutdown();
 
     super.stop(context);
   }
@@ -186,15 +176,11 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     return serverIssueUpdater;
   }
 
-  public static IssueTracker getOrCreateIssueTracker(String localModuleKey) {
-    return getDefault().issueTrackerRegistry.getOrCreate(localModuleKey);
+  public static IssueTracker getOrCreateIssueTracker(IProject project, String localModulePath) {
+    return getDefault().issueTrackerRegistry.getOrCreate(project, localModulePath);
   }
 
-  public static void clearIssueTracker(String localModuleKey) {
-    getDefault().issueTrackerRegistry.get(localModuleKey).ifPresent(IssueTracker::clear);
-  }
-
-  public ModulePathManager getModulePathManager() {
-    return modulePathManager;
+  public static void clearIssueTracker(IProject project) {
+    getDefault().issueTrackerRegistry.get(project).ifPresent(IssueTracker::clear);
   }
 }

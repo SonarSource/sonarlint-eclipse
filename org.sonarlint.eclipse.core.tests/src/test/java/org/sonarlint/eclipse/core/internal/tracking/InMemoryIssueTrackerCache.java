@@ -42,6 +42,15 @@ public class InMemoryIssueTrackerCache implements IssueTrackerCache {
   }
 
   @Override
+  public Collection<Trackable> getLiveOrFail(String file) {
+    Collection<Trackable> trackables = cache.get(file);
+    if (trackables != null) {
+      return trackables;
+    }
+    throw new IllegalStateException("No trackables for file: " + file);
+  }
+
+  @Override
   public void put(String file, Collection<Trackable> trackables) {
     cache.put(file, trackables);
   }

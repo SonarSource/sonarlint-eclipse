@@ -26,6 +26,7 @@ import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 
@@ -37,8 +38,10 @@ import static org.mockito.Mockito.when;
 public class IssueTrackerTest {
 
   private final IssueTrackerCache cache = new InMemoryIssueTrackerCache();
-  private final TrackingChangeSubmitter submitter = mock(TrackingChangeSubmitter.class);
-  private final IssueTracker tracker = new IssueTracker(cache, submitter);
+  private final SonarLintProject project = mock(SonarLintProject.class);
+  private final String moduleKey = "module1";
+
+  private final IssueTracker tracker = new IssueTracker(cache);
 
   private final String file1 = "dummyFile1";
 

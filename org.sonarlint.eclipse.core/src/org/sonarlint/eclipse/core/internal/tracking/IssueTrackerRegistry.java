@@ -23,36 +23,35 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.eclipse.core.resources.IProject;
+
 /**
  * Registry of per-module IssueTracker instances.
  */
 public class IssueTrackerRegistry {
 
-  private final Map<String, IssueTracker> registry = new HashMap<>();
-
-  private final TrackingChangeQueueManager queueManager;
+  private final Map<IProject, IssueTracker> registry = new HashMap<>();
   private final IssueTrackerCacheFactory cacheFactory;
 
-  public IssueTrackerRegistry(TrackingChangeQueueManager queueManager, IssueTrackerCacheFactory cacheFactory) {
-    this.queueManager = queueManager;
+  public IssueTrackerRegistry(IssueTrackerCacheFactory cacheFactory) {
     this.cacheFactory = cacheFactory;
   }
 
-  public synchronized IssueTracker getOrCreate(String localModuleKey) {
-    IssueTracker tracker = registry.get(localModuleKey);
+  public synchronized IssueTracker getOrCreate(IProject project, String localModulePath) {
+    IssueTracker tracker = registry.get(project);
     if (tracker == null) {
-      tracker = newTracker(localModuleKey);
-      registry.put(localModuleKey, tracker);
+      tracker = newTracker(project, localModulePath);
+      registry.put(project, tracker);
     }
     return tracker;
   }
 
-  public synchronized Optional<IssueTracker> get(String localModuleKey) {
-    return Optional.ofNullable(registry.get(localModuleKey));
+  public synchronized Optional<IssueTracker> get(IProject project) {
+    return Optional.ofNullable(registry.get(project));
   }
 
-  private IssueTracker newTracker(String localModuleKey) {
-    return new IssueTracker(cacheFactory.apply(localModuleKey), new TrackingChangeSubmitter(queueManager, localModuleKey));
+  private IssueTracker newTracker(IProject project, String localModulePath) {
+    return new IssueTracker(cacheFactory.apply(project, localModulePath));
   }
 
   public void shutdown() {

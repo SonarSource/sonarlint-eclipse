@@ -26,6 +26,8 @@ public interface IssueTrackerCache {
   boolean isFirstAnalysis(String file);
 
   Collection<Trackable> getCurrentTrackables(String file);
+  
+  Collection<Trackable> getLiveOrFail(String file);
 
   void put(String file, Collection<Trackable> trackables);
 

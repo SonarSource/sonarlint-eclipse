@@ -21,8 +21,10 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -34,6 +36,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.eclipse.core.resources.IResource;
+import org.sonarlint.eclipse.core.internal.jobs.MarkerUpdaterJob;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
@@ -57,16 +62,16 @@ public class ServerIssueUpdater {
   public ServerIssueUpdater(IssueTrackerRegistry issueTrackerRegistry) {
     final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(QUEUE_LIMIT);
     this.executorService = new ThreadPoolExecutor(THREADS_NUM, THREADS_NUM, 0L, TimeUnit.MILLISECONDS, queue);
-
     this.issueTrackerRegistry = issueTrackerRegistry;
   }
 
-  public void updateFor(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String localModuleKey, String serverModuleKey, String relativePath) {
-    Runnable task = new IssueUpdateRunnable(serverConfiguration, engine, localModuleKey, serverModuleKey, relativePath);
+  public void update(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, SonarLintProject project, String localModuleKey, String serverModuleKey,
+    Collection<IResource> resources) {
+    Runnable task = new IssueUpdateRunnable(serverConfiguration, engine, project, localModuleKey, serverModuleKey, resources);
     try {
       this.executorService.submit(task);
     } catch (RejectedExecutionException e) {
-      LOGGER.debug("fetch and match server issues rejected for moduleKey=" + serverModuleKey + ", filepath=" + relativePath, e);
+      LOGGER.debug("fetch and match server issues rejected for server moduleKey=" + serverModuleKey, e);
     }
   }
 
@@ -82,24 +87,33 @@ public class ServerIssueUpdater {
     private final ConnectedSonarLintEngine engine;
     private final String localModuleKey;
     private final String serverModuleKey;
-    private final String relativePath;
+    private final Collection<IResource> resources;
+    private final SonarLintProject project;
 
-    private IssueUpdateRunnable(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String localModuleKey, String serverModuleKey, String relativePath) {
+    private IssueUpdateRunnable(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, SonarLintProject project, String localModuleKey,
+      String serverModuleKey, Collection<IResource> resources) {
       this.serverConfiguration = serverConfiguration;
       this.engine = engine;
+      this.project = project;
       this.localModuleKey = localModuleKey;
       this.serverModuleKey = serverModuleKey;
-      this.relativePath = relativePath;
+      this.resources = resources;
     }
 
     @Override
     public void run() {
+      Map<IResource, Collection<Trackable>> trackedIssues = new HashMap<>();
       try {
         ConnectedSonarLintEngine.class.getProtectionDomain().getCodeSource().getLocation();
-        Iterator<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, relativePath);
-        Collection<Trackable> serverIssuesTrackable = toStream(serverIssues).map(ServerIssueTrackable::new).collect(Collectors.toList());
-
-        issueTrackerRegistry.getOrCreate(localModuleKey).matchAndTrackAsBase(relativePath, serverIssuesTrackable);
+        for (IResource resource : resources) {
+          Iterator<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, resource);
+          Collection<Trackable> serverIssuesTrackable = toStream(serverIssues).map(ServerIssueTrackable::new).collect(Collectors.toList());
+          String relativePath = resource.getProjectRelativePath().toString();
+          IssueTracker issueTracker = issueTrackerRegistry.getOrCreate(project.getProject(), localModuleKey);
+          Collection<Trackable> tracked = issueTracker.matchAndTrackAsBase(relativePath, serverIssuesTrackable);
+          trackedIssues.put(resource, tracked);
+        }
+        new MarkerUpdaterJob("Update SonarLint markers", project, trackedIssues).schedule();
       } catch (Throwable t) {
         // note: without catching Throwable, any exceptions raised in the thread will not be visible
         console.error("error while fetching and matching server issues", t);
@@ -111,14 +125,15 @@ public class ServerIssueUpdater {
       return StreamSupport.stream(iterable.spliterator(), false);
     }
 
-    private Iterator<ServerIssue> fetchServerIssues(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String moduleKey, String relativePath) {
+    private Iterator<ServerIssue> fetchServerIssues(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String moduleKey, IResource resource) {
+      String fileKey = toFileKey(resource);
+
       try {
-        LOGGER.debug("fetchServerIssues moduleKey=" + moduleKey + ", filepath=" + relativePath);
-        String fileKey = toFileKey(relativePath);
+        LOGGER.debug("fetchServerIssues moduleKey=" + moduleKey + ", filepath=" + resource.getFullPath());
         return engine.downloadServerIssues(serverConfiguration, moduleKey, fileKey);
       } catch (DownloadException e) {
         console.info(e.getMessage());
-        return engine.getServerIssues(moduleKey, relativePath);
+        return engine.getServerIssues(moduleKey, fileKey);
       }
     }
   }
@@ -129,7 +144,8 @@ public class ServerIssueUpdater {
    * @param relativePath relative path string in the local OS
    * @return SonarQube file key
    */
-  public static String toFileKey(String relativePath) {
+  public static String toFileKey(IResource resource) {
+    String relativePath = resource.getProjectRelativePath().toString();
     if (File.separatorChar != '/') {
       return relativePath.replaceAll(PATH_SEPARATOR_PATTERN, "/");
     }

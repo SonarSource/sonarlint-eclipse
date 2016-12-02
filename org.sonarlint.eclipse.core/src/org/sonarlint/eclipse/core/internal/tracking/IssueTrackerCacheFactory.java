@@ -19,10 +19,12 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
+
+import org.eclipse.core.resources.IProject;
 
 @FunctionalInterface
-public interface IssueTrackerCacheFactory extends Function<String, IssueTrackerCache> {
+public interface IssueTrackerCacheFactory extends BiFunction<IProject, String, IssueTrackerCache> {
   @Override
-  IssueTrackerCache apply(String localModuleKey);
+  IssueTrackerCache apply(IProject project, String localModuleKey);
 }

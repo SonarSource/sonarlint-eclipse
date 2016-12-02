@@ -17,68 +17,65 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.tracking;
+package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Callable;
+
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.FlatTextRange;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextFileContext;
+import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 
-public class MarkerUpdater implements TrackingChangeListener {
+public class MarkerUpdaterCallable implements Callable<IStatus> {
+  private final IResource resource;
+  private final Collection<Trackable> issues;
 
-  private final ModulePathManager modulePathManager;
-
-  public MarkerUpdater(ModulePathManager modulePathManager) {
-    this.modulePathManager = modulePathManager;
+  public MarkerUpdaterCallable(IResource resource, Collection<Trackable> issues) {
+    this.resource = resource;
+    this.issues = issues;
   }
 
   @Override
-  public void onTrackingChange(String localModuleKey, String relativePath, Collection<Trackable> issues) {
-    String absolutePath = modulePathManager.getFilePath(localModuleKey, relativePath);
-
-    IWorkspace workspace = ResourcesPlugin.getWorkspace();
-    IPath location = Path.fromOSString(absolutePath);
-    IFile file = workspace.getRoot().getFileForLocation(location);
-
+  public IStatus call() {
     try {
-      file.deleteMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+      resource.deleteMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
-      return;
+      return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error updating SonarLint markers", e);
     }
 
     ITextFileBufferManager textFileBufferManager = FileBuffers.getTextFileBufferManager();
     if (textFileBufferManager == null) {
-      return;
+      return Status.OK_STATUS;
     }
 
-    try (TextFileContext context = new TextFileContext(file)) {
+    try (TextFileContext context = new TextFileContext(resource)) {
       IDocument document = context.getDocument();
       if (document != null) {
-        createMarkers(document, file, issues);
+        createMarkers(document, resource, issues);
       }
     } catch (CoreException e) {
       SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+      return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error updating SonarLint markers", e);
     }
+    return Status.OK_STATUS;
   }
 
-  private static void createMarkers(IDocument document, IFile file, Collection<Trackable> issues) throws CoreException {
+  private static void createMarkers(IDocument document, IResource file, Collection<Trackable> issues) throws CoreException {
     for (Trackable issue : issues) {
       if (!issue.isResolved()) {
         createMarker(document, file, issue);
@@ -86,7 +83,7 @@ public class MarkerUpdater implements TrackingChangeListener {
     }
   }
 
-  private static void createMarker(IDocument document, IFile file, Trackable trackable) throws CoreException {
+  private static void createMarker(IDocument document, IResource file, Trackable trackable) throws CoreException {
     Map<String, Object> attributes = new HashMap<>();
 
     attributes.put(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());
@@ -136,4 +133,5 @@ public class MarkerUpdater implements TrackingChangeListener {
         return IMarker.PRIORITY_LOW;
     }
   }
+
 }

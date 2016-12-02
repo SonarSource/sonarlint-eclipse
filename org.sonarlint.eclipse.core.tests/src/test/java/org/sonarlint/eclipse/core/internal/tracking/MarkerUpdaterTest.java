@@ -20,19 +20,23 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
+import org.sonarlint.eclipse.core.internal.jobs.MarkerUpdaterCallable;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -84,14 +88,13 @@ public class MarkerUpdaterTest extends SonarTestCase {
   }
 
   private IMarker processTrackable(Trackable trackable) throws CoreException {
-    String localModuleKey = "dummy";
-    ModulePathManager modulePathManager = new ModulePathManager();
-    modulePathManager.setModulePath(localModuleKey, project.getLocation().toString());
-    MarkerUpdater markerUpdater = new MarkerUpdater(modulePathManager);
-
     String relativePath = "src/Findbugs.java";
-    Collection<Trackable> issues = Collections.singletonList(trackable);
-    markerUpdater.onTrackingChange(localModuleKey, relativePath, issues);
+    String absolutePath = project.getLocation().toString() + "/" + relativePath;
+    IPath location = Path.fromOSString(absolutePath);
+    IFile file = workspace.getRoot().getFileForLocation(location);
+    MarkerUpdaterCallable markerUpdater = new MarkerUpdaterCallable(file, Collections.singletonList(trackable));
+
+    markerUpdater.call();
 
     IMarker[] markers = project.getFile(relativePath).findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertThat(markers).hasSize(1);

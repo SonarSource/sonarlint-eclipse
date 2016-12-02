@@ -69,6 +69,16 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
   public boolean isFirstAnalysis(String file) {
     return !cache.containsKey(file) && !store.contains(file);
   }
+  
+  @Override
+  public synchronized Collection<Trackable> getLiveOrFail(String file) {
+    Collection<Trackable> liveTrackables = cache.get(file);
+    if (liveTrackables != null) {
+      return liveTrackables;
+    }
+    
+    throw new IllegalStateException("No issues in cache for file: " + file);
+  }
 
   /**
    * Read issues from a file that is cached. On cache miss, it won't fallback to the persistent store.
