@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -33,9 +32,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 import org.eclipse.core.resources.IResource;
 import org.sonarlint.eclipse.core.internal.jobs.MarkerUpdaterJob;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
@@ -106,8 +102,8 @@ public class ServerIssueUpdater {
       try {
         ConnectedSonarLintEngine.class.getProtectionDomain().getCodeSource().getLocation();
         for (IResource resource : resources) {
-          Iterator<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, resource);
-          Collection<Trackable> serverIssuesTrackable = toStream(serverIssues).map(ServerIssueTrackable::new).collect(Collectors.toList());
+          List<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, resource);
+          Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
           String relativePath = resource.getProjectRelativePath().toString();
           IssueTracker issueTracker = issueTrackerRegistry.getOrCreate(project.getProject(), localModuleKey);
           Collection<Trackable> tracked = issueTracker.matchAndTrackAsBase(relativePath, serverIssuesTrackable);
@@ -120,12 +116,7 @@ public class ServerIssueUpdater {
       }
     }
 
-    private <T> Stream<T> toStream(Iterator<T> iterator) {
-      Iterable<T> iterable = () -> iterator;
-      return StreamSupport.stream(iterable.spliterator(), false);
-    }
-
-    private Iterator<ServerIssue> fetchServerIssues(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String moduleKey, IResource resource) {
+    private List<ServerIssue> fetchServerIssues(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String moduleKey, IResource resource) {
       String fileKey = toFileKey(resource);
 
       try {
