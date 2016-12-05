@@ -4,7 +4,7 @@ SonarLint Eclipse Plugin
 Building
 --------
 
-    mvn clean install
+    mvn clean verify
 
 Development setup in Eclipse
 ----------------------------
@@ -72,7 +72,7 @@ To verify the content of the package: `mvn clean package` and check content of t
 
 ### For Eclipse
 
-Add to `target-platform-e45/target-platform-e45-dev.target` (or whatever target you use) the path of the artifact in your local maven repository as a filesystem path, similar to already existing dependencies.
+Add to `target-platform-e46/target-platform-e46-dev.target` (or whatever target you use) the path of the artifact in your local maven repository as a filesystem path, similar to already existing dependencies.
 
 In the target editor (or open `plugin.xml`), click **Set as Target Platform**.
 Note that this will trigger a compilation in Eclipse.
