@@ -196,20 +196,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       // Handle future opened/closed windows
       SonarLintUiPlugin.getDefault().getWorkbench().addWindowListener(new WindowOpenCloseListener());
 
-      analyzeCurrentFile();
-
       return Status.OK_STATUS;
-    }
-
-    private static void analyzeCurrentFile() {
-      IWorkbenchPart workbenchPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
-      IEditorPart editor = workbenchPart.getSite().getPage().getActiveEditor();
-      if (editor != null) {
-        // note: the cast is necessary for e43 and e44
-        IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
-        AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Collections.singletonList(file), TriggerType.EDITOR_OPEN);
-        new AnalyzeProjectJob(request).schedule();
-      }
     }
 
     class WindowOpenCloseListener implements IWindowListener {
