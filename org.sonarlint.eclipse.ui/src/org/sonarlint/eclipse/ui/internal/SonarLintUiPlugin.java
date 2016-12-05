@@ -207,8 +207,11 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       if (editor != null) {
         // note: the cast is necessary for e43 and e44
         IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
-        AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Collections.singletonList(file), TriggerType.EDITOR_OPEN);
-        new AnalyzeProjectJob(request).schedule();
+
+        if (SonarLintProject.getInstance(file.getProject()).isAutoEnabled()) {
+          AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Collections.singletonList(file), TriggerType.EDITOR_OPEN);
+          new AnalyzeProjectJob(request).schedule();
+        }
       }
     }
 
