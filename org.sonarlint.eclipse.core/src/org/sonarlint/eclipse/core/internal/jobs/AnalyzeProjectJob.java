@@ -158,6 +158,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   @Override
   protected IStatus doRun(final IProgressMonitor monitor) {
     long startTime = System.currentTimeMillis();
+    SonarLintCorePlugin.getDefault().info(this.getName());
+    SonarLintCorePlugin.getDefault().debug("Trigger type: " + request.getTriggerType().name());
     // Analyze
     try {
       // Configure
