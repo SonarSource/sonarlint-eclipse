@@ -53,8 +53,8 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
   private static LocalDateTime lastRefresh;
   private static ChangeSetIssuesView instance;
   private Label label;
-  private Composite bottom;
   private Button btn;
+  private Composite bottom;
 
   public ChangeSetIssuesView() {
     super(SonarLintUiPlugin.PLUGIN_ID + ".views.issues.changeSetIssueMarkerGenerator");
@@ -63,6 +63,7 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
 
   @Override
   protected void populateBottomPanel(Composite bottom) {
+    this.bottom = bottom;
     RowLayout bottomLayout = new RowLayout();
     bottomLayout.center = true;
     bottom.setLayout(bottomLayout);
@@ -90,14 +91,18 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
 
   public static void setRefreshTime(LocalDateTime now) {
     ChangeSetIssuesView.lastRefresh = now;
-    instance.refreshText();
-    // TODO replace by requestLayout() when supporting only Eclipse 4.6+
-    instance.bottom.getShell().layout(new Control[] {instance.bottom}, SWT.DEFER);
+    if (ChangeSetIssuesView.instance != null) {
+      instance.refreshText();
+      // TODO replace by requestLayout() when supporting only Eclipse 4.6+
+      instance.bottom.getShell().layout(new Control[] {instance.bottom}, SWT.DEFER);
+    }
   }
 
   public static void triggerAnalysis(Collection<IProject> selectedProjects) {
-    // Disable button
-    ChangeSetIssuesView.instance.btn.setEnabled(false);
+    // Disable button if view is visible
+    if (ChangeSetIssuesView.instance != null) {
+      ChangeSetIssuesView.instance.btn.setEnabled(false);
+    }
     AnalyzeChangedFilesJob job = new AnalyzeChangedFilesJob(selectedProjects);
     registerJobListener(job);
     job.schedule();
@@ -108,8 +113,10 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
       @Override
       public void done(IJobChangeEvent event) {
         Display.getDefault().asyncExec(() -> {
-          // Enable button
-          ChangeSetIssuesView.instance.btn.setEnabled(true);
+          // Enable button if view is visible
+          if (ChangeSetIssuesView.instance != null) {
+            ChangeSetIssuesView.instance.btn.setEnabled(true);
+          }
           if (Status.OK_STATUS == event.getResult()) {
             // Display changeset issues view after analysis is completed
             IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
