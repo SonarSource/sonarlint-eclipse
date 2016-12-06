@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-
 import javax.annotation.CheckForNull;
 
 public class IssueTracker {
@@ -83,7 +82,7 @@ public class IssueTracker {
     for (Trackable next : tracking.getUnmatchedRaws()) {
       if (next.getServerIssueKey() != null) {
         next = new DisconnectedTrackable(next);
-      } else {
+      } else if (next.getCreationDate() == null) {
         next = new LeakedTrackable(next);
       }
       trackedIssues.add(next);

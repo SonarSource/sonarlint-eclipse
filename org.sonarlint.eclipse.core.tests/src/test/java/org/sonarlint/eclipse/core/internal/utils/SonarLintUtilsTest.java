@@ -19,70 +19,49 @@
  */
 package org.sonarlint.eclipse.core.internal.utils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.junit.Test;
+import org.sonarlint.eclipse.tests.common.JobHelpers;
+import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.sonarlint.eclipse.core.internal.utils.SonarLintUtils.isParentOf;
-import static org.sonarlint.eclipse.core.internal.utils.SonarLintUtils.removeAggregatedDuplicates;
+import static org.sonarlint.eclipse.core.internal.utils.SonarLintUtils.aggregatePerMoreSpecificProject;
 
-public class SonarLintUtilsTest {
-  private IProject mockProject(String location) {
-    IProject project = mock(IProject.class);
-    when(project.getLocation()).thenReturn(new Path(location));
-    return project;
-  }
-
-  private IFile mockFile() {
-    IFile file = mock(IFile.class);
-    return file;
-  }
+public class SonarLintUtilsTest extends SonarTestCase {
 
   @Test
-  public void test_isParentOf() {
-    IProject parent = mockProject("L/parent");
-    IProject child1 = mockProject("L/parent/child1");
-    IProject child2 = mockProject("L/parent/child2");
+  public void use_more_precise_project() throws Exception {
+    IProject root = importEclipseProject("multimodule");
+    IProject module = workspace.getRoot().getProject("submodule");
+    workspace.run(new IWorkspaceRunnable() {
 
-    assertThat(isParentOf(parent, child1)).isTrue();
-    assertThat(isParentOf(child1, parent)).isFalse();
-    assertThat(isParentOf(child1, child2)).isFalse();
+      @Override
+      public void run(final IProgressMonitor monitor) throws CoreException {
+        final IProjectDescription projectDescription = workspace.newProjectDescription(module.getName());
+        projectDescription.setLocation(root.findMember("submodule").getRawLocation());
+        module.create(projectDescription, monitor);
+        module.open(IResource.NONE, monitor);
+      }
+    }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, MONITOR);
+    JobHelpers.waitForJobsToComplete();
+
+    Map<IProject, Collection<IFile>> usePrecise = aggregatePerMoreSpecificProject(Arrays.asList(root.getFile("submodule/foo.js")));
+    assertThat(usePrecise).containsOnlyKeys(module);
+    assertThat(usePrecise.get(module)).containsOnly(module.getFile("foo.js"));
+
+    Map<IProject, Collection<IFile>> aggregate = aggregatePerMoreSpecificProject(Arrays.asList(root.getFile("submodule/foo.js"), module.getFile("foo.js")));
+    assertThat(aggregate).containsOnlyKeys(module);
+    assertThat(aggregate.get(module)).containsOnly(module.getFile("foo.js"));
   }
 
-  @Test
-  public void should_do_nothing_if_files_are_unrelated() {
-    Map<IProject, Collection<IFile>> map = new HashMap<>();
-    IFile file = mockFile();
-    map.put(mockProject("L/parent/child1"), Arrays.asList(file));
-    map.put(mockProject("L/parent/child1-notsubdir"), Arrays.asList(file));
-
-    removeAggregatedDuplicates(map);
-    assertThat(map.values().stream().map(v -> v.size())).containsExactly(1, 1);
-  }
-
-  @Test
-  public void should_remove_file_from_parent_fileset() {
-    Map<IProject, Collection<IFile>> map = new HashMap<>();
-    IFile file = mockFile();
-    IProject parent = mockProject("L/parent");
-    IProject child1 = mockProject("L/parent/child1");
-    IProject child2 = mockProject("L/parent/child2");
-    map.put(parent, new ArrayList<>(Arrays.asList(file)));
-    map.put(child1, Arrays.asList(file));
-    map.put(child2, Arrays.asList(file));
-
-    removeAggregatedDuplicates(map);
-    assertThat(map.get(child1)).hasSize(1);
-    assertThat(map.get(child2)).hasSize(1);
-    assertThat(map.get(parent)).isEmpty();
-  }
 }

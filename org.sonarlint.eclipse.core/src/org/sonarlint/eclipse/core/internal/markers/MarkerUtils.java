@@ -55,10 +55,12 @@ public final class MarkerUtils {
   }
 
   public static void deleteMarkers(IResource resource, String markerId) {
-    try {
-      resource.deleteMarkers(markerId, true, IResource.DEPTH_INFINITE);
-    } catch (CoreException e) {
-      SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+    if (resource.isAccessible()) {
+      try {
+        resource.deleteMarkers(markerId, true, IResource.DEPTH_INFINITE);
+      } catch (CoreException e) {
+        SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+      }
     }
   }
 

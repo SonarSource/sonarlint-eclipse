@@ -19,14 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.utils;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 
 public class SonarLintUtils {
@@ -36,40 +35,29 @@ public class SonarLintUtils {
   }
 
   /**
-   * Remove files that are already included in a more specific fileset.
-   *
-   * @param filesets filesets per project
+   * Find more specific project for every file.
    */
-  public static void removeAggregatedDuplicates(Map<IProject, Collection<IFile>> changedFilesPerProject) {
-    List<Map.Entry<IProject, Collection<IFile>>> entries = new ArrayList<>(changedFilesPerProject.entrySet());
-    for (int i = 0; i < entries.size() - 1; i++) {
-      for (int j = i + 1; j < entries.size(); j++) {
-        IProject p1 = entries.get(i).getKey();
-        Collection<IFile> fileset1 = entries.get(i).getValue();
+  public static Map<IProject, Collection<IFile>> aggregatePerMoreSpecificProject(Collection<IFile> files) {
+    Map<IProject, Collection<IFile>> aggregate = new HashMap<>();
 
-        IProject p2 = entries.get(j).getKey();
-        Collection<IFile> fileset2 = entries.get(j).getValue();
-
-        if (isParentOf(p1, p2)) {
-          removeAggregatedDuplicates(fileset1, fileset2);
-        } else if (isParentOf(p2, p1)) {
-          removeAggregatedDuplicates(fileset2, fileset1);
-        }
-      }
+    for (IFile file : files) {
+      IFile finalFile = toSpecificFile(file);
+      aggregate.putIfAbsent(finalFile.getProject(), new LinkedHashSet<>());
+      aggregate.get(finalFile.getProject()).add(finalFile);
     }
+
+    return aggregate;
   }
 
-  private static void removeAggregatedDuplicates(Collection<IFile> parentset, Collection<IFile> childset) {
-    Map<IPath, IFile> map = parentset.stream().collect(Collectors.toMap(IFile::getLocation, Function.identity()));
-    for (IFile child : childset) {
-      IFile parent = map.get(child.getLocation());
-      if (parent != null) {
-        parentset.remove(parent);
+  public static IFile toSpecificFile(IFile file) {
+    IFile finalFile = file;
+    IPath rawLocation = file.getRawLocation();
+    if (rawLocation != null) {
+      IFile moreSpecific = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(rawLocation);
+      if (moreSpecific != null) {
+        finalFile = moreSpecific;
       }
     }
-  }
-
-  public static boolean isParentOf(IProject maybeParent, IProject maybeChild) {
-    return maybeParent.getLocation().isPrefixOf(maybeChild.getLocation());
+    return finalFile;
   }
 }

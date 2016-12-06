@@ -20,12 +20,14 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -37,6 +39,7 @@ import org.eclipse.team.core.synchronize.SyncInfo;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 
 public class AnalyzeChangedFilesJob extends Job {
   private static final String UNABLE_TO_ANALYZE_CHANGED_FILES = "Unable to analyze changed files";
@@ -50,27 +53,22 @@ public class AnalyzeChangedFilesJob extends Job {
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
-      projects.stream().forEach(MarkerUtils::deleteChangeSetIssuesMarkers);
+      Arrays.asList(ResourcesPlugin.getWorkspace().getRoot().getProjects()).stream().forEach(MarkerUtils::deleteChangeSetIssuesMarkers);
+      Collection<IFile> collectChangedFiles = collectChangedFiles(projects, monitor);
+
+      Map<IProject, Collection<IFile>> changedFilesPerProject = SonarLintUtils.aggregatePerMoreSpecificProject(collectChangedFiles);
+
       List<Job> jobs = new ArrayList<>();
-      for (IProject project : projects) {
-        if (monitor.isCanceled()) {
-          break;
-        }
-        Collection<IFile> collectChangedFiles = collectChangedFiles(project, monitor);
-        if (!collectChangedFiles.isEmpty()) {
-          AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, collectChangedFiles, TriggerType.CHANGESET);
-          AnalyzeProjectJob job = new AnalyzeProjectJob(req);
-          job.schedule();
-          jobs.add(job);
-        }
+      for (Map.Entry<IProject, Collection<IFile>> entry : changedFilesPerProject.entrySet()) {
+        IProject project = entry.getKey();
+        Collection<IFile> filesToAnalyze = entry.getValue();
+        AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.CHANGESET);
+        AnalyzeProjectJob job = new AnalyzeProjectJob(req);
+        job.schedule();
+        jobs.add(job);
       }
-      jobs.stream().forEach(j -> {
-        try {
-          j.join();
-        } catch (InterruptedException e) {
-          // Ignore
-        }
-      });
+
+      waitForAllJobsToComplete(jobs);
     } catch (Exception e) {
       SonarLintCorePlugin.getDefault().error(UNABLE_TO_ANALYZE_CHANGED_FILES, e);
       return new Status(Status.ERROR, SonarLintCorePlugin.PLUGIN_ID, UNABLE_TO_ANALYZE_CHANGED_FILES, e);
@@ -78,27 +76,41 @@ public class AnalyzeChangedFilesJob extends Job {
     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
   }
 
-  private Collection<IFile> collectChangedFiles(IProject project, IProgressMonitor monitor) {
-    RepositoryProvider provider = RepositoryProvider.getProvider(project);
-    if (provider == null) {
-      return Collections.emptyList();
-    }
-
-    Collection<IFile> changedFiles = new ArrayList<>();
-
-    Subscriber subscriber = provider.getSubscriber();
-
-    // Allow the subscriber to refresh its state
-    try {
-      subscriber.refresh(subscriber.roots(), IResource.DEPTH_INFINITE, monitor);
-
-      // Collect all the synchronization states and print
-      IResource[] children = subscriber.roots();
-      for (int i = 0; i < children.length; i++) {
-        collect(subscriber, children[i], changedFiles);
+  private static void waitForAllJobsToComplete(List<Job> jobs) {
+    jobs.stream().forEach(j -> {
+      try {
+        j.join();
+      } catch (InterruptedException e) {
+        // Ignore
       }
-    } catch (TeamException e) {
-      throw new IllegalStateException(UNABLE_TO_ANALYZE_CHANGED_FILES, e);
+    });
+  }
+
+  private Collection<IFile> collectChangedFiles(Collection<IProject> projects, IProgressMonitor monitor) {
+    Collection<IFile> changedFiles = new ArrayList<>();
+    for (IProject project : projects) {
+      if (monitor.isCanceled()) {
+        break;
+      }
+      RepositoryProvider provider = RepositoryProvider.getProvider(project);
+      if (provider == null) {
+        continue;
+      }
+
+      Subscriber subscriber = provider.getSubscriber();
+
+      // Allow the subscriber to refresh its state
+      try {
+        subscriber.refresh(new IResource[] {project}, IResource.DEPTH_INFINITE, monitor);
+
+        // Collect all the synchronization states and print
+        IResource[] children = new IResource[] {project};
+        for (int i = 0; i < children.length; i++) {
+          collect(subscriber, children[i], changedFiles);
+        }
+      } catch (TeamException e) {
+        throw new IllegalStateException(UNABLE_TO_ANALYZE_CHANGED_FILES, e);
+      }
     }
     return changedFiles;
   }

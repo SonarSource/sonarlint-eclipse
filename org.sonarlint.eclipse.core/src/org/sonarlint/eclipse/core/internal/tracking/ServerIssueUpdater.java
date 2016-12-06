@@ -103,7 +103,6 @@ public class ServerIssueUpdater {
     public void run() {
       Map<IResource, Collection<Trackable>> trackedIssues = new HashMap<>();
       try {
-        ConnectedSonarLintEngine.class.getProtectionDomain().getCodeSource().getLocation();
         for (IResource resource : resources) {
           List<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, resource);
           Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());

@@ -33,6 +33,7 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 
 public class SonarLintPartListener implements IPartListener2 {
   @Override
@@ -50,6 +51,11 @@ public class SonarLintPartListener implements IPartListener2 {
   private static void scheduleUpdate(IResource resource) {
     IFile file = (IFile) resource.getAdapter(IFile.class);
     if (file != null) {
+      IFile specificFile = SonarLintUtils.toSpecificFile(file);
+      if (!specificFile.equals(file)) {
+        // Don't analyze files that are also part of submodules
+        return;
+      }
       final SonarLintProject sonarProject = SonarLintProject.getInstance(file.getProject());
       if (!sonarProject.isAutoEnabled() || !SonarLintChangeListener.shouldAnalyze(file)) {
         return;

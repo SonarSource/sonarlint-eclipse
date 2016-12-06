@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -34,21 +33,21 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 
-import static org.sonarlint.eclipse.core.internal.utils.SonarLintUtils.removeAggregatedDuplicates;
+import static org.sonarlint.eclipse.core.internal.utils.SonarLintUtils.aggregatePerMoreSpecificProject;
 
 public class SonarLintChangeListener implements IResourceChangeListener {
 
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
     if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-      final Map<IProject, Collection<IFile>> changedFilesPerProject = new HashMap<>();
+      final Collection<IFile> changedFiles = new ArrayList<>();
       try {
-        event.getDelta().accept(delta -> visitDelta(changedFilesPerProject, delta));
+        event.getDelta().accept(delta -> visitDelta(changedFiles, delta));
       } catch (CoreException e) {
         SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
       }
 
-      removeAggregatedDuplicates(changedFilesPerProject);
+      final Map<IProject, Collection<IFile>> changedFilesPerProject = aggregatePerMoreSpecificProject(changedFiles);
 
       for (Map.Entry<IProject, Collection<IFile>> entry : changedFilesPerProject.entrySet()) {
         IProject project = entry.getKey();
@@ -63,7 +62,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
     }
   }
 
-  private static boolean visitDelta(final Map<IProject, Collection<IFile>> changedFilesPerProject, IResourceDelta delta) {
+  private static boolean visitDelta(final Collection<IFile> changedFiles, IResourceDelta delta) {
     IProject project = delta.getResource().getProject();
     if (project == null) {
       // Workspace root
@@ -75,12 +74,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
 
     boolean shouldAnalyzeResource = shouldAnalyze(delta.getResource());
     if (isChangedFile(delta) && shouldAnalyzeResource) {
-      Collection<IFile> files = changedFilesPerProject.get(project);
-      if (files == null) {
-        files = new ArrayList<>();
-        changedFilesPerProject.put(project, files);
-      }
-      files.add((IFile) delta.getResource());
+      changedFiles.add((IFile) delta.getResource());
       return true;
     }
     return shouldAnalyzeResource;
