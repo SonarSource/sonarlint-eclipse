@@ -14,8 +14,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.sonarlint.eclipse.core,
  org.sonarsource.sonarlint.core.sonarlint-client-api;bundle-version="2.4.0",
  org.eclipse.core.filesystem
-Export-Package: org.sonarlint.eclipse.cdt.internal;x-friends:="org.son
- ar.ide.eclipse.core.tests"
+Export-Package: org.sonarlint.eclipse.cdt.internal;x-friends:="org.sonarlint.eclipse.core.tests"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle
