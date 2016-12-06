@@ -30,17 +30,16 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.views.markers.MarkerSupportView;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeChangedFilesJob;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -48,7 +47,7 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
-public class ChangeSetIssuesView extends MarkerSupportView {
+public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.issues.ChangeSetIssuesView";
   private static LocalDateTime lastRefresh;
@@ -63,18 +62,7 @@ public class ChangeSetIssuesView extends MarkerSupportView {
   }
 
   @Override
-  public void createPartControl(Composite parent) {
-    GridLayout layout = new GridLayout(1, false);
-    layout.marginHeight = 0;
-    layout.marginWidth = 0;
-    layout.horizontalSpacing = 0;
-    layout.verticalSpacing = 0;
-    parent.setLayout(layout);
-    Composite issuesTable = new Composite(parent, SWT.NONE);
-    GridData issuesLayoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    issuesTable.setLayoutData(issuesLayoutData);
-    super.createPartControl(issuesTable);
-    bottom = new Composite(parent, SWT.NONE);
+  protected void populateBottomPanel(Composite bottom) {
     RowLayout bottomLayout = new RowLayout();
     bottomLayout.center = true;
     bottom.setLayout(bottomLayout);
@@ -103,7 +91,8 @@ public class ChangeSetIssuesView extends MarkerSupportView {
   public static void setRefreshTime(LocalDateTime now) {
     ChangeSetIssuesView.lastRefresh = now;
     instance.refreshText();
-    instance.bottom.requestLayout();
+    // TODO replace by requestLayout() when supporting only Eclipse 4.6+
+    instance.bottom.getShell().layout(new Control[] {instance.bottom}, SWT.DEFER);
   }
 
   public static void triggerAnalysis(Collection<IProject> selectedProjects) {
