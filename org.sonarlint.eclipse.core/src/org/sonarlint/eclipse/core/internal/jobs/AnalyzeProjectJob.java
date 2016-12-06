@@ -278,7 +278,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       return;
     }
 
-    Set<IFile> failedFiles = result.failedAnalysisFiles().stream().map(f -> f.<IFile>getClientObject()).collect(Collectors.toSet());
+    Set<IFile> failedFiles = result.failedAnalysisFiles().stream().map(ClientInputFile::<IFile>getClientObject).collect(Collectors.toSet());
     Map<IResource, List<Issue>> successfulFiles = issuesPerResource.entrySet().stream()
       .filter(e -> !failedFiles.contains(e.getKey()))
       // TODO handle non-file-level issues

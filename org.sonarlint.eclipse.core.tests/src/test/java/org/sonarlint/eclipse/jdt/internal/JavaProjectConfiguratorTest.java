@@ -21,12 +21,17 @@ package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaModel;
@@ -37,12 +42,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
+import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class JavaProjectConfiguratorTest {
+public class JavaProjectConfiguratorTest extends SonarTestCase {
 
   private JavaProjectConfigurator configurator = new JavaProjectConfigurator();
 
@@ -50,9 +57,8 @@ public class JavaProjectConfiguratorTest {
   public TemporaryFolder temp = new TemporaryFolder();
 
   @Test
-  public void shouldConfigureProjectsWithJavaNature() throws CoreException {
+  public void shouldConfigureAllProjects() throws CoreException {
     IProject project = mock(IProject.class);
-    when(project.hasNature(JavaCore.NATURE_ID)).thenReturn(true);
     assertThat(configurator.canConfigure(project)).isTrue();
   }
 
@@ -173,4 +179,31 @@ public class JavaProjectConfiguratorTest {
     return cpe;
   }
 
+  @Test
+  public void analyzeOnlyJavaFilesOnClasspathForJdtProject() throws Exception {
+    IProject jdtProject = importEclipseProject("SimpleJdtProject");
+    IFile onClassPath = (IFile) jdtProject.findMember("src/main/java/ClassOnDefaultPackage.java");
+    IFile compileError = (IFile) jdtProject.findMember("src/main/java/ClassWithCompileError.java");
+    IFile outsideClassPath = (IFile) jdtProject.findMember("ClassOutsideSourceFolder.java");
+    IFile nonJava = (IFile) jdtProject.findMember("src/main/sample.js");
+
+    List<IFile> filesToAnalyze = new ArrayList<>(Arrays.asList(onClassPath, compileError, outsideClassPath, nonJava));
+
+    configurator.configure(new ProjectConfigurationRequest(jdtProject, filesToAnalyze, new HashMap<>()), new NullProgressMonitor());
+
+    assertThat(filesToAnalyze).containsOnly(onClassPath, nonJava);
+  }
+
+  @Test
+  public void ignoreJavaFilesOnNonJdtProject() throws Exception {
+    IProject nonJdtProject = importEclipseProject("SimpleNonJdtProject");
+    IFile java = (IFile) nonJdtProject.findMember("src/main/ClassOnDefaultPackage.java");
+    IFile nonJava = (IFile) nonJdtProject.findMember("src/main/sample.js");
+
+    List<IFile> filesToAnalyze = new ArrayList<>(Arrays.asList(java, nonJava));
+
+    configurator.configure(new ProjectConfigurationRequest(nonJdtProject, filesToAnalyze, new HashMap<>()), new NullProgressMonitor());
+
+    assertThat(filesToAnalyze).containsOnly(nonJava);
+  }
 }

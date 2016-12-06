@@ -20,13 +20,17 @@
 package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -39,14 +43,44 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
 
   @Override
   public boolean canConfigure(IProject project) {
-    return SonarJdtPlugin.hasJavaNature(project);
+    return true;
   }
 
   @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
+    keepOnlyValidJavaFiles(request);
     IProject project = request.getProject();
-    IJavaProject javaProject = JavaCore.create(project);
-    configureJavaProject(javaProject, request.getSonarProjectProperties());
+    if (SonarJdtPlugin.hasJavaNature(project)) {
+      IJavaProject javaProject = JavaCore.create(project);
+      configureJavaProject(javaProject, request.getSonarProjectProperties());
+    }
+  }
+
+  /**
+   * SLE-34 Remove Java files that are not compiled.This should automatically exclude files that are excluded / unparseable. 
+   */
+  private static void keepOnlyValidJavaFiles(ProjectConfigurationRequest request) {
+    boolean hasJavaNature = SonarJdtPlugin.hasJavaNature(request.getProject());
+    IJavaProject javaProject = JavaCore.create(request.getProject());
+
+    Collection<IFile> copy = new ArrayList<>(request.getFilesToAnalyze());
+
+    request.getFilesToAnalyze().clear();
+    copy.stream()
+      .filter(res -> {
+        IJavaElement javaElt = res.getAdapter(IJavaElement.class);
+        return javaElt == null || (hasJavaNature && isStructureKnown(javaElt) && javaProject.isOnClasspath(javaElt));
+      })
+      .forEach(request.getFilesToAnalyze()::add);
+
+  }
+
+  private static boolean isStructureKnown(IJavaElement javaElt) {
+    try {
+      return javaElt.isStructureKnown();
+    } catch (JavaModelException e) {
+      return false;
+    }
   }
 
   // Visible for testing
