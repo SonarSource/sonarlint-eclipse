@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint.Issues.Issue;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public class ProtobufIssueTrackable implements Trackable {
 
@@ -62,7 +63,7 @@ public class ProtobufIssueTrackable implements Trackable {
 
   @Override
   public String getServerIssueKey() {
-    return issue.getServerIssueKey() != null ? issue.getServerIssueKey() : null;
+    return !StringUtils.isEmpty(issue.getServerIssueKey()) ? issue.getServerIssueKey() : null;
   }
 
   @Override
