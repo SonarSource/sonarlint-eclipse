@@ -180,7 +180,7 @@ public class IssueTrackerTest {
   }
 
   @Test
-  public void should_add_timestamp_for_leaked_trackables() {
+  public void should_add_creation_date_for_leaked_trackables() {
     long start = System.currentTimeMillis();
 
     tracker.matchAndTrackAsNew(file1, Collections.singletonList(trackable1));
@@ -400,6 +400,20 @@ public class IssueTrackerTest {
   }
 
   @Test
+  public void should_preserve_creation_date_of_leaked_issues_in_connected_mode() {
+    Long leakCreationDate = 1L;
+    Trackable leak = builder().ruleKey("dummy ruleKey").line(7).textRangeHash(11).creationDate(leakCreationDate).build();
+
+    // fake first analysis, trackable has a date
+    tracker.matchAndTrackAsNew(file1, Collections.singletonList(leak));
+
+    // fake server issue tracking
+    tracker.matchAndTrackAsBase(file1, Collections.emptyList());
+
+    assertThat(cache.getCurrentTrackables(file1).iterator().next().getCreationDate()).isEqualTo(leakCreationDate);
+  }
+
+  @Test
   public void should_preserve_server_issue_details() {
     MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").line(7).textRangeHash(11);
     // note: (ab)using the assignee field to uniquely identify the trackable
@@ -442,15 +456,18 @@ public class IssueTrackerTest {
 
   @Test
   public void should_clear_server_issue_details_if_disappeared() {
-    String serverIssueKey = "dummy serverIssueKey";
     boolean resolved = true;
-    String assignee = "dummy assignee";
-    MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").serverIssueKey(serverIssueKey).resolved(resolved).assignee(assignee);
+    Trackable serverIssueTrackable = builder().ruleKey("dummy ruleKey")
+      .serverIssueKey("dummy serverIssueKey").resolved(resolved).assignee("dummy assignee").creationDate(1L).build();
+
+    long start = System.currentTimeMillis();
 
     tracker.matchAndTrackAsNew(file1, Collections.emptyList());
-    tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.build()));
+    tracker.matchAndTrackAsNew(file1, Collections.singletonList(serverIssueTrackable));
 
-    assertThat(cache.getCurrentTrackables(file1)).extracting("serverIssueKey", "resolved", "assignee").containsExactly(tuple(null, !resolved, ""));
+    Collection<Trackable> trackables = cache.getCurrentTrackables(file1);
+    assertThat(trackables).extracting("serverIssueKey", "resolved", "assignee").containsExactly(tuple(null, !resolved, ""));
+    assertThat(trackables.iterator().next().getCreationDate()).isGreaterThanOrEqualTo(start);
   }
 
   @Test
