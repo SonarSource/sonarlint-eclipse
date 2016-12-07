@@ -23,6 +23,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import org.eclipse.core.internal.localstore.FileSystemResourceManager;
+import org.eclipse.core.internal.resources.ICoreConstants;
+import org.eclipse.core.internal.resources.Resource;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -53,11 +57,46 @@ public class SonarLintUtils {
     IFile finalFile = file;
     IPath rawLocation = file.getRawLocation();
     if (rawLocation != null) {
-      IFile moreSpecific = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(rawLocation);
+      // TODO use getFileForLocation when we will support only Eclipse 4.6+
+      // IFile moreSpecific = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(rawLocation);
+      IFile moreSpecific = resourceForLocation(rawLocation);
       if (moreSpecific != null) {
         finalFile = moreSpecific;
       }
     }
     return finalFile;
+  }
+
+  /**
+   * Copied from {@link FileSystemResourceManager} of Oxygen to support older Eclipse versions
+   */
+  private static IFile resourceForLocation(IPath location) {
+    int resultProjectPathSegments = 0;
+    IFile result = null;
+    IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects(IContainer.INCLUDE_HIDDEN);
+    for (int i = 0; i < projects.length; i++) {
+      IProject project = projects[i];
+      IPath projectLocation = project.getLocation();
+      if (projectLocation != null && projectLocation.isPrefixOf(location)) {
+        int segmentsToRemove = projectLocation.segmentCount();
+        if (segmentsToRemove > resultProjectPathSegments) {
+          IPath path = project.getFullPath().append(location.removeFirstSegments(segmentsToRemove));
+          IFile resource = resourceFor(path);
+          if (resource != null && !((Resource) resource).isFiltered()) {
+            resultProjectPathSegments = segmentsToRemove;
+            result = resource;
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  private static IFile resourceFor(IPath path) {
+    int numSegments = path.segmentCount();
+    if (numSegments < ICoreConstants.MINIMUM_FILE_SEGMENT_LENGTH) {
+      return null;
+    }
+    return ResourcesPlugin.getWorkspace().getRoot().getFile(path);
   }
 }
