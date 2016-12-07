@@ -400,6 +400,28 @@ public class IssueTrackerTest {
   }
 
   @Test
+  public void should_preserve_creation_date_of_leaked_issues_in_connected_mode() throws Exception {
+    Trackable leakedTrackable = builder().ruleKey("dummy ruleKey").line(7).textRangeHash(11).build();
+
+    // first analysis, no issues
+    tracker.matchAndTrackAsNew(file1, Collections.emptyList());
+
+    // second analysis, leak introduced
+    tracker.matchAndTrackAsNew(file1, Collections.singletonList(leakedTrackable));
+
+    Long leakCreationDate = cache.getCurrentTrackables(file1).iterator().next().getCreationDate();
+    assertThat(leakCreationDate).isNotNull();
+
+    Thread.sleep(1);
+
+    // fake server issue tracking
+    tracker.matchAndTrackAsBase(file1, Collections.emptyList());
+
+    Long leakCreationDate2 = cache.getCurrentTrackables(file1).iterator().next().getCreationDate();
+    assertThat(leakCreationDate2).isEqualTo(leakCreationDate);
+  }
+
+  @Test
   public void should_preserve_server_issue_details() {
     MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").line(7).textRangeHash(11);
     // note: (ab)using the assignee field to uniquely identify the trackable
