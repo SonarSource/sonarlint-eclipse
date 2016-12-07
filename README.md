@@ -15,11 +15,15 @@ Install `m2eclipse` and then Tycho extension to `m2eclipse`:
 2. Install **Tycho Configurator**
 3. Import everything as Maven project
 4. Run `mvn compile` on the command line to fetch artifacts referenced in the parent pom
-5. Open `target-platform-e46-dev.target`
+5. Open `target-platform-e47-dev.target`
     - Click on **Environment** tab and add `M2_REPO` variable pointing to your local maven repo (for example `/home/youruser/.m2/repository`)
-    - On the **Definitions** tab, if there are problems with the **Locations** entries, click **Reload**
+    - On the **Definition** tab, if there are problems with the **Locations** entries, click **Reload**
     - Click **Set as Target Platform** in the top-right corner
-6. Run `mvn compile` on the command line to generate and compile protobuf classes
+
+At this point you should be all set, unless Eclipse is not able to generate protobuf sources.
+Following the explanations [here](https://github.com/trustin/os-maven-plugin) may help.
+As a workaround, you can run `mvn compile` on the command line to generate protobuf sources,
+and in Eclipse hit `F5` on the project with build errors.
 
 ### Eclipse quirks
 
