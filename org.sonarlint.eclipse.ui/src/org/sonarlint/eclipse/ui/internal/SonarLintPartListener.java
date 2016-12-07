@@ -34,6 +34,7 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.ui.internal.views.issues.ChangeSetIssuesView;
 
 public class SonarLintPartListener implements IPartListener2 {
   @Override
@@ -46,6 +47,7 @@ public class SonarLintPartListener implements IPartListener2 {
         scheduleUpdate(resource);
       }
     }
+    ChangeSetIssuesView.notifyEditorChanged();
   }
 
   private static void scheduleUpdate(IResource resource) {
@@ -67,37 +69,37 @@ public class SonarLintPartListener implements IPartListener2 {
 
   @Override
   public void partVisible(IWorkbenchPartReference partRef) {
-    // Nothing to do
+    ChangeSetIssuesView.notifyEditorChanged();
   }
 
   @Override
   public void partInputChanged(IWorkbenchPartReference partRef) {
-    // Nothing to do
+    ChangeSetIssuesView.notifyEditorChanged();
   }
 
   @Override
   public void partHidden(IWorkbenchPartReference partRef) {
-    // Nothing to do
+    ChangeSetIssuesView.notifyEditorChanged();
   }
 
   @Override
   public void partDeactivated(IWorkbenchPartReference partRef) {
-    // Nothing to do
+    ChangeSetIssuesView.notifyEditorChanged();
   }
 
   @Override
   public void partClosed(IWorkbenchPartReference partRef) {
-    // Nothing to do
+    ChangeSetIssuesView.notifyEditorChanged();
   }
 
   @Override
   public void partBroughtToTop(IWorkbenchPartReference partRef) {
-    // Nothing to do
+    ChangeSetIssuesView.notifyEditorChanged();
   }
 
   @Override
   public void partActivated(IWorkbenchPartReference partRef) {
-    // Nothing to do
+    ChangeSetIssuesView.notifyEditorChanged();
   }
 
 }

@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.views.issues;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Status;
@@ -41,7 +42,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeChangedFilesJob;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 import static java.util.Arrays.asList;
@@ -53,7 +53,8 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
   private static LocalDateTime lastRefresh;
   private static ChangeSetIssuesView instance;
   private Label label;
-  private Button btn;
+  private Button btnPrj;
+  private Button btnAll;
   private Composite bottom;
 
   public ChangeSetIssuesView() {
@@ -69,10 +70,23 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
     bottom.setLayout(bottomLayout);
     GridData bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     bottom.setLayoutData(bottomLayoutData);
-    btn = new Button(bottom, SWT.PUSH);
-    btn.setImage(SonarLintImages.RUN_IMG);
-    btn.setText("Analyze changed files");
-    btn.addListener(SWT.Selection, e -> triggerAnalysis(
+
+    Label caption = new Label(bottom, SWT.NONE);
+    caption.setText("Run the analysis and find issues on the files in the SCM change set:");
+
+    btnPrj = new Button(bottom, SWT.PUSH);
+    refreshBtnText();
+
+    btnPrj.addListener(SWT.Selection, e -> {
+      IFile editedFile = SonarLintUiPlugin.findCurrentEditedFile();
+      if (editedFile != null) {
+        triggerAnalysis(asList(editedFile.getProject()));
+      }
+    });
+
+    btnAll = new Button(bottom, SWT.PUSH);
+    btnAll.setText("All projects");
+    btnAll.addListener(SWT.Selection, e -> triggerAnalysis(
       asList(ResourcesPlugin.getWorkspace().getRoot().getProjects()).stream()
         .filter(IProject::isAccessible)
         .collect(toList())));
@@ -80,12 +94,29 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
     refreshText();
   }
 
-  private void refreshText() {
-    String msg = "Find issues on changed files based on the SCM";
-    if (lastRefresh != null) {
-      label.setText(msg + ". Report generated on " + DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(lastRefresh));
+  private void refreshBtnText() {
+    IFile editedFile = SonarLintUiPlugin.findCurrentEditedFile();
+    if (editedFile == null) {
+      btnPrj.setText("Current project: <no editor opened>");
+      btnPrj.setEnabled(false);
     } else {
-      label.setText(msg);
+      btnPrj.setText("Current project: " + editedFile.getProject().getName());
+      btnPrj.setEnabled(true);
+    }
+  }
+
+  private void refreshText() {
+    if (lastRefresh != null) {
+      label.setText("Report generated on " + DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(lastRefresh));
+    } else {
+      label.setText("");
+    }
+  }
+
+  public static void notifyEditorChanged() {
+    if (ChangeSetIssuesView.instance != null) {
+      instance.refreshBtnText();
+      instance.requestLayout();
     }
   }
 
@@ -93,15 +124,19 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
     ChangeSetIssuesView.lastRefresh = now;
     if (ChangeSetIssuesView.instance != null) {
       instance.refreshText();
-      // TODO replace by requestLayout() when supporting only Eclipse 4.6+
-      instance.bottom.getShell().layout(new Control[] {instance.bottom}, SWT.DEFER);
+      instance.requestLayout();
     }
+  }
+
+  private void requestLayout() {
+    // TODO replace by requestLayout() when supporting only Eclipse 4.6+
+    bottom.getShell().layout(new Control[] {instance.bottom}, SWT.DEFER);
   }
 
   public static void triggerAnalysis(Collection<IProject> selectedProjects) {
     // Disable button if view is visible
     if (ChangeSetIssuesView.instance != null) {
-      ChangeSetIssuesView.instance.btn.setEnabled(false);
+      ChangeSetIssuesView.instance.btnAll.setEnabled(false);
     }
     AnalyzeChangedFilesJob job = new AnalyzeChangedFilesJob(selectedProjects);
     registerJobListener(job);
@@ -115,7 +150,7 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
         Display.getDefault().asyncExec(() -> {
           // Enable button if view is visible
           if (ChangeSetIssuesView.instance != null) {
-            ChangeSetIssuesView.instance.btn.setEnabled(true);
+            ChangeSetIssuesView.instance.btnAll.setEnabled(true);
           }
           if (Status.OK_STATUS == event.getResult()) {
             // Display changeset issues view after analysis is completed

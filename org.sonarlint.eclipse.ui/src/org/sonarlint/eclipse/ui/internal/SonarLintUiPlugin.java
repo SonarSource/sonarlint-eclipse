@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal;
 
 import java.util.Collections;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -249,25 +250,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
 
     private static void analyzeCurrentFile() {
-      // Super defensing programming because we don't really understand what is initialized at startup (SLE-122)
-      IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-      if (window == null) {
-        return;
-      }
-      IWorkbenchPage page = window.getActivePage();
-      if (page == null) {
-        return;
-      }
-      IWorkbenchPart workbenchPart = page.getActivePart();
-      if (workbenchPart == null) {
-        return;
-      }
-      IEditorPart editor = workbenchPart.getSite().getPage().getActiveEditor();
-      if (editor == null) {
-        return;
-      }
-      // note: the cast is necessary for e43 and e44
-      IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
+      IFile file = findCurrentEditedFile();
       if (file == null || !SonarLintProject.getInstance(file.getProject()).isAutoEnabled()) {
         return;
       }
@@ -275,6 +258,29 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       new AnalyzeProjectJob(request).schedule();
     }
 
+  }
+
+  @CheckForNull
+  public static IFile findCurrentEditedFile() {
+    // Super defensing programming because we don't really understand what is initialized at startup (SLE-122)
+    IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+    if (window == null) {
+      return null;
+    }
+    IWorkbenchPage page = window.getActivePage();
+    if (page == null) {
+      return null;
+    }
+    IWorkbenchPart workbenchPart = page.getActivePart();
+    if (workbenchPart == null) {
+      return null;
+    }
+    IEditorPart editor = workbenchPart.getSite().getPage().getActiveEditor();
+    if (editor == null) {
+      return null;
+    }
+    // note: the cast is necessary for e43 and e44
+    return (IFile) editor.getEditorInput().getAdapter(IFile.class);
   }
 
   public static void analyzeCurrentFile() {

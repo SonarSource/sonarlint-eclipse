@@ -29,6 +29,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonarlint.eclipse.ui.internal.views.issues.ChangeSetIssuesView;
 
@@ -43,19 +44,27 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
     @SuppressWarnings("rawtypes")
     List elems = selection.toList();
     for (Object elem : elems) {
-      if (elem instanceof IResource) {
+      if (elem instanceof IWorkingSet) {
+        for (IAdaptable elt : ((IWorkingSet) elem).getElements()) {
+          collectProject(selectedProjects, elt);
+        }
+      } else if (elem instanceof IResource) {
         selectedProjects.add(((IResource) elem).getProject());
       } else if (elem instanceof IAdaptable) {
-        IResource res = (IResource) ((IAdaptable) elem).getAdapter(IResource.class);
-        if (res != null) {
-          selectedProjects.add(res.getProject());
-        }
+        collectProject(selectedProjects, elem);
       }
     }
 
     ChangeSetIssuesView.triggerAnalysis(selectedProjects);
 
     return null;
+  }
+
+  private static void collectProject(final Set<IProject> selectedProjects, Object elem) {
+    IResource res = (IResource) ((IAdaptable) elem).getAdapter(IResource.class);
+    if (res != null) {
+      selectedProjects.add(res.getProject());
+    }
   }
 
 }

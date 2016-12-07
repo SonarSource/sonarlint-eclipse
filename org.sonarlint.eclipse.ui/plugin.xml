@@ -293,6 +293,12 @@
         <markerTypeReference
               id="org.sonarlint.eclipse.core.sonarlintChangeSetProblem"/>
         <markerFieldReference
+              id="org.eclipse.ui.ide.resourceField"
+              visible="true"/>
+        <markerFieldReference
+              id="org.eclipse.ui.ide.pathField"
+              visible="false"/>
+        <markerFieldReference
               id="org.sonarlint.eclipse.ui.views.issues.issueCreationDateField"
               visible="true"/>
         <markerFieldReference
@@ -307,12 +313,6 @@
         <markerFieldReference
               id="org.sonarlint.eclipse.ui.views.issues.serverIssueKeyField"
               visible="false"/>
-        <markerFieldReference
-              id="org.eclipse.ui.ide.resourceField"
-              visible="true"/>
-        <markerFieldReference
-              id="org.eclipse.ui.ide.pathField"
-              visible="false"/>
         <!-- Default Filtering -->
         <markerFieldConfiguration
               enabled="true"
@@ -320,65 +320,6 @@
               name="All Issues on Changed Files"
               scope="ON_ANY">
         </markerFieldConfiguration>
-
-      <markerGrouping
-            id="org.sonarlint.eclipse.ui.issues.severityGrouping"
-            label="Severity">
-         <markerGroupingEntry
-               id="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
-               label="Blocker"
-               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="5">
-         </markerGroupingEntry>
-         <markerGroupingEntry
-               id="org.sonarlint.eclipse.ui.issues.severityGrouping.critical"
-               label="Critical"
-               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="4">
-         </markerGroupingEntry>
-         <markerGroupingEntry
-               id="org.sonarlint.eclipse.ui.issues.severityGrouping.major"
-               label="Major"
-               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="3">
-         </markerGroupingEntry>
-         <markerGroupingEntry
-               id="org.sonarlint.eclipse.ui.issues.severityGrouping.minor"
-               label="Minor"
-               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="2">
-         </markerGroupingEntry>
-         <markerGroupingEntry
-               id="org.sonarlint.eclipse.ui.issues.severityGrouping.info"
-               label="Info"
-               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
-               priority="1">
-         </markerGroupingEntry>
-         <markerAttributeGrouping
-               attribute="sonarseverity"
-               markerType="org.sonarlint.eclipse.core.sonarlintProblem">
-            <markerAttributeMapping
-                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
-                  value="BLOCKER">
-            </markerAttributeMapping>
-            <markerAttributeMapping
-                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.critical"
-                  value="CRITICAL">
-            </markerAttributeMapping>
-            <markerAttributeMapping
-                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.major"
-                  value="MAJOR">
-            </markerAttributeMapping>
-            <markerAttributeMapping
-                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.minor"
-                  value="MINOR">
-            </markerAttributeMapping>
-            <markerAttributeMapping
-                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.info"
-                  value="INFO">
-            </markerAttributeMapping>
-         </markerAttributeGrouping>
-      </markerGrouping>
     </markerContentGenerator>
     <markerField
         class="org.sonarlint.eclipse.ui.internal.views.issues.IssueDescriptionField"
@@ -507,9 +448,10 @@
 	      <visibleWhen>
 	         <with variable="activeMenuSelection">
 	            <iterate ifEmpty="false">
-	              <and>
-							    <adapt type="org.eclipse.core.resources.IResource"/>
-				  			</and>
+	              <or>
+							    <adapt type="org.eclipse.core.resources.IProject"/>
+							    <adapt type="org.eclipse.ui.IWorkingSet"/>
+				  			</or>
 	            </iterate>
 	         </with>
 	      </visibleWhen>
