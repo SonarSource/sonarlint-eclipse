@@ -464,15 +464,18 @@ public class IssueTrackerTest {
 
   @Test
   public void should_clear_server_issue_details_if_disappeared() {
-    String serverIssueKey = "dummy serverIssueKey";
     boolean resolved = true;
-    String assignee = "dummy assignee";
-    MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").serverIssueKey(serverIssueKey).resolved(resolved).assignee(assignee);
+    Trackable serverIssueTrackable = builder().ruleKey("dummy ruleKey")
+      .serverIssueKey("dummy serverIssueKey").resolved(resolved).assignee("dummy assignee").creationDate(1L).build();
+
+    long start = System.currentTimeMillis();
 
     tracker.matchAndTrackAsNew(file1, Collections.emptyList());
-    tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.build()));
+    tracker.matchAndTrackAsNew(file1, Collections.singletonList(serverIssueTrackable));
 
-    assertThat(cache.getCurrentTrackables(file1)).extracting("serverIssueKey", "resolved", "assignee").containsExactly(tuple(null, !resolved, ""));
+    Collection<Trackable> trackables = cache.getCurrentTrackables(file1);
+    assertThat(trackables).extracting("serverIssueKey", "resolved", "assignee").containsExactly(tuple(null, !resolved, ""));
+    assertThat(trackables.iterator().next().getCreationDate()).isGreaterThanOrEqualTo(start);
   }
 
   @Test
