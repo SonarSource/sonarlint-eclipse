@@ -180,7 +180,7 @@ public class IssueTrackerTest {
   }
 
   @Test
-  public void should_add_timestamp_for_leaked_trackables() {
+  public void should_add_creation_date_for_leaked_trackables() {
     long start = System.currentTimeMillis();
 
     tracker.matchAndTrackAsNew(file1, Collections.singletonList(trackable1));
