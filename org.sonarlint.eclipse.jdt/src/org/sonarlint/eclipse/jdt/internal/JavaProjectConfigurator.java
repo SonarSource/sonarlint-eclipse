@@ -68,7 +68,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     request.getFilesToAnalyze().clear();
     copy.stream()
       .filter(res -> {
-        IJavaElement javaElt = res.getAdapter(IJavaElement.class);
+        IJavaElement javaElt = JavaCore.create(res);
         return javaElt == null || (hasJavaNature && isStructureKnown(javaElt) && javaProject.isOnClasspath(javaElt));
       })
       .forEach(request.getFilesToAnalyze()::add);
