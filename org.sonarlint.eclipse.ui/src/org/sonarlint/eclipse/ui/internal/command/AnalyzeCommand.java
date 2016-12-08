@@ -129,7 +129,7 @@ public class AnalyzeCommand extends AbstractHandler {
     }
   }
 
-  protected static IFile findEditedFile(ExecutionEvent event) {
+  static IFile findEditedFile(ExecutionEvent event) {
     IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
     IEditorInput input = activeEditor.getEditorInput();
     if (input instanceof IFileEditorInput) {
