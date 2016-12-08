@@ -75,7 +75,8 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
     caption.setText("Run the analysis and find issues on the files in the SCM change set:");
 
     btnPrj = new Button(bottom, SWT.PUSH);
-    refreshBtnText();
+    btnPrj.setText("Current project");
+    refreshBtnState();
 
     btnPrj.addListener(SWT.Selection, e -> {
       IFile editedFile = SonarLintUiPlugin.findCurrentEditedFile();
@@ -94,13 +95,13 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
     refreshText();
   }
 
-  private void refreshBtnText() {
+  private void refreshBtnState() {
     IFile editedFile = SonarLintUiPlugin.findCurrentEditedFile();
     if (editedFile == null) {
-      btnPrj.setText("Current project: <no editor opened>");
+      btnPrj.setToolTipText("<no editor opened>");
       btnPrj.setEnabled(false);
     } else {
-      btnPrj.setText("Current project: " + editedFile.getProject().getName());
+      btnPrj.setToolTipText(editedFile.getProject().getName());
       btnPrj.setEnabled(true);
     }
   }
@@ -115,7 +116,7 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
 
   public static void notifyEditorChanged() {
     if (ChangeSetIssuesView.instance != null) {
-      instance.refreshBtnText();
+      instance.refreshBtnState();
       instance.requestLayout();
     }
   }
