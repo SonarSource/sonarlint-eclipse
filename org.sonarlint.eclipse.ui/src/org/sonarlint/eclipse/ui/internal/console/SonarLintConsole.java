@@ -34,7 +34,8 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 public class SonarLintConsole extends MessageConsole {
 
-  public static final String P_DEBUG_OUTPUT = "debugOutput"; //$NON-NLS-1$
+  public static final String P_VERBOSE_OUTPUT = "debugOutput"; //$NON-NLS-1$
+  public static final String P_ANALYZER_OUTPUT = "showAnalyzerOutput"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE = "showConsole"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE_NEVER = "never"; //$NON-NLS-1$
   public static final String P_SHOW_CONSOLE_ON_OUTPUT = "onOutput"; //$NON-NLS-1$
@@ -85,34 +86,31 @@ public class SonarLintConsole extends MessageConsole {
     return false;
   }
 
-  public void info(String msg) {
-    if (isShowConsoleOnOutput()) {
-      bringConsoleToFront();
+  public void info(String msg, boolean fromAnalyzer) {
+    if (showAnalysisLogs() || !fromAnalyzer) {
+      if (isShowConsoleOnOutput()) {
+        bringConsoleToFront();
+      }
+      write(getInfoStream(), msg);
     }
-    write(getInfoStream(), msg);
   }
 
-  public void error(String msg) {
-    if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
-      bringConsoleToFront();
+  public void error(String msg, boolean fromAnalyzer) {
+    if (showAnalysisLogs() || !fromAnalyzer) {
+      if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
+        bringConsoleToFront();
+      }
+      write(getWarnStream(), msg);
     }
-    write(getWarnStream(), msg);
   }
 
-  public void debug(String msg) {
-    if (isDebugEnabled()) {
+  public void debug(String msg, boolean fromAnalyzer) {
+    if (isVerboseEnabled() && (showAnalysisLogs() || !fromAnalyzer)) {
       if (isShowConsoleOnOutput()) {
         bringConsoleToFront();
       }
       write(getDebugStream(), msg);
     }
-  }
-
-  public void warn(String msg) {
-    if (isShowConsoleOnOutput() || isShowConsoleOnError()) {
-      bringConsoleToFront();
-    }
-    write(getWarnStream(), msg);
   }
 
   private static void write(MessageConsoleStream stream, String msg) {
@@ -146,8 +144,11 @@ public class SonarLintConsole extends MessageConsole {
     return P_SHOW_CONSOLE_ON_ERROR.equals(getShowConsolePreference());
   }
 
-  public static boolean isDebugEnabled() {
-    return SonarLintUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarLintConsole.P_DEBUG_OUTPUT);
+  public static boolean isVerboseEnabled() {
+    return SonarLintUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarLintConsole.P_VERBOSE_OUTPUT);
   }
 
+  public static boolean showAnalysisLogs() {
+    return SonarLintUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarLintConsole.P_ANALYZER_OUTPUT);
+  }
 }

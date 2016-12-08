@@ -74,23 +74,18 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private class SonarLintConsoleLogger implements LogListener {
     @Override
-    public void info(String msg) {
-      getSonarConsole().info(msg);
+    public void info(String msg, boolean fromAnalyzer) {
+      getSonarConsole().info(msg, fromAnalyzer);
     }
 
     @Override
-    public void error(String msg) {
-      getSonarConsole().error(msg);
+    public void error(String msg, boolean fromAnalyzer) {
+      getSonarConsole().error(msg, fromAnalyzer);
     }
 
     @Override
-    public void debug(String msg) {
-      getSonarConsole().debug(msg);
-    }
-
-    @Override
-    public void warn(String msg) {
-      getSonarConsole().warn(msg);
+    public void debug(String msg, boolean fromAnalyzer) {
+      getSonarConsole().debug(msg, fromAnalyzer);
     }
   }
 
@@ -114,6 +109,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     };
 
     getPreferenceStore().addPropertyChangeListener(prefListener);
+
+    SonarLintCorePlugin.getDefault().info("Starting SonarLint for Eclipse " + getBundle().getVersion());
 
     checkServersStatus();
 
@@ -176,6 +173,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   @Override
   protected void initializeDefaultPreferences(IPreferenceStore store) {
     store.setDefault(SonarLintConsole.P_SHOW_CONSOLE, SonarLintConsole.P_SHOW_CONSOLE_ON_ERROR);
+    store.setDefault(SonarLintConsole.P_ANALYZER_OUTPUT, false);
     store.setDefault(PreferencesUtils.PREF_MARKER_SEVERITY, PreferencesUtils.PREF_MARKER_SEVERITY_DEFAULT);
     store.setDefault(PreferencesUtils.PREF_EXTRA_ARGS, PreferencesUtils.PREF_EXTRA_ARGS_DEFAULT);
     store.setDefault(PreferencesUtils.PREF_TEST_FILE_REGEXPS, PreferencesUtils.PREF_TEST_FILE_REGEXPS_DEFAULT);
@@ -254,7 +252,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       if (file == null || !SonarLintProject.getInstance(file.getProject()).isAutoEnabled()) {
         return;
       }
-      AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Collections.singletonList(file), TriggerType.EDITOR_OPEN);
+      AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Collections.singletonList(file), TriggerType.STARTUP);
       new AnalyzeProjectJob(request).schedule();
     }
 

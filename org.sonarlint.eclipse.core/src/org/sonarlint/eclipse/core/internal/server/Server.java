@@ -43,7 +43,7 @@ import org.eclipse.equinox.security.storage.StorageException;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StorageManager;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
-import org.sonarlint.eclipse.core.internal.jobs.SonarLintLogOutput;
+import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
@@ -86,7 +86,7 @@ public class Server implements IServer, StateListener {
       .setServerId(getId())
       .setWorkDir(StorageManager.getServerWorkDir(getId()))
       .setStorageRoot(StorageManager.getServerStorageRoot())
-      .setLogOutput(new SonarLintLogOutput())
+      .setLogOutput(new SonarLintAnalyzerLogOutput())
       .build();
     this.client = new ConnectedSonarLintEngineImpl(globalConfig);
     this.client.addStateListener(this);

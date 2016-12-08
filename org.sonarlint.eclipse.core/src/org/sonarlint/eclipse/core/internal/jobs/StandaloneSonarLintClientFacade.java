@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.osgi.framework.FrameworkUtil;
@@ -41,18 +42,25 @@ public class StandaloneSonarLintClientFacade {
   @CheckForNull
   private synchronized StandaloneSonarLintEngine getClient() {
     if (client == null) {
-      SonarLintCorePlugin.getDefault().info("Starting standalone SonarLint engine " + FrameworkUtil.getBundle(this.getClass()).getVersion().toString());
-      Enumeration<URL> pluginEntries = SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false);
-      StandaloneGlobalConfiguration globalConfig = StandaloneGlobalConfiguration.builder()
-        .addPlugins(pluginEntries != null ? Collections.list(pluginEntries).toArray(new URL[0]) : (new URL[0]))
-        .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("default").toFile().toPath())
-        .setLogOutput(new SonarLintLogOutput())
-        .build();
-      try {
-        client = new StandaloneSonarLintEngineImpl(globalConfig);
-      } catch (Throwable e) {
-        SonarLintCorePlugin.getDefault().error("Unable to start standalone SonarLint engine", e);
-        client = null;
+      SonarLintCorePlugin.getDefault().info("Starting standalone SonarLint engine " + FrameworkUtil.getBundle(this.getClass()).getVersion().toString() + "...");
+      Enumeration<URL> pluginEntriesEnum = SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false);
+      if (pluginEntriesEnum != null) {
+        List<URL> pluginEntries = Collections.list(pluginEntriesEnum);
+        SonarLintCorePlugin.getDefault().debug("Loading embedded analyzers...");
+        pluginEntries.stream().forEach(e -> SonarLintCorePlugin.getDefault().debug("  - " + e.getFile()));
+        StandaloneGlobalConfiguration globalConfig = StandaloneGlobalConfiguration.builder()
+          .addPlugins(pluginEntries.toArray(new URL[0]))
+          .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("default").toFile().toPath())
+          .setLogOutput(new SonarLintAnalyzerLogOutput())
+          .build();
+        try {
+          client = new StandaloneSonarLintEngineImpl(globalConfig);
+        } catch (Throwable e) {
+          SonarLintCorePlugin.getDefault().error("Unable to start standalone SonarLint engine", e);
+          client = null;
+        }
+      } else {
+        throw new IllegalStateException("Unable to find any embedded plugin");
       }
     }
     return client;

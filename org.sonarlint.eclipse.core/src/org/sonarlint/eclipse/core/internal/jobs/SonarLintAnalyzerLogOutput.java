@@ -22,24 +22,24 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
 
-public final class SonarLintLogOutput implements LogOutput {
+public final class SonarLintAnalyzerLogOutput implements LogOutput {
 
   @Override
   public void log(String msg, Level level) {
     switch (level) {
       case TRACE:
       case DEBUG:
-        SonarLintCorePlugin.getDefault().debug(msg);
+        SonarLintCorePlugin.getDefault().analyzerDebug(msg);
         break;
       case INFO:
       case WARN:
-        SonarLintCorePlugin.getDefault().info(msg);
+        SonarLintCorePlugin.getDefault().analyzerInfo(msg);
         break;
       case ERROR:
-        SonarLintCorePlugin.getDefault().error(msg);
+        SonarLintCorePlugin.getDefault().analyzerError(msg);
         break;
       default:
-        SonarLintCorePlugin.getDefault().info(msg);
+        SonarLintCorePlugin.getDefault().analyzerInfo(msg);
     }
 
   }

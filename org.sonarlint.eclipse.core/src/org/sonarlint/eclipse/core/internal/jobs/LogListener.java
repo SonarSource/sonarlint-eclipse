@@ -21,12 +21,10 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 public interface LogListener {
 
-  void info(String msg);
+  void info(String msg, boolean fromAnalyzer);
 
-  void error(String msg);
+  void error(String msg, boolean fromAnalyzer);
 
-  void debug(String msg);
-
-  void warn(String msg);
+  void debug(String msg, boolean fromAnalyzer);
 
 }

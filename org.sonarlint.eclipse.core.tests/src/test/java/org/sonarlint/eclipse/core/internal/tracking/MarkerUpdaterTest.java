@@ -56,21 +56,18 @@ public class MarkerUpdaterTest extends SonarTestCase {
   public static void prepare() throws Exception {
     SonarLintCorePlugin.getDefault().addLogListener(new LogListener() {
       @Override
-      public void info(String msg) {
+      public void info(String msg, boolean fromAnalyzer) {
       }
 
       @Override
-      public void error(String msg) {
+      public void error(String msg, boolean fromAnalyzer) {
         errors.add(msg);
       }
 
       @Override
-      public void debug(String msg) {
+      public void debug(String msg, boolean fromAnalyzer) {
       }
 
-      @Override
-      public void warn(String msg) {
-      }
     });
     project = importEclipseProject("reference");
   }

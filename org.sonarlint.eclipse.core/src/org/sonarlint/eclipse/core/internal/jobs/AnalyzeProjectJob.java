@@ -134,6 +134,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   private final class SonarLintIssueListener implements IssueListener {
     private final Map<IResource, List<Issue>> issuesPerResource;
+    private long issueCount = 0;
 
     private SonarLintIssueListener(Map<IResource, List<Issue>> issuesPerResource) {
       this.issuesPerResource = issuesPerResource;
@@ -141,6 +142,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
     @Override
     public void handle(Issue issue) {
+      issueCount++;
       IResource r;
       ClientInputFile inputFile = issue.getInputFile();
       if (inputFile == null) {
@@ -161,8 +163,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       return Status.CANCEL_STATUS;
     }
     long startTime = System.currentTimeMillis();
-    SonarLintCorePlugin.getDefault().info(this.getName());
-    SonarLintCorePlugin.getDefault().debug("Trigger type: " + request.getTriggerType().name());
+    SonarLintCorePlugin.getDefault().debug("Trigger: " + request.getTriggerType().name());
+    SonarLintCorePlugin.getDefault().info(this.getName() + "...");
     // Analyze
     try {
       // Configure
@@ -184,7 +186,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
 
       analysisCompleted(usedConfigurators, mergedExtraProps, monitor);
-      SonarLintCorePlugin.getDefault().debug(String.format("Analysis completed in %d ms", System.currentTimeMillis() - startTime));
+      SonarLintCorePlugin.getDefault().debug(String.format("Done in %d ms", System.currentTimeMillis() - startTime));
     } catch (Exception e) {
       SonarLintCorePlugin.getDefault().error("Error during execution of SonarLint analysis", e);
       return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
@@ -200,8 +202,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     // In some unfrequent cases the project may be virtual and don't have physical location
     Path projectBaseDir = projectLocation != null ? projectLocation.toFile().toPath() : ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
     if (sonarProject.isBound()) {
+      SonarLintCorePlugin.getDefault().debug("Connected mode (using configuration of '" + sonarProject.getModuleKey() + "' in server '" + sonarProject.getServerId() + "')");
       config = new ConnectedAnalysisConfiguration(trimToNull(sonarProject.getModuleKey()), projectBaseDir, projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
     } else {
+      SonarLintCorePlugin.getDefault().debug("Standalone mode (project not bound)");
       config = new StandaloneAnalysisConfiguration(projectBaseDir, projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
     }
 
@@ -388,7 +392,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   @CheckForNull
   public AnalysisResults runAndCheckCancellation(final StandaloneAnalysisConfiguration config, final SonarLintProject project, final Map<IResource, List<Issue>> issuesPerResource,
     final IProgressMonitor monitor) {
-    SonarLintCorePlugin.getDefault().debug("Start analysis with configuration:\n" + config.toString());
+    SonarLintCorePlugin.getDefault().debug("Starting analysis with configuration:\n" + config.toString());
     AnalysisThread t = new AnalysisThread(issuesPerResource, config, project);
     t.setDaemon(true);
     t.setUncaughtExceptionHandler((th, ex) -> SonarLintCorePlugin.getDefault().error("Error during analysis", ex));
@@ -422,16 +426,20 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   // Visible for testing
   @CheckForNull
   public AnalysisResults run(final StandaloneAnalysisConfiguration config, final SonarLintProject project, final Map<IResource, List<Issue>> issuesPerResource) {
+    SonarLintIssueListener issueListener = new SonarLintIssueListener(issuesPerResource);
+    AnalysisResults result;
     if (StringUtils.isNotBlank(project.getServerId())) {
       IServer server = ServersManager.getInstance().getServer(project.getServerId());
       if (server == null) {
         throw new IllegalStateException(
           "Project '" + project.getProject().getName() + "' is linked to an unknow server: '" + project.getServerId() + "'. Please bind project again.");
       }
-      return server.runAnalysis((ConnectedAnalysisConfiguration) config, new SonarLintIssueListener(issuesPerResource));
+      result = server.runAnalysis((ConnectedAnalysisConfiguration) config, issueListener);
     } else {
       StandaloneSonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade();
-      return facadeToUse.runAnalysis(config, new SonarLintIssueListener(issuesPerResource));
+      result = facadeToUse.runAnalysis(config, issueListener);
     }
+    SonarLintCorePlugin.getDefault().info("Found " + issueListener.issueCount + " issue(s)");
+    return result;
   }
 }

@@ -42,12 +42,14 @@ public final class Messages extends NLS {
 
   public static String SonarConsoleRemoveAction_tooltip;
 
-  public static String SonarDebugOutputAction_tooltip;
-
   public static String SonarShowConsoleAction_tooltip;
   public static String SonarShowConsoleAction_never_text;
   public static String SonarShowConsoleAction_onOutput_text;
   public static String SonarShowConsoleAction_onError_text;
+
+  public static String ConfigureLoggingAction_tooltip;
+  public static String ConfigureLoggingAction_verbose_text;
+  public static String ConfigureLoggingAction_analyzer_text;
 
   public static String PropertyAndPreferencePage_useprojectsettings_label;
   public static String PropertyAndPreferencePage_useworkspacesettings_change;

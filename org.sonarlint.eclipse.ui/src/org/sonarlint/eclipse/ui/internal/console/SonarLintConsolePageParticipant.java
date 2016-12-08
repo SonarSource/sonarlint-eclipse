@@ -25,7 +25,6 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
@@ -39,14 +38,14 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 public class SonarLintConsolePageParticipant implements IConsolePageParticipant {
 
-  private DebugAction debugAction;
   private ShowConsoleAction showOnOutputAction;
+  private ConfigureLoggingAction configureLoggingAction;
   private IAction consoleRemoveAction;
 
   @Override
   public void init(IPageBookViewPage page, IConsole console) {
     this.consoleRemoveAction = new RemoveAction();
-    this.debugAction = new DebugAction();
+    this.configureLoggingAction = new ConfigureLoggingAction();
     this.showOnOutputAction = new ShowConsoleAction();
 
     IActionBars actionBars = page.getSite().getActionBars();
@@ -55,14 +54,14 @@ public class SonarLintConsolePageParticipant implements IConsolePageParticipant 
 
   private void configureToolBar(IToolBarManager manager) {
     manager.prependToGroup(IConsoleConstants.LAUNCH_GROUP, consoleRemoveAction);
-    manager.prependToGroup(IConsoleConstants.OUTPUT_GROUP, debugAction);
+    manager.prependToGroup(IConsoleConstants.OUTPUT_GROUP, configureLoggingAction);
     manager.appendToGroup(IConsoleConstants.OUTPUT_GROUP, showOnOutputAction);
   }
 
   @Override
   public void dispose() {
-    debugAction.dispose();
-    debugAction = null;
+    configureLoggingAction.dispose();
+    configureLoggingAction = null;
 
     showOnOutputAction.dispose();
     showOnOutputAction = null;
@@ -145,37 +144,61 @@ public class SonarLintConsolePageParticipant implements IConsolePageParticipant 
     }
   }
 
-  static class DebugAction extends Action {
-    private final IPropertyChangeListener listener = event -> {
-      if (SonarLintConsole.P_DEBUG_OUTPUT.equals(event.getProperty())) {
-        setChecked(SonarLintConsole.isDebugEnabled());
-      }
-    };
+  static class ConfigureLoggingAction extends Action implements IMenuCreator {
+    private Menu menu;
 
-    public DebugAction() {
-      setToolTipText(Messages.SonarDebugOutputAction_tooltip);
+    public ConfigureLoggingAction() {
+      setToolTipText(Messages.ConfigureLoggingAction_tooltip);
       setImageDescriptor(SonarLintImages.DEBUG);
-
-      getPreferenceStore().addPropertyChangeListener(listener);
-      setChecked(SonarLintConsole.isDebugEnabled());
-    }
-
-    /**
-     * Must be called to dispose this action.
-     */
-    public void dispose() {
-      getPreferenceStore().removePropertyChangeListener(listener);
+      setMenuCreator(this);
     }
 
     @Override
-    public void run() {
-      getPreferenceStore().setValue(SonarLintConsole.P_DEBUG_OUTPUT, isChecked());
+    public void dispose() {
+      if (menu != null) {
+        menu.dispose();
+      }
     }
 
-    private static IPreferenceStore getPreferenceStore() {
-      return SonarLintUiPlugin.getDefault().getPreferenceStore();
+    @Override
+    public Menu getMenu(Control parent) {
+      if (menu != null) {
+        menu.dispose();
+      }
+      menu = new Menu(parent);
+      addActionToMenu(menu, new MyAction(Messages.ConfigureLoggingAction_verbose_text, SonarLintConsole.P_VERBOSE_OUTPUT));
+      addActionToMenu(menu, new MyAction(Messages.ConfigureLoggingAction_analyzer_text, SonarLintConsole.P_ANALYZER_OUTPUT));
+      return menu;
     }
 
+    private static void addActionToMenu(Menu parent, Action action) {
+      ActionContributionItem item = new ActionContributionItem(action);
+      item.fill(parent, -1);
+    }
+
+    @Override
+    public Menu getMenu(Menu parent) {
+      return null;
+    }
+
+    static class MyAction extends Action {
+      private final String propKey;
+
+      public MyAction(String name, String propKey) {
+        super(name, IAction.AS_CHECK_BOX);
+        this.propKey = propKey;
+        setChecked(getPreferenceStore().getBoolean(propKey));
+      }
+
+      private static IPreferenceStore getPreferenceStore() {
+        return SonarLintUiPlugin.getDefault().getPreferenceStore();
+      }
+
+      @Override
+      public void run() {
+        getPreferenceStore().setValue(propKey, isChecked());
+      }
+    }
   }
 
 }

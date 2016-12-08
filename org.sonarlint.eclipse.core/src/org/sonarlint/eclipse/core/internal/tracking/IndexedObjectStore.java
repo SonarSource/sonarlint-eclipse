@@ -83,7 +83,7 @@ class IndexedObjectStore<K, V> implements ObjectStore<K, V> {
           counter++;
           delete(k);
         } catch (IOException e) {
-          LOGGER.warn("Failed to delete file in the store", e);
+          LOGGER.error("Failed to delete file in the store", e);
         }
       }
     }

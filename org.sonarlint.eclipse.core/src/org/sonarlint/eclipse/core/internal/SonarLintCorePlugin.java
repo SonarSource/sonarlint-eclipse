@@ -81,46 +81,55 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   public void error(String msg) {
     for (LogListener listener : logListeners) {
-      listener.error(msg);
+      listener.error(msg, false);
+    }
+  }
+
+  public void analyzerError(String msg) {
+    for (LogListener listener : logListeners) {
+      listener.error(msg, true);
     }
   }
 
   public void error(String msg, Throwable t) {
     for (LogListener listener : logListeners) {
-      listener.error(msg);
+      listener.error(msg, false);
       StringWriter stack = new StringWriter();
       t.printStackTrace(new PrintWriter(stack));
-      listener.error(stack.toString());
+      listener.error(stack.toString(), false);
     }
   }
 
   public void info(String msg) {
     for (LogListener listener : logListeners) {
-      listener.info(msg);
+      listener.info(msg, false);
+    }
+  }
+
+  public void analyzerInfo(String msg) {
+    for (LogListener listener : logListeners) {
+      listener.info(msg, true);
     }
   }
 
   public void debug(String msg) {
     for (LogListener listener : logListeners) {
-      listener.debug(msg);
+      listener.debug(msg, false);
+    }
+  }
+
+  public void analyzerDebug(String msg) {
+    for (LogListener listener : logListeners) {
+      listener.debug(msg, true);
     }
   }
 
   public void debug(String msg, Throwable t) {
     for (LogListener listener : logListeners) {
-      listener.debug(msg);
+      listener.debug(msg, false);
       StringWriter stack = new StringWriter();
       t.printStackTrace(new PrintWriter(stack));
-      listener.debug(stack.toString());
-    }
-  }
-
-  public void warn(String msg, Throwable t) {
-    for (LogListener listener : logListeners) {
-      listener.warn(msg);
-      StringWriter stack = new StringWriter();
-      t.printStackTrace(new PrintWriter(stack));
-      listener.warn(stack.toString());
+      listener.debug(stack.toString(), false);
     }
   }
 

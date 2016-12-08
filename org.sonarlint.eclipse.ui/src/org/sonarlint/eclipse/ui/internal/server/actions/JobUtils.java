@@ -39,6 +39,7 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils.JobCompletionListener;
 
 public class JobUtils {
 
@@ -66,7 +67,7 @@ public class JobUtils {
           files.add(file);
         }
       } catch (PartInitException e) {
-        SonarLintCorePlugin.getDefault().warn("could not get editor content", e);
+        SonarLintCorePlugin.getDefault().error("could not get editor content", e);
       }
     }
 
