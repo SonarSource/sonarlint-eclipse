@@ -61,6 +61,9 @@ public class AnalyzeChangedFilesJob extends Job {
       List<Job> jobs = new ArrayList<>();
       for (Map.Entry<IProject, Collection<IFile>> entry : changedFilesPerProject.entrySet()) {
         IProject project = entry.getKey();
+        if (!project.isAccessible()) {
+          continue;
+        }
         Collection<IFile> filesToAnalyze = entry.getValue();
         AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.CHANGESET);
         AnalyzeProjectJob job = new AnalyzeProjectJob(req);
