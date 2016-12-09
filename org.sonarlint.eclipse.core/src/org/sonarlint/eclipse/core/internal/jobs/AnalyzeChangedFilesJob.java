@@ -24,10 +24,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -104,7 +106,7 @@ public class AnalyzeChangedFilesJob extends Job {
 
       // Allow the subscriber to refresh its state
       try {
-        subscriber.refresh(new IResource[] {project}, IResource.DEPTH_INFINITE, monitor);
+        subscriber.refresh(subscriber.roots(), IResource.DEPTH_INFINITE, monitor);
 
         // Collect all the synchronization states and print
         IResource[] children = new IResource[] {project};
@@ -122,12 +124,20 @@ public class AnalyzeChangedFilesJob extends Job {
     IFile file = (IFile) resource.getAdapter(IFile.class);
     if (file != null) {
       SyncInfo syncInfo = subscriber.getSyncInfo(resource);
-      if (!SyncInfo.isInSync(syncInfo.getKind())) {
+      if (syncInfo != null && !SyncInfo.isInSync(syncInfo.getKind())) {
         changedFiles.add(file);
       }
     }
-    for (IResource child : subscriber.members(resource)) {
-      collect(subscriber, child, changedFiles);
+    if (resource instanceof IContainer) {
+      IResource[] members = new IResource[0];
+      try {
+        members = ((IContainer) resource).members();
+      } catch (CoreException e) {
+        // Ignore
+      }
+      for (IResource child : members) {
+        collect(subscriber, child, changedFiles);
+      }
     }
   }
 }

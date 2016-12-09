@@ -138,6 +138,7 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
     // Disable button if view is visible
     if (ChangeSetIssuesView.instance != null) {
       ChangeSetIssuesView.instance.btnAll.setEnabled(false);
+      ChangeSetIssuesView.instance.btnPrj.setEnabled(false);
     }
     AnalyzeChangedFilesJob job = new AnalyzeChangedFilesJob(selectedProjects);
     registerJobListener(job);
@@ -152,6 +153,7 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
           // Enable button if view is visible
           if (ChangeSetIssuesView.instance != null) {
             ChangeSetIssuesView.instance.btnAll.setEnabled(true);
+            ChangeSetIssuesView.instance.refreshBtnState();
           }
           if (Status.OK_STATUS == event.getResult()) {
             // Display changeset issues view after analysis is completed
@@ -166,7 +168,6 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
         });
       }
     });
-    job.schedule();
   }
 
 }
