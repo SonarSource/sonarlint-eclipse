@@ -63,6 +63,11 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
   }
 
   @Override
+  public void dispose() {
+    instance = null;
+  }
+
+  @Override
   protected void populateBottomPanel(Composite bottom) {
     this.bottom = bottom;
     RowLayout bottomLayout = new RowLayout();
