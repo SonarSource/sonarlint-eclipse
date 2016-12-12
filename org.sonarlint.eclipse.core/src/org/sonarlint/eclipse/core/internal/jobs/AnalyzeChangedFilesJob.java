@@ -38,6 +38,7 @@ import org.eclipse.team.core.RepositoryProvider;
 import org.eclipse.team.core.TeamException;
 import org.eclipse.team.core.subscribers.Subscriber;
 import org.eclipse.team.core.synchronize.SyncInfo;
+import org.sonarlint.eclipse.core.internal.SonarLintChangeListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
@@ -134,6 +135,9 @@ public class AnalyzeChangedFilesJob extends Job {
   }
 
   void collect(Subscriber subscriber, IResource resource, Collection<IFile> changedFiles) throws TeamException {
+    if (!SonarLintChangeListener.shouldAnalyze(resource)) {
+      return;
+    }
     IFile file = (IFile) resource.getAdapter(IFile.class);
     if (file != null) {
       SyncInfo syncInfo = subscriber.getSyncInfo(resource);
