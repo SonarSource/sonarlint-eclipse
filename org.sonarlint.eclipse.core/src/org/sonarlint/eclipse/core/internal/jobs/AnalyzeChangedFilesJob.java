@@ -58,7 +58,16 @@ public class AnalyzeChangedFilesJob extends Job {
       Arrays.asList(ResourcesPlugin.getWorkspace().getRoot().getProjects()).stream().forEach(MarkerUtils::deleteChangeSetIssuesMarkers);
       Collection<IFile> collectChangedFiles = collectChangedFiles(projects, monitor);
 
+      if (collectChangedFiles.isEmpty()) {
+        SonarLintCorePlugin.getDefault().info("No changed files found");
+        return Status.OK_STATUS;
+      }
+
       Map<IProject, Collection<IFile>> changedFilesPerProject = SonarLintUtils.aggregatePerMoreSpecificProject(collectChangedFiles);
+
+      long fileCount = changedFilesPerProject.values().stream().flatMap(Collection::stream).count();
+
+      SonarLintCorePlugin.getDefault().info("Analyzing " + fileCount + " changed file(s) in " + changedFilesPerProject.keySet().size() + " project(s)");
 
       List<Job> jobs = new ArrayList<>();
       for (Map.Entry<IProject, Collection<IFile>> entry : changedFilesPerProject.entrySet()) {
@@ -103,6 +112,10 @@ public class AnalyzeChangedFilesJob extends Job {
       }
 
       Subscriber subscriber = provider.getSubscriber();
+      if (subscriber == null) {
+        // Seems to occurs with Rational ClearTeam Explorer
+        continue;
+      }
 
       // Allow the subscriber to refresh its state
       try {
