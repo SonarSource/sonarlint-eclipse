@@ -22,18 +22,16 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.team.core.RepositoryProvider;
 import org.eclipse.team.core.TeamException;
 import org.eclipse.team.core.subscribers.Subscriber;
@@ -44,7 +42,7 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 
-public class AnalyzeChangedFilesJob extends Job {
+public class AnalyzeChangedFilesJob extends WorkspaceJob {
   private static final String UNABLE_TO_ANALYZE_CHANGED_FILES = "Unable to analyze changed files";
   private final Collection<IProject> projects;
 
@@ -54,10 +52,12 @@ public class AnalyzeChangedFilesJob extends Job {
   }
 
   @Override
-  protected IStatus run(IProgressMonitor monitor) {
+  public IStatus runInWorkspace(IProgressMonitor monitor) {
+    SubMonitor global = SubMonitor.convert(monitor, 100);
     try {
+      global.setTaskName("Collect changed file(s) list");
       Arrays.asList(ResourcesPlugin.getWorkspace().getRoot().getProjects()).stream().forEach(MarkerUtils::deleteChangeSetIssuesMarkers);
-      Collection<IFile> collectChangedFiles = collectChangedFiles(projects, monitor);
+      Collection<IFile> collectChangedFiles = collectChangedFiles(projects, global.newChild(20));
 
       if (collectChangedFiles.isEmpty()) {
         SonarLintCorePlugin.getDefault().info("No changed files found");
@@ -70,35 +70,26 @@ public class AnalyzeChangedFilesJob extends Job {
 
       SonarLintCorePlugin.getDefault().info("Analyzing " + fileCount + " changed file(s) in " + changedFilesPerProject.keySet().size() + " project(s)");
 
-      List<Job> jobs = new ArrayList<>();
+      global.setTaskName("Analysis");
+      SubMonitor analysisMonitor = SubMonitor.convert(global.newChild(80), changedFilesPerProject.entrySet().size());
       for (Map.Entry<IProject, Collection<IFile>> entry : changedFilesPerProject.entrySet()) {
+        SubMonitor projectAnalysisMonitor = analysisMonitor.newChild(1);
         IProject project = entry.getKey();
+        global.setTaskName("Analysing project " + project.getName());
         if (!project.isAccessible()) {
           continue;
         }
         Collection<IFile> filesToAnalyze = entry.getValue();
         AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.CHANGESET);
         AnalyzeProjectJob job = new AnalyzeProjectJob(req);
-        job.schedule();
-        jobs.add(job);
+        job.runInWorkspace(projectAnalysisMonitor);
       }
 
-      waitForAllJobsToComplete(jobs);
     } catch (Exception e) {
       SonarLintCorePlugin.getDefault().error(UNABLE_TO_ANALYZE_CHANGED_FILES, e);
       return new Status(Status.ERROR, SonarLintCorePlugin.PLUGIN_ID, UNABLE_TO_ANALYZE_CHANGED_FILES, e);
     }
     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
-  }
-
-  private static void waitForAllJobsToComplete(List<Job> jobs) {
-    jobs.stream().forEach(j -> {
-      try {
-        j.join();
-      } catch (InterruptedException e) {
-        // Ignore
-      }
-    });
   }
 
   private Collection<IFile> collectChangedFiles(Collection<IProject> projects, IProgressMonitor monitor) {
@@ -109,23 +100,27 @@ public class AnalyzeChangedFilesJob extends Job {
       }
       RepositoryProvider provider = RepositoryProvider.getProvider(project);
       if (provider == null) {
+        SonarLintCorePlugin.getDefault().debug("Project " + project.getName() + " doesn't have any RepositoryProvider");
         continue;
       }
 
       Subscriber subscriber = provider.getSubscriber();
       if (subscriber == null) {
         // Seems to occurs with Rational ClearTeam Explorer
+        SonarLintCorePlugin.getDefault().debug("No Subscriber for provider " + provider.getID() + " on project " + project.getName());
         continue;
       }
 
-      // Allow the subscriber to refresh its state
       try {
-        subscriber.refresh(subscriber.roots(), IResource.DEPTH_INFINITE, monitor);
+        IResource[] roots = subscriber.roots();
+        if (Arrays.asList(roots).contains(project)) {
+          // Refresh
+          subscriber.refresh(new IResource[] {project}, IResource.DEPTH_INFINITE, monitor);
 
-        // Collect all the synchronization states and print
-        IResource[] children = new IResource[] {project};
-        for (int i = 0; i < children.length; i++) {
-          collect(subscriber, children[i], changedFiles);
+          // Collect all the synchronization states and print
+          collect(subscriber, project, changedFiles);
+        } else {
+          SonarLintCorePlugin.getDefault().debug("Project " + project.getName() + " is not part of Subscriber roots");
         }
       } catch (TeamException e) {
         throw new IllegalStateException(UNABLE_TO_ANALYZE_CHANGED_FILES, e);
@@ -145,16 +140,8 @@ public class AnalyzeChangedFilesJob extends Job {
         changedFiles.add(file);
       }
     }
-    if (resource instanceof IContainer) {
-      IResource[] members = new IResource[0];
-      try {
-        members = ((IContainer) resource).members();
-      } catch (CoreException e) {
-        // Ignore
-      }
-      for (IResource child : members) {
-        collect(subscriber, child, changedFiles);
-      }
+    for (IResource child : subscriber.members(resource)) {
+      collect(subscriber, child, changedFiles);
     }
   }
 }
