@@ -122,7 +122,7 @@ public class ServerIssueUpdater {
       String fileKey = toFileKey(resource);
 
       try {
-        LOGGER.debug("fetchServerIssues moduleKey=" + moduleKey + ", filepath=" + resource.getFullPath());
+        LOGGER.debug("fetchServerIssues moduleKey=" + moduleKey + ", filepath=" + fileKey);
         return engine.downloadServerIssues(serverConfiguration, moduleKey, fileKey);
       } catch (DownloadException e) {
         console.info(e.getMessage());
