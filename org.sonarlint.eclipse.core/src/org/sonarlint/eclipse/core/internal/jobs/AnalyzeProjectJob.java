@@ -291,7 +291,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
     trackIssues(successfulFiles, triggerType);
     if (shouldUpdateServerIssues(triggerType)) {
-      trackServerIssues(issuesPerResource.keySet(), triggerType);
+      trackServerIssues(successfulFiles.keySet(), triggerType);
     }
   }
 
