@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e47-dev" sequenceNumber="6">
+<?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e47-dev" sequenceNumber="8">
 <locations>
 <location path="${M2_REPO}/org/mockito/mockito-core/2.2.9" type="Directory"/>
 <location path="${M2_REPO}/net/bytebuddy/byte-buddy/1.5.0" type="Directory"/>
@@ -10,15 +10,20 @@
 <location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/2.7.0.154" type="Directory"/>
 <location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/2.7.0.154" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/technology/m2e/milestones/1.8"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.platform.ide" version="0.0.0"/>
 <unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.team.svn.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/oxygen/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/technology/m2e/milestones/1.8"/>
+<unit id="org.polarion.eclipse.team.svn.connector.svnkit18.feature.group" version="0.0.0"/>
+<repository location="http://community.polarion.com/projects/subversive/download/eclipse/6.0/neon-site/"/>
 </location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>

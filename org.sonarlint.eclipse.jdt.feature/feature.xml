@@ -2,7 +2,7 @@
 <feature
       id="org.sonarlint.eclipse.jdt.feature"
       label="%feature_name"
-      version="2.5.0.qualifier"
+      version="2.6.0.qualifier"
       provider-name="%provider_name"
       plugin="org.sonarlint.eclipse.ui">
 
