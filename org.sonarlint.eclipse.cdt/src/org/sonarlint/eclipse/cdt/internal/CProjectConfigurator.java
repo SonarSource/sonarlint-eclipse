@@ -25,10 +25,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import javax.annotation.CheckForNull;
 
 import org.eclipse.cdt.core.CCorePlugin;
 import org.eclipse.cdt.core.model.CoreModel;
@@ -40,6 +44,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.content.IContentType;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -54,19 +59,22 @@ public class CProjectConfigurator extends ProjectConfigurator {
   private final Predicate<IFile> fileValidator;
   private final SonarLintCorePlugin core;
   private final FilePathResolver filePathResolver;
+  private final BiFunction<IProject, Path, IContentType> contentTypeResolver;
 
   public CProjectConfigurator() {
-    this(new BuildWrapperJsonFactory(), CCorePlugin.getDefault(), CoreModel::isTranslationUnit, SonarLintCorePlugin.getDefault(),
+    this(new BuildWrapperJsonFactory(), CCorePlugin.getDefault(), CoreModel::isTranslationUnit,
+      (project, path) -> CCorePlugin.getContentType(project, path.toString()), SonarLintCorePlugin.getDefault(),
       new FilePathResolver());
   }
 
-  public CProjectConfigurator(BuildWrapperJsonFactory jsonFactory, CCorePlugin cCorePlugin, Predicate<IFile> fileValidator, 
-    SonarLintCorePlugin core, FilePathResolver filePathResolver) {
+  public CProjectConfigurator(BuildWrapperJsonFactory jsonFactory, CCorePlugin cCorePlugin, Predicate<IFile> fileValidator,
+    BiFunction<IProject, Path, IContentType> contentTypeResolver, SonarLintCorePlugin core, FilePathResolver filePathResolver) {
     this.jsonFactory = jsonFactory;
     this.cCorePlugin = cCorePlugin;
     this.fileValidator = fileValidator;
     this.core = core;
     this.filePathResolver = filePathResolver;
+    this.contentTypeResolver = contentTypeResolver;
   }
 
   @Override
@@ -81,10 +89,12 @@ public class CProjectConfigurator extends ProjectConfigurator {
       .collect(Collectors.toList());
 
     try {
-      Path jsonPath = configureCProject(request.getProject(), filesToAnalyze, jsonFactory);
+      Collection<ConfiguredFile> configuredFiles = configureCProject(request.getProject(), filesToAnalyze);
+      Path jsonPath = writeJson(request.getProject(), configuredFiles);
       core.debug("Wrote build info to: " + jsonPath.toString());
       request.getSonarProjectProperties().put(CFAMILY_USE_CACHE, Boolean.FALSE.toString());
       request.getSonarProjectProperties().put(BUILD_WRAPPER_OUTPUT_PROP, jsonPath.getParent().toString());
+      configuredFiles.forEach(f -> request.getFileLanguages().put(f.file(), f.languageKey()));
     } catch (Exception e) {
       core.error(e.getMessage(), e);
     }
@@ -96,25 +106,55 @@ public class CProjectConfigurator extends ProjectConfigurator {
     return projectLocation != null ? projectLocation.toFile().toPath() : ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
   }
 
-  private Path configureCProject(IProject project, Collection<IFile> filesToAnalyze, BuildWrapperJsonFactory jsonFactory) throws IOException {
-    Map<String, IScannerInfo> filesInfo = new HashMap<>();
+  private Collection<ConfiguredFile> configureCProject(IProject project, Collection<IFile> filesToAnalyze) {
+    List<ConfiguredFile> files = new LinkedList<>();
     IScannerInfoProvider infoProvider = cCorePlugin.getScannerInfoProvider(project);
 
     for (IFile file : filesToAnalyze) {
       try {
+        ConfiguredFile.Builder builder = new ConfiguredFile.Builder(file);
+
         Path path = filePathResolver.getPath(file);
         IScannerInfo fileInfo = infoProvider.getScannerInformation(file);
-        filesInfo.put(path.toString(), fileInfo);
+        String languageKey = getFileLanguage(project, file, path);
+
+        builder.includes(fileInfo.getIncludePaths() != null ? fileInfo.getIncludePaths() : new String[0])
+          .symbols(fileInfo.getDefinedSymbols() != null ? fileInfo.getDefinedSymbols() : Collections.emptyMap())
+          .path(path.toString())
+          .languageKey(languageKey);
+
+        files.add(builder.build());
       } catch (CoreException e) {
         core.error("Error building input file for SonarLint analysis: " + file.getName(), e);
       }
     }
+    return files;
 
+  }
+
+  private Path writeJson(IProject project, Collection<ConfiguredFile> files) throws IOException {
     Path projectBaseDir = getProjectBaseDir(project);
-    String json = jsonFactory.create(filesInfo, projectBaseDir.toString());
-
+    String json = jsonFactory.create(files, projectBaseDir.toString());
     return createJsonFile(filePathResolver.getWorkDir(), json);
+  }
 
+  @CheckForNull
+  private String getFileLanguage(IProject project, IFile file, Path path) {
+    IContentType contentType = contentTypeResolver.apply(project, path);
+
+    if (contentType == null) {
+      return null;
+    }
+    switch (contentType.getId()) {
+      case CCorePlugin.CONTENT_TYPE_CHEADER:
+      case CCorePlugin.CONTENT_TYPE_CSOURCE:
+        return "c";
+      case CCorePlugin.CONTENT_TYPE_CXXHEADER:
+      case CCorePlugin.CONTENT_TYPE_CXXSOURCE:
+        return "cpp";
+      default:
+        return null;
+    }
   }
 
   private static Path createJsonFile(Path workDir, String content) throws IOException {

@@ -27,6 +27,7 @@ import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,7 +75,6 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
@@ -83,9 +83,7 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisCo
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.trimToNull;
 
 public class AnalyzeProjectJob extends AbstractSonarProjectJob {
-
   private final List<SonarLintProperty> extraProps;
-
   private final AnalyzeProjectRequest request;
 
   static final ISchedulingRule SONARLINT_ANALYSIS_RULE = ResourcesPlugin.getWorkspace().getRuleFactory().buildRule();
@@ -132,31 +130,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private final class SonarLintIssueListener implements IssueListener {
-    private final Map<IResource, List<Issue>> issuesPerResource;
-    private long issueCount = 0;
-
-    private SonarLintIssueListener(Map<IResource, List<Issue>> issuesPerResource) {
-      this.issuesPerResource = issuesPerResource;
-    }
-
-    @Override
-    public void handle(Issue issue) {
-      issueCount++;
-      IResource r;
-      ClientInputFile inputFile = issue.getInputFile();
-      if (inputFile == null) {
-        r = request.getProject();
-      } else {
-        r = inputFile.getClientObject();
-      }
-      if (!issuesPerResource.containsKey(r)) {
-        issuesPerResource.put(r, new ArrayList<Issue>());
-      }
-      issuesPerResource.get(r).add(issue);
-    }
-  }
-
   @Override
   protected IStatus doRun(final IProgressMonitor monitor) {
     if (monitor.isCanceled()) {
@@ -172,10 +145,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       SonarLintProject sonarProject = SonarLintProject.getInstance(project);
       IPath projectSpecificWorkDir = project.getWorkingLocation(SonarLintCorePlugin.PLUGIN_ID);
       Map<String, String> mergedExtraProps = new LinkedHashMap<>();
-      final List<IFile> filesToAnalyze = new ArrayList<>(request.getFiles().size());
-      Collection<ProjectConfigurator> usedConfigurators = populateFilesToAnalyze(monitor, project, mergedExtraProps, filesToAnalyze);
+      final List<IFile> filesToAnalyze = new ArrayList<>(request.getFiles());
+      Map<IFile, String> fileLanguages = new HashMap<>();
+      Collection<ProjectConfigurator> usedConfigurators = configure(project, filesToAnalyze, fileLanguages, mergedExtraProps, monitor);
 
-      List<ClientInputFile> inputFiles = buildInputFiles(filesToAnalyze, monitor);
+      List<ClientInputFile> inputFiles = buildInputFiles(filesToAnalyze, fileLanguages, monitor);
 
       for (SonarLintProperty sonarProperty : extraProps) {
         mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue());
@@ -218,7 +192,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private static List<ClientInputFile> buildInputFiles(final List<IFile> filesToAnalyze, IProgressMonitor monitor) {
+  private static List<ClientInputFile> buildInputFiles(final List<IFile> filesToAnalyze, Map<IFile, String> fileLanguages, IProgressMonitor monitor) {
     List<ClientInputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
     String allTestPattern = PreferencesUtils.getTestFileRegexps();
     String[] testPatterns = allTestPattern.split(",");
@@ -238,18 +212,13 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           continue;
         }
         uniqueFilePaths.add(filePath.toString());
-        inputFiles.add(new EclipseInputFile(pathMatchersForTests, file, filePath));
+        ClientInputFile inputFile = new EclipseInputFile(pathMatchersForTests, file, filePath, fileLanguages.get(file));
+        inputFiles.add(inputFile);
       } catch (CoreException e) {
         SonarLintCorePlugin.getDefault().error("Error building input file for SonarLint analysis: " + file.getName(), e);
       }
     }
     return inputFiles;
-  }
-
-  private Collection<ProjectConfigurator> populateFilesToAnalyze(final IProgressMonitor monitor, IProject project,
-    Map<String, String> mergedExtraProps, final List<IFile> filesToAnalyze) {
-    filesToAnalyze.addAll(request.getFiles());
-    return configure(project, filesToAnalyze, mergedExtraProps, monitor);
   }
 
   private static List<PathMatcher> createMatchersForTests(String[] testPatterns) {
@@ -261,9 +230,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return pathMatchersForTests;
   }
 
-  private static Collection<ProjectConfigurator> configure(final IProject project, Collection<IFile> filesToAnalyze, final Map<String, String> extraProperties,
+  private static Collection<ProjectConfigurator> configure(final IProject project, Collection<IFile> filesToAnalyze, Map<IFile, String> fileLanguages,
+    final Map<String, String> extraProperties,
     final IProgressMonitor monitor) {
-    ProjectConfigurationRequest configuratorRequest = new ProjectConfigurationRequest(project, filesToAnalyze, extraProperties);
+    ProjectConfigurationRequest configuratorRequest = new ProjectConfigurationRequest(project, filesToAnalyze, fileLanguages, extraProperties);
     Collection<ProjectConfigurator> configurators = ConfiguratorUtils.getConfigurators();
     Collection<ProjectConfigurator> usedConfigurators = new ArrayList<>();
     for (ProjectConfigurator configurator : configurators) {
@@ -426,7 +396,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   // Visible for testing
   @CheckForNull
   public AnalysisResults run(final StandaloneAnalysisConfiguration config, final SonarLintProject project, final Map<IResource, List<Issue>> issuesPerResource) {
-    SonarLintIssueListener issueListener = new SonarLintIssueListener(issuesPerResource);
+    SonarLintIssueListener issueListener = new SonarLintIssueListener(project.getProject(), issuesPerResource);
     AnalysisResults result;
     if (StringUtils.isNotBlank(project.getServerId())) {
       IServer server = ServersManager.getInstance().getServer(project.getServerId());
@@ -439,7 +409,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       StandaloneSonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade();
       result = facadeToUse.runAnalysis(config, issueListener);
     }
-    SonarLintCorePlugin.getDefault().info("Found " + issueListener.issueCount + " issue(s)");
+    SonarLintCorePlugin.getDefault().info("Found " + issueListener.getIssueCount() + " issue(s)");
     return result;
   }
 }

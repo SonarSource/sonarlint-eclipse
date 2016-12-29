@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.anyMap;
+import static org.mockito.Mockito.anyCollection;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.nio.file.Paths;
@@ -74,7 +74,7 @@ public class CProjectConfiguratorTest {
     core = mock(SonarLintCorePlugin.class);
     filePathResolver = mock(FilePathResolver.class);
     when(filePathResolver.getWorkDir()).thenReturn(temp.getRoot().toPath());
-    configurator = new CProjectConfigurator(jsonFactory, cCorePlugin, fileValidator, core, filePathResolver);
+    configurator = new CProjectConfigurator(jsonFactory, cCorePlugin, fileValidator, (proj, path) -> null, core, filePathResolver);
   }
 
   @Test
@@ -98,16 +98,16 @@ public class CProjectConfiguratorTest {
     when(infoProvider.getScannerInformation(file)).thenReturn(info);
     when(fileValidator.test(file)).thenReturn(true);
     when(filePathResolver.getPath(file)).thenReturn(Paths.get("file1"));
-    when(jsonFactory.create(anyMap(), anyString())).thenReturn("json");
+    when(jsonFactory.create(anyCollection(), anyString())).thenReturn("json");
 
     Map<String, String> props = new HashMap<>();
 
-    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, Collections.singleton(file), props);
+    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, Collections.singleton(file), new HashMap<>(), props);
 
     configurator.configure(request, monitor);
 
     // json created
-    verify(jsonFactory).create(anyMap(), eq(temp.getRoot().getAbsolutePath()));
+    verify(jsonFactory).create(anyCollection(), eq(temp.getRoot().getAbsolutePath()));
 
     // json written
     assertThat(temp.getRoot().toPath().resolve("build-wrapper-dump.json")).hasContent("json");

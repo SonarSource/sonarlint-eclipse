@@ -20,17 +20,19 @@
 package org.sonarlint.eclipse.cdt.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.eclipse.cdt.core.parser.IScannerInfo;
+import org.eclipse.core.resources.IFile;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,25 +46,27 @@ public class BuildWrapperJsonFactoryTest {
 
   @Test
   public void test() throws IOException, URISyntaxException {
-    Map<String, IScannerInfo> info = new HashMap<>();
+    List<ConfiguredFile> info = new ArrayList<>();
     Map<String, String> defines1 = new LinkedHashMap<>();
     defines1.put("MACRO1", "V1");
     defines1.put("MACRO2", "V2");
 
-    info.put(
-      "path/to/file1",
-      new ScannerInfo(
-        new String[] {"/path/to/include1", "/path/to/include2"},
-        defines1));
+    info.add(new ConfiguredFile.Builder(mock(IFile.class))
+      .includes(new String[] {"/path/to/include1", "/path/to/include2"})
+      .symbols(defines1)
+      .path("path/to/file1")
+      .build());
 
     Map<String, String> defines2 = new LinkedHashMap<>();
     defines2.put("MACRO1", "V1");
     defines2.put("MACRO2", "V2");
     defines2.put("MACRO3", "V3");
-    info.put("\\path\\to\\file2",
-      new ScannerInfo(
-        new String[] {"path\\to\\include1", "\\path\\to\\include2", "\\path\\to\\include3"},
-        defines2));
+
+    info.add(new ConfiguredFile.Builder(mock(IFile.class))
+      .includes(new String[] {"path\\to\\include1", "\\path\\to\\include2", "\\path\\to\\include3"})
+      .symbols(defines2)
+      .path("\\path\\to\\file2")
+      .build());
 
     String json = writer.create(info, "/path/to/projectBaseDir");
     assertThat(json).isEqualTo(loadExpected());
@@ -73,26 +77,4 @@ public class BuildWrapperJsonFactoryTest {
     String str = new String(Files.readAllBytes(Paths.get("src", "test", "resources", "expected.json")), StandardCharsets.UTF_8);
     return str.replace("\n", "").replace("\r", "");
   }
-
-  private static class ScannerInfo implements IScannerInfo {
-
-    private final String[] includes;
-    private final Map<String, String> symbols;
-
-    public ScannerInfo(String[] includes, Map<String, String> symbols) {
-      this.includes = includes;
-      this.symbols = symbols;
-    }
-
-    @Override
-    public String[] getIncludePaths() {
-      return includes;
-    }
-
-    @Override
-    public Map<String, String> getDefinedSymbols() {
-      return symbols;
-    }
-  }
-
 }

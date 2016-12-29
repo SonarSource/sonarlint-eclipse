@@ -189,7 +189,7 @@ public class JavaProjectConfiguratorTest extends SonarTestCase {
 
     List<IFile> filesToAnalyze = new ArrayList<>(Arrays.asList(onClassPath, compileError, outsideClassPath, nonJava));
 
-    configurator.configure(new ProjectConfigurationRequest(jdtProject, filesToAnalyze, new HashMap<>()), new NullProgressMonitor());
+    configurator.configure(new ProjectConfigurationRequest(jdtProject, filesToAnalyze, new HashMap<>(), new HashMap<>()), new NullProgressMonitor());
 
     assertThat(filesToAnalyze).containsOnly(onClassPath, nonJava);
   }
@@ -202,7 +202,7 @@ public class JavaProjectConfiguratorTest extends SonarTestCase {
 
     List<IFile> filesToAnalyze = new ArrayList<>(Arrays.asList(java, nonJava));
 
-    configurator.configure(new ProjectConfigurationRequest(nonJdtProject, filesToAnalyze, new HashMap<>()), new NullProgressMonitor());
+    configurator.configure(new ProjectConfigurationRequest(nonJdtProject, filesToAnalyze, new HashMap<>(), new HashMap<>()), new NullProgressMonitor());
 
     assertThat(filesToAnalyze).containsOnly(nonJava);
   }
