@@ -19,46 +19,46 @@
  */
 package org.sonarlint.eclipse.cdt.internal;
 
+import java.util.Collection;
 import java.util.Map;
-import org.eclipse.cdt.core.parser.IScannerInfo;
 
 public class BuildWrapperJsonFactory {
   private static final String COMPILER = "clang";
 
-  public String create(Map<String, IScannerInfo> fileInfo, String baseDirPath) {
+  public String create(Collection<ConfiguredFile> files, String baseDirPath) {
     StringBuilder builder = new StringBuilder();
     builder.append("{"
       + "\"version\":0,"
       + "\"captures\":[");
 
     boolean first = true;
-    for (Map.Entry<String, IScannerInfo> f : fileInfo.entrySet()) {
+    for (ConfiguredFile file : files) {
       if (first) {
         first = false;
       } else {
         builder.append(",");
       }
-      writeFile(builder, baseDirPath, f.getKey(), f.getValue().getIncludePaths(), f.getValue().getDefinedSymbols());
+      writeFile(builder, baseDirPath, file.path(), file.includes(), file.symbols());
     }
 
     builder.append("]}");
     return builder.toString();
   }
 
-  private static void writeFile(StringBuilder builder, String baseDirPath, String relativeFilePath, String[] includes, Map<String, String> symbols) {
+  private static void writeFile(StringBuilder builder, String baseDirPath, String filePath, String[] includes, Map<String, String> symbols) {
     String probeStdout = probeStdout(symbols);
     String probeStderr = probeStderr(includes);
-    writeCompilerProbe(builder, relativeFilePath, probeStdout, probeStderr);
+    writeCompilerProbe(builder, filePath, probeStdout, probeStderr);
     builder.append(",");
-    writeCompilerProbe(builder, relativeFilePath, probeStdout, probeStderr);
+    writeCompilerProbe(builder, filePath, probeStdout, probeStderr);
     builder.append(",");
     builder.append("{")
       .append("\"compiler\":\"" + COMPILER + "\",")
       .append("\"cwd\":" + quote(baseDirPath) + ",")
-      .append("\"executable\":" + quote(relativeFilePath) + ",")
+      .append("\"executable\":" + quote(filePath) + ",")
       .append("\"cmd\":[")
       .append("\"clang\"")
-      .append("," + quote(relativeFilePath) + "")
+      .append("," + quote(filePath) + "")
       .append("]}");
 
   }

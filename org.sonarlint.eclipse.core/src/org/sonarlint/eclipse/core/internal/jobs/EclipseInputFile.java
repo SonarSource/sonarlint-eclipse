@@ -28,6 +28,8 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.sonarlint.eclipse.core.internal.markers.TextFileContext;
@@ -37,12 +39,19 @@ class EclipseInputFile implements ClientInputFile {
   private final List<PathMatcher> pathMatchersForTests;
   private final IFile file;
   private final Path filePath;
+  private final String language;
 
   EclipseInputFile(List<PathMatcher> pathMatchersForTests, IFile file, Path filePath) {
+    this(pathMatchersForTests, file, filePath, null);
+  }
+  
+  EclipseInputFile(List<PathMatcher> pathMatchersForTests, IFile file, Path filePath, @Nullable String language) {
     this.pathMatchersForTests = pathMatchersForTests;
     this.file = file;
     this.filePath = filePath;
+    this.language = language;
   }
+
 
   @Override
   public String getPath() {
@@ -57,6 +66,11 @@ class EclipseInputFile implements ClientInputFile {
       }
     }
     return false;
+  }
+  
+  @Override
+  public String language() {
+    return language;
   }
 
   @Override
