@@ -31,6 +31,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
@@ -59,7 +60,7 @@ public final class MarkerUtils {
       try {
         resource.deleteMarkers(markerId, true, IResource.DEPTH_INFINITE);
       } catch (CoreException e) {
-        SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+        SonarLintLogger.get().error(e.getMessage(), e);
       }
     }
   }
@@ -68,7 +69,7 @@ public final class MarkerUtils {
     try {
       return Arrays.asList(resource.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
     } catch (CoreException e) {
-      SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+      SonarLintLogger.get().error(e.getMessage(), e);
       return Collections.emptyList();
     }
   }
@@ -104,7 +105,7 @@ public final class MarkerUtils {
       length = document.getLineLength(startLine - 1);
       lineDelimiter = document.getLineDelimiter(startLine - 1);
     } catch (BadLocationException e) {
-      SonarLintCorePlugin.getDefault().error("failed to compute flat text range for line " + startLine, e);
+      SonarLintLogger.get().error("failed to compute flat text range for line " + startLine, e);
       return null;
     }
 
@@ -123,7 +124,7 @@ public final class MarkerUtils {
       startLineStartOffset = document.getLineOffset(startLine - 1);
       endLineStartOffset = endLine != startLine ? document.getLineOffset(endLine - 1) : startLineStartOffset;
     } catch (BadLocationException e) {
-      SonarLintCorePlugin.getDefault().error("failed to compute line offsets for start, end = " + startLine + ", " + endLine, e);
+      SonarLintLogger.get().error("failed to compute line offsets for start, end = " + startLine + ", " + endLine, e);
       return null;
     }
 

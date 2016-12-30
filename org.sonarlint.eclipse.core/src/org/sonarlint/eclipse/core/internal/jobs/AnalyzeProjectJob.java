@@ -53,6 +53,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
@@ -136,8 +137,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       return Status.CANCEL_STATUS;
     }
     long startTime = System.currentTimeMillis();
-    SonarLintCorePlugin.getDefault().debug("Trigger: " + request.getTriggerType().name());
-    SonarLintCorePlugin.getDefault().info(this.getName() + "...");
+    SonarLintLogger.get().debug("Trigger: " + request.getTriggerType().name());
+    SonarLintLogger.get().info(this.getName() + "...");
     // Analyze
     try {
       // Configure
@@ -160,9 +161,9 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
 
       analysisCompleted(usedConfigurators, mergedExtraProps, monitor);
-      SonarLintCorePlugin.getDefault().debug(String.format("Done in %d ms", System.currentTimeMillis() - startTime));
+      SonarLintLogger.get().debug(String.format("Done in %d ms", System.currentTimeMillis() - startTime));
     } catch (Exception e) {
-      SonarLintCorePlugin.getDefault().error("Error during execution of SonarLint analysis", e);
+      SonarLintLogger.get().error("Error during execution of SonarLint analysis", e);
       return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
     }
 
@@ -176,10 +177,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     // In some unfrequent cases the project may be virtual and don't have physical location
     Path projectBaseDir = projectLocation != null ? projectLocation.toFile().toPath() : ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
     if (sonarProject.isBound()) {
-      SonarLintCorePlugin.getDefault().debug("Connected mode (using configuration of '" + sonarProject.getModuleKey() + "' in server '" + sonarProject.getServerId() + "')");
+      SonarLintLogger.get().debug("Connected mode (using configuration of '" + sonarProject.getModuleKey() + "' in server '" + sonarProject.getServerId() + "')");
       config = new ConnectedAnalysisConfiguration(trimToNull(sonarProject.getModuleKey()), projectBaseDir, projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
     } else {
-      SonarLintCorePlugin.getDefault().debug("Standalone mode (project not bound)");
+      SonarLintLogger.get().debug("Standalone mode (project not bound)");
       config = new StandaloneAnalysisConfiguration(projectBaseDir, projectSpecificWorkDir.toFile().toPath(), inputFiles, mergedExtraProps);
     }
 
@@ -215,7 +216,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         ClientInputFile inputFile = new EclipseInputFile(pathMatchersForTests, file, filePath, fileLanguages.get(file));
         inputFiles.add(inputFile);
       } catch (CoreException e) {
-        SonarLintCorePlugin.getDefault().error("Error building input file for SonarLint analysis: " + file.getName(), e);
+        SonarLintLogger.get().error("Error building input file for SonarLint analysis: " + file.getName(), e);
       }
     }
     return inputFiles;
@@ -312,7 +313,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       try {
         return document.get(flatTextRange.getStart(), flatTextRange.getLength());
       } catch (BadLocationException e) {
-        SonarLintCorePlugin.getDefault().error("failed to get text range content of resource " + resource.getFullPath(), e);
+        SonarLintLogger.get().error("failed to get text range content of resource " + resource.getFullPath(), e);
       }
     }
     return null;
@@ -325,7 +326,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       try {
         return document.get(lineTextRange.getStart(), lineTextRange.getLength());
       } catch (BadLocationException e) {
-        SonarLintCorePlugin.getDefault().error("failed to get line content of resource " + resource.getFullPath(), e);
+        SonarLintLogger.get().error("failed to get line content of resource " + resource.getFullPath(), e);
       }
     }
     return null;
@@ -362,10 +363,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   @CheckForNull
   public AnalysisResults runAndCheckCancellation(final StandaloneAnalysisConfiguration config, final SonarLintProject project, final Map<IResource, List<Issue>> issuesPerResource,
     final IProgressMonitor monitor) {
-    SonarLintCorePlugin.getDefault().debug("Starting analysis with configuration:\n" + config.toString());
+    SonarLintLogger.get().debug("Starting analysis with configuration:\n" + config.toString());
     AnalysisThread t = new AnalysisThread(issuesPerResource, config, project);
     t.setDaemon(true);
-    t.setUncaughtExceptionHandler((th, ex) -> SonarLintCorePlugin.getDefault().error("Error during analysis", ex));
+    t.setUncaughtExceptionHandler((th, ex) -> SonarLintLogger.get().error("Error during analysis", ex));
     t.start();
     waitForThread(monitor, t);
     return t.getResult();
@@ -381,7 +382,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           // just quit
         }
         if (t.isAlive()) {
-          SonarLintCorePlugin.getDefault().error("Unable to properly terminate SonarLint analysis");
+          SonarLintLogger.get().error("Unable to properly terminate SonarLint analysis");
         }
         break;
       }
@@ -409,7 +410,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       StandaloneSonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade();
       result = facadeToUse.runAnalysis(config, issueListener);
     }
-    SonarLintCorePlugin.getDefault().info("Found " + issueListener.getIssueCount() + " issue(s)");
+    SonarLintLogger.get().info("Found " + issueListener.getIssueCount() + " issue(s)");
     return result;
   }
 }

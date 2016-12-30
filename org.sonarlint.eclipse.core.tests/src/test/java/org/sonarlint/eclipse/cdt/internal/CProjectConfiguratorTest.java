@@ -42,7 +42,6 @@ import org.eclipse.cdt.core.parser.IScannerInfo;
 import org.eclipse.cdt.core.parser.IScannerInfoProvider;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -51,8 +50,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
 public class CProjectConfiguratorTest {
   private CProjectConfigurator configurator;
@@ -60,7 +59,7 @@ public class CProjectConfiguratorTest {
   private BuildWrapperJsonFactory jsonFactory;
   private CCorePlugin cCorePlugin;
   private Predicate<IFile> fileValidator;
-  private SonarLintCorePlugin core;
+  private SonarLintLogger logger;
   private FilePathResolver filePathResolver;
 
   @Rule
@@ -71,10 +70,10 @@ public class CProjectConfiguratorTest {
     cCorePlugin = mock(CCorePlugin.class);
     jsonFactory = mock(BuildWrapperJsonFactory.class);
     fileValidator = mock(Predicate.class);
-    core = mock(SonarLintCorePlugin.class);
+    logger = mock(SonarLintLogger.class);
     filePathResolver = mock(FilePathResolver.class);
     when(filePathResolver.getWorkDir()).thenReturn(temp.getRoot().toPath());
-    configurator = new CProjectConfigurator(jsonFactory, cCorePlugin, fileValidator, (proj, path) -> null, core, filePathResolver);
+    configurator = new CProjectConfigurator(jsonFactory, cCorePlugin, fileValidator, (proj, path) -> null, logger, filePathResolver);
   }
 
   @Test
@@ -118,8 +117,8 @@ public class CProjectConfiguratorTest {
       entry("sonar.cfamily.useCache", "false"));
 
     // no errors
-    verify(core, never()).error(Mockito.any(), Mockito.any());
-    verify(core, never()).error(Mockito.any());
+    verify(logger, never()).error(Mockito.any(), Mockito.any());
+    verify(logger, never()).error(Mockito.any());
   }
 
   @Test

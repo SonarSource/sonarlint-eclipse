@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
 
 public final class SonarLintAnalyzerLogOutput implements LogOutput {
@@ -29,17 +29,17 @@ public final class SonarLintAnalyzerLogOutput implements LogOutput {
     switch (level) {
       case TRACE:
       case DEBUG:
-        SonarLintCorePlugin.getDefault().analyzerDebug(msg);
+        SonarLintLogger.get().analyzerDebug(msg);
         break;
       case INFO:
       case WARN:
-        SonarLintCorePlugin.getDefault().analyzerInfo(msg);
+        SonarLintLogger.get().analyzerInfo(msg);
         break;
       case ERROR:
-        SonarLintCorePlugin.getDefault().analyzerError(msg);
+        SonarLintLogger.get().analyzerError(msg);
         break;
       default:
-        SonarLintCorePlugin.getDefault().analyzerInfo(msg);
+        SonarLintLogger.get().analyzerInfo(msg);
     }
 
   }

@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.ui.internal.command;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
 
 public class ShowRuleDescriptionCommand extends AbstractIssueCommand {
@@ -32,7 +32,7 @@ public class ShowRuleDescriptionCommand extends AbstractIssueCommand {
       RuleDescriptionWebView view = (RuleDescriptionWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(RuleDescriptionWebView.ID);
       view.setInput(selectedMarker);
     } catch (Exception e) {
-      SonarLintCorePlugin.getDefault().error("Unable to open Rule Description Web View", e);
+      SonarLintLogger.get().error("Unable to open Rule Description Web View", e);
     }
   }
 

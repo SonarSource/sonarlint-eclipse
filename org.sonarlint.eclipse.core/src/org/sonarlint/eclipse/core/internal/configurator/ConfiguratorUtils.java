@@ -26,8 +26,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
 /**
  * Utility class to deal with configurator extension point.
@@ -52,7 +52,7 @@ public class ConfiguratorUtils {
         ProjectConfigurator configurator = (ProjectConfigurator) obj;
         result.add(configurator);
       } catch (CoreException e) {
-        SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+        SonarLintLogger.get().error(e.getMessage(), e);
       }
     }
     return result;

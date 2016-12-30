@@ -28,7 +28,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public final class PlatformUtils {
 
@@ -43,7 +43,7 @@ public final class PlatformUtils {
     try {
       IDE.openEditor(page, file);
     } catch (PartInitException e) {
-      SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+      SonarLintLogger.get().error(e.getMessage(), e);
     }
   }
 
@@ -65,7 +65,7 @@ public final class PlatformUtils {
       IDE.openEditor(page, marker);
       marker.delete();
     } catch (CoreException e) {
-      SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+      SonarLintLogger.get().error(e.getMessage(), e);
     }
   }
 

@@ -24,6 +24,7 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.server.IServer;
@@ -85,7 +86,7 @@ public class SonarLintProject {
   public void update(IProgressMonitor monitor) {
     IServer server = ServersManager.getInstance().getServer(getServerId());
     if (server == null) {
-      SonarLintCorePlugin.getDefault().error("Unable to update project '" + project.getName() + "' since it is bound to an unknow server: '" + getServerId() + "'");
+      SonarLintLogger.get().error("Unable to update project '" + project.getName() + "' since it is bound to an unknow server: '" + getServerId() + "'");
       return;
     }
     server.updateProjectStorage(moduleKey);

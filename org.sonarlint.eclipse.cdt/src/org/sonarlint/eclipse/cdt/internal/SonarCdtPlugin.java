@@ -23,9 +23,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.cdt.core.CCProjectNature;
 import org.eclipse.cdt.core.CProjectNature;
-import org.eclipse.cdt.core.model.CoreModel;
 import org.sonarlint.eclipse.core.AbstractPlugin;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public class SonarCdtPlugin extends AbstractPlugin {
 
@@ -48,7 +47,7 @@ public class SonarCdtPlugin extends AbstractPlugin {
     try {
       return project.hasNature(CProjectNature.C_NATURE_ID) || project.hasNature(CCProjectNature.CC_NATURE_ID);
     } catch (CoreException e) {
-      SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+      SonarLintLogger.get().error(e.getMessage(), e);
       return false;
     }
   }

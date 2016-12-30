@@ -19,12 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -33,7 +29,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 import org.sonarlint.eclipse.core.AbstractPlugin;
-import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
 import org.sonarlint.eclipse.core.internal.tracking.IssueStore;
@@ -56,7 +51,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   private IssueTrackerRegistry issueTrackerRegistry;
   private ServerIssueUpdater serverIssueUpdater;
 
-  private final List<LogListener> logListeners = new ArrayList<>();
   private StandaloneSonarLintClientFacade sonarlint;
   private final ServiceTracker proxyTracker;
   private SonarLintChangeListener sonarLintChangeListener;
@@ -69,68 +63,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   public static SonarLintCorePlugin getDefault() {
     return plugin;
-  }
-
-  public void addLogListener(LogListener listener) {
-    logListeners.add(listener);
-  }
-
-  public void removeLogListener(LogListener listener) {
-    logListeners.remove(listener);
-  }
-
-  public void error(String msg) {
-    for (LogListener listener : logListeners) {
-      listener.error(msg, false);
-    }
-  }
-
-  public void analyzerError(String msg) {
-    for (LogListener listener : logListeners) {
-      listener.error(msg, true);
-    }
-  }
-
-  public void error(String msg, Throwable t) {
-    for (LogListener listener : logListeners) {
-      listener.error(msg, false);
-      StringWriter stack = new StringWriter();
-      t.printStackTrace(new PrintWriter(stack));
-      listener.error(stack.toString(), false);
-    }
-  }
-
-  public void info(String msg) {
-    for (LogListener listener : logListeners) {
-      listener.info(msg, false);
-    }
-  }
-
-  public void analyzerInfo(String msg) {
-    for (LogListener listener : logListeners) {
-      listener.info(msg, true);
-    }
-  }
-
-  public void debug(String msg) {
-    for (LogListener listener : logListeners) {
-      listener.debug(msg, false);
-    }
-  }
-
-  public void analyzerDebug(String msg) {
-    for (LogListener listener : logListeners) {
-      listener.debug(msg, true);
-    }
-  }
-
-  public void debug(String msg, Throwable t) {
-    for (LogListener listener : logListeners) {
-      listener.debug(msg, false);
-      StringWriter stack = new StringWriter();
-      t.printStackTrace(new PrintWriter(stack));
-      listener.debug(stack.toString(), false);
-    }
   }
 
   public synchronized SonarLintProjectManager getProjectManager() {

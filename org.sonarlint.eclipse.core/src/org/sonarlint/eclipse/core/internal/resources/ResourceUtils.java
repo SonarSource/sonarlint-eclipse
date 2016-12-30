@@ -24,7 +24,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public final class ResourceUtils {
 
@@ -39,7 +39,7 @@ public final class ResourceUtils {
       if (res.getLocation() != null) {
         return res.getLocation();
       } else {
-        SonarLintCorePlugin.getDefault().error("Unable to resolve absolute path for " + res.getLocationURI());
+        SonarLintLogger.get().error("Unable to resolve absolute path for " + res.getLocationURI());
         return null;
       }
     } else {

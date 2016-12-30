@@ -26,6 +26,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
@@ -83,7 +84,7 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
         + ")</h1><div class=\"rule-desc\">" + htmlDescription
         + "</div></body></html>");
     } catch (CoreException e) {
-      SonarLintCorePlugin.getDefault().error("Unable to open rule description", e);
+      SonarLintLogger.get().error("Unable to open rule description", e);
     }
   }
 

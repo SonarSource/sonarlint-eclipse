@@ -26,7 +26,7 @@ import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
@@ -69,7 +69,7 @@ public class SearchEngineProvider implements IContentProposalProvider {
         list.add(new ContentProposal(prj.asString(), m.getName(), prj.getDescription()));
       }
     } catch (Exception e) {
-      SonarLintCorePlugin.getDefault().debug("Unable to search modules from server " + server.getId(), e);
+      SonarLintLogger.get().debug("Unable to search modules from server " + server.getId(), e);
     }
     if (!list.isEmpty()) {
       parentPage.setMessage("", IMessageProvider.NONE);

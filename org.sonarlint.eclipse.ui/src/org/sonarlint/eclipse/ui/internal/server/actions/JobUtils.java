@@ -33,13 +33,12 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils.JobCompletionListener;
 
 public class JobUtils {
 
@@ -54,7 +53,7 @@ public class JobUtils {
 
     IWorkbenchWindow workbench = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
     if (workbench == null) {
-      SonarLintCorePlugin.getDefault().debug("possible attempt to get workbench window outside of a Display");
+      SonarLintLogger.get().debug("possible attempt to get workbench window outside of a Display");
       return;
     }
 
@@ -67,7 +66,7 @@ public class JobUtils {
           files.add(file);
         }
       } catch (PartInitException e) {
-        SonarLintCorePlugin.getDefault().error("could not get editor content", e);
+        SonarLintLogger.get().error("could not get editor content", e);
       }
     }
 

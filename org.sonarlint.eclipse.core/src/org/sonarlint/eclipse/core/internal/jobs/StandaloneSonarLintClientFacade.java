@@ -26,6 +26,7 @@ import java.util.List;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.osgi.framework.FrameworkUtil;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
@@ -42,12 +43,12 @@ public class StandaloneSonarLintClientFacade {
   @CheckForNull
   private synchronized StandaloneSonarLintEngine getClient() {
     if (client == null) {
-      SonarLintCorePlugin.getDefault().info("Starting standalone SonarLint engine " + FrameworkUtil.getBundle(this.getClass()).getVersion().toString() + "...");
+      SonarLintLogger.get().info("Starting standalone SonarLint engine " + FrameworkUtil.getBundle(this.getClass()).getVersion().toString() + "...");
       Enumeration<URL> pluginEntriesEnum = SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false);
       if (pluginEntriesEnum != null) {
         List<URL> pluginEntries = Collections.list(pluginEntriesEnum);
-        SonarLintCorePlugin.getDefault().debug("Loading embedded analyzers...");
-        pluginEntries.stream().forEach(e -> SonarLintCorePlugin.getDefault().debug("  - " + e.getFile()));
+        SonarLintLogger.get().debug("Loading embedded analyzers...");
+        pluginEntries.stream().forEach(e -> SonarLintLogger.get().debug("  - " + e.getFile()));
         StandaloneGlobalConfiguration globalConfig = StandaloneGlobalConfiguration.builder()
           .addPlugins(pluginEntries.toArray(new URL[0]))
           .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("default").toFile().toPath())
@@ -56,7 +57,7 @@ public class StandaloneSonarLintClientFacade {
         try {
           client = new StandaloneSonarLintEngineImpl(globalConfig);
         } catch (Throwable e) {
-          SonarLintCorePlugin.getDefault().error("Unable to start standalone SonarLint engine", e);
+          SonarLintLogger.get().error("Unable to start standalone SonarLint engine", e);
           client = null;
         }
       } else {

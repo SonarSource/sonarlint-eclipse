@@ -41,8 +41,8 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.UIJob;
 import org.osgi.framework.BundleContext;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
@@ -94,7 +94,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     super.start(context);
 
     logListener = new SonarLintConsoleLogger();
-    SonarLintCorePlugin.getDefault().addLogListener(logListener);
+    SonarLintLogger.get().addLogListener(logListener);
 
     addSonarLintPartListener();
 
@@ -103,14 +103,14 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         try {
           MarkerUtils.updateAllSonarMarkerSeverity();
         } catch (CoreException e) {
-          SonarLintCorePlugin.getDefault().error("Unable to update marker severity", e);
+          SonarLintLogger.get().error("Unable to update marker severity", e);
         }
       }
     };
 
     getPreferenceStore().addPropertyChangeListener(prefListener);
 
-    SonarLintCorePlugin.getDefault().info("Starting SonarLint for Eclipse " + getBundle().getVersion());
+    SonarLintLogger.get().info("Starting SonarLint for Eclipse " + getBundle().getVersion());
 
     checkServersStatus();
 
@@ -134,7 +134,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   @Override
   public void stop(final BundleContext context) throws Exception {
-    SonarLintCorePlugin.getDefault().removeLogListener(logListener);
+    SonarLintLogger.get().removeLogListener(logListener);
     try {
       getPreferenceStore().removePropertyChangeListener(prefListener);
     } finally {

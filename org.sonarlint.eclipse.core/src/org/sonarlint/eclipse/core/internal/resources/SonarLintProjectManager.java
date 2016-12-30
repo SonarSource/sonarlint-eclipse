@@ -26,6 +26,7 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
@@ -54,7 +55,7 @@ public class SonarLintProjectManager {
           sonarProperties.add(new SonarLintProperty(keyValue[0], keyValue.length > 1 ? keyValue[1] : ""));
         }
       } catch (Exception e) {
-        SonarLintCorePlugin.getDefault().error("Error while loading SonarLint properties", e);
+        SonarLintLogger.get().error("Error while loading SonarLint properties", e);
       }
     }
     sonarProject.setExtraProperties(sonarProperties);
@@ -99,7 +100,7 @@ public class SonarLintProjectManager {
       projectNode.flush();
       return true;
     } catch (BackingStoreException e) {
-      SonarLintCorePlugin.getDefault().error("Failed to save project configuration", e);
+      SonarLintLogger.get().error("Failed to save project configuration", e);
       return false;
     }
   }

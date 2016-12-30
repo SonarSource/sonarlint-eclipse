@@ -40,6 +40,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.security.storage.StorageException;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StorageManager;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
@@ -131,12 +132,12 @@ public class Server implements IServer, StateListener {
     try {
       SubMonitor subMonitor = SubMonitor.convert(progress, getBoundProjects().size() + 1);
       SubMonitor globalMonitor = subMonitor.newChild(1);
-      SonarLintCorePlugin.getDefault().info("Check for updates from server '" + getId() + "'");
+      SonarLintLogger.get().info("Check for updates from server '" + getId() + "'");
       StorageUpdateCheckResult checkForUpdateResult = client.checkIfGlobalStorageNeedUpdate(getConfig(),
         new WrappedProgressMonitor(globalMonitor, "Check for configuration updates on server '" + getId() + "'"));
       if (checkForUpdateResult.needUpdate()) {
         this.hasUpdates = true;
-        checkForUpdateResult.changelog().forEach(line -> SonarLintCorePlugin.getDefault().info("  - " + line));
+        checkForUpdateResult.changelog().forEach(line -> SonarLintLogger.get().info("  - " + line));
       }
 
       for (SonarLintProject boundProject : getBoundProjects()) {
@@ -144,18 +145,18 @@ public class Server implements IServer, StateListener {
         if (progress.isCanceled()) {
           return;
         }
-        SonarLintCorePlugin.getDefault().info("Check for updates from server '" + getId() + "' for project '" + boundProject.getProject().getName() + "'");
+        SonarLintLogger.get().info("Check for updates from server '" + getId() + "' for project '" + boundProject.getProject().getName() + "'");
         StorageUpdateCheckResult moduleUpdateCheckResult = client.checkIfModuleStorageNeedUpdate(getConfig(), boundProject.getModuleKey(),
           new WrappedProgressMonitor(projectMonitor, "Checking for configuration update for project '" + boundProject.getProject().getName() + "'"));
         if (moduleUpdateCheckResult.needUpdate()) {
           this.hasUpdates = true;
-          SonarLintCorePlugin.getDefault().info("On project '" + boundProject.getProject().getName() + "':");
-          moduleUpdateCheckResult.changelog().forEach(line -> SonarLintCorePlugin.getDefault().info("  - " + line));
+          SonarLintLogger.get().info("On project '" + boundProject.getProject().getName() + "':");
+          moduleUpdateCheckResult.changelog().forEach(line -> SonarLintLogger.get().info("  - " + line));
         }
       }
     } catch (DownloadException e) {
       // If server is not reachable, just ignore
-      SonarLintCorePlugin.getDefault().debug("Unable to check for update on server '" + getId() + "'", e);
+      SonarLintLogger.get().debug("Unable to check for update on server '" + getId() + "'", e);
     } finally {
       notifyAllListeners();
     }
@@ -325,7 +326,7 @@ public class Server implements IServer, StateListener {
       if (e.getCause() instanceof UnknownHostException) {
         return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unknown host: " + getHost());
       }
-      SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+      SonarLintLogger.get().error(e.getMessage(), e);
       return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
     }
   }

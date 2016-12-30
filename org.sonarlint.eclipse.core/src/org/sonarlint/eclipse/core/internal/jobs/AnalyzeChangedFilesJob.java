@@ -36,6 +36,7 @@ import org.eclipse.team.core.RepositoryProvider;
 import org.eclipse.team.core.TeamException;
 import org.eclipse.team.core.subscribers.Subscriber;
 import org.eclipse.team.core.synchronize.SyncInfo;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintChangeListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
@@ -60,7 +61,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
       Collection<IFile> collectChangedFiles = collectChangedFiles(projects, global.newChild(20));
 
       if (collectChangedFiles.isEmpty()) {
-        SonarLintCorePlugin.getDefault().info("No changed files found");
+        SonarLintLogger.get().info("No changed files found");
         return Status.OK_STATUS;
       }
 
@@ -68,7 +69,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
 
       long fileCount = changedFilesPerProject.values().stream().flatMap(Collection::stream).count();
 
-      SonarLintCorePlugin.getDefault().info("Analyzing " + fileCount + " changed file(s) in " + changedFilesPerProject.keySet().size() + " project(s)");
+      SonarLintLogger.get().info("Analyzing " + fileCount + " changed file(s) in " + changedFilesPerProject.keySet().size() + " project(s)");
 
       global.setTaskName("Analysis");
       SubMonitor analysisMonitor = SubMonitor.convert(global.newChild(80), changedFilesPerProject.entrySet().size());
@@ -86,7 +87,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
       }
 
     } catch (Exception e) {
-      SonarLintCorePlugin.getDefault().error(UNABLE_TO_ANALYZE_CHANGED_FILES, e);
+      SonarLintLogger.get().error(UNABLE_TO_ANALYZE_CHANGED_FILES, e);
       return new Status(Status.ERROR, SonarLintCorePlugin.PLUGIN_ID, UNABLE_TO_ANALYZE_CHANGED_FILES, e);
     }
     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
@@ -100,14 +101,14 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
       }
       RepositoryProvider provider = RepositoryProvider.getProvider(project);
       if (provider == null) {
-        SonarLintCorePlugin.getDefault().debug("Project " + project.getName() + " doesn't have any RepositoryProvider");
+        SonarLintLogger.get().debug("Project " + project.getName() + " doesn't have any RepositoryProvider");
         continue;
       }
 
       Subscriber subscriber = provider.getSubscriber();
       if (subscriber == null) {
         // Seems to occurs with Rational ClearTeam Explorer
-        SonarLintCorePlugin.getDefault().debug("No Subscriber for provider " + provider.getID() + " on project " + project.getName());
+        SonarLintLogger.get().debug("No Subscriber for provider " + provider.getID() + " on project " + project.getName());
         continue;
       }
 
@@ -120,7 +121,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
           // Collect all the synchronization states and print
           collect(subscriber, project, changedFiles);
         } else {
-          SonarLintCorePlugin.getDefault().debug("Project " + project.getName() + " is not part of Subscriber roots");
+          SonarLintLogger.get().debug("Project " + project.getName() + " is not part of Subscriber roots");
         }
       } catch (TeamException e) {
         throw new IllegalStateException(UNABLE_TO_ANALYZE_CHANGED_FILES, e);

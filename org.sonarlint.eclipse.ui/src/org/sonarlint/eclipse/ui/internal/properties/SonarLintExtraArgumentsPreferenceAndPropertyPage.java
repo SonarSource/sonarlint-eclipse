@@ -53,8 +53,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -422,7 +422,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
           sonarProperties.add(new SonarLintProperty(keyValue[0], keyValue[1]));
         }
       } catch (Exception e) {
-        SonarLintCorePlugin.getDefault().error("Error while loading SonarLint analyzer properties" + props, e);
+        SonarLintLogger.get().error("Error while loading SonarLint analyzer properties" + props, e);
       }
     } else {
       SonarLintProject sonarProject = getSonarProject();

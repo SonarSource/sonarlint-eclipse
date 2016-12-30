@@ -23,7 +23,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.JavaCore;
 import org.sonarlint.eclipse.core.AbstractPlugin;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public class SonarJdtPlugin extends AbstractPlugin {
 
@@ -46,7 +46,7 @@ public class SonarJdtPlugin extends AbstractPlugin {
     try {
       return project.hasNature(JavaCore.NATURE_ID);
     } catch (CoreException e) {
-      SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+      SonarLintLogger.get().error(e.getMessage(), e);
       return false;
     }
   }

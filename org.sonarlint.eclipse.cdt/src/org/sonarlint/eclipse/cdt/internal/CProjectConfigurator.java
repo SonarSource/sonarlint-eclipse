@@ -45,9 +45,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentType;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
 public class CProjectConfigurator extends ProjectConfigurator {
   private static final String CFAMILY_USE_CACHE = "sonar.cfamily.useCache";
@@ -57,22 +57,22 @@ public class CProjectConfigurator extends ProjectConfigurator {
   private final BuildWrapperJsonFactory jsonFactory;
   private final CCorePlugin cCorePlugin;
   private final Predicate<IFile> fileValidator;
-  private final SonarLintCorePlugin core;
+  private final SonarLintLogger logger;
   private final FilePathResolver filePathResolver;
   private final BiFunction<IProject, Path, IContentType> contentTypeResolver;
 
   public CProjectConfigurator() {
     this(new BuildWrapperJsonFactory(), CCorePlugin.getDefault(), CoreModel::isTranslationUnit,
-      (project, path) -> CCorePlugin.getContentType(project, path.toString()), SonarLintCorePlugin.getDefault(),
+      (project, path) -> CCorePlugin.getContentType(project, path.toString()), SonarLintLogger.get(),
       new FilePathResolver());
   }
 
   public CProjectConfigurator(BuildWrapperJsonFactory jsonFactory, CCorePlugin cCorePlugin, Predicate<IFile> fileValidator,
-    BiFunction<IProject, Path, IContentType> contentTypeResolver, SonarLintCorePlugin core, FilePathResolver filePathResolver) {
+    BiFunction<IProject, Path, IContentType> contentTypeResolver, SonarLintLogger logger, FilePathResolver filePathResolver) {
     this.jsonFactory = jsonFactory;
     this.cCorePlugin = cCorePlugin;
     this.fileValidator = fileValidator;
-    this.core = core;
+    this.logger = logger;
     this.filePathResolver = filePathResolver;
     this.contentTypeResolver = contentTypeResolver;
   }
@@ -91,12 +91,12 @@ public class CProjectConfigurator extends ProjectConfigurator {
     try {
       Collection<ConfiguredFile> configuredFiles = configureCProject(request.getProject(), filesToAnalyze);
       Path jsonPath = writeJson(request.getProject(), configuredFiles);
-      core.debug("Wrote build info to: " + jsonPath.toString());
+      logger.debug("Wrote build info to: " + jsonPath.toString());
       request.getSonarProjectProperties().put(CFAMILY_USE_CACHE, Boolean.FALSE.toString());
       request.getSonarProjectProperties().put(BUILD_WRAPPER_OUTPUT_PROP, jsonPath.getParent().toString());
       configuredFiles.forEach(f -> request.getFileLanguages().put(f.file(), f.languageKey()));
     } catch (Exception e) {
-      core.error(e.getMessage(), e);
+      logger.error(e.getMessage(), e);
     }
   }
 
@@ -125,7 +125,7 @@ public class CProjectConfigurator extends ProjectConfigurator {
 
         files.add(builder.build());
       } catch (CoreException e) {
-        core.error("Error building input file for SonarLint analysis: " + file.getName(), e);
+        logger.error("Error building input file for SonarLint analysis: " + file.getName(), e);
       }
     }
     return files;

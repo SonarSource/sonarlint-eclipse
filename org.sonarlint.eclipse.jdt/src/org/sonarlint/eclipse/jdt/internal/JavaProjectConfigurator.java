@@ -35,9 +35,9 @@ import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
 public class JavaProjectConfigurator extends ProjectConfigurator {
 
@@ -97,7 +97,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
       addClassPathToSonarProject(javaProject, configuration, true);
       configurationToProperties(sonarProjectProperties, configuration);
     } catch (JavaModelException e) {
-      SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+      SonarLintLogger.get().error(e.getMessage(), e);
     }
   }
 
@@ -125,7 +125,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
           processProjectEntry(entry, javaProject, context);
           break;
         default:
-          SonarLintCorePlugin.getDefault().info("Unhandled ClassPathEntry : " + entry);
+          SonarLintLogger.get().info("Unhandled ClassPathEntry : " + entry);
           break;
       }
     }
@@ -143,7 +143,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
         context.libraries().add(outDir);
       }
     } else {
-      SonarLintCorePlugin.getDefault().info("Binary directory was not added because it was not found. Maybe should you enable auto build of your project.");
+      SonarLintLogger.get().info("Binary directory was not added because it was not found. Maybe should you enable auto build of your project.");
     }
   }
 
@@ -153,7 +153,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     }
     String srcDir = getRelativePath(javaProject.getPath(), entry.getPath());
     if (srcDir == null) {
-      SonarLintCorePlugin.getDefault().info("Skipping non existing source entry: " + entry.getPath().toOSString());
+      SonarLintLogger.get().info("Skipping non existing source entry: " + entry.getPath().toOSString());
       return;
     }
     if (entry.getOutputLocation() != null) {

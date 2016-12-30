@@ -29,6 +29,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
@@ -44,7 +45,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
       try {
         event.getDelta().accept(delta -> visitDelta(changedFiles, delta));
       } catch (CoreException e) {
-        SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+        SonarLintLogger.get().error(e.getMessage(), e);
       }
 
       final Map<IProject, Collection<IFile>> changedFilesPerProject = aggregatePerMoreSpecificProject(changedFiles);
@@ -53,7 +54,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
         IProject project = entry.getKey();
         Collection<IFile> filesToAnalyze = entry.getValue();
         if (filesToAnalyze.size() > 10) {
-          SonarLintCorePlugin.getDefault().debug("Too many files to analyze in project " + project.getName() + " (" + filesToAnalyze.size() + "). Skipping.");
+          SonarLintLogger.get().debug("Too many files to analyze in project " + project.getName() + " (" + filesToAnalyze.size() + "). Skipping.");
           return;
         }
         AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.EDITOR_CHANGE);

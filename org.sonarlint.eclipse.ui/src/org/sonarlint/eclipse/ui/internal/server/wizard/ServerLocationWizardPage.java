@@ -41,7 +41,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -142,7 +142,7 @@ public class ServerLocationWizardPage extends WizardPage {
           serverPasswordText.setText(previousPassword);
         }
       } catch (StorageException e) {
-        SonarLintCorePlugin.getDefault().error(ERROR_READING_SECURE_STORAGE, e);
+        SonarLintLogger.get().error(ERROR_READING_SECURE_STORAGE, e);
         MessageDialog.openError(this.getShell(), ERROR_READING_SECURE_STORAGE, "Unable to read password from secure storage: " + e.getMessage());
       }
     }
@@ -161,7 +161,7 @@ public class ServerLocationWizardPage extends WizardPage {
           serverUsernameText.setText(previousUsername);
         }
       } catch (StorageException e) {
-        SonarLintCorePlugin.getDefault().error(ERROR_READING_SECURE_STORAGE, e);
+        SonarLintLogger.get().error(ERROR_READING_SECURE_STORAGE, e);
         MessageDialog.openError(parent.getDisplay().getActiveShell(), ERROR_READING_SECURE_STORAGE, "Unable to read username from secure storage: " + e.getMessage());
       }
     }
@@ -275,7 +275,7 @@ public class ServerLocationWizardPage extends WizardPage {
     try {
       PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(url.toString()));
     } catch (PartInitException | MalformedURLException e) {
-      SonarLintCorePlugin.getDefault().error("Unable to open external browser", e);
+      SonarLintLogger.get().error("Unable to open external browser", e);
       MessageDialog.openError(this.getShell(), "Error", "Unable to open external browser: " + e.getMessage());
     }
   }

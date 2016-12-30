@@ -33,6 +33,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
@@ -54,7 +55,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
 
   @BeforeClass
   public static void prepare() throws Exception {
-    SonarLintCorePlugin.getDefault().addLogListener(new LogListener() {
+    SonarLintLogger.get().addLogListener(new LogListener() {
       @Override
       public void info(String msg, boolean fromAnalyzer) {
       }

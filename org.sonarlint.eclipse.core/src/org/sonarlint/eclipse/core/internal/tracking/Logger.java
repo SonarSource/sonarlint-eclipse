@@ -19,20 +19,20 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public class Logger {
 
   public void error(String message, Exception e) {
-    SonarLintCorePlugin.getDefault().error(message, e);
+    SonarLintLogger.get().error(message, e);
   }
 
   public void debug(String message, Exception e) {
-    SonarLintCorePlugin.getDefault().debug(message, e);
+    SonarLintLogger.get().debug(message, e);
   }
 
   public void debug(String message) {
-    SonarLintCorePlugin.getDefault().debug(message);
+    SonarLintLogger.get().debug(message);
   }
 
 }

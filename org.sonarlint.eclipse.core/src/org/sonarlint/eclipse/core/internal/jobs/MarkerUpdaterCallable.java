@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IDocument;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
@@ -70,7 +71,7 @@ public class MarkerUpdaterCallable implements Callable<IStatus> {
         createMarkers(document, resource, issues, triggerType);
       }
     } catch (CoreException e) {
-      SonarLintCorePlugin.getDefault().error(e.getMessage(), e);
+      SonarLintLogger.get().error(e.getMessage(), e);
       return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error updating SonarLint markers", e);
     }
     return Status.OK_STATUS;
