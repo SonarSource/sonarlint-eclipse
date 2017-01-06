@@ -51,6 +51,15 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
       -Dsonar.login=$SONAR_TOKEN \
       -B -e -V $*
 
+elif [[ "${TRAVIS_BRANCH}" == "branch-"* ]] && [ "$IS_PULLREQUEST" == "false" ]; then
+    echo '======= Build, no analysis'
+    echo '======= with deploy'
+    mvn deploy \
+      -Pdeploy-sonarsource \
+      -Dtycho.disableP2Mirrors=true \
+      -Dmaven.test.redirectTestOutputToFile=false \
+      -B -e -V $*
+
 else
   echo '======= Build, no analysis, no deploy'
 
