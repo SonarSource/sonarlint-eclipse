@@ -55,7 +55,7 @@ elif [[ "${TRAVIS_BRANCH}" == "branch-"* ]] && [ "$IS_PULLREQUEST" == "false" ];
     echo '======= Build, no analysis'
     echo '======= with deploy'
     mvn deploy \
-      -Pdeploy-sonarsource \
+      -Pdeploy-sonarsource,sign \
       -Dtycho.disableP2Mirrors=true \
       -Dmaven.test.redirectTestOutputToFile=false \
       -B -e -V $*
