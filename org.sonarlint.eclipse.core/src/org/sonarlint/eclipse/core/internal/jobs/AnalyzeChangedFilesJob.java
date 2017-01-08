@@ -86,7 +86,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
         job.runInWorkspace(projectAnalysisMonitor);
       }
 
-    } catch (Exception e) {
+    } catch (Throwable e) {
       SonarLintLogger.get().error(UNABLE_TO_ANALYZE_CHANGED_FILES, e);
       return new Status(Status.ERROR, SonarLintCorePlugin.PLUGIN_ID, UNABLE_TO_ANALYZE_CHANGED_FILES, e);
     }
