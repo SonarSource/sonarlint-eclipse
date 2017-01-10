@@ -82,3 +82,9 @@ In the target editor (or open `plugin.xml`), click **Set as Target Platform**.
 Note that this will trigger a compilation in Eclipse.
 
 At this point, and if the artifact exists at the specified path, it should be usable, and Eclipse will be able to compile the project.
+
+### License
+
+Copyright 2015-2017 SonarSource.
+
+Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.gnu.org/licenses/lgpl.txt)
