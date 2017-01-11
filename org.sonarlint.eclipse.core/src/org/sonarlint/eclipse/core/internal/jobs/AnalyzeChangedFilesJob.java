@@ -107,7 +107,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
 
       Subscriber subscriber = provider.getSubscriber();
       if (subscriber == null) {
-        // Seems to occurs with Rational ClearTeam Explorer
+        // Some providers (like Clear Case SCM Adapter) don't provide a Subscriber.
         SonarLintLogger.get().debug("No Subscriber for provider " + provider.getID() + " on project " + project.getName());
         continue;
       }
@@ -140,6 +140,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
       if (syncInfo != null && !SyncInfo.isInSync(syncInfo.getKind())) {
         changedFiles.add(file);
       }
+      return;
     }
     for (IResource child : subscriber.members(resource)) {
       collect(subscriber, child, changedFiles);
