@@ -39,7 +39,7 @@ public class IssueStore {
 
   public IssueStore(Path storeBasePath, Path projectBasePath) {
     this.basePath = storeBasePath;
-    FileUtils.forceMkDirs(storeBasePath);
+    FileUtils.mkdirs(storeBasePath);
     StoreIndex<String> index = new StringStoreIndex(storeBasePath);
     PathMapper<String> mapper = new HashingPathMapper(storeBasePath, 2);
     StoreKeyValidator<String> validator = new PathStoreKeyValidator(projectBasePath);
@@ -83,8 +83,8 @@ public class IssueStore {
   }
 
   public void clear() {
-    FileUtils.deleteDirectory(basePath);
-    FileUtils.forceMkDirs(basePath);
+    FileUtils.deleteRecursively(basePath);
+    FileUtils.mkdirs(basePath);
   }
 
   private static Collection<Trackable> transform(Sonarlint.Issues protoIssues) {
