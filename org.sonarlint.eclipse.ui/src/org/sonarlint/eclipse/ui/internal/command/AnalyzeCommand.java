@@ -48,10 +48,10 @@ import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.sonarlint.eclipse.core.internal.SonarLintChangeListener;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.views.issues.IssuesView;
 
@@ -109,7 +109,7 @@ public class AnalyzeCommand extends AbstractHandler {
   private static void collectChildren(final Map<IProject, Collection<IFile>> filesToAnalyzePerProject, IResource elem) {
     try {
       elem.accept(resource -> {
-        if (!SonarLintChangeListener.shouldAnalyze(resource)) {
+        if (!SonarLintUtils.shouldAnalyze(resource)) {
           return false;
         }
         IFile file = (IFile) resource.getAdapter(IFile.class);
