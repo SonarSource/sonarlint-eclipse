@@ -17,11 +17,12 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal;
+package org.sonarlint.eclipse.ui.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -29,10 +30,20 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.progress.UIJob;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 
 import static org.sonarlint.eclipse.core.internal.utils.SonarLintUtils.aggregatePerMoreSpecificProject;
 
@@ -50,16 +61,38 @@ public class SonarLintChangeListener implements IResourceChangeListener {
 
       final Map<IProject, Collection<IFile>> changedFilesPerProject = aggregatePerMoreSpecificProject(changedFiles);
 
+      new AnalyzeOpenedFiles(changedFilesPerProject).schedule();
+    }
+  }
+
+  private static class AnalyzeOpenedFiles extends UIJob {
+
+    private final Map<IProject, Collection<IFile>> changedFilesPerProject;
+
+    AnalyzeOpenedFiles(Map<IProject, Collection<IFile>> changedFilesPerProject) {
+      super("Find opened files");
+      this.changedFilesPerProject = changedFilesPerProject;
+    }
+
+    @Override
+    public IStatus runInUIThread(IProgressMonitor monitor) {
+      IWorkbenchWindow win = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+      if (win == null) {
+        return Status.OK_STATUS;
+      }
+      IWorkbenchPage page = win.getActivePage();
+      if (page == null) {
+        return Status.OK_STATUS;
+      }
       for (Map.Entry<IProject, Collection<IFile>> entry : changedFilesPerProject.entrySet()) {
         IProject project = entry.getKey();
-        Collection<IFile> filesToAnalyze = entry.getValue();
-        if (filesToAnalyze.size() > 10) {
-          SonarLintLogger.get().debug("Too many files to analyze in project " + project.getName() + " (" + filesToAnalyze.size() + "). Skipping.");
-          return;
-        }
+        Collection<IFile> filesToAnalyze = entry.getValue().stream()
+          .filter(f -> ResourceUtil.findEditor(page, f) != null)
+          .collect(Collectors.toList());
         AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.EDITOR_CHANGE);
         new AnalyzeProjectJob(request).schedule();
       }
+      return Status.OK_STATUS;
     }
   }
 
@@ -73,7 +106,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
       return false;
     }
 
-    boolean shouldAnalyzeResource = shouldAnalyze(delta.getResource());
+    boolean shouldAnalyzeResource = SonarLintUtils.shouldAnalyze(delta.getResource());
     if (isChangedFile(delta) && shouldAnalyzeResource) {
       changedFiles.add((IFile) delta.getResource());
       return true;
@@ -87,15 +120,4 @@ public class SonarLintChangeListener implements IResourceChangeListener {
       && (delta.getFlags() & IResourceDelta.CONTENT) != 0;
   }
 
-  public static boolean shouldAnalyze(IResource resource) {
-    if (!resource.exists() || resource.isDerived(IResource.CHECK_ANCESTORS) || resource.isHidden(IResource.CHECK_ANCESTORS)) {
-      return false;
-    }
-    // Ignore .project, .settings, that are not considered hidden on Windows...
-    // Also ignore .class (SLE-65)
-    if (resource.getName().startsWith(".") || "class".equals(resource.getFileExtension())) {
-      return false;
-    }
-    return true;
-  }
 }

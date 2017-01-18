@@ -23,8 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -53,7 +51,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   private StandaloneSonarLintClientFacade sonarlint;
   private final ServiceTracker proxyTracker;
-  private SonarLintChangeListener sonarLintChangeListener;
 
   public SonarLintCorePlugin() {
     plugin = this;
@@ -75,8 +72,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   @Override
   public void start(BundleContext context) {
     super.start(context);
-    sonarLintChangeListener = new SonarLintChangeListener();
-    ResourcesPlugin.getWorkspace().addResourceChangeListener(sonarLintChangeListener, IResourceChangeEvent.POST_CHANGE);
 
     IssueTrackerCacheFactory factory = (project, localModuleKey) -> {
       Path projectBasePath = Paths.get(project.getLocation().toString());
@@ -91,7 +86,6 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   @Override
   public void stop(BundleContext context) {
-    ResourcesPlugin.getWorkspace().removeResourceChangeListener(sonarLintChangeListener);
     if (sonarlint != null) {
       sonarlint.stop();
     }

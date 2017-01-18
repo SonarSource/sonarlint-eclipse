@@ -29,6 +29,7 @@ import org.eclipse.core.internal.resources.Resource;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 
@@ -36,6 +37,18 @@ public class SonarLintUtils {
 
   private SonarLintUtils() {
     // utility class, forbidden constructor
+  }
+
+  public static boolean shouldAnalyze(IResource resource) {
+    if (!resource.exists() || resource.isDerived(IResource.CHECK_ANCESTORS) || resource.isHidden(IResource.CHECK_ANCESTORS)) {
+      return false;
+    }
+    // Ignore .project, .settings, that are not considered hidden on Windows...
+    // Also ignore .class (SLE-65)
+    if (resource.getName().startsWith(".") || "class".equals(resource.getFileExtension())) {
+      return false;
+    }
+    return true;
   }
 
   /**

@@ -22,6 +22,8 @@ package org.sonarlint.eclipse.ui.internal;
 import java.util.Collections;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -32,7 +34,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -68,6 +69,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private SonarLintConsole console;
 
+  private static final SonarLintPartListener SONARLINT_PART_LISTENER = new SonarLintPartListener();
+  private static final SonarLintChangeListener SONARLINT_CHANGE_LISTENER = new SonarLintChangeListener();
+
   public SonarLintUiPlugin() {
     plugin = this;
   }
@@ -92,6 +96,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   @Override
   public void start(final BundleContext context) throws Exception {
     super.start(context);
+
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_CHANGE_LISTENER, IResourceChangeEvent.POST_CHANGE);
 
     logListener = new SonarLintConsoleLogger();
     SonarLintLogger.get().addLogListener(logListener);
@@ -134,6 +140,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   @Override
   public void stop(final BundleContext context) throws Exception {
+    ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_CHANGE_LISTENER);
     SonarLintLogger.get().removeLogListener(logListener);
     try {
       getPreferenceStore().removePropertyChangeListener(prefListener);
@@ -180,25 +187,23 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   }
 
   private static class RegisterSonarLintPartListenerJob extends UIJob {
-    private SonarLintPartListener sonarlintPartListener = new SonarLintPartListener();
-
     RegisterSonarLintPartListenerJob() {
       super("Register SonarLint part listener");
     }
 
     @Override
     public IStatus runInUIThread(IProgressMonitor monitor) {
-      for (IWorkbenchWindow window : SonarLintUiPlugin.getDefault().getWorkbench().getWorkbenchWindows()) {
+      for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
         addListenerToAllPages(window);
       }
 
       // Handle future opened/closed windows
-      SonarLintUiPlugin.getDefault().getWorkbench().addWindowListener(new WindowOpenCloseListener());
+      PlatformUI.getWorkbench().addWindowListener(new WindowOpenCloseListener());
 
       return Status.OK_STATUS;
     }
 
-    class WindowOpenCloseListener implements IWindowListener {
+    static class WindowOpenCloseListener implements IWindowListener {
       @Override
       public void windowOpened(IWorkbenchWindow window) {
         addListenerToAllPages(window);
@@ -219,16 +224,16 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         // Nothing to do
       }
 
-      private void removeListenerToAllPages(IWorkbenchWindow window) {
+      private static void removeListenerToAllPages(IWorkbenchWindow window) {
         for (IWorkbenchPage page : window.getPages()) {
-          page.removePartListener(sonarlintPartListener);
+          page.removePartListener(SONARLINT_PART_LISTENER);
         }
       }
     }
 
-    private void addListenerToAllPages(IWorkbenchWindow window) {
+    private static void addListenerToAllPages(IWorkbenchWindow window) {
       for (IWorkbenchPage page : window.getPages()) {
-        page.addPartListener(sonarlintPartListener);
+        page.addPartListener(SONARLINT_PART_LISTENER);
       }
     }
   }
@@ -269,11 +274,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     if (page == null) {
       return null;
     }
-    IWorkbenchPart workbenchPart = page.getActivePart();
-    if (workbenchPart == null) {
-      return null;
-    }
-    IEditorPart editor = workbenchPart.getSite().getPage().getActiveEditor();
+    IEditorPart editor = page.getActiveEditor();
     if (editor == null) {
       return null;
     }
