@@ -32,11 +32,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.markers.FlatTextRange;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextFileContext;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
@@ -100,10 +100,10 @@ public class MarkerUpdaterCallable implements Callable<IStatus> {
     // File level issues (line == null) are displayed on line 1
     attributes.put(IMarker.LINE_NUMBER, trackable.getLine() != null ? trackable.getLine() : 1);
 
-    FlatTextRange textRange = MarkerUtils.getFlatTextRange(document, trackable.getTextRange());
-    if (textRange != null) {
-      attributes.put(IMarker.CHAR_START, textRange.getStart());
-      attributes.put(IMarker.CHAR_END, textRange.getEnd());
+    Position position = MarkerUtils.getPosition(document, trackable.getTextRange());
+    if (position != null) {
+      attributes.put(IMarker.CHAR_START, position.getOffset());
+      attributes.put(IMarker.CHAR_END, position.getOffset() + position.getLength());
     }
 
     Long creationDate = trackable.getCreationDate();

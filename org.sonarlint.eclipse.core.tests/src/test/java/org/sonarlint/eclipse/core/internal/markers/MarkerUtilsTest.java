@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.markers;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.text.Position;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
@@ -42,10 +43,10 @@ public class MarkerUtilsTest extends SonarTestCase {
   public void testLineStartEnd() throws Exception {
     try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
       TextRange textRange = new TextRange(2);
-      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
-      assertThat(flatTextRange.getStart()).isEqualTo(31);
-      assertThat(flatTextRange.getEnd()).isEqualTo(63);
-      assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("  public static String INSTANCE;");
+      Position position = MarkerUtils.getPosition(context.getDocument(), textRange);
+      assertThat(position.getOffset()).isEqualTo(31);
+      assertThat(position.getLength()).isEqualTo(32);
+      assertThat(context.getDocument().get(position.getOffset(), position.getLength())).isEqualTo("  public static String INSTANCE;");
     }
   }
 
@@ -53,10 +54,10 @@ public class MarkerUtilsTest extends SonarTestCase {
   public void testLineStartEndCrLf() throws Exception {
     try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFileCrLf.java"))) {
       TextRange textRange = new TextRange(2);
-      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
-      assertThat(flatTextRange.getStart()).isEqualTo(32);
-      assertThat(flatTextRange.getEnd()).isEqualTo(64);
-      assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("  public static String INSTANCE;");
+      Position position = MarkerUtils.getPosition(context.getDocument(), textRange);
+      assertThat(position.getOffset()).isEqualTo(32);
+      assertThat(position.getLength()).isEqualTo(32);
+      assertThat(context.getDocument().get(position.getOffset(), position.getLength())).isEqualTo("  public static String INSTANCE;");
     }
   }
 
@@ -64,10 +65,10 @@ public class MarkerUtilsTest extends SonarTestCase {
   public void testPreciseIssueLocationSingleLine() throws Exception {
     try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
       TextRange textRange = new TextRange(2, 23, 2, 31);
-      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
-      assertThat(flatTextRange.getStart()).isEqualTo(54);
-      assertThat(flatTextRange.getEnd()).isEqualTo(62);
-      assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("INSTANCE");
+      Position position = MarkerUtils.getPosition(context.getDocument(), textRange);
+      assertThat(position.getOffset()).isEqualTo(54);
+      assertThat(position.getLength()).isEqualTo(8);
+      assertThat(context.getDocument().get(position.getOffset(), position.getLength())).isEqualTo("INSTANCE");
     }
   }
 
@@ -75,10 +76,10 @@ public class MarkerUtilsTest extends SonarTestCase {
   public void testPreciseIssueLocationMultiLine() throws Exception {
     try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
       TextRange textRange = new TextRange(4, 34, 5, 12);
-      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
-      assertThat(flatTextRange.getStart()).isEqualTo(101);
-      assertThat(flatTextRange.getEnd()).isEqualTo(119);
-      assertThat(context.getDocument().get(flatTextRange.getStart(), flatTextRange.getLength())).isEqualTo("\"foo\"\n     + \"bar\"");
+      Position position = MarkerUtils.getPosition(context.getDocument(), textRange);
+      assertThat(position.getOffset()).isEqualTo(101);
+      assertThat(position.getLength()).isEqualTo(18);
+      assertThat(context.getDocument().get(position.getOffset(), position.getLength())).isEqualTo("\"foo\"\n     + \"bar\"");
     }
   }
 
@@ -86,8 +87,8 @@ public class MarkerUtilsTest extends SonarTestCase {
   public void testNonexistentLine() throws Exception {
     try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
       int nonexistentLine = context.getDocument().getNumberOfLines() + 1;
-      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), nonexistentLine);
-      assertThat(flatTextRange).isNull();
+      Position position = MarkerUtils.getPosition(context.getDocument(), nonexistentLine);
+      assertThat(position).isNull();
     }
   }
 
@@ -96,16 +97,16 @@ public class MarkerUtilsTest extends SonarTestCase {
     try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
       int nonexistentLine = context.getDocument().getNumberOfLines() + 1;
       TextRange textRange = new TextRange(nonexistentLine, 5, nonexistentLine, 12);
-      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), textRange);
-      assertThat(flatTextRange).isNull();
+      Position position = MarkerUtils.getPosition(context.getDocument(), textRange);
+      assertThat(position).isNull();
     }
   }
 
   @Test
   public void testTextRangeWithoutLine() throws Exception {
     try (TextFileContext context = new TextFileContext(project.getFile("src/main/java/ViolationOnFile.java"))) {
-      FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(context.getDocument(), new TextRange(null));
-      assertThat(flatTextRange).isNull();
+      Position position = MarkerUtils.getPosition(context.getDocument(), new TextRange(null));
+      assertThat(position).isNull();
     }
   }
 }

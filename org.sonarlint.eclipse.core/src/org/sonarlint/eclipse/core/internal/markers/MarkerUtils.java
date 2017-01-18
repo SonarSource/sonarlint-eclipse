@@ -31,6 +31,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -85,18 +86,18 @@ public final class MarkerUtils {
   }
 
   @CheckForNull
-  public static FlatTextRange getFlatTextRange(final IDocument document, @Nullable TextRange textRange) {
+  public static Position getPosition(final IDocument document, @Nullable TextRange textRange) {
     if (textRange == null || textRange.getStartLine() == null) {
       return null;
     }
     if (textRange.getStartLineOffset() == null) {
-      return getFlatTextRange(document, textRange.getStartLine());
+      return getPosition(document, textRange.getStartLine());
     }
-    return getFlatTextRange(document, textRange.getStartLine(), textRange.getStartLineOffset(), textRange.getEndLine(), textRange.getEndLineOffset());
+    return getPosition(document, textRange.getStartLine(), textRange.getStartLineOffset(), textRange.getEndLine(), textRange.getEndLineOffset());
   }
 
   @CheckForNull
-  public static FlatTextRange getFlatTextRange(final IDocument document, int startLine) {
+  public static Position getPosition(final IDocument document, int startLine) {
     int startLineStartOffset;
     int length;
     String lineDelimiter;
@@ -111,13 +112,11 @@ public final class MarkerUtils {
 
     int lineDelimiterLength = lineDelimiter != null ? lineDelimiter.length() : 0;
 
-    int start = startLineStartOffset;
-    int end = startLineStartOffset + length - lineDelimiterLength;
-    return new FlatTextRange(start, end);
+    return new Position(startLineStartOffset, length - lineDelimiterLength);
   }
 
   @CheckForNull
-  private static FlatTextRange getFlatTextRange(final IDocument document, int startLine, int startLineOffset, int endLine, int endLineOffset) {
+  private static Position getPosition(final IDocument document, int startLine, int startLineOffset, int endLine, int endLineOffset) {
     int startLineStartOffset;
     int endLineStartOffset;
     try {
@@ -130,7 +129,7 @@ public final class MarkerUtils {
 
     int start = startLineStartOffset + startLineOffset;
     int end = endLineStartOffset + endLineOffset;
-    return new FlatTextRange(start, end);
+    return new Position(start, end - start);
   }
 
 }

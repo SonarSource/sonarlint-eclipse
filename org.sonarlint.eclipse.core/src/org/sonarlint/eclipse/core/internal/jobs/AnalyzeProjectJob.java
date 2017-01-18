@@ -53,6 +53,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
@@ -60,7 +61,6 @@ import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.configurator.ConfiguratorUtils;
-import org.sonarlint.eclipse.core.internal.markers.FlatTextRange;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextFileContext;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
@@ -308,10 +308,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   @CheckForNull
   private static String readTextRangeContent(IResource resource, IDocument document, TextRange textRange) {
-    FlatTextRange flatTextRange = MarkerUtils.getFlatTextRange(document, textRange);
-    if (flatTextRange != null) {
+    Position position = MarkerUtils.getPosition(document, textRange);
+    if (position != null) {
       try {
-        return document.get(flatTextRange.getStart(), flatTextRange.getLength());
+        return document.get(position.getOffset(), position.getLength());
       } catch (BadLocationException e) {
         SonarLintLogger.get().error("failed to get text range content of resource " + resource.getFullPath(), e);
       }
@@ -321,10 +321,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   @CheckForNull
   private static String readLineContent(IResource resource, IDocument document, int startLine) {
-    FlatTextRange lineTextRange = MarkerUtils.getFlatTextRange(document, startLine);
-    if (lineTextRange != null) {
+    Position position = MarkerUtils.getPosition(document, startLine);
+    if (position != null) {
       try {
-        return document.get(lineTextRange.getStart(), lineTextRange.getLength());
+        return document.get(position.getOffset(), position.getLength());
       } catch (BadLocationException e) {
         SonarLintLogger.get().error("failed to get line content of resource " + resource.getFullPath(), e);
       }
