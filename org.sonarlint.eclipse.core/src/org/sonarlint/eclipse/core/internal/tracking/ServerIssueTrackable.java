@@ -19,7 +19,9 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import java.util.List;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 
 public class ServerIssueTrackable implements Trackable {
@@ -99,5 +101,10 @@ public class ServerIssueTrackable implements Trackable {
   @Override
   public TextRange getTextRange() {
     return new TextRange(serverIssue.line());
+  }
+
+  @Override
+  public List<Flow> getFlows() {
+    throw new UnsupportedOperationException();
   }
 }

@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.markers;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
@@ -44,6 +45,9 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_CREATION_DATE_ATTR = "creationdate";
 
   public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";
+  public static final String SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR = "hasextralocation";
+
+  public static final String SONARLINT_EXTRA_POSITIONS_CATEGORY = "sonarlintextralocations";
 
   private MarkerUtils() {
   }
@@ -125,20 +129,52 @@ public final class MarkerUtils {
   }
 
   @CheckForNull
-  private static Position getPosition(final IDocument document, int startLine, int startLineOffset, int endLine, int endLineOffset) {
-    int startLineStartOffset;
-    int endLineStartOffset;
+  public static Position getPosition(final IDocument document, int startLine, int startLineOffset, int endLine, int endLineOffset) {
     try {
-      startLineStartOffset = document.getLineOffset(startLine - 1);
-      endLineStartOffset = endLine != startLine ? document.getLineOffset(endLine - 1) : startLineStartOffset;
+      return convertToGlobalOffset(document, startLine, startLineOffset, endLine, endLineOffset, Position::new);
     } catch (BadLocationException e) {
       SonarLintLogger.get().error("failed to compute line offsets for start, end = " + startLine + ", " + endLine, e);
       return null;
     }
+  }
 
+  @CheckForNull
+  public static ExtraPosition getExtraPosition(final IDocument document, int startLine, int startLineOffset, int endLine, int endLineOffset, String message, long markerId) {
+    try {
+      return convertToGlobalOffset(document, startLine, startLineOffset, endLine, endLineOffset, (o, l) -> new ExtraPosition(o, l, message, markerId));
+    } catch (BadLocationException e) {
+      SonarLintLogger.get().error("failed to compute line offsets for start, end = " + startLine + ", " + endLine, e);
+      return null;
+    }
+  }
+
+  private static <G> G convertToGlobalOffset(final IDocument document, int startLine, int startLineOffset, int endLine, int endLineOffset,
+    BiFunction<Integer, Integer, G> function)
+    throws BadLocationException {
+    int startLineStartOffset = document.getLineOffset(startLine - 1);
+    int endLineStartOffset = endLine != startLine ? document.getLineOffset(endLine - 1) : startLineStartOffset;
     int start = startLineStartOffset + startLineOffset;
     int end = endLineStartOffset + endLineOffset;
-    return new Position(start, end - start);
+    return function.apply(start, end - start);
+  }
+
+  public static class ExtraPosition extends Position {
+    private final String message;
+    private final long markerId;
+
+    public ExtraPosition(int offset, int length, String message, long markerId) {
+      super(offset, length);
+      this.message = message;
+      this.markerId = markerId;
+    }
+
+    public String getMessage() {
+      return message;
+    }
+
+    public long getMarkerId() {
+      return markerId;
+    }
   }
 
 }

@@ -19,9 +19,11 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import java.util.List;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint.Issues.Issue;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
 
 public class ProtobufIssueTrackable implements Trackable {
 
@@ -98,6 +100,11 @@ public class ProtobufIssueTrackable implements Trackable {
 
   @Override
   public TextRange getTextRange() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<Flow> getFlows() {
     throw new UnsupportedOperationException();
   }
 }
