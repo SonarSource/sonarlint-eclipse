@@ -19,9 +19,11 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
 
 public interface Trackable {
 
@@ -64,5 +66,7 @@ public interface Trackable {
 
   @CheckForNull
   TextRange getTextRange();
+
+  List<Flow> getFlows();
 
 }

@@ -592,6 +592,8 @@
         <type
             name="org.sonarlint.eclipse.issueAnnotationType"
             markerType="org.sonarlint.eclipse.core.sonarlintProblem"/>
+        <type
+            name="org.sonarlint.eclipse.issueFlowAnnotationType"/>
     </extension>
     
     <extension
@@ -627,6 +629,39 @@
               textStylePreferenceValue="SQUIGGLES"
               verticalRulerPreferenceKey="org.sonarlint.eclipse.ui.issue.verticalruler"
               verticalRulerPreferenceValue="false"/>
+        <specification
+              annotationType="org.sonarlint.eclipse.issueFlowAnnotationType"
+              label="SonarLint issue flow location"
+              annotationImageProvider="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerImageProvider"
+              colorPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.color"
+              colorPreferenceValue="212,212,212"
+              highlightPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.highlight"
+              highlightPreferenceValue="true"
+              icon="icons/onde-sonar-16.png"
+              isGoToNextNavigationTarget="true"
+              isGoToNextNavigationTargetKey="org.sonarlint.eclipse.issueFlow.next"
+              isGoToPreviousNavigationTarget="true"
+              isGoToPreviousNavigationTargetKey="org.sonarlint.eclipse.issueFlow.previous"
+              overviewRulerPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.overviewruler"
+              overviewRulerPreferenceValue="true"
+              presentationLayer="4"
+              showInNextPrevDropdownToolbarAction="true"
+              showInNextPrevDropdownToolbarActionKey="org.sonarlint.eclipse.issueFlow.dropdown"
+              textPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.error.text"
+              textPreferenceValue="true"
+              textStylePreferenceKey="org.sonarlint.eclipse.ui.issueFlow.text.style"
+              textStylePreferenceValue="NONE"
+              verticalRulerPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.verticalruler"
+              verticalRulerPreferenceValue="false"/>
+  </extension>
+  
+  <!-- Marker resolver -->
+  <extension
+        point="org.eclipse.ui.ide.markerResolution">
+     <markerResolutionGenerator
+           class="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerResolutionGenerator"
+           markerType="org.sonarlint.eclipse.core.sonarlintProblem">
+     </markerResolutionGenerator>
   </extension>
 
   <extension

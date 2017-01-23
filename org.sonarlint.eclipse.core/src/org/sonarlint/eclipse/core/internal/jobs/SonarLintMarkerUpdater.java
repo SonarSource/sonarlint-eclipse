@@ -30,6 +30,9 @@ import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.BadPositionCategoryException;
+import org.eclipse.jface.text.DefaultPositionUpdater;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -37,11 +40,19 @@ import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueLocation;
 
 public class SonarLintMarkerUpdater {
 
-  public static void createOrUpdateMarkers(IResource resource, IDocument document, Collection<Trackable> issues, TriggerType triggerType) {
+  private static final DefaultPositionUpdater EXTRA_POSITIONS_UPDATER = new DefaultPositionUpdater(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY);
+
+  private SonarLintMarkerUpdater() {
+  }
+
+  public static void createOrUpdateMarkers(IResource resource, IDocument document, Collection<Trackable> issues, TriggerType triggerType, boolean createExtraLocations) {
     try {
       Set<IMarker> previousMarkersToDelete;
       if (triggerType == TriggerType.CHANGESET) {
@@ -50,7 +61,11 @@ public class SonarLintMarkerUpdater {
         previousMarkersToDelete = new HashSet<>(Arrays.asList(resource.findMarkers(SonarLintCorePlugin.MARKER_ID, false, IResource.DEPTH_ZERO)));
       }
 
-      createOrUpdateMarkers(document, resource, issues, triggerType, previousMarkersToDelete);
+      if (createExtraLocations) {
+        resetExtraPositions(document);
+      }
+
+      createOrUpdateMarkers(document, resource, issues, triggerType, previousMarkersToDelete, createExtraLocations);
 
       for (IMarker marker : previousMarkersToDelete) {
         marker.delete();
@@ -58,6 +73,16 @@ public class SonarLintMarkerUpdater {
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
+  }
+
+  private static void resetExtraPositions(IDocument document) {
+    try {
+      document.removePositionCategory(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY);
+    } catch (BadPositionCategoryException e1) {
+      // Ignore
+    }
+    document.addPositionCategory(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY);
+    document.addPositionUpdater(EXTRA_POSITIONS_UPDATER);
   }
 
   public static void updateMarkersWithServerSideData(IResource resource, Collection<Trackable> issues) {
@@ -78,14 +103,14 @@ public class SonarLintMarkerUpdater {
   }
 
   private static void createOrUpdateMarkers(IDocument document, IResource file, Collection<Trackable> issues,
-    TriggerType triggerType, Set<IMarker> previousMarkersToDelete) throws CoreException {
+    TriggerType triggerType, Set<IMarker> previousMarkersToDelete, boolean createExtraLocations) throws CoreException {
     for (Trackable issue : issues) {
       if (!issue.isResolved()) {
         if (issue.getMarkerId() == null || file.findMarker(issue.getMarkerId()) == null) {
-          createMarker(document, file, issue, triggerType);
+          createMarker(document, file, issue, triggerType, createExtraLocations);
         } else {
           IMarker marker = file.findMarker(issue.getMarkerId());
-          updateMarkerAttributes(document, issue, marker);
+          updateMarkerAttributes(document, issue, marker, createExtraLocations);
           previousMarkersToDelete.remove(marker);
         }
       } else {
@@ -94,14 +119,15 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  private static void createMarker(IDocument document, IResource file, Trackable trackable, TriggerType triggerType) throws CoreException {
+  private static void createMarker(IDocument document, IResource file, Trackable trackable, TriggerType triggerType, boolean createExtraLocations) throws CoreException {
     IMarker marker = file.createMarker(triggerType == TriggerType.CHANGESET ? SonarLintCorePlugin.MARKER_CHANGESET_ID : SonarLintCorePlugin.MARKER_ID);
     trackable.setMarkerId(marker.getId());
 
-    updateMarkerAttributes(document, trackable, marker);
+    updateMarkerAttributes(document, trackable, marker, createExtraLocations);
+
   }
 
-  private static void updateMarkerAttributes(IDocument document, Trackable trackable, IMarker marker) throws CoreException {
+  private static void updateMarkerAttributes(IDocument document, Trackable trackable, IMarker marker, boolean createExtraLocations) throws CoreException {
     Map<String, Object> existingAttributes = marker.getAttributes();
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());
@@ -119,7 +145,38 @@ public class SonarLintMarkerUpdater {
       setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_END, position.getOffset() + position.getLength());
     }
 
+    boolean hasExtraLocation = false;
+    if (createExtraLocations) {
+      hasExtraLocation = createExtraLocations(document, trackable, marker);
+    }
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, hasExtraLocation);
+
     updateServerMarkerAttributes(trackable, marker);
+  }
+
+  private static boolean createExtraLocations(IDocument document, Trackable trackable, IMarker marker) {
+    boolean hasExtraLocation = false;
+    for (Flow f : trackable.getFlows()) {
+      for (IssueLocation l : f.locations()) {
+        ExtraPosition extraPosition = MarkerUtils.getExtraPosition(document,
+          l.getStartLine(), l.getStartLineOffset(), l.getEndLine(), l.getEndLineOffset(),
+          l.getMessage(),
+          marker.getId());
+        if (extraPosition != null) {
+          savePosition(document, extraPosition);
+          hasExtraLocation = true;
+        }
+      }
+    }
+    return hasExtraLocation;
+  }
+
+  private static void savePosition(IDocument document, ExtraPosition extraPosition) {
+    try {
+      document.addPosition(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY, extraPosition);
+    } catch (BadLocationException | BadPositionCategoryException e) {
+      throw new IllegalStateException("Unable to register extra position", e);
+    }
   }
 
   /**

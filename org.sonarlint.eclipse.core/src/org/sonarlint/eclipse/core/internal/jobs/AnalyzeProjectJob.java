@@ -149,7 +149,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       Map<IFile, String> fileLanguages = new HashMap<>();
       Collection<ProjectConfigurator> usedConfigurators = configure(project, filesToAnalyze.keySet(), fileLanguages, mergedExtraProps, monitor);
 
-      List<ClientInputFile> inputFiles = buildInputFiles(filesToAnalyze, fileLanguages, monitor);
+      List<ClientInputFile> inputFiles = buildInputFiles(filesToAnalyze, fileLanguages);
 
       for (SonarLintProperty sonarProperty : extraProps) {
         mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue());
@@ -193,7 +193,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private static List<ClientInputFile> buildInputFiles(final Map<IFile, IDocument> filesToAnalyze, Map<IFile, String> fileLanguages, IProgressMonitor monitor) {
+  private static List<ClientInputFile> buildInputFiles(final Map<IFile, IDocument> filesToAnalyze, Map<IFile, String> fileLanguages) {
     List<ClientInputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
     String allTestPattern = PreferencesUtils.getTestFileRegexps();
     String[] testPatterns = allTestPattern.split(",");
@@ -267,7 +267,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       if (shouldUpdateServerIssuesSync(triggerType)) {
         tracked = trackServerIssuesSync(resource, tracked);
       }
-      SonarLintMarkerUpdater.createOrUpdateMarkers(resource, documentNotNull, tracked, triggerType);
+      SonarLintMarkerUpdater.createOrUpdateMarkers(resource, documentNotNull, tracked, triggerType, documentOrNull != null);
       // Now that markerId are set, store issues in cache
       issueTracker.updateCache(relativePath, tracked);
     }
