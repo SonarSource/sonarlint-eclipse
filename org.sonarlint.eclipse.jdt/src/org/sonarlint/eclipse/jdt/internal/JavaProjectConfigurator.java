@@ -20,9 +20,10 @@
 package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -63,16 +64,18 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     boolean hasJavaNature = SonarJdtPlugin.hasJavaNature(request.getProject());
     IJavaProject javaProject = JavaCore.create(request.getProject());
 
-    Collection<IFile> copy = new ArrayList<>(request.getFilesToAnalyze());
-
-    request.getFilesToAnalyze().clear();
-    copy.stream()
+    Collection<IFile> keep = request.getFilesToAnalyze().stream()
       .filter(res -> {
         IJavaElement javaElt = JavaCore.create(res);
         return javaElt == null || (hasJavaNature && isStructureKnown(javaElt) && javaProject.isOnClasspath(javaElt));
       })
-      .forEach(request.getFilesToAnalyze()::add);
+      .collect(Collectors.toSet());
 
+    for (Iterator<IFile> it = request.getFilesToAnalyze().iterator(); it.hasNext();) {
+      if (!keep.contains(it.next())) {
+        it.remove();
+      }
+    }
   }
 
   private static boolean isStructureKnown(IJavaElement javaElt) {

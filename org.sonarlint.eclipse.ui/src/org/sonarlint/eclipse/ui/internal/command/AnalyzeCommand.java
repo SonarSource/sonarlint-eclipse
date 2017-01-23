@@ -36,6 +36,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
@@ -48,9 +49,12 @@ import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.views.issues.IssuesView;
@@ -59,11 +63,11 @@ public class AnalyzeCommand extends AbstractHandler {
 
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    final Map<IProject, Collection<IFile>> filesPerProject = findSelectedFilesPerProject(event);
+    final Map<IProject, Collection<FileWithDocument>> filesPerProject = findSelectedFilesPerProject(event);
     if (filesPerProject.isEmpty()) {
-      IFile editedFile = findEditedFile(event);
+      FileWithDocument editedFile = findEditedFile(event);
       if (editedFile != null) {
-        filesPerProject.put(editedFile.getProject(), Arrays.asList(editedFile));
+        filesPerProject.put(editedFile.getFile().getProject(), Arrays.asList(editedFile));
       }
     }
 
@@ -74,39 +78,39 @@ public class AnalyzeCommand extends AbstractHandler {
     return null;
   }
 
-  private void runAnalysisJobs(Map<IProject, Collection<IFile>> filesPerProject) {
-    for (Map.Entry<IProject, Collection<IFile>> entry : filesPerProject.entrySet()) {
+  private void runAnalysisJobs(Map<IProject, Collection<FileWithDocument>> filesPerProject) {
+    for (Map.Entry<IProject, Collection<FileWithDocument>> entry : filesPerProject.entrySet()) {
       AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(entry.getKey(), entry.getValue(), TriggerType.ACTION));
       showIssuesViewAfterJobSuccess(job);
     }
   }
 
-  protected Map<IProject, Collection<IFile>> findSelectedFilesPerProject(ExecutionEvent event) throws ExecutionException {
-    Map<IProject, Collection<IFile>> selectedFilesPerProject = new LinkedHashMap<>();
+  protected Map<IProject, Collection<FileWithDocument>> findSelectedFilesPerProject(ExecutionEvent event) throws ExecutionException {
+    Map<IProject, Collection<FileWithDocument>> selectedFilesPerProject = new LinkedHashMap<>();
     ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
 
     if (selection instanceof IStructuredSelection) {
       Object[] elems = ((IStructuredSelection) selection).toArray();
-      collectFilesPerProject(selectedFilesPerProject, elems);
+      collectFilesPerProject(HandlerUtil.getActivePart(event).getSite().getPage(), selectedFilesPerProject, elems);
     }
 
     return selectedFilesPerProject;
   }
 
-  private static void collectFilesPerProject(final Map<IProject, Collection<IFile>> filesToAnalyzePerProject, Object[] elems) {
+  private static void collectFilesPerProject(IWorkbenchPage page, final Map<IProject, Collection<FileWithDocument>> filesToAnalyzePerProject, Object[] elems) {
     for (Object elem : elems) {
       if (elem instanceof IResource) {
-        collectChildren(filesToAnalyzePerProject, (IResource) elem);
+        collectChildren(page, filesToAnalyzePerProject, (IResource) elem);
       } else if (elem instanceof IAdaptable && ((IAdaptable) elem).getAdapter(IResource.class) != null) {
-        collectChildren(filesToAnalyzePerProject, (IResource) ((IAdaptable) elem).getAdapter(IResource.class));
+        collectChildren(page, filesToAnalyzePerProject, (IResource) ((IAdaptable) elem).getAdapter(IResource.class));
       } else if (elem instanceof IWorkingSet) {
         IWorkingSet ws = (IWorkingSet) elem;
-        collectFilesPerProject(filesToAnalyzePerProject, ws.getElements());
+        collectFilesPerProject(page, filesToAnalyzePerProject, ws.getElements());
       }
     }
   }
 
-  private static void collectChildren(final Map<IProject, Collection<IFile>> filesToAnalyzePerProject, IResource elem) {
+  private static void collectChildren(IWorkbenchPage page, final Map<IProject, Collection<FileWithDocument>> filesToAnalyzePerProject, IResource elem) {
     try {
       elem.accept(resource -> {
         if (!SonarLintUtils.shouldAnalyze(resource)) {
@@ -118,10 +122,14 @@ public class AnalyzeCommand extends AbstractHandler {
           return true;
         }
         IProject project = resource.getProject();
-        if (!filesToAnalyzePerProject.containsKey(project)) {
-          filesToAnalyzePerProject.put(project, new ArrayList<IFile>());
+        filesToAnalyzePerProject.putIfAbsent(project, new ArrayList<FileWithDocument>());
+        IEditorPart editorPart = ResourceUtil.findEditor(page, file);
+        if (editorPart instanceof ITextEditor) {
+          IDocument doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
+          filesToAnalyzePerProject.get(project).add(new FileWithDocument(file, doc));
+        } else {
+          filesToAnalyzePerProject.get(project).add(new FileWithDocument(file, null));
         }
-        filesToAnalyzePerProject.get(project).add(file);
         return true;
       });
     } catch (CoreException e) {
@@ -129,11 +137,15 @@ public class AnalyzeCommand extends AbstractHandler {
     }
   }
 
-  static IFile findEditedFile(ExecutionEvent event) {
+  static FileWithDocument findEditedFile(ExecutionEvent event) {
     IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
+    if (activeEditor == null) {
+      return null;
+    }
     IEditorInput input = activeEditor.getEditorInput();
     if (input instanceof IFileEditorInput) {
-      return ((IFileEditorInput) input).getFile();
+      IDocument doc = ((ITextEditor) activeEditor).getDocumentProvider().getDocument(activeEditor.getEditorInput());
+      return new FileWithDocument(((IFileEditorInput) input).getFile(), doc);
     }
     return null;
   }

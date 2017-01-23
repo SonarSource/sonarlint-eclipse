@@ -21,16 +21,19 @@ package org.sonarlint.eclipse.ui.internal;
 
 import java.util.Arrays;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.ui.internal.views.issues.ChangeSetIssuesView;
@@ -42,28 +45,32 @@ public class SonarLintPartListener implements IPartListener2 {
     if (part instanceof IEditorPart) {
       IEditorInput input = ((IEditorPart) part).getEditorInput();
       if (input instanceof IFileEditorInput) {
-        IResource resource = ((IFileEditorInput) input).getFile();
-        scheduleUpdate(resource);
+        IFile file = ((IFileEditorInput) input).getFile();
+        IEditorPart editorPart = ResourceUtil.findEditor(part.getSite().getPage(), file);
+        if (editorPart instanceof ITextEditor) {
+          IDocument doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
+          scheduleUpdate(new FileWithDocument(file, doc));
+        } else {
+          scheduleUpdate(new FileWithDocument(file, null));
+        }
       }
     }
     ChangeSetIssuesView.notifyEditorChanged();
   }
 
-  private static void scheduleUpdate(IResource resource) {
-    IFile file = (IFile) resource.getAdapter(IFile.class);
-    if (file != null) {
-      IFile specificFile = SonarLintUtils.toSpecificFile(file);
-      if (!specificFile.equals(file)) {
-        // Don't analyze files that are also part of submodules
-        return;
-      }
-      final SonarLintProject sonarProject = SonarLintProject.getInstance(file.getProject());
-      if (!sonarProject.isAutoEnabled() || !SonarLintUtils.shouldAnalyze(file)) {
-        return;
-      }
-      AnalyzeProjectRequest request = new AnalyzeProjectRequest(resource.getProject(), Arrays.asList(file), TriggerType.EDITOR_OPEN);
-      new AnalyzeProjectJob(request).schedule();
+  private static void scheduleUpdate(FileWithDocument fileWithDoc) {
+    IFile file = fileWithDoc.getFile();
+    IFile specificFile = SonarLintUtils.toSpecificFile(file);
+    if (!specificFile.equals(file)) {
+      // Don't analyze files that are also part of submodules
+      return;
     }
+    final SonarLintProject sonarProject = SonarLintProject.getInstance(file.getProject());
+    if (!sonarProject.isAutoEnabled() || !SonarLintUtils.shouldAnalyze(file)) {
+      return;
+    }
+    AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Arrays.asList(fileWithDoc), TriggerType.EDITOR_OPEN);
+    new AnalyzeProjectJob(request).schedule();
   }
 
   @Override

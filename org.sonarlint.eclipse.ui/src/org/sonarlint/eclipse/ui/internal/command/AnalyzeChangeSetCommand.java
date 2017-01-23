@@ -25,7 +25,6 @@ import java.util.Set;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
@@ -33,6 +32,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.ui.internal.views.issues.ChangeSetIssuesView;
 
 public class AnalyzeChangeSetCommand extends AbstractHandler {
@@ -58,9 +58,9 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
         }
       }
     } else {
-      IFile editedFile = AnalyzeCommand.findEditedFile(event);
+      FileWithDocument editedFile = AnalyzeCommand.findEditedFile(event);
       if (editedFile != null) {
-        selectedProjects.add(editedFile.getProject());
+        selectedProjects.add(editedFile.getFile().getProject());
       }
     }
 

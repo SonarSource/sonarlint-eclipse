@@ -20,17 +20,40 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.Collection;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 
 public class AnalyzeProjectRequest {
 
   private final IProject project;
-  private final Collection<IFile> files;
+  private final Collection<FileWithDocument> files;
   private final TriggerType triggerType;
 
-  public AnalyzeProjectRequest(IProject project, Collection<IFile> files, TriggerType triggerType) {
+  public static class FileWithDocument {
+    private final IFile file;
+    private final IDocument document;
+
+    public FileWithDocument(IFile file, @Nullable IDocument document) {
+      this.file = file;
+      this.document = document;
+    }
+
+    public IFile getFile() {
+      return file;
+    }
+
+    @CheckForNull
+    public IDocument getDocument() {
+      return document;
+    }
+
+  }
+
+  public AnalyzeProjectRequest(IProject project, Collection<FileWithDocument> files, TriggerType triggerType) {
     this.project = project;
     this.files = files;
     this.triggerType = triggerType;
@@ -40,7 +63,7 @@ public class AnalyzeProjectRequest {
     return project;
   }
 
-  public Collection<IFile> getFiles() {
+  public Collection<FileWithDocument> getFiles() {
     return files;
   }
 

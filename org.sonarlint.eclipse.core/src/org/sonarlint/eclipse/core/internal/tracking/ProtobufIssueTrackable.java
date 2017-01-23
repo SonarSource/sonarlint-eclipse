@@ -37,6 +37,16 @@ public class ProtobufIssueTrackable implements Trackable {
   }
 
   @Override
+  public Long getMarkerId() {
+    return issue.getMarkerId() == 0 ? null : issue.getMarkerId();
+  }
+
+  @Override
+  public void setMarkerId(Long id) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public String getMessage() {
     return issue.getMessage();
   }

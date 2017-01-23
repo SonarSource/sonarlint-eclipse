@@ -20,6 +20,8 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -27,34 +29,58 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.List;
-
 import javax.annotation.Nullable;
-
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.sonarlint.eclipse.core.internal.markers.TextFileContext;
+import org.eclipse.jface.text.IDocument;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 
+/**
+ * Two situations:
+ *   - either a IDocument is provided, which mean the file is open in an editor
+ *   - if document is <code>null</code> then file is not open but that doesn't mean we can read from FS, since the file might be stored on a remote FS
+ *
+ */
 class EclipseInputFile implements ClientInputFile {
   private final List<PathMatcher> pathMatchersForTests;
   private final IFile file;
-  private final Path filePath;
   private final String language;
+  private final IDocument document;
+  private Path filePath;
 
-  EclipseInputFile(List<PathMatcher> pathMatchersForTests, IFile file, Path filePath) {
-    this(pathMatchersForTests, file, filePath, null);
+  EclipseInputFile(List<PathMatcher> pathMatchersForTests, IFile file, @Nullable IDocument document) {
+    this(pathMatchersForTests, file, document, null);
   }
-  
-  EclipseInputFile(List<PathMatcher> pathMatchersForTests, IFile file, Path filePath, @Nullable String language) {
+
+  EclipseInputFile(List<PathMatcher> pathMatchersForTests, IFile file, @Nullable IDocument document, @Nullable String language) {
     this.pathMatchersForTests = pathMatchersForTests;
     this.file = file;
-    this.filePath = filePath;
     this.language = language;
+    this.document = document;
   }
 
+  private synchronized void initFromFS() {
+    IFileStore fileStore;
+    try {
+      fileStore = EFS.getStore(file.getLocationURI());
+      File localFile = fileStore.toLocalFile(EFS.NONE, null);
+      if (localFile == null) {
+        // Try to get a cached copy (for virtual file systems)
+        localFile = fileStore.toLocalFile(EFS.CACHE, null);
+      }
+      filePath = localFile.toPath().toAbsolutePath();
+    } catch (CoreException e) {
+      throw new IllegalStateException("Unable to find path for file " + file, e);
+    }
+  }
 
   @Override
   public String getPath() {
+    if (filePath == null) {
+      initFromFS();
+    }
     return filePath.toString();
   }
 
@@ -67,7 +93,7 @@ class EclipseInputFile implements ClientInputFile {
     }
     return false;
   }
-  
+
   @Override
   public String language() {
     return language;
@@ -78,7 +104,7 @@ class EclipseInputFile implements ClientInputFile {
     try {
       return Charset.forName(file.getCharset());
     } catch (CoreException e) {
-      return null;
+      throw new IllegalStateException("Unable to determine charset of file " + file, e);
     }
   }
 
@@ -89,23 +115,34 @@ class EclipseInputFile implements ClientInputFile {
 
   @Override
   public String contents() throws IOException {
-    try (TextFileContext context = new TextFileContext(file)) {
-      return context.getDocument().get();
-    } catch (CoreException e) {
-      throw new IOException("error while reading file: " + file.getFullPath(), e);
+    if (document != null) {
+      return document.get();
     }
+    ByteArrayOutputStream result = new ByteArrayOutputStream();
+    try (InputStream is = inputStream()) {
+      byte[] buffer = new byte[1024];
+      int length;
+      while ((length = is.read(buffer)) != -1) {
+        result.write(buffer, 0, length);
+      }
+    }
+    return result.toString(getCharset().name());
   }
 
   @Override
   public InputStream inputStream() throws IOException {
-    Charset charset = getCharset();
-    if (charset == null) {
-      charset = StandardCharsets.UTF_8;
-    }
-    try (TextFileContext context = new TextFileContext(file)) {
+    if (document != null) {
+      Charset charset = getCharset();
+      if (charset == null) {
+        charset = StandardCharsets.UTF_8;
+      }
       return new ByteArrayInputStream(contents().getBytes(charset));
+    }
+    try {
+      return file.getContents(true);
     } catch (CoreException e) {
-      throw new IOException("error while streaming file: " + file.getFullPath(), e);
+      throw new IllegalStateException("Unable to read file content for " + file, e);
     }
   }
+
 }

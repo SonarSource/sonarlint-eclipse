@@ -130,6 +130,9 @@ public class IssueStore {
     if (localIssue.getLine() != null) {
       builder.setLine(localIssue.getLine());
     }
+    if (localIssue.getMarkerId() != null) {
+      builder.setMarkerId(localIssue.getMarkerId());
+    }
     return builder.build();
   }
 }

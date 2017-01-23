@@ -30,6 +30,16 @@ public class WrappedTrackable implements Trackable {
   }
 
   @Override
+  public Long getMarkerId() {
+    return trackable.getMarkerId();
+  }
+
+  @Override
+  public void setMarkerId(Long id) {
+    trackable.setMarkerId(id);
+  }
+
+  @Override
   public Integer getLine() {
     return trackable.getLine();
   }

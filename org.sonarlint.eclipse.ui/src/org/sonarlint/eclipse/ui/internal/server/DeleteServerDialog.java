@@ -28,6 +28,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -96,7 +97,7 @@ public class DeleteServerDialog extends MessageDialog {
   protected void buttonPressed(int buttonId) {
     if (buttonId == OK && !servers.isEmpty()) {
       Job job = new DeleteServerJob();
-      servers.forEach(server -> JobUtils.scheduleAnalysisOfOpenFiles(job, server.getBoundProjects()));
+      servers.forEach(server -> JobUtils.scheduleAnalysisOfOpenFiles(job, server.getBoundProjects(), TriggerType.BINDING_CHANGE));
       job.setPriority(Job.BUILD);
       job.schedule();
     }
