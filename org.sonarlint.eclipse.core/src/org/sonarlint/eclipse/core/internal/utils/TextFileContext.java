@@ -17,13 +17,13 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.markers;
+package org.sonarlint.eclipse.core.internal.utils;
 
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -34,7 +34,7 @@ public class TextFileContext implements AutoCloseable {
   private final ITextFileBufferManager textFileBufferManager;
   private final IDocument document;
 
-  public TextFileContext(IFile file) throws CoreException {
+  public TextFileContext(IResource file) throws CoreException {
     this.path = file.getFullPath();
     this.textFileBufferManager = FileBuffers.getTextFileBufferManager();
     textFileBufferManager.connect(path, LocationKind.IFILE, new NullProgressMonitor());

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -39,6 +40,7 @@ import org.eclipse.team.core.synchronize.SyncInfo;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 
@@ -79,7 +81,9 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
         if (!project.isAccessible()) {
           continue;
         }
-        Collection<IFile> filesToAnalyze = entry.getValue();
+        Collection<FileWithDocument> filesToAnalyze = entry.getValue().stream()
+          .map(f -> new FileWithDocument(f, null))
+          .collect(Collectors.toList());
         AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.CHANGESET);
         AnalyzeProjectJob job = new AnalyzeProjectJob(req);
         job.runInWorkspace(projectAnalysisMonitor);

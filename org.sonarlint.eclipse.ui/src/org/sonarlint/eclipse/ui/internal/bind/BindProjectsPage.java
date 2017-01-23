@@ -68,6 +68,7 @@ import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.part.PageBook;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.ProjectUpdateJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
@@ -466,7 +467,7 @@ public class BindProjectsPage extends WizardPage {
     MarkerUtils.deleteIssuesMarkers(project);
     MarkerUtils.deleteChangeSetIssuesMarkers(project);
     SonarLintCorePlugin.clearIssueTracker(project);
-    JobUtils.scheduleAnalysisOfOpenFiles(project);
+    JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
     if (sonarProject.isBound()) {
       new ProjectUpdateJob(sonarProject).schedule();
     }

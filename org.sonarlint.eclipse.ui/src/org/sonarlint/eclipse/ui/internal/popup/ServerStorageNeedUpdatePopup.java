@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -60,7 +61,7 @@ public class ServerStorageNeedUpdatePopup extends AbstractNotificationPopup {
       @Override
       public void widgetSelected(SelectionEvent e) {
         Job job = new ServerUpdateJob(server);
-        JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server);
+        JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
         job.schedule();
         ServerStorageNeedUpdatePopup.this.close();
       }

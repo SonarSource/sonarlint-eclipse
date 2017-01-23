@@ -19,9 +19,9 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
-import java.util.Collections;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -45,16 +45,14 @@ import org.osgi.framework.BundleContext;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
+import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
 
@@ -247,18 +245,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     @Override
     public IStatus runInUIThread(IProgressMonitor monitor) {
 
-      analyzeCurrentFile();
+      JobUtils.scheduleAnalysisOfOpenFiles((IProject) null, TriggerType.STARTUP);
 
       return Status.OK_STATUS;
-    }
-
-    private static void analyzeCurrentFile() {
-      IFile file = findCurrentEditedFile();
-      if (file == null || !SonarLintProject.getInstance(file.getProject()).isAutoEnabled()) {
-        return;
-      }
-      AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Collections.singletonList(file), TriggerType.STARTUP);
-      new AnalyzeProjectJob(request).schedule();
     }
 
   }

@@ -31,6 +31,7 @@ public class IssueTrackable implements Trackable {
   private final TextRange textRange;
   private final Integer textRangeHash;
   private final Integer lineHash;
+  private Long markerId;
 
   public IssueTrackable(Issue issue) {
     this(issue, null, null, null);
@@ -41,6 +42,16 @@ public class IssueTrackable implements Trackable {
     this.textRange = textRange;
     this.textRangeHash = textRangeContent != null ? checksum(textRangeContent) : null;
     this.lineHash = lineContent != null ? checksum(lineContent) : null;
+  }
+
+  @Override
+  public Long getMarkerId() {
+    return markerId;
+  }
+
+  @Override
+  public void setMarkerId(Long id) {
+    this.markerId = id;
   }
 
   private static int checksum(String content) {
@@ -106,4 +117,5 @@ public class IssueTrackable implements Trackable {
   public String getAssignee() {
     return "";
   }
+
 }

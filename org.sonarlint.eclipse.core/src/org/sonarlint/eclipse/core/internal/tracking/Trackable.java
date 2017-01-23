@@ -20,9 +20,15 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 
 public interface Trackable {
+
+  @CheckForNull
+  Long getMarkerId();
+
+  void setMarkerId(@Nullable Long id);
 
   /**
    * The line index, starting with 1. Null means that
@@ -58,4 +64,5 @@ public interface Trackable {
 
   @CheckForNull
   TextRange getTextRange();
+
 }

@@ -24,10 +24,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public class PersistentIssueTrackerCache implements IssueTrackerCache {
-
-  private static final Logger LOGGER = new Logger();
 
   static final int MAX_ENTRIES = 100;
 
@@ -56,7 +55,7 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
 
       String key = eldest.getKey();
       try {
-        LOGGER.debug("Persisting issues for " + key);
+        SonarLintLogger.get().debug("Persisting issues for " + key);
         store.save(key, eldest.getValue());
       } catch (IOException e) {
         throw new IllegalStateException(String.format("Error persisting issues for %s", key), e);
@@ -69,14 +68,14 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
   public boolean isFirstAnalysis(String file) {
     return !cache.containsKey(file) && !store.contains(file);
   }
-  
+
   @Override
   public synchronized Collection<Trackable> getLiveOrFail(String file) {
     Collection<Trackable> liveTrackables = cache.get(file);
     if (liveTrackables != null) {
       return liveTrackables;
     }
-    
+
     throw new IllegalStateException("No issues in cache for file: " + file);
   }
 
@@ -96,7 +95,7 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
         return Collections.unmodifiableCollection(storedTrackables);
       }
     } catch (IOException e) {
-      LOGGER.error(String.format("Failed to read issues from store for file %s", file), e);
+      SonarLintLogger.get().error(String.format("Failed to read issues from store for file %s", file), e);
     }
     return Collections.emptyList();
   }
@@ -117,7 +116,7 @@ public class PersistentIssueTrackerCache implements IssueTrackerCache {
    * It does not clear the cache.
    */
   public synchronized void flushAll() {
-    LOGGER.debug("Persisting all issues");
+    SonarLintLogger.get().debug("Persisting all issues");
     cache.forEach((path, trackables) -> {
       try {
         store.save(path, trackables);

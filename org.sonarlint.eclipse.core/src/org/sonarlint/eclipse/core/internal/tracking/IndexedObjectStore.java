@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarsource.sonarlint.core.client.api.connected.objectstore.ObjectStore;
 import org.sonarsource.sonarlint.core.client.api.connected.objectstore.PathMapper;
 import org.sonarsource.sonarlint.core.client.api.connected.objectstore.Reader;
@@ -38,7 +39,6 @@ import org.sonarsource.sonarlint.core.client.api.connected.objectstore.Writer;
  * @param <V> type of the value to store
  */
 class IndexedObjectStore<K, V> implements ObjectStore<K, V> {
-  private static final Logger LOGGER = new Logger();
 
   private final StoreIndex<K> index;
   private final PathMapper<K> pathMapper;
@@ -83,11 +83,11 @@ class IndexedObjectStore<K, V> implements ObjectStore<K, V> {
           counter++;
           delete(k);
         } catch (IOException e) {
-          LOGGER.error("Failed to delete file in the store", e);
+          SonarLintLogger.get().error("Failed to delete file in the store", e);
         }
       }
     }
-    LOGGER.debug(String.format("%d entries removed from the store", counter));
+    SonarLintLogger.get().debug(String.format("%d entries removed from the store", counter));
   }
 
   @Override

@@ -37,7 +37,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
-import org.sonarlint.eclipse.core.internal.jobs.MarkerUpdaterCallable;
+import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -90,9 +90,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
     String absolutePath = project.getLocation().toString() + "/" + relativePath;
     IPath location = Path.fromOSString(absolutePath);
     IFile file = workspace.getRoot().getFileForLocation(location);
-    MarkerUpdaterCallable markerUpdater = new MarkerUpdaterCallable(file, Collections.singletonList(trackable), TriggerType.EDITOR_CHANGE);
-
-    markerUpdater.call();
+    SonarLintMarkerUpdater.createOrUpdateMarkers(file, null, Collections.singletonList(trackable), TriggerType.EDITOR_CHANGE);
 
     IMarker[] markers = project.getFile(relativePath).findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
     assertThat(markers).hasSize(1);

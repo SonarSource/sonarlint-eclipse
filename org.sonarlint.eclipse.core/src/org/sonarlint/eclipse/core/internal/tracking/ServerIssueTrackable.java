@@ -31,6 +31,16 @@ public class ServerIssueTrackable implements Trackable {
   }
 
   @Override
+  public Long getMarkerId() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void setMarkerId(Long id) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Integer getLine() {
     return serverIssue.line();
   }
