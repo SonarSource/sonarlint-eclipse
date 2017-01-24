@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.markers;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
@@ -174,6 +175,23 @@ public final class MarkerUtils {
 
     public long getMarkerId() {
       return markerId;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (other instanceof ExtraPosition) {
+        ExtraPosition rp = (ExtraPosition) other;
+        return (rp.offset == offset) && (rp.length == length) && (rp.markerId == markerId) && Objects.equals(rp.message, message);
+      }
+      return super.equals(other);
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (int) (markerId ^ (markerId >>> 32));
+      return result;
     }
   }
 
