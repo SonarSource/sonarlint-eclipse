@@ -108,4 +108,6 @@ public interface IServer {
 
   boolean hasUpdates();
 
+  void updateModuleList(IProgressMonitor monitor);
+
 }

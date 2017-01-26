@@ -67,6 +67,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.part.PageBook;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.ProjectUpdateJob;
@@ -266,7 +267,7 @@ public class BindProjectsPage extends WizardPage {
     updateServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        updateSelectedServer();
+        updateProjectListOfSelectedServer();
       }
     });
 
@@ -282,21 +283,21 @@ public class BindProjectsPage extends WizardPage {
     });
   }
 
-  private void updateSelectedServer() {
+  private void updateProjectListOfSelectedServer() {
     updateServerLink.setEnabled(false);
     try {
       final IServer server = (IServer) ((IStructuredSelection) serverCombo.getSelection()).getFirstElement();
-      getContainer().run(true, true, monitor -> {
-        try {
-          server.updateStorage(monitor);
-        } finally {
-          Display.getDefault().asyncExec(this::updateState);
-        }
+      getContainer().run(true, false, monitor -> {
+        server.updateModuleList(monitor);
+        Display.getDefault().asyncExec(this::updateState);
       });
     } catch (InvocationTargetException ex) {
-      throw new IllegalStateException(ex);
+      SonarLintLogger.get().error("Unable to update project list", ex);
+      setMessage(ex.getCause().getMessage(), IMessageProvider.ERROR);
     } catch (InterruptedException e1) {
       // Job cancelled, ignore
+    } finally {
+      updateServerLink.setEnabled(true);
     }
   }
 
