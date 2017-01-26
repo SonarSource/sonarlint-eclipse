@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -30,6 +31,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -48,6 +50,8 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
+import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
 
 public class JobUtils {
 
@@ -154,4 +158,24 @@ public class JobUtils {
       // nothing to do
     }
   }
+
+  public static void notifyServerViewAfterBindingChange(SonarLintProject sonarProject, @Nullable String oldServerId) {
+    if (oldServerId != null && !Objects.equals(sonarProject.getServerId(), oldServerId)) {
+      IServer oldServer = ServersManager.getInstance().getServer(oldServerId);
+      if (oldServer != null) {
+        oldServer.notifyAllListeners();
+      }
+    }
+    if (sonarProject.getServerId() != null) {
+      IServer server = ServersManager.getInstance().getServer(sonarProject.getServerId());
+      if (server != null) {
+        server.notifyAllListeners();
+      }
+    }
+    IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
+    if (labelProvider != null) {
+      ((SonarLintProjectDecorator) labelProvider).fireChange(new IProject[] {sonarProject.getProject()});
+    }
+  }
+
 }

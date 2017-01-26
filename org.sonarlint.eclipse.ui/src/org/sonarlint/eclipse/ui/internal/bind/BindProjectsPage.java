@@ -41,7 +41,6 @@ import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.FocusCellHighlighter;
 import org.eclipse.jface.viewers.FocusCellOwnerDrawHighlighter;
-import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -63,7 +62,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.part.PageBook;
@@ -79,7 +77,6 @@ import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
@@ -459,12 +456,13 @@ public class BindProjectsPage extends WizardPage {
       changed = true;
     }
     if (changed) {
-      updateProjectBinding(projectBinding, project, sonarProject, oldServerId);
+      sonarProject.save();
+      updateProjectBinding(project, sonarProject, oldServerId);
     }
   }
 
-  private static void updateProjectBinding(ProjectBindModel projectBinding, IProject project, SonarLintProject sonarProject, String oldServerId) {
-    sonarProject.save();
+  private static void updateProjectBinding(IProject project, SonarLintProject sonarProject, String oldServerId) {
+
     MarkerUtils.deleteIssuesMarkers(project);
     MarkerUtils.deleteChangeSetIssuesMarkers(project);
     SonarLintCorePlugin.clearIssueTracker(project);
@@ -472,22 +470,7 @@ public class BindProjectsPage extends WizardPage {
     if (sonarProject.isBound()) {
       new ProjectUpdateJob(sonarProject).schedule();
     }
-    if (oldServerId != null && !Objects.equals(projectBinding.getServerId(), oldServerId)) {
-      IServer oldServer = ServersManager.getInstance().getServer(oldServerId);
-      if (oldServer != null) {
-        oldServer.notifyAllListeners();
-      }
-    }
-    if (projectBinding.getServerId() != null) {
-      IServer server = ServersManager.getInstance().getServer(projectBinding.getServerId());
-      if (server != null) {
-        server.notifyAllListeners();
-      }
-    }
-    IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
-    if (labelProvider != null) {
-      ((SonarLintProjectDecorator) labelProvider).fireChange(new IProject[] {sonarProject.getProject()});
-    }
+    JobUtils.notifyServerViewAfterBindingChange(sonarProject, oldServerId);
   }
 
   private ProjectBindModel[] getProjects() {

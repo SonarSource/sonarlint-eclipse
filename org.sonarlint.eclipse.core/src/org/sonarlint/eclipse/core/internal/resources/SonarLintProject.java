@@ -21,6 +21,8 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -67,19 +69,21 @@ public class SonarLintProject {
     this.extraProperties = extraProperties;
   }
 
+  @CheckForNull
   public String getModuleKey() {
     return StringUtils.trimToNull(moduleKey);
   }
 
+  @CheckForNull
   public String getServerId() {
     return StringUtils.trimToNull(serverId);
   }
 
-  public void setModuleKey(String moduleKey) {
+  public void setModuleKey(@Nullable String moduleKey) {
     this.moduleKey = moduleKey;
   }
 
-  public void setServerId(String serverId) {
+  public void setServerId(@Nullable String serverId) {
     this.serverId = serverId;
   }
 

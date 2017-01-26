@@ -28,11 +28,11 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
-import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
 /**
  * Dialog that prompts a user to unbind project(s).
@@ -78,9 +78,10 @@ public class UnbindProjectDialog extends MessageDialog {
           if (monitor.isCanceled()) {
             return Status.CANCEL_STATUS;
           }
-          IServer oldServer = ServersManager.getInstance().getServer(project.getServerId());
+          String oldServerId = project.getServerId();
           project.unbind();
-          oldServer.notifyAllListeners();
+          JobUtils.scheduleAnalysisOfOpenFiles(project.getProject(), TriggerType.BINDING_CHANGE);
+          JobUtils.notifyServerViewAfterBindingChange(project, oldServerId);
         }
       } catch (Exception e) {
         return new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, 0, e.getMessage(), e);
