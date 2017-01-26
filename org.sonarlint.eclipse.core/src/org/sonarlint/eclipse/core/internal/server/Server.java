@@ -290,6 +290,11 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
+  public void updateModuleList(IProgressMonitor monitor) {
+    client.downloadAllModules(getConfig());
+  }
+
+  @Override
   public List<SonarLintProject> getBoundProjects() {
     List<SonarLintProject> result = new ArrayList<>();
     for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
