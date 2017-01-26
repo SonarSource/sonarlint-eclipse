@@ -78,7 +78,7 @@ public class JobUtils {
 
     for (Map.Entry<IProject, List<FileWithDocument>> entry : filesByProject.entrySet()) {
       IProject aProject = entry.getKey();
-      if (SonarLintProject.getInstance(aProject).isAutoEnabled()) {
+      if (aProject.isAccessible() && SonarLintProject.getInstance(aProject).isAutoEnabled()) {
         AnalyzeProjectRequest request = new AnalyzeProjectRequest(aProject, entry.getValue(), triggerType);
         new AnalyzeProjectJob(request).schedule();
       }

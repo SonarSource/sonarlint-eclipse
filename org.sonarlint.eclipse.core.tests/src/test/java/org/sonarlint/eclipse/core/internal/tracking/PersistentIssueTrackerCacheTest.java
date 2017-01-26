@@ -49,8 +49,8 @@ public class PersistentIssueTrackerCacheTest extends SonarTestCase {
   class StubIssueStore extends IssueStore {
     private final Map<String, Collection<Trackable>> cache = new HashMap<>();
 
-    public StubIssueStore() throws IOException {
-      super(temporaryFolder.newFolder().toPath(), temporaryFolder.newFolder().toPath());
+    public StubIssueStore(IProject project) throws IOException {
+      super(temporaryFolder.newFolder().toPath(), project);
     }
 
     @Override
@@ -87,7 +87,7 @@ public class PersistentIssueTrackerCacheTest extends SonarTestCase {
 
   @Before
   public void setUp() throws IOException {
-    stubIssueStore = new StubIssueStore();
+    stubIssueStore = new StubIssueStore(project);
     cache = new PersistentIssueTrackerCache(stubIssueStore);
   }
 

@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
+import org.eclipse.core.resources.IProject;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint;
 import org.sonarsource.sonarlint.core.client.api.connected.objectstore.HashingPathMapper;
 import org.sonarsource.sonarlint.core.client.api.connected.objectstore.PathMapper;
@@ -37,12 +38,12 @@ public class IssueStore {
   private Path basePath;
   private IndexedObjectStore<String, Sonarlint.Issues> store;
 
-  public IssueStore(Path storeBasePath, Path projectBasePath) {
+  public IssueStore(Path storeBasePath, IProject project) {
     this.basePath = storeBasePath;
     FileUtils.mkdirs(storeBasePath);
     StoreIndex<String> index = new StringStoreIndex(storeBasePath);
     PathMapper<String> mapper = new HashingPathMapper(storeBasePath, 2);
-    StoreKeyValidator<String> validator = new PathStoreKeyValidator(projectBasePath);
+    StoreKeyValidator<String> validator = new PathStoreKeyValidator(project);
     Reader<Sonarlint.Issues> reader = is -> {
       try {
         return Sonarlint.Issues.parseFrom(is);

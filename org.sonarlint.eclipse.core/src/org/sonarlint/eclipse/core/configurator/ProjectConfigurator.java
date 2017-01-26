@@ -78,16 +78,6 @@ public abstract class ProjectConfigurator {
     properties.put(key, newValue);
   }
 
-  protected static String getRelativePath(IPath root, IPath path) {
-    IPath absoluteRoot = ResourceUtils.getAbsolutePath(root);
-    IPath absolutePath = ResourceUtils.getAbsolutePath(path);
-    String relativePath = absolutePath != null ? absolutePath.makeRelativeTo(absoluteRoot).toOSString() : null;
-    if ("".equals(relativePath)) {
-      relativePath = ".";
-    }
-    return relativePath;
-  }
-
   public static void setPropertyList(Map<String, String> properties, String key, Collection<String> values) {
     properties.put(key, StringUtils.joinSkipNull(values, SEPARATOR));
   }
