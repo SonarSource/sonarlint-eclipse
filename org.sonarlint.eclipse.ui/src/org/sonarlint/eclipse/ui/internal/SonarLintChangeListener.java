@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -50,8 +51,6 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDo
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 
-import static org.sonarlint.eclipse.core.internal.utils.SonarLintUtils.aggregatePerMoreSpecificProject;
-
 public class SonarLintChangeListener implements IResourceChangeListener {
 
   @Override
@@ -64,17 +63,17 @@ public class SonarLintChangeListener implements IResourceChangeListener {
         SonarLintLogger.get().error(e.getMessage(), e);
       }
 
-      final Map<IProject, Collection<IFile>> changedFilesPerProject = aggregatePerMoreSpecificProject(changedFiles);
-
-      new AnalyzeOpenedFiles(changedFilesPerProject).schedule();
+      if (!changedFiles.isEmpty()) {
+        new AnalyzeOpenedFiles(changedFiles.stream().collect(Collectors.groupingBy(IFile::getProject, Collectors.toList()))).schedule();
+      }
     }
   }
 
   private static class AnalyzeOpenedFiles extends UIJob {
 
-    private final Map<IProject, Collection<IFile>> changedFilesPerProject;
+    private final Map<IProject, List<IFile>> changedFilesPerProject;
 
-    AnalyzeOpenedFiles(Map<IProject, Collection<IFile>> changedFilesPerProject) {
+    AnalyzeOpenedFiles(Map<IProject, List<IFile>> changedFilesPerProject) {
       super("Find opened files");
       this.changedFilesPerProject = changedFilesPerProject;
     }
@@ -89,7 +88,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
       if (page == null) {
         return Status.OK_STATUS;
       }
-      for (Map.Entry<IProject, Collection<IFile>> entry : changedFilesPerProject.entrySet()) {
+      for (Map.Entry<IProject, List<IFile>> entry : changedFilesPerProject.entrySet()) {
         IProject project = entry.getKey();
         Collection<FileWithDocument> filesToAnalyze = entry.getValue().stream()
           .map(f -> {

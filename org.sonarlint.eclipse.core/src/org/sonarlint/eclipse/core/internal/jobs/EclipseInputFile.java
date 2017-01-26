@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.List;
@@ -48,15 +49,13 @@ class EclipseInputFile implements ClientInputFile {
   private final IFile file;
   private final String language;
   private final IDocument document;
+  private final Path tempDirectory;
   private Path filePath;
 
-  EclipseInputFile(List<PathMatcher> pathMatchersForTests, IFile file, @Nullable IDocument document) {
-    this(pathMatchersForTests, file, document, null);
-  }
-
-  EclipseInputFile(List<PathMatcher> pathMatchersForTests, IFile file, @Nullable IDocument document, @Nullable String language) {
+  EclipseInputFile(List<PathMatcher> pathMatchersForTests, IFile file, Path tempDirectory, @Nullable IDocument document, @Nullable String language) {
     this.pathMatchersForTests = pathMatchersForTests;
     this.file = file;
+    this.tempDirectory = tempDirectory;
     this.language = language;
     this.document = document;
   }
@@ -67,17 +66,21 @@ class EclipseInputFile implements ClientInputFile {
       fileStore = EFS.getStore(file.getLocationURI());
       File localFile = fileStore.toLocalFile(EFS.NONE, null);
       if (localFile == null) {
-        // Try to get a cached copy (for virtual file systems)
-        localFile = fileStore.toLocalFile(EFS.CACHE, null);
+        // For analyzers to properly work we should ensure the temporary file has a "correct" name, and not a generated one
+        localFile = new File(tempDirectory.toFile(), file.getProjectRelativePath().toOSString());
+        Files.createDirectories(localFile.getParentFile().toPath());
+        fileStore.copy(EFS.getStore(localFile.toURI()), EFS.OVERWRITE, null);
       }
       filePath = localFile.toPath().toAbsolutePath();
-    } catch (CoreException e) {
+    } catch (Exception e) {
       throw new IllegalStateException("Unable to find path for file " + file, e);
     }
   }
 
   @Override
   public String getPath() {
+    // TODO When we are sure all analyzers stop using this to read file content, we should return "virtual" path and not create temporary
+    // copy
     if (filePath == null) {
       initFromFS();
     }
@@ -87,7 +90,7 @@ class EclipseInputFile implements ClientInputFile {
   @Override
   public boolean isTest() {
     for (PathMatcher matcher : pathMatchersForTests) {
-      if (matcher.matches(filePath)) {
+      if (matcher.matches(file.getProjectRelativePath().toFile().toPath())) {
         return true;
       }
     }

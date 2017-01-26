@@ -154,11 +154,6 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     if (isSourceExcluded(entry)) {
       return;
     }
-    String srcDir = getRelativePath(javaProject.getPath(), entry.getPath());
-    if (srcDir == null) {
-      SonarLintLogger.get().info("Skipping non existing source entry: " + entry.getPath().toOSString());
-      return;
-    }
     if (entry.getOutputLocation() != null) {
       processOutputDir(entry.getOutputLocation(), context, topProject);
     }

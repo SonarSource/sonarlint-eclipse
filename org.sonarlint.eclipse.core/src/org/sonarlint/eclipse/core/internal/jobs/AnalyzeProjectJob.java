@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
@@ -77,6 +78,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEng
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
 
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.trimToNull;
 
@@ -138,6 +140,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     SonarLintLogger.get().debug("Trigger: " + request.getTriggerType().name());
     SonarLintLogger.get().info(this.getName() + "...");
     // Analyze
+    Path tempDirectory = null;
     try {
       // Configure
       IProject project = request.getProject();
@@ -149,7 +152,9 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       Map<IFile, String> fileLanguages = new HashMap<>();
       Collection<ProjectConfigurator> usedConfigurators = configure(project, filesToAnalyze.keySet(), fileLanguages, mergedExtraProps, monitor);
 
-      List<ClientInputFile> inputFiles = buildInputFiles(filesToAnalyze, fileLanguages);
+      tempDirectory = Files.createTempDirectory("sonarlint");
+
+      List<ClientInputFile> inputFiles = buildInputFiles(tempDirectory, filesToAnalyze, fileLanguages);
 
       for (SonarLintProperty sonarProperty : extraProps) {
         mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue());
@@ -164,6 +169,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     } catch (Exception e) {
       SonarLintLogger.get().error("Error during execution of SonarLint analysis", e);
       return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
+    } finally {
+      if (tempDirectory != null) {
+        FileUtils.deleteRecursively(tempDirectory);
+      }
     }
 
     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
@@ -193,7 +202,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private static List<ClientInputFile> buildInputFiles(final Map<IFile, IDocument> filesToAnalyze, Map<IFile, String> fileLanguages) {
+  private static List<ClientInputFile> buildInputFiles(Path tempDirectory, final Map<IFile, IDocument> filesToAnalyze, Map<IFile, String> fileLanguages) {
     List<ClientInputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
     String allTestPattern = PreferencesUtils.getTestFileRegexps();
     String[] testPatterns = allTestPattern.split(",");
@@ -201,7 +210,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
     for (final Map.Entry<IFile, IDocument> fileWithDoc : filesToAnalyze.entrySet()) {
       IFile file = fileWithDoc.getKey();
-      ClientInputFile inputFile = new EclipseInputFile(pathMatchersForTests, file, fileWithDoc.getValue(), fileLanguages.get(file));
+      ClientInputFile inputFile = new EclipseInputFile(pathMatchersForTests, file, tempDirectory, fileWithDoc.getValue(), fileLanguages.get(file));
       inputFiles.add(inputFile);
     }
     return inputFiles;

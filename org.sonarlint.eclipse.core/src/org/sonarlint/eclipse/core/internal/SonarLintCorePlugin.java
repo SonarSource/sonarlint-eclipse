@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
 import org.osgi.framework.BundleContext;
@@ -74,9 +73,8 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     super.start(context);
 
     IssueTrackerCacheFactory factory = (project, localModuleKey) -> {
-      Path projectBasePath = Paths.get(project.getLocation().toString());
       Path storeBasePath = StorageManager.getIssuesDir(localModuleKey);
-      IssueStore issueStore = new IssueStore(storeBasePath, projectBasePath);
+      IssueStore issueStore = new IssueStore(storeBasePath, project);
       return new PersistentIssueTrackerCache(issueStore);
     };
     issueTrackerRegistry = new IssueTrackerRegistry(factory);
