@@ -30,13 +30,16 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.team.core.RepositoryProvider;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -54,6 +57,7 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
   private static ChangeSetIssuesView instance;
   private Label label;
   private Button btnPrj;
+  private Composite btnPrjWrapper;
   private Button btnAll;
   private Composite bottom;
 
@@ -79,7 +83,11 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
     Label caption = new Label(bottom, SWT.NONE);
     caption.setText("Run the analysis and find issues on the files in the SCM change set:");
 
-    btnPrj = new Button(bottom, SWT.PUSH);
+    btnPrjWrapper = new Composite(bottom, SWT.NONE);
+    // default values so it doesn't grab excess space
+    btnPrjWrapper.setLayoutData(new RowData());
+    btnPrjWrapper.setLayout(new FillLayout());
+    btnPrj = new Button(btnPrjWrapper, SWT.PUSH);
     btnPrj.setText("Current project");
     refreshBtnState();
 
@@ -92,6 +100,7 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
 
     btnAll = new Button(bottom, SWT.PUSH);
     btnAll.setText("All projects");
+    btnAll.setToolTipText("Analyze all changed files in all projects");
     btnAll.addListener(SWT.Selection, e -> triggerAnalysis(
       asList(ResourcesPlugin.getWorkspace().getRoot().getProjects()).stream()
         .filter(IProject::isAccessible)
@@ -103,11 +112,21 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
   private void refreshBtnState() {
     IFile editedFile = SonarLintUiPlugin.findCurrentEditedFile();
     if (editedFile == null) {
-      btnPrj.setToolTipText("<no editor opened>");
+      btnPrjWrapper.setToolTipText("No editor opened");
       btnPrj.setEnabled(false);
     } else {
-      btnPrj.setToolTipText(editedFile.getProject().getName());
-      btnPrj.setEnabled(true);
+      IProject project = editedFile.getProject();
+      RepositoryProvider provider = RepositoryProvider.getProvider(project);
+      if (provider == null) {
+        btnPrjWrapper.setToolTipText("No SCM for project '" + project.getName() + "'");
+        btnPrj.setEnabled(false);
+      } else if (provider.getSubscriber() == null) {
+        btnPrjWrapper.setToolTipText("Unsupported SCM for project '" + project.getName() + "'");
+        btnPrj.setEnabled(false);
+      } else {
+        btnPrjWrapper.setToolTipText(project.getName());
+        btnPrj.setEnabled(true);
+      }
     }
   }
 
