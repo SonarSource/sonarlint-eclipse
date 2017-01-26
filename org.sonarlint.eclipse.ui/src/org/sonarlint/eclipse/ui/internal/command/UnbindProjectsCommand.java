@@ -76,7 +76,10 @@ public class UnbindProjectsCommand extends AbstractHandler {
         monitor.beginTask("Unbind projects", selectedProjects.size());
         for (IProject p : selectedProjects) {
           SonarLintProject sonarLintProject = SonarLintProject.getInstance(p);
+          String oldServerId = sonarLintProject.getServerId();
           sonarLintProject.unbind();
+          JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE);
+          JobUtils.notifyServerViewAfterBindingChange(sonarLintProject, oldServerId);
           monitor.worked(1);
           Display.getDefault().asyncExec(() -> JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE));
         }
