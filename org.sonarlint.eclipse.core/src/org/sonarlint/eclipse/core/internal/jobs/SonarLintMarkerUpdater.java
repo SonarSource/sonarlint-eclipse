@@ -87,18 +87,26 @@ public class SonarLintMarkerUpdater {
 
   public static void updateMarkersWithServerSideData(IResource resource, Collection<Trackable> issues) {
     try {
-      // We are expecting every issue to be associated to an existing marker
       for (Trackable issue : issues) {
-        IMarker marker = resource.findMarker(issue.getMarkerId());
-        if (issue.isResolved()) {
-          marker.delete();
-          issue.setMarkerId(null);
-        } else {
-          updateServerMarkerAttributes(issue, marker);
-        }
+        updateMarkerWithServerSideData(resource, issue);
       }
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
+    }
+  }
+
+  private static void updateMarkerWithServerSideData(IResource resource, Trackable issue) throws CoreException {
+    if (issue.isResolved()) {
+      if (issue.getMarkerId() != null) {
+        // Issue is associated to a marker, means it was not marked as resolved in previous analysis, but now it is, so clear marker
+        IMarker marker = resource.findMarker(issue.getMarkerId());
+        marker.delete();
+        issue.setMarkerId(null);
+      }
+    } else {
+      // We are expecting every unresolved issue to be associated to an existing marker
+      IMarker marker = resource.findMarker(issue.getMarkerId());
+      updateServerMarkerAttributes(issue, marker);
     }
   }
 
