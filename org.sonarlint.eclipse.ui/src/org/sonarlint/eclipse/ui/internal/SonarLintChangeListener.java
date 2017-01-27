@@ -36,6 +36,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -50,6 +51,7 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 
 public class SonarLintChangeListener implements IResourceChangeListener {
 
@@ -94,7 +96,10 @@ public class SonarLintChangeListener implements IResourceChangeListener {
           .map(f -> {
             IEditorPart editorPart = ResourceUtil.findEditor(page, f);
             if (editorPart instanceof ITextEditor) {
-              IDocument doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
+              ITextEditor textEditor = (ITextEditor) editorPart;
+              IAnnotationModel annotationModel = textEditor.getDocumentProvider().getAnnotationModel(editorPart.getEditorInput());
+              ShowIssueFlowsMarkerResolver.removePreviousAnnotations(annotationModel);
+              IDocument doc = textEditor.getDocumentProvider().getDocument(editorPart.getEditorInput());
               return new FileWithDocument(f, doc);
             }
             return null;

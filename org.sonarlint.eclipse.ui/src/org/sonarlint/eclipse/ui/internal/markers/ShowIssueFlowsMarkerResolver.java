@@ -79,7 +79,7 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
     }
   }
 
-  private static void removePreviousAnnotations(IAnnotationModel annotationModel) {
+  public static void removePreviousAnnotations(IAnnotationModel annotationModel) {
     annotationModel.getAnnotationIterator().forEachRemaining(a -> {
       // Cast are required for Eclipse prior 4.6
       if (ISSUE_FLOW_ANNOTATION_TYPE.equals(((Annotation) a).getType())) {
