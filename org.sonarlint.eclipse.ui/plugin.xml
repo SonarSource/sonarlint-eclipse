@@ -631,10 +631,10 @@
               verticalRulerPreferenceValue="false"/>
         <specification
               annotationType="org.sonarlint.eclipse.issueFlowAnnotationType"
-              label="SonarLint issue flow location"
+              label="SonarLint issue location"
               annotationImageProvider="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerImageProvider"
               colorPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.color"
-              colorPreferenceValue="212,212,212"
+              colorPreferenceValue="63,152,191"
               highlightPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.highlight"
               highlightPreferenceValue="true"
               icon="icons/onde-sonar-16.png"

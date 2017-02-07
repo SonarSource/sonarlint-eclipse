@@ -165,13 +165,15 @@ public class SonarLintMarkerUpdater {
   private static boolean createExtraLocations(IDocument document, Trackable trackable, IMarker marker) {
     boolean hasExtraLocation = false;
     for (Flow f : trackable.getFlows()) {
+      ExtraPosition parent = null;
       for (IssueLocation l : f.locations()) {
         ExtraPosition extraPosition = MarkerUtils.getExtraPosition(document,
           l.getStartLine(), l.getStartLineOffset(), l.getEndLine(), l.getEndLineOffset(),
           l.getMessage(),
-          marker.getId());
+          marker.getId(), parent);
         if (extraPosition != null) {
           savePosition(document, extraPosition);
+          parent = extraPosition;
           hasExtraLocation = true;
         }
       }

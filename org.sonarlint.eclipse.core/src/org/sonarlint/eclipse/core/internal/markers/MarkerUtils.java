@@ -140,9 +140,10 @@ public final class MarkerUtils {
   }
 
   @CheckForNull
-  public static ExtraPosition getExtraPosition(final IDocument document, int startLine, int startLineOffset, int endLine, int endLineOffset, String message, long markerId) {
+  public static ExtraPosition getExtraPosition(final IDocument document, int startLine, int startLineOffset, int endLine, int endLineOffset, String message, long markerId,
+    ExtraPosition parent) {
     try {
-      return convertToGlobalOffset(document, startLine, startLineOffset, endLine, endLineOffset, (o, l) -> new ExtraPosition(o, l, message, markerId));
+      return convertToGlobalOffset(document, startLine, startLineOffset, endLine, endLineOffset, (o, l) -> new ExtraPosition(o, l, message, markerId, parent));
     } catch (BadLocationException e) {
       SonarLintLogger.get().error("failed to compute line offsets for start, end = " + startLine + ", " + endLine, e);
       return null;
@@ -162,11 +163,13 @@ public final class MarkerUtils {
   public static class ExtraPosition extends Position {
     private final String message;
     private final long markerId;
+    private final ExtraPosition parent;
 
-    public ExtraPosition(int offset, int length, String message, long markerId) {
+    public ExtraPosition(int offset, int length, String message, long markerId, @Nullable ExtraPosition parent) {
       super(offset, length);
       this.message = message;
       this.markerId = markerId;
+      this.parent = parent;
     }
 
     public String getMessage() {
@@ -175,6 +178,11 @@ public final class MarkerUtils {
 
     public long getMarkerId() {
       return markerId;
+    }
+
+    @CheckForNull
+    public ExtraPosition getParent() {
+      return parent;
     }
 
     @Override

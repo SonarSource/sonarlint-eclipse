@@ -19,12 +19,18 @@
  */
 package org.sonarlint.eclipse.ui.internal.markers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -44,12 +50,12 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
 
   @Override
   public String getDescription() {
-    return "Show the extra locations to better understand the issue";
+    return "Show/Hide all locations to better understand the issue";
   }
 
   @Override
   public String getLabel() {
-    return "Show issue extra locations";
+    return "Toggle all issue locations";
   }
 
   @Override
@@ -61,31 +67,45 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
       if (editorPart instanceof ITextEditor) {
         ITextEditor textEditor = (ITextEditor) editorPart;
         IAnnotationModel annotationModel = textEditor.getDocumentProvider().getAnnotationModel(editorInput);
-        removePreviousAnnotations(annotationModel);
         IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
-        createAnnotations(marker, annotationModel, doc);
+        Map<Annotation, Position> newAnnotations = createAnnotations(marker, doc);
+        List<Annotation> existingFlowAnnotations = existingFlowAnnotations(annotationModel);
+        if (!existingFlowAnnotations.isEmpty() && newAnnotations.containsValue(annotationModel.getPosition(existingFlowAnnotations.iterator().next()))) {
+          removePreviousAnnotations(annotationModel);
+        } else if (annotationModel instanceof IAnnotationModelExtension) {
+          ((IAnnotationModelExtension) annotationModel).replaceAnnotations(existingFlowAnnotations.toArray(new Annotation[0]), newAnnotations);
+        } else {
+          removePreviousAnnotations(annotationModel);
+          newAnnotations.forEach(annotationModel::addAnnotation);
+        }
       }
     } catch (Exception e) {
-      SonarLintLogger.get().error("Unable to show extra locations", e);
+      SonarLintLogger.get().error("Unable to show issue locations", e);
     }
   }
 
-  private static void createAnnotations(IMarker marker, IAnnotationModel annotationModel, IDocument doc) throws BadPositionCategoryException {
-    for (Position p : doc.getPositions(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY)) {
-      ExtraPosition extraPosition = (ExtraPosition) p;
-      if (extraPosition.getMarkerId() == marker.getId()) {
-        annotationModel.addAnnotation(new Annotation(ISSUE_FLOW_ANNOTATION_TYPE, false, extraPosition.getMessage()), new Position(p.getOffset(), p.getLength()));
-      }
-    }
+  private static Map<Annotation, Position> createAnnotations(IMarker marker, IDocument doc) throws BadPositionCategoryException {
+    return Arrays.asList(doc.getPositions(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY))
+      .stream()
+      .map(p -> (ExtraPosition) p)
+      .filter(p -> p.getMarkerId() == marker.getId() && !p.isDeleted)
+      .collect(Collectors.toMap(p -> new Annotation(ISSUE_FLOW_ANNOTATION_TYPE, false, p.getMessage()),
+        p -> new Position(p.getOffset(), p.getLength())));
   }
 
   public static void removePreviousAnnotations(IAnnotationModel annotationModel) {
+    existingFlowAnnotations(annotationModel).forEach(annotationModel::removeAnnotation);
+  }
+
+  private static List<Annotation> existingFlowAnnotations(IAnnotationModel annotationModel) {
+    List<Annotation> result = new ArrayList<>();
     annotationModel.getAnnotationIterator().forEachRemaining(a -> {
       // Cast are required for Eclipse prior 4.6
       if (ISSUE_FLOW_ANNOTATION_TYPE.equals(((Annotation) a).getType())) {
-        annotationModel.removeAnnotation((Annotation) a);
+        result.add((Annotation) a);
       }
     });
+    return result;
   }
 
   @Override
