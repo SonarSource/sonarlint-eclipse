@@ -63,24 +63,28 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
     try {
       IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
       IEditorPart editorPart = IDE.openEditor(page, marker);
-      IEditorInput editorInput = editorPart.getEditorInput();
       if (editorPart instanceof ITextEditor) {
         ITextEditor textEditor = (ITextEditor) editorPart;
-        IAnnotationModel annotationModel = textEditor.getDocumentProvider().getAnnotationModel(editorInput);
-        IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
-        Map<Annotation, Position> newAnnotations = createAnnotations(marker, doc);
-        List<Annotation> existingFlowAnnotations = existingFlowAnnotations(annotationModel);
-        if (!existingFlowAnnotations.isEmpty() && newAnnotations.containsValue(annotationModel.getPosition(existingFlowAnnotations.iterator().next()))) {
-          removePreviousAnnotations(annotationModel);
-        } else if (annotationModel instanceof IAnnotationModelExtension) {
-          ((IAnnotationModelExtension) annotationModel).replaceAnnotations(existingFlowAnnotations.toArray(new Annotation[0]), newAnnotations);
-        } else {
-          removePreviousAnnotations(annotationModel);
-          newAnnotations.forEach(annotationModel::addAnnotation);
-        }
+        toggleAnnotations(marker, textEditor, false);
       }
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to show issue locations", e);
+    }
+  }
+
+  public static void toggleAnnotations(IMarker marker, ITextEditor textEditor, boolean forceShow) throws BadPositionCategoryException {
+    IEditorInput editorInput = textEditor.getEditorInput();
+    IAnnotationModel annotationModel = textEditor.getDocumentProvider().getAnnotationModel(editorInput);
+    IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
+    Map<Annotation, Position> newAnnotations = createAnnotations(marker, doc);
+    List<Annotation> existingFlowAnnotations = existingFlowAnnotations(annotationModel);
+    if (!forceShow && !existingFlowAnnotations.isEmpty() && newAnnotations.containsValue(annotationModel.getPosition(existingFlowAnnotations.iterator().next()))) {
+      removePreviousAnnotations(annotationModel);
+    } else if (annotationModel instanceof IAnnotationModelExtension) {
+      ((IAnnotationModelExtension) annotationModel).replaceAnnotations(existingFlowAnnotations.toArray(new Annotation[0]), newAnnotations);
+    } else {
+      removePreviousAnnotations(annotationModel);
+      newAnnotations.forEach(annotationModel::addAnnotation);
     }
   }
 

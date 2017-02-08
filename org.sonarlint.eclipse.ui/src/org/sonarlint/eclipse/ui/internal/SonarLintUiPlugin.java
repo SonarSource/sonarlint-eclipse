@@ -254,6 +254,16 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   @CheckForNull
   public static IFile findCurrentEditedFile() {
+    IEditorPart editor = findActiveEditor();
+    if (editor == null) {
+      return null;
+    }
+    // note: the cast is necessary for e43 and e44
+    return (IFile) editor.getEditorInput().getAdapter(IFile.class);
+  }
+
+  @CheckForNull
+  public static IEditorPart findActiveEditor() {
     // Super defensing programming because we don't really understand what is initialized at startup (SLE-122)
     IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
     if (window == null) {
@@ -263,12 +273,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     if (page == null) {
       return null;
     }
-    IEditorPart editor = page.getActiveEditor();
-    if (editor == null) {
-      return null;
-    }
-    // note: the cast is necessary for e43 and e44
-    return (IFile) editor.getEditorInput().getAdapter(IFile.class);
+    return page.getActiveEditor();
   }
 
   public static void analyzeCurrentFile() {
