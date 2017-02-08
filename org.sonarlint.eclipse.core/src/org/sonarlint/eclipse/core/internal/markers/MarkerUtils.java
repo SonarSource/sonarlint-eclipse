@@ -163,13 +163,13 @@ public final class MarkerUtils {
   public static class ExtraPosition extends Position {
     private final String message;
     private final long markerId;
-    private final ExtraPosition parent;
+    private final ExtraPosition previous;
 
-    public ExtraPosition(int offset, int length, String message, long markerId, @Nullable ExtraPosition parent) {
+    public ExtraPosition(int offset, int length, String message, long markerId, @Nullable ExtraPosition previous) {
       super(offset, length);
       this.message = message;
       this.markerId = markerId;
-      this.parent = parent;
+      this.previous = previous;
     }
 
     public String getMessage() {
@@ -182,14 +182,18 @@ public final class MarkerUtils {
 
     @CheckForNull
     public ExtraPosition getParent() {
-      return parent;
+      return previous;
     }
 
     @Override
     public boolean equals(Object other) {
       if (other instanceof ExtraPosition) {
         ExtraPosition rp = (ExtraPosition) other;
-        return (rp.offset == offset) && (rp.length == length) && (rp.markerId == markerId) && Objects.equals(rp.message, message);
+        return (rp.offset == offset)
+          && (rp.length == length)
+          && (rp.markerId == markerId)
+          && Objects.equals(rp.message, message)
+          && Objects.equals(rp.previous, previous);
       }
       return super.equals(other);
     }
