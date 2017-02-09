@@ -26,6 +26,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 import org.sonarlint.eclipse.core.AbstractPlugin;
+import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
 import org.sonarlint.eclipse.core.internal.tracking.IssueStore;
@@ -50,6 +51,8 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   private StandaloneSonarLintClientFacade sonarlint;
   private final ServiceTracker proxyTracker;
+
+  private AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
 
   public SonarLintCorePlugin() {
     plugin = this;
@@ -116,5 +119,9 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   public static void clearIssueTracker(IProject project) {
     getDefault().issueTrackerRegistry.get(project).ifPresent(IssueTracker::clear);
+  }
+
+  public static AnalysisListenerManager getAnalysisListenerManager() {
+    return getDefault().analysisListenerManager;
   }
 }

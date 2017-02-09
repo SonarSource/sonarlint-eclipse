@@ -65,6 +65,9 @@ public class SonarLintPartListener implements IPartListener2 {
       // Don't analyze files that are also part of submodules
       return;
     }
+    if (!file.getProject().isAccessible()) {
+      return;
+    }
     final SonarLintProject sonarProject = SonarLintProject.getInstance(file.getProject());
     if (!sonarProject.isAutoEnabled() || !SonarLintUtils.shouldAnalyze(file)) {
       return;

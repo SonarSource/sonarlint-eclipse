@@ -20,23 +20,25 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 /**
- * Combine a server Trackable ("serverIssue") with existing issue ("currentIssue")
+ * Combine a new Trackable ("raw") with a previous state ("base")
  */
-public class CombinedTrackable extends WrappedTrackable {
+public class PreviousTrackable extends WrappedTrackable {
 
   private final String serverIssueKey;
   private final Long creationDate;
   private final boolean resolved;
   private final String assignee;
+  private Long markerId;
 
-  public CombinedTrackable(Trackable serverIssue, Trackable currentIssue) {
-    super(currentIssue);
+  public PreviousTrackable(Trackable base, RawIssueTrackable raw) {
+    super(raw);
 
-    // Warning: do not store a reference to serverIssue, as it might never get garbage collected
-    this.serverIssueKey = serverIssue.getServerIssueKey();
-    this.creationDate = serverIssue.getCreationDate();
-    this.resolved = serverIssue.isResolved();
-    this.assignee = serverIssue.getAssignee();
+    // Warning: do not store a reference to base, as it might never get garbage collected
+    this.serverIssueKey = base.getServerIssueKey();
+    this.creationDate = base.getCreationDate();
+    this.resolved = base.isResolved();
+    this.assignee = base.getAssignee();
+    this.markerId = base.getMarkerId();
   }
 
   @Override
@@ -57,5 +59,15 @@ public class CombinedTrackable extends WrappedTrackable {
   @Override
   public String getAssignee() {
     return assignee;
+  }
+
+  @Override
+  public Long getMarkerId() {
+    return markerId;
+  }
+
+  @Override
+  public void setMarkerId(Long markerId) {
+    this.markerId = markerId;
   }
 }

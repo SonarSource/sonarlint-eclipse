@@ -107,7 +107,7 @@ public class ServerIssueUpdater {
           IssueTracker issueTracker = issueTrackerRegistry.getOrCreate(project.getProject(), localModuleKey);
           List<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, resource);
           Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
-          Collection<Trackable> tracked = issueTracker.matchAndTrackAsBase(relativePath, serverIssuesTrackable);
+          Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(relativePath, serverIssuesTrackable);
           issueTracker.updateCache(relativePath, tracked);
           trackedIssues.put(resource, tracked);
         }

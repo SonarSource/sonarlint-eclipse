@@ -64,8 +64,8 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
-import org.sonarlint.eclipse.core.internal.tracking.IssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
+import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
@@ -165,6 +165,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
 
       analysisCompleted(usedConfigurators, mergedExtraProps, monitor);
+      SonarLintCorePlugin.getAnalysisListenerManager().notifyListeners();
       SonarLintLogger.get().debug(String.format("Done in %d ms", System.currentTimeMillis() - startTime));
     } catch (Exception e) {
       SonarLintLogger.get().error("Error during execution of SonarLint analysis", e);
@@ -297,15 +298,15 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return getSonarProject().isBound() && trigger == TriggerType.EDITOR_OPEN;
   }
 
-  private static IssueTrackable transform(Issue issue, IResource resource, IDocument document) {
+  private static RawIssueTrackable transform(Issue issue, IResource resource, IDocument document) {
     Integer startLine = issue.getStartLine();
     if (startLine == null) {
-      return new IssueTrackable(issue);
+      return new RawIssueTrackable(issue);
     }
     TextRange textRange = new TextRange(startLine, issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
     String textRangeContent = readTextRangeContent(resource, document, textRange);
     String lineContent = readLineContent(resource, document, startLine);
-    return new IssueTrackable(issue, textRange, textRangeContent, lineContent);
+    return new RawIssueTrackable(issue, textRange, textRangeContent, lineContent);
   }
 
   @CheckForNull
@@ -353,7 +354,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     ConnectedSonarLintEngine engine = server.getEngine();
     List<ServerIssue> serverIssues = ServerIssueUpdater.fetchServerIssues(serverConfiguration, engine, serverModuleKey, resource);
     Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
-    return IssueTracker.matchAndTrack(serverIssuesTrackable, tracked);
+    return IssueTracker.matchAndTrackServerIssues(serverIssuesTrackable, tracked);
   }
 
   private void trackServerIssuesAsync(Collection<IResource> resources) {
