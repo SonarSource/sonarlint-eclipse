@@ -124,6 +124,6 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
 
   @Override
   public Image getImage() {
-    return SonarLintImages.BALLOON_IMG;
+    return SonarLintImages.IMG_ISSUE;
   }
 }
