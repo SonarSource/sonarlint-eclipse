@@ -36,6 +36,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -43,6 +44,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.views.IssueLocationsView;
 
 public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
 
@@ -66,6 +68,12 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
       if (editorPart instanceof ITextEditor) {
         ITextEditor textEditor = (ITextEditor) editorPart;
         toggleAnnotations(marker, textEditor, false);
+        try {
+          IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
+          view.setInput(marker);
+        } catch (PartInitException e) {
+          SonarLintLogger.get().error("Unable to open Issue Locations View", e);
+        }
       }
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to show issue locations", e);
@@ -80,11 +88,13 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
     List<Annotation> existingFlowAnnotations = existingFlowAnnotations(annotationModel);
     if (!forceShow && !existingFlowAnnotations.isEmpty() && newAnnotations.containsValue(annotationModel.getPosition(existingFlowAnnotations.iterator().next()))) {
       removePreviousAnnotations(annotationModel);
-    } else if (annotationModel instanceof IAnnotationModelExtension) {
-      ((IAnnotationModelExtension) annotationModel).replaceAnnotations(existingFlowAnnotations.toArray(new Annotation[0]), newAnnotations);
     } else {
-      removePreviousAnnotations(annotationModel);
-      newAnnotations.forEach(annotationModel::addAnnotation);
+      if (annotationModel instanceof IAnnotationModelExtension) {
+        ((IAnnotationModelExtension) annotationModel).replaceAnnotations(existingFlowAnnotations.toArray(new Annotation[0]), newAnnotations);
+      } else {
+        removePreviousAnnotations(annotationModel);
+        newAnnotations.forEach(annotationModel::addAnnotation);
+      }
     }
   }
 
