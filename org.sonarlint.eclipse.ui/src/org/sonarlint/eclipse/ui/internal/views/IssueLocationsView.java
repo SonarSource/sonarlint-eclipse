@@ -60,12 +60,15 @@ import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 
 /**
  * Display details of a rule in a web browser
  */
 public class IssueLocationsView extends ViewPart implements ISelectionListener, AnalysisListener {
+
+  public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.IssueLocationsView";
 
   private LocationsViewer locationsViewer;
   private IFile currentFile;
