@@ -34,7 +34,9 @@ import javax.annotation.Nullable;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.text.IDocument;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 
@@ -89,8 +91,17 @@ class EclipseInputFile implements ClientInputFile {
 
   @Override
   public boolean isTest() {
+    Path relativePath = file.getProjectRelativePath().toFile().toPath();
+    IPath projectLocation = file.getProject().getLocation();
+    Path projectPath;
+    if (projectLocation == null) {
+      projectPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath().resolve(file.getProject().getName());
+    } else {
+      projectPath = projectLocation.toFile().toPath();
+    }
+    Path absolutePath = projectPath.resolve(relativePath);
     for (PathMatcher matcher : pathMatchersForTests) {
-      if (matcher.matches(file.getProjectRelativePath().toFile().toPath())) {
+      if (matcher.matches(absolutePath)) {
         return true;
       }
     }
