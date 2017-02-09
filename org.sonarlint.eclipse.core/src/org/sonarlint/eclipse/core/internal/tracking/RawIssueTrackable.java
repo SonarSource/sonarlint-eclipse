@@ -27,7 +27,7 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
 
 import static org.sonarlint.eclipse.core.internal.tracking.DigestUtils.digest;
 
-public class IssueTrackable implements Trackable {
+public class RawIssueTrackable implements Trackable {
 
   private final Issue issue;
   private final TextRange textRange;
@@ -35,11 +35,11 @@ public class IssueTrackable implements Trackable {
   private final Integer lineHash;
   private Long markerId;
 
-  public IssueTrackable(Issue issue) {
+  public RawIssueTrackable(Issue issue) {
     this(issue, null, null, null);
   }
 
-  public IssueTrackable(Issue issue, @Nullable TextRange textRange, @Nullable String textRangeContent, @Nullable String lineContent) {
+  public RawIssueTrackable(Issue issue, @Nullable TextRange textRange, @Nullable String textRangeContent, @Nullable String lineContent) {
     this.issue = issue;
     this.textRange = textRange;
     this.textRangeHash = textRangeContent != null ? checksum(textRangeContent) : null;

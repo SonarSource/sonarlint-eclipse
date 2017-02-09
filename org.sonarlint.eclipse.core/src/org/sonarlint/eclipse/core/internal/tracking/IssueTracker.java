@@ -41,7 +41,18 @@ public class IssueTracker {
     if (cache.isFirstAnalysis(file)) {
       tracked = rawIssues;
     } else {
-      tracked = matchAndTrack(cache.getCurrentTrackables(file), rawIssues);
+      Collection<Trackable> trackedIssues = new ArrayList<>();
+      Tracking<Trackable, Trackable> tracking = new Tracker<>().track(() -> rawIssues, () -> cache.getCurrentTrackables(file));
+      // Previous issues
+      for (Map.Entry<Trackable, Trackable> entry : tracking.getMatchedRaws().entrySet()) {
+        Trackable next = new PreviousTrackable(entry.getValue(), (RawIssueTrackable) entry.getKey());
+        trackedIssues.add(next);
+      }
+      // New local issues compared to previous analysis
+      for (Trackable raw : tracking.getUnmatchedRaws()) {
+        trackedIssues.add(raw);
+      }
+      tracked = trackedIssues;
     }
     return tracked;
   }
@@ -54,7 +65,7 @@ public class IssueTracker {
    * "Rebase" current issues against given server issues.
    *
    */
-  public synchronized Collection<Trackable> matchAndTrackAsBase(String file, Collection<Trackable> serverIssues) {
+  public synchronized Collection<Trackable> matchAndTrackServerIssues(String file, Collection<Trackable> serverIssues) {
     // store issues (ProtobufIssueTrackable) are of no use since they can't be used in markers. There should have been
     // an analysis before that set the live issues for the file (even if it is empty)
     Collection<Trackable> current = cache.getLiveOrFail(file);
@@ -62,13 +73,12 @@ public class IssueTracker {
       // whatever is the base, if current is empty, then nothing to do
       return Collections.emptyList();
     }
-    return matchAndTrack(serverIssues, current);
+    return matchAndTrackServerIssues(serverIssues, current);
   }
 
-  // note: the base issues are type T: sometimes mutable, sometimes not (for example server issues)
-  public static Collection<Trackable> matchAndTrack(Collection<Trackable> baseIssues, Collection<Trackable> nextIssues) {
+  public static Collection<Trackable> matchAndTrackServerIssues(Collection<Trackable> serverIssue, Collection<Trackable> currentIssues) {
     Collection<Trackable> trackedIssues = new ArrayList<>();
-    Tracking<Trackable, Trackable> tracking = new Tracker<>().track(() -> nextIssues, () -> baseIssues);
+    Tracking<Trackable, Trackable> tracking = new Tracker<>().track(() -> currentIssues, () -> serverIssue);
     for (Map.Entry<Trackable, Trackable> entry : tracking.getMatchedRaws().entrySet()) {
       Trackable next = new CombinedTrackable(entry.getValue(), entry.getKey());
       trackedIssues.add(next);

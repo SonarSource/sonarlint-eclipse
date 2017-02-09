@@ -39,6 +39,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -53,6 +54,9 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
+import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -61,7 +65,7 @@ import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 /**
  * Display details of a rule in a web browser
  */
-public class IssueLocationsView extends ViewPart implements ISelectionListener {
+public class IssueLocationsView extends ViewPart implements ISelectionListener, AnalysisListener {
 
   private LocationsViewer locationsViewer;
   private IFile currentFile;
@@ -175,7 +179,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener {
 
   }
 
-  private class LocationsViewer extends TreeViewer {
+  private static class LocationsViewer extends TreeViewer {
 
     public LocationsViewer(Tree tree) {
       super(tree);
@@ -184,7 +188,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener {
     }
   }
 
-  private class LocationsTreeLabelProvider extends LabelProvider {
+  private static class LocationsTreeLabelProvider extends LabelProvider {
 
     @Override
     public String getText(Object element) {
@@ -230,7 +234,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener {
       if (file != null && sonarlintMarker.getResource().equals(file)) {
         IEditorPart editorPart = editor.getEditor(false);
         if (editorPart instanceof ITextEditor) {
-          this.currentEditor = ((ITextEditor) editorPart);
+          this.currentEditor = (ITextEditor) editorPart;
           this.currentDoc = currentEditor.getDocumentProvider().getDocument(editorPart.getEditorInput());
           this.currentFile = file;
           locationsViewer.setInput(sonarlintMarker);
@@ -242,6 +246,13 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener {
         }
       }
     }
+  }
+
+  private void clearInput() {
+    this.currentEditor = null;
+    this.currentDoc = null;
+    this.currentFile = null;
+    locationsViewer.setInput(null);
   }
 
   @Override
@@ -290,6 +301,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener {
       }
     });
     startListeningForSelectionChanges();
+    SonarLintCorePlugin.getAnalysisListenerManager().addListener(this);
   }
 
   @Override
@@ -300,8 +312,20 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener {
   @Override
   public void dispose() {
     stopListeningForSelectionChanges();
-
+    SonarLintCorePlugin.getAnalysisListenerManager().removeListener(this);
     super.dispose();
+  }
+
+  @Override
+  public void analysisCompleted(AnalysisEvent event) {
+    IMarker marker = (IMarker) locationsViewer.getInput();
+    Display.getDefault().asyncExec(() -> {
+      if (marker != null && marker.exists()) {
+        setInput(marker);
+      } else {
+        clearInput();
+      }
+    });
   }
 
 }
