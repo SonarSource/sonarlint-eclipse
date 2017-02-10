@@ -30,7 +30,7 @@ public class PreviousTrackable extends WrappedTrackable {
   private final String assignee;
   private Long markerId;
 
-  public PreviousTrackable(Trackable base, RawIssueTrackable raw) {
+  public PreviousTrackable(Trackable base, Trackable raw) {
     super(raw);
 
     // Warning: do not store a reference to base, as it might never get garbage collected

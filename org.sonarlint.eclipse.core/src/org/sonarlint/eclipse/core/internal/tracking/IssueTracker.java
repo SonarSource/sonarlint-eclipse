@@ -45,12 +45,12 @@ public class IssueTracker {
       Tracking<Trackable, Trackable> tracking = new Tracker<>().track(() -> rawIssues, () -> cache.getCurrentTrackables(file));
       // Previous issues
       for (Map.Entry<Trackable, Trackable> entry : tracking.getMatchedRaws().entrySet()) {
-        Trackable next = new PreviousTrackable(entry.getValue(), (RawIssueTrackable) entry.getKey());
+        Trackable next = new PreviousTrackable(entry.getValue(), entry.getKey());
         trackedIssues.add(next);
       }
       // New local issues compared to previous analysis
       for (Trackable raw : tracking.getUnmatchedRaws()) {
-        trackedIssues.add(raw);
+        trackedIssues.add(new LeakedTrackable(raw));
       }
       tracked = trackedIssues;
     }
