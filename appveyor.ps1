@@ -20,6 +20,21 @@ function InstallAppveyorTools
 	Copy-Item "$localPath\travis-utils-$travisUtilsVersion\m2\settings-public.xml" "$mavenLocal\settings.xml"
 }
 
+function CheckLastExitCode
+{
+    param ([int[]]$SuccessCodes = @(0))
+
+    if ($SuccessCodes -notcontains $LastExitCode)
+	{
+        $msg = @"
+EXE RETURNED EXIT CODE $LastExitCode
+CALLSTACK:$(Get-PSCallStack | Out-String)
+"@
+        throw $msg
+    }
+}
+
 InstallAppveyorTools
 
-mvn verify
+mvn verify "--batch-mode" "-B" "-e" "-V"
+CheckLastExitCode
