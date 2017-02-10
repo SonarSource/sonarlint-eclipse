@@ -423,6 +423,14 @@
          </command>
       </menuContribution>
       <menuContribution
+            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
+           <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.ShowIssueLocationsCommand"
+                 style="push"
+                 mnemonic="L">
+         </command>
+      </menuContribution>
+      <menuContribution
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
@@ -522,6 +530,12 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
+          description="Show issue locations"
+          id="org.sonarlint.eclipse.ui.internal.command.ShowIssueLocationsCommand"
+          name="Issue locations"
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
+    <command
           description="Analyze with SonarLint"
           id="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
           name="Analyze"
@@ -557,6 +571,10 @@
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand">
+    </handler>
+    <handler
+          class="org.sonarlint.eclipse.ui.internal.command.ShowIssueLocationsCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.ShowIssueLocationsCommand">
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
