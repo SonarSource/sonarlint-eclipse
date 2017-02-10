@@ -96,7 +96,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
             IEditorPart editorPart = ResourceUtil.findEditor(page, f);
             if (editorPart instanceof ITextEditor) {
               ITextEditor textEditor = (ITextEditor) editorPart;
-              ShowIssueFlowsMarkerResolver.removePreviousAnnotations(textEditor);
+              ShowIssueFlowsMarkerResolver.removeAnnotations(textEditor);
               IDocument doc = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
               return new FileWithDocument(f, doc);
             }

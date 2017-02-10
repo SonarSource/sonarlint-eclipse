@@ -34,6 +34,7 @@ import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -112,11 +113,26 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
     existingFlowAnnotations(annotationModel).forEach(annotationModel::removeAnnotation);
   }
 
-  public static void removePreviousAnnotations(ITextEditor textEditor) {
+  public static void removeAnnotations(ITextEditor textEditor) {
     IDocumentProvider documentProvider = textEditor.getDocumentProvider();
     if (documentProvider != null) {
       IAnnotationModel annotationModel = documentProvider.getAnnotationModel(textEditor.getEditorInput());
       removePreviousAnnotations(annotationModel);
+    }
+  }
+
+  public static void removeAllAnnotations() {
+    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    for (IEditorReference editorRef : page.getEditorReferences()) {
+      IEditorPart editorPart = editorRef.getEditor(false);
+      if (editorPart != null && editorPart instanceof ITextEditor) {
+        ITextEditor textEditor = (ITextEditor) editorPart;
+        IDocumentProvider documentProvider = textEditor.getDocumentProvider();
+        if (documentProvider != null) {
+          IAnnotationModel annotationModel = documentProvider.getAnnotationModel(textEditor.getEditorInput());
+          removePreviousAnnotations(annotationModel);
+        }
+      }
     }
   }
 

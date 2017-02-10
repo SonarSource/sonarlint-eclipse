@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.action.Action;
@@ -140,7 +141,14 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     @Override
     public Object[] getElements(Object inputElement) {
       IMarker sonarlintMarker = (IMarker) inputElement;
-      return new Object[] {new RootNode(sonarlintMarker, positions(p -> p.getMarkerId() == sonarlintMarker.getId()))};
+      if (sonarlintMarker.getAttribute(MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, false)) {
+        if (currentDoc == null) {
+          return new Object[] {"Please open the file containing this issue in an editor to see the flows"};
+        }
+        return new Object[] {new RootNode(sonarlintMarker, positions(p -> p.getMarkerId() == sonarlintMarker.getId()))};
+      } else {
+        return new Object[] {"No aditional locations associated with this issue"};
+      }
     }
 
     @Override
@@ -204,6 +212,8 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         return ((RootNode) element).getRoot().getAttribute(IMarker.MESSAGE, "No message");
       } else if (element instanceof FlowRootNode) {
         return ((FlowRootNode) element).getLabel();
+      } else if (element instanceof String) {
+        return (String) element;
       }
       return ((ExtraPosition) element).getMessage();
     }
@@ -218,15 +228,21 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   }
 
-  public void setInput(IMarker sonarlintMarker) {
+  public void setInput(@Nullable IMarker sonarlintMarker) {
+    if (sonarlintMarker == null) {
+      clearInput();
+      return;
+    }
     // Find IFile and open Editor
     // Super defensing programming because we don't really understand what is initialized at startup (SLE-122)
     IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
     if (window == null) {
+      showMarkerWithNoEditor(sonarlintMarker);
       return;
     }
     IWorkbenchPage page = window.getActivePage();
     if (page == null) {
+      showMarkerWithNoEditor(sonarlintMarker);
       return;
     }
     for (IEditorReference editor : page.getEditorReferences()) {
@@ -251,16 +267,27 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
           } catch (BadPositionCategoryException e) {
             SonarLintLogger.get().error("Unable to show annotations", e);
           }
+          return;
         }
       }
     }
+    showMarkerWithNoEditor(sonarlintMarker);
+  }
+
+  private void showMarkerWithNoEditor(IMarker sonarlintMarker) {
+    clearCurrentEditor();
+    locationsViewer.setInput(sonarlintMarker);
   }
 
   private void clearInput() {
+    clearCurrentEditor();
+    locationsViewer.setInput(null);
+  }
+
+  private void clearCurrentEditor() {
     this.currentEditor = null;
     this.currentDoc = null;
     this.currentFile = null;
-    locationsViewer.setInput(null);
   }
 
   @Override
@@ -332,9 +359,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
     @Override
     public void run() {
-      if (currentEditor != null) {
-        ShowIssueFlowsMarkerResolver.removePreviousAnnotations(currentEditor);
-      }
+      ShowIssueFlowsMarkerResolver.removeAllAnnotations();
     }
   }
 
@@ -347,6 +372,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   public void dispose() {
     stopListeningForSelectionChanges();
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(this);
+    ShowIssueFlowsMarkerResolver.removeAllAnnotations();
     super.dispose();
   }
 
