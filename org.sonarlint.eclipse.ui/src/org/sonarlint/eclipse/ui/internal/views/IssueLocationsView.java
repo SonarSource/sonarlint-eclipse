@@ -41,6 +41,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -191,6 +192,16 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     @Override
     public boolean hasChildren(Object element) {
       return getChildren(element).length > 0;
+    }
+
+    @Override
+    public void dispose() {
+      // Do nothing
+    }
+
+    @Override
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      // Do nothing
     }
 
   }
