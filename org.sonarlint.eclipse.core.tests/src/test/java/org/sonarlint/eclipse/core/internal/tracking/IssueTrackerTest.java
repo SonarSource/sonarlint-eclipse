@@ -455,17 +455,25 @@ public class IssueTrackerTest {
 
   @Test
   public void should_clear_server_issue_details_if_disappeared() {
+    String serverIssueKey = "dummy serverIssueKey";
     boolean resolved = true;
-    Trackable serverIssueTrackable = builder().ruleKey("dummy ruleKey")
-      .serverIssueKey("dummy serverIssueKey").resolved(resolved).assignee("dummy assignee").creationDate(1L).build();
+    String assignee = "dummy assignee";
+    MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").serverIssueKey(serverIssueKey).resolved(true).assignee(assignee);
 
     long start = System.currentTimeMillis();
 
-    cache.put(file1, tracker.matchAndTrackAsNew(file1, Collections.emptyList()));
-    cache.put(file1, tracker.matchAndTrackAsNew(file1, Collections.singletonList(serverIssueTrackable)));
+    // First analysis
+    cache.put(file1, tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.copy().resolved(false).assignee(null).build())));
+    cache.put(file1, tracker.matchAndTrackServerIssues(file1, Collections.singletonList(base.build())));
+
+    // Second analysis with no more issue on server side
+    cache.put(file1, tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.copy().resolved(false).assignee(null).build())));
+    cache.put(file1, tracker.matchAndTrackServerIssues(file1, Collections.emptyList()));
 
     Collection<Trackable> trackables = cache.getCurrentTrackables(file1);
-    assertThat(trackables).extracting("serverIssueKey", "resolved", "assignee").containsExactly(tuple(null, !resolved, ""));
+    assertThat(trackables)
+      .extracting("serverIssueKey", "resolved", "assignee")
+      .containsExactly(tuple(null, !resolved, ""));
     assertThat(trackables.iterator().next().getCreationDate()).isGreaterThanOrEqualTo(start);
   }
 
