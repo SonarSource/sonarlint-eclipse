@@ -36,7 +36,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -97,9 +96,8 @@ public class SonarLintChangeListener implements IResourceChangeListener {
             IEditorPart editorPart = ResourceUtil.findEditor(page, f);
             if (editorPart instanceof ITextEditor) {
               ITextEditor textEditor = (ITextEditor) editorPart;
-              IAnnotationModel annotationModel = textEditor.getDocumentProvider().getAnnotationModel(editorPart.getEditorInput());
-              ShowIssueFlowsMarkerResolver.removePreviousAnnotations(annotationModel);
-              IDocument doc = textEditor.getDocumentProvider().getDocument(editorPart.getEditorInput());
+              ShowIssueFlowsMarkerResolver.removePreviousAnnotations(textEditor);
+              IDocument doc = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
               return new FileWithDocument(f, doc);
             }
             return null;

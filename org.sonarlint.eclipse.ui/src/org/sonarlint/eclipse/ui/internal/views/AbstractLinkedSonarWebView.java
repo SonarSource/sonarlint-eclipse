@@ -21,11 +21,11 @@ package org.sonarlint.eclipse.ui.internal.views;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.ISelectionListener;
@@ -39,8 +39,6 @@ public abstract class AbstractLinkedSonarWebView<G> extends AbstractSonarWebView
   protected G currentElement;
 
   private boolean linking = true;
-
-  private LinkAction toggleLinkAction;
 
   /**
    * The last selected element if linking was disabled.
@@ -99,20 +97,15 @@ public abstract class AbstractLinkedSonarWebView<G> extends AbstractSonarWebView
   @Override
   public void createPartControl(Composite parent) {
     super.createPartControl(parent);
-    createActions();
     createToolbar();
 
     getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
     startListeningForSelectionChanges();
   }
 
-  protected void createActions() {
-    toggleLinkAction = new LinkAction();
-  }
-
   private void createToolbar() {
     IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
-    toolbarManager.add(toggleLinkAction);
+    toolbarManager.add(new LinkAction());
     toolbarManager.add(new Separator());
     toolbarManager.update(false);
   }
@@ -121,7 +114,7 @@ public abstract class AbstractLinkedSonarWebView<G> extends AbstractSonarWebView
     private static final String LINK_WITH_SELECTION = "Link with Selection";
 
     public LinkAction() {
-      super(LINK_WITH_SELECTION, SWT.TOGGLE);
+      super(LINK_WITH_SELECTION, IAction.AS_CHECK_BOX);
       setTitleToolTip(LINK_WITH_SELECTION);
       setImageDescriptor(PlatformUI.getWorkbench()
         .getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_SYNCED));

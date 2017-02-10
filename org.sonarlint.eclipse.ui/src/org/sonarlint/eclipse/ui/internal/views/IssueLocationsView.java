@@ -29,6 +29,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
@@ -45,6 +49,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -276,6 +281,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   @Override
   public void createPartControl(Composite parent) {
+    createToolbar();
     Tree tree = new Tree(parent, SWT.MULTI);
     locationsViewer = new LocationsViewer(tree);
     locationsViewer.setContentProvider(new LocationsProvider());
@@ -305,6 +311,31 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     });
     startListeningForSelectionChanges();
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(this);
+  }
+
+  private void createToolbar() {
+    IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
+    toolbarManager.add(new ClearLocationsAnnotationsAction());
+    toolbarManager.add(new Separator());
+    toolbarManager.update(false);
+  }
+
+  private class ClearLocationsAnnotationsAction extends Action {
+    private static final String MSG = "Clear locations annotations";
+
+    public ClearLocationsAnnotationsAction() {
+      super(MSG, IAction.AS_PUSH_BUTTON);
+      setTitleToolTip(MSG);
+      setImageDescriptor(PlatformUI.getWorkbench()
+        .getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVEALL));
+    }
+
+    @Override
+    public void run() {
+      if (currentEditor != null) {
+        ShowIssueFlowsMarkerResolver.removePreviousAnnotations(currentEditor);
+      }
+    }
   }
 
   @Override

@@ -39,6 +39,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
@@ -107,8 +108,16 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
         p -> new Position(p.getOffset(), p.getLength())));
   }
 
-  public static void removePreviousAnnotations(IAnnotationModel annotationModel) {
+  private static void removePreviousAnnotations(IAnnotationModel annotationModel) {
     existingFlowAnnotations(annotationModel).forEach(annotationModel::removeAnnotation);
+  }
+
+  public static void removePreviousAnnotations(ITextEditor textEditor) {
+    IDocumentProvider documentProvider = textEditor.getDocumentProvider();
+    if (documentProvider != null) {
+      IAnnotationModel annotationModel = documentProvider.getAnnotationModel(textEditor.getEditorInput());
+      removePreviousAnnotations(annotationModel);
+    }
   }
 
   private static List<Annotation> existingFlowAnnotations(IAnnotationModel annotationModel) {
