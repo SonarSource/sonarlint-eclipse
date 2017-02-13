@@ -78,7 +78,7 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
     }
   }
 
-  private void updateLocationsView(IMarker marker) {
+  private static void updateLocationsView(IMarker marker) {
     try {
       IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
       view.setInput(marker);

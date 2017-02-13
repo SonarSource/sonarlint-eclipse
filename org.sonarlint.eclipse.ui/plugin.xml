@@ -370,6 +370,10 @@
       class="org.sonarlint.eclipse.ui.internal.properties.SonarProjectPropertyPage"
        id="org.sonarlint.eclipse.ui.properties.sonarProjectPropertyPage"
        name="%sonar.properties.page.name">
+       <filter
+             name="open"
+             value="true">
+       </filter>
        <enabledWhen>
           <adapt type="org.eclipse.core.resources.IProject"/>
        </enabledWhen>
@@ -379,6 +383,10 @@
        id="org.sonarlint.eclipse.ui.properties.SonarExtraArgumentsPreferenceAndPropertyPage"
        category="org.sonarlint.eclipse.ui.properties.sonarProjectPropertyPage"
        name="%sonar.preference.extraProps.page.name">
+       <filter
+             name="open"
+             value="true">
+       </filter>
        <enabledWhen>
           <adapt type="org.eclipse.core.resources.IProject"/>
        </enabledWhen>
@@ -465,7 +473,12 @@
 	         <with variable="activeMenuSelection">
 	            <iterate ifEmpty="false">
 	              <or>
-							    <adapt type="org.eclipse.core.resources.IProject"/>
+							    <adapt
+										type="org.eclipse.core.resources.IProject">
+										<test
+											property="org.eclipse.core.resources.open">
+										</test>
+									</adapt>
 							    <adapt type="org.eclipse.ui.IWorkingSet"/>
 				  			</or>
 	            </iterate>
@@ -479,7 +492,12 @@
               <with variable="activeMenuSelection">
                  <iterate ifEmpty="false">
                    <and>
-                 	   <adapt type="org.eclipse.core.resources.IProject"/>
+                 	   <adapt
+											type="org.eclipse.core.resources.IProject">
+											<test
+												property="org.eclipse.core.resources.open">
+											</test>
+										 </adapt>
                  	   <test property="org.sonarlint.eclipse.core.isBound" value="false"/>
                  	 </and>
                  </iterate>
@@ -493,7 +511,12 @@
               <with variable="activeMenuSelection">
                  <iterate ifEmpty="false">
                    <and>
-                 	   <adapt type="org.eclipse.core.resources.IProject"/>
+                 	   <adapt
+											type="org.eclipse.core.resources.IProject">
+											<test
+												property="org.eclipse.core.resources.open">
+											</test>
+										 </adapt>
                  	   <test property="org.sonarlint.eclipse.core.isBound" value="true"/>
                  	 </and>
                  </iterate>
@@ -507,7 +530,12 @@
               <with variable="activeMenuSelection">
                  <iterate ifEmpty="false">
                    <and>
-                 	   <adapt type="org.eclipse.core.resources.IProject"/>
+                 	   <adapt
+											type="org.eclipse.core.resources.IProject">
+											<test
+												property="org.eclipse.core.resources.open">
+											</test>
+										 </adapt>
                  	   <test property="org.sonarlint.eclipse.core.isBound" value="true"/>
                  	 </and>
                  </iterate>
