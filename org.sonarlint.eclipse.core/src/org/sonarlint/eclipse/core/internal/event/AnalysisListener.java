@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.event;
 
+@FunctionalInterface
 public interface AnalysisListener {
 
   void analysisCompleted(AnalysisEvent event);

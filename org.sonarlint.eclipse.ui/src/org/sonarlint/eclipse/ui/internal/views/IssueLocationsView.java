@@ -256,6 +256,13 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
       showMarkerWithNoEditor(sonarlintMarker);
       return;
     }
+    boolean editorFound = findEditor(sonarlintMarker, page);
+    if (!editorFound) {
+      showMarkerWithNoEditor(sonarlintMarker);
+    }
+  }
+
+  private boolean findEditor(IMarker sonarlintMarker, IWorkbenchPage page) {
     for (IEditorReference editor : page.getEditorReferences()) {
       IEditorInput editorInput;
       try {
@@ -273,16 +280,12 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
           this.currentDoc = currentEditor.getDocumentProvider().getDocument(editorPart.getEditorInput());
           this.currentFile = file;
           locationsViewer.setInput(sonarlintMarker);
-          try {
-            ShowIssueFlowsMarkerResolver.toggleAnnotations((IMarker) locationsViewer.getInput(), currentEditor, true);
-          } catch (BadPositionCategoryException e) {
-            SonarLintLogger.get().error("Unable to show annotations", e);
-          }
-          return;
+          ShowIssueFlowsMarkerResolver.toggleAnnotations((IMarker) locationsViewer.getInput(), currentEditor, true);
+          return true;
         }
       }
     }
-    showMarkerWithNoEditor(sonarlintMarker);
+    return false;
   }
 
   private void showMarkerWithNoEditor(IMarker sonarlintMarker) {
@@ -331,24 +334,28 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         if (firstElement == null) {
           return;
         }
-        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        try {
-          if (firstElement instanceof RootNode) {
-            IDE.openEditor(page, ((RootNode) firstElement).getRoot());
-          } else if (firstElement instanceof ExtraPosition) {
-            IEditorPart editor = IDE.openEditor(page, currentFile);
-            if (editor instanceof ITextEditor) {
-              ExtraPosition pos = (ExtraPosition) firstElement;
-              ((ITextEditor) editor).selectAndReveal(pos.offset, pos.length);
-            }
-          }
-        } catch (PartInitException e) {
-          SonarLintLogger.get().error("Unable to open editor", e);
-        }
+        onTreeNodeSelected(firstElement);
       }
     });
     startListeningForSelectionChanges();
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(this);
+  }
+
+  private void onTreeNodeSelected(Object node) {
+    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    try {
+      if (node instanceof RootNode) {
+        IDE.openEditor(page, ((RootNode) node).getRoot());
+      } else if (node instanceof ExtraPosition) {
+        IEditorPart editor = IDE.openEditor(page, currentFile);
+        if (editor instanceof ITextEditor) {
+          ExtraPosition pos = (ExtraPosition) node;
+          ((ITextEditor) editor).selectAndReveal(pos.offset, pos.length);
+        }
+      }
+    } catch (PartInitException e) {
+      SonarLintLogger.get().error("Unable to open editor", e);
+    }
   }
 
   private void createToolbar() {

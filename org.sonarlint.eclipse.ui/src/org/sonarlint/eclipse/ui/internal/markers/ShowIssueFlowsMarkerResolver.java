@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.markers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,19 +71,23 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
       if (editorPart instanceof ITextEditor) {
         ITextEditor textEditor = (ITextEditor) editorPart;
         toggleAnnotations(marker, textEditor, false);
-        try {
-          IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
-          view.setInput(marker);
-        } catch (PartInitException e) {
-          SonarLintLogger.get().error("Unable to open Issue Locations View", e);
-        }
+        updateLocationsView(marker);
       }
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to show issue locations", e);
     }
   }
 
-  public static void toggleAnnotations(IMarker marker, ITextEditor textEditor, boolean forceShow) throws BadPositionCategoryException {
+  private void updateLocationsView(IMarker marker) {
+    try {
+      IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
+      view.setInput(marker);
+    } catch (PartInitException e) {
+      SonarLintLogger.get().error("Unable to open Issue Locations View", e);
+    }
+  }
+
+  public static void toggleAnnotations(IMarker marker, ITextEditor textEditor, boolean forceShow) {
     IEditorInput editorInput = textEditor.getEditorInput();
     IAnnotationModel annotationModel = textEditor.getDocumentProvider().getAnnotationModel(editorInput);
     IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
@@ -100,8 +105,15 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
     }
   }
 
-  private static Map<Annotation, Position> createAnnotations(IMarker marker, IDocument doc) throws BadPositionCategoryException {
-    return Arrays.asList(doc.getPositions(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY))
+  private static Map<Annotation, Position> createAnnotations(IMarker marker, IDocument doc) {
+    Position[] positions;
+    try {
+      positions = doc.getPositions(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY);
+    } catch (BadPositionCategoryException e) {
+      SonarLintLogger.get().error("Unable to read positions", e);
+      return Collections.emptyMap();
+    }
+    return Arrays.asList(positions)
       .stream()
       .map(p -> (ExtraPosition) p)
       .filter(p -> p.getMarkerId() == marker.getId() && !p.isDeleted)
