@@ -70,8 +70,7 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
       IEditorPart editorPart = IDE.openEditor(page, marker);
       if (editorPart instanceof ITextEditor) {
         ITextEditor textEditor = (ITextEditor) editorPart;
-        toggleAnnotations(marker, textEditor, false);
-        updateLocationsView(marker);
+        toggleAnnotations(marker, textEditor);
       }
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to show issue locations", e);
@@ -81,27 +80,39 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
   private static void updateLocationsView(IMarker marker) {
     try {
       IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
-      view.setInput(marker);
+      view.setInput(marker, false);
     } catch (PartInitException e) {
       SonarLintLogger.get().error("Unable to open Issue Locations View", e);
     }
   }
 
-  public static void toggleAnnotations(IMarker marker, ITextEditor textEditor, boolean forceShow) {
+  private static void toggleAnnotations(IMarker marker, ITextEditor textEditor) {
     IEditorInput editorInput = textEditor.getEditorInput();
     IAnnotationModel annotationModel = textEditor.getDocumentProvider().getAnnotationModel(editorInput);
     IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
     Map<Annotation, Position> newAnnotations = createAnnotations(marker, doc);
     List<Annotation> existingFlowAnnotations = existingFlowAnnotations(annotationModel);
-    if (!forceShow && !existingFlowAnnotations.isEmpty() && newAnnotations.containsValue(annotationModel.getPosition(existingFlowAnnotations.iterator().next()))) {
-      removePreviousAnnotations(annotationModel);
+    boolean annotationAlreadyDisplayedForThisMarker = !existingFlowAnnotations.isEmpty()
+      && newAnnotations.containsValue(annotationModel.getPosition(existingFlowAnnotations.iterator().next()));
+    if (!annotationAlreadyDisplayedForThisMarker) {
+      updateLocationsView(marker);
+      showAnnotations(marker, textEditor);
     } else {
-      if (annotationModel instanceof IAnnotationModelExtension) {
-        ((IAnnotationModelExtension) annotationModel).replaceAnnotations(existingFlowAnnotations.toArray(new Annotation[0]), newAnnotations);
-      } else {
-        removePreviousAnnotations(annotationModel);
-        newAnnotations.forEach(annotationModel::addAnnotation);
-      }
+      removePreviousAnnotations(annotationModel);
+    }
+  }
+
+  public static void showAnnotations(IMarker marker, ITextEditor textEditor) {
+    IEditorInput editorInput = textEditor.getEditorInput();
+    IAnnotationModel annotationModel = textEditor.getDocumentProvider().getAnnotationModel(editorInput);
+    IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
+    Map<Annotation, Position> newAnnotations = createAnnotations(marker, doc);
+    List<Annotation> existingFlowAnnotations = existingFlowAnnotations(annotationModel);
+    if (annotationModel instanceof IAnnotationModelExtension) {
+      ((IAnnotationModelExtension) annotationModel).replaceAnnotations(existingFlowAnnotations.toArray(new Annotation[0]), newAnnotations);
+    } else {
+      removePreviousAnnotations(annotationModel);
+      newAnnotations.forEach(annotationModel::addAnnotation);
     }
   }
 

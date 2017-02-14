@@ -239,7 +239,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   }
 
-  public void setInput(@Nullable IMarker sonarlintMarker) {
+  public void setInput(@Nullable IMarker sonarlintMarker, boolean showAnnotations) {
     if (sonarlintMarker == null) {
       clearInput();
       return;
@@ -257,7 +257,12 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
       return;
     }
     boolean editorFound = findEditor(sonarlintMarker, page);
-    if (!editorFound) {
+    if (editorFound) {
+      locationsViewer.setInput(sonarlintMarker);
+      if (showAnnotations) {
+        ShowIssueFlowsMarkerResolver.showAnnotations((IMarker) locationsViewer.getInput(), currentEditor);
+      }
+    } else {
       showMarkerWithNoEditor(sonarlintMarker);
     }
   }
@@ -279,8 +284,6 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
           this.currentEditor = (ITextEditor) editorPart;
           this.currentDoc = currentEditor.getDocumentProvider().getDocument(editorPart.getEditorInput());
           this.currentFile = file;
-          locationsViewer.setInput(sonarlintMarker);
-          ShowIssueFlowsMarkerResolver.toggleAnnotations((IMarker) locationsViewer.getInput(), currentEditor, true);
           return true;
         }
       }
@@ -308,7 +311,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   public void selectionChanged(IWorkbenchPart part, ISelection selection) {
     IMarker selectedMarker = AbstractSonarWebView.findSelectedSonarIssue(selection);
     if (selectedMarker != null && selectedMarker != locationsViewer.getInput()) {
-      setInput(selectedMarker);
+      setInput(selectedMarker, true);
     }
   }
 
@@ -399,7 +402,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     IMarker marker = (IMarker) locationsViewer.getInput();
     Display.getDefault().asyncExec(() -> {
       if (marker != null && marker.exists()) {
-        setInput(marker);
+        setInput(marker, true);
       } else {
         clearInput();
       }
