@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -56,7 +57,7 @@ public class SonarLintMarkerUpdater {
     try {
       Set<IMarker> previousMarkersToDelete;
       if (triggerType == TriggerType.CHANGESET) {
-        previousMarkersToDelete = new HashSet<>(Arrays.asList(resource.findMarkers(SonarLintCorePlugin.MARKER_CHANGESET_ID, false, IResource.DEPTH_ZERO)));
+        previousMarkersToDelete = Collections.emptySet();
       } else {
         previousMarkersToDelete = new HashSet<>(Arrays.asList(resource.findMarkers(SonarLintCorePlugin.MARKER_ID, false, IResource.DEPTH_ZERO)));
       }
@@ -114,7 +115,7 @@ public class SonarLintMarkerUpdater {
     TriggerType triggerType, Set<IMarker> previousMarkersToDelete, boolean createExtraLocations) throws CoreException {
     for (Trackable issue : issues) {
       if (!issue.isResolved()) {
-        if (issue.getMarkerId() == null || file.findMarker(issue.getMarkerId()) == null) {
+        if (triggerType == TriggerType.CHANGESET || issue.getMarkerId() == null || file.findMarker(issue.getMarkerId()) == null) {
           createMarker(document, file, issue, triggerType, createExtraLocations);
         } else {
           IMarker marker = file.findMarker(issue.getMarkerId());
@@ -129,7 +130,9 @@ public class SonarLintMarkerUpdater {
 
   private static void createMarker(IDocument document, IResource file, Trackable trackable, TriggerType triggerType, boolean createExtraLocations) throws CoreException {
     IMarker marker = file.createMarker(triggerType == TriggerType.CHANGESET ? SonarLintCorePlugin.MARKER_CHANGESET_ID : SonarLintCorePlugin.MARKER_ID);
-    trackable.setMarkerId(marker.getId());
+    if (triggerType != TriggerType.CHANGESET) {
+      trackable.setMarkerId(marker.getId());
+    }
 
     updateMarkerAttributes(document, trackable, marker, createExtraLocations);
 
