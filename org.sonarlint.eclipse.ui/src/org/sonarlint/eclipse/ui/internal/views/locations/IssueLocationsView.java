@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
@@ -79,8 +80,6 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.IssueLocationsView";
 
   private TreeViewer locationsViewer;
-
-  private IToolBarManager toolbarManager;
 
   private ToggleAnnotationsAction showAnnotationsAction;
 
@@ -303,7 +302,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   }
 
   @CheckForNull
-  private ITextEditor findOpenEditorFor(IMarker sonarlintMarker) {
+  private static ITextEditor findOpenEditorFor(IMarker sonarlintMarker) {
     // Find IFile and open Editor
     // Super defensing programming because we don't really understand what is initialized at startup (SLE-122)
     IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -335,7 +334,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   @Override
   public void selectionChanged(IWorkbenchPart part, ISelection selection) {
     IMarker selectedMarker = AbstractSonarWebView.findSelectedSonarIssue(selection);
-    if (selectedMarker != null && selectedMarker != locationsViewer.getInput()) {
+    if (!Objects.equals(selectedMarker, locationsViewer.getInput())) {
       setInput(selectedMarker);
     }
   }
@@ -419,7 +418,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   }
 
   private void createToolbar() {
-    toolbarManager = getViewSite().getActionBars().getToolBarManager();
+    IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
     showAnnotationsAction = new ToggleAnnotationsAction();
     toolbarManager.add(showAnnotationsAction);
     toolbarManager.add(new Separator());
