@@ -84,7 +84,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
     }
   }
 
-  static IMarker findSelectedSonarIssue(ISelection selection) {
+  public static IMarker findSelectedSonarIssue(ISelection selection) {
     try {
       if (selection instanceof IStructuredSelection) {
         List<IMarker> selectedSonarMarkers = new ArrayList<>();

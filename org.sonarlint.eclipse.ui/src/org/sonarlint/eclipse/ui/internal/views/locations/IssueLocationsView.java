@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.views;
+package org.sonarlint.eclipse.ui.internal.views.locations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,6 +69,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
+import org.sonarlint.eclipse.ui.internal.views.AbstractSonarWebView;
 
 /**
  * Display details of a rule in a web browser
@@ -82,22 +83,61 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   private ITextEditor currentEditor;
   private IDocument currentDoc;
 
-  private static class FlowRootNode {
+  private static class FlowNode {
 
     private final String label;
-    private final List<ExtraPosition> positions;
+    private final ExtraPosition position;
 
-    public FlowRootNode(String label, List<ExtraPosition> positions) {
+    public FlowNode(ExtraPosition position) {
+      this(positionLabel(position.getMessage()), position);
+    }
+
+    public FlowNode(String label, ExtraPosition position) {
       this.label = label;
-      this.positions = positions;
+      this.position = position;
     }
 
     public String getLabel() {
       return label;
     }
 
-    public List<ExtraPosition> getPositions() {
-      return positions;
+    public ExtraPosition getPosition() {
+      return position;
+    }
+
+  }
+
+  static List<FlowNode> toFlowNodes(List<ExtraPosition> positions) {
+    List<FlowNode> result = new ArrayList<>();
+    int id = positions.size();
+    for (ExtraPosition extraPosition : positions) {
+      String childLabel = positions.size() > 1 ? (id + ": " + positionLabel(extraPosition.getMessage())) : positionLabel(extraPosition.getMessage());
+      result.add(new FlowNode(childLabel, extraPosition));
+      id--;
+    }
+    return result;
+  }
+
+  private static String positionLabel(String message) {
+    return message != null ? message : "";
+  }
+
+  private static class FlowRootNode {
+
+    private final String label;
+    private final List<FlowNode> children;
+
+    public FlowRootNode(String label, List<ExtraPosition> positions) {
+      this.label = label;
+      children = toFlowNodes(positions);
+    }
+
+    public String getLabel() {
+      return label;
+    }
+
+    public FlowNode[] getChildren() {
+      return children.toArray(new FlowNode[0]);
     }
 
   }
@@ -128,7 +168,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
       return result;
     }
 
-    public IMarker getRoot() {
+    public IMarker getMarker() {
       return rootMarker;
     }
 
@@ -148,7 +188,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         }
         return new Object[] {new RootNode(sonarlintMarker, positions(p -> p.getMarkerId() == sonarlintMarker.getId()))};
       } else {
-        return new Object[] {"No aditional locations associated with this issue"};
+        return new Object[] {"No additional locations associated with this issue"};
       }
     }
 
@@ -158,14 +198,14 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         List<List<ExtraPosition>> flows = ((RootNode) parentElement).getFlows();
         if (flows.size() > 1) {
           AtomicInteger counter = new AtomicInteger(0);
-          return flows.stream().map(f -> f.size() > 1 ? new FlowRootNode("Flow " + counter.incrementAndGet(), f) : f.get(0)).toArray();
+          return flows.stream().map(f -> f.size() > 1 ? new FlowRootNode("Flow " + counter.incrementAndGet(), f) : new FlowNode(f.get(0))).toArray();
         } else if (flows.size() == 1) {
-          return flows.get(0).toArray();
+          return toFlowNodes(flows.get(0)).toArray();
         } else {
           return new Object[0];
         }
       } else if (parentElement instanceof FlowRootNode) {
-        return ((FlowRootNode) parentElement).getPositions().toArray();
+        return ((FlowRootNode) parentElement).getChildren();
       } else {
         return new Object[0];
       }
@@ -220,13 +260,15 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     @Override
     public String getText(Object element) {
       if (element instanceof RootNode) {
-        return ((RootNode) element).getRoot().getAttribute(IMarker.MESSAGE, "No message");
+        return ((RootNode) element).getMarker().getAttribute(IMarker.MESSAGE, "No message");
       } else if (element instanceof FlowRootNode) {
         return ((FlowRootNode) element).getLabel();
+      } else if (element instanceof FlowNode) {
+        return ((FlowNode) element).getLabel();
       } else if (element instanceof String) {
         return (String) element;
       }
-      return ((ExtraPosition) element).getMessage();
+      throw new IllegalArgumentException("Unknow node type: " + element);
     }
 
     @Override
@@ -348,11 +390,11 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     try {
       if (node instanceof RootNode) {
-        IDE.openEditor(page, ((RootNode) node).getRoot());
-      } else if (node instanceof ExtraPosition) {
+        IDE.openEditor(page, ((RootNode) node).getMarker());
+      } else if (node instanceof FlowNode) {
         IEditorPart editor = IDE.openEditor(page, currentFile);
         if (editor instanceof ITextEditor) {
-          ExtraPosition pos = (ExtraPosition) node;
+          ExtraPosition pos = ((FlowNode) node).getPosition();
           ((ITextEditor) editor).selectAndReveal(pos.offset, pos.length);
         }
       }

@@ -165,13 +165,14 @@ public final class MarkerUtils {
     private final long markerId;
     private final ExtraPosition previous;
 
-    public ExtraPosition(int offset, int length, String message, long markerId, @Nullable ExtraPosition previous) {
+    public ExtraPosition(int offset, int length, @Nullable String message, long markerId, @Nullable ExtraPosition previous) {
       super(offset, length);
       this.message = message;
       this.markerId = markerId;
       this.previous = previous;
     }
 
+    @CheckForNull
     public String getMessage() {
       return message;
     }

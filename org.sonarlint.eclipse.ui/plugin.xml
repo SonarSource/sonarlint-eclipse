@@ -98,7 +98,7 @@
     <view
 	        allowMultiple="false"
           category="org.sonarlint.eclipse"
-          class="org.sonarlint.eclipse.ui.internal.views.IssueLocationsView"
+          class="org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView"
           icon="icons/sonarlint-16x16.png"
           id="org.sonarlint.eclipse.ui.views.IssueLocationsView"
           name="SonarLint Issue Locations">

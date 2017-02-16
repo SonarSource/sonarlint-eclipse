@@ -47,7 +47,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.views.IssueLocationsView;
+import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
 public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
 
