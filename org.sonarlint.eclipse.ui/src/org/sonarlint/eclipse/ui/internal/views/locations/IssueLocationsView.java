@@ -334,7 +334,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   @Override
   public void selectionChanged(IWorkbenchPart part, ISelection selection) {
     IMarker selectedMarker = AbstractSonarWebView.findSelectedSonarIssue(selection);
-    if (!Objects.equals(selectedMarker, locationsViewer.getInput())) {
+    if (selectedMarker != null && !Objects.equals(selectedMarker, locationsViewer.getInput())) {
       setInput(selectedMarker);
     }
   }
