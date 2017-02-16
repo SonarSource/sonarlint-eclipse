@@ -181,7 +181,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   }
 
-  private class LocationsProvider implements ITreeContentProvider {
+  private static class LocationsProvider implements ITreeContentProvider {
 
     @Override
     public Object[] getElements(Object inputElement) {
@@ -227,7 +227,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
       }
     }
 
-    private List<ExtraPosition> positions(IDocument document, Predicate<? super ExtraPosition> filter) {
+    private static List<ExtraPosition> positions(IDocument document, Predicate<? super ExtraPosition> filter) {
       try {
         return Arrays.asList(document.getPositions(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY))
           .stream()
