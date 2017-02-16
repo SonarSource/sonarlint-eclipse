@@ -688,7 +688,7 @@
               label="SonarLint issue location"
               annotationImageProvider="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerImageProvider"
               colorPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.color"
-              colorPreferenceValue="30,194,255"
+              colorPreferenceValue="141,169,201"
               highlightPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.highlight"
               highlightPreferenceValue="true"
               icon="icons/onde-sonar-16.png"
