@@ -133,7 +133,12 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
   }
 
   private static void removePreviousAnnotations(IAnnotationModel annotationModel) {
-    existingFlowAnnotations(annotationModel).forEach(annotationModel::removeAnnotation);
+    List<Annotation> existingFlowAnnotations = existingFlowAnnotations(annotationModel);
+    if (annotationModel instanceof IAnnotationModelExtension) {
+      ((IAnnotationModelExtension) annotationModel).replaceAnnotations(existingFlowAnnotations.toArray(new Annotation[0]), Collections.emptyMap());
+    } else {
+      existingFlowAnnotations.forEach(annotationModel::removeAnnotation);
+    }
   }
 
   public static void removeAnnotations(ITextEditor textEditor) {

@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
@@ -78,7 +79,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.IssueLocationsView";
 
-  private LocationsViewer locationsViewer;
+  private TreeViewer locationsViewer;
   private IFile currentFile;
   private ITextEditor currentEditor;
   private IDocument currentDoc;
@@ -182,6 +183,13 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     @Override
     public Object[] getElements(Object inputElement) {
       IMarker sonarlintMarker = (IMarker) inputElement;
+      try {
+        if (SonarLintCorePlugin.MARKER_CHANGESET_ID.equals(sonarlintMarker.getType())) {
+          return new Object[] {"Information not available from the Report view"};
+        }
+      } catch (CoreException e) {
+        // Ignore
+      }
       if (sonarlintMarker.getAttribute(MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, false)) {
         if (currentDoc == null) {
           return new Object[] {"Please open the file containing this issue in an editor to see the flows"};
@@ -244,15 +252,6 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
       // Do nothing
     }
 
-  }
-
-  private static class LocationsViewer extends TreeViewer {
-
-    public LocationsViewer(Tree tree) {
-      super(tree);
-      setAutoExpandLevel(ALL_LEVELS);
-      setUseHashlookup(true);
-    }
   }
 
   private static class LocationsTreeLabelProvider extends LabelProvider {
@@ -369,7 +368,9 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   public void createPartControl(Composite parent) {
     createToolbar();
     Tree tree = new Tree(parent, SWT.MULTI);
-    locationsViewer = new LocationsViewer(tree);
+    locationsViewer = new TreeViewer(tree);
+    locationsViewer.setAutoExpandLevel(TreeViewer.ALL_LEVELS);
+    locationsViewer.setUseHashlookup(true);
     locationsViewer.setContentProvider(new LocationsProvider());
     locationsViewer.setLabelProvider(new LocationsTreeLabelProvider());
     locationsViewer.addSelectionChangedListener(event -> {
