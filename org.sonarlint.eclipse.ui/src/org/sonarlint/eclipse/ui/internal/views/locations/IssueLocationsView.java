@@ -27,8 +27,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
@@ -51,6 +51,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPage;
@@ -80,9 +81,6 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.IssueLocationsView";
 
   private TreeViewer locationsViewer;
-  private IFile currentFile;
-  private ITextEditor currentEditor;
-  private IDocument currentDoc;
 
   private static class FlowNode {
 
@@ -162,9 +160,12 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         while (current.isPresent()) {
           ExtraPosition currentValue = current.get();
           flow.add(currentValue);
-          current = positions.stream().filter(p -> p.getParent() == currentValue).findFirst();
+          current = positions.stream().filter(
+
+            p -> p.getParent() == currentValue).findFirst();
         }
         result.add(flow);
+
       }
       return result;
     }
@@ -178,6 +179,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     }
 
   }
+
   private class LocationsProvider implements ITreeContentProvider {
 
     @Override
@@ -191,10 +193,12 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         // Ignore
       }
       if (sonarlintMarker.getAttribute(MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, false)) {
-        if (currentDoc == null) {
+        ITextEditor openEditor = findOpenEditorFor(sonarlintMarker);
+        if (openEditor == null) {
           return new Object[] {"Please open the file containing this issue in an editor to see the flows"};
         }
-        return new Object[] {new RootNode(sonarlintMarker, positions(p -> p.getMarkerId() == sonarlintMarker.getId()))};
+        IDocument document = openEditor.getDocumentProvider().getDocument(openEditor.getEditorInput());
+        return new Object[] {new RootNode(sonarlintMarker, positions(document, p -> p.getMarkerId() == sonarlintMarker.getId()))};
       } else {
         return new Object[] {"No additional locations associated with this issue"};
       }
@@ -206,7 +210,10 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         List<List<ExtraPosition>> flows = ((RootNode) parentElement).getFlows();
         if (flows.size() > 1) {
           AtomicInteger counter = new AtomicInteger(0);
-          return flows.stream().map(f -> f.size() > 1 ? new FlowRootNode("Flow " + counter.incrementAndGet(), f) : new FlowNode(f.get(0))).toArray();
+          return flows.stream().map(
+
+            f -> f.size() > 1 ? new FlowRootNode("Flow " + counter.incrementAndGet(), f) : new FlowNode(f.get(0))).toArray();
+
         } else if (flows.size() == 1) {
           return toFlowNodes(flows.get(0)).toArray();
         } else {
@@ -219,14 +226,17 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
       }
     }
 
-    private List<ExtraPosition> positions(Predicate<? super ExtraPosition> filter) {
+    private List<ExtraPosition> positions(IDocument document, Predicate<? super ExtraPosition> filter) {
       try {
-        return Arrays.asList(currentDoc.getPositions(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY))
+        return Arrays.asList(document.getPositions(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY))
           .stream()
-          .map(p -> (ExtraPosition) p)
-          .filter(filter)
-          .collect(Collectors.toList());
-      } catch (BadPositionCategoryException e) {
+          .map(
+
+            p -> (ExtraPosition) p)
+          .filter(filter).collect(Collectors.toList());
+      } catch (
+
+      BadPositionCategoryException e) {
         SonarLintLogger.get().error("Unable to read positions", e);
         return Collections.emptyList();
       }
@@ -281,34 +291,27 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   }
 
   public void setInput(@Nullable IMarker sonarlintMarker, boolean showAnnotations) {
-    if (sonarlintMarker == null) {
-      clearInput();
-      return;
+    locationsViewer.setInput(sonarlintMarker);
+    if (sonarlintMarker != null && showAnnotations) {
+      ITextEditor editorFound = findOpenEditorFor(sonarlintMarker);
+      if (editorFound != null) {
+        ShowIssueFlowsMarkerResolver.showAnnotations((IMarker) locationsViewer.getInput(), editorFound);
+      }
     }
+  }
+
+  @CheckForNull
+  private ITextEditor findOpenEditorFor(IMarker sonarlintMarker) {
     // Find IFile and open Editor
     // Super defensing programming because we don't really understand what is initialized at startup (SLE-122)
     IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
     if (window == null) {
-      showMarkerWithNoEditor(sonarlintMarker);
-      return;
+      return null;
     }
     IWorkbenchPage page = window.getActivePage();
     if (page == null) {
-      showMarkerWithNoEditor(sonarlintMarker);
-      return;
+      return null;
     }
-    boolean editorFound = findEditor(sonarlintMarker, page);
-    if (editorFound) {
-      locationsViewer.setInput(sonarlintMarker);
-      if (showAnnotations) {
-        ShowIssueFlowsMarkerResolver.showAnnotations((IMarker) locationsViewer.getInput(), currentEditor);
-      }
-    } else {
-      showMarkerWithNoEditor(sonarlintMarker);
-    }
-  }
-
-  private boolean findEditor(IMarker sonarlintMarker, IWorkbenchPage page) {
     for (IEditorReference editor : page.getEditorReferences()) {
       IEditorInput editorInput;
       try {
@@ -317,35 +320,14 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         SonarLintLogger.get().error("Unable to restore editor", e);
         continue;
       }
-      // Cast needed for older Eclipse versions
-      IFile file = (IFile) editorInput.getAdapter(IFile.class);
-      if (file != null && sonarlintMarker.getResource().equals(file)) {
+      if (editorInput instanceof IFileEditorInput && ((IFileEditorInput) editorInput).getFile().equals(sonarlintMarker.getResource())) {
         IEditorPart editorPart = editor.getEditor(false);
         if (editorPart instanceof ITextEditor) {
-          this.currentEditor = (ITextEditor) editorPart;
-          this.currentDoc = currentEditor.getDocumentProvider().getDocument(editorPart.getEditorInput());
-          this.currentFile = file;
-          return true;
+          return (ITextEditor) editorPart;
         }
       }
     }
-    return false;
-  }
-
-  private void showMarkerWithNoEditor(IMarker sonarlintMarker) {
-    clearCurrentEditor();
-    locationsViewer.setInput(sonarlintMarker);
-  }
-
-  private void clearInput() {
-    clearCurrentEditor();
-    locationsViewer.setInput(null);
-  }
-
-  private void clearCurrentEditor() {
-    this.currentEditor = null;
-    this.currentDoc = null;
-    this.currentFile = null;
+    return null;
   }
 
   @Override
@@ -373,33 +355,63 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     locationsViewer.setUseHashlookup(true);
     locationsViewer.setContentProvider(new LocationsProvider());
     locationsViewer.setLabelProvider(new LocationsTreeLabelProvider());
-    locationsViewer.addSelectionChangedListener(event -> {
-      ISelection selection = event.getSelection();
-      if (selection instanceof IStructuredSelection) {
-        Object firstElement = ((IStructuredSelection) selection).getFirstElement();
-        if (firstElement == null) {
-          return;
+    locationsViewer.addPostSelectionChangedListener(
+
+      event -> {
+
+        ISelection selection = event.getSelection();
+        if (selection instanceof IStructuredSelection) {
+          Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+          if (firstElement == null) {
+            return;
+          }
+          onTreeNodeSelected(firstElement);
         }
-        onTreeNodeSelected(firstElement);
-      }
-    });
+      });
+    locationsViewer.addDoubleClickListener(
+
+      event -> {
+
+        ISelection selection = event.getSelection();
+        if (selection instanceof IStructuredSelection) {
+          Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+          if (firstElement == null) {
+            return;
+          }
+          onTreeNodeDoubleClick(firstElement);
+        }
+      });
     startListeningForSelectionChanges();
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(this);
   }
 
   private void onTreeNodeSelected(Object node) {
+    if (node instanceof FlowNode) {
+      IMarker sonarlintMarker = (IMarker) locationsViewer.getInput();
+      ExtraPosition pos = ((FlowNode) node).getPosition();
+      ITextEditor openEditor = findOpenEditorFor(sonarlintMarker);
+      if (openEditor != null) {
+        openEditor.setHighlightRange(pos.offset, pos.length, true);
+      }
+    }
+  }
+
+  private void onTreeNodeDoubleClick(Object node) {
     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     try {
       if (node instanceof RootNode) {
         IDE.openEditor(page, ((RootNode) node).getMarker());
       } else if (node instanceof FlowNode) {
-        IEditorPart editor = IDE.openEditor(page, currentFile);
+        IMarker sonarlintMarker = (IMarker) locationsViewer.getInput();
+        ExtraPosition pos = ((FlowNode) node).getPosition();
+        IEditorPart editor = IDE.openEditor(page, sonarlintMarker);
         if (editor instanceof ITextEditor) {
-          ExtraPosition pos = ((FlowNode) node).getPosition();
           ((ITextEditor) editor).selectAndReveal(pos.offset, pos.length);
         }
       }
-    } catch (PartInitException e) {
+    } catch (
+
+    PartInitException e) {
       SonarLintLogger.get().error("Unable to open editor", e);
     }
   }
@@ -447,7 +459,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
       if (marker != null && marker.exists()) {
         setInput(marker, true);
       } else {
-        clearInput();
+        setInput(null, false);
       }
     });
   }
