@@ -80,7 +80,8 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
   private static void updateLocationsView(IMarker marker) {
     try {
       IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
-      view.setInput(marker, false);
+      view.setShowAnnotations(true);
+      view.setInput(marker);
     } catch (PartInitException e) {
       SonarLintLogger.get().error("Unable to open Issue Locations View", e);
     }
@@ -96,8 +97,11 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
       && newAnnotations.containsValue(annotationModel.getPosition(existingFlowAnnotations.iterator().next()));
     if (!annotationAlreadyDisplayedForThisMarker) {
       updateLocationsView(marker);
-      showAnnotations(marker, textEditor);
     } else {
+      IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IssueLocationsView.ID);
+      if (view != null) {
+        view.setShowAnnotations(false);
+      }
       removePreviousAnnotations(annotationModel);
     }
   }

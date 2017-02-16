@@ -32,7 +32,6 @@ import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.BadPositionCategoryException;
@@ -53,7 +52,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -81,6 +79,10 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.IssueLocationsView";
 
   private TreeViewer locationsViewer;
+
+  private IToolBarManager toolbarManager;
+
+  private ToggleAnnotationsAction showAnnotationsAction;
 
   private static class FlowNode {
 
@@ -290,12 +292,12 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   }
 
-  public void setInput(@Nullable IMarker sonarlintMarker, boolean showAnnotations) {
+  public void setInput(@Nullable IMarker sonarlintMarker) {
     locationsViewer.setInput(sonarlintMarker);
-    if (sonarlintMarker != null && showAnnotations) {
+    if (sonarlintMarker != null && showAnnotationsAction.isChecked()) {
       ITextEditor editorFound = findOpenEditorFor(sonarlintMarker);
       if (editorFound != null) {
-        ShowIssueFlowsMarkerResolver.showAnnotations((IMarker) locationsViewer.getInput(), editorFound);
+        ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound);
       }
     }
   }
@@ -334,7 +336,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   public void selectionChanged(IWorkbenchPart part, ISelection selection) {
     IMarker selectedMarker = AbstractSonarWebView.findSelectedSonarIssue(selection);
     if (selectedMarker != null && selectedMarker != locationsViewer.getInput()) {
-      setInput(selectedMarker, true);
+      setInput(selectedMarker);
     }
   }
 
@@ -417,26 +419,11 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   }
 
   private void createToolbar() {
-    IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
-    toolbarManager.add(new ClearLocationsAnnotationsAction());
+    toolbarManager = getViewSite().getActionBars().getToolBarManager();
+    showAnnotationsAction = new ToggleAnnotationsAction();
+    toolbarManager.add(showAnnotationsAction);
     toolbarManager.add(new Separator());
     toolbarManager.update(false);
-  }
-
-  private class ClearLocationsAnnotationsAction extends Action {
-    private static final String MSG = "Clear locations annotations";
-
-    public ClearLocationsAnnotationsAction() {
-      super(MSG, IAction.AS_PUSH_BUTTON);
-      setTitleToolTip(MSG);
-      setImageDescriptor(PlatformUI.getWorkbench()
-        .getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVEALL));
-    }
-
-    @Override
-    public void run() {
-      ShowIssueFlowsMarkerResolver.removeAllAnnotations();
-    }
   }
 
   @Override
@@ -457,11 +444,52 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     IMarker marker = (IMarker) locationsViewer.getInput();
     Display.getDefault().asyncExec(() -> {
       if (marker != null && marker.exists()) {
-        setInput(marker, true);
+        setInput(marker);
       } else {
-        setInput(null, false);
+        setInput(null);
       }
     });
+  }
+
+  public class ToggleAnnotationsAction extends Action {
+
+    /**
+     * Constructs a new action.
+     */
+    public ToggleAnnotationsAction() {
+      super("Toggle annotations");
+      setDescription("Show/hide annotations in editor");
+      setToolTipText("Show/hide annotations in editor");
+      setImageDescriptor(SonarLintImages.MARK_OCCURENCES_IMG);
+      setChecked(true);
+    }
+
+    /**
+     * Runs the action.
+     */
+    @Override
+    public void run() {
+      if (isChecked()) {
+        showAnnotations();
+      } else {
+        ShowIssueFlowsMarkerResolver.removeAllAnnotations();
+      }
+    }
+
+  }
+
+  public void showAnnotations() {
+    IMarker sonarlintMarker = (IMarker) locationsViewer.getInput();
+    if (sonarlintMarker != null) {
+      ITextEditor editorFound = findOpenEditorFor(sonarlintMarker);
+      if (editorFound != null) {
+        ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound);
+      }
+    }
+  }
+
+  public void setShowAnnotations(boolean b) {
+    showAnnotationsAction.setChecked(b);
   }
 
 }

@@ -30,7 +30,8 @@ public class ShowIssueLocationsCommand extends AbstractIssueCommand {
   protected void execute(IMarker selectedMarker) {
     try {
       IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
-      view.setInput(selectedMarker, true);
+      view.setShowAnnotations(true);
+      view.setInput(selectedMarker);
     } catch (Exception e) {
       SonarLintLogger.get().error("Unable to open Issue Location View", e);
     }
