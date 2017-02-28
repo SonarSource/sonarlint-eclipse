@@ -22,6 +22,10 @@ package org.sonarlint.eclipse.core;
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 
+/**
+ * @deprecated since 2.7 use {@link Plugin} directly
+ */
+@Deprecated
 public class AbstractPlugin extends Plugin {
 
   /**

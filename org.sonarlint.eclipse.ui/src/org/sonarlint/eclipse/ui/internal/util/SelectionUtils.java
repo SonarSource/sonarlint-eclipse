@@ -19,8 +19,19 @@
  */
 package org.sonarlint.eclipse.ui.internal.util;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintFileContainer;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer;
 
 public final class SelectionUtils {
 
@@ -43,6 +54,81 @@ public final class SelectionUtils {
       return null;
     }
     return selection.getFirstElement();
+  }
+
+  public static Set<ISonarLintProject> allSelectedProjects(ExecutionEvent event) throws ExecutionException {
+    ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
+
+    final Set<ISonarLintProject> selectedProjects = new HashSet<>();
+
+    if (selection instanceof IStructuredSelection) {
+      List elems = ((IStructuredSelection) selection).toList();
+      for (Object elem : elems) {
+        if (elem instanceof IAdaptable) {
+          collectProjects(selectedProjects, (IAdaptable) elem);
+        }
+      }
+    }
+
+    return selectedProjects;
+
+  }
+
+  private static void collectProjects(Set<ISonarLintProject> selectedProjects, IAdaptable elem) {
+    ISonarLintProjectContainer container = (ISonarLintProjectContainer) elem.getAdapter(ISonarLintProjectContainer.class);
+    if (container != null) {
+      selectedProjects.addAll(container.projects());
+      return;
+    }
+    ISonarLintProject project = (ISonarLintProject) elem.getAdapter(ISonarLintProject.class);
+    if (project != null) {
+      selectedProjects.add(project);
+      return;
+    }
+  }
+
+  /** 
+   * Return all {@link ISonarLintFile} based on current selection.
+   */
+  public static Set<ISonarLintFile> allSelectedFiles(ExecutionEvent event) throws ExecutionException {
+    ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
+
+    final Set<ISonarLintFile> selectedFiles = new HashSet<>();
+
+    if (selection instanceof IStructuredSelection) {
+      List elems = ((IStructuredSelection) selection).toList();
+      for (Object elem : elems) {
+        if (elem instanceof IAdaptable) {
+          collectFiles(selectedFiles, (IAdaptable) elem);
+        }
+      }
+    }
+
+    return selectedFiles;
+
+  }
+
+  private static void collectFiles(Set<ISonarLintFile> selectedFiles, IAdaptable elem) {
+    ISonarLintProjectContainer container = (ISonarLintProjectContainer) elem.getAdapter(ISonarLintProjectContainer.class);
+    if (container != null) {
+      container.projects().forEach(p -> selectedFiles.addAll(p.files()));
+      return;
+    }
+    ISonarLintProject project = (ISonarLintProject) elem.getAdapter(ISonarLintProject.class);
+    if (project != null) {
+      selectedFiles.addAll(project.files());
+      return;
+    }
+    ISonarLintFileContainer fileContainer = (ISonarLintFileContainer) elem.getAdapter(ISonarLintFileContainer.class);
+    if (fileContainer != null) {
+      selectedFiles.addAll(fileContainer.files());
+      return;
+    }
+    ISonarLintFile file = (ISonarLintFile) elem.getAdapter(ISonarLintFile.class);
+    if (file != null) {
+      selectedFiles.add(file);
+      return;
+    }
   }
 
 }

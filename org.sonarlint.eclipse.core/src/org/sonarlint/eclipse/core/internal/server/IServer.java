@@ -22,7 +22,7 @@ package org.sonarlint.eclipse.core.internal.server;
 import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
@@ -96,7 +96,7 @@ public interface IServer {
 
   boolean isStorageUpdated();
 
-  List<SonarLintProject> getBoundProjects();
+  List<ISonarLintProject> getBoundProjects();
 
   void notifyAllListeners();
 

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -242,9 +243,9 @@ public class ServersManager {
    * Returns the server with the given id.
    * 
    * @param id a server id
-   * @return a server
+   * @return a server or null if id is null
    */
-  public IServer getServer(String id) {
+  public IServer getServer(@Nullable String id) {
     if (id == null) {
       return null;
     }

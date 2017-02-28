@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.Arrays;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -34,9 +33,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
 import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
@@ -64,7 +64,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
       return new Composite(parent, SWT.NULL);
     }
 
-    final SonarLintProject sonarProject = SonarLintProject.getInstance(getProject());
+    final SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(getProject().getScopeContext());
 
     container = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout();
@@ -75,7 +75,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
 
     enabledBtn = new Button(container, SWT.CHECK);
     enabledBtn.setText("Run SonarLint automatically");
-    enabledBtn.setSelection(sonarProject.isAutoEnabled());
+    enabledBtn.setSelection(projectConfig.isAutoEnabled());
     GridData layoutData = new GridData();
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
@@ -90,7 +90,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
     addServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        String serverId = SonarLintProject.getInstance(getProject()).getServerId();
+        String serverId = SonarLintProjectConfiguration.read(getProject().getScopeContext()).getServerId();
         NewServerLocationWizard wizard = new NewServerLocationWizard(serverId);
         WizardDialog wd = new WizardDialog(container.getShell(), wizard);
         if (wd.open() == Window.OK) {
@@ -120,9 +120,9 @@ public class SonarProjectPropertyPage extends PropertyPage {
   }
 
   private void updateState() {
-    final SonarLintProject sonarProject = SonarLintProject.getInstance(getProject());
-    String moduleKey = sonarProject.getModuleKey();
-    final String serverId = sonarProject.getServerId();
+    final SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(getProject().getScopeContext());
+    String moduleKey = projectConfig.getModuleKey();
+    final String serverId = projectConfig.getServerId();
     if (moduleKey == null && serverId == null) {
       bindLink.setText("<a>Bind this Eclipse project to a SonarQube project</a>");
       boundDetails.setText("");
@@ -155,13 +155,13 @@ public class SonarProjectPropertyPage extends PropertyPage {
 
   @Override
   public boolean performOk() {
-    final SonarLintProject sonarProject = SonarLintProject.getInstance(getProject());
-    sonarProject.setAutoEnabled(enabledBtn.getSelection());
-    sonarProject.save();
+    final SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(getProject().getScopeContext());
+    projectConfig.setAutoEnabled(enabledBtn.getSelection());
+    projectConfig.save();
     return super.performOk();
   }
 
-  private IProject getProject() {
-    return (IProject) getElement().getAdapter(IProject.class);
+  private ISonarLintProject getProject() {
+    return (ISonarLintProject) getElement().getAdapter(ISonarLintProject.class);
   }
 }

@@ -29,10 +29,11 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 /**
@@ -66,14 +67,16 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
     try {
       String ruleName = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR).toString();
       String ruleKey = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR).toString();
-      SonarLintProject p = SonarLintProject.getInstance(element.getResource());
+      ISonarLintIssuable issuable = (ISonarLintIssuable) element.getResource().getAdapter(ISonarLintIssuable.class);
+      ISonarLintProject p = issuable.getProject();
+      SonarLintProjectConfiguration configuration = SonarLintProjectConfiguration.read(p.getScopeContext());
       String htmlDescription;
-      if (StringUtils.isBlank(p.getServerId())) {
+      if (!configuration.isBound()) {
         htmlDescription = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade().getHtmlRuleDescription(ruleKey);
       } else {
-        IServer server = ServersManager.getInstance().getServer(p.getServerId());
+        IServer server = ServersManager.getInstance().getServer(configuration.getServerId());
         if (server == null) {
-          super.showMessage("Project " + p.getProject().getName() + " is linked to an unknown server: " + p.getServerId() + ". Please update configuration.");
+          super.showMessage("Project " + p.getName() + " is linked to an unknown server: " + configuration.getServerId() + ". Please update configuration.");
           return;
         }
         htmlDescription = server.getHtmlRuleDescription(ruleKey);

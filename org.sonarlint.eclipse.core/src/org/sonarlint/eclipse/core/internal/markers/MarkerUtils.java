@@ -61,7 +61,7 @@ public final class MarkerUtils {
     deleteMarkers(resource, SonarLintCorePlugin.MARKER_CHANGESET_ID);
   }
 
-  public static void deleteMarkers(IResource resource, String markerId) {
+  private static void deleteMarkers(IResource resource, String markerId) {
     if (resource.isAccessible()) {
       try {
         resource.deleteMarkers(markerId, true, IResource.DEPTH_INFINITE);

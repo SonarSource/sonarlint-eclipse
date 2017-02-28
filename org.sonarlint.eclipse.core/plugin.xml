@@ -2,6 +2,7 @@
 <?eclipse version="3.0"?>
 <plugin>
    <extension-point id="projectConfigurators" name="Project Configurators" schema="schema/projectConfigurators.exsd"/>
+   <extension-point id="projectsProvider" name="SonarLint Projects Provider" schema="schema/projectsProvider.exsd"/>
 
 
    <extension
@@ -50,10 +51,40 @@
         point="org.eclipse.core.expressions.propertyTesters">
      <propertyTester
            class="org.sonarlint.eclipse.core.internal.resources.SonarLintPropertyTester"
-           id="org.sonarlint.eclipse.core.internal.resources.BindedPropertyTester"
+           id="org.sonarlint.eclipse.core.internal.resources.SonarLintProjectTester"
            namespace="org.sonarlint.eclipse.core"
-           properties="isBound,isAutoAnalysis"
-           type="org.eclipse.core.runtime.IAdaptable">
+           properties="bound,autoAnalysisEnabled,open"
+           type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
      </propertyTester>
+     <propertyTester
+           class="org.sonarlint.eclipse.core.internal.resources.SonarLintPropertyTester"
+           id="org.sonarlint.eclipse.core.internal.resources.SonarLintFileTester"
+           namespace="org.sonarlint.eclipse.core"
+           properties="bound,autoAnalysisEnabled,open"
+           type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
+     </propertyTester>
+  </extension>
+  <extension
+        point="org.eclipse.core.runtime.adapters">
+     <factory
+           adaptableType="org.eclipse.core.runtime.IAdaptable"
+           class="org.sonarlint.eclipse.core.internal.adapter.DefaultSonarLintProjectAdaterFactory">
+        <adapter
+              type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+        </adapter>
+     </factory>
+     <factory
+           adaptableType="org.eclipse.core.runtime.IAdaptable"
+           class="org.sonarlint.eclipse.core.internal.adapter.DefaultSonarLintFileAdaterFactory">
+        <adapter
+              type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
+        </adapter>
+     </factory>
+  </extension>
+  <extension
+        point="org.sonarlint.eclipse.core.projectsProvider">
+     <provider
+           class="org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectsProvider">
+     </provider>
   </extension>
 </plugin>

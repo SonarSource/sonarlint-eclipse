@@ -26,8 +26,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
-import org.eclipse.core.resources.IProject;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.connected.objectstore.HashingPathMapper;
 import org.sonarsource.sonarlint.core.client.api.connected.objectstore.PathMapper;
 import org.sonarsource.sonarlint.core.client.api.connected.objectstore.Reader;
@@ -38,7 +38,7 @@ public class IssueStore {
   private Path basePath;
   private IndexedObjectStore<String, Sonarlint.Issues> store;
 
-  public IssueStore(Path storeBasePath, IProject project) {
+  public IssueStore(Path storeBasePath, ISonarLintProject project) {
     this.basePath = storeBasePath;
     FileUtils.mkdirs(storeBasePath);
     StoreIndex<String> index = new StringStoreIndex(storeBasePath);

@@ -17,4 +17,18 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.configurator;
+package org.sonarlint.eclipse.core.resource;
+
+import java.util.Collection;
+import org.eclipse.core.resources.IFolder;
+
+/**
+ * Anything equal or nested nested under {@link ISonarLintProject} that may contain {@link ISonarLintFile}. For example {@link IFolder} are good candidates. 
+ */
+public interface ISonarLintFileContainer {
+
+  ISonarLintProject getProject();
+
+  Collection<ISonarLintFile> files();
+
+}

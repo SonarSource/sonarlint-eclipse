@@ -40,8 +40,9 @@ import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 import org.eclipse.ui.navigator.ICommonViewerSite;
 import org.eclipse.ui.navigator.ICommonViewerWorkbenchSite;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
 import org.sonarlint.eclipse.ui.internal.server.actions.NewServerWizardAction;
@@ -86,8 +87,8 @@ public class ServerActionProvider extends CommonActionProvider {
       if (data instanceof IServer) {
         IServer server = (IServer) data;
         ServerEditAction.openEditWizard(tableViewer.getTree().getShell(), server);
-      } else if (data instanceof SonarLintProject) {
-        BindProjectsWizard wizard = new BindProjectsWizard(Arrays.asList(((SonarLintProject) data).getProject()));
+      } else if (data instanceof ISonarLintProject) {
+        BindProjectsWizard wizard = new BindProjectsWizard(Arrays.asList(((ISonarLintProject) data)));
         final WizardDialog dialog = new WizardDialog(tableViewer.getTree().getShell(), wizard);
         dialog.setHelpAvailable(true);
         dialog.open();
@@ -124,7 +125,7 @@ public class ServerActionProvider extends CommonActionProvider {
     }
 
     List<IServer> servers = new ArrayList<>();
-    List<SonarLintProject> projects = new ArrayList<>();
+    List<SonarLintProjectConfiguration> projects = new ArrayList<>();
     populateServersAndProjects(selection, servers, projects);
 
     if (projects.isEmpty()) {
@@ -146,15 +147,15 @@ public class ServerActionProvider extends CommonActionProvider {
     }
   }
 
-  private static void populateServersAndProjects(IStructuredSelection selection, List<IServer> servers, List<SonarLintProject> projects) {
+  private static void populateServersAndProjects(IStructuredSelection selection, List<IServer> servers, List<SonarLintProjectConfiguration> projects) {
     if (selection != null && !selection.isEmpty()) {
       Iterator iterator = selection.iterator();
       while (iterator.hasNext()) {
         Object obj = iterator.next();
         if (obj instanceof IServer) {
           servers.add((IServer) obj);
-        } else if (obj instanceof SonarLintProject) {
-          projects.add((SonarLintProject) obj);
+        } else if (obj instanceof SonarLintProjectConfiguration) {
+          projects.add((SonarLintProjectConfiguration) obj);
         }
       }
     }

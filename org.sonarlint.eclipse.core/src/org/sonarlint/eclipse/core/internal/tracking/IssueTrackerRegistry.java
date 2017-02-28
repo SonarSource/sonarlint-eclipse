@@ -22,35 +22,35 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import org.eclipse.core.resources.IProject;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
  * Registry of per-module IssueTracker instances.
  */
 public class IssueTrackerRegistry {
 
-  private final Map<IProject, IssueTracker> registry = new HashMap<>();
+  // Use project name as key since we don't know if ISonarLintProject instances are implementing hashcode
+  private final Map<String, IssueTracker> registry = new HashMap<>();
   private final IssueTrackerCacheFactory cacheFactory;
 
   public IssueTrackerRegistry(IssueTrackerCacheFactory cacheFactory) {
     this.cacheFactory = cacheFactory;
   }
 
-  public synchronized IssueTracker getOrCreate(IProject project, String localModulePath) {
-    IssueTracker tracker = registry.get(project);
+  public synchronized IssueTracker getOrCreate(ISonarLintProject project, String localModulePath) {
+    IssueTracker tracker = registry.get(project.getName());
     if (tracker == null) {
       tracker = newTracker(project, localModulePath);
-      registry.put(project, tracker);
+      registry.put(project.getName(), tracker);
     }
     return tracker;
   }
 
-  public synchronized Optional<IssueTracker> get(IProject project) {
-    return Optional.ofNullable(registry.get(project));
+  public synchronized Optional<IssueTracker> get(ISonarLintProject project) {
+    return Optional.ofNullable(registry.get(project.getName()));
   }
 
-  private IssueTracker newTracker(IProject project, String localModulePath) {
+  private IssueTracker newTracker(ISonarLintProject project, String localModulePath) {
     return new IssueTracker(cacheFactory.apply(project, localModulePath));
   }
 

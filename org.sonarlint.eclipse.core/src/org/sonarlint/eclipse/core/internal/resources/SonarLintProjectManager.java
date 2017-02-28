@@ -21,8 +21,6 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
@@ -37,14 +35,13 @@ public class SonarLintProjectManager {
   private static final String P_MODULE_KEY = "moduleKey";
   private static final String P_AUTO_ENABLED_KEY = "autoEnabled";
 
-  public SonarLintProject readSonarLintConfiguration(IProject project) {
-    IScopeContext projectScope = new ProjectScope(project);
+  public SonarLintProjectConfiguration readSonarLintConfiguration(IScopeContext projectScope) {
     IEclipsePreferences projectNode = projectScope.getNode(SonarLintCorePlugin.PLUGIN_ID);
+    SonarLintProjectConfiguration sonarProject = new SonarLintProjectConfiguration(projectScope);
     if (projectNode == null) {
-      return new SonarLintProject(project);
+      return sonarProject;
     }
 
-    SonarLintProject sonarProject = new SonarLintProject(project);
     String extraArgsAsString = projectNode.get(P_EXTRA_PROPS, null);
     List<SonarLintProperty> sonarProperties = new ArrayList<>();
     if (extraArgsAsString != null) {
@@ -68,8 +65,7 @@ public class SonarLintProjectManager {
   /**
    * @return false, if unable to save configuration
    */
-  public boolean saveSonarLintConfiguration(IProject project, SonarLintProject configuration) {
-    IScopeContext projectScope = new ProjectScope(project);
+  public boolean saveSonarLintConfiguration(IScopeContext projectScope, SonarLintProjectConfiguration configuration) {
     IEclipsePreferences projectNode = projectScope.getNode(SonarLintCorePlugin.PLUGIN_ID);
     if (projectNode == null) {
       return false;

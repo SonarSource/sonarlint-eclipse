@@ -19,17 +19,17 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import org.eclipse.core.resources.IProject;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 class PathStoreKeyValidator implements StoreKeyValidator<String> {
-  private final IProject project;
+  private final ISonarLintProject project;
 
-  PathStoreKeyValidator(IProject project) {
+  PathStoreKeyValidator(ISonarLintProject project) {
     this.project = project;
   }
 
   @Override
   public Boolean apply(String relativeFilePath) {
-    return project.getFile(relativeFilePath).exists();
+    return project.exists(relativeFilePath);
   }
 }

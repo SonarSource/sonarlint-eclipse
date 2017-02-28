@@ -34,7 +34,6 @@ import org.junit.Assert;
  * Inspired by m2e
  *
  */
-@SuppressWarnings("restriction")
 public class JobHelpers {
 
   private static final int POLLING_DELAY = 10;

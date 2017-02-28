@@ -43,6 +43,8 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueLocation;
 
@@ -53,20 +55,20 @@ public class SonarLintMarkerUpdater {
   private SonarLintMarkerUpdater() {
   }
 
-  public static void createOrUpdateMarkers(IResource resource, IDocument document, Collection<Trackable> issues, TriggerType triggerType, boolean createExtraLocations) {
+  public static void createOrUpdateMarkers(ISonarLintFile issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType, boolean createExtraLocations) {
     try {
       Set<IMarker> previousMarkersToDelete;
       if (triggerType == TriggerType.CHANGESET) {
         previousMarkersToDelete = Collections.emptySet();
       } else {
-        previousMarkersToDelete = new HashSet<>(Arrays.asList(resource.findMarkers(SonarLintCorePlugin.MARKER_ID, false, IResource.DEPTH_ZERO)));
+        previousMarkersToDelete = new HashSet<>(Arrays.asList(issuable.getResourceForMarkerOperations().findMarkers(SonarLintCorePlugin.MARKER_ID, false, IResource.DEPTH_ZERO)));
       }
 
       if (createExtraLocations) {
         resetExtraPositions(document);
       }
 
-      createOrUpdateMarkers(document, resource, issues, triggerType, previousMarkersToDelete, createExtraLocations);
+      createOrUpdateMarkers(document, issuable, issues, triggerType, previousMarkersToDelete, createExtraLocations);
 
       for (IMarker marker : previousMarkersToDelete) {
         marker.delete();
@@ -86,7 +88,7 @@ public class SonarLintMarkerUpdater {
     document.addPositionUpdater(EXTRA_POSITIONS_UPDATER);
   }
 
-  public static void updateMarkersWithServerSideData(IResource resource, Collection<Trackable> issues) {
+  public static void updateMarkersWithServerSideData(ISonarLintIssuable resource, Collection<Trackable> issues) {
     try {
       for (Trackable issue : issues) {
         updateMarkerWithServerSideData(resource, issue);
@@ -96,29 +98,29 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  private static void updateMarkerWithServerSideData(IResource resource, Trackable issue) throws CoreException {
+  private static void updateMarkerWithServerSideData(ISonarLintIssuable issuable, Trackable issue) throws CoreException {
     if (issue.isResolved()) {
       if (issue.getMarkerId() != null) {
         // Issue is associated to a marker, means it was not marked as resolved in previous analysis, but now it is, so clear marker
-        IMarker marker = resource.findMarker(issue.getMarkerId());
+        IMarker marker = issuable.getResourceForMarkerOperations().findMarker(issue.getMarkerId());
         marker.delete();
         issue.setMarkerId(null);
       }
     } else {
       // We are expecting every unresolved issue to be associated to an existing marker
-      IMarker marker = resource.findMarker(issue.getMarkerId());
+      IMarker marker = issuable.getResourceForMarkerOperations().findMarker(issue.getMarkerId());
       updateServerMarkerAttributes(issue, marker);
     }
   }
 
-  private static void createOrUpdateMarkers(IDocument document, IResource file, Collection<Trackable> issues,
+  private static void createOrUpdateMarkers(IDocument document, ISonarLintFile file, Collection<Trackable> issues,
     TriggerType triggerType, Set<IMarker> previousMarkersToDelete, boolean createExtraLocations) throws CoreException {
     for (Trackable issue : issues) {
       if (!issue.isResolved()) {
-        if (triggerType == TriggerType.CHANGESET || issue.getMarkerId() == null || file.findMarker(issue.getMarkerId()) == null) {
+        if (triggerType == TriggerType.CHANGESET || issue.getMarkerId() == null || file.getResourceForMarkerOperations().findMarker(issue.getMarkerId()) == null) {
           createMarker(document, file, issue, triggerType, createExtraLocations);
         } else {
-          IMarker marker = file.findMarker(issue.getMarkerId());
+          IMarker marker = file.getResourceForMarkerOperations().findMarker(issue.getMarkerId());
           updateMarkerAttributes(document, issue, marker, createExtraLocations);
           previousMarkersToDelete.remove(marker);
         }
@@ -128,8 +130,9 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  private static void createMarker(IDocument document, IResource file, Trackable trackable, TriggerType triggerType, boolean createExtraLocations) throws CoreException {
-    IMarker marker = file.createMarker(triggerType == TriggerType.CHANGESET ? SonarLintCorePlugin.MARKER_CHANGESET_ID : SonarLintCorePlugin.MARKER_ID);
+  private static void createMarker(IDocument document, ISonarLintFile file, Trackable trackable, TriggerType triggerType, boolean createExtraLocations) throws CoreException {
+    IMarker marker = file.getResourceForMarkerOperations()
+      .createMarker(triggerType == TriggerType.CHANGESET ? SonarLintCorePlugin.MARKER_CHANGESET_ID : SonarLintCorePlugin.MARKER_ID);
     if (triggerType != TriggerType.CHANGESET) {
       trackable.setMarkerId(marker.getId());
     }

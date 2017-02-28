@@ -21,23 +21,17 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.util.List;
 import javax.annotation.Nullable;
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.text.IDocument;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 
 /**
@@ -48,13 +42,12 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile
  */
 class EclipseInputFile implements ClientInputFile {
   private final List<PathMatcher> pathMatchersForTests;
-  private final IFile file;
+  private final ISonarLintFile file;
   private final String language;
   private final IDocument document;
   private final Path tempDirectory;
-  private Path filePath;
 
-  EclipseInputFile(List<PathMatcher> pathMatchersForTests, IFile file, Path tempDirectory, @Nullable IDocument document, @Nullable String language) {
+  EclipseInputFile(List<PathMatcher> pathMatchersForTests, ISonarLintFile file, Path tempDirectory, @Nullable IDocument document, @Nullable String language) {
     this.pathMatchersForTests = pathMatchersForTests;
     this.file = file;
     this.tempDirectory = tempDirectory;
@@ -62,44 +55,14 @@ class EclipseInputFile implements ClientInputFile {
     this.document = document;
   }
 
-  private synchronized void initFromFS() {
-    IFileStore fileStore;
-    try {
-      fileStore = EFS.getStore(file.getLocationURI());
-      File localFile = fileStore.toLocalFile(EFS.NONE, null);
-      if (localFile == null) {
-        // For analyzers to properly work we should ensure the temporary file has a "correct" name, and not a generated one
-        localFile = new File(tempDirectory.toFile(), file.getProjectRelativePath().toOSString());
-        Files.createDirectories(localFile.getParentFile().toPath());
-        fileStore.copy(EFS.getStore(localFile.toURI()), EFS.OVERWRITE, null);
-      }
-      filePath = localFile.toPath().toAbsolutePath();
-    } catch (Exception e) {
-      throw new IllegalStateException("Unable to find path for file " + file, e);
-    }
-  }
-
   @Override
   public String getPath() {
-    // TODO When we are sure all analyzers stop using this to read file content, we should return "virtual" path and not create temporary
-    // copy
-    if (filePath == null) {
-      initFromFS();
-    }
-    return filePath.toString();
+    return file.getPhysicalPath(tempDirectory);
   }
 
   @Override
   public boolean isTest() {
-    Path relativePath = file.getProjectRelativePath().toFile().toPath();
-    IPath projectLocation = file.getProject().getLocation();
-    Path projectPath;
-    if (projectLocation == null) {
-      projectPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath().resolve(file.getProject().getName());
-    } else {
-      projectPath = projectLocation.toFile().toPath();
-    }
-    Path absolutePath = projectPath.resolve(relativePath);
+    Path absolutePath = Paths.get(file.getProject().getName()).resolve(file.getProjectRelativePath());
     for (PathMatcher matcher : pathMatchersForTests) {
       if (matcher.matches(absolutePath)) {
         return true;
@@ -115,11 +78,7 @@ class EclipseInputFile implements ClientInputFile {
 
   @Override
   public Charset getCharset() {
-    try {
-      return Charset.forName(file.getCharset());
-    } catch (CoreException e) {
-      throw new IllegalStateException("Unable to determine charset of file " + file, e);
-    }
+    return file.getCharset();
   }
 
   @Override
@@ -129,6 +88,7 @@ class EclipseInputFile implements ClientInputFile {
 
   @Override
   public String contents() throws IOException {
+    // Prefer to use Document when file is already opened in an editor
     if (document != null) {
       return document.get();
     }
@@ -145,6 +105,7 @@ class EclipseInputFile implements ClientInputFile {
 
   @Override
   public InputStream inputStream() throws IOException {
+    // Prefer to use Document when file is already opened in an editor
     if (document != null) {
       Charset charset = getCharset();
       if (charset == null) {
@@ -152,11 +113,7 @@ class EclipseInputFile implements ClientInputFile {
       }
       return new ByteArrayInputStream(contents().getBytes(charset));
     }
-    try {
-      return file.getContents(true);
-    } catch (CoreException e) {
-      throw new IllegalStateException("Unable to read file content for " + file, e);
-    }
+    return file.inputStream();
   }
 
 }

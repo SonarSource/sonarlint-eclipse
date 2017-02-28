@@ -22,9 +22,6 @@ package org.sonarlint.eclipse.ui.internal.views.issues;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -39,12 +36,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.team.core.RepositoryProvider;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeChangedFilesJob;
+import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 import static java.util.Arrays.asList;
@@ -93,7 +92,7 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
     refreshBtnState();
 
     btnPrj.addListener(SWT.Selection, e -> {
-      IFile editedFile = SonarLintUiPlugin.findCurrentEditedFile();
+      ISonarLintFile editedFile = SonarLintUiPlugin.findCurrentEditedFile();
       if (editedFile != null) {
         triggerAnalysis(asList(editedFile.getProject()));
       }
@@ -103,26 +102,23 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
     btnAll.setText("All projects");
     btnAll.setToolTipText("Analyze all changed files in all projects");
     btnAll.addListener(SWT.Selection, e -> triggerAnalysis(
-      asList(ResourcesPlugin.getWorkspace().getRoot().getProjects()).stream()
-        .filter(IProject::isAccessible)
+      ProjectsProviderUtils.allProjects().stream()
+        .filter(ISonarLintProject::isOpen)
         .collect(toList())));
     label = new Label(bottom, SWT.NONE);
     refreshText();
   }
 
   private void refreshBtnState() {
-    IFile editedFile = SonarLintUiPlugin.findCurrentEditedFile();
+    ISonarLintFile editedFile = SonarLintUiPlugin.findCurrentEditedFile();
     if (editedFile == null) {
-      btnPrjWrapper.setToolTipText("No editor opened");
+      btnPrjWrapper.setToolTipText("No editor opened or current file not analyzable");
       btnPrj.setEnabled(false);
     } else {
-      IProject project = editedFile.getProject();
-      RepositoryProvider provider = RepositoryProvider.getProvider(project);
-      if (provider == null) {
-        btnPrjWrapper.setToolTipText("No SCM for project '" + project.getName() + "'");
-        btnPrj.setEnabled(false);
-      } else if (provider.getSubscriber() == null) {
-        btnPrjWrapper.setToolTipText("Unsupported SCM for project '" + project.getName() + "'");
+      ISonarLintProject project = editedFile.getProject();
+      String msgNoScm = project.getNoScmReason();
+      if (msgNoScm != null) {
+        btnPrjWrapper.setToolTipText(msgNoScm);
         btnPrj.setEnabled(false);
       } else {
         btnPrjWrapper.setToolTipText(project.getName());
@@ -159,7 +155,7 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
     bottom.getShell().layout(new Control[] {instance.bottom}, SWT.DEFER);
   }
 
-  public static void triggerAnalysis(Collection<IProject> selectedProjects) {
+  public static void triggerAnalysis(Collection<ISonarLintProject> selectedProjects) {
     // Disable button if view is visible
     if (ChangeSetIssuesView.instance != null) {
       ChangeSetIssuesView.instance.btnAll.setEnabled(false);

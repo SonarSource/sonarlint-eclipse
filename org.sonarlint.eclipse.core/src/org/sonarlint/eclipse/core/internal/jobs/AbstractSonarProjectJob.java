@@ -19,22 +19,24 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public abstract class AbstractSonarProjectJob extends WorkspaceJob {
 
-  private final SonarLintProject sonarProject;
+  private final ISonarLintProject project;
+  private final SonarLintProjectConfiguration config;
 
-  public AbstractSonarProjectJob(String title, SonarLintProject project) {
+  public AbstractSonarProjectJob(String title, ISonarLintProject project) {
     super(title);
-    this.sonarProject = project;
+    this.project = project;
+    this.config = SonarLintProjectConfiguration.read(project.getScopeContext());
     setPriority(Job.DECORATE);
-    setRule(ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(project.getProject()));
+    // TODO see MultiRule for every touched file setRule(ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(project.getResource()));
   }
 
   @Override
@@ -42,8 +44,12 @@ public abstract class AbstractSonarProjectJob extends WorkspaceJob {
     return doRun(monitor);
   }
 
-  protected SonarLintProject getSonarProject() {
-    return sonarProject;
+  protected ISonarLintProject getProject() {
+    return project;
+  }
+
+  public SonarLintProjectConfiguration getProjectConfig() {
+    return config;
   }
 
   protected abstract IStatus doRun(final IProgressMonitor monitor);

@@ -19,11 +19,11 @@
  */
 package org.sonarlint.eclipse.ui.internal.bind;
 
-import org.eclipse.core.resources.IProject;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
  * This class represents the association between an Eclipse and a SonarQube project/module.
@@ -33,21 +33,21 @@ public class ProjectBindModel extends AbstractModelObject {
   public static final String PROPERTY_PROJECT_ECLIPSE_NAME = "eclipseName";
   public static final String PROPERTY_PROJECT_SONAR_FULLNAME = "sonarFullName";
 
-  private final IProject project;
+  private final ISonarLintProject project;
   private String moduleKey;
   private String serverId;
   private IServer server;
   private boolean autoBindFailed;
 
-  public ProjectBindModel(IProject project) {
+  public ProjectBindModel(ISonarLintProject project) {
     this.project = project;
-    SonarLintProject sonarProject = SonarLintProject.getInstance(project);
-    this.moduleKey = sonarProject.getModuleKey();
-    this.serverId = sonarProject.getServerId();
+    SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(project.getScopeContext());
+    this.moduleKey = projectConfig.getModuleKey();
+    this.serverId = projectConfig.getServerId();
     this.server = ServersManager.getInstance().getServer(this.serverId);
   }
 
-  public IProject getProject() {
+  public ISonarLintProject getProject() {
     return project;
   }
 

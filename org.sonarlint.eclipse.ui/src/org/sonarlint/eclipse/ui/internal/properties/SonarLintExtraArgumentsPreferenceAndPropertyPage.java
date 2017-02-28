@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.CheckForNull;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.resource.JFaceResources;
@@ -55,9 +54,10 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
@@ -425,7 +425,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
         SonarLintLogger.get().error("Error while loading SonarLint analyzer properties" + props, e);
       }
     } else {
-      SonarLintProject sonarProject = getSonarProject();
+      SonarLintProjectConfiguration sonarProject = getProjectConfig();
       if (sonarProject != null) {
         sonarProperties.addAll(sonarProject.getExtraProperties());
       }
@@ -442,7 +442,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     if (isGlobal()) {
       getPreferenceStore().setValue(PreferencesUtils.PREF_EXTRA_ARGS, props);
     } else {
-      SonarLintProject sonarProject = getSonarProject();
+      SonarLintProjectConfiguration sonarProject = getProjectConfig();
       if (sonarProject != null) {
         sonarProject.setExtraProperties(sonarProperties);
         sonarProject.save();
@@ -457,16 +457,16 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     fTableViewer.refresh();
   }
 
-  private IProject getProject() {
+  private ISonarLintProject getProject() {
     // note: the cast to IResource is necessary for e43 and e44
-    return (IProject) getElement().getAdapter(IProject.class);
+    return (ISonarLintProject) getElement().getAdapter(ISonarLintProject.class);
   }
 
   @CheckForNull
-  private SonarLintProject getSonarProject() {
-    IProject project = getProject();
+  private SonarLintProjectConfiguration getProjectConfig() {
+    ISonarLintProject project = getProject();
     if (project != null) {
-      return SonarLintProject.getInstance(project);
+      return SonarLintProjectConfiguration.read(project.getScopeContext());
     }
     return null;
   }

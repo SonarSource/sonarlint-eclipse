@@ -20,18 +20,18 @@
 package org.sonarlint.eclipse.ui.internal.bind;
 
 import java.util.List;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.wizard.Wizard;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
  * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertedProjectWizard
  */
 public class BindProjectsWizard extends Wizard {
 
-  private final List<IProject> projects;
+  private final List<ISonarLintProject> projects;
   private BindProjectsPage mainPage;
 
-  public BindProjectsWizard(List<IProject> projects) {
+  public BindProjectsWizard(List<ISonarLintProject> projects) {
     this.projects = projects;
     setNeedsProgressMonitor(true);
     setWindowTitle("Bind Eclipse projects to SonarQube projects");

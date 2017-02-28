@@ -25,12 +25,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ProjectScope;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +52,7 @@ public class PersistentIssueTrackerCacheTest extends SonarTestCase {
   class StubIssueStore extends IssueStore {
     private final Map<String, Collection<Trackable>> cache = new HashMap<>();
 
-    public StubIssueStore(IProject project) throws IOException {
+    public StubIssueStore(ISonarLintProject project) throws IOException {
       super(temporaryFolder.newFolder().toPath(), project);
     }
 
@@ -82,12 +85,12 @@ public class PersistentIssueTrackerCacheTest extends SonarTestCase {
   public static void importProject() throws Exception {
     project = importEclipseProject("SimpleProject");
     // Configure the project
-    SonarLintProject.getInstance(project);
+    SonarLintProjectConfiguration.read(new ProjectScope(project));
   }
 
   @Before
   public void setUp() throws IOException {
-    stubIssueStore = new StubIssueStore(project);
+    stubIssueStore = new StubIssueStore(new DefaultSonarLintProjectAdapter(project));
     cache = new PersistentIssueTrackerCache(stubIssueStore);
   }
 

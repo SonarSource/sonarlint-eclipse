@@ -22,20 +22,19 @@ package org.sonarlint.eclipse.ui.internal.server.actions;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.actions.SelectionProviderAction;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
 
 public class ProjectChangeBindingAction extends SelectionProviderAction {
   private final Shell shell;
-  private List<SonarLintProject> selectedProjects;
+  private List<ISonarLintProject> selectedProjects;
 
   public ProjectChangeBindingAction(Shell shell, ISelectionProvider selectionProvider) {
     super(selectionProvider, Messages.actionChangeBinding);
@@ -54,9 +53,9 @@ public class ProjectChangeBindingAction extends SelectionProviderAction {
     Iterator iterator = sel.iterator();
     while (iterator.hasNext()) {
       Object obj = iterator.next();
-      if (obj instanceof SonarLintProject) {
-        SonarLintProject server = (SonarLintProject) obj;
-        selectedProjects.add(server);
+      if (obj instanceof ISonarLintProject) {
+        ISonarLintProject project = (ISonarLintProject) obj;
+        selectedProjects.add(project);
         enabled = true;
       } else {
         setEnabled(false);
@@ -85,7 +84,7 @@ public class ProjectChangeBindingAction extends SelectionProviderAction {
     }
 
     if (selectedProjects != null) {
-      BindProjectsWizard wizard = new BindProjectsWizard(selectedProjects.stream().map(SonarLintProject::getProject).collect(Collectors.toList()));
+      BindProjectsWizard wizard = new BindProjectsWizard(selectedProjects);
 
       final WizardDialog dialog = new WizardDialog(shell, wizard);
       dialog.setHelpAvailable(true);

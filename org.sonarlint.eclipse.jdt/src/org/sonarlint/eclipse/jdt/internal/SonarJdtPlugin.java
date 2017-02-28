@@ -21,11 +21,11 @@ package org.sonarlint.eclipse.jdt.internal;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Plugin;
 import org.eclipse.jdt.core.JavaCore;
-import org.sonarlint.eclipse.core.AbstractPlugin;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 
-public class SonarJdtPlugin extends AbstractPlugin {
+public class SonarJdtPlugin extends Plugin {
 
   public static final String PLUGIN_ID = "org.sonarlint.eclipse.jdt"; //$NON-NLS-1$
 

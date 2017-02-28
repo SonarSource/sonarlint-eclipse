@@ -29,8 +29,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
@@ -85,10 +85,10 @@ public class DeleteServerDialog extends MessageDialog {
           if (monitor.isCanceled()) {
             return Status.CANCEL_STATUS;
           }
-          List<SonarLintProject> boundProjects = server.getBoundProjects();
+          List<ISonarLintProject> boundProjects = server.getBoundProjects();
           server.delete();
           // All bound projects have been unbound, so refresh issues
-          boundProjects.stream().forEach(p -> JobUtils.scheduleAnalysisOfOpenFiles(p.getProject(), TriggerType.BINDING_CHANGE));
+          boundProjects.stream().forEach(p -> JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE));
         }
       } catch (Exception e) {
         return new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, 0, e.getMessage(), e);

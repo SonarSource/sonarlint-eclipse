@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal;
 
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -49,6 +48,8 @@ import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
@@ -245,7 +246,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     @Override
     public IStatus runInUIThread(IProgressMonitor monitor) {
 
-      JobUtils.scheduleAnalysisOfOpenFiles((IProject) null, TriggerType.STARTUP);
+      JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
 
       return Status.OK_STATUS;
     }
@@ -253,13 +254,17 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   }
 
   @CheckForNull
-  public static IFile findCurrentEditedFile() {
+  public static ISonarLintFile findCurrentEditedFile() {
     IEditorPart editor = findActiveEditor();
     if (editor == null) {
       return null;
     }
     // note: the cast is necessary for e43 and e44
-    return (IFile) editor.getEditorInput().getAdapter(IFile.class);
+    IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
+    if (file != null) {
+      return (ISonarLintFile) file.getAdapter(ISonarLintFile.class);
+    }
+    return null;
   }
 
   @CheckForNull

@@ -25,9 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
@@ -48,8 +45,10 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintFileContainer;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 
 public class SonarLintChangeListener implements IResourceChangeListener {
@@ -57,7 +56,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
     if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-      final Collection<IFile> changedFiles = new ArrayList<>();
+      final Collection<ISonarLintFile> changedFiles = new ArrayList<>();
       try {
         event.getDelta().accept(delta -> visitDelta(changedFiles, delta));
       } catch (CoreException e) {
@@ -65,16 +64,16 @@ public class SonarLintChangeListener implements IResourceChangeListener {
       }
 
       if (!changedFiles.isEmpty()) {
-        new AnalyzeOpenedFiles(changedFiles.stream().collect(Collectors.groupingBy(IFile::getProject, Collectors.toList()))).schedule();
+        new AnalyzeOpenedFiles(changedFiles.stream().collect(Collectors.groupingBy(ISonarLintFile::getProject, Collectors.toList()))).schedule();
       }
     }
   }
 
   private static class AnalyzeOpenedFiles extends UIJob {
 
-    private final Map<IProject, List<IFile>> changedFilesPerProject;
+    private final Map<ISonarLintProject, List<ISonarLintFile>> changedFilesPerProject;
 
-    AnalyzeOpenedFiles(Map<IProject, List<IFile>> changedFilesPerProject) {
+    AnalyzeOpenedFiles(Map<ISonarLintProject, List<ISonarLintFile>> changedFilesPerProject) {
       super("Find opened files");
       this.changedFilesPerProject = changedFilesPerProject;
     }
@@ -89,11 +88,11 @@ public class SonarLintChangeListener implements IResourceChangeListener {
       if (page == null) {
         return Status.OK_STATUS;
       }
-      for (Map.Entry<IProject, List<IFile>> entry : changedFilesPerProject.entrySet()) {
-        IProject project = entry.getKey();
+      for (Map.Entry<ISonarLintProject, List<ISonarLintFile>> entry : changedFilesPerProject.entrySet()) {
+        ISonarLintProject project = entry.getKey();
         Collection<FileWithDocument> filesToAnalyze = entry.getValue().stream()
           .map(f -> {
-            IEditorPart editorPart = ResourceUtil.findEditor(page, f);
+            IEditorPart editorPart = ResourceUtil.findEditor(page, f.getFileInEditor());
             if (editorPart instanceof ITextEditor) {
               ITextEditor textEditor = (ITextEditor) editorPart;
               ShowIssueFlowsMarkerResolver.removeAnnotations(textEditor);
@@ -111,27 +110,25 @@ public class SonarLintChangeListener implements IResourceChangeListener {
     }
   }
 
-  private static boolean visitDelta(final Collection<IFile> changedFiles, IResourceDelta delta) {
-    IProject project = delta.getResource().getProject();
-    if (project == null) {
-      // Workspace root
+  private static boolean visitDelta(final Collection<ISonarLintFile> changedFiles, IResourceDelta delta) {
+    if (delta.getResource().getAdapter(ISonarLintProjectContainer.class) != null) {
       return true;
     }
-    if (!project.isAccessible() || !SonarLintProject.getInstance(project).isAutoEnabled()) {
-      return false;
+    ISonarLintFileContainer sonarLintContainer = (ISonarLintFileContainer) delta.getResource().getAdapter(ISonarLintFileContainer.class);
+    if (sonarLintContainer != null) {
+      return sonarLintContainer.getProject().isAutoEnabled();
     }
 
-    boolean shouldAnalyzeResource = SonarLintUtils.shouldAnalyze(delta.getResource());
-    if (isChangedFile(delta) && shouldAnalyzeResource) {
-      changedFiles.add((IFile) delta.getResource());
+    ISonarLintFile sonarLintFile = (ISonarLintFile) delta.getResource().getAdapter(ISonarLintFile.class);
+    if (sonarLintFile != null && isChanged(delta)) {
+      changedFiles.add(sonarLintFile);
       return true;
     }
-    return shouldAnalyzeResource;
+    return false;
   }
 
-  private static boolean isChangedFile(IResourceDelta delta) {
-    return delta.getResource().getType() == IResource.FILE
-      && delta.getKind() == IResourceDelta.CHANGED
+  private static boolean isChanged(IResourceDelta delta) {
+    return delta.getKind() == IResourceDelta.CHANGED
       && (delta.getFlags() & IResourceDelta.CONTENT) != 0;
   }
 

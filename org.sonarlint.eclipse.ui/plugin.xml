@@ -59,7 +59,7 @@
                   name="org.sonarlint.eclipse.core.internal.server.IServer">
             </objectClass>
             <objectClass
-                  name="org.sonarlint.eclipse.core.internal.resources.SonarLintProject">
+                  name="org.sonarlint.eclipse.core.resource.ISonarLintProject">
             </objectClass>
           </or>
       </enablement>
@@ -375,7 +375,7 @@
              value="true">
        </filter>
        <enabledWhen>
-          <adapt type="org.eclipse.core.resources.IProject"/>
+          <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject"/>
        </enabledWhen>
     </page>
     <page
@@ -388,7 +388,7 @@
              value="true">
        </filter>
        <enabledWhen>
-          <adapt type="org.eclipse.core.resources.IProject"/>
+          <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject"/>
        </enabledWhen>
     </page>
   </extension>
@@ -453,15 +453,9 @@
 	      <visibleWhen>
 	         <with variable="activeMenuSelection">
 	            <iterate ifEmpty="false">
-	              <and>
-		              <or>
-								    <adapt type="org.eclipse.core.resources.IFile"/>
-								    <adapt type="org.eclipse.core.resources.IResource">
-					      			<instanceof value="org.eclipse.core.resources.IFile"/>
-					    			</adapt>
-					  			</or>
-                 	<test property="org.sonarlint.eclipse.core.isAutoAnalysis" value="false"/>
-				  			</and>
+						    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
+                 	<test property="org.sonarlint.eclipse.core.autoAnalysisEnabled" value="false"/>
+			    			</adapt>
 	            </iterate>
 	         </with>
 	      </visibleWhen>
@@ -473,13 +467,10 @@
 	         <with variable="activeMenuSelection">
 	            <iterate ifEmpty="false">
 	              <or>
-							    <adapt
-										type="org.eclipse.core.resources.IProject">
-										<test
-											property="org.eclipse.core.resources.open">
-										</test>
+							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+										<test property="org.sonarlint.eclipse.core.open"/>
 									</adapt>
-							    <adapt type="org.eclipse.ui.IWorkingSet"/>
+							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
 				  			</or>
 	            </iterate>
 	         </with>
@@ -491,15 +482,10 @@
           <visibleWhen>
               <with variable="activeMenuSelection">
                  <iterate ifEmpty="false">
-                   <and>
-                 	   <adapt
-											type="org.eclipse.core.resources.IProject">
-											<test
-												property="org.eclipse.core.resources.open">
-											</test>
-										 </adapt>
-                 	   <test property="org.sonarlint.eclipse.core.isBound" value="false"/>
-                 	 </and>
+               	   <adapt	type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+											<test property="org.sonarlint.eclipse.core.open"/>
+											<test	property="org.sonarlint.eclipse.core.bound" value="false"/>
+									 </adapt>
                  </iterate>
              </with>
           </visibleWhen>
@@ -510,15 +496,10 @@
           <visibleWhen>
               <with variable="activeMenuSelection">
                  <iterate ifEmpty="false">
-                   <and>
-                 	   <adapt
-											type="org.eclipse.core.resources.IProject">
-											<test
-												property="org.eclipse.core.resources.open">
-											</test>
-										 </adapt>
-                 	   <test property="org.sonarlint.eclipse.core.isBound" value="true"/>
-                 	 </and>
+                   <adapt	type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+  									  <test property="org.sonarlint.eclipse.core.open"/>
+											<test	property="org.sonarlint.eclipse.core.bound"/>
+									 </adapt>
                  </iterate>
              </with>
           </visibleWhen>
@@ -530,13 +511,10 @@
               <with variable="activeMenuSelection">
                  <iterate ifEmpty="false">
                    <and>
-                 	   <adapt
-											type="org.eclipse.core.resources.IProject">
-											<test
-												property="org.eclipse.core.resources.open">
-											</test>
-										 </adapt>
-                 	   <test property="org.sonarlint.eclipse.core.isBound" value="true"/>
+                 	  <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+											<test property="org.sonarlint.eclipse.core.open"/>
+											<test	property="org.sonarlint.eclipse.core.bound"/>
+									 </adapt>
                  	 </and>
                  </iterate>
              </with>
@@ -776,13 +754,20 @@
 	     location="TOP_RIGHT">
 	     <description>%sonarlint.decorator.description</description>
 	     <enablement>
-	       <or> 
-	         <objectClass name="org.eclipse.core.resources.IProject"/>
-	         <objectClass name="org.eclipse.core.runtime.IAdaptable"/>
-	       </or>  
+	       <objectClass name="org.eclipse.core.runtime.IAdaptable"/>
 	     </enablement>  
 	  </decorator>
   </extension>
   
+  <extension
+        point="org.eclipse.core.runtime.adapters">
+     <factory
+           adaptableType="org.eclipse.ui.IWorkingSet"
+           class="org.sonarlint.eclipse.ui.internal.adapter.DefaultSonarLintProjectContainerAdaterFactory">
+        <adapter
+              type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer">
+        </adapter>
+     </factory>
+  </extension>
 	
 </plugin>

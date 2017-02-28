@@ -24,13 +24,13 @@ import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
 
 public class BindProjectsCommand extends AbstractHandler {
@@ -47,15 +47,13 @@ public class BindProjectsCommand extends AbstractHandler {
   public Object execute(ExecutionEvent event) throws ExecutionException {
     IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
 
-    List<IProject> selectedProjects = new ArrayList<>();
+    List<ISonarLintProject> selectedProjects = new ArrayList<>();
 
     @SuppressWarnings("rawtypes")
     List elems = selection.toList();
     for (Object elem : elems) {
-      if (elem instanceof IProject) {
-        selectedProjects.add((IProject) elem);
-      } else if (elem instanceof IAdaptable) {
-        IProject proj = (IProject) ((IAdaptable) elem).getAdapter(IProject.class);
+      if (elem instanceof IAdaptable) {
+        ISonarLintProject proj = (ISonarLintProject) ((IAdaptable) elem).getAdapter(ISonarLintProject.class);
         if (proj != null) {
           selectedProjects.add(proj);
         }

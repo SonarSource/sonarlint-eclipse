@@ -19,15 +19,16 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
-import org.eclipse.core.resources.IProject;
+import java.util.Collection;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProviderChangedEvent;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
 
@@ -37,14 +38,12 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
 
   @Override
   public void decorate(Object element, IDecoration decoration) {
-    IProject project = null;
-    if (element instanceof IProject) {
-      project = (IProject) element;
-    } else if (element instanceof IAdaptable) {
-      project = (IProject) ((IAdaptable) element).getAdapter(IProject.class);
+    ISonarLintProject project = null;
+    if (element instanceof IAdaptable) {
+      project = (ISonarLintProject) ((IAdaptable) element).getAdapter(ISonarLintProject.class);
     }
-    if (project != null && project.isAccessible()) {
-      SonarLintProject p = SonarLintProject.getInstance(project);
+    if (project != null && project.isOpen()) {
+      SonarLintProjectConfiguration p = SonarLintProjectConfiguration.read(project.getScopeContext());
       if (!p.isAutoEnabled()) {
         return;
       }
@@ -89,9 +88,9 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
     fListeners.remove(listener);
   }
 
-  public void fireChange(IProject[] elements) {
+  public void fireChange(Collection<ISonarLintProject> elements) {
     if (fListeners != null && !fListeners.isEmpty()) {
-      LabelProviderChangedEvent event = new LabelProviderChangedEvent(this, elements);
+      LabelProviderChangedEvent event = new LabelProviderChangedEvent(this, elements.stream().map(ISonarLintProject::getObjectToNotify).toArray());
       Object[] listeners = fListeners.getListeners();
       for (int i = 0; i < listeners.length; i++) {
         ((ILabelProviderListener) listeners[i]).labelProviderChanged(event);

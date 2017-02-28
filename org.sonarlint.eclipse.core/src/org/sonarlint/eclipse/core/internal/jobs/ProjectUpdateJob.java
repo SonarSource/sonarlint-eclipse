@@ -24,23 +24,33 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class ProjectUpdateJob extends Job {
-  private final SonarLintProject project;
+  private final ISonarLintProject project;
 
-  public ProjectUpdateJob(SonarLintProject project) {
-    super("Update configuration of project " + project.getProject().getName());
+  public ProjectUpdateJob(ISonarLintProject project) {
+    super("Update configuration of project " + project.getName());
     this.project = project;
   }
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
-      project.update(monitor);
+      SonarLintProjectConfiguration config = SonarLintProjectConfiguration.read(project.getScopeContext());
+      String serverId = config.getServerId();
+      IServer server = ServersManager.getInstance().getServer(serverId);
+      if (server == null) {
+        return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID,
+          "Unable to update project '" + project.getName() + "' since it is bound to an unknow server: '" + serverId + "'");
+      }
+      server.updateProjectStorage(config.getModuleKey());
       return Status.OK_STATUS;
     } catch (Exception e) {
-      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update project " + project.getProject().getName(), e);
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update project " + project.getName(), e);
     }
   }
 }

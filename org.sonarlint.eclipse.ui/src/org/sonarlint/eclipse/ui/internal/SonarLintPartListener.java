@@ -34,8 +34,7 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.views.issues.ChangeSetIssuesView;
 
 public class SonarLintPartListener implements IPartListener2 {
@@ -46,12 +45,15 @@ public class SonarLintPartListener implements IPartListener2 {
       IEditorInput input = ((IEditorPart) part).getEditorInput();
       if (input instanceof IFileEditorInput) {
         IFile file = ((IFileEditorInput) input).getFile();
-        IEditorPart editorPart = ResourceUtil.findEditor(part.getSite().getPage(), file);
-        if (editorPart instanceof ITextEditor) {
-          IDocument doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
-          scheduleUpdate(new FileWithDocument(file, doc));
-        } else {
-          scheduleUpdate(new FileWithDocument(file, null));
+        ISonarLintFile sonarLintFile = (ISonarLintFile) file.getAdapter(ISonarLintFile.class);
+        if (sonarLintFile != null) {
+          IEditorPart editorPart = ResourceUtil.findEditor(part.getSite().getPage(), file);
+          if (editorPart instanceof ITextEditor) {
+            IDocument doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
+            scheduleUpdate(new FileWithDocument(sonarLintFile, doc));
+          } else {
+            scheduleUpdate(new FileWithDocument(sonarLintFile, null));
+          }
         }
       }
     }
@@ -59,17 +61,8 @@ public class SonarLintPartListener implements IPartListener2 {
   }
 
   private static void scheduleUpdate(FileWithDocument fileWithDoc) {
-    IFile file = fileWithDoc.getFile();
-    IFile specificFile = SonarLintUtils.toSpecificFile(file);
-    if (!specificFile.equals(file)) {
-      // Don't analyze files that are also part of submodules
-      return;
-    }
-    if (!file.getProject().isAccessible()) {
-      return;
-    }
-    final SonarLintProject sonarProject = SonarLintProject.getInstance(file.getProject());
-    if (!sonarProject.isAutoEnabled() || !SonarLintUtils.shouldAnalyze(file)) {
+    ISonarLintFile file = fileWithDoc.getFile();
+    if (!file.getProject().isAutoEnabled()) {
       return;
     }
     AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Arrays.asList(fileWithDoc), TriggerType.EDITOR_OPEN);

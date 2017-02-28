@@ -23,9 +23,10 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
@@ -41,8 +42,8 @@ public class ServerLabelProvider extends BaseCellLabelProvider {
       return StringUtils.defaultString(server.getId());
     }
 
-    if (element instanceof SonarLintProject) {
-      return ((SonarLintProject) element).getProject().getName();
+    if (element instanceof ISonarLintProject) {
+      return ((ISonarLintProject) element).getName();
     }
 
     if (element instanceof IWorkspaceRoot) {
@@ -57,7 +58,7 @@ public class ServerLabelProvider extends BaseCellLabelProvider {
     if (element instanceof IServer) {
       return SonarLintImages.SERVER_ICON_IMG;
     }
-    if (element instanceof SonarLintProject) {
+    if (element instanceof SonarLintProjectConfiguration) {
       return PlatformUI.getWorkbench().getSharedImages().getImage(org.eclipse.ui.ide.IDE.SharedImages.IMG_OBJ_PROJECT);
     }
     return null;

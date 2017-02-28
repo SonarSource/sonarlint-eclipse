@@ -32,8 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -45,8 +43,11 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StorageManager;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.WsHelperImpl;
 import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
@@ -140,17 +141,18 @@ public class Server implements IServer, StateListener {
         checkForUpdateResult.changelog().forEach(line -> SonarLintLogger.get().info("  - " + line));
       }
 
-      for (SonarLintProject boundProject : getBoundProjects()) {
+      for (ISonarLintProject boundProject : getBoundProjects()) {
         SubMonitor projectMonitor = subMonitor.newChild(1);
         if (progress.isCanceled()) {
           return;
         }
-        SonarLintLogger.get().info("Check for updates from server '" + getId() + "' for project '" + boundProject.getProject().getName() + "'");
-        StorageUpdateCheckResult moduleUpdateCheckResult = client.checkIfModuleStorageNeedUpdate(getConfig(), boundProject.getModuleKey(),
-          new WrappedProgressMonitor(projectMonitor, "Checking for configuration update for project '" + boundProject.getProject().getName() + "'"));
+        SonarLintLogger.get().info("Check for updates from server '" + getId() + "' for project '" + boundProject.getName() + "'");
+        SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(boundProject.getScopeContext());
+        StorageUpdateCheckResult moduleUpdateCheckResult = client.checkIfModuleStorageNeedUpdate(getConfig(), projectConfig.getModuleKey(),
+          new WrappedProgressMonitor(projectMonitor, "Checking for configuration update for project '" + boundProject.getName() + "'"));
         if (moduleUpdateCheckResult.needUpdate()) {
           this.hasUpdates = true;
-          SonarLintLogger.get().info("On project '" + boundProject.getProject().getName() + "':");
+          SonarLintLogger.get().info("On project '" + boundProject.getName() + "':");
           moduleUpdateCheckResult.changelog().forEach(line -> SonarLintLogger.get().info("  - " + line));
         }
       }
@@ -245,10 +247,17 @@ public class Server implements IServer, StateListener {
   @Override
   public synchronized void delete() {
     client.stop(true);
-    for (SonarLintProject sonarLintProject : getBoundProjects()) {
-      sonarLintProject.unbind();
+    for (ISonarLintProject sonarLintProject : getBoundProjects()) {
+      unbind(sonarLintProject);
     }
     ServersManager.getInstance().removeServer(this);
+  }
+
+  public static void unbind(ISonarLintProject project) {
+    SonarLintProjectConfiguration.read(project.getScopeContext()).unbind();
+    MarkerUtils.deleteIssuesMarkers(project.getResourceForProjectLevelIssues());
+    MarkerUtils.deleteChangeSetIssuesMarkers(project.getResourceForProjectLevelIssues());
+    SonarLintCorePlugin.clearIssueTracker(project);
   }
 
   @Override
@@ -295,13 +304,13 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public List<SonarLintProject> getBoundProjects() {
-    List<SonarLintProject> result = new ArrayList<>();
-    for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-      if (project.isAccessible()) {
-        SonarLintProject sonarProject = SonarLintProject.getInstance(project);
-        if (Objects.equals(sonarProject.getServerId(), id)) {
-          result.add(sonarProject);
+  public List<ISonarLintProject> getBoundProjects() {
+    List<ISonarLintProject> result = new ArrayList<>();
+    for (ISonarLintProject project : ProjectsProviderUtils.allProjects()) {
+      if (project.isOpen()) {
+        SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(project.getScopeContext());
+        if (Objects.equals(projectConfig.getServerId(), id)) {
+          result.add(project);
         }
       }
     }

@@ -20,8 +20,9 @@
 package org.sonarlint.eclipse.core;
 
 /**
- * Because we don't like checked exceptions!
+ * @deprecated since 2.7 was only used by {@link AbstractPlugin}
  */
+@Deprecated
 public class SonarEclipseException extends RuntimeException {
 
   public SonarEclipseException(String message) {

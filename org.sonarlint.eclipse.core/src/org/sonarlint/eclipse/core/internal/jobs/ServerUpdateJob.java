@@ -27,8 +27,9 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class ServerUpdateJob extends Job {
   private final IServer server;
@@ -40,7 +41,7 @@ public class ServerUpdateJob extends Job {
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
-    List<SonarLintProject> projectsToUpdate = server.getBoundProjects();
+    List<ISonarLintProject> projectsToUpdate = server.getBoundProjects();
     monitor.beginTask("Update server and all associated projects", projectsToUpdate.size() + 1);
     try {
       server.updateStorage(monitor);
@@ -49,14 +50,14 @@ public class ServerUpdateJob extends Job {
     }
     monitor.worked(1);
     List<IStatus> failures = new ArrayList<>();
-    for (SonarLintProject projectToUpdate : projectsToUpdate) {
+    for (ISonarLintProject projectToUpdate : projectsToUpdate) {
       if (monitor.isCanceled()) {
         return Status.CANCEL_STATUS;
       }
       try {
-        server.updateProjectStorage(projectToUpdate.getModuleKey());
+        server.updateProjectStorage(SonarLintProjectConfiguration.read(projectToUpdate.getScopeContext()).getModuleKey());
       } catch (Exception e) {
-        failures.add(new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding for project '" + projectToUpdate.getProject().getName() + "'", e));
+        failures.add(new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding for project '" + projectToUpdate.getName() + "'", e));
       }
       monitor.worked(1);
     }

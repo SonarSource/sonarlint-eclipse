@@ -22,19 +22,18 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 
 public class SonarLintIssueListener implements IssueListener {
-  private final Map<IResource, List<Issue>> issuesPerResource;
-  private final IProject project;
+  private final Map<ISonarLintIssuable, List<Issue>> issuesPerResource;
+  private final ISonarLintProject project;
   private long issueCount = 0;
 
-  public SonarLintIssueListener(IProject project, Map<IResource, List<Issue>> issuesPerResource) {
+  public SonarLintIssueListener(ISonarLintProject project, Map<ISonarLintIssuable, List<Issue>> issuesPerResource) {
     this.issuesPerResource = issuesPerResource;
     this.project = project;
   }
@@ -42,7 +41,7 @@ public class SonarLintIssueListener implements IssueListener {
   @Override
   public void handle(Issue issue) {
     issueCount++;
-    IResource r;
+    ISonarLintIssuable r;
     ClientInputFile inputFile = issue.getInputFile();
     if (inputFile == null) {
       r = project;
@@ -54,7 +53,7 @@ public class SonarLintIssueListener implements IssueListener {
     }
     issuesPerResource.get(r).add(issue);
   }
-  
+
   public long getIssueCount() {
     return issueCount;
   }

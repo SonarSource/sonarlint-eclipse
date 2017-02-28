@@ -29,7 +29,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.server.Server;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
@@ -38,18 +40,18 @@ import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
  * Dialog that prompts a user to unbind project(s).
  */
 public class UnbindProjectDialog extends MessageDialog {
-  protected List<SonarLintProject> projects;
+  protected List<ISonarLintProject> projects;
 
-  public UnbindProjectDialog(Shell parentShell, List<SonarLintProject> projects) {
+  public UnbindProjectDialog(Shell parentShell, List<ISonarLintProject> projects) {
     super(parentShell, Messages.unbindProjectDialogTitle, null, getMessage(projects), QUESTION, new String[] {IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL}, 0);
     this.projects = projects;
 
   }
 
-  private static String getMessage(List<SonarLintProject> projects) {
+  private static String getMessage(List<ISonarLintProject> projects) {
     StringBuilder sb = new StringBuilder();
     if (projects.size() == 1) {
-      sb.append(NLS.bind(Messages.unbindProjectDialogMessage, projects.get(0).getProject().getName()));
+      sb.append(NLS.bind(Messages.unbindProjectDialogMessage, projects.get(0).getName()));
     } else {
       sb.append(NLS.bind(Messages.unbindProjectDialogMessageMany, Integer.toString(projects.size())));
     }
@@ -74,13 +76,13 @@ public class UnbindProjectDialog extends MessageDialog {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
       try {
-        for (SonarLintProject project : projects) {
+        for (ISonarLintProject project : projects) {
           if (monitor.isCanceled()) {
             return Status.CANCEL_STATUS;
           }
-          String oldServerId = project.getServerId();
-          project.unbind();
-          JobUtils.scheduleAnalysisOfOpenFiles(project.getProject(), TriggerType.BINDING_CHANGE);
+          String oldServerId = SonarLintProjectConfiguration.read(project.getScopeContext()).getServerId();
+          Server.unbind(project);
+          JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
           JobUtils.notifyServerViewAfterBindingChange(project, oldServerId);
         }
       } catch (Exception e) {

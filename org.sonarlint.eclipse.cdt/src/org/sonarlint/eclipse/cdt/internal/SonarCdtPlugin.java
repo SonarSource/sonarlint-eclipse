@@ -19,14 +19,14 @@
  */
 package org.sonarlint.eclipse.cdt.internal;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.cdt.core.CCProjectNature;
 import org.eclipse.cdt.core.CProjectNature;
-import org.sonarlint.eclipse.core.AbstractPlugin;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Plugin;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 
-public class SonarCdtPlugin extends AbstractPlugin {
+public class SonarCdtPlugin extends Plugin {
 
   public static final String PLUGIN_ID = "org.sonarlint.eclipse.cdt"; //$NON-NLS-1$
 

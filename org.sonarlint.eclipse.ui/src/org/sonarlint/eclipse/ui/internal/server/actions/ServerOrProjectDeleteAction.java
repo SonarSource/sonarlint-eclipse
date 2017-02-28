@@ -29,15 +29,15 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.SelectionProviderAction;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.server.DeleteServerDialog;
 import org.sonarlint.eclipse.ui.internal.server.UnbindProjectDialog;
 
 public class ServerOrProjectDeleteAction extends SelectionProviderAction {
   private List<IServer> selectedServers;
-  private List<SonarLintProject> selectedProjects;
+  private List<ISonarLintProject> selectedProjects;
   private Shell shell;
 
   public ServerOrProjectDeleteAction(Shell shell, ISelectionProvider selectionProvider) {
@@ -63,8 +63,8 @@ public class ServerOrProjectDeleteAction extends SelectionProviderAction {
       if (obj instanceof IServer) {
         IServer server = (IServer) obj;
         selectedServers.add(server);
-      } else if (obj instanceof SonarLintProject) {
-        SonarLintProject project = (SonarLintProject) obj;
+      } else if (obj instanceof ISonarLintProject) {
+        ISonarLintProject project = (ISonarLintProject) obj;
         selectedProjects.add(project);
       } else {
         setEnabled(false);

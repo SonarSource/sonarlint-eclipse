@@ -20,47 +20,54 @@
 package org.sonarlint.eclipse.core.internal.resources;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class SonarLintPropertyTester extends PropertyTester {
 
   @Override
   public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-    IProject project = getProject(receiver);
+    ISonarLintProject project = getProject(receiver);
     if (project == null) {
       return false;
     }
 
-    SonarLintProject p = SonarLintProject.getInstance(project);
-    if ("isBound".equals(property)) {
-      return expectedValue.equals(p.isBound());
+    if ("bound".equals(property)) {
+      return expectedValue == null
+        ? project.isBound()
+        : (project.isBound() == ((Boolean) expectedValue).booleanValue());
     }
-    if ("isAutoAnalysis".equals(property)) {
-      return expectedValue.equals(p.isAutoEnabled());
+    if ("autoAnalysisEnabled".equals(property)) {
+      return expectedValue == null
+        ? project.isAutoEnabled()
+        : (project.isAutoEnabled() == ((Boolean) expectedValue).booleanValue());
+    }
+    if ("open".equals(property)) {
+      return expectedValue == null
+        ? project.isOpen()
+        : (project.isOpen() == ((Boolean) expectedValue).booleanValue());
     }
     return false;
   }
 
-  private static IProject getProject(Object receiver) {
-    if (receiver instanceof IProject) {
-      return (IProject) receiver;
+  private static ISonarLintProject getProject(Object receiver) {
+    if (receiver instanceof ISonarLintProject) {
+      return (ISonarLintProject) receiver;
     }
-    if (receiver instanceof IResource) {
-      return ((IResource) receiver).getProject();
+    if (receiver instanceof ISonarLintFile) {
+      return ((ISonarLintFile) receiver).getProject();
     }
     if (receiver instanceof IAdaptable) {
-      // note: the cast to IProject is necessary for e43 and e44
-      IProject project = (IProject) ((IAdaptable) receiver).getAdapter(IProject.class);
-      if (project == null) {
-        // note: the cast to IResource is necessary for e43 and e44
-        IResource res = (IResource) ((IAdaptable) receiver).getAdapter(IResource.class);
-        if (res != null) {
-          project = res.getProject();
-        }
+      // note: the cast to ISonarLintProject is necessary for e43 and e44
+      ISonarLintProject project = (ISonarLintProject) ((IAdaptable) receiver).getAdapter(ISonarLintProject.class);
+      if (project != null) {
+        return project;
       }
-      return project;
+      ISonarLintFile file = (ISonarLintFile) ((IAdaptable) receiver).getAdapter(ISonarLintFile.class);
+      if (file != null) {
+        return file.getProject();
+      }
     }
     return null;
   }

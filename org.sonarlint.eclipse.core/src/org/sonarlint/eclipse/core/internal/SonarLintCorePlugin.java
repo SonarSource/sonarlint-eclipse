@@ -21,12 +21,12 @@ package org.sonarlint.eclipse.core.internal;
 
 import java.nio.file.Path;
 import org.eclipse.core.net.proxy.IProxyService;
-import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
-import org.sonarlint.eclipse.core.AbstractPlugin;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
+import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
 import org.sonarlint.eclipse.core.internal.tracking.IssueStore;
@@ -35,8 +35,9 @@ import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerCacheFactory;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerRegistry;
 import org.sonarlint.eclipse.core.internal.tracking.PersistentIssueTrackerCache;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-public class SonarLintCorePlugin extends AbstractPlugin {
+public class SonarLintCorePlugin extends Plugin {
 
   public static final String PLUGIN_ID = "org.sonarlint.eclipse.core";
   public static final String UI_PLUGIN_ID = "org.sonarlint.eclipse.ui";
@@ -51,6 +52,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
   private StandaloneSonarLintClientFacade sonarlint;
   private final ServiceTracker proxyTracker;
+  private final SonarLintExtensionTracker extensionTracker = new SonarLintExtensionTracker();
 
   private AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
 
@@ -72,8 +74,9 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   }
 
   @Override
-  public void start(BundleContext context) {
+  public void start(BundleContext context) throws Exception {
     super.start(context);
+    extensionTracker.start();
 
     IssueTrackerCacheFactory factory = (project, localModuleKey) -> {
       Path storeBasePath = StorageManager.getIssuesDir(localModuleKey);
@@ -86,7 +89,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
   }
 
   @Override
-  public void stop(BundleContext context) {
+  public void stop(BundleContext context) throws Exception {
     if (sonarlint != null) {
       sonarlint.stop();
     }
@@ -94,6 +97,7 @@ public class SonarLintCorePlugin extends AbstractPlugin {
 
     serverIssueUpdater.shutdown();
     issueTrackerRegistry.shutdown();
+    extensionTracker.close();
 
     super.stop(context);
   }
@@ -113,15 +117,19 @@ public class SonarLintCorePlugin extends AbstractPlugin {
     return serverIssueUpdater;
   }
 
-  public static IssueTracker getOrCreateIssueTracker(IProject project, String localModulePath) {
+  public static IssueTracker getOrCreateIssueTracker(ISonarLintProject project, String localModulePath) {
     return getDefault().issueTrackerRegistry.getOrCreate(project, localModulePath);
   }
 
-  public static void clearIssueTracker(IProject project) {
+  public static void clearIssueTracker(ISonarLintProject project) {
     getDefault().issueTrackerRegistry.get(project).ifPresent(IssueTracker::clear);
   }
 
   public static AnalysisListenerManager getAnalysisListenerManager() {
     return getDefault().analysisListenerManager;
+  }
+
+  public static SonarLintExtensionTracker getExtensionTracker() {
+    return getDefault().extensionTracker;
   }
 }

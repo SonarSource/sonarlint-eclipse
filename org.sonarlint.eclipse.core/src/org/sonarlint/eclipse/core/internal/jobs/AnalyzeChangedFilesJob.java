@@ -22,33 +22,28 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.team.core.RepositoryProvider;
-import org.eclipse.team.core.TeamException;
-import org.eclipse.team.core.subscribers.Subscriber;
-import org.eclipse.team.core.synchronize.SyncInfo;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class AnalyzeChangedFilesJob extends WorkspaceJob {
   private static final String UNABLE_TO_ANALYZE_CHANGED_FILES = "Unable to analyze changed files";
-  private final Collection<IProject> projects;
+  private final Collection<ISonarLintProject> projects;
 
-  public AnalyzeChangedFilesJob(Collection<IProject> projects) {
+  public AnalyzeChangedFilesJob(Collection<ISonarLintProject> projects) {
     super("Analyze changeset");
     this.projects = projects;
   }
@@ -59,14 +54,16 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
     try {
       global.setTaskName("Collect changed file(s) list");
       Arrays.asList(ResourcesPlugin.getWorkspace().getRoot().getProjects()).stream().forEach(MarkerUtils::deleteChangeSetIssuesMarkers);
-      Collection<IFile> collectChangedFiles = collectChangedFiles(projects, global.newChild(20));
+      Collection<ISonarLintFile> collectChangedFiles = collectChangedFiles(projects, global.newChild(20));
 
       if (collectChangedFiles.isEmpty()) {
         SonarLintLogger.get().info("No changed files found");
         return Status.OK_STATUS;
       }
 
-      Map<IProject, Collection<IFile>> changedFilesPerProject = SonarLintUtils.aggregatePerMoreSpecificProject(collectChangedFiles);
+      // FIXME duplicate Map<ISonarLintProject, Collection<ISonarLintFile>> changedFilesPerProject =
+      // SonarLintUtils.aggregatePerMoreSpecificProject(collectChangedFiles);
+      Map<ISonarLintProject, List<ISonarLintFile>> changedFilesPerProject = collectChangedFiles.stream().collect(Collectors.groupingBy(ISonarLintFile::getProject));
 
       long fileCount = changedFilesPerProject.values().stream().flatMap(Collection::stream).count();
 
@@ -74,13 +71,13 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
 
       global.setTaskName("Analysis");
       SubMonitor analysisMonitor = SubMonitor.convert(global.newChild(80), changedFilesPerProject.entrySet().size());
-      for (Map.Entry<IProject, Collection<IFile>> entry : changedFilesPerProject.entrySet()) {
+      for (Map.Entry<ISonarLintProject, List<ISonarLintFile>> entry : changedFilesPerProject.entrySet()) {
         SubMonitor projectAnalysisMonitor = analysisMonitor.newChild(1);
-        IProject project = entry.getKey();
-        global.setTaskName("Analysing project " + project.getName());
-        if (!project.isAccessible()) {
+        ISonarLintProject project = entry.getKey();
+        if (!project.isOpen()) {
           continue;
         }
+        global.setTaskName("Analysing project " + project.getName());
         Collection<FileWithDocument> filesToAnalyze = entry.getValue().stream()
           .map(f -> new FileWithDocument(f, null))
           .collect(Collectors.toList());
@@ -96,57 +93,15 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
   }
 
-  private Collection<IFile> collectChangedFiles(Collection<IProject> projects, IProgressMonitor monitor) {
-    Collection<IFile> changedFiles = new ArrayList<>();
-    for (IProject project : projects) {
+  private static Collection<ISonarLintFile> collectChangedFiles(Collection<ISonarLintProject> projects, IProgressMonitor monitor) {
+    Collection<ISonarLintFile> changedFiles = new ArrayList<>();
+    for (ISonarLintProject project : projects) {
       if (monitor.isCanceled()) {
         break;
       }
-      RepositoryProvider provider = RepositoryProvider.getProvider(project);
-      if (provider == null) {
-        SonarLintLogger.get().debug("Project " + project.getName() + " doesn't have any RepositoryProvider");
-        continue;
-      }
-
-      Subscriber subscriber = provider.getSubscriber();
-      if (subscriber == null) {
-        // Some providers (like Clear Case SCM Adapter) don't provide a Subscriber.
-        SonarLintLogger.get().debug("No Subscriber for provider " + provider.getID() + " on project " + project.getName());
-        continue;
-      }
-
-      try {
-        IResource[] roots = subscriber.roots();
-        if (Arrays.asList(roots).contains(project)) {
-          // Refresh
-          subscriber.refresh(new IResource[] {project}, IResource.DEPTH_INFINITE, monitor);
-
-          // Collect all the synchronization states and print
-          collect(subscriber, project, changedFiles);
-        } else {
-          SonarLintLogger.get().debug("Project " + project.getName() + " is not part of Subscriber roots");
-        }
-      } catch (TeamException e) {
-        throw new IllegalStateException(UNABLE_TO_ANALYZE_CHANGED_FILES, e);
-      }
+      changedFiles.addAll(project.getScmChangedFiles(monitor));
     }
     return changedFiles;
   }
 
-  void collect(Subscriber subscriber, IResource resource, Collection<IFile> changedFiles) throws TeamException {
-    if (!SonarLintUtils.shouldAnalyze(resource)) {
-      return;
-    }
-    IFile file = (IFile) resource.getAdapter(IFile.class);
-    if (file != null) {
-      SyncInfo syncInfo = subscriber.getSyncInfo(resource);
-      if (syncInfo != null && !SyncInfo.isInSync(syncInfo.getKind())) {
-        changedFiles.add(file);
-      }
-      return;
-    }
-    for (IResource child : subscriber.members(resource)) {
-      collect(subscriber, child, changedFiles);
-    }
-  }
 }

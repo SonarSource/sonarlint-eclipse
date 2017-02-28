@@ -35,7 +35,9 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IResource;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.jobs.AsyncServerMarkerUpdaterJob;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
@@ -58,8 +60,9 @@ public class ServerIssueUpdater {
     this.issueTrackerRegistry = issueTrackerRegistry;
   }
 
-  public void updateAsync(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, SonarLintProject project, String localModuleKey, String serverModuleKey,
-    Collection<IResource> resources) {
+  public void updateAsync(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project, String localModuleKey,
+    String serverModuleKey,
+    Collection<ISonarLintIssuable> resources) {
     Runnable task = new IssueUpdateRunnable(serverConfiguration, engine, project, localModuleKey, serverModuleKey, resources);
     try {
       this.executorService.submit(task);
@@ -68,8 +71,9 @@ public class ServerIssueUpdater {
     }
   }
 
-  public void updateSync(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, SonarLintProject project, String localModuleKey, String serverModuleKey,
-    Collection<IResource> resources) {
+  public void updateSync(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project, String localModuleKey,
+    String serverModuleKey,
+    Collection<ISonarLintIssuable> resources) {
     new IssueUpdateRunnable(serverConfiguration, engine, project, localModuleKey, serverModuleKey, resources).run();
   }
 
@@ -85,11 +89,11 @@ public class ServerIssueUpdater {
     private final ConnectedSonarLintEngine engine;
     private final String localModuleKey;
     private final String serverModuleKey;
-    private final Collection<IResource> resources;
-    private final SonarLintProject project;
+    private final Collection<ISonarLintIssuable> resources;
+    private final ISonarLintProject project;
 
-    private IssueUpdateRunnable(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, SonarLintProject project, String localModuleKey,
-      String serverModuleKey, Collection<IResource> resources) {
+    private IssueUpdateRunnable(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project, String localModuleKey,
+      String serverModuleKey, Collection<ISonarLintIssuable> resources) {
       this.serverConfiguration = serverConfiguration;
       this.engine = engine;
       this.project = project;
@@ -100,16 +104,18 @@ public class ServerIssueUpdater {
 
     @Override
     public void run() {
-      Map<IResource, Collection<Trackable>> trackedIssues = new HashMap<>();
+      Map<ISonarLintIssuable, Collection<Trackable>> trackedIssues = new HashMap<>();
       try {
-        for (IResource resource : resources) {
-          String relativePath = resource.getProjectRelativePath().toString();
-          IssueTracker issueTracker = issueTrackerRegistry.getOrCreate(project.getProject(), localModuleKey);
-          List<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, resource);
-          Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
-          Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(relativePath, serverIssuesTrackable);
-          issueTracker.updateCache(relativePath, tracked);
-          trackedIssues.put(resource, tracked);
+        for (ISonarLintIssuable resource : resources) {
+          if (resource instanceof ISonarLintFile) {
+            String relativePath = ((ISonarLintFile) resource).getProjectRelativePath();
+            IssueTracker issueTracker = issueTrackerRegistry.getOrCreate(project, localModuleKey);
+            List<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, ((ISonarLintFile) resource));
+            Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
+            Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(relativePath, serverIssuesTrackable);
+            issueTracker.updateCache(relativePath, tracked);
+            trackedIssues.put(resource, tracked);
+          }
         }
         new AsyncServerMarkerUpdaterJob(project, trackedIssues).schedule();
       } catch (Throwable t) {
@@ -120,8 +126,8 @@ public class ServerIssueUpdater {
 
   }
 
-  public static List<ServerIssue> fetchServerIssues(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String moduleKey, IResource resource) {
-    String fileKey = toFileKey(resource);
+  public static List<ServerIssue> fetchServerIssues(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String moduleKey, ISonarLintFile resource) {
+    String fileKey = resource.getProjectRelativePath();
 
     try {
       SonarLintLogger.get().debug("fetchServerIssues moduleKey=" + moduleKey + ", filepath=" + fileKey);

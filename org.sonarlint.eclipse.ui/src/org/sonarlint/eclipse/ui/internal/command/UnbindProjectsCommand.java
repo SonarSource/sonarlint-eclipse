@@ -24,7 +24,6 @@ import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -36,7 +35,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.server.Server;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
@@ -54,15 +55,13 @@ public class UnbindProjectsCommand extends AbstractHandler {
   public Object execute(ExecutionEvent event) throws ExecutionException {
     IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
 
-    final List<IProject> selectedProjects = new ArrayList<>();
+    final List<ISonarLintProject> selectedProjects = new ArrayList<>();
 
     @SuppressWarnings("rawtypes")
     List elems = selection.toList();
     for (Object elem : elems) {
-      if (elem instanceof IProject) {
-        selectedProjects.add((IProject) elem);
-      } else if (elem instanceof IAdaptable) {
-        IProject proj = (IProject) ((IAdaptable) elem).getAdapter(IProject.class);
+      if (elem instanceof IAdaptable) {
+        ISonarLintProject proj = (ISonarLintProject) ((IAdaptable) elem).getAdapter(ISonarLintProject.class);
         if (proj != null) {
           selectedProjects.add(proj);
         }
@@ -74,18 +73,18 @@ public class UnbindProjectsCommand extends AbstractHandler {
       @Override
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Unbind projects", selectedProjects.size());
-        for (IProject p : selectedProjects) {
-          SonarLintProject sonarLintProject = SonarLintProject.getInstance(p);
-          String oldServerId = sonarLintProject.getServerId();
-          sonarLintProject.unbind();
+        for (ISonarLintProject p : selectedProjects) {
+          SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(p.getScopeContext());
+          String oldServerId = projectConfig.getServerId();
+          Server.unbind(p);
           JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE);
-          JobUtils.notifyServerViewAfterBindingChange(sonarLintProject, oldServerId);
+          JobUtils.notifyServerViewAfterBindingChange(p, oldServerId);
           monitor.worked(1);
           Display.getDefault().asyncExec(() -> JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE));
         }
         IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
         if (labelProvider != null) {
-          ((SonarLintProjectDecorator) labelProvider).fireChange(selectedProjects.toArray(new IProject[0]));
+          ((SonarLintProjectDecorator) labelProvider).fireChange(selectedProjects);
         }
         return Status.OK_STATUS;
       }

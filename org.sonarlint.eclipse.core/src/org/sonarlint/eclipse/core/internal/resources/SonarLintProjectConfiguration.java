@@ -23,42 +23,28 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
-public class SonarLintProject {
+public class SonarLintProjectConfiguration {
 
-  private final IProject project;
+  private final IScopeContext projectScope;
   private List<SonarLintProperty> extraProperties = new ArrayList<>();
   private String moduleKey;
   private String serverId;
   private boolean autoEnabled = true;
 
-  public SonarLintProject(IProject project) {
-    this.project = project;
+  SonarLintProjectConfiguration(IScopeContext projectScope) {
+    this.projectScope = projectScope;
   }
 
-  public static SonarLintProject getInstance(IResource resource) {
-    IProject project = resource.getProject();
-    if (project == null || !project.isAccessible()) {
-      throw new IllegalStateException("Unable to find project for resource " + resource);
-    }
-    return SonarLintCorePlugin.getDefault().getProjectManager().readSonarLintConfiguration(project);
+  public static SonarLintProjectConfiguration read(IScopeContext projectScope) {
+    return SonarLintCorePlugin.getDefault().getProjectManager().readSonarLintConfiguration(projectScope);
   }
 
   public void save() {
-    SonarLintCorePlugin.getDefault().getProjectManager().saveSonarLintConfiguration(project, this);
-  }
-
-  public IProject getProject() {
-    return project;
+    SonarLintCorePlugin.getDefault().getProjectManager().saveSonarLintConfiguration(projectScope, this);
   }
 
   public List<SonarLintProperty> getExtraProperties() {
@@ -87,15 +73,6 @@ public class SonarLintProject {
     this.serverId = serverId;
   }
 
-  public void update(IProgressMonitor monitor) {
-    IServer server = ServersManager.getInstance().getServer(getServerId());
-    if (server == null) {
-      SonarLintLogger.get().error("Unable to update project '" + project.getName() + "' since it is bound to an unknow server: '" + getServerId() + "'");
-      return;
-    }
-    server.updateProjectStorage(moduleKey);
-  }
-
   public boolean isBound() {
     return getServerId() != null && getModuleKey() != null;
   }
@@ -112,9 +89,6 @@ public class SonarLintProject {
     setServerId(null);
     setModuleKey(null);
     save();
-    MarkerUtils.deleteIssuesMarkers(project);
-    MarkerUtils.deleteChangeSetIssuesMarkers(project);
-    SonarLintCorePlugin.clearIssueTracker(project);
   }
 
 }

@@ -22,11 +22,11 @@ package org.sonarlint.eclipse.core.internal;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Platform;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class PreferencesUtils {
 
@@ -49,7 +49,7 @@ public class PreferencesUtils {
     return Platform.getPreferencesService().getInt(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_MARKER_SEVERITY, PREF_MARKER_SEVERITY_DEFAULT, null);
   }
 
-  public static List<SonarLintProperty> getExtraPropertiesForLocalAnalysis(IProject project) {
+  public static List<SonarLintProperty> getExtraPropertiesForLocalAnalysis(ISonarLintProject project) {
     List<SonarLintProperty> props = new ArrayList<>();
     // First add all global properties
     String globalExtraArgs = Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_EXTRA_ARGS, PREF_EXTRA_ARGS_DEFAULT, null);
@@ -60,7 +60,7 @@ public class PreferencesUtils {
     }
 
     // Then add project properties
-    SonarLintProject sonarProject = SonarLintProject.getInstance(project);
+    SonarLintProjectConfiguration sonarProject = SonarLintProjectConfiguration.read(project.getScopeContext());
     if (sonarProject.getExtraProperties() != null) {
       props.addAll(sonarProject.getExtraProperties());
     }

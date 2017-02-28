@@ -26,7 +26,6 @@ import java.util.Objects;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.property.value.IValueProperty;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
@@ -70,11 +69,12 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.ProjectUpdateJob;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProject;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
@@ -84,7 +84,7 @@ import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class BindProjectsPage extends WizardPage {
 
-  private final List<IProject> projects;
+  private final List<ISonarLintProject> projects;
   private CheckboxTableViewer viewer;
   private Form noServersPage;
   private PageBook book;
@@ -98,14 +98,14 @@ public class BindProjectsPage extends WizardPage {
   private Composite container;
   private Link updateServerLink;
 
-  public BindProjectsPage(List<IProject> projects) {
+  public BindProjectsPage(List<ISonarLintProject> projects) {
     super("bindProjects", "Bind Eclipse projects to SonarQube projects", SonarLintImages.SONARWIZBAN_IMG);
     setDescription(
       "SonarQube is an Open Source platform to manage code quality. "
         + "Bind your Eclipse projects to some SonarQube projects in order to get the same issues in Eclipse and in SonarQube.");
     this.projects = projects;
     if (!projects.isEmpty()) {
-      selectedServer = ServersManager.getInstance().getServer(SonarLintProject.getInstance(projects.get(0)).getServerId());
+      selectedServer = ServersManager.getInstance().getServer(SonarLintProjectConfiguration.read(projects.get(0).getScopeContext()).getServerId());
     }
   }
 
@@ -151,7 +151,7 @@ public class BindProjectsPage extends WizardPage {
     columnSonarProject.setEditingSupport(new ProjectAssociationModelEditingSupport(viewer));
 
     List<ProjectBindModel> list = new ArrayList<>();
-    for (IProject project : projects) {
+    for (ISonarLintProject project : projects) {
       ProjectBindModel sonarProject = new ProjectBindModel(project);
       list.add(sonarProject);
     }
@@ -444,33 +444,33 @@ public class BindProjectsPage extends WizardPage {
 
   private static void updateProjectBinding(ProjectBindModel projectBinding) {
     boolean changed = false;
-    IProject project = projectBinding.getProject();
-    SonarLintProject sonarProject = SonarLintProject.getInstance(project);
-    String oldServerId = sonarProject.getServerId();
+    ISonarLintProject project = projectBinding.getProject();
+    SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(project.getScopeContext());
+    String oldServerId = projectConfig.getServerId();
     if (!Objects.equals(projectBinding.getServerId(), oldServerId)) {
-      sonarProject.setServerId(projectBinding.getServerId());
+      projectConfig.setServerId(projectBinding.getServerId());
       changed = true;
     }
-    if (!Objects.equals(projectBinding.getModuleKey(), sonarProject.getModuleKey())) {
-      sonarProject.setModuleKey(projectBinding.getModuleKey());
+    if (!Objects.equals(projectBinding.getModuleKey(), projectConfig.getModuleKey())) {
+      projectConfig.setModuleKey(projectBinding.getModuleKey());
       changed = true;
     }
     if (changed) {
-      sonarProject.save();
-      updateProjectBinding(project, sonarProject, oldServerId);
+      projectConfig.save();
+      updateProjectBinding(project, oldServerId);
     }
   }
 
-  private static void updateProjectBinding(IProject project, SonarLintProject sonarProject, String oldServerId) {
+  private static void updateProjectBinding(ISonarLintProject project, String oldServerId) {
 
-    MarkerUtils.deleteIssuesMarkers(project);
-    MarkerUtils.deleteChangeSetIssuesMarkers(project);
+    MarkerUtils.deleteIssuesMarkers(project.getResourceForProjectLevelIssues());
+    MarkerUtils.deleteChangeSetIssuesMarkers(project.getResourceForProjectLevelIssues());
     SonarLintCorePlugin.clearIssueTracker(project);
     JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
-    if (sonarProject.isBound()) {
-      new ProjectUpdateJob(sonarProject).schedule();
+    if (project.isBound()) {
+      new ProjectUpdateJob(project).schedule();
     }
-    JobUtils.notifyServerViewAfterBindingChange(sonarProject, oldServerId);
+    JobUtils.notifyServerViewAfterBindingChange(project, oldServerId);
   }
 
   private ProjectBindModel[] getProjects() {
