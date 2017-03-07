@@ -48,7 +48,6 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDo
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileContainer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 
 public class SonarLintChangeListener implements IResourceChangeListener {
@@ -111,20 +110,16 @@ public class SonarLintChangeListener implements IResourceChangeListener {
   }
 
   private static boolean visitDelta(final Collection<ISonarLintFile> changedFiles, IResourceDelta delta) {
-    if (delta.getResource().getAdapter(ISonarLintProjectContainer.class) != null) {
-      return true;
-    }
     ISonarLintFileContainer sonarLintContainer = (ISonarLintFileContainer) delta.getResource().getAdapter(ISonarLintFileContainer.class);
     if (sonarLintContainer != null) {
       return sonarLintContainer.getProject().isAutoEnabled();
     }
-
     ISonarLintFile sonarLintFile = (ISonarLintFile) delta.getResource().getAdapter(ISonarLintFile.class);
-    if (sonarLintFile != null && isChanged(delta)) {
+    if (sonarLintFile != null && sonarLintFile.getProject().isAutoEnabled() && isChanged(delta)) {
       changedFiles.add(sonarLintFile);
       return true;
     }
-    return false;
+    return true;
   }
 
   private static boolean isChanged(IResourceDelta delta) {

@@ -23,13 +23,14 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
+import org.sonarlint.eclipse.core.resource.ISonarLintFileContainer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class DefaultSonarLintProjectAdaterFactory implements IAdapterFactory {
 
   @Override
   public Object getAdapter(Object adaptableObject, Class adapterType) {
-    if (ISonarLintProject.class.equals(adapterType) && adaptableObject instanceof IAdaptable) {
+    if ((ISonarLintProject.class.equals(adapterType) || ISonarLintFileContainer.class.equals(adapterType)) && adaptableObject instanceof IAdaptable) {
       IProject project = (IProject) ((IAdaptable) adaptableObject).getAdapter(IProject.class);
       if (project != null) {
         return adapterType.cast(new DefaultSonarLintProjectAdapter(project));
@@ -40,7 +41,7 @@ public class DefaultSonarLintProjectAdaterFactory implements IAdapterFactory {
 
   @Override
   public Class<?>[] getAdapterList() {
-    return new Class[] {ISonarLintProject.class};
+    return new Class[] {ISonarLintProject.class, ISonarLintFileContainer.class};
   }
 
 }
