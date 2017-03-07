@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class DefaultSonarLintFileAdaterFactory implements IAdapterFactory {
@@ -31,8 +32,8 @@ public class DefaultSonarLintFileAdaterFactory implements IAdapterFactory {
   @Override
   public Object getAdapter(Object adaptableObject, Class adapterType) {
     if (ISonarLintFile.class.equals(adapterType) && adaptableObject instanceof IAdaptable) {
-      IResource resource = (IResource) ((IResource) adaptableObject).getAdapter(IResource.class);
-      if (resource instanceof IFile) {
+      IResource resource = (IResource) ((IAdaptable) adaptableObject).getAdapter(IResource.class);
+      if (resource instanceof IFile && SonarLintUtils.shouldAnalyze(resource)) {
         return adapterType.cast(new DefaultSonarLintFileAdapter((IFile) resource));
       }
     }

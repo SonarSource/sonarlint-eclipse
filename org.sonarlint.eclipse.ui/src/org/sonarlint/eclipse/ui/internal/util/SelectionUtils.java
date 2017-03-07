@@ -29,7 +29,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.core.resource.ISonarLintFileContainer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer;
 
@@ -117,11 +116,6 @@ public final class SelectionUtils {
     ISonarLintProject project = (ISonarLintProject) elem.getAdapter(ISonarLintProject.class);
     if (project != null) {
       selectedFiles.addAll(project.files());
-      return;
-    }
-    ISonarLintFileContainer fileContainer = (ISonarLintFileContainer) elem.getAdapter(ISonarLintFileContainer.class);
-    if (fileContainer != null) {
-      selectedFiles.addAll(fileContainer.files());
       return;
     }
     ISonarLintFile file = (ISonarLintFile) elem.getAdapter(ISonarLintFile.class);

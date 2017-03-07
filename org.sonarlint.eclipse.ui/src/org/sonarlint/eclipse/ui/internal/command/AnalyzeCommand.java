@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.command;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.eclipse.core.commands.AbstractHandler;
@@ -33,6 +34,8 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -58,8 +61,12 @@ public class AnalyzeCommand extends AbstractHandler {
 
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    final Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject = findSelectedFilesPerProject(event);
-    if (filesPerProject.isEmpty()) {
+    ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
+    final Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject;
+    if (selection instanceof IStructuredSelection) {
+      filesPerProject = findSelectedFilesPerProject(event);
+    } else {
+      filesPerProject = new HashMap<>(1);
       FileWithDocument editedFile = findEditedFile(event);
       if (editedFile != null) {
         filesPerProject.put(editedFile.getFile().getProject(), Arrays.asList(editedFile));
@@ -81,7 +88,6 @@ public class AnalyzeCommand extends AbstractHandler {
   }
 
   protected Map<ISonarLintProject, Collection<FileWithDocument>> findSelectedFilesPerProject(ExecutionEvent event) throws ExecutionException {
-
     Map<ISonarLintProject, Collection<FileWithDocument>> filesToAnalyzePerProject = new LinkedHashMap<>();
     for (ISonarLintFile file : SelectionUtils.allSelectedFiles(event)) {
       filesToAnalyzePerProject.putIfAbsent(file.getProject(), new ArrayList<FileWithDocument>());

@@ -32,7 +32,7 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfigurati
  * project level specific SonarLint configuration (binding, exclusions, ...).
  * @since 2.7
  */
-public interface ISonarLintProject extends ISonarLintFileContainer, ISonarLintIssuable {
+public interface ISonarLintProject extends ISonarLintIssuable {
 
   /**
    * Is the project open. Most actions are disabled on closed projects.
@@ -103,5 +103,10 @@ public interface ISonarLintProject extends ISonarLintFileContainer, ISonarLintIs
    */
   @CheckForNull
   String getNoScmReason();
+
+  /**
+   * @return all SonarLint files contained in this project.
+   */
+  Collection<ISonarLintFile> files();
 
 }

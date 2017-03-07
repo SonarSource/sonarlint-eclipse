@@ -41,6 +41,7 @@ import org.eclipse.team.core.subscribers.Subscriber;
 import org.eclipse.team.core.synchronize.SyncInfo;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -105,7 +106,13 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
 
         @Override
         public boolean visit(IResource resource) throws CoreException {
-          // TODO
+          if (!SonarLintUtils.shouldAnalyze(resource)) {
+            return false;
+          }
+          ISonarLintFile sonarLintFile = (ISonarLintFile) resource.getAdapter(ISonarLintFile.class);
+          if (sonarLintFile != null) {
+            result.add(sonarLintFile);
+          }
           return true;
         }
       });

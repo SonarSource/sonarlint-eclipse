@@ -72,9 +72,6 @@
         <adapter
               type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
         </adapter>
-        <adapter
-              type="org.sonarlint.eclipse.core.resource.ISonarLintFileContainer">
-        </adapter>
      </factory>
      <factory
            adaptableType="org.eclipse.core.runtime.IAdaptable"
