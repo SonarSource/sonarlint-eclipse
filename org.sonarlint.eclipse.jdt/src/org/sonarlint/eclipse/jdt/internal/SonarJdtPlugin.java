@@ -19,11 +19,7 @@
  */
 package org.sonarlint.eclipse.jdt.internal;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.jdt.core.JavaCore;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public class SonarJdtPlugin extends Plugin {
 
@@ -40,15 +36,6 @@ public class SonarJdtPlugin extends Plugin {
    */
   public static SonarJdtPlugin getDefault() {
     return plugin;
-  }
-
-  public static boolean hasJavaNature(IProject project) {
-    try {
-      return project.hasNature(JavaCore.NATURE_ID);
-    } catch (CoreException e) {
-      SonarLintLogger.get().error(e.getMessage(), e);
-      return false;
-    }
   }
 
 }

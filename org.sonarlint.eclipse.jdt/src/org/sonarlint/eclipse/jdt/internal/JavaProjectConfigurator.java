@@ -28,6 +28,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -38,22 +40,26 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 
-public class JavaProjectConfigurator extends ProjectConfigurator {
+import static org.sonarlint.eclipse.core.configurator.ProjectConfigurator.setPropertyList;
 
-  @Override
-  public boolean canConfigure(IProject project) {
-    return true;
-  }
+public class JavaProjectConfigurator {
 
-  @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
     keepOnlyValidJavaFiles(request);
     IProject project = request.getProject();
-    if (SonarJdtPlugin.hasJavaNature(project)) {
+    if (hasJavaNature(project)) {
       IJavaProject javaProject = JavaCore.create(project);
       configureJavaProject(javaProject, request.getSonarProjectProperties());
+    }
+  }
+
+  private static boolean hasJavaNature(IProject project) {
+    try {
+      return project.hasNature(JavaCore.NATURE_ID);
+    } catch (CoreException e) {
+      SonarLintLogger.get().error(e.getMessage(), e);
+      return false;
     }
   }
 
@@ -61,7 +67,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
    * SLE-34 Remove Java files that are not compiled.This should automatically exclude files that are excluded / unparseable. 
    */
   private static void keepOnlyValidJavaFiles(ProjectConfigurationRequest request) {
-    boolean hasJavaNature = SonarJdtPlugin.hasJavaNature(request.getProject());
+    boolean hasJavaNature = hasJavaNature(request.getProject());
     IJavaProject javaProject = JavaCore.create(request.getProject());
 
     Collection<IFile> keep = request.getFilesToAnalyze().stream()
@@ -119,7 +125,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     for (IClasspathEntry entry : classPath) {
       switch (entry.getEntryKind()) {
         case IClasspathEntry.CPE_SOURCE:
-          processSourceEntry(entry, javaProject, context, topProject);
+          processSourceEntry(entry, context, topProject);
           break;
         case IClasspathEntry.CPE_LIBRARY:
           processLibraryEntry(entry, javaProject, context, topProject);
@@ -136,8 +142,33 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     processOutputDir(javaProject.getOutputLocation(), context, topProject);
   }
 
+  protected static String getAbsolutePathAsString(IPath path) {
+    IPath absolutePath = getAbsolutePath(path);
+    return absolutePath != null ? absolutePath.toString() : null;
+  }
+
+  private static IPath getAbsolutePath(IPath path) {
+    // IPath should be resolved this way in order to handle linked resources (SONARIDE-271)
+    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+    IResource res = root.findMember(path);
+    if (res != null) {
+      if (res.getLocation() != null) {
+        return res.getLocation();
+      } else {
+        SonarLintLogger.get().error("Unable to resolve absolute path for " + res.getLocationURI());
+        return null;
+      }
+    } else {
+      File external = path.toFile();
+      if (external.exists()) {
+        return path;
+      }
+      return null;
+    }
+  }
+
   private static void processOutputDir(IPath outputDir, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
-    String outDir = getAbsolutePath(outputDir);
+    String outDir = getAbsolutePathAsString(outputDir);
     if (outDir != null) {
       if (topProject) {
         context.binaries().add(outDir);
@@ -150,7 +181,7 @@ public class JavaProjectConfigurator extends ProjectConfigurator {
     }
   }
 
-  private static void processSourceEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
+  private static void processSourceEntry(IClasspathEntry entry, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
     if (isSourceExcluded(entry)) {
       return;
     }

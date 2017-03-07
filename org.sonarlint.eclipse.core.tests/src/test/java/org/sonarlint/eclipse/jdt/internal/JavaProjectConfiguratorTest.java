@@ -59,7 +59,7 @@ public class JavaProjectConfiguratorTest extends SonarTestCase {
   @Test
   public void shouldConfigureAllProjects() throws CoreException {
     IProject project = mock(IProject.class);
-    assertThat(configurator.canConfigure(project)).isTrue();
+    assertThat(new JavaProjectConfiguratorExtension().canConfigure(project)).isTrue();
   }
 
   @Test

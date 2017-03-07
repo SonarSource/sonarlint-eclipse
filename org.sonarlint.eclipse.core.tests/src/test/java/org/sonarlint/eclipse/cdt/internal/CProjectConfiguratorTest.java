@@ -19,25 +19,12 @@
  */
 package org.sonarlint.eclipse.cdt.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.anyCollection;
-import static org.mockito.Mockito.verifyZeroInteractions;
-
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
-
 import org.eclipse.cdt.core.CCorePlugin;
-import org.eclipse.cdt.core.CProjectNature;
 import org.eclipse.cdt.core.parser.IScannerInfo;
 import org.eclipse.cdt.core.parser.IScannerInfoProvider;
 import org.eclipse.core.resources.IFile;
@@ -52,6 +39,16 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class CProjectConfiguratorTest {
   private CProjectConfigurator configurator;
@@ -74,13 +71,6 @@ public class CProjectConfiguratorTest {
     filePathResolver = mock(FilePathResolver.class);
     when(filePathResolver.getWorkDir()).thenReturn(temp.getRoot().toPath());
     configurator = new CProjectConfigurator(jsonFactory, cCorePlugin, fileValidator, (proj, path) -> null, logger, filePathResolver);
-  }
-
-  @Test
-  public void should_configurate_projects_c_nature() throws CoreException {
-    IProject project = mock(IProject.class);
-    when(project.hasNature(CProjectNature.C_NATURE_ID)).thenReturn(true);
-    assertThat(configurator.canConfigure(project)).isTrue();
   }
 
   @Test
@@ -121,9 +111,4 @@ public class CProjectConfiguratorTest {
     verify(logger, never()).error(Mockito.any());
   }
 
-  @Test
-  public void do_nothing_on_complete() {
-    configurator.analysisComplete(Collections.emptyMap(), mock(IProgressMonitor.class));
-    verifyZeroInteractions(cCorePlugin, jsonFactory);
-  }
 }

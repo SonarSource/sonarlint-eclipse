@@ -31,9 +31,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
 import javax.annotation.CheckForNull;
-
 import org.eclipse.cdt.core.CCorePlugin;
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.parser.IScannerInfo;
@@ -47,9 +45,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentType;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 
-public class CProjectConfigurator extends ProjectConfigurator {
+public class CProjectConfigurator {
   private static final String CFAMILY_USE_CACHE = "sonar.cfamily.useCache";
   private static final String BUILD_WRAPPER_OUTPUT_PROP = "sonar.cfamily.build-wrapper-output";
   private static final String BUILD_WRAPPER_OUTPUT_FILENAME = "build-wrapper-dump.json";
@@ -77,12 +74,6 @@ public class CProjectConfigurator extends ProjectConfigurator {
     this.contentTypeResolver = contentTypeResolver;
   }
 
-  @Override
-  public boolean canConfigure(IProject project) {
-    return SonarCdtPlugin.hasCNature(project);
-  }
-
-  @Override
   public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
     Collection<IFile> filesToAnalyze = request.getFilesToAnalyze()
       .stream().filter(fileValidator)

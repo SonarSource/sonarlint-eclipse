@@ -19,12 +19,7 @@
  */
 package org.sonarlint.eclipse.cdt.internal;
 
-import org.eclipse.cdt.core.CCProjectNature;
-import org.eclipse.cdt.core.CProjectNature;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Plugin;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public class SonarCdtPlugin extends Plugin {
 
@@ -41,15 +36,6 @@ public class SonarCdtPlugin extends Plugin {
    */
   public static SonarCdtPlugin getDefault() {
     return plugin;
-  }
-
-  public static boolean hasCNature(IProject project) {
-    try {
-      return project.hasNature(CProjectNature.C_NATURE_ID) || project.hasNature(CCProjectNature.CC_NATURE_ID);
-    } catch (CoreException e) {
-      SonarLintLogger.get().error(e.getMessage(), e);
-      return false;
-    }
   }
 
 }

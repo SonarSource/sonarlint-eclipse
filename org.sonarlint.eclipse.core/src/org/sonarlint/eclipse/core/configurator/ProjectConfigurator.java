@@ -22,9 +22,7 @@ package org.sonarlint.eclipse.core.configurator;
 import java.util.Collection;
 import java.util.Map;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonarlint.eclipse.core.internal.resources.ResourceUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 /**
@@ -58,11 +56,6 @@ public abstract class ProjectConfigurator {
   @Override
   public String toString() {
     return getClass().getName();
-  }
-
-  protected static String getAbsolutePath(IPath path) {
-    IPath absolutePath = ResourceUtils.getAbsolutePath(path);
-    return absolutePath != null ? absolutePath.toString() : null;
   }
 
   public static void appendProperty(Map<String, String> properties, String key, String value) {

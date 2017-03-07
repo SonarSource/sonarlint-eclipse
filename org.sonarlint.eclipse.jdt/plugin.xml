@@ -3,7 +3,7 @@
    <extension
          point="org.sonarlint.eclipse.core.projectConfigurators">
       <configurator
-            class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfigurator">
+            class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfiguratorExtension">
       </configurator>
    </extension>
 </plugin>
