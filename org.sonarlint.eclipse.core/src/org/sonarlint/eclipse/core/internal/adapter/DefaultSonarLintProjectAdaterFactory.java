@@ -19,9 +19,11 @@
  */
 package org.sonarlint.eclipse.core.internal.adapter;
 
+import java.util.function.Predicate;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -32,7 +34,13 @@ public class DefaultSonarLintProjectAdaterFactory implements IAdapterFactory {
     if (ISonarLintProject.class.equals(adapterType) && adaptableObject instanceof IAdaptable) {
       IProject project = (IProject) ((IAdaptable) adaptableObject).getAdapter(IProject.class);
       if (project != null) {
-        return adapterType.cast(new DefaultSonarLintProjectAdapter(project));
+        Predicate<IProject> shouldKeep = SonarLintCorePlugin.getExtensionTracker().getProjectFilters().stream()
+          .<Predicate<IProject>>map(f -> f::test)
+          .reduce(Predicate::and)
+          .orElse(x -> true);
+        if (shouldKeep.test(project)) {
+          return adapterType.cast(new DefaultSonarLintProjectAdapter(project));
+        }
       }
     }
     return null;

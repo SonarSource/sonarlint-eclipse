@@ -17,34 +17,16 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.m2e.internal;
+package org.sonarlint.eclipse.core.resource;
 
-import org.eclipse.core.resources.IFile;
-import org.sonarlint.eclipse.core.resource.ISonarLintFileFilter;
+import java.util.function.Predicate;
+import org.eclipse.core.resources.IProject;
 
-public class MavenModuleFilter implements ISonarLintFileFilter {
-
-  private final boolean isM2ePresent;
-
-  public MavenModuleFilter() {
-    this.isM2ePresent = isM2ePresent();
-  }
-
-  private static boolean isM2ePresent() {
-    try {
-      Class.forName("org.eclipse.m2e.core.MavenPlugin");
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
-  }
-
-  @Override
-  public boolean test(IFile file) {
-    if (isM2ePresent) {
-      return !M2eUtils.isInNestedModule(file);
-    }
-    return true;
-  }
+/**
+ * By default SonarLint try to adapt any {@link IProject} to {@link ISonarLintProject}.
+ * You can use this extension point to prevent some {@link IProject} to be converted to {@link ISonarLintProject}
+ *
+ */
+public interface ISonarLintProjectFilter extends Predicate<IProject> {
 
 }

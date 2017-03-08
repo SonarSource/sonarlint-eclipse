@@ -35,30 +35,39 @@ import org.eclipse.core.runtime.dynamichelpers.IFilter;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileFilter;
+import org.sonarlint.eclipse.core.resource.ISonarLintProjectFilter;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
 
 public class SonarLintExtensionTracker implements IExtensionChangeHandler {
 
-  private static final String CONFIGURATOR_EP = "org.sonarlint.eclipse.core.projectConfigurators"; //$NON-NLS-1$
-  private static final String PROJECTSPROVIDER_EP = "org.sonarlint.eclipse.core.projectsProvider"; //$NON-NLS-1$
-  private static final String FILEFILTER_EP = "org.sonarlint.eclipse.core.fileFilter"; //$NON-NLS-1$
   private static final String ATTR_CLASS = "class"; //$NON-NLS-1$
 
+  private final SonarLintEP<ProjectConfigurator> configuratorEp = new SonarLintEP<>("org.sonarlint.eclipse.core.projectConfigurators"); //$NON-NLS-1$
+  private final SonarLintEP<ISonarLintProjectsProvider> projectsProviderEp = new SonarLintEP<>("org.sonarlint.eclipse.core.projectsProvider"); //$NON-NLS-1$
+  private final SonarLintEP<ISonarLintFileFilter> fileFilterEp = new SonarLintEP<>("org.sonarlint.eclipse.core.fileFilter"); //$NON-NLS-1$
+  private final SonarLintEP<ISonarLintProjectFilter> projectFilterEp = new SonarLintEP<>("org.sonarlint.eclipse.core.projectFilter"); //$NON-NLS-1$
+
+  private static class SonarLintEP<G> {
+
+    private final String id;
+    private final Collection<G> instances = new ArrayList<>();
+
+    public SonarLintEP(String id) {
+      this.id = id;
+    }
+  }
+
+  private final Collection<SonarLintEP<?>> allEps = Arrays.asList(configuratorEp, projectsProviderEp, fileFilterEp, projectFilterEp);
+
   private ExtensionTracker tracker;
-  private Collection<ProjectConfigurator> configurators = new ArrayList<>();
-  private Collection<ISonarLintProjectsProvider> projectsProviders = new ArrayList<>();
-  private Collection<ISonarLintFileFilter> fileFilters = new ArrayList<>();
 
   public void start() {
     IExtensionRegistry reg = Platform.getExtensionRegistry();
     tracker = new ExtensionTracker(reg);
-    IExtensionPoint[] allEps = new IExtensionPoint[] {
-      reg.getExtensionPoint(CONFIGURATOR_EP),
-      reg.getExtensionPoint(PROJECTSPROVIDER_EP),
-      reg.getExtensionPoint(FILEFILTER_EP)};
-    IFilter filter = ExtensionTracker.createExtensionPointFilter(allEps);
+    IExtensionPoint[] epArray = allEps.stream().map(ep -> reg.getExtensionPoint(ep.id)).toArray(IExtensionPoint[]::new);
+    IFilter filter = ExtensionTracker.createExtensionPointFilter(epArray);
     tracker.registerHandler(this, filter);
-    for (IExtensionPoint ep : allEps) {
+    for (IExtensionPoint ep : epArray) {
       for (IExtension ext : ep.getExtensions()) {
         addExtension(tracker, ext);
       }
@@ -77,76 +86,46 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
     IConfigurationElement[] configs = extension.getConfigurationElements();
     for (final IConfigurationElement element : configs) {
       try {
-        Object instance;
-        switch (extension.getExtensionPointUniqueIdentifier()) {
-          case CONFIGURATOR_EP:
-            instance = addConfigurator(element);
+        for (SonarLintEP ep : allEps) {
+          if (ep.id.equals(extension.getExtensionPointUniqueIdentifier())) {
+            Object instance = element.createExecutableExtension(ATTR_CLASS);
+            ep.instances.add(instance);
+            // register association between object and extension with the tracker
+            tracker.registerObject(extension, instance, IExtensionTracker.REF_WEAK);
             break;
-          case PROJECTSPROVIDER_EP:
-            instance = addProjectsProvider(element);
-            break;
-          case FILEFILTER_EP:
-            instance = addFileFilter(element);
-            break;
-          default:
-            throw new IllegalStateException("Unexpected extension point: " + extension.getExtensionPointUniqueIdentifier());
+          }
         }
-
-        // register association between object and extension with the tracker
-        tracker.registerObject(extension, instance, IExtensionTracker.REF_WEAK);
       } catch (CoreException e) {
         SonarLintLogger.get().error("Unable to load one SonarLint extension", e);
       }
     }
   }
 
-  private Object addConfigurator(IConfigurationElement element) throws CoreException {
-    ProjectConfigurator instance = (ProjectConfigurator) element.createExecutableExtension(ATTR_CLASS);
-    configurators.add(instance);
-    return instance;
-  }
-
-  private Object addProjectsProvider(IConfigurationElement element) throws CoreException {
-    ISonarLintProjectsProvider instance = (ISonarLintProjectsProvider) element.createExecutableExtension(ATTR_CLASS);
-    projectsProviders.add(instance);
-    return instance;
-  }
-
-  private Object addFileFilter(IConfigurationElement element) throws CoreException {
-    ISonarLintFileFilter instance = (ISonarLintFileFilter) element.createExecutableExtension(ATTR_CLASS);
-    fileFilters.add(instance);
-    return instance;
-  }
-
   @Override
   public void removeExtension(IExtension extension, Object[] objects) {
     // stop using objects associated with the removed extension
-    switch (extension.getExtensionPointUniqueIdentifier()) {
-      case CONFIGURATOR_EP:
-        configurators.removeAll(Arrays.asList(objects));
+    for (SonarLintEP ep : allEps) {
+      if (ep.id.equals(extension.getExtensionPointUniqueIdentifier())) {
+        ep.instances.removeAll(Arrays.asList(objects));
         break;
-      case PROJECTSPROVIDER_EP:
-        projectsProviders.removeAll(Arrays.asList(objects));
-        break;
-      case FILEFILTER_EP:
-        fileFilters.removeAll(Arrays.asList(objects));
-        break;
-      default:
-        throw new IllegalStateException("Unexpected extension point: " + extension.getExtensionPointUniqueIdentifier());
+      }
     }
-
   }
 
   public Collection<ProjectConfigurator> getConfigurators() {
-    return configurators;
+    return configuratorEp.instances;
   }
 
   public Collection<ISonarLintProjectsProvider> getProjectsProviders() {
-    return projectsProviders;
+    return projectsProviderEp.instances;
+  }
+
+  public Collection<ISonarLintProjectFilter> getProjectFilters() {
+    return projectFilterEp.instances;
   }
 
   public Collection<ISonarLintFileFilter> getFileFilters() {
-    return fileFilters;
+    return fileFilterEp.instances;
   }
 
 }

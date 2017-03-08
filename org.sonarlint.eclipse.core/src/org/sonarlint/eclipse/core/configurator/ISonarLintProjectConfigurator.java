@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.configurator;
 
 import java.util.Collection;
 import java.util.Map;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -32,43 +31,29 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
  * 
  * Other products also use this interface, so <b>it should be kept stable</b>.
  */
-public abstract class ProjectConfigurator implements ISonarLintProjectConfigurator {
+public interface ISonarLintProjectConfigurator {
 
-  public static final String SEPARATOR = ",";
+  String SEPARATOR = ",";
 
   /**
    * Tell if this project configurator can configure the given project.
    */
-  public abstract boolean canConfigure(IProject project);
-
-  @Override
-  public boolean canConfigure(ISonarLintProject project) {
-    if (project.getResourceForProjectLevelIssues() instanceof IProject) {
-      IProject iProject = (IProject) project.getResourceForProjectLevelIssues();
-      return canConfigure(iProject);
-    }
-    return false;
-  }
+  boolean canConfigure(ISonarLintProject project);
 
   /**
    * Configures SonarLint analysis, using information from Eclipse project.
    */
-  public abstract void configure(ProjectConfigurationRequest request, IProgressMonitor monitor);
+  void configure(ProjectConfigurationRequest request, IProgressMonitor monitor);
 
   /**
    * This method is called after analysis is finished
    * @param analysisProperties Properties used during the analysis
    */
-  public void analysisComplete(Map<String, String> analysisProperties, IProgressMonitor monitor) {
+  default void analysisComplete(Map<String, String> analysisProperties, IProgressMonitor monitor) {
     // Do nothing by default
   }
 
-  @Override
-  public String toString() {
-    return getClass().getName();
-  }
-
-  public static void appendProperty(Map<String, String> properties, String key, String value) {
+  static void appendProperty(Map<String, String> properties, String key, String value) {
     if (value == null) {
       return;
     }
@@ -81,11 +66,11 @@ public abstract class ProjectConfigurator implements ISonarLintProjectConfigurat
     properties.put(key, newValue);
   }
 
-  public static void setPropertyList(Map<String, String> properties, String key, Collection<String> values) {
+  static void setPropertyList(Map<String, String> properties, String key, Collection<String> values) {
     properties.put(key, StringUtils.joinSkipNull(values, SEPARATOR));
   }
 
-  public static void appendPropertyList(Map<String, String> properties, String key, Collection<String> values) {
+  static void appendPropertyList(Map<String, String> properties, String key, Collection<String> values) {
     appendProperty(properties, key, StringUtils.joinSkipNull(values, SEPARATOR));
   }
 
