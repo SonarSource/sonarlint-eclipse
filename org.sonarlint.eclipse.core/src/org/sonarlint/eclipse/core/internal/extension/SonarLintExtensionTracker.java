@@ -34,22 +34,28 @@ import org.eclipse.core.runtime.dynamichelpers.IExtensionTracker;
 import org.eclipse.core.runtime.dynamichelpers.IFilter;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
+import org.sonarlint.eclipse.core.resource.ISonarLintFileFilter;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
 
 public class SonarLintExtensionTracker implements IExtensionChangeHandler {
 
   private static final String CONFIGURATOR_EP = "org.sonarlint.eclipse.core.projectConfigurators"; //$NON-NLS-1$
   private static final String PROJECTSPROVIDER_EP = "org.sonarlint.eclipse.core.projectsProvider"; //$NON-NLS-1$
+  private static final String FILEFILTER_EP = "org.sonarlint.eclipse.core.fileFilter"; //$NON-NLS-1$
   private static final String ATTR_CLASS = "class"; //$NON-NLS-1$
 
   private ExtensionTracker tracker;
   private Collection<ProjectConfigurator> configurators = new ArrayList<>();
   private Collection<ISonarLintProjectsProvider> projectsProviders = new ArrayList<>();
+  private Collection<ISonarLintFileFilter> fileFilters = new ArrayList<>();
 
   public void start() {
     IExtensionRegistry reg = Platform.getExtensionRegistry();
     tracker = new ExtensionTracker(reg);
-    IExtensionPoint[] allEps = new IExtensionPoint[] {reg.getExtensionPoint(CONFIGURATOR_EP), reg.getExtensionPoint(PROJECTSPROVIDER_EP)};
+    IExtensionPoint[] allEps = new IExtensionPoint[] {
+      reg.getExtensionPoint(CONFIGURATOR_EP),
+      reg.getExtensionPoint(PROJECTSPROVIDER_EP),
+      reg.getExtensionPoint(FILEFILTER_EP)};
     IFilter filter = ExtensionTracker.createExtensionPointFilter(allEps);
     tracker.registerHandler(this, filter);
     for (IExtensionPoint ep : allEps) {
@@ -79,6 +85,9 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
           case PROJECTSPROVIDER_EP:
             instance = addProjectsProvider(element);
             break;
+          case FILEFILTER_EP:
+            instance = addFileFilter(element);
+            break;
           default:
             throw new IllegalStateException("Unexpected extension point: " + extension.getExtensionPointUniqueIdentifier());
         }
@@ -103,6 +112,12 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
     return instance;
   }
 
+  private Object addFileFilter(IConfigurationElement element) throws CoreException {
+    ISonarLintFileFilter instance = (ISonarLintFileFilter) element.createExecutableExtension(ATTR_CLASS);
+    fileFilters.add(instance);
+    return instance;
+  }
+
   @Override
   public void removeExtension(IExtension extension, Object[] objects) {
     // stop using objects associated with the removed extension
@@ -112,6 +127,9 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
         break;
       case PROJECTSPROVIDER_EP:
         projectsProviders.removeAll(Arrays.asList(objects));
+        break;
+      case FILEFILTER_EP:
+        fileFilters.removeAll(Arrays.asList(objects));
         break;
       default:
         throw new IllegalStateException("Unexpected extension point: " + extension.getExtensionPointUniqueIdentifier());
@@ -125,6 +143,10 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
 
   public Collection<ISonarLintProjectsProvider> getProjectsProviders() {
     return projectsProviders;
+  }
+
+  public Collection<ISonarLintFileFilter> getFileFilters() {
+    return fileFilters;
   }
 
 }

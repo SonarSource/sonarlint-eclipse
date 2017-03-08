@@ -44,6 +44,7 @@
     <module>org.sonarlint.eclipse.ui</module>
     <module>org.sonarlint.eclipse.feature</module>
 
+    <module>org.sonarlint.eclipse.m2e</module>
     <module>org.sonarlint.eclipse.jdt</module>
     <module>org.sonarlint.eclipse.cdt</module>
 

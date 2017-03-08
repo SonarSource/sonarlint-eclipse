@@ -19,10 +19,12 @@
  */
 package org.sonarlint.eclipse.core.internal.adapter;
 
+import java.util.function.Predicate;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -34,7 +36,14 @@ public class DefaultSonarLintFileAdaterFactory implements IAdapterFactory {
     if (ISonarLintFile.class.equals(adapterType) && adaptableObject instanceof IAdaptable) {
       IResource resource = (IResource) ((IAdaptable) adaptableObject).getAdapter(IResource.class);
       if (resource instanceof IFile && SonarLintUtils.shouldAnalyze(resource)) {
-        return adapterType.cast(new DefaultSonarLintFileAdapter((IFile) resource));
+        IFile file = (IFile) resource;
+        Predicate<IFile> shouldKeep = SonarLintCorePlugin.getExtensionTracker().getFileFilters().stream()
+          .<Predicate<IFile>>map(f -> f::test)
+          .reduce(Predicate::and)
+          .orElse(x -> true);
+        if (shouldKeep.test(file)) {
+          return adapterType.cast(new DefaultSonarLintFileAdapter(file));
+        }
       }
     }
     return null;

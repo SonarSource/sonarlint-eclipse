@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %bundle_name
+Bundle-SymbolicName: org.sonarlint.eclipse.m2e;singleton:=true
+Bundle-Version: 2.7.0.qualifier
+Bundle-Vendor: %bundle_vendor
+Bundle-ClassPath: .
+Bundle-Activator: org.sonarlint.eclipse.m2e.internal.SonarM2ePlugin
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.m2e.core,
+ org.sonarlint.eclipse.core
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Bundle-Localization: OSGI-INF/l10n/bundle
