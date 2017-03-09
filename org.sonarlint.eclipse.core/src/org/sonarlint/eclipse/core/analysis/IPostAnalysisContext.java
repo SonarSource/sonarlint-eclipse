@@ -17,5 +17,15 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-@javax.annotation.ParametersAreNonnullByDefault
-package org.sonarlint.eclipse.jdt.internal;
+package org.sonarlint.eclipse.core.analysis;
+
+import java.util.Map;
+
+/**
+ * @since 2.7
+ */
+public interface IPostAnalysisContext {
+
+  Map<String, String> getAnalysisProperties();
+
+}

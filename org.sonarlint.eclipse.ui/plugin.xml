@@ -510,12 +510,10 @@
           <visibleWhen>
               <with variable="activeMenuSelection">
                  <iterate ifEmpty="false">
-                   <and>
                  	  <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
 											<test property="org.sonarlint.eclipse.core.open"/>
 											<test	property="org.sonarlint.eclipse.core.bound"/>
 									 </adapt>
-                 	 </and>
                  </iterate>
              </with>
           </visibleWhen>

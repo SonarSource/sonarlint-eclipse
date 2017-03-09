@@ -38,15 +38,15 @@ import org.eclipse.cdt.core.parser.IScannerInfo;
 import org.eclipse.cdt.core.parser.IScannerInfoProvider;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentType;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
+import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-public class CProjectConfigurator {
+public class CdtUtils {
   private static final String CFAMILY_USE_CACHE = "sonar.cfamily.useCache";
   private static final String BUILD_WRAPPER_OUTPUT_PROP = "sonar.cfamily.build-wrapper-output";
   private static final String BUILD_WRAPPER_OUTPUT_FILENAME = "build-wrapper-dump.json";
@@ -55,83 +55,72 @@ public class CProjectConfigurator {
   private final CCorePlugin cCorePlugin;
   private final Predicate<IFile> fileValidator;
   private final SonarLintLogger logger;
-  private final FilePathResolver filePathResolver;
-  private final BiFunction<IProject, Path, IContentType> contentTypeResolver;
+  private final BiFunction<IProject, String, IContentType> contentTypeResolver;
 
-  public CProjectConfigurator() {
+  public CdtUtils() {
     this(new BuildWrapperJsonFactory(), CCorePlugin.getDefault(), CoreModel::isTranslationUnit,
-      (project, path) -> CCorePlugin.getContentType(project, path.toString()), SonarLintLogger.get(),
-      new FilePathResolver());
+      CCorePlugin::getContentType, SonarLintLogger.get());
   }
 
-  public CProjectConfigurator(BuildWrapperJsonFactory jsonFactory, CCorePlugin cCorePlugin, Predicate<IFile> fileValidator,
-    BiFunction<IProject, Path, IContentType> contentTypeResolver, SonarLintLogger logger, FilePathResolver filePathResolver) {
+  public CdtUtils(BuildWrapperJsonFactory jsonFactory, CCorePlugin cCorePlugin, Predicate<IFile> fileValidator,
+    BiFunction<IProject, String, IContentType> contentTypeResolver, SonarLintLogger logger) {
     this.jsonFactory = jsonFactory;
     this.cCorePlugin = cCorePlugin;
     this.fileValidator = fileValidator;
     this.logger = logger;
-    this.filePathResolver = filePathResolver;
     this.contentTypeResolver = contentTypeResolver;
   }
 
-  public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
-    Collection<IFile> filesToAnalyze = request.getFilesToAnalyze()
-      .stream().filter(fileValidator)
+  public void configure(IPreAnalysisContext context, IProgressMonitor monitor) {
+    Collection<ISonarLintFile> filesToAnalyze = context.getFilesToAnalyze()
+      .stream()
+      .filter(f -> f.getUnderlyingFile() != null && fileValidator.test(f.getUnderlyingFile()))
       .collect(Collectors.toList());
 
     try {
-      Collection<ConfiguredFile> configuredFiles = configureCProject(request.getProject(), filesToAnalyze);
-      Path jsonPath = writeJson(request.getProject(), configuredFiles);
+      Collection<ConfiguredFile> configuredFiles = configureCProject(context, context.getProject(), filesToAnalyze);
+      Path jsonPath = writeJson(context, context.getProject(), configuredFiles);
       logger.debug("Wrote build info to: " + jsonPath.toString());
-      request.getSonarProjectProperties().put(CFAMILY_USE_CACHE, Boolean.FALSE.toString());
-      request.getSonarProjectProperties().put(BUILD_WRAPPER_OUTPUT_PROP, jsonPath.getParent().toString());
-      configuredFiles.forEach(f -> request.getFileLanguages().put(f.file(), f.languageKey()));
+      context.setAnalysisProperty(CFAMILY_USE_CACHE, Boolean.FALSE.toString());
+      context.setAnalysisProperty(BUILD_WRAPPER_OUTPUT_PROP, jsonPath.getParent().toString());
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
     }
   }
 
-  private static Path getProjectBaseDir(IProject project) {
-    IPath projectLocation = project.getLocation();
-    // In some infrequent cases the project may be virtual and don't have physical location
-    return projectLocation != null ? projectLocation.toFile().toPath() : ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
-  }
-
-  private Collection<ConfiguredFile> configureCProject(IProject project, Collection<IFile> filesToAnalyze) {
+  private Collection<ConfiguredFile> configureCProject(IPreAnalysisContext context, ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze) {
     List<ConfiguredFile> files = new LinkedList<>();
-    IScannerInfoProvider infoProvider = cCorePlugin.getScannerInfoProvider(project);
+    IScannerInfoProvider infoProvider = cCorePlugin.getScannerInfoProvider(project.getUnderlyingProject());
 
-    for (IFile file : filesToAnalyze) {
-      try {
-        ConfiguredFile.Builder builder = new ConfiguredFile.Builder(file);
+    for (ISonarLintFile file : filesToAnalyze) {
+      ConfiguredFile.Builder builder = new ConfiguredFile.Builder(file.getUnderlyingFile());
 
-        Path path = filePathResolver.getPath(file);
-        IScannerInfo fileInfo = infoProvider.getScannerInformation(file);
-        String languageKey = getFileLanguage(project, file, path);
+      String path = file.getPhysicalPath(context.getAnalysisTemporaryFolder());
+      IScannerInfo fileInfo = infoProvider.getScannerInformation(file.getUnderlyingFile());
 
-        builder.includes(fileInfo.getIncludePaths() != null ? fileInfo.getIncludePaths() : new String[0])
-          .symbols(fileInfo.getDefinedSymbols() != null ? fileInfo.getDefinedSymbols() : Collections.emptyMap())
-          .path(path.toString())
-          .languageKey(languageKey);
+      builder.includes(fileInfo.getIncludePaths() != null ? fileInfo.getIncludePaths() : new String[0])
+        .symbols(fileInfo.getDefinedSymbols() != null ? fileInfo.getDefinedSymbols() : Collections.emptyMap())
+        .path(path);
 
-        files.add(builder.build());
-      } catch (CoreException e) {
-        logger.error("Error building input file for SonarLint analysis: " + file.getName(), e);
-      }
+      files.add(builder.build());
     }
     return files;
 
   }
 
-  private Path writeJson(IProject project, Collection<ConfiguredFile> files) throws IOException {
-    Path projectBaseDir = getProjectBaseDir(project);
-    String json = jsonFactory.create(files, projectBaseDir.toString());
-    return createJsonFile(filePathResolver.getWorkDir(), json);
+  private Path writeJson(IPreAnalysisContext context, ISonarLintProject project, Collection<ConfiguredFile> files) throws IOException {
+    String json = jsonFactory.create(files, project.getBaseDir().toString());
+    return createJsonFile(context.getAnalysisTemporaryFolder(), json);
   }
 
   @CheckForNull
-  private String getFileLanguage(IProject project, IFile file, Path path) {
-    IContentType contentType = contentTypeResolver.apply(project, path);
+  private String getFileLanguage(IProject project, IFile file) {
+    IPath location = file.getLocation();
+    if (location == null) {
+      return null;
+    }
+
+    IContentType contentType = contentTypeResolver.apply(project, location.toOSString());
 
     if (contentType == null) {
       return null;
@@ -153,5 +142,9 @@ public class CProjectConfigurator {
     Files.createDirectories(workDir);
     Files.write(jsonFilePath, content.getBytes(BUILD_WRAPPER_OUTPUT_CHARSET));
     return jsonFilePath;
+  }
+
+  public String language(IFile iFile) {
+    return getFileLanguage(iFile.getProject(), iFile);
   }
 }

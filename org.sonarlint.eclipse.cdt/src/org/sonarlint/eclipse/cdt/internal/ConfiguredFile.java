@@ -21,25 +21,19 @@ package org.sonarlint.eclipse.cdt.internal;
 
 import java.util.Collections;
 import java.util.Map;
-
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
-
 import org.eclipse.core.resources.IFile;
 
 public class ConfiguredFile {
   private final IFile file;
-  private final String languageKey;
   private final String[] includes;
   private final Map<String, String> symbols;
   private final String path;
 
-  private ConfiguredFile(IFile file, @Nullable String languageKey, String[] includes, Map<String, String> symbols, String path) {
+  private ConfiguredFile(IFile file, String[] includes, Map<String, String> symbols, String path) {
     if (file == null || includes == null || symbols == null || path == null) {
       throw new IllegalStateException("null argument");
     }
     this.file = file;
-    this.languageKey = languageKey;
     this.includes = includes;
     this.symbols = Collections.unmodifiableMap(symbols);
     this.path = path;
@@ -47,11 +41,6 @@ public class ConfiguredFile {
 
   public IFile file() {
     return file;
-  }
-
-  @CheckForNull
-  public String languageKey() {
-    return languageKey;
   }
 
   public String[] includes() {
@@ -67,7 +56,6 @@ public class ConfiguredFile {
   }
 
   public static class Builder {
-    private String languageKey = null;
     private String[] includes = new String[0];
     private Map<String, String> symbols = Collections.emptyMap();
     private String path;
@@ -75,11 +63,6 @@ public class ConfiguredFile {
 
     public Builder(IFile file) {
       this.file = file;
-    }
-
-    public Builder languageKey(@Nullable String languageKey) {
-      this.languageKey = languageKey;
-      return this;
     }
 
     public Builder includes(String[] includes) {
@@ -98,7 +81,7 @@ public class ConfiguredFile {
     }
 
     public ConfiguredFile build() {
-      return new ConfiguredFile(file, languageKey, includes, symbols, path);
+      return new ConfiguredFile(file, includes, symbols, path);
     }
   }
 

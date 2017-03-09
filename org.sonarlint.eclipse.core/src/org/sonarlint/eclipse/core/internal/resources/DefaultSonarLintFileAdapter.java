@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
@@ -139,6 +140,31 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
       initFromFS(temporaryDirectory);
     }
     return filePath.toString();
+  }
+
+  @Override
+  public IFile getUnderlyingFile() {
+    return file;
+  }
+
+  @Override
+  public int hashCode() {
+    return file.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    DefaultSonarLintFileAdapter other = (DefaultSonarLintFileAdapter) obj;
+    return Objects.equals(file, other.file);
   }
 
 }

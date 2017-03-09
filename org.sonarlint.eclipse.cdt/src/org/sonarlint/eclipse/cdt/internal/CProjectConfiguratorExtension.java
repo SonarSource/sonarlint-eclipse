@@ -21,22 +21,26 @@ package org.sonarlint.eclipse.cdt.internal;
 
 import org.eclipse.cdt.core.CCProjectNature;
 import org.eclipse.cdt.core.CProjectNature;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
+import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
+import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
+import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
  * Responsible for checking at runtime if CDT plugin is installed.
  */
-public class CProjectConfiguratorExtension extends ProjectConfigurator {
+public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFileLanguageProvider {
 
-  private final CProjectConfigurator cProjectConfigurator;
+  private final CdtUtils cdtUtils;
 
   public CProjectConfiguratorExtension() {
-    cProjectConfigurator = isCdtPresent() ? new CProjectConfigurator() : null;
+    cdtUtils = isCdtPresent() ? new CdtUtils() : null;
   }
 
   private static boolean isCdtPresent() {
@@ -49,10 +53,13 @@ public class CProjectConfiguratorExtension extends ProjectConfigurator {
   }
 
   @Override
-  public boolean canConfigure(IProject project) {
+  public boolean canConfigure(ISonarLintProject project) {
     try {
       // Constants are inlined so this is not causing ClassNotFound
-      return cProjectConfigurator != null && (project.hasNature(CProjectNature.C_NATURE_ID) || project.hasNature(CCProjectNature.CC_NATURE_ID));
+      IProject underlyingProject = project.getUnderlyingProject();
+      return cdtUtils != null &&
+        underlyingProject != null &&
+        (underlyingProject.hasNature(CProjectNature.C_NATURE_ID) || underlyingProject.hasNature(CCProjectNature.CC_NATURE_ID));
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
       return false;
@@ -60,8 +67,17 @@ public class CProjectConfiguratorExtension extends ProjectConfigurator {
   }
 
   @Override
-  public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
-    cProjectConfigurator.configure(request, monitor);
+  public void configure(IPreAnalysisContext context, IProgressMonitor monitor) {
+    cdtUtils.configure(context, monitor);
+  }
+
+  @Override
+  public String language(ISonarLintFile file) {
+    IFile iFile = file.getUnderlyingFile();
+    if (cdtUtils != null && iFile != null) {
+      return cdtUtils.language(iFile);
+    }
+    return null;
   }
 
 }

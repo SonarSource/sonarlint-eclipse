@@ -23,19 +23,22 @@ import java.util.Collection;
 import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 
+/**
+ * @deprecated since 2.7 use {@link IAnalysisConfigurator}
+ */
+@Deprecated
 public class ProjectConfigurationRequest {
 
   private final IProject project;
   private final Map<String, String> sonarProjectProperties;
   private final Collection<IFile> filesToAnalyze;
-  private final Map<IFile, String> fileLanguages;
 
-  public ProjectConfigurationRequest(IProject eclipseProject, Collection<IFile> filesToAnalyze, Map<IFile, String> fileLanguages, Map<String, String> sonarProjectProperties) {
+  public ProjectConfigurationRequest(IProject eclipseProject, Collection<IFile> filesToAnalyze, Map<String, String> sonarProjectProperties) {
     this.project = eclipseProject;
     this.sonarProjectProperties = sonarProjectProperties;
     this.filesToAnalyze = filesToAnalyze;
-    this.fileLanguages = fileLanguages;
   }
 
   public IProject getProject() {
@@ -56,10 +59,4 @@ public class ProjectConfigurationRequest {
     return filesToAnalyze;
   }
 
-  /**
-   * Map of language key per file to analyze. Configurators can force a file to be considered of a certain language. 
-   */
-  public Map<IFile, String> getFileLanguages() {
-    return fileLanguages;
-  }
 }

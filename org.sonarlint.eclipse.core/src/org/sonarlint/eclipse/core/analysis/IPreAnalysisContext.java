@@ -17,29 +17,32 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.cdt.internal;
+package org.sonarlint.eclipse.core.analysis;
 
-import java.io.File;
 import java.nio.file.Path;
+import java.util.Collection;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
+/**
+ * @since 2.7
+ */
+public interface IPreAnalysisContext {
 
-public class FilePathResolver {
-  public Path getPath(IFile file) throws CoreException {
-    IFileStore fileStore = EFS.getStore(file.getLocationURI());
-    File localFile = fileStore.toLocalFile(EFS.NONE, null);
-    if (localFile == null) {
-      // Try to get a cached copy (for virtual file systems)
-      localFile = fileStore.toLocalFile(EFS.CACHE, null);
-    }
-    return localFile.toPath().toAbsolutePath();
-  }
-  
-  public Path getWorkDir() {
-    return ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").toFile().toPath();
-  }
+  ISonarLintProject getProject();
+
+  void setAnalysisProperty(String key, String value);
+
+  void setAnalysisProperty(String key, Collection<String> values);
+
+  /**
+   * Readonly list of files to analyze.
+   */
+  Collection<ISonarLintFile> getFilesToAnalyze();
+
+  /**
+   * A temporary location that will be cleaned after the analysis.
+   */
+  Path getAnalysisTemporaryFolder();
+
 }

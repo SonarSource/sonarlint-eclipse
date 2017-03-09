@@ -32,12 +32,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -48,6 +48,8 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
+import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
@@ -144,12 +146,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       Map<String, String> mergedExtraProps = new LinkedHashMap<>();
       final Map<ISonarLintFile, IDocument> filesToAnalyze = request.getFiles().stream().collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()),
         HashMap::putAll);
-      Map<IFile, String> fileLanguages = new HashMap<>();
-      Collection<ProjectConfigurator> usedConfigurators = configure(getProject(), filesToAnalyze.keySet(), fileLanguages, mergedExtraProps, monitor);
+      Collection<ProjectConfigurator> usedDeprecatedConfigurators = configureDeprecated(getProject(), filesToAnalyze.keySet(), mergedExtraProps, monitor);
+      tempDirectory = Files.createTempDirectory(getProject().getWorkingDir(), "sonarlint");
+      Collection<IAnalysisConfigurator> usedConfigurators = configure(getProject(), filesToAnalyze.keySet(), mergedExtraProps, tempDirectory, monitor);
 
-      tempDirectory = Files.createTempDirectory("sonarlint");
-
-      List<ClientInputFile> inputFiles = buildInputFiles(tempDirectory, filesToAnalyze, fileLanguages);
+      List<ClientInputFile> inputFiles = buildInputFiles(tempDirectory, filesToAnalyze);
 
       for (SonarLintProperty sonarProperty : extraProps) {
         mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue());
@@ -159,7 +160,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
         runAnalysisAndUpdateMarkers(filesToAnalyze, monitor, mergedExtraProps, inputFiles);
       }
 
-      analysisCompleted(usedConfigurators, mergedExtraProps, monitor);
+      analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
       SonarLintCorePlugin.getAnalysisListenerManager().notifyListeners();
       SonarLintLogger.get().debug(String.format("Done in %d ms", System.currentTimeMillis() - startTime));
     } catch (Exception e) {
@@ -204,7 +205,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private static List<ClientInputFile> buildInputFiles(Path tempDirectory, final Map<ISonarLintFile, IDocument> filesToAnalyze, Map<IFile, String> fileLanguages) {
+  private static List<ClientInputFile> buildInputFiles(Path tempDirectory, final Map<ISonarLintFile, IDocument> filesToAnalyze) {
     List<ClientInputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
     String allTestPattern = PreferencesUtils.getTestFileRegexps();
     String[] testPatterns = allTestPattern.split(",");
@@ -212,10 +213,27 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
     for (final Map.Entry<ISonarLintFile, IDocument> fileWithDoc : filesToAnalyze.entrySet()) {
       ISonarLintFile file = fileWithDoc.getKey();
-      ClientInputFile inputFile = new EclipseInputFile(pathMatchersForTests, file, tempDirectory, fileWithDoc.getValue(), fileLanguages.get(file));
+      String language = tryDetectLanguage(file);
+      ClientInputFile inputFile = new EclipseInputFile(pathMatchersForTests, file, tempDirectory, fileWithDoc.getValue(), language);
       inputFiles.add(inputFile);
     }
     return inputFiles;
+  }
+
+  @CheckForNull
+  private static String tryDetectLanguage(ISonarLintFile file) {
+    String language = null;
+    for (IFileLanguageProvider languageProvider : SonarLintCorePlugin.getExtensionTracker().getLanguageProviders()) {
+      String detectedLanguage = languageProvider.language(file);
+      if (detectedLanguage != null) {
+        if (language == null) {
+          language = detectedLanguage;
+        } else if (!language.equals(detectedLanguage)) {
+          SonarLintLogger.get().error("Conflicting languages detected for file " + file.getName() + ". " + language + " and " + detectedLanguage);
+        }
+      }
+    }
+    return language;
   }
 
   private static List<PathMatcher> createMatchersForTests(String[] testPatterns) {
@@ -227,21 +245,38 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return pathMatchersForTests;
   }
 
-  private static Collection<ProjectConfigurator> configure(final ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze, Map<IFile, String> fileLanguages,
+  private static Collection<ProjectConfigurator> configureDeprecated(final ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze,
     final Map<String, String> extraProperties,
     final IProgressMonitor monitor) {
     Collection<ProjectConfigurator> usedConfigurators = new ArrayList<>();
-    if (project.getResourceForMarkerOperations() instanceof IProject) {
-      IProject iProject = (IProject) project.getResourceForMarkerOperations();
-      // FIXME
-      ProjectConfigurationRequest configuratorRequest = new ProjectConfigurationRequest(iProject,
-        filesToAnalyze.stream().map(f -> (IFile) f.getResourceForMarkerOperations()).collect(Collectors.toList()), fileLanguages, extraProperties);
+    if (project.getUnderlyingProject() != null) {
+      ProjectConfigurationRequest configuratorRequest = new ProjectConfigurationRequest(project.getUnderlyingProject(),
+        filesToAnalyze.stream()
+          .map(ISonarLintFile::getUnderlyingFile)
+          .filter(Objects::nonNull)
+          .collect(Collectors.toList()),
+        extraProperties);
       Collection<ProjectConfigurator> configurators = SonarLintCorePlugin.getExtensionTracker().getConfigurators();
       for (ProjectConfigurator configurator : configurators) {
-        if (configurator.canConfigure(iProject)) {
+        if (configurator.canConfigure(project.getUnderlyingProject())) {
           configurator.configure(configuratorRequest, monitor);
           usedConfigurators.add(configurator);
         }
+      }
+    }
+
+    return usedConfigurators;
+  }
+
+  private static Collection<IAnalysisConfigurator> configure(final ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze,
+    final Map<String, String> extraProperties, Path tempDir, final IProgressMonitor monitor) {
+    Collection<IAnalysisConfigurator> usedConfigurators = new ArrayList<>();
+    Collection<IAnalysisConfigurator> configurators = SonarLintCorePlugin.getExtensionTracker().getAnalysisConfigurators();
+    DefaultPreAnalysisContext context = new DefaultPreAnalysisContext(project, extraProperties, filesToAnalyze, tempDir);
+    for (IAnalysisConfigurator configurator : configurators) {
+      if (configurator.canConfigure(project)) {
+        configurator.configure(context, monitor);
+        usedConfigurators.add(configurator);
       }
     }
 
@@ -356,9 +391,14 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     SonarLintCorePlugin.getDefault().getServerIssueUpdater().updateAsync(serverConfiguration, engine, getProject(), localModuleKey, getProjectConfig().getModuleKey(), resources);
   }
 
-  private static void analysisCompleted(Collection<ProjectConfigurator> usedConfigurators, Map<String, String> properties, final IProgressMonitor monitor) {
-    for (ProjectConfigurator p : usedConfigurators) {
-      p.analysisComplete(Collections.unmodifiableMap(properties), monitor);
+  private static void analysisCompleted(Collection<ProjectConfigurator> usedDeprecatedConfigurators, Collection<IAnalysisConfigurator> usedConfigurators,
+    Map<String, String> properties, final IProgressMonitor monitor) {
+    Map<String, String> unmodifiableMap = Collections.unmodifiableMap(properties);
+    for (ProjectConfigurator p : usedDeprecatedConfigurators) {
+      p.analysisComplete(unmodifiableMap, monitor);
+    }
+    for (IAnalysisConfigurator p : usedConfigurators) {
+      p.analysisComplete(() -> unmodifiableMap, monitor);
     }
 
   }

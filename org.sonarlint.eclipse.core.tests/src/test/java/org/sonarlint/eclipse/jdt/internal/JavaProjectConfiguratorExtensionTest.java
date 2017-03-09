@@ -17,11 +17,11 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.cdt.internal;
+package org.sonarlint.eclipse.jdt.internal;
 
-import org.eclipse.cdt.core.CProjectNature;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.JavaCore;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
@@ -30,19 +30,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class CProjectConfiguratorExtensionTest {
-  private CProjectConfiguratorExtension extension;
+public class JavaProjectConfiguratorExtensionTest {
+  private JavaProjectConfiguratorExtension extension;
 
   @Before
   public void setUp() {
-    extension = new CProjectConfiguratorExtension();
+    extension = new JavaProjectConfiguratorExtension();
   }
 
   @Test
-  public void should_configurate_projects_c_nature() throws CoreException {
+  public void should_configurate_projects_java_nature() throws CoreException {
     IProject project = mock(IProject.class);
-    when(project.hasNature(CProjectNature.C_NATURE_ID)).thenReturn(true);
+    when(project.hasNature(JavaCore.NATURE_ID)).thenReturn(true);
     assertThat(extension.canConfigure(new DefaultSonarLintProjectAdapter(project))).isTrue();
   }
-
 }

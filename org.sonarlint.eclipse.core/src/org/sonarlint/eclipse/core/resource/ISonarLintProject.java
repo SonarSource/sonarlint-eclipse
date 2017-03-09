@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.resource;
 import java.nio.file.Path;
 import java.util.Collection;
 import javax.annotation.CheckForNull;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.IScopeContext;
@@ -108,5 +109,13 @@ public interface ISonarLintProject extends ISonarLintIssuable {
    * @return all SonarLint files contained in this project.
    */
   Collection<ISonarLintFile> files();
+
+  /**
+   * Return the underlying IProject when possible. Will be used by caller to access
+   * project specific informations, like nature, ...
+   * Caller should be ready to handle null values.
+   */
+  @CheckForNull
+  IProject getUnderlyingProject();
 
 }

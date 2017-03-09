@@ -21,17 +21,12 @@ package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaModel;
@@ -41,43 +36,37 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
+import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class JavaProjectConfiguratorTest extends SonarTestCase {
+public class JdtUtilsTest extends SonarTestCase {
 
-  private JavaProjectConfigurator configurator = new JavaProjectConfigurator();
+  private JdtUtils jdtUtils = new JdtUtils();
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
   @Test
-  public void shouldConfigureAllProjects() throws CoreException {
-    IProject project = mock(IProject.class);
-    assertThat(new JavaProjectConfiguratorExtension().canConfigure(project)).isTrue();
-  }
-
-  @Test
   public void shouldConfigureJavaSourceAndTarget() throws JavaModelException, IOException {
     IJavaProject project = mock(IJavaProject.class);
-    Map<String, String> sonarProperties = new HashMap<>();
+    IPreAnalysisContext context = mock(IPreAnalysisContext.class);
 
     when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
     when(project.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
     when(project.getResolvedClasspath(true)).thenReturn(new IClasspathEntry[] {});
     when(project.getOutputLocation()).thenReturn(new Path(temp.newFolder("output").getAbsolutePath()));
 
-    configurator.configureJavaProject(project, sonarProperties);
+    jdtUtils.configureJavaProject(project, context);
 
-    assertThat(sonarProperties).containsKey("sonar.java.source");
-    assertThat(sonarProperties.get("sonar.java.source")).isEqualTo("1.6");
-    assertThat(sonarProperties).containsKey("sonar.java.target");
-    assertThat(sonarProperties.get("sonar.java.target")).isEqualTo("1.6");
+    verify(context).setAnalysisProperty("sonar.java.source", "1.6");
+    verify(context).setAnalysisProperty("sonar.java.target", "1.6");
   }
 
   @Test
@@ -94,37 +83,30 @@ public class JavaProjectConfiguratorTest extends SonarTestCase {
     outputFolder.mkdir();
 
     IJavaProject project = mock(IJavaProject.class);
-    Map<String, String> sonarProperties = new HashMap<>();
+    IPreAnalysisContext context = mock(IPreAnalysisContext.class);
 
     when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
     when(project.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
     when(project.getPath()).thenReturn(new Path(projectRoot.getAbsolutePath()));
 
     IClasspathEntry[] cpes = new IClasspathEntry[] {
-      createCPE(IClasspathEntry.CPE_SOURCE, sourceFolder),
-      createCPE(IClasspathEntry.CPE_SOURCE, testFolder)
+      createCPE(IClasspathEntry.CPE_SOURCE, sourceFolder, outputFolder),
+      createCPE(IClasspathEntry.CPE_SOURCE, testFolder, outputFolder)
     };
 
     when(project.getResolvedClasspath(true)).thenReturn(cpes);
     when(project.getOutputLocation()).thenReturn(new Path(outputFolder.getAbsolutePath()));
 
-    configurator.configureJavaProject(project, sonarProperties);
+    jdtUtils.configureJavaProject(project, context);
 
-    // TODO Find a way to mock a project inside Eclipse
-
-    // assertTrue(sonarProperties.containsKey("sonar.sources"));
-    // assertThat(sonarProperties.getProperty("sonar.sources"), is(sourceFolder.getPath()));
-    // assertTrue(sonarProperties.containsKey("sonar.tests"));
-    // assertThat(sonarProperties.getProperty("sonar.tests"), is(testFolder.getPath()));
-    // assertTrue(sonarProperties.containsKey("sonar.binaries"));
-    // assertThat(sonarProperties.getProperty("sonar.binaries"), is(outputFolder.getPath()));
+    verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.binaries"), ArgumentMatchers.anyCollection());
   }
 
   @Test
   public void shouldConfigureProjectsWithCircularDependencies() throws CoreException, IOException {
     // the bug appeared when at least 3 projects were involved: the first project depends on the second one which has a circular dependency
     // towards the second one
-    Map<String, String> sonarProperties = new HashMap<>();
+    IPreAnalysisContext context = mock(IPreAnalysisContext.class);
     // mock three projects that depend on each other
     final String project1Name = "project1";
     final String project2Name = "project2";
@@ -168,30 +150,30 @@ public class JavaProjectConfiguratorTest extends SonarTestCase {
     when(project3.getJavaModel()).thenReturn(javaModel);
 
     // this call should not fail (StackOverFlowError before patch)
-    configurator.configureJavaProject(project1, sonarProperties);
+    jdtUtils.configureJavaProject(project1, context);
 
   }
 
-  private IClasspathEntry createCPE(int kind, File path) {
+  private IClasspathEntry createCPE(int kind, File path, @Nullable File outputLocation) {
     IClasspathEntry cpe = mock(IClasspathEntry.class);
     when(cpe.getEntryKind()).thenReturn(kind);
     when(cpe.getPath()).thenReturn(new Path(path.getAbsolutePath()));
+    when(cpe.getOutputLocation()).thenReturn(new Path(outputLocation.getAbsolutePath()));
     return cpe;
   }
 
   @Test
-  public void analyzeOnlyJavaFilesOnClasspathForJdtProject() throws Exception {
+  public void keepOnlyJavaFilesOnClasspathForJdtProject() throws Exception {
     IProject jdtProject = importEclipseProject("SimpleJdtProject");
     IFile onClassPath = (IFile) jdtProject.findMember("src/main/java/ClassOnDefaultPackage.java");
     IFile compileError = (IFile) jdtProject.findMember("src/main/java/ClassWithCompileError.java");
     IFile outsideClassPath = (IFile) jdtProject.findMember("ClassOutsideSourceFolder.java");
     IFile nonJava = (IFile) jdtProject.findMember("src/main/sample.js");
 
-    List<IFile> filesToAnalyze = new ArrayList<>(Arrays.asList(onClassPath, compileError, outsideClassPath, nonJava));
-
-    configurator.configure(new ProjectConfigurationRequest(jdtProject, filesToAnalyze, new HashMap<>(), new HashMap<>()), new NullProgressMonitor());
-
-    assertThat(filesToAnalyze).containsOnly(onClassPath, nonJava);
+    assertThat(JdtUtils.isValidJavaFile(onClassPath)).isTrue();
+    assertThat(JdtUtils.isValidJavaFile(compileError)).isFalse();
+    assertThat(JdtUtils.isValidJavaFile(outsideClassPath)).isFalse();
+    assertThat(JdtUtils.isValidJavaFile(nonJava)).isTrue();
   }
 
   @Test
@@ -200,10 +182,7 @@ public class JavaProjectConfiguratorTest extends SonarTestCase {
     IFile java = (IFile) nonJdtProject.findMember("src/main/ClassOnDefaultPackage.java");
     IFile nonJava = (IFile) nonJdtProject.findMember("src/main/sample.js");
 
-    List<IFile> filesToAnalyze = new ArrayList<>(Arrays.asList(java, nonJava));
-
-    configurator.configure(new ProjectConfigurationRequest(nonJdtProject, filesToAnalyze, new HashMap<>(), new HashMap<>()), new NullProgressMonitor());
-
-    assertThat(filesToAnalyze).containsOnly(nonJava);
+    assertThat(JdtUtils.isValidJavaFile(java)).isFalse();
+    assertThat(JdtUtils.isValidJavaFile(nonJava)).isTrue();
   }
 }

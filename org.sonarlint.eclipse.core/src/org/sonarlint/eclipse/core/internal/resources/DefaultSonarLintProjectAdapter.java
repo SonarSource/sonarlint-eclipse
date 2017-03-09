@@ -57,7 +57,7 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
 
   @Override
   public boolean isOpen() {
-    return project.isOpen();
+    return project.isAccessible();
   }
 
   @Override
@@ -191,6 +191,11 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
 
   @Override
   public IResource getResourceForMarkerOperations() {
+    return project;
+  }
+
+  @Override
+  public IProject getUnderlyingProject() {
     return project;
   }
 

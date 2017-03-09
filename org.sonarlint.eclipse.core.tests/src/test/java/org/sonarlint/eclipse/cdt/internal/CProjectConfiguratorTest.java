@@ -21,27 +21,26 @@ package org.sonarlint.eclipse.cdt.internal;
 
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Predicate;
 import org.eclipse.cdt.core.CCorePlugin;
 import org.eclipse.cdt.core.parser.IScannerInfo;
 import org.eclipse.cdt.core.parser.IScannerInfoProvider;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
+import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
+import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -51,13 +50,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class CProjectConfiguratorTest {
-  private CProjectConfigurator configurator;
+  private CdtUtils configurator;
 
   private BuildWrapperJsonFactory jsonFactory;
   private CCorePlugin cCorePlugin;
   private Predicate<IFile> fileValidator;
   private SonarLintLogger logger;
-  private FilePathResolver filePathResolver;
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
@@ -68,43 +66,44 @@ public class CProjectConfiguratorTest {
     jsonFactory = mock(BuildWrapperJsonFactory.class);
     fileValidator = mock(Predicate.class);
     logger = mock(SonarLintLogger.class);
-    filePathResolver = mock(FilePathResolver.class);
-    when(filePathResolver.getWorkDir()).thenReturn(temp.getRoot().toPath());
-    configurator = new CProjectConfigurator(jsonFactory, cCorePlugin, fileValidator, (proj, path) -> null, logger, filePathResolver);
+    configurator = new CdtUtils(jsonFactory, cCorePlugin, fileValidator, (proj, path) -> null, logger);
   }
 
   @Test
-  public void should_configure() throws CoreException {
+  public void should_configure() throws Exception {
+    java.nio.file.Path projectBaseDir = temp.newFolder().toPath();
     IProject project = mock(IProject.class);
     IFile file = mock(IFile.class);
+    when(file.getProject()).thenReturn(project);
     IProgressMonitor monitor = mock(IProgressMonitor.class);
     IScannerInfoProvider infoProvider = mock(IScannerInfoProvider.class);
     IScannerInfo info = mock(IScannerInfo.class);
 
     when(cCorePlugin.getScannerInfoProvider(project)).thenReturn(infoProvider);
-    when(project.getLocation()).thenReturn(Path.fromOSString(temp.getRoot().getAbsolutePath()));
-    when(project.getWorkingLocation(anyString())).thenReturn(Path.fromOSString(temp.getRoot().getAbsolutePath()));
+    when(project.getLocation()).thenReturn(Path.fromOSString(projectBaseDir.toString()));
     when(infoProvider.getScannerInformation(file)).thenReturn(info);
     when(fileValidator.test(file)).thenReturn(true);
-    when(filePathResolver.getPath(file)).thenReturn(Paths.get("file1"));
     when(jsonFactory.create(anyCollection(), anyString())).thenReturn("json");
 
-    Map<String, String> props = new HashMap<>();
+    IPreAnalysisContext context = mock(IPreAnalysisContext.class);
+    DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
+    when(context.getProject()).thenReturn(slProject);
+    ISonarLintFile slFile = mock(ISonarLintFile.class);
+    when(slFile.getPhysicalPath(ArgumentMatchers.any(java.nio.file.Path.class))).thenReturn(Paths.get("file1").toString());
+    when(context.getFilesToAnalyze()).thenReturn(Collections.singleton(slFile));
+    when(context.getAnalysisTemporaryFolder()).thenReturn(temp.getRoot().toPath());
 
-    ProjectConfigurationRequest request = new ProjectConfigurationRequest(project, Collections.singleton(file), new HashMap<>(), props);
-
-    configurator.configure(request, monitor);
+    configurator.configure(context, monitor);
 
     // json created
-    verify(jsonFactory).create(anyCollection(), eq(temp.getRoot().getAbsolutePath()));
+    verify(jsonFactory).create(anyCollection(), eq(projectBaseDir.toAbsolutePath().toString()));
 
     // json written
     assertThat(temp.getRoot().toPath().resolve("build-wrapper-dump.json")).hasContent("json");
 
     // property created
-    assertThat(props).containsOnly(
-      entry("sonar.cfamily.build-wrapper-output", temp.getRoot().toPath().toString()),
-      entry("sonar.cfamily.useCache", "false"));
+    verify(context).setAnalysisProperty("sonar.cfamily.build-wrapper-output", temp.getRoot().toPath().toString());
+    verify(context).setAnalysisProperty("sonar.cfamily.useCache", "false");
 
     // no errors
     verify(logger, never()).error(Mockito.any(), Mockito.any());

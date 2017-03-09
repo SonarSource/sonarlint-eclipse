@@ -19,19 +19,21 @@
  */
 package org.sonarlint.eclipse.jdt.internal;
 
-import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
+import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
+import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
+import org.sonarlint.eclipse.core.resource.ISonarLintFileFilter;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-public class JavaProjectConfiguratorExtension extends ProjectConfigurator {
+public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, ISonarLintFileFilter {
 
-  private final JavaProjectConfigurator javaProjectConfigurator;
+  private final JdtUtils javaProjectConfigurator;
   private boolean jdtPresent;
 
   public JavaProjectConfiguratorExtension() {
     jdtPresent = isJdtPresent();
-    javaProjectConfigurator = jdtPresent ? new JavaProjectConfigurator() : null;
+    javaProjectConfigurator = jdtPresent ? new JdtUtils() : null;
   }
 
   private static boolean isJdtPresent() {
@@ -44,13 +46,22 @@ public class JavaProjectConfiguratorExtension extends ProjectConfigurator {
   }
 
   @Override
-  public boolean canConfigure(IProject project) {
-    return jdtPresent;
+  public boolean canConfigure(ISonarLintProject project) {
+    return jdtPresent && project.getUnderlyingProject() != null
+      && JdtUtils.hasJavaNature(project.getUnderlyingProject());
   }
 
   @Override
-  public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
-    javaProjectConfigurator.configure(request, monitor);
+  public void configure(IPreAnalysisContext context, IProgressMonitor monitor) {
+    javaProjectConfigurator.configure(context, monitor);
+  }
+
+  @Override
+  public boolean test(IFile file) {
+    if (jdtPresent) {
+      return JdtUtils.isValidJavaFile(file);
+    }
+    return true;
   }
 
 }

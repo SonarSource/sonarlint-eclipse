@@ -17,5 +17,22 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-@javax.annotation.ParametersAreNonnullByDefault
-package org.sonarlint.eclipse.jdt.internal;
+package org.sonarlint.eclipse.core.analysis;
+
+import javax.annotation.CheckForNull;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+
+/**
+ * Most analyzers are relying on file extensions to detect languages. In some situations it
+ * may be useful to force language.
+ * @since 2.7
+ */
+public interface IFileLanguageProvider {
+
+  /**
+   * @return the language of the file, or null to keep default bahavior
+   */
+  @CheckForNull
+  String language(ISonarLintFile file);
+
+}

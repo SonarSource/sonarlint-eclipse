@@ -8,6 +8,7 @@ Bundle-Activator: org.sonarlint.eclipse.core.internal.SonarLintCorePlugin
 Bundle-Vendor: %bundle_vendor
 Bundle-Localization: OSGI-INF/l10n/bundle
 Export-Package: org.sonarlint.eclipse.core,
+ org.sonarlint.eclipse.core.analysis,
  org.sonarlint.eclipse.core.configurator,
  org.sonarlint.eclipse.core.internal;
   x-friends:="org.sonarlint.eclipse.core.tests,
@@ -32,7 +33,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.jface.text,
  org.sonarsource.sonarlint.core.sonarlint-client-api;bundle-version="2.4.0",
  org.sonarsource.sonarlint.core.sonarlint-core;bundle-version="2.4.0",
- org.jsr-305;resolution:=optional;visibility:=reexport,
+ org.jsr-305;resolution:=optional,
  org.eclipse.core.net,
  org.eclipse.core.filesystem,
  org.eclipse.team.core

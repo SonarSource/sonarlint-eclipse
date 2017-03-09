@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.resource;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 
@@ -61,5 +62,11 @@ public interface ISonarLintFile extends ISonarLintIssuable {
    * @param tempDirectory if needed, use this temporary directory to create a temporary file. The directory is cleaned after analysis.
    */
   String getPhysicalPath(Path tempDirectory);
+
+  /**
+   * The underlying IFile if applicable. Used by some configurators to get some details.
+   */
+  @CheckForNull
+  IFile getUnderlyingFile();
 
 }

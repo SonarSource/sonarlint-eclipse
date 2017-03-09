@@ -20,10 +20,6 @@
 package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -39,22 +35,19 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
+import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 
-import static org.sonarlint.eclipse.core.configurator.ProjectConfigurator.setPropertyList;
+public class JdtUtils {
 
-public class JavaProjectConfigurator {
-
-  public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) {
-    keepOnlyValidJavaFiles(request);
-    IProject project = request.getProject();
-    if (hasJavaNature(project)) {
+  public void configure(IPreAnalysisContext context, IProgressMonitor monitor) {
+    IProject project = context.getProject().getUnderlyingProject();
+    if (project != null) {
       IJavaProject javaProject = JavaCore.create(project);
-      configureJavaProject(javaProject, request.getSonarProjectProperties());
+      configureJavaProject(javaProject, context);
     }
   }
 
-  private static boolean hasJavaNature(IProject project) {
+  static boolean hasJavaNature(IProject project) {
     try {
       return project.hasNature(JavaCore.NATURE_ID);
     } catch (CoreException e) {
@@ -66,22 +59,11 @@ public class JavaProjectConfigurator {
   /**
    * SLE-34 Remove Java files that are not compiled.This should automatically exclude files that are excluded / unparseable. 
    */
-  private static void keepOnlyValidJavaFiles(ProjectConfigurationRequest request) {
-    boolean hasJavaNature = hasJavaNature(request.getProject());
-    IJavaProject javaProject = JavaCore.create(request.getProject());
-
-    Collection<IFile> keep = request.getFilesToAnalyze().stream()
-      .filter(res -> {
-        IJavaElement javaElt = JavaCore.create(res);
-        return javaElt == null || (hasJavaNature && isStructureKnown(javaElt) && javaProject.isOnClasspath(javaElt));
-      })
-      .collect(Collectors.toSet());
-
-    for (Iterator<IFile> it = request.getFilesToAnalyze().iterator(); it.hasNext();) {
-      if (!keep.contains(it.next())) {
-        it.remove();
-      }
-    }
+  public static boolean isValidJavaFile(IFile file) {
+    boolean hasJavaNature = hasJavaNature(file.getProject());
+    IJavaProject javaProject = JavaCore.create(file.getProject());
+    IJavaElement javaElt = JavaCore.create(file);
+    return javaElt == null || (hasJavaNature && isStructureKnown(javaElt) && javaProject.isOnClasspath(javaElt));
   }
 
   private static boolean isStructureKnown(IJavaElement javaElt) {
@@ -93,18 +75,18 @@ public class JavaProjectConfigurator {
   }
 
   // Visible for testing
-  public void configureJavaProject(IJavaProject javaProject, Map<String, String> sonarProjectProperties) {
+  public void configureJavaProject(IJavaProject javaProject, IPreAnalysisContext context) {
     String javaSource = javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
     String javaTarget = javaProject.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true);
 
-    sonarProjectProperties.put("sonar.java.source", javaSource);
-    sonarProjectProperties.put("sonar.java.target", javaTarget);
+    context.setAnalysisProperty("sonar.java.source", javaSource);
+    context.setAnalysisProperty("sonar.java.target", javaTarget);
 
     try {
       JavaProjectConfiguration configuration = new JavaProjectConfiguration();
       configuration.dependentProjects().add(javaProject);
       addClassPathToSonarProject(javaProject, configuration, true);
-      configurationToProperties(sonarProjectProperties, configuration);
+      configurationToProperties(context, configuration);
     } catch (JavaModelException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
@@ -247,14 +229,14 @@ public class JavaProjectConfigurator {
     return false;
   }
 
-  private static void configurationToProperties(Map<String, String> sonarProjectProperties, JavaProjectConfiguration context) {
-    setPropertyList(sonarProjectProperties, "sonar.libraries", context.libraries());
+  private static void configurationToProperties(IPreAnalysisContext analysisContext, JavaProjectConfiguration context) {
+    analysisContext.setAnalysisProperty("sonar.libraries", context.libraries());
     // Eclipse doesn't separate main and test classpath
-    setPropertyList(sonarProjectProperties, "sonar.java.libraries", context.libraries());
-    setPropertyList(sonarProjectProperties, "sonar.java.test.libraries", context.libraries());
-    setPropertyList(sonarProjectProperties, "sonar.binaries", context.binaries());
+    analysisContext.setAnalysisProperty("sonar.java.libraries", context.libraries());
+    analysisContext.setAnalysisProperty("sonar.java.test.libraries", context.libraries());
+    analysisContext.setAnalysisProperty("sonar.binaries", context.binaries());
     // Eclipse doesn't separate main and test classpath
-    setPropertyList(sonarProjectProperties, "sonar.java.binaries", context.binaries());
-    setPropertyList(sonarProjectProperties, "sonar.java.test.binaries", context.binaries());
+    analysisContext.setAnalysisProperty("sonar.java.binaries", context.binaries());
+    analysisContext.setAnalysisProperty("sonar.java.test.binaries", context.binaries());
   }
 }

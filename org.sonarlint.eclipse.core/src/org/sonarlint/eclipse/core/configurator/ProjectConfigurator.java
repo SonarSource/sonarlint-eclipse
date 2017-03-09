@@ -23,16 +23,18 @@ import java.util.Collection;
 import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
  * Implemented by components that configure the analysis on certain environments.
  * For example, we have configurators for C/C++ projects in Eclipse CDT and for Java projects.
  * 
  * Other products also use this interface, so <b>it should be kept stable</b>.
+ * @deprecated since 2.7 replaced by {@link IAnalysisConfigurator}
  */
-public abstract class ProjectConfigurator implements ISonarLintProjectConfigurator {
+@Deprecated
+public abstract class ProjectConfigurator {
 
   public static final String SEPARATOR = ",";
 
@@ -40,15 +42,6 @@ public abstract class ProjectConfigurator implements ISonarLintProjectConfigurat
    * Tell if this project configurator can configure the given project.
    */
   public abstract boolean canConfigure(IProject project);
-
-  @Override
-  public boolean canConfigure(ISonarLintProject project) {
-    if (project.getResourceForProjectLevelIssues() instanceof IProject) {
-      IProject iProject = (IProject) project.getResourceForProjectLevelIssues();
-      return canConfigure(iProject);
-    }
-    return false;
-  }
 
   /**
    * Configures SonarLint analysis, using information from Eclipse project.

@@ -5,6 +5,8 @@
    <extension-point id="projectsProvider" name="SonarLint Projects Provider" schema="schema/projectsProvider.exsd"/>
    <extension-point id="fileFilter" name="SonarLint File Filter" schema="schema/fileFilter.exsd"/>
    <extension-point id="projectFilter" name="SonaRLint Project Filter" schema="schema/projectFilter.exsd"/>
+   <extension-point id="analysisConfigurator" name="SonarLint Analysis Configurator" schema="schema/analysisConfigurator.exsd"/>
+   <extension-point id="languageProvider" name="SonarLint File Language Provider" schema="schema/languageProvider.exsd"/>
 
 
    <extension

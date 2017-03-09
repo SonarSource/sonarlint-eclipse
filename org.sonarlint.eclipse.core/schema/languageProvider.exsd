@@ -3,22 +3,22 @@
 <schema targetNamespace="org.sonarlint.eclipse.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.sonarlint.eclipse.core" id="projectConfigurators" name="Project Configurators"/>
+         <meta.schema plugin="org.sonarlint.eclipse.core" id="languageProvider" name="SonarLint File Language Provider"/>
       </appInfo>
       <documentation>
-         
+         Help analyzers to detect language of some files
       </documentation>
    </annotation>
 
    <element name="extension">
       <annotation>
          <appInfo>
-            <meta.element deprecated="true" />
+            <meta.element />
          </appInfo>
       </annotation>
       <complexType>
          <sequence minOccurs="1" maxOccurs="unbounded">
-            <element ref="configurator"/>
+            <element ref="provider"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,32 +47,56 @@
       </complexType>
    </element>
 
-   <element name="configurator">
-      <annotation>
-         <appInfo>
-            <meta.element deprecated="true"/>
-         </appInfo>
-         <documentation>
-            Project configurator
-         </documentation>
-      </annotation>
+   <element name="provider">
       <complexType>
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  Configurator implementation
+                  
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn="org.sonarlint.eclipse.core.configurator.ProjectConfigurator:" deprecated="true"/>
+                  <meta.attribute kind="java" basedOn=":org.sonarlint.eclipse.core.analysis.IFileLanguageProvider"/>
                </appInfo>
             </annotation>
          </attribute>
       </complexType>
    </element>
 
+   <annotation>
+      <appInfo>
+         <meta.section type="since"/>
+      </appInfo>
+      <documentation>
+         [Enter the first release in which this extension point appears.]
+      </documentation>
+   </annotation>
 
+   <annotation>
+      <appInfo>
+         <meta.section type="examples"/>
+      </appInfo>
+      <documentation>
+         [Enter extension point usage example here.]
+      </documentation>
+   </annotation>
 
+   <annotation>
+      <appInfo>
+         <meta.section type="apiinfo"/>
+      </appInfo>
+      <documentation>
+         [Enter API information here.]
+      </documentation>
+   </annotation>
 
+   <annotation>
+      <appInfo>
+         <meta.section type="implementation"/>
+      </appInfo>
+      <documentation>
+         [Enter information about supplied implementation of this extension point.]
+      </documentation>
+   </annotation>
 
 
 </schema>
