@@ -42,11 +42,11 @@ import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
 import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
 
 /**
- * Property page for projects to view sonar server connection. It store in
+ * Property page for projects. It store in
  * <project>/.settings/org.sonarlint.eclipse.prefs following properties
  *
  */
-public class SonarProjectPropertyPage extends PropertyPage {
+public class SonarLintProjectPropertyPage extends PropertyPage {
 
   private Button enabledBtn;
   private Link addServerLink;
@@ -54,7 +54,7 @@ public class SonarProjectPropertyPage extends PropertyPage {
   private Composite container;
   private Label boundDetails;
 
-  public SonarProjectPropertyPage() {
+  public SonarLintProjectPropertyPage() {
     setTitle(Messages.SonarProjectPropertyPage_title);
   }
 

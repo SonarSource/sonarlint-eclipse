@@ -367,15 +367,13 @@
   <extension
       point="org.eclipse.ui.propertyPages">
     <page
-      class="org.sonarlint.eclipse.ui.internal.properties.SonarProjectPropertyPage"
+      class="org.sonarlint.eclipse.ui.internal.properties.SonarLintProjectPropertyPage"
        id="org.sonarlint.eclipse.ui.properties.sonarProjectPropertyPage"
        name="%sonar.properties.page.name">
-       <filter
-             name="open"
-             value="true">
-       </filter>
        <enabledWhen>
-          <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject"/>
+          <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+            <test property="org.sonarlint.eclipse.core.open"/>
+          </adapt>
        </enabledWhen>
     </page>
     <page
@@ -383,12 +381,10 @@
        id="org.sonarlint.eclipse.ui.properties.SonarExtraArgumentsPreferenceAndPropertyPage"
        category="org.sonarlint.eclipse.ui.properties.sonarProjectPropertyPage"
        name="%sonar.preference.extraProps.page.name">
-       <filter
-             name="open"
-             value="true">
-       </filter>
        <enabledWhen>
-          <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject"/>
+          <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+            <test property="org.sonarlint.eclipse.core.open"/>
+          </adapt>
        </enabledWhen>
     </page>
   </extension>
