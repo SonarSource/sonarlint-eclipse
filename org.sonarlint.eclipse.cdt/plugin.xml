@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
      <extension
-         point="org.sonarlint.eclipse.core.projectConfigurators">
+         point="org.sonarlint.eclipse.core.analysisConfigurator">
       <configurator
             class="org.sonarlint.eclipse.cdt.internal.CProjectConfiguratorExtension">
       </configurator>
