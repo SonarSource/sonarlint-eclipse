@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint;
+import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
 
 class StringStoreIndex implements StoreIndex<String> {
   public static final String INDEX_FILENAME = "index.pb";
@@ -73,6 +74,8 @@ class StringStoreIndex implements StoreIndex<String> {
   }
 
   private void save(Sonarlint.StorageIndex index) {
+    // In case folder was deleted while Eclipse was live
+    FileUtils.mkdirs(indexFilePath.getParent());
     try (OutputStream stream = Files.newOutputStream(indexFilePath)) {
       index.writeTo(stream);
     } catch (IOException e) {
