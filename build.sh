@@ -41,6 +41,7 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
   echo '======= with deploy'
     mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy sonar:sonar \
       -Pdeploy-sonarsource \
+      -Dsonar.github.disableInlineComments=true \
       -Dtycho.disableP2Mirrors=true \
       -Dmaven.test.redirectTestOutputToFile=false \
       -Dsonar.analysis.mode=issues \
