@@ -3,10 +3,10 @@
 <schema targetNamespace="org.sonarlint.eclipse.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.sonarlint.eclipse.core" id="fileFilter" name="SonarLint File Filter"/>
+         <meta.schema plugin="org.sonarlint.eclipse.core" id="fileAdapterParticipant" name="SonarLint File Adapter Participant"/>
       </appInfo>
       <documentation>
-         Allows to exclude some files to be processed by SonarLint.
+         Allows to tune IFile to ISonarLintFile default adapter.
       </documentation>
    </annotation>
 
@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence minOccurs="1" maxOccurs="unbounded">
-            <element ref="filter"/>
+            <element ref="participant"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,7 +47,7 @@
       </complexType>
    </element>
 
-   <element name="filter">
+   <element name="participant">
       <annotation>
          <documentation>
             File filter
@@ -60,7 +60,7 @@
                   Filter implementation
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.sonarlint.eclipse.core.resource.ISonarLintFileFilter"/>
+                  <meta.attribute kind="java" basedOn=":org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant"/>
                </appInfo>
             </annotation>
          </attribute>

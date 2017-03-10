@@ -20,9 +20,9 @@
 package org.sonarlint.eclipse.m2e.internal;
 
 import org.eclipse.core.resources.IFile;
-import org.sonarlint.eclipse.core.resource.ISonarLintFileFilter;
+import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 
-public class MavenModuleFilter implements ISonarLintFileFilter {
+public class MavenModuleFilter implements ISonarLintFileAdapterParticipant {
 
   private final boolean isM2ePresent;
 
@@ -40,11 +40,11 @@ public class MavenModuleFilter implements ISonarLintFileFilter {
   }
 
   @Override
-  public boolean test(IFile file) {
+  public boolean exclude(IFile file) {
     if (isM2ePresent) {
-      return !M2eUtils.isInNestedModule(file);
+      return M2eUtils.isInNestedModule(file);
     }
-    return true;
+    return false;
   }
 
 }

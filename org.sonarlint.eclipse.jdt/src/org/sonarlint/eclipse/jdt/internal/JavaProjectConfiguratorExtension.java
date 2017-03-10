@@ -23,10 +23,10 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
-import org.sonarlint.eclipse.core.resource.ISonarLintFileFilter;
+import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, ISonarLintFileFilter {
+public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, ISonarLintFileAdapterParticipant {
 
   private final JdtUtils javaProjectConfigurator;
   private boolean jdtPresent;
@@ -57,11 +57,11 @@ public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, 
   }
 
   @Override
-  public boolean test(IFile file) {
+  public boolean exclude(IFile file) {
     if (jdtPresent) {
-      return JdtUtils.isValidJavaFile(file);
+      return !JdtUtils.isValidJavaFile(file);
     }
-    return true;
+    return false;
   }
 
 }

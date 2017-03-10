@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
    <extension
-         point="org.sonarlint.eclipse.core.fileFilter">
-      <filter
+         point="org.sonarlint.eclipse.core.fileAdapterParticipant">
+      <participant
             class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfiguratorExtension">
-      </filter>
+      </participant>
    </extension>
 </plugin>

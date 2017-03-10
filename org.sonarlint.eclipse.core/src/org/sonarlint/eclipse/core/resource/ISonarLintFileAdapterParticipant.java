@@ -19,14 +19,30 @@
  */
 package org.sonarlint.eclipse.core.resource;
 
-import java.util.function.Predicate;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
 
 /**
  * By default SonarLint try to adapt any {@link IFile} to {@link ISonarLintFile}.
  * You can use this extension point to prevent some {@link IFile} to be converted to {@link ISonarLintFile}
- *
+ * or to provide your own implementation.
+ * @since 2.7
  */
-public interface ISonarLintFileFilter extends Predicate<IFile> {
+public interface ISonarLintFileAdapterParticipant {
+
+  /**
+   * @return <code>true</code> to have this file not converted to an {@link ISonarLintFile}
+   */
+  default boolean exclude(IFile file) {
+    return false;
+  }
+
+  /**
+   * @return <code>null</code> to use SonarLint default adapter
+   */
+  @CheckForNull
+  default ISonarLintFile adapt(IFile file) {
+    return null;
+  }
 
 }

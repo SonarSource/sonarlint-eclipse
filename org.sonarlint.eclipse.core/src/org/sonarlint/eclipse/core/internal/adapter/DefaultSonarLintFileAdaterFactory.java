@@ -28,6 +28,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 
 public class DefaultSonarLintFileAdaterFactory implements IAdapterFactory {
 
@@ -35,18 +36,32 @@ public class DefaultSonarLintFileAdaterFactory implements IAdapterFactory {
   public Object getAdapter(Object adaptableObject, Class adapterType) {
     if (ISonarLintFile.class.equals(adapterType) && adaptableObject instanceof IAdaptable) {
       IResource resource = (IResource) ((IAdaptable) adaptableObject).getAdapter(IResource.class);
-      if (resource instanceof IFile && SonarLintUtils.shouldAnalyze(resource)) {
+      if (resource instanceof IFile) {
         IFile file = (IFile) resource;
-        Predicate<IFile> shouldKeep = SonarLintCorePlugin.getExtensionTracker().getFileFilters().stream()
-          .<Predicate<IFile>>map(f -> f::test)
-          .reduce(Predicate::and)
-          .orElse(x -> true);
-        if (shouldKeep.test(file)) {
-          return adapterType.cast(new DefaultSonarLintFileAdapter(file));
-        }
+        return getAdapter(adapterType, file);
       }
     }
     return null;
+  }
+
+  private Object getAdapter(Class adapterType, IFile file) {
+    if (!SonarLintUtils.shouldAnalyze(file)) {
+      return null;
+    }
+    Predicate<IFile> shouldExclude = SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants().stream()
+      .<Predicate<IFile>>map(participant -> participant::exclude)
+      .reduce(Predicate::or)
+      .orElse(x -> false);
+    if (shouldExclude.test(file)) {
+      return null;
+    }
+    for (ISonarLintFileAdapterParticipant p : SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants()) {
+      ISonarLintFile adapted = p.adapt(file);
+      if (adapted != null) {
+        return adapted;
+      }
+    }
+    return adapterType.cast(new DefaultSonarLintFileAdapter(file));
   }
 
   @Override
