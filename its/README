@@ -1,0 +1,8 @@
+ 
+# Create a dedicated display
+Xephyr -screen 1024x768 :51&
+export DISPLAY=:51
+metacity --sm-disable --replace &
+
+# Run ITs
+mvn clean verify -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url=file:///home/julien/Prog/Projects/sonarlint-eclipse/org.sonarlint.eclipse.site/target/repository/ [-Dtest=LocalAnalysisTest -DdebugPort=8000]

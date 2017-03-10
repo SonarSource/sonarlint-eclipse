@@ -9,10 +9,10 @@
     <version>39</version>
     <relativePath />
   </parent>
-  
+
   <groupId>org.sonarsource.sonarlint.eclipse.its</groupId>
   <artifactId>sonarlint-eclipse-its-parent</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>ITs for SonarLint Eclipse</name>
@@ -20,12 +20,13 @@
   <properties>
     <tycho.version>0.25.0</tycho.version>
     <license.title>SonarLint for Eclipse ITs</license.title>
-    <license.year>2015</license.year>
+    <license.year>2017</license.year>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <target.platform>e46</target.platform>
+    <tycho.localArtifacts>ignore</tycho.localArtifacts>
   </properties>
-  
+
   <modules>
     <module>org.sonarlint.eclipse.its</module>
     <module>target-platform-e43</module>
@@ -37,6 +38,11 @@
 
   <!-- These dependencies will be added to the target platform -->
   <dependencies>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.5</version>
+    </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
@@ -53,7 +59,7 @@
       <version>4.12</version>
     </dependency>
   </dependencies>
-  
+
   <build>
     <pluginManagement>
       <plugins>
@@ -148,8 +154,8 @@
           <pomDependencies>consider</pomDependencies>
           <target>
             <artifact>
-              <groupId>com.sonarsource.it.sonar-eclipse</groupId>
-              <artifactId>target-platform-${target.platform}</artifactId>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>target-platform-its-${target.platform}</artifactId>
               <version>${project.version}</version>
             </artifact>
           </target>
@@ -157,22 +163,12 @@
       </plugin>
     </plugins>
   </build>
-  
-  <profiles>
-    <profile>
-      <id>use-p2-repo</id>
-      <activation>
-        <property>
-          <name>sonarlint-eclipse.p2.url</name>
-        </property>
-      </activation>
-      <repositories>
-        <repository>
-          <id>sonarlint-eclipse</id>
-          <url>${sonarlint-eclipse.p2.url}</url>
-          <layout>p2</layout>
-        </repository>
-      </repositories>
-    </profile>
-  </profiles>
+
+  <repositories>
+    <repository>
+      <id>sonarlint-eclipse</id>
+      <url>${sonarlint-eclipse.p2.url}</url>
+      <layout>p2</layout>
+    </repository>
+  </repositories>
 </project>

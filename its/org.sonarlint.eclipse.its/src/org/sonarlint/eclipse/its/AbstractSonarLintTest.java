@@ -1,0 +1,197 @@
+/*
+ * SonarLint for Eclipse ITs
+ * Copyright (C) 2009-2017 SonarSource SA
+ * sonarlint@sonarsource.com
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+package org.sonarlint.eclipse.its;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.apache.commons.io.FileUtils;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceDescription;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
+import org.eclipse.swtbot.swt.finder.results.VoidResult;
+import org.eclipse.ui.PlatformUI;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.sonarlint.eclipse.its.utils.CaptureScreenshotOnFailure;
+import org.sonarlint.eclipse.its.utils.SwtBotUtils;
+import org.sonarlint.eclipse.its.utils.WorkspaceHelpers;
+
+import static org.junit.Assert.assertTrue;
+
+/**
+ * Common test case for sonar-ide/eclipse projects.
+ */
+public abstract class AbstractSonarLintTest {
+
+  public static final String PLUGIN_ID = "org.sonarlint.eclipse.core";
+  public static final String UI_PLUGIN_ID = "org.sonarlint.eclipse.ui";
+  public static final String MARKER_ID = PLUGIN_ID + ".sonarlintProblem";
+  public static final String MARKER_CHANGESET_ID = PLUGIN_ID + ".sonarlintChangeSetProblem";
+
+  protected static SWTWorkbenchBot bot;
+
+  @Rule
+  public CaptureScreenshotOnFailure screenshot = new CaptureScreenshotOnFailure();
+
+  protected static final IProgressMonitor monitor = new NullProgressMonitor();
+  protected static IWorkspace workspace;
+  protected static File projectsWorkdir;
+  private static final ReadWriteLock copyProjectLock = new ReentrantReadWriteLock();
+
+  @BeforeClass
+  public final static void beforeClass() throws Exception {
+    projectsWorkdir = new File("target/projects-target");
+
+    workspace = ResourcesPlugin.getWorkspace();
+    final IWorkspaceDescription description = workspace.getDescription();
+    description.setAutoBuilding(false);
+    workspace.setDescription(description);
+
+    cleanWorkspace();
+
+    // Trick to force activation of the Shell on xvfb
+    UIThreadRunnable.syncExec(new VoidResult() {
+      @Override
+      public void run() {
+        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().forceActive();
+      }
+    });
+
+    bot = new SWTWorkbenchBot();
+
+    SwtBotUtils.closeViewQuietly(bot, "org.eclipse.ui.internal.introview");
+    SwtBotUtils.closeViewQuietly(bot, "org.eclipse.ui.views.ContentOutline");
+    SwtBotUtils.closeViewQuietly(bot, "org.eclipse.mylyn.tasks.ui.views.tasks");
+
+    // Clean out projects left over from previous test runs
+    clean();
+
+    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+
+  }
+
+  @AfterClass
+  public final static void afterClass() throws Exception {
+    final IWorkspaceDescription description = workspace.getDescription();
+    description.setAutoBuilding(true);
+    workspace.setDescription(description);
+    try {
+      clean();
+    } catch (Exception e) {
+      // Silently ignore exceptions at this point
+      System.err.println("[WARN] Error during cleanup: " + e.getMessage());
+    }
+  }
+
+  private static void clean() throws InterruptedException, CoreException {
+    WorkspaceHelpers.cleanWorkspace(bot);
+    bot.resetWorkbench();
+  }
+
+  public static String getProjectPath(String name) throws IOException {
+    return getProject(name).getCanonicalPath();
+  }
+
+  protected static File getProject(String projectName) throws IOException {
+    File destDir = new File(projectsWorkdir, projectName);
+    return getProject(projectName, destDir);
+  }
+
+  /**
+   * Installs specified project to specified directory.
+   *
+   * @param projectName
+   *          name of project
+   * @param destDir
+   *          destination directory
+   * @return project directory
+   * @throws IOException
+   *           if unable to prepare project directory
+   */
+  protected static File getProject(String projectdir, File destDir) throws IOException {
+    copyProjectLock.writeLock().lock();
+    try {
+      File projectFolder = new File("projects", projectdir);
+      assertTrue("Project " + projectdir + " folder not found.\n" + projectFolder.getAbsolutePath(), projectFolder.isDirectory());
+      FileUtils.copyDirectory(projectFolder, destDir);
+      return destDir;
+    } finally {
+      copyProjectLock.writeLock().unlock();
+    }
+  }
+
+  private static void cleanWorkspace() throws Exception {
+    final IWorkspaceRoot root = workspace.getRoot();
+    for (final IProject project : root.getProjects()) {
+      project.delete(true, true, monitor);
+    }
+  }
+
+  /**
+   * Import test project into the Eclipse workspace
+   *
+   * @return created projects
+   */
+  public static IProject importEclipseProject(final String projectdir, final String projectName) throws IOException, CoreException {
+    final IWorkspaceRoot root = workspace.getRoot();
+
+    File dst = new File(root.getLocation().toFile(), projectName);
+    getProject(projectdir, dst);
+
+    final IProject project = workspace.getRoot().getProject(projectName);
+    final List<IProject> addedProjectList = new ArrayList<IProject>();
+
+    workspace.run(new IWorkspaceRunnable() {
+
+      @Override
+      public void run(final IProgressMonitor monitor) throws CoreException {
+        // create project as java project
+        if (!project.exists()) {
+          final IProjectDescription projectDescription = workspace.newProjectDescription(project.getName());
+          projectDescription.setLocation(null);
+          project.create(projectDescription, monitor);
+          project.open(IResource.NONE, monitor);
+        } else {
+          project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+        }
+        addedProjectList.add(project);
+      }
+    }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
+
+    return addedProjectList.get(0);
+  }
+
+}
