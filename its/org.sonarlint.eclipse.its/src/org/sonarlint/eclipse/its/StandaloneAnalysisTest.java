@@ -36,6 +36,7 @@ import org.sonarlint.eclipse.its.utils.JobHelpers;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
@@ -51,10 +52,19 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
 
-    List<IMarker> markers = Arrays.asList(project.findMarkers(MARKER_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers).hasSize(1);
-    assertThat(markers.get(0).getAttribute(IMarker.LINE_NUMBER, -1)).isEqualTo(9);
-    assertThat(markers.get(0).getAttribute(IMarker.MESSAGE, "")).isEqualTo("Replace this usage of System.out or System.err by a logger.");
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple(13, "Replace this usage of System.out or System.err by a logger."),
+      tuple(15, "Make this anonymous inner class a lambda"), // Test that sonar.java.source is set
+      tuple(16, "Add the \"@Override\" annotation above this method signature"),
+      tuple(24, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndDoubleClick("java-simple", "src", "hello", "HelloTest.java");
+
+    List<IMarker> testMarkers = Arrays.asList(project.findMember("src/hello/HelloTest.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(testMarkers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple(10, "Fix or remove this skipped unit test"));
   }
 
   // SONARIDE-348, SONARIDE-370

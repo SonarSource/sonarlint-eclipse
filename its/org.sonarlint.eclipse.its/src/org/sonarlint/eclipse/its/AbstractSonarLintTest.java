@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.api.iterable.Extractor;
+import org.assertj.core.groups.Tuple;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -192,6 +195,32 @@ public abstract class AbstractSonarLintTest {
     }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
 
     return addedProjectList.get(0);
+  }
+
+  public static MarkerAttributesExtractor markerAttributes(String... attributes) {
+    return new MarkerAttributesExtractor(attributes);
+  }
+
+  public static class MarkerAttributesExtractor implements Extractor<IMarker, Tuple> {
+
+    private String[] attributes;
+
+    public MarkerAttributesExtractor(String... attributes) {
+      this.attributes = attributes;
+    }
+
+    @Override
+    public Tuple extract(IMarker marker) {
+      Tuple result = new Tuple();
+      for (String attribute : attributes) {
+        try {
+          result.addData(marker.getAttribute(attribute));
+        } catch (CoreException e) {
+          throw new IllegalStateException("Unable to get attribute '" + attribute + "'");
+        }
+      }
+      return result;
+    }
   }
 
 }

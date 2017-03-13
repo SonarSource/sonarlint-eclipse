@@ -6,4 +6,10 @@
             class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfiguratorExtension">
       </participant>
    </extension>
+   <extension
+         point="org.sonarlint.eclipse.core.analysisConfigurator">
+      <configurator
+            class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfiguratorExtension">
+      </configurator>
+   </extension>
 </plugin>
