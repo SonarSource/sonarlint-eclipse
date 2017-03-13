@@ -86,7 +86,7 @@
     <sonar.java.source>1.8</sonar.java.source>
     <sonar.java.target>1.8</sonar.java.target>
     <sonar.scm.ignoreLocalModifications>true</sonar.scm.ignoreLocalModifications>
-    <sonar.jacoco.reportsPath>../target/jacoco.exec,../../its/target/jacoco-its.exec</sonar.jacoco.reportsPath>
+    <sonar.jacoco.reportPaths>../target/jacoco.exec,../its/target/jacoco-it.exec</sonar.jacoco.reportPaths>
     <jarsigner.skip>true</jarsigner.skip>
     
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
@@ -317,7 +317,7 @@
             <version>0.7.9</version>
             <configuration>
               <append>true</append>
-              <destFile>${sonar.jacoco.reportPath}</destFile>
+              <destFile>../target/jacoco.exec</destFile>
             </configuration>
             <executions>
               <execution>
