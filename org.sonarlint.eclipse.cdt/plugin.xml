@@ -6,4 +6,10 @@
             class="org.sonarlint.eclipse.cdt.internal.CProjectConfiguratorExtension">
       </configurator>
    </extension>
+     <extension
+           point="org.sonarlint.eclipse.core.languageProvider">
+        <provider
+              class="org.sonarlint.eclipse.cdt.internal.CProjectConfiguratorExtension">
+        </provider>
+     </extension>
 </plugin>
