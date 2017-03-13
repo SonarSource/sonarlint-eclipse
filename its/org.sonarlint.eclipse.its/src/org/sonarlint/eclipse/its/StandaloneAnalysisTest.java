@@ -19,19 +19,23 @@
  */
 package org.sonarlint.eclipse.its;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.ui.JavaUI;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Test;
+import org.python.pydev.ui.perspective.PythonPerspectiveFactory;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
+import org.sonarlint.eclipse.its.bots.PydevPackageExplorerBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
@@ -67,176 +71,58 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       tuple(10, "Fix or remove this skipped unit test"));
   }
 
-  // SONARIDE-348, SONARIDE-370
-  @Test
-  public void shouldPassAdditionalArguments() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
-    // SonarCorePlugin.getServersManager().addServer(SonarCorePlugin.getServersManager().create("for-its", getSonarServerUrl(), "", ""));
-    // IProject project = importEclipseProject("java/java-simple", "java-simple-additional-args");
-    // JobHelpers.waitForJobsToComplete(bot);
-    //
-    // // Configure extra args on project
-    // sonarProject.getExtraProperties().add(new SonarProperty("sonar.exclusions", "**/Pmd.java"));
-    // // Force default profile to ensure analysis is correctly done
-    // sonarProject.getExtraProperties().add(new SonarProperty("sonar.profile", "it-profile"));
-    // sonarProject.save();
-    //
-    // // Configure JVM arguments (SONARIDE-370)
-    // new SonarPreferencesBot(bot).setJvmArguments("-Xms512m -Xmx1024m").ok();
-    //
-    // // FindBugs requires bytecode, so project should be compiled
-    // project.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
-    //
-    // new JavaPackageExplorerBot(bot)
-    // .expandAndSelect("java-simple-additional-args")
-    // .clickContextMenu("SonarQube", "Analyze");
-    //
-    // JobHelpers.waitForJobsToComplete(bot);
-    //
-    // List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    // assertThat(markers.size(), is(3));
-    //
-    // assertThat(markers, hasItem(new IsMarker("src/Findbugs.java", 5)));
-    // assertThat(markers, hasItem(new IsMarker("src/Checkstyle.java", 1)));
-    //
-    // // SONARIDE-209 Divide source code for tests and main source code
-    // assertThat(markers, hasItem(new IsMarker("test/PmdTest.java", 14)));
-    //
-    // // Configure wrong JVM arguments to test if it is taken into account (SONARIDE-370)
-    // new SonarPreferencesBot(bot).setJvmArguments("-Xmx10m").ok();
-    //
-    // new JavaPackageExplorerBot(bot)
-    // .expandAndSelect("java-simple-additional-args")
-    // .clickContextMenu("SonarQube", "Analyze");
-    //
-    // JobHelpers.waitForJobsToComplete(bot);
-    //
-    // // No marker as local analysis should have failed
-    // markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    // assertThat(markers.size(), is(0));
-    //
-    // // Restore JVM arguments
-    // new SonarPreferencesBot(bot).setJvmArguments("").ok();
-  }
-
-  // SONARIDE-359
-  @Test
-  public void shouldAnalyseJavaWithOptionalSrcFolders() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
-    // SonarCorePlugin.getServersManager().addServer(SonarCorePlugin.getServersManager().create("for-its", getSonarServerUrl(), "", ""));
-    // IProject project = importEclipseProject("java/java-simple-optional-src", "java-simple-optional-src");
-    // JobHelpers.waitForJobsToComplete(bot);
-    //
-    // // Enable Sonar Nature
-    // SonarProject sonarProject = SonarCorePlugin.createSonarProject(project, getSonarServerUrl(), "bar:foo");
-    // // Force default profile to ensure analysis is correctly done
-    // sonarProject.getExtraProperties().add(new SonarProperty("sonar.profile", "it-profile"));
-    // sonarProject.save();
-    //
-    // // FindBugs requires bytecode, so project should be compiled
-    // project.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
-    //
-    // new JavaPackageExplorerBot(bot)
-    // .expandAndSelect("java-simple-optional-src")
-    // .clickContextMenu("SonarQube", "Analyze");
-    //
-    // JobHelpers.waitForJobsToComplete(bot);
-    //
-    // List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    // assertThat(markers.size(), is(3));
-  }
-
-  // SONARIDE-349
-  @Test
-  public void shouldAnalyseJavaWithSeveralOutputFolders() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
-    // SonarCorePlugin.getServersManager().addServer(SonarCorePlugin.getServersManager().create("for-its", getSonarServerUrl(), "", ""));
-    // IProject project = importEclipseProject("java/java-several-output-folders", "java-several-output-folders");
-    // JobHelpers.waitForJobsToComplete(bot);
-    //
-    // // Enable Sonar Nature
-    // SonarProject sonarProject = SonarCorePlugin.createSonarProject(project, getSonarServerUrl(), "bar:foo");
-    // // Force default profile to ensure analysis is correctly done
-    // sonarProject.getExtraProperties().add(new SonarProperty("sonar.profile", "it-profile"));
-    // sonarProject.save();
-    //
-    // // FindBugs requires bytecode, so project should be compiled
-    // project.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
-    //
-    // new JavaPackageExplorerBot(bot)
-    // .expandAndSelect("java-several-output-folders")
-    // .clickContextMenu("SonarQube", "Analyze");
-    //
-    // JobHelpers.waitForJobsToComplete(bot);
-    //
-    // List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    // assertThat(markers.size(), is(2));
-  }
-
   // SONARIDE-349
   // SONARIDE-350
   // SONARIDE-353
   @Test
   public void shouldAnalyseJavaWithDependentProject() throws Exception {
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
-    // SonarCorePlugin.getServersManager().addServer(SonarCorePlugin.getServersManager().create("for-its", getSonarServerUrl(), "", ""));
-    // IProject depProject = importEclipseProject("java/java-dependent-projects/java-dependent-project", "java-dependent-project");
-    // IProject mainProject = importEclipseProject("java/java-dependent-projects/java-main-project", "java-main-project");
-    // JobHelpers.waitForJobsToComplete(bot);
-    //
-    // // Enable Sonar Nature
-    // SonarProject sonarProject = SonarCorePlugin.createSonarProject(mainProject, getSonarServerUrl(), "bar:foo");
-    // // Force default profile to ensure analysis is correctly done
-    // sonarProject.getExtraProperties().add(new SonarProperty("sonar.profile", "it-profile"));
-    // sonarProject.save();
-    //
-    // // FindBugs requires bytecode, so projects should be compiled
-    // depProject.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
-    // mainProject.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
-    //
-    // final IWorkspaceRoot root = workspace.getRoot();
-    // File toBeDeleted = new File(root.getLocation().toFile(), "java-main-project/libs/toBeDeleted.jar");
-    // assertTrue("Unable to delete JAR to test SONARIDE-350", toBeDeleted.delete());
-    //
-    // new JavaPackageExplorerBot(bot)
-    // .expandAndSelect("java-main-project")
-    // .clickContextMenu("SonarQube", "Analyze");
-    //
-    // JobHelpers.waitForJobsToComplete(bot);
-    //
-    // List<IMarker> markers = Arrays.asList(mainProject.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    // assertThat(markers.size(), is(2));
+    IProject depProject = importEclipseProject("java/java-dependent-projects/java-dependent-project", "java-dependent-project");
+    IProject mainProject = importEclipseProject("java/java-dependent-projects/java-main-project", "java-main-project");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    // SonarJava requires bytecode, so project should be compiled
+    depProject.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
+    mainProject.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
+
+    final IWorkspaceRoot root = workspace.getRoot();
+    File toBeDeleted = new File(root.getLocation().toFile(), "java-main-project/libs/toBeDeleted.jar");
+    assertThat(toBeDeleted.delete()).as("Unable to delete JAR to test SONARIDE-350").isTrue();
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndDoubleClick("java-main-project", "src", "use", "UseUtils.java");
+
+    JobHelpers.waitForJobsToComplete(bot);
+
+    List<IMarker> markers = Arrays.asList(mainProject.findMember("src/use/UseUtils.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple(9, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set on dependent project
   }
 
   @Test
   public void shouldAnalysePython() throws Exception {
-    // SwtBotUtils.openPerspective(bot, PythonPerspectiveFactory.PERSPECTIVE_ID);
-    // SonarCorePlugin.getServersManager().addServer(SonarCorePlugin.getServersManager().create("for-its", getSonarServerUrl(), "", ""));
-    // IProject project = importEclipseProject("python", "python");
-    //
-    // bot.shell("Python not configured").activate();
-    // bot.sleep(1000);
-    // bot.button("Don't ask again").click();
-    //
-    // JobHelpers.waitForJobsToComplete(bot);
-    //
-    // // Enable Sonar Nature
-    // SonarProject sonarProject = SonarCorePlugin.createSonarProject(project, getSonarServerUrl(), "python");
-    // // Force default profile to ensure analysis is correctly done
-    // sonarProject.getExtraProperties().add(new SonarProperty("sonar.profile", "it-profile"));
-    // sonarProject.save();
-    //
-    // new PydevPackageExplorerBot(bot)
-    // .expandAndSelect("python")
-    // .clickContextMenu("SonarQube", "Analyze");
-    //
-    // JobHelpers.waitForJobsToComplete(bot);
-    //
-    // List<IMarker> markers = Arrays.asList(project.findMarkers(SonarCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));
-    // assertThat(markers.size(), is(2));
-    //
-    // assertThat(markers, hasItem(new IsMarker("src/root/nested/exemple.py", 9)));
-    // assertThat(markers, hasItem(new IsMarker("src/root/nested/exemple.py", 10)));
+    SwtBotUtils.openPerspective(bot, PythonPerspectiveFactory.PERSPECTIVE_ID);
+    IProject project = importEclipseProject("python", "python");
+
+    bot.shell("Python not configured").activate();
+    bot.button("Don't ask again").click();
+
+    JobHelpers.waitForJobsToComplete(bot);
+
+    new PydevPackageExplorerBot(bot)
+      .expandAndDoubleClick("python", "src", "root", "nested", "exemple.py");
+
+    bot.shell("Default Eclipse preferences for PyDev").activate();
+    bot.button("OK").click();
+
+    JobHelpers.waitForJobsToComplete(bot);
+
+    List<IMarker> markers = Arrays.asList(project.findMember("src/root/nested/exemple.py").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple(9, "Merge this if statement with the enclosing one."),
+      tuple(10, "Replace print statement by built-in function."),
+      tuple(9, "Replace \"<>\" by \"!=\"."),
+      tuple(1, "Remove this commented out code."));
   }
 
   static class IsMarker extends BaseMatcher<IMarker> {
