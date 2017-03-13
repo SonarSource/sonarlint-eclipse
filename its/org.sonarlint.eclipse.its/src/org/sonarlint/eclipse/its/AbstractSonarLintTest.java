@@ -33,7 +33,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceDescription;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -79,9 +78,6 @@ public abstract class AbstractSonarLintTest {
     projectsWorkdir = new File("target/projects-target");
 
     workspace = ResourcesPlugin.getWorkspace();
-    final IWorkspaceDescription description = workspace.getDescription();
-    description.setAutoBuilding(false);
-    workspace.setDescription(description);
 
     cleanWorkspace();
 
@@ -108,9 +104,6 @@ public abstract class AbstractSonarLintTest {
 
   @AfterClass
   public final static void afterClass() throws Exception {
-    final IWorkspaceDescription description = workspace.getDescription();
-    description.setAutoBuilding(true);
-    workspace.setDescription(description);
     try {
       clean();
     } catch (Exception e) {

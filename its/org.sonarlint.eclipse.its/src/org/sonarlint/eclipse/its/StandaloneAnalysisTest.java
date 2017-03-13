@@ -22,16 +22,11 @@ package org.sonarlint.eclipse.its;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.ui.JavaUI;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.junit.Test;
 import org.python.pydev.ui.perspective.PythonPerspectiveFactory;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
@@ -49,9 +44,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
     IProject project = importEclipseProject("java/java-simple", "java-simple");
     JobHelpers.waitForJobsToComplete(bot);
-
-    // SonarJava requires bytecode, so project should be compiled
-    project.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
 
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
@@ -81,10 +73,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     IProject mainProject = importEclipseProject("java/java-dependent-projects/java-main-project", "java-main-project");
     JobHelpers.waitForJobsToComplete(bot);
 
-    // SonarJava requires bytecode, so project should be compiled
-    depProject.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
-    mainProject.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor());
-
     final IWorkspaceRoot root = workspace.getRoot();
     File toBeDeleted = new File(root.getLocation().toFile(), "java-main-project/libs/toBeDeleted.jar");
     assertThat(toBeDeleted.delete()).as("Unable to delete JAR to test SONARIDE-350").isTrue();
@@ -112,8 +100,11 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new PydevPackageExplorerBot(bot)
       .expandAndDoubleClick("python", "src", "root", "nested", "exemple.py");
 
-    bot.shell("Default Eclipse preferences for PyDev").activate();
-    bot.button("OK").click();
+    // Starting from PyDev 5.5 there is a new modal window to close
+    if (!bot.shells("Default Eclipse preferences for PyDev").isEmpty()) {
+      bot.shell("Default Eclipse preferences for PyDev").activate();
+      bot.button("OK").click();
+    }
 
     JobHelpers.waitForJobsToComplete(bot);
 
@@ -123,30 +114,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       tuple(10, "Replace print statement by built-in function."),
       tuple(9, "Replace \"<>\" by \"!=\"."),
       tuple(1, "Remove this commented out code."));
-  }
-
-  static class IsMarker extends BaseMatcher<IMarker> {
-
-    private final String path;
-    private final int line;
-
-    public IsMarker(String path, int line) {
-      this.path = path;
-      this.line = line;
-    }
-
-    @Override
-    public boolean matches(Object item) {
-      IMarker marker = (IMarker) item;
-      String actualPath = marker.getResource().getProjectRelativePath().toString();
-      int actualLine = marker.getAttribute(IMarker.LINE_NUMBER, -1);
-      return Objects.equals(actualPath, path) && (actualLine == line);
-    }
-
-    @Override
-    public void describeTo(Description description) {
-    }
-
   }
 
 }
