@@ -24,13 +24,29 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
   # if there are not enough commits in the Git repository (even if Travis executed git clone --depth 50).
   # For this reason errors are ignored with "|| true"
   git fetch --unshallow || true
-
-  mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy sonar:sonar \
+  
+  mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy \
       -Pdeploy-sonarsource,coverage,sign \
       -Dsonarsource.keystore.path=$SONARSOURCE_KEYSTORE_PATH \
       -Dsonarsource.keystore.password=$SONARSOURCE_KEYSTORE_PASS \
       -Dtycho.disableP2Mirrors=true \
       -Dmaven.test.redirectTestOutputToFile=false \
+      -B -e -V $*
+
+  REPO_URL="file://`pwd`/org.sonarlint.eclipse.site/target/repository/"   
+      
+
+  # Run ITs to collect IT coverage
+  cd its
+  mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+      -Pcoverage \
+      -Dtycho.localArtifacts=ignore \
+      -Dsonarlint-eclipse.p2.url=$REPO_URL
+      
+  cd ..
+  mvn sonar:sonar \
+      -Pcoverage \
+      -Dtycho.disableP2Mirrors=true \
       -Dsonar.host.url=$SONAR_HOST_URL \
       -Dsonar.login=$SONAR_TOKEN \
       -Dsonar.projectVersion=$CURRENT_VERSION \
