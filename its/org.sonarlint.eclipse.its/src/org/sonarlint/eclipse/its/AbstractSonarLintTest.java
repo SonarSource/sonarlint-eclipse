@@ -42,9 +42,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
-import org.eclipse.swtbot.swt.finder.results.VoidResult;
-import org.eclipse.ui.PlatformUI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -82,14 +79,6 @@ public abstract class AbstractSonarLintTest {
     workspace = ResourcesPlugin.getWorkspace();
 
     cleanWorkspace();
-
-    // Trick to force activation of the Shell on xvfb
-    UIThreadRunnable.syncExec(new VoidResult() {
-      @Override
-      public void run() {
-        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().forceActive();
-      }
-    });
 
     bot = new SWTWorkbenchBot();
 
