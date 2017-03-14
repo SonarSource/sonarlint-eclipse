@@ -98,6 +98,10 @@ public class SonarLintChangeListener implements IResourceChangeListener {
               IDocument doc = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
               return new FileWithDocument(f, doc);
             }
+            if (editorPart != null) {
+              // File is open in an editor, but we don't know how to get the IDocument
+              return new FileWithDocument(f, null);
+            }
             return null;
           })
           .filter(Objects::nonNull)
