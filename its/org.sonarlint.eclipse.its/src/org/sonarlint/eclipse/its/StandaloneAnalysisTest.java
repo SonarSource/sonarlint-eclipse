@@ -110,6 +110,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("java-junit", "src", "hello", "HelloTest.java");
+    JobHelpers.waitForJobsToComplete(bot);
 
     List<IMarker> testMarkers = Arrays.asList(project.findMember("src/hello/HelloTest.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
     assertThat(testMarkers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(

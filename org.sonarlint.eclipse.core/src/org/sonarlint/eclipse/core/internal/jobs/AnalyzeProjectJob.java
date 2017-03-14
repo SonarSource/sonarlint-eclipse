@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -286,7 +285,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private void updateMarkers(@Nullable Server server, Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> issuesPerResource, AnalysisResults result,
     TriggerType triggerType)
     throws CoreException {
-    Set<IFile> failedFiles = result.failedAnalysisFiles().stream().map(ClientInputFile::<IFile>getClientObject).collect(Collectors.toSet());
+    Set<ISonarLintFile> failedFiles = result.failedAnalysisFiles().stream().map(ClientInputFile::<ISonarLintFile>getClientObject).collect(Collectors.toSet());
     Map<ISonarLintIssuable, List<Issue>> successfulFiles = issuesPerResource.entrySet().stream()
       .filter(e -> !failedFiles.contains(e.getKey()))
       // TODO handle non-file-level issues
@@ -306,7 +305,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       IDocument documentOrNull = docPerFile.get((ISonarLintFile) resource);
       final IDocument documentNotNull;
       if (documentOrNull == null) {
-        documentNotNull = ((ISonarLintFile) resource).getDocument();
+        documentNotNull = resource.getDocument();
       } else {
         documentNotNull = documentOrNull;
       }

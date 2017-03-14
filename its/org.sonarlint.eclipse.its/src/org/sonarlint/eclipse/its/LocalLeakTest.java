@@ -88,4 +88,51 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     assertThat(view.bot().tree().cell(1, 0)).isEqualTo("");
   }
 
+  @Test
+  public void dontLooseLeakOnParsingError() throws Exception {
+    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+
+    IProject project = importEclipseProject("js/js-simple", "js-simple");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndDoubleClick("js-simple", "src", "hello.js");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
+      tuple(2, "Remove this usage of alert(...).", null));
+    long markerId = markers.get(0).getId();
+
+    // Change content
+    SWTBotEclipseEditor editor = bot.editorByTitle("hello.js").toTextEditor();
+    editor.navigateTo(1, 23);
+    editor.insertText("\nvar i;");
+    editor.save();
+
+    JobHelpers.waitForJobsToComplete(bot);
+
+    markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple(2, "Remove this usage of alert(...)."),
+      tuple(3, "Remove the declaration of the unused 'i' variable."));
+
+    IMarker newIssue = markers.stream().filter(m -> m.getId() != markerId).findFirst().get();
+    String timestamp = (String) newIssue.getAttribute(CREATIONDATE_ATT);
+    assertThat(timestamp).isNotEmpty();
+
+    // Insert content that should crash analyzer
+    editor.navigateTo(2, 8);
+    editor.insertText("\nvar");
+    editor.save();
+    JobHelpers.waitForJobsToComplete(bot);
+
+    // Issues are still there
+    markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
+      tuple(2, "Remove this usage of alert(...).", null),
+      tuple(3, "Remove the declaration of the unused 'i' variable.", timestamp));
+
+  }
+
 }

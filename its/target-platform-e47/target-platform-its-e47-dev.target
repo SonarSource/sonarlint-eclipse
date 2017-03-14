@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e47-dev" sequenceNumber="9">
+<?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e47-dev" sequenceNumber="10">
 <locations>
 <location path="${M2_REPO}/commons-io/commons-io/2.5" type="Directory"/>
 <location path="${M2_REPO}/org/mockito/mockito-core/2.2.9" type="Directory"/>
@@ -21,6 +21,7 @@
 <unit id="org.eclipse.team.svn.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.rse.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.wst.jsdt.feature.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/oxygen/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">

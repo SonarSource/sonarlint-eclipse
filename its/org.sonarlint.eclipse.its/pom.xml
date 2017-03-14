@@ -13,6 +13,11 @@
   <packaging>eclipse-test-plugin</packaging>
 
   <name>SonarLint Integration Tests</name>
+  
+  <properties>
+    <!-- http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassdeffounderror-jdk-nashorn-internal-runtime -->
+    <argLine>-Dorg.osgi.framework.bundle.parent=ext</argLine>
+  </properties>
 
   <build>
     <sourceDirectory>src</sourceDirectory>
