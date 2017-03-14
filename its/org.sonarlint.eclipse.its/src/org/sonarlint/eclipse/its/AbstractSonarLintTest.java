@@ -39,6 +39,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
@@ -47,6 +48,7 @@ import org.eclipse.ui.PlatformUI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
+import org.osgi.framework.Version;
 import org.sonarlint.eclipse.its.utils.CaptureScreenshotOnFailure;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 import org.sonarlint.eclipse.its.utils.WorkspaceHelpers;
@@ -214,6 +216,24 @@ public abstract class AbstractSonarLintTest {
       }
       return result;
     }
+  }
+
+  /**
+   * JavaSE-1.8 was added in Kepler SR2 / Luna
+   */
+  protected boolean supportJava8() {
+    return platformVersion().compareTo(new Version("4.4")) >= 0;
+  }
+
+  /**
+   * JUnit was shipped in ???
+   */
+  protected boolean supportJunit() {
+    return platformVersion().compareTo(new Version("4.4")) >= 0;
+  }
+
+  private Version platformVersion() {
+    return Platform.getBundle("org.eclipse.platform").getVersion();
   }
 
 }

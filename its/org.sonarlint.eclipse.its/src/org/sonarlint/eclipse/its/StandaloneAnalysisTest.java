@@ -36,6 +36,7 @@ import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.junit.Assume.assumeTrue;
 
 public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
@@ -50,17 +51,46 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(13, "Replace this usage of System.out or System.err by a logger."),
-      tuple(15, "Make this anonymous inner class a lambda"), // Test that sonar.java.source is set
-      tuple(16, "Add the \"@Override\" annotation above this method signature"),
-      tuple(24, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set
+      tuple(9, "Replace this usage of System.out or System.err by a logger."));
+
+  }
+
+  @Test
+  public void shouldAnalyseJavaJunit() throws Exception {
+    assumeTrue(supportJunit());
+    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+    IProject project = importEclipseProject("java/java-junit", "java-junit");
+    JobHelpers.waitForJobsToComplete(bot);
 
     new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("java-simple", "src", "hello", "HelloTest.java");
+      .expandAndDoubleClick("java-junit", "src", "hello", "Hello.java");
+
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple(11, "Replace this usage of System.out or System.err by a logger."),
+      tuple(15, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndDoubleClick("java-junit", "src", "hello", "HelloTest.java");
 
     List<IMarker> testMarkers = Arrays.asList(project.findMember("src/hello/HelloTest.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
     assertThat(testMarkers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(10, "Fix or remove this skipped unit test"));
+  }
+
+  @Test
+  public void shouldAnalyseJava8() throws Exception {
+    assumeTrue(supportJava8());
+    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+    IProject project = importEclipseProject("java/java8", "java8");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndDoubleClick("java8", "src", "hello", "Hello.java");
+
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple(13, "Make this anonymous inner class a lambda")); // Test that sonar.java.source is set
   }
 
   // SONARIDE-349
@@ -69,7 +99,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   public void shouldAnalyseJavaWithDependentProject() throws Exception {
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
-    IProject depProject = importEclipseProject("java/java-dependent-projects/java-dependent-project", "java-dependent-project");
+    importEclipseProject("java/java-dependent-projects/java-dependent-project", "java-dependent-project");
     IProject mainProject = importEclipseProject("java/java-dependent-projects/java-main-project", "java-main-project");
     JobHelpers.waitForJobsToComplete(bot);
 
@@ -98,13 +128,10 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     JobHelpers.waitForJobsToComplete(bot);
 
     new PydevPackageExplorerBot(bot)
-      .expandAndDoubleClick("python", "src", "root", "nested", "exemple.py");
+      .expandAndOpen("python", "src", "root", "nested", "exemple.py");
 
-    // Starting from PyDev 5.5 there is a new modal window to close
-    if (!bot.shells("Default Eclipse preferences for PyDev").isEmpty()) {
-      bot.shell("Default Eclipse preferences for PyDev").activate();
-      bot.button("OK").click();
-    }
+    bot.shell("Default Eclipse preferences for PyDev").activate();
+    bot.button("OK").click();
 
     JobHelpers.waitForJobsToComplete(bot);
 

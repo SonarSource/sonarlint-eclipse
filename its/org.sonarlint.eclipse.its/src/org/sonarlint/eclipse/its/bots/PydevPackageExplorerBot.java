@@ -39,8 +39,9 @@ public class PydevPackageExplorerBot {
     return this;
   }
 
-  public PydevPackageExplorerBot expandAndDoubleClick(String... nodes) {
-    viewBot.bot().tree().expandNode(nodes).doubleClick();
+  public PydevPackageExplorerBot expandAndOpen(String... nodes) {
+    // Open using the context menu because double click doesn't work on old Eclipse
+    viewBot.bot().tree().expandNode(nodes).contextMenu("Open").click();
     JobHelpers.waitForJobsToComplete(bot);
     return this;
   }
