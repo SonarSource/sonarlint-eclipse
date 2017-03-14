@@ -27,10 +27,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.junit.Test;
 import org.python.pydev.ui.perspective.PythonPerspectiveFactory;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.PydevPackageExplorerBot;
+import org.sonarlint.eclipse.its.bots.SonarLintProjectPropertiesBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
@@ -48,11 +50,46 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
+    JobHelpers.waitForJobsToComplete(bot);
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(9, "Replace this usage of System.out or System.err by a logger."));
 
+    bot.editorByTitle("Hello.java").close();
+
+    // Disable auto analysis on open
+    new JavaPackageExplorerBot(bot)
+      .openSonarLintProperties("java-simple");
+    new SonarLintProjectPropertiesBot(bot, "java-simple")
+      .clickAutoAnalysis()
+      .ok();
+    project.deleteMarkers(MARKER_ID, true, IResource.DEPTH_INFINITE);
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
+    JobHelpers.waitForJobsToComplete(bot);
+    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).isEmpty();
+
+    // Disable auto-analysis on save
+    SWTBotEclipseEditor editor = bot.editorByTitle("Hello.java").toTextEditor();
+    editor.navigateTo(8, 29);
+    editor.insertText("2");
+    editor.save();
+    JobHelpers.waitForJobsToComplete(bot);
+
+    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).isEmpty();
+
+    // Trigger manual analysis
+    new JavaPackageExplorerBot(bot)
+      .triggerManualAnalysis("java-simple", "src", "hello", "Hello.java");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple(9, "Replace this usage of System.out or System.err by a logger."));
   }
 
   @Test
@@ -64,6 +101,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("java-junit", "src", "hello", "Hello.java");
+    JobHelpers.waitForJobsToComplete(bot);
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
@@ -87,6 +125,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("java8", "src", "hello", "Hello.java");
+    JobHelpers.waitForJobsToComplete(bot);
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
@@ -109,7 +148,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("java-main-project", "src", "use", "UseUtils.java");
-
     JobHelpers.waitForJobsToComplete(bot);
 
     List<IMarker> markers = Arrays.asList(mainProject.findMember("src/use/UseUtils.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));

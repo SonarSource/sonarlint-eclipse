@@ -53,6 +53,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("leak", "src", "hello", "Hello.java");
+    JobHelpers.waitForJobsToComplete(bot);
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(

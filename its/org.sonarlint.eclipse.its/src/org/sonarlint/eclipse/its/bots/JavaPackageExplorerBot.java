@@ -43,7 +43,6 @@ public class JavaPackageExplorerBot {
 
   public JavaPackageExplorerBot expandAndDoubleClick(String... nodes) {
     viewBot.bot().tree().expandNode(nodes).doubleClick();
-    JobHelpers.waitForJobsToComplete(bot);
     return this;
   }
 
@@ -53,5 +52,14 @@ public class JavaPackageExplorerBot {
 
   public void clickContextMenu(String... texts) {
     new SWTBotMenu(ContextMenuHelper.contextMenu(viewBot.bot().tree(), texts)).click();
+  }
+
+  public void openSonarLintProperties(String projectName) {
+    viewBot.bot().tree().select(projectName);
+    clickContextMenu("Properties");
+  }
+
+  public void triggerManualAnalysis(String... nodes) {
+    viewBot.bot().tree().expandNode(nodes).contextMenu("SonarLint").menu("Analyze").click();
   }
 }
