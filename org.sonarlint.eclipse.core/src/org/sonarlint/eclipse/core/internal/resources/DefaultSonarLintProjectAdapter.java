@@ -79,11 +79,6 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
   }
 
   @Override
-  public IResource getResourceForProjectLevelIssues() {
-    return project;
-  }
-
-  @Override
   public Path getWorkingDir() {
     return project.getWorkingLocation(SonarLintCorePlugin.PLUGIN_ID).toFile().toPath();
   }

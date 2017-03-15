@@ -51,14 +51,14 @@ public class SonarLintCorePlugin extends Plugin {
   private ServerIssueUpdater serverIssueUpdater;
 
   private StandaloneSonarLintClientFacade sonarlint;
-  private final ServiceTracker proxyTracker;
+  private final ServiceTracker<IProxyService, IProxyService> proxyTracker;
   private final SonarLintExtensionTracker extensionTracker = new SonarLintExtensionTracker();
 
   private AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
 
   public SonarLintCorePlugin() {
     plugin = this;
-    proxyTracker = new ServiceTracker(FrameworkUtil.getBundle(this.getClass()).getBundleContext(), IProxyService.class.getName(), null);
+    proxyTracker = new ServiceTracker<>(FrameworkUtil.getBundle(this.getClass()).getBundleContext(), IProxyService.class, null);
     proxyTracker.open();
   }
 
@@ -110,7 +110,7 @@ public class SonarLintCorePlugin extends Plugin {
   }
 
   public IProxyService getProxyService() {
-    return (IProxyService) proxyTracker.getService();
+    return proxyTracker.getService();
   }
 
   public ServerIssueUpdater getServerIssueUpdater() {

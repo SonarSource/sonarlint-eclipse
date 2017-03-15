@@ -26,24 +26,36 @@ import org.eclipse.core.runtime.IAdapterFactory;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant;
 
 public class DefaultSonarLintProjectAdaterFactory implements IAdapterFactory {
 
   @Override
-  public Object getAdapter(Object adaptableObject, Class adapterType) {
+  public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
     if (ISonarLintProject.class.equals(adapterType) && adaptableObject instanceof IAdaptable) {
-      IProject project = (IProject) ((IAdaptable) adaptableObject).getAdapter(IProject.class);
+      IProject project = ((IAdaptable) adaptableObject).getAdapter(IProject.class);
       if (project != null) {
-        Predicate<IProject> shouldKeep = SonarLintCorePlugin.getExtensionTracker().getProjectFilters().stream()
-          .<Predicate<IProject>>map(f -> f::test)
-          .reduce(Predicate::and)
-          .orElse(x -> true);
-        if (shouldKeep.test(project)) {
-          return adapterType.cast(new DefaultSonarLintProjectAdapter(project));
-        }
+        return getAdapter(adapterType, project);
       }
     }
     return null;
+  }
+
+  private <T> T getAdapter(Class<T> adapterType, IProject project) {
+    Predicate<IProject> shouldExclude = SonarLintCorePlugin.getExtensionTracker().getProjectAdapterParticipants().stream()
+      .<Predicate<IProject>>map(participant -> participant::exclude)
+      .reduce(Predicate::or)
+      .orElse(x -> false);
+    if (shouldExclude.test(project)) {
+      return null;
+    }
+    for (ISonarLintProjectAdapterParticipant p : SonarLintCorePlugin.getExtensionTracker().getProjectAdapterParticipants()) {
+      ISonarLintProject adapted = p.adapt(project);
+      if (adapted != null) {
+        return adapterType.cast(adapted);
+      }
+    }
+    return adapterType.cast(new DefaultSonarLintProjectAdapter(project));
   }
 
   @Override

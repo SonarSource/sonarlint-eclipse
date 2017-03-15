@@ -26,7 +26,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
  * Implemented by components that configure the analysis on certain environments.
  * For example, we have configurators for C/C++ projects in Eclipse CDT and for Java projects in JDT.
  * 
- * @since 2.7
+ * @since 3.0
  */
 public interface IAnalysisConfigurator {
 

@@ -25,7 +25,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 /**
  * Most analyzers are relying on file extensions to detect languages. In some situations it
  * may be useful to force language.
- * @since 2.7
+ * @since 3.0
  */
 public interface IFileLanguageProvider {
 

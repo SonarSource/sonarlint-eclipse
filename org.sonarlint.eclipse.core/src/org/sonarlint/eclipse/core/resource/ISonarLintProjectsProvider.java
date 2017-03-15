@@ -26,6 +26,7 @@ import java.util.function.Supplier;
  * Interface for the extension point <code>org.sonarlint.eclipse.core.projectsProvider</code>.
  * Returned projects will be used in addition of defaults (ie IProject) when SonarLint need to collect
  * the list of all {@link ISonarLintProject}.
+ * @since 3.0
  */
 public interface ISonarLintProjectsProvider extends Supplier<Collection<ISonarLintProject>> {
 

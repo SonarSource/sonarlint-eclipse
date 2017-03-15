@@ -25,7 +25,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
- * @since 2.7
+ * @since 3.0
  */
 public interface IPreAnalysisContext {
 

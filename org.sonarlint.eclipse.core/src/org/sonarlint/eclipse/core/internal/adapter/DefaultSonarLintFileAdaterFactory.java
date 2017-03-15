@@ -33,9 +33,9 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 public class DefaultSonarLintFileAdaterFactory implements IAdapterFactory {
 
   @Override
-  public Object getAdapter(Object adaptableObject, Class adapterType) {
+  public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
     if (ISonarLintFile.class.equals(adapterType) && adaptableObject instanceof IAdaptable) {
-      IResource resource = (IResource) ((IAdaptable) adaptableObject).getAdapter(IResource.class);
+      IResource resource = ((IAdaptable) adaptableObject).getAdapter(IResource.class);
       if (resource instanceof IFile) {
         IFile file = (IFile) resource;
         return getAdapter(adapterType, file);
@@ -44,7 +44,7 @@ public class DefaultSonarLintFileAdaterFactory implements IAdapterFactory {
     return null;
   }
 
-  private Object getAdapter(Class adapterType, IFile file) {
+  private <T> T getAdapter(Class<T> adapterType, IFile file) {
     if (!SonarLintUtils.shouldAnalyze(file)) {
       return null;
     }
@@ -58,7 +58,7 @@ public class DefaultSonarLintFileAdaterFactory implements IAdapterFactory {
     for (ISonarLintFileAdapterParticipant p : SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants()) {
       ISonarLintFile adapted = p.adapt(file);
       if (adapted != null) {
-        return adapted;
+        return adapterType.cast(adapted);
       }
     }
     return adapterType.cast(new DefaultSonarLintFileAdapter(file));

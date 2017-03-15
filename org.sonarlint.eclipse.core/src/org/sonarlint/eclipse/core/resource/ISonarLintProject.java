@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
@@ -31,7 +30,7 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfigurati
 /**
  * Represents a project for SonarLint. A project will contain the 
  * project level specific SonarLint configuration (binding, exclusions, ...).
- * @since 2.7
+ * @since 3.0
  */
 public interface ISonarLintProject extends ISonarLintIssuable {
 
@@ -70,12 +69,6 @@ public interface ISonarLintProject extends ISonarLintIssuable {
    * TODO we should get rid of this at some point.
    */
   Path getBaseDir();
-
-  /**
-   * Some analyzers will report global issues that are not specific to a single file. Such issues
-   * will have their marker attached to a parent resource (usually the project containing the file).
-   */
-  IResource getResourceForProjectLevelIssues();
 
   /**
    * Working directory for analyzers (they may store temporary files for example).

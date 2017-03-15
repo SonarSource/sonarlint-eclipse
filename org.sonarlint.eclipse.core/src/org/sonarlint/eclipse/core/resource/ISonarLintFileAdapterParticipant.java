@@ -26,7 +26,7 @@ import org.eclipse.core.resources.IFile;
  * By default SonarLint try to adapt any {@link IFile} to {@link ISonarLintFile}.
  * You can use this extension point to prevent some {@link IFile} to be converted to {@link ISonarLintFile}
  * or to provide your own implementation.
- * @since 2.7
+ * @since 3.0
  */
 public interface ISonarLintFileAdapterParticipant {
 

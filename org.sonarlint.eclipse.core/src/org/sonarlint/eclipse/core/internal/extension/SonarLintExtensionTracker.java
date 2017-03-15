@@ -37,7 +37,7 @@ import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
-import org.sonarlint.eclipse.core.resource.ISonarLintProjectFilter;
+import org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
 
 public class SonarLintExtensionTracker implements IExtensionChangeHandler {
@@ -48,7 +48,8 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
   private final SonarLintEP<IAnalysisConfigurator> analysisEp = new SonarLintEP<>("org.sonarlint.eclipse.core.analysisConfigurator"); //$NON-NLS-1$
   private final SonarLintEP<ISonarLintProjectsProvider> projectsProviderEp = new SonarLintEP<>("org.sonarlint.eclipse.core.projectsProvider"); //$NON-NLS-1$
   private final SonarLintEP<ISonarLintFileAdapterParticipant> fileAdapterParticipantEp = new SonarLintEP<>("org.sonarlint.eclipse.core.fileAdapterParticipant"); //$NON-NLS-1$
-  private final SonarLintEP<ISonarLintProjectFilter> projectFilterEp = new SonarLintEP<>("org.sonarlint.eclipse.core.projectFilter"); //$NON-NLS-1$
+  private final SonarLintEP<ISonarLintProjectAdapterParticipant> projectAdapterParticipantEp = new SonarLintEP<>(
+    "org.sonarlint.eclipse.core.projectAdapterParticipant"); //$NON-NLS-1$
   private final SonarLintEP<IFileLanguageProvider> languageEp = new SonarLintEP<>("org.sonarlint.eclipse.core.languageProvider"); //$NON-NLS-1$
 
   private static class SonarLintEP<G> {
@@ -61,7 +62,8 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
     }
   }
 
-  private final Collection<SonarLintEP<?>> allEps = Arrays.asList(configuratorEp, analysisEp, projectsProviderEp, fileAdapterParticipantEp, projectFilterEp, languageEp);
+  private final Collection<SonarLintEP<?>> allEps = Arrays.asList(configuratorEp, analysisEp, projectsProviderEp, fileAdapterParticipantEp, projectAdapterParticipantEp,
+    languageEp);
 
   private ExtensionTracker tracker;
 
@@ -90,17 +92,21 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
     IConfigurationElement[] configs = extension.getConfigurationElements();
     for (final IConfigurationElement element : configs) {
       try {
-        for (SonarLintEP ep : allEps) {
-          if (ep.id.equals(extension.getExtensionPointUniqueIdentifier())) {
-            Object instance = element.createExecutableExtension(ATTR_CLASS);
-            ep.instances.add(instance);
-            // register association between object and extension with the tracker
-            tracker.registerObject(extension, instance, IExtensionTracker.REF_WEAK);
-            break;
-          }
-        }
+        instanciateAndRegister(tracker, extension, element);
       } catch (CoreException e) {
         SonarLintLogger.get().error("Unable to load one SonarLint extension", e);
+      }
+    }
+  }
+
+  private void instanciateAndRegister(IExtensionTracker tracker, IExtension extension, final IConfigurationElement element) throws CoreException {
+    for (SonarLintEP ep : allEps) {
+      if (ep.id.equals(extension.getExtensionPointUniqueIdentifier())) {
+        Object instance = element.createExecutableExtension(ATTR_CLASS);
+        ep.instances.add(instance);
+        // register association between object and extension with the tracker
+        tracker.registerObject(extension, instance, IExtensionTracker.REF_WEAK);
+        break;
       }
     }
   }
@@ -128,8 +134,8 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
     return projectsProviderEp.instances;
   }
 
-  public Collection<ISonarLintProjectFilter> getProjectFilters() {
-    return projectFilterEp.instances;
+  public Collection<ISonarLintProjectAdapterParticipant> getProjectAdapterParticipants() {
+    return projectAdapterParticipantEp.instances;
   }
 
   public Collection<ISonarLintFileAdapterParticipant> getFileAdapterParticipants() {

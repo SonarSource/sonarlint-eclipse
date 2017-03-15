@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IResource;
 
 /**
  * Common interface for all SonarLint objects that can have issues (=marker)
+ * @since 3.0
  */
 public interface ISonarLintIssuable {
 

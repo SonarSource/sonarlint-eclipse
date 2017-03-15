@@ -22,7 +22,7 @@ package org.sonarlint.eclipse.core.analysis;
 import java.util.Map;
 
 /**
- * @since 2.7
+ * @since 3.0
  */
 public interface IPostAnalysisContext {
 

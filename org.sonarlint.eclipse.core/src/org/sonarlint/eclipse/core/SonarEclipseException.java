@@ -20,7 +20,7 @@
 package org.sonarlint.eclipse.core;
 
 /**
- * @deprecated since 2.7 was only used by {@link AbstractPlugin}
+ * @deprecated since 3.0 was only used by {@link AbstractPlugin}
  */
 @Deprecated
 public class SonarEclipseException extends RuntimeException {

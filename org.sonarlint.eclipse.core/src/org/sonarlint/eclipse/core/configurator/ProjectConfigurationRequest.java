@@ -26,7 +26,7 @@ import org.eclipse.core.resources.IProject;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 
 /**
- * @deprecated since 2.7 use {@link IAnalysisConfigurator}
+ * @deprecated since 3.0 use {@link IAnalysisConfigurator}
  */
 @Deprecated
 public class ProjectConfigurationRequest {

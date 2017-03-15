@@ -22,7 +22,8 @@ package org.sonarlint.eclipse.core.resource;
 import java.util.Collection;
 
 /**
- * Anything that may contain {@link ISonarLintProject}. For example IWorkingSet are good candidates. 
+ * Anything that may contain {@link ISonarLintProject}. For example IWorkingSet are good candidates.
+ * @since 3.0
  */
 public interface ISonarLintProjectContainer {
 

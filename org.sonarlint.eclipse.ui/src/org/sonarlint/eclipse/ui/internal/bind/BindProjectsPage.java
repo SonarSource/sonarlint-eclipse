@@ -463,8 +463,8 @@ public class BindProjectsPage extends WizardPage {
 
   private static void updateProjectBinding(ISonarLintProject project, String oldServerId) {
 
-    MarkerUtils.deleteIssuesMarkers(project.getResourceForProjectLevelIssues());
-    MarkerUtils.deleteChangeSetIssuesMarkers(project.getResourceForProjectLevelIssues());
+    MarkerUtils.deleteIssuesMarkers(project.getResourceForMarkerOperations());
+    MarkerUtils.deleteChangeSetIssuesMarkers(project.getResourceForMarkerOperations());
     SonarLintCorePlugin.clearIssueTracker(project);
     JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
     if (project.isBound()) {

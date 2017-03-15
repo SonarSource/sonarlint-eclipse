@@ -31,7 +31,7 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
  * For example, we have configurators for C/C++ projects in Eclipse CDT and for Java projects.
  * 
  * Other products also use this interface, so <b>it should be kept stable</b>.
- * @deprecated since 2.7 replaced by {@link IAnalysisConfigurator}
+ * @deprecated since 3.0 replaced by {@link IAnalysisConfigurator}
  */
 @Deprecated
 public abstract class ProjectConfigurator {

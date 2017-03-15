@@ -3,10 +3,10 @@
 <schema targetNamespace="org.sonarlint.eclipse.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.sonarlint.eclipse.core" id="projectFilter" name="SonarLint Project Filter"/>
+         <meta.schema plugin="org.sonarlint.eclipse.core" id="projectAdapterParticipant" name="SonarLint Project Adapter Participant"/>
       </appInfo>
       <documentation>
-         Allows to exclude some projects to be processed by SonarLint.
+         Allows to tune IProject to ISonarLintProject default adapter.
       </documentation>
    </annotation>
 
@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence minOccurs="1" maxOccurs="unbounded">
-            <element ref="filter"/>
+            <element ref="participant"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,7 +47,7 @@
       </complexType>
    </element>
 
-   <element name="filter">
+   <element name="participant">
       <complexType>
          <attribute name="class" type="string" use="required">
             <annotation>
@@ -55,7 +55,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.sonarlint.eclipse.core.resource.ISonarLintProjectFilter"/>
+                  <meta.attribute kind="java" basedOn=":org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant"/>
                </appInfo>
             </annotation>
          </attribute>
@@ -67,7 +67,7 @@
          <meta.section type="since"/>
       </appInfo>
       <documentation>
-         [Enter the first release in which this extension point appears.]
+         3.0
       </documentation>
    </annotation>
 

@@ -19,14 +19,29 @@
  */
 package org.sonarlint.eclipse.core.resource;
 
-import java.util.function.Predicate;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IProject;
 
 /**
  * By default SonarLint try to adapt any {@link IProject} to {@link ISonarLintProject}.
  * You can use this extension point to prevent some {@link IProject} to be converted to {@link ISonarLintProject}
- *
+ * or to provide your own implementation.
+ * @since 3.0
  */
-public interface ISonarLintProjectFilter extends Predicate<IProject> {
+public interface ISonarLintProjectAdapterParticipant {
 
+  /**
+   * @return <code>true</code> to have this project not converted to an {@link ISonarLintProject}
+   */
+  default boolean exclude(IProject project) {
+    return false;
+  }
+
+  /**
+   * @return <code>null</code> to use SonarLint default adapter
+   */
+  @CheckForNull
+  default ISonarLintProject adapt(IProject project) {
+    return null;
+  }
 }
