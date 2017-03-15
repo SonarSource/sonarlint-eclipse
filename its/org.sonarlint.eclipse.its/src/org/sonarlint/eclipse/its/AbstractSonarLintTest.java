@@ -78,8 +78,6 @@ public abstract class AbstractSonarLintTest {
 
     workspace = ResourcesPlugin.getWorkspace();
 
-    cleanWorkspace();
-
     bot = new SWTWorkbenchBot();
 
     SwtBotUtils.closeViewQuietly(bot, "org.eclipse.ui.internal.introview");
@@ -90,7 +88,6 @@ public abstract class AbstractSonarLintTest {
     clean();
 
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
-
   }
 
   @AfterClass
@@ -137,13 +134,6 @@ public abstract class AbstractSonarLintTest {
       return destDir;
     } finally {
       copyProjectLock.writeLock().unlock();
-    }
-  }
-
-  private static void cleanWorkspace() throws Exception {
-    final IWorkspaceRoot root = workspace.getRoot();
-    for (final IProject project : root.getProjects()) {
-      project.delete(true, true, monitor);
     }
   }
 

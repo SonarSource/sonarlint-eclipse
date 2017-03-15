@@ -42,6 +42,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldComputeLocalLeak() throws Exception {
+    System.out.println("shouldComputeLocalLeak");
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
 
     SWTBotView view = new OnTheFlyViewBot(bot).show();
