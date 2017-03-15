@@ -24,16 +24,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.AsyncServerMarkerUpdaterJob;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
@@ -47,44 +46,19 @@ public class ServerIssueUpdater {
 
   public static final String PATH_SEPARATOR_PATTERN = Pattern.quote(File.separator);
 
-  private static final int THREADS_NUM = 5;
-  private static final int QUEUE_LIMIT = 20;
-
-  private final ExecutorService executorService;
-
   private final IssueTrackerRegistry issueTrackerRegistry;
 
   public ServerIssueUpdater(IssueTrackerRegistry issueTrackerRegistry) {
-    final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(QUEUE_LIMIT);
-    this.executorService = new ThreadPoolExecutor(THREADS_NUM, THREADS_NUM, 0L, TimeUnit.MILLISECONDS, queue);
     this.issueTrackerRegistry = issueTrackerRegistry;
   }
 
   public void updateAsync(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project, String localModuleKey,
     String serverModuleKey,
     Collection<ISonarLintIssuable> resources) {
-    Runnable task = new IssueUpdateRunnable(serverConfiguration, engine, project, localModuleKey, serverModuleKey, resources);
-    try {
-      this.executorService.submit(task);
-    } catch (RejectedExecutionException e) {
-      SonarLintLogger.get().debug("fetch and match server issues rejected for server moduleKey=" + serverModuleKey, e);
-    }
+    new IssueUpdateJob(serverConfiguration, engine, project, localModuleKey, serverModuleKey, resources).schedule();
   }
 
-  public void updateSync(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project, String localModuleKey,
-    String serverModuleKey,
-    Collection<ISonarLintIssuable> resources) {
-    new IssueUpdateRunnable(serverConfiguration, engine, project, localModuleKey, serverModuleKey, resources).run();
-  }
-
-  public void shutdown() {
-    List<Runnable> rejected = executorService.shutdownNow();
-    if (!rejected.isEmpty()) {
-      SonarLintLogger.get().debug("rejected " + rejected.size() + " pending tasks");
-    }
-  }
-
-  private class IssueUpdateRunnable implements Runnable {
+  private class IssueUpdateJob extends Job {
     private final ServerConfiguration serverConfiguration;
     private final ConnectedSonarLintEngine engine;
     private final String localModuleKey;
@@ -92,8 +66,10 @@ public class ServerIssueUpdater {
     private final Collection<ISonarLintIssuable> resources;
     private final ISonarLintProject project;
 
-    private IssueUpdateRunnable(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project, String localModuleKey,
+    private IssueUpdateJob(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project, String localModuleKey,
       String serverModuleKey, Collection<ISonarLintIssuable> resources) {
+      super("Fetch server issues for " + project.getName());
+      setPriority(DECORATE);
       this.serverConfiguration = serverConfiguration;
       this.engine = engine;
       this.project = project;
@@ -103,10 +79,13 @@ public class ServerIssueUpdater {
     }
 
     @Override
-    public void run() {
+    protected IStatus run(IProgressMonitor monitor) {
       Map<ISonarLintIssuable, Collection<Trackable>> trackedIssues = new HashMap<>();
       try {
         for (ISonarLintIssuable resource : resources) {
+          if (monitor.isCanceled()) {
+            return Status.CANCEL_STATUS;
+          }
           if (resource instanceof ISonarLintFile) {
             String relativePath = ((ISonarLintFile) resource).getProjectRelativePath();
             IssueTracker issueTracker = issueTrackerRegistry.getOrCreate(project, localModuleKey);
@@ -118,9 +97,11 @@ public class ServerIssueUpdater {
           }
         }
         new AsyncServerMarkerUpdaterJob(project, trackedIssues).schedule();
+        return Status.OK_STATUS;
       } catch (Throwable t) {
         // note: without catching Throwable, any exceptions raised in the thread will not be visible
         SonarLintLogger.get().error("error while fetching and matching server issues", t);
+        return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, t.getMessage());
       }
     }
 

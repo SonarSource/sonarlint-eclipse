@@ -163,9 +163,9 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
   }
 
   private static void collect(Subscriber subscriber, IResource resource, Collection<ISonarLintFile> changedFiles) throws TeamException {
-    IFile file = (IFile) resource.getAdapter(IFile.class);
+    IFile file = resource.getAdapter(IFile.class);
     if (file != null) {
-      ISonarLintFile sonarLintFile = (ISonarLintFile) file.getAdapter(ISonarLintFile.class);
+      ISonarLintFile sonarLintFile = file.getAdapter(ISonarLintFile.class);
       if (sonarLintFile != null) {
         SyncInfo syncInfo = subscriber.getSyncInfo(resource);
         if (syncInfo != null && !SyncInfo.isInSync(syncInfo.getKind())) {

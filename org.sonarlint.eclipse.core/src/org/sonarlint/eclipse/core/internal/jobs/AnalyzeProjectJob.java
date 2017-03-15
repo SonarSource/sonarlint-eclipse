@@ -200,7 +200,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
     AnalysisResults result = runAndCheckCancellation(server, config, issuesPerResource, monitor);
     if (!monitor.isCanceled() && result != null) {
-      updateMarkers(server, docPerFiles, issuesPerResource, result, request.getTriggerType());
+      updateMarkers(server, docPerFiles, issuesPerResource, result, request.getTriggerType(), monitor);
     }
   }
 
@@ -283,7 +283,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private void updateMarkers(@Nullable Server server, Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> issuesPerResource, AnalysisResults result,
-    TriggerType triggerType)
+    TriggerType triggerType, final IProgressMonitor monitor)
     throws CoreException {
     Set<ISonarLintFile> failedFiles = result.failedAnalysisFiles().stream().map(ClientInputFile::<ISonarLintFile>getClientObject).collect(Collectors.toSet());
     Map<ISonarLintIssuable, List<Issue>> successfulFiles = issuesPerResource.entrySet().stream()
@@ -292,15 +292,19 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       .filter(e -> e.getKey() instanceof ISonarLintFile)
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
-    trackIssues(server, docPerFile, successfulFiles, triggerType);
+    trackIssues(server, docPerFile, successfulFiles, triggerType, monitor);
   }
 
-  private void trackIssues(@Nullable Server server, Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType)
+  private void trackIssues(@Nullable Server server, Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,
+    final IProgressMonitor monitor)
     throws CoreException {
 
     String localModuleKey = getProject().getName();
 
     for (Map.Entry<ISonarLintIssuable, List<Issue>> entry : rawIssuesPerResource.entrySet()) {
+      if (monitor.isCanceled()) {
+        return;
+      }
       ISonarLintFile resource = (ISonarLintFile) entry.getKey();
       IDocument documentOrNull = docPerFile.get((ISonarLintFile) resource);
       final IDocument documentNotNull;
@@ -323,7 +327,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     if (server != null && shouldUpdateServerIssuesAsync(triggerType)) {
-      trackServerIssuesAsync(server, rawIssuesPerResource.keySet());
+      trackServerIssuesAsync(server, rawIssuesPerResource.keySet(), monitor);
     }
   }
 
@@ -383,7 +387,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return IssueTracker.matchAndTrackServerIssues(serverIssuesTrackable, tracked);
   }
 
-  private void trackServerIssuesAsync(Server server, Collection<ISonarLintIssuable> resources) {
+  private void trackServerIssuesAsync(Server server, Collection<ISonarLintIssuable> resources, final IProgressMonitor monitor) {
     ServerConfiguration serverConfiguration = server.getConfig();
     ConnectedSonarLintEngine engine = server.getEngine();
     String localModuleKey = getProject().getName();

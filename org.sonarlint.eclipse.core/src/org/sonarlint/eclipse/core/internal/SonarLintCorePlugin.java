@@ -95,7 +95,6 @@ public class SonarLintCorePlugin extends Plugin {
     }
     proxyTracker.close();
 
-    serverIssueUpdater.shutdown();
     issueTrackerRegistry.shutdown();
     extensionTracker.close();
 

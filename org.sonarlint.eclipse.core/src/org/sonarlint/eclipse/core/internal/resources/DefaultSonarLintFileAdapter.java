@@ -48,9 +48,9 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
   private final ISonarLintProject project;
   private Path filePath;
 
-  public DefaultSonarLintFileAdapter(IFile file) {
+  public DefaultSonarLintFileAdapter(ISonarLintProject project, IFile file) {
     this.file = file;
-    this.project = (ISonarLintProject) file.getProject().getAdapter(ISonarLintProject.class);
+    this.project = project;
   }
 
   @Override

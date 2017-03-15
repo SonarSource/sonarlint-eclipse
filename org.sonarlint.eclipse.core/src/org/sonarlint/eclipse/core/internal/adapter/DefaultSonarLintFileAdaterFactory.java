@@ -29,6 +29,7 @@ import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class DefaultSonarLintFileAdaterFactory implements IAdapterFactory {
 
@@ -61,7 +62,8 @@ public class DefaultSonarLintFileAdaterFactory implements IAdapterFactory {
         return adapterType.cast(adapted);
       }
     }
-    return adapterType.cast(new DefaultSonarLintFileAdapter(file));
+    ISonarLintProject project = file.getProject().getAdapter(ISonarLintProject.class);
+    return project != null ? adapterType.cast(new DefaultSonarLintFileAdapter(project, file)) : null;
   }
 
   @Override
