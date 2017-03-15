@@ -67,7 +67,7 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
     try {
       String ruleName = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR).toString();
       String ruleKey = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR).toString();
-      ISonarLintIssuable issuable = (ISonarLintIssuable) element.getResource().getAdapter(ISonarLintIssuable.class);
+      ISonarLintIssuable issuable = element.getResource().getAdapter(ISonarLintIssuable.class);
       ISonarLintProject p = issuable.getProject();
       SonarLintProjectConfiguration configuration = SonarLintProjectConfiguration.read(p.getScopeContext());
       String htmlDescription;

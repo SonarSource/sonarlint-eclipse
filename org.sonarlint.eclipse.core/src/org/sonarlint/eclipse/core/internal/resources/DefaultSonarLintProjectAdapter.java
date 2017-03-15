@@ -104,7 +104,7 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
           if (!SonarLintUtils.shouldAnalyze(resource)) {
             return false;
           }
-          ISonarLintFile sonarLintFile = (ISonarLintFile) resource.getAdapter(ISonarLintFile.class);
+          ISonarLintFile sonarLintFile = resource.getAdapter(ISonarLintFile.class);
           if (sonarLintFile != null) {
             result.add(sonarLintFile);
           }

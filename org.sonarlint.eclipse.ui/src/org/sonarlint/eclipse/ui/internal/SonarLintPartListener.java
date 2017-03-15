@@ -28,7 +28,6 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
-import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
@@ -42,22 +41,26 @@ public class SonarLintPartListener implements IPartListener2 {
   public void partOpened(IWorkbenchPartReference partRef) {
     IWorkbenchPart part = partRef.getPart(true);
     if (part instanceof IEditorPart) {
+      IEditorPart editorPart = (IEditorPart) part;
       IEditorInput input = ((IEditorPart) part).getEditorInput();
       if (input instanceof IFileEditorInput) {
         IFile file = ((IFileEditorInput) input).getFile();
-        ISonarLintFile sonarLintFile = (ISonarLintFile) file.getAdapter(ISonarLintFile.class);
+        ISonarLintFile sonarLintFile = file.getAdapter(ISonarLintFile.class);
         if (sonarLintFile != null) {
-          IEditorPart editorPart = ResourceUtil.findEditor(part.getSite().getPage(), file);
-          if (editorPart instanceof ITextEditor) {
-            IDocument doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
-            scheduleUpdate(new FileWithDocument(sonarLintFile, doc));
-          } else {
-            scheduleUpdate(new FileWithDocument(sonarLintFile, null));
-          }
+          scheduleUpdate(editorPart, sonarLintFile);
         }
       }
     }
     ChangeSetIssuesView.notifyEditorChanged();
+  }
+
+  private static void scheduleUpdate(IEditorPart editorPart, ISonarLintFile sonarLintFile) {
+    if (editorPart instanceof ITextEditor) {
+      IDocument doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
+      scheduleUpdate(new FileWithDocument(sonarLintFile, doc));
+    } else {
+      scheduleUpdate(new FileWithDocument(sonarLintFile, null));
+    }
   }
 
   private static void scheduleUpdate(FileWithDocument fileWithDoc) {

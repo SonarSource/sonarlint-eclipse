@@ -74,12 +74,12 @@ public final class SelectionUtils {
   }
 
   private static void collectProjects(Set<ISonarLintProject> selectedProjects, IAdaptable elem) {
-    ISonarLintProjectContainer container = (ISonarLintProjectContainer) elem.getAdapter(ISonarLintProjectContainer.class);
+    ISonarLintProjectContainer container = elem.getAdapter(ISonarLintProjectContainer.class);
     if (container != null) {
       selectedProjects.addAll(container.projects());
       return;
     }
-    ISonarLintProject project = (ISonarLintProject) elem.getAdapter(ISonarLintProject.class);
+    ISonarLintProject project = elem.getAdapter(ISonarLintProject.class);
     if (project != null) {
       selectedProjects.add(project);
       return;
@@ -108,17 +108,17 @@ public final class SelectionUtils {
   }
 
   private static void collectFiles(Set<ISonarLintFile> selectedFiles, IAdaptable elem) {
-    ISonarLintProjectContainer container = (ISonarLintProjectContainer) elem.getAdapter(ISonarLintProjectContainer.class);
+    ISonarLintProjectContainer container = elem.getAdapter(ISonarLintProjectContainer.class);
     if (container != null) {
       container.projects().forEach(p -> selectedFiles.addAll(p.files()));
       return;
     }
-    ISonarLintProject project = (ISonarLintProject) elem.getAdapter(ISonarLintProject.class);
+    ISonarLintProject project = elem.getAdapter(ISonarLintProject.class);
     if (project != null) {
       selectedFiles.addAll(project.files());
       return;
     }
-    ISonarLintFile file = (ISonarLintFile) elem.getAdapter(ISonarLintFile.class);
+    ISonarLintFile file = elem.getAdapter(ISonarLintFile.class);
     if (file != null) {
       selectedFiles.add(file);
       return;

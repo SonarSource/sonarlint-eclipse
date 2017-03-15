@@ -89,7 +89,7 @@ public class ServerIssueUpdater {
           if (resource instanceof ISonarLintFile) {
             String relativePath = ((ISonarLintFile) resource).getProjectRelativePath();
             IssueTracker issueTracker = issueTrackerRegistry.getOrCreate(project, localModuleKey);
-            List<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, ((ISonarLintFile) resource));
+            List<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, (ISonarLintFile) resource);
             Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
             Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(relativePath, serverIssuesTrackable);
             issueTracker.updateCache(relativePath, tracked);

@@ -61,8 +61,6 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
         return Status.OK_STATUS;
       }
 
-      // FIXME duplicate Map<ISonarLintProject, Collection<ISonarLintFile>> changedFilesPerProject =
-      // SonarLintUtils.aggregatePerMoreSpecificProject(collectChangedFiles);
       Map<ISonarLintProject, List<ISonarLintFile>> changedFilesPerProject = collectChangedFiles.stream().collect(Collectors.groupingBy(ISonarLintFile::getProject));
 
       long fileCount = changedFilesPerProject.values().stream().flatMap(Collection::stream).count();

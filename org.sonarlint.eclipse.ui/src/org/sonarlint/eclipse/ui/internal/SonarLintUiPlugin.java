@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -172,19 +171,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
   }
 
-  /**
-   * Initializes a preference store with default preference values
-   * for this plug-in.
-   */
-  @Override
-  protected void initializeDefaultPreferences(IPreferenceStore store) {
-    store.setDefault(SonarLintConsole.P_SHOW_CONSOLE, SonarLintConsole.P_SHOW_CONSOLE_ON_ERROR);
-    store.setDefault(SonarLintConsole.P_ANALYZER_OUTPUT, false);
-    store.setDefault(PreferencesUtils.PREF_MARKER_SEVERITY, PreferencesUtils.PREF_MARKER_SEVERITY_DEFAULT);
-    store.setDefault(PreferencesUtils.PREF_EXTRA_ARGS, PreferencesUtils.PREF_EXTRA_ARGS_DEFAULT);
-    store.setDefault(PreferencesUtils.PREF_TEST_FILE_REGEXPS, PreferencesUtils.PREF_TEST_FILE_REGEXPS_DEFAULT);
-  }
-
   private static class RegisterSonarLintPartListenerJob extends UIJob {
     RegisterSonarLintPartListenerJob() {
       super("Register SonarLint part listener");
@@ -259,10 +245,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     if (editor == null) {
       return null;
     }
-    // note: the cast is necessary for e43 and e44
-    IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
+    IFile file = editor.getEditorInput().getAdapter(IFile.class);
     if (file != null) {
-      return (ISonarLintFile) file.getAdapter(ISonarLintFile.class);
+      return file.getAdapter(ISonarLintFile.class);
     }
     return null;
   }

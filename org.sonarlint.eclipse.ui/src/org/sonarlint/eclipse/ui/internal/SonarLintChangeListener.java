@@ -117,11 +117,11 @@ public class SonarLintChangeListener implements IResourceChangeListener {
     if (!SonarLintUtils.shouldAnalyze(delta.getResource())) {
       return false;
     }
-    ISonarLintProject sonarLintProject = (ISonarLintProject) delta.getResource().getAdapter(ISonarLintProject.class);
+    ISonarLintProject sonarLintProject = delta.getResource().getAdapter(ISonarLintProject.class);
     if (sonarLintProject != null) {
       return sonarLintProject.isAutoEnabled();
     }
-    ISonarLintFile sonarLintFile = (ISonarLintFile) delta.getResource().getAdapter(ISonarLintFile.class);
+    ISonarLintFile sonarLintFile = delta.getResource().getAdapter(ISonarLintFile.class);
     if (sonarLintFile != null && sonarLintFile.getProject().isAutoEnabled() && isChanged(delta)) {
       changedFiles.add(sonarLintFile);
       return true;

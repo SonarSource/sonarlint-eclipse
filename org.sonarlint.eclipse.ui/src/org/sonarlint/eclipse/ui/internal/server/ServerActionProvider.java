@@ -88,7 +88,7 @@ public class ServerActionProvider extends CommonActionProvider {
         IServer server = (IServer) data;
         ServerEditAction.openEditWizard(tableViewer.getTree().getShell(), server);
       } else if (data instanceof ISonarLintProject) {
-        BindProjectsWizard wizard = new BindProjectsWizard(Arrays.asList(((ISonarLintProject) data)));
+        BindProjectsWizard wizard = new BindProjectsWizard(Arrays.asList((ISonarLintProject) data));
         final WizardDialog dialog = new WizardDialog(tableViewer.getTree().getShell(), wizard);
         dialog.setHelpAvailable(true);
         dialog.open();

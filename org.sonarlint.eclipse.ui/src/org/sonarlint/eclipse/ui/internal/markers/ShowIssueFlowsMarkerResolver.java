@@ -171,8 +171,7 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
   private static List<Annotation> existingFlowAnnotations(IAnnotationModel annotationModel) {
     List<Annotation> result = new ArrayList<>();
     annotationModel.getAnnotationIterator().forEachRemaining(a -> {
-      // Cast are required for Eclipse prior 4.6
-      if (ISSUE_FLOW_ANNOTATION_TYPE.equals(((Annotation) a).getType())) {
+      if (ISSUE_FLOW_ANNOTATION_TYPE.equals(a.getType())) {
         result.add((Annotation) a);
       }
     });

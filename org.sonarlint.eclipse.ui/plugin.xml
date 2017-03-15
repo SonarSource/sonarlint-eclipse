@@ -763,5 +763,11 @@
         </adapter>
      </factory>
   </extension>
+  <extension
+        point="org.eclipse.core.runtime.preferences">
+     <initializer
+           class="org.sonarlint.eclipse.ui.internal.preferences.SonarLintPreferencesInitializer">
+     </initializer>
+  </extension>
 	
 </plugin>

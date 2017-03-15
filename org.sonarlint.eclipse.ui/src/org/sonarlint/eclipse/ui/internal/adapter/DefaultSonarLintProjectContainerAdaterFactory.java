@@ -40,12 +40,12 @@ public class DefaultSonarLintProjectContainerAdaterFactory implements IAdapterFa
     public Collection<ISonarLintProject> projects() {
       Collection<ISonarLintProject> result = new ArrayList<>();
       for (IAdaptable elem : workingSet.getElements()) {
-        ISonarLintProject p = (ISonarLintProject) elem.getAdapter(ISonarLintProject.class);
+        ISonarLintProject p = elem.getAdapter(ISonarLintProject.class);
         if (p != null) {
           result.add(p);
           continue;
         }
-        ISonarLintProjectContainer c = (ISonarLintProjectContainer) elem.getAdapter(ISonarLintProjectContainer.class);
+        ISonarLintProjectContainer c = elem.getAdapter(ISonarLintProjectContainer.class);
         if (c != null) {
           result.addAll(c.projects());
         }

@@ -34,7 +34,7 @@ public class DefaultSonarLintProjectsProvider implements ISonarLintProjectsProvi
     List<ISonarLintProject> result = new ArrayList<>();
     for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
       if (p.isAccessible()) {
-        ISonarLintProject project = (ISonarLintProject) p.getAdapter(ISonarLintProject.class);
+        ISonarLintProject project = p.getAdapter(ISonarLintProject.class);
         if (project != null) {
           result.add(project);
         }
