@@ -74,6 +74,8 @@ public abstract class AbstractSonarLintTest {
 
   @BeforeClass
   public final static void beforeClass() throws Exception {
+    System.out.println("GTK: " + System.getProperty("org.eclipse.swt.internal.gtk.version"));
+
     projectsWorkdir = new File("target/projects-target");
 
     workspace = ResourcesPlugin.getWorkspace();
