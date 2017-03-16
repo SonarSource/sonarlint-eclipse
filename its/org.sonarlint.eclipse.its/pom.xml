@@ -14,11 +14,6 @@
 
   <name>SonarLint Integration Tests</name>
   
-  <properties>
-    <!-- https://www.eclipse.org/forums/index.php/t/1084973/ -->
-    <tycho.testArgLine>-Dorg.eclipse.swt.internal.gtk.cairoGraphics=false</tycho.testArgLine>
-  </properties>
-
   <build>
     <sourceDirectory>src</sourceDirectory>
 

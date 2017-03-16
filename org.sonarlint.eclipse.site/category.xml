@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <description url="http://sonar-ide.codehaus.org/">
+   <description url="http://www.sonarlint.org/eclipse">
       SonarLint for Eclipse
    </description>
-   <feature url="features/org.sonarlint.eclipse.feature_0.0.0.qualifier.jar" id="org.sonarlint.eclipse.feature" version="0.0.0">
+   <feature id="org.sonarlint.eclipse.feature" version="0.0.0">
+      <category name="SonarLint for Eclipse"/>
+   </feature>
+   <feature id="org.sonarlint.eclipse.feature.source" version="0.0.0">
       <category name="SonarLint for Eclipse"/>
    </feature>
    <category-def name="SonarLint for Eclipse" label="SonarLint for Eclipse">
