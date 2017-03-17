@@ -41,6 +41,7 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
   mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify \
       -Pcoverage \
       -Dtycho.localArtifacts=ignore \
+      -Dtycho.disableP2Mirrors=true \
       -Dsonarlint-eclipse.p2.url=$REPO_URL
       
   cd ..
