@@ -55,8 +55,8 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
   @Override
   public boolean canConfigure(ISonarLintProject project) {
     try {
-      // Constants are inlined so this is not causing ClassNotFound
-      IProject underlyingProject = project.getUnderlyingProject();
+      IProject underlyingProject = project.getResource() instanceof IProject ? (IProject) project.getResource() : null;
+      // Constants are inlined so this should not cause ClassNotFound
       return cdtUtils != null &&
         underlyingProject != null &&
         (underlyingProject.hasNature(CProjectNature.C_NATURE_ID) || underlyingProject.hasNature(CCProjectNature.CC_NATURE_ID));
@@ -73,7 +73,7 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
 
   @Override
   public String language(ISonarLintFile file) {
-    IFile iFile = file.getUnderlyingFile();
+    IFile iFile = file.getResource() instanceof IFile ? (IFile) file.getResource() : null;
     if (cdtUtils != null && iFile != null) {
       return cdtUtils.language(iFile);
     }

@@ -37,8 +37,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -49,6 +52,7 @@ import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
+import org.sonarlint.eclipse.core.analysis.IPostAnalysisContext;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
@@ -139,24 +143,24 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     SonarLintLogger.get().debug("Trigger: " + request.getTriggerType().name());
     SonarLintLogger.get().info(this.getName() + "...");
     // Analyze
-    Path tempDirectory = null;
+    Path analysisWorkDir = null;
     try {
       // Configure
       Map<String, String> mergedExtraProps = new LinkedHashMap<>();
       final Map<ISonarLintFile, IDocument> filesToAnalyze = request.getFiles().stream().collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()),
         HashMap::putAll);
       Collection<ProjectConfigurator> usedDeprecatedConfigurators = configureDeprecated(getProject(), filesToAnalyze.keySet(), mergedExtraProps, monitor);
-      tempDirectory = Files.createTempDirectory(getProject().getWorkingDir(), "sonarlint");
-      Collection<IAnalysisConfigurator> usedConfigurators = configure(getProject(), filesToAnalyze.keySet(), mergedExtraProps, tempDirectory, monitor);
 
-      List<ClientInputFile> inputFiles = buildInputFiles(tempDirectory, filesToAnalyze);
+      analysisWorkDir = Files.createTempDirectory(getProject().getWorkingDir(), "sonarlint");
+      List<ClientInputFile> inputFiles = buildInputFiles(analysisWorkDir, filesToAnalyze);
+      Collection<IAnalysisConfigurator> usedConfigurators = configure(getProject(), inputFiles, mergedExtraProps, analysisWorkDir, monitor);
 
       for (SonarLintProperty sonarProperty : extraProps) {
         mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue());
       }
 
       if (!inputFiles.isEmpty()) {
-        runAnalysisAndUpdateMarkers(filesToAnalyze, monitor, mergedExtraProps, inputFiles);
+        runAnalysisAndUpdateMarkers(filesToAnalyze, monitor, mergedExtraProps, inputFiles, analysisWorkDir);
       }
 
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
@@ -166,8 +170,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       SonarLintLogger.get().error("Error during execution of SonarLint analysis", e);
       return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
     } finally {
-      if (tempDirectory != null) {
-        FileUtils.deleteRecursively(tempDirectory);
+      if (analysisWorkDir != null) {
+        FileUtils.deleteRecursively(analysisWorkDir);
       }
     }
 
@@ -175,9 +179,12 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private void runAnalysisAndUpdateMarkers(Map<ISonarLintFile, IDocument> docPerFiles, final IProgressMonitor monitor, Map<String, String> mergedExtraProps,
-    List<ClientInputFile> inputFiles) throws CoreException {
+    List<ClientInputFile> inputFiles, Path analysisWorkDir) throws CoreException {
     StandaloneAnalysisConfiguration config;
-    Path projectBaseDir = getProject().getBaseDir();
+    IPath projectLocation = getProject().getResource().getLocation();
+    // In some unfrequent cases the project may be virtual and don't have physical location
+    // so fallback to use analysis work dir
+    Path projectBaseDir = projectLocation != null ? projectLocation.toFile().toPath() : analysisWorkDir;
     Server server;
     if (getProject().isBound()) {
       server = (Server) ServersManager.getInstance().getServer(getProjectConfig().getServerId());
@@ -248,16 +255,16 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     final Map<String, String> extraProperties,
     final IProgressMonitor monitor) {
     Collection<ProjectConfigurator> usedConfigurators = new ArrayList<>();
-    if (project.getUnderlyingProject() != null) {
-      ProjectConfigurationRequest configuratorRequest = new ProjectConfigurationRequest(project.getUnderlyingProject(),
+    if (project.getResource() instanceof IProject) {
+      ProjectConfigurationRequest configuratorRequest = new ProjectConfigurationRequest((IProject) project.getResource(),
         filesToAnalyze.stream()
-          .map(ISonarLintFile::getUnderlyingFile)
+          .map(f -> (f.getResource() instanceof IFile) ? (IFile) f.getResource() : null)
           .filter(Objects::nonNull)
           .collect(Collectors.toList()),
         extraProperties);
       Collection<ProjectConfigurator> configurators = SonarLintCorePlugin.getExtensionTracker().getConfigurators();
       for (ProjectConfigurator configurator : configurators) {
-        if (configurator.canConfigure(project.getUnderlyingProject())) {
+        if (configurator.canConfigure((IProject) project.getResource())) {
           configurator.configure(configuratorRequest, monitor);
           usedConfigurators.add(configurator);
         }
@@ -267,7 +274,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return usedConfigurators;
   }
 
-  private static Collection<IAnalysisConfigurator> configure(final ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze,
+  private static Collection<IAnalysisConfigurator> configure(final ISonarLintProject project, List<ClientInputFile> filesToAnalyze,
     final Map<String, String> extraProperties, Path tempDir, final IProgressMonitor monitor) {
     Collection<IAnalysisConfigurator> usedConfigurators = new ArrayList<>();
     Collection<IAnalysisConfigurator> configurators = SonarLintCorePlugin.getExtensionTracker().getAnalysisConfigurators();
@@ -400,8 +407,20 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     for (ProjectConfigurator p : usedDeprecatedConfigurators) {
       p.analysisComplete(unmodifiableMap, monitor);
     }
+    IPostAnalysisContext context = new IPostAnalysisContext() {
+
+      @Override
+      public ISonarLintProject getProject() {
+        return getProject();
+      }
+
+      @Override
+      public Map<String, String> getAnalysisProperties() {
+        return unmodifiableMap;
+      }
+    };
     for (IAnalysisConfigurator p : usedConfigurators) {
-      p.analysisComplete(() -> unmodifiableMap, monitor);
+      p.analysisComplete(context, monitor);
     }
 
   }

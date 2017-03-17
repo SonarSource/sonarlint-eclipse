@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.jdt.internal;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
@@ -47,8 +48,8 @@ public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, 
 
   @Override
   public boolean canConfigure(ISonarLintProject project) {
-    return jdtPresent && project.getUnderlyingProject() != null
-      && JdtUtils.hasJavaNature(project.getUnderlyingProject());
+    return jdtPresent && project.getResource() instanceof IProject
+      && JdtUtils.hasJavaNature((IProject) project.getResource());
   }
 
   @Override

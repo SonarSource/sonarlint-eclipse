@@ -33,7 +33,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
@@ -89,7 +88,7 @@ public class CProjectConfiguratorTest {
     DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
     when(context.getProject()).thenReturn(slProject);
     ISonarLintFile slFile = mock(ISonarLintFile.class);
-    when(slFile.getPhysicalPath(ArgumentMatchers.any(java.nio.file.Path.class))).thenReturn(Paths.get("file1").toString());
+    when(slFile.getProjectRelativePath()).thenReturn(Paths.get("file1").toString());
     when(context.getFilesToAnalyze()).thenReturn(Collections.singleton(slFile));
     when(context.getAnalysisTemporaryFolder()).thenReturn(temp.getRoot().toPath());
 

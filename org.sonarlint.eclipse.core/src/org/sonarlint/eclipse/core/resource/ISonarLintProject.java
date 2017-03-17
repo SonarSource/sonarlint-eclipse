@@ -21,15 +21,15 @@ package org.sonarlint.eclipse.core.resource;
 
 import java.nio.file.Path;
 import java.util.Collection;
-import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 
 /**
  * Represents a project for SonarLint. A project will contain the 
  * project level specific SonarLint configuration (binding, exclusions, ...).
+ * Should implement hashCode and equals.
  * @since 3.0
  */
 public interface ISonarLintProject extends ISonarLintIssuable {
@@ -37,7 +37,9 @@ public interface ISonarLintProject extends ISonarLintIssuable {
   /**
    * Is the project open. Most actions are disabled on closed projects.
    */
-  boolean isOpen();
+  default boolean isOpen() {
+    return getResource().isAccessible();
+  }
 
   /**
    * Is this project already bound to a remote SonarQube project/module?
@@ -56,19 +58,15 @@ public interface ISonarLintProject extends ISonarLintIssuable {
   /**
    * The scope context used to store SonarLint configuration
    */
-  IScopeContext getScopeContext();
+  default IScopeContext getScopeContext() {
+    return new ProjectScope((IProject) getResource());
+  }
 
   /**
    * Unique name of the project that is displayed in logs and UI
    */
   @Override
   String getName();
-
-  /**
-   * Physical directory that is used to compute relative path for files to be analyzed.
-   * TODO we should get rid of this at some point.
-   */
-  Path getBaseDir();
 
   /**
    * Working directory for analyzers (they may store temporary files for example).
@@ -87,28 +85,8 @@ public interface ISonarLintProject extends ISonarLintIssuable {
   Object getObjectToNotify();
 
   /**
-   * List of files in this project reported as changed by the SCM (ie that contains local changes).
-   */
-  Collection<ISonarLintFile> getScmChangedFiles(IProgressMonitor monitor);
-
-  /**
-   * Return the reason why this project doesn't support SCM feature. This will be displayed to the user.
-   * @return <code>null</code> if SCM is supported.
-   */
-  @CheckForNull
-  String getNoScmReason();
-
-  /**
    * @return all SonarLint files contained in this project.
    */
   Collection<ISonarLintFile> files();
-
-  /**
-   * Return the underlying IProject when possible. Will be used by caller to access
-   * project specific informations, like nature, ...
-   * Caller should be ready to handle null values.
-   */
-  @CheckForNull
-  IProject getUnderlyingProject();
 
 }

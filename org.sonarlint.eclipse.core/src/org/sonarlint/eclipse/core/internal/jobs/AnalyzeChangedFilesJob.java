@@ -36,6 +36,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -97,7 +98,9 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
       if (monitor.isCanceled()) {
         break;
       }
-      changedFiles.addAll(project.getScmChangedFiles(monitor));
+      if (project instanceof DefaultSonarLintProjectAdapter) {
+        changedFiles.addAll(((DefaultSonarLintProjectAdapter) project).getScmChangedFiles(monitor));
+      }
     }
     return changedFiles;
   }

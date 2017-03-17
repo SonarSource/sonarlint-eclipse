@@ -31,13 +31,12 @@ public interface ISonarLintIssuable {
 
   /**
    * Name to uniquely identify this object in the workspace.
-   * @return
    */
   String getName();
 
   /**
-   * The resource where marker will be created
+   * The resource where markers will be created
    */
-  IResource getResourceForMarkerOperations();
+  IResource getResource();
 
 }

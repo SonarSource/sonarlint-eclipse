@@ -41,6 +41,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeChangedFilesJob;
+import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -115,8 +116,14 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
       btnPrjWrapper.setToolTipText("No editor opened or current file not analyzable");
       btnPrj.setEnabled(false);
     } else {
+      String msgNoScm;
       ISonarLintProject project = editedFile.getProject();
-      String msgNoScm = project.getNoScmReason();
+      if (project instanceof DefaultSonarLintProjectAdapter) {
+        DefaultSonarLintProjectAdapter slProject = (DefaultSonarLintProjectAdapter) project;
+        msgNoScm = slProject.getNoScmSupportCause();
+      } else {
+        msgNoScm = "SCM not supported on the current project";
+      }
       if (msgNoScm != null) {
         btnPrjWrapper.setToolTipText(msgNoScm);
         btnPrj.setEnabled(false);

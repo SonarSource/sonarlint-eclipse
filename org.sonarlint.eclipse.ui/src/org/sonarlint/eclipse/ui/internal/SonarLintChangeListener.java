@@ -37,7 +37,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -49,6 +48,7 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
+import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 public class SonarLintChangeListener implements IResourceChangeListener {
 
@@ -91,7 +91,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
         ISonarLintProject project = entry.getKey();
         Collection<FileWithDocument> filesToAnalyze = entry.getValue().stream()
           .map(f -> {
-            IEditorPart editorPart = ResourceUtil.findEditor(page, f.getFileInEditor());
+            IEditorPart editorPart = PlatformUtils.findEditor(page, f);
             if (editorPart instanceof ITextEditor) {
               ITextEditor textEditor = (ITextEditor) editorPart;
               ShowIssueFlowsMarkerResolver.removeAnnotations(textEditor);

@@ -19,19 +19,12 @@
  */
 package org.sonarlint.eclipse.core.internal.resources;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Objects;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.filebuffers.ITextFileBufferManager;
 import org.eclipse.core.filebuffers.LocationKind;
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -46,7 +39,6 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
 
   private final IFile file;
   private final ISonarLintProject project;
-  private Path filePath;
 
   public DefaultSonarLintFileAdapter(ISonarLintProject project, IFile file) {
     this.file = file;
@@ -61,11 +53,6 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
   @Override
   public ISonarLintProject getProject() {
     return project;
-  }
-
-  @Override
-  public IFile getFileInEditor() {
-    return file;
   }
 
   @Override
@@ -93,7 +80,7 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
   }
 
   @Override
-  public IResource getResourceForMarkerOperations() {
+  public IResource getResource() {
     return file;
   }
 
@@ -105,46 +92,6 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
       SonarLintLogger.get().error("Unable to determine charset of file " + file, e);
       return Charset.defaultCharset();
     }
-  }
-
-  @Override
-  public InputStream inputStream() {
-    try {
-      return file.getContents(true);
-    } catch (CoreException e) {
-      SonarLintLogger.get().error("Unable to read file content for " + file, e);
-      return new ByteArrayInputStream(new byte[0]);
-    }
-  }
-
-  private synchronized void initFromFS(Path temporaryDirectory) {
-    IFileStore fileStore;
-    try {
-      fileStore = EFS.getStore(file.getLocationURI());
-      File localFile = fileStore.toLocalFile(EFS.NONE, null);
-      if (localFile == null) {
-        // For analyzers to properly work we should ensure the temporary file has a "correct" name, and not a generated one
-        localFile = new File(temporaryDirectory.toFile(), file.getProjectRelativePath().toOSString());
-        Files.createDirectories(localFile.getParentFile().toPath());
-        fileStore.copy(EFS.getStore(localFile.toURI()), EFS.OVERWRITE, null);
-      }
-      filePath = localFile.toPath().toAbsolutePath();
-    } catch (Exception e) {
-      throw new IllegalStateException("Unable to find path for file " + file, e);
-    }
-  }
-
-  @Override
-  public String getPhysicalPath(Path temporaryDirectory) {
-    if (filePath == null) {
-      initFromFS(temporaryDirectory);
-    }
-    return filePath.toString();
-  }
-
-  @Override
-  public IFile getUnderlyingFile() {
-    return file;
   }
 
   @Override

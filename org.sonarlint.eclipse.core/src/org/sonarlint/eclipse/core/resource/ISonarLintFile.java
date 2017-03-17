@@ -19,20 +19,16 @@
  */
 package org.sonarlint.eclipse.core.resource;
 
-import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
-import javax.annotation.CheckForNull;
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.filesystem.EFS;
 import org.eclipse.jface.text.IDocument;
 
+/**
+ * Represents a file that can be analyzed for SonarLint.
+ * Should implement hashCode and equals.
+ * @since 3.0
+ */
 public interface ISonarLintFile extends ISonarLintIssuable {
-
-  /**
-   * The IFile resource that will be found in editor.
-   * TODO drop that
-   */
-  IFile getFileInEditor();
 
   /**
    * Return a document that represents content of this file.
@@ -41,32 +37,14 @@ public interface ISonarLintFile extends ISonarLintIssuable {
 
   /**
    * Path of the file inside its project. Should use same separator than SonarQube keys ('/').
+   * Used by issue tracking.
    */
   String getProjectRelativePath();
 
   /**
-   * Charset to be used to read this file content.
+   * Some analyzers need to read the file from disk so {@link #getDocument()} will not be used, and instead
+   * {@link EFS} will be queried for a physical copy of the file, and content will be read using this charset.
    */
   Charset getCharset();
-
-  /**
-   * Return an InputStream on the file content.
-   */
-  InputStream inputStream();
-
-  /**
-   * A physical path to a file with same content than this file.
-   * Filename should be the same as the original file.
-   * Location should be relative to workspace (so don't create a temp file in Operating System temp folder).
-   * TODO will be removed when analyzers are able to rely only on {@link #inputStream()} and {@link #getProjectRelativePath()}
-   * @param tempDirectory if needed, use this temporary directory to create a temporary file. The directory is cleaned after analysis.
-   */
-  String getPhysicalPath(Path tempDirectory);
-
-  /**
-   * The underlying IFile if applicable. Used by some configurators to get some details.
-   */
-  @CheckForNull
-  IFile getUnderlyingFile();
 
 }

@@ -45,7 +45,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
@@ -54,6 +53,7 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDo
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 import org.sonarlint.eclipse.ui.internal.views.issues.IssuesView;
 
@@ -91,7 +91,7 @@ public class AnalyzeCommand extends AbstractHandler {
     Map<ISonarLintProject, Collection<FileWithDocument>> filesToAnalyzePerProject = new LinkedHashMap<>();
     for (ISonarLintFile file : SelectionUtils.allSelectedFiles(event)) {
       filesToAnalyzePerProject.putIfAbsent(file.getProject(), new ArrayList<FileWithDocument>());
-      IEditorPart editorPart = ResourceUtil.findEditor(HandlerUtil.getActivePart(event).getSite().getPage(), file.getFileInEditor());
+      IEditorPart editorPart = PlatformUtils.findEditor(HandlerUtil.getActivePart(event).getSite().getPage(), file);
       if (editorPart instanceof ITextEditor) {
         IDocument doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
         filesToAnalyzePerProject.get(file.getProject()).add(new FileWithDocument(file, doc));
