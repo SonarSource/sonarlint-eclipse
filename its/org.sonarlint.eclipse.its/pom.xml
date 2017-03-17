@@ -14,6 +14,11 @@
 
   <name>SonarLint Integration Tests</name>
   
+  <properties>
+    <!-- http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassdeffounderror-jdk-nashorn-internal-runtime -->
+    <tycho.testArgLine>-Dorg.osgi.framework.bundle.parent=ext</tycho.testArgLine>
+  </properties>
+  
   <build>
     <sourceDirectory>src</sourceDirectory>
 
