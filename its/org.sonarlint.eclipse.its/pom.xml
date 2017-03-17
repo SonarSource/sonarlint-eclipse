@@ -44,6 +44,14 @@
               <type>p2-installable-unit</type>
               <artifactId>org.eclipse.cdt.feature.group</artifactId>
             </dependency>
+            <dependency>
+              <type>p2-installable-unit</type>
+              <artifactId>org.eclipse.wst.jsdt.feature.feature.group</artifactId>
+            </dependency>
+            <dependency>
+              <type>p2-installable-unit</type>
+              <artifactId>org.eclipse.rse.feature.group</artifactId>
+            </dependency>
           </dependencies>
         </configuration>
       </plugin>

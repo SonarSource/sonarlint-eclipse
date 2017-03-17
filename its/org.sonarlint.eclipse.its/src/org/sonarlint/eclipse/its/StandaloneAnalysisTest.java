@@ -20,15 +20,26 @@
 package org.sonarlint.eclipse.its;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.python.pydev.ui.perspective.PythonPerspectiveFactory;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.PydevPackageExplorerBot;
@@ -41,6 +52,9 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.Assume.assumeTrue;
 
 public class StandaloneAnalysisTest extends AbstractSonarLintTest {
+
+  @ClassRule
+  public static TemporaryFolder temp = new TemporaryFolder();
 
   @Test
   public void shouldAnalyseJava() throws Exception {
@@ -180,6 +194,60 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       tuple(10, "Replace print statement by built-in function."),
       tuple(9, "Replace \"<>\" by \"!=\"."),
       tuple(1, "Remove this commented out code."));
+  }
+
+  @Test
+  public void shouldAnalyseLinkedFile() throws Exception {
+    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+    IProject project = importEclipseProject("java/java-linked", "java-linked");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    File dotProject = new File(project.getLocation().toFile(), ".project");
+    String content = FileUtils.readFileToString(dotProject, StandardCharsets.UTF_8);
+    FileUtils.write(dotProject, content.replace("${PLACEHOLDER}", new File("projects/java/java-linked-target/hello/HelloLinked.java").getAbsolutePath()), StandardCharsets.UTF_8);
+    project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndDoubleClick("java-linked", "src", "hello", "HelloLinked.java");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/HelloLinked.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple(13, "Replace this usage of System.out or System.err by a logger."));
+  }
+
+  @Test
+  public void shouldAnalyseVirtualProject() throws Exception {
+    File remoteProjectDir = temp.newFolder();
+    FileUtils.copyDirectory(new File("projects/java/java-simple"), remoteProjectDir);
+
+    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+    final IProject rseProject = workspace.getRoot().getProject("Local_java-simple");
+
+    workspace.run(new IWorkspaceRunnable() {
+
+      @Override
+      public void run(final IProgressMonitor monitor) throws CoreException {
+        final IProjectDescription projectDescription = workspace.newProjectDescription(rseProject.getName());
+        URI uri = remoteProjectDir.toURI();
+        try {
+          projectDescription.setLocationURI(new URI("rse", "LOCALHOST", uri.getPath(), null));
+        } catch (URISyntaxException e) {
+          throw new IllegalStateException(e);
+        }
+        rseProject.create(projectDescription, monitor);
+        rseProject.open(IResource.NONE, monitor);
+      }
+    }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
+    JobHelpers.waitForJobsToComplete(bot);
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndDoubleClick("Local_java-simple", "src", "hello", "Hello.java");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    List<IMarker> markers = Arrays.asList(rseProject.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple(9, "Replace this usage of System.out or System.err by a logger."));
   }
 
 }

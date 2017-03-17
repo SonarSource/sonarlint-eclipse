@@ -21,8 +21,6 @@ package org.sonarlint.eclipse.its;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.io.FileUtils;
@@ -86,9 +84,6 @@ public abstract class AbstractSonarLintTest {
     SwtBotUtils.closeViewQuietly(bot, "org.eclipse.ui.views.ContentOutline");
     SwtBotUtils.closeViewQuietly(bot, "org.eclipse.mylyn.tasks.ui.views.tasks");
 
-    // Clean out projects left over from previous test runs
-    clean();
-
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
   }
 
@@ -151,13 +146,11 @@ public abstract class AbstractSonarLintTest {
     getProject(projectdir, dst);
 
     final IProject project = workspace.getRoot().getProject(projectName);
-    final List<IProject> addedProjectList = new ArrayList<IProject>();
 
     workspace.run(new IWorkspaceRunnable() {
 
       @Override
       public void run(final IProgressMonitor monitor) throws CoreException {
-        // create project as java project
         if (!project.exists()) {
           final IProjectDescription projectDescription = workspace.newProjectDescription(project.getName());
           projectDescription.setLocation(null);
@@ -166,11 +159,10 @@ public abstract class AbstractSonarLintTest {
         } else {
           project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
         }
-        addedProjectList.add(project);
       }
     }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
 
-    return addedProjectList.get(0);
+    return project;
   }
 
   public static MarkerAttributesExtractor markerAttributes(String... attributes) {
