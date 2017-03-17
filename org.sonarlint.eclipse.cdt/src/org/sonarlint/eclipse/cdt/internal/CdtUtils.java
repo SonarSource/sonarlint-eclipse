@@ -43,6 +43,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.content.IContentType;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
+import org.sonarlint.eclipse.core.internal.jobs.DefaultPreAnalysisContext;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -74,7 +75,7 @@ public class CdtUtils {
   public void configure(IPreAnalysisContext context, IProgressMonitor monitor) {
     Collection<ISonarLintFile> filesToAnalyze = context.getFilesToAnalyze()
       .stream()
-      .filter(f -> f.getUnderlyingFile() != null && fileValidator.test(f.getUnderlyingFile()))
+      .filter(f -> f.getResource() instanceof IFile && fileValidator.test((IFile) f.getResource()))
       .collect(Collectors.toList());
 
     try {
@@ -90,13 +91,13 @@ public class CdtUtils {
 
   private Collection<ConfiguredFile> configureCProject(IPreAnalysisContext context, ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze) {
     List<ConfiguredFile> files = new LinkedList<>();
-    IScannerInfoProvider infoProvider = cCorePlugin.getScannerInfoProvider(project.getUnderlyingProject());
+    IScannerInfoProvider infoProvider = cCorePlugin.getScannerInfoProvider((IProject) project.getResource());
 
     for (ISonarLintFile file : filesToAnalyze) {
-      ConfiguredFile.Builder builder = new ConfiguredFile.Builder(file.getUnderlyingFile());
+      ConfiguredFile.Builder builder = new ConfiguredFile.Builder((IFile) file.getResource());
 
-      String path = file.getPhysicalPath(context.getAnalysisTemporaryFolder());
-      IScannerInfo fileInfo = infoProvider.getScannerInformation(file.getUnderlyingFile());
+      String path = ((DefaultPreAnalysisContext) context).getLocalPath(file);
+      IScannerInfo fileInfo = infoProvider.getScannerInformation(file.getResource());
 
       builder.includes(fileInfo.getIncludePaths() != null ? fileInfo.getIncludePaths() : new String[0])
         .symbols(fileInfo.getDefinedSymbols() != null ? fileInfo.getDefinedSymbols() : Collections.emptyMap())
@@ -109,8 +110,18 @@ public class CdtUtils {
   }
 
   private Path writeJson(IPreAnalysisContext context, ISonarLintProject project, Collection<ConfiguredFile> files) throws IOException {
-    String json = jsonFactory.create(files, project.getBaseDir().toString());
+    String json = jsonFactory.create(files, getBaseDir(context, project));
     return createJsonFile(context.getAnalysisTemporaryFolder(), json);
+  }
+
+  private static String getBaseDir(IPreAnalysisContext context, ISonarLintProject project) {
+    IPath projectLocation = project.getResource().getLocation();
+    if (projectLocation != null) {
+      return projectLocation.toFile().toString();
+    }
+    // In some unfrequent cases the project may be virtual and don't have physical location
+    // so fallback to use analysis work dir (where physical file copy should be created anyway)
+    return context.getAnalysisTemporaryFolder().toString();
   }
 
   @CheckForNull

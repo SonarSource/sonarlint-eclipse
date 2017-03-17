@@ -20,11 +20,14 @@
 package org.sonarlint.eclipse.core.analysis;
 
 import java.util.Map;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
  * @since 3.0
  */
 public interface IPostAnalysisContext {
+
+  ISonarLintProject getProject();
 
   Map<String, String> getAnalysisProperties();
 

@@ -29,12 +29,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
-import org.eclipse.core.resources.ProjectScope;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.eclipse.team.core.RepositoryProvider;
 import org.eclipse.team.core.TeamException;
 import org.eclipse.team.core.subscribers.Subscriber;
@@ -56,26 +52,8 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
   }
 
   @Override
-  public boolean isOpen() {
-    return project.isAccessible();
-  }
-
-  @Override
   public String getName() {
     return project.getName();
-  }
-
-  @Override
-  public IScopeContext getScopeContext() {
-    return new ProjectScope(project);
-  }
-
-  @Override
-  public Path getBaseDir() {
-    IPath projectLocation = project.getLocation();
-    // In some unfrequent cases the project may be virtual and don't have physical location
-    // so fallback to use workspace root
-    return projectLocation != null ? projectLocation.toFile().toPath() : ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
   }
 
   @Override
@@ -117,8 +95,7 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
     return result;
   }
 
-  @Override
-  public String getNoScmReason() {
+  public String getNoScmSupportCause() {
     RepositoryProvider provider = RepositoryProvider.getProvider(project);
     if (provider == null) {
       return "No SCM for project '" + project.getName() + "'";
@@ -129,7 +106,6 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
     }
   }
 
-  @Override
   public Collection<ISonarLintFile> getScmChangedFiles(IProgressMonitor monitor) {
     List<ISonarLintFile> result = new ArrayList<>();
     RepositoryProvider provider = RepositoryProvider.getProvider(project);
@@ -185,12 +161,7 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
   }
 
   @Override
-  public IResource getResourceForMarkerOperations() {
-    return project;
-  }
-
-  @Override
-  public IProject getUnderlyingProject() {
+  public IResource getResource() {
     return project;
   }
 

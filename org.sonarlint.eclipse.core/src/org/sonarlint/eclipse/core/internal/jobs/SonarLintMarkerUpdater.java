@@ -61,7 +61,7 @@ public class SonarLintMarkerUpdater {
       if (triggerType == TriggerType.CHANGESET) {
         previousMarkersToDelete = Collections.emptySet();
       } else {
-        previousMarkersToDelete = new HashSet<>(Arrays.asList(issuable.getResourceForMarkerOperations().findMarkers(SonarLintCorePlugin.MARKER_ID, false, IResource.DEPTH_ZERO)));
+        previousMarkersToDelete = new HashSet<>(Arrays.asList(issuable.getResource().findMarkers(SonarLintCorePlugin.MARKER_ID, false, IResource.DEPTH_ZERO)));
       }
 
       if (createExtraLocations) {
@@ -102,13 +102,13 @@ public class SonarLintMarkerUpdater {
     if (issue.isResolved()) {
       if (issue.getMarkerId() != null) {
         // Issue is associated to a marker, means it was not marked as resolved in previous analysis, but now it is, so clear marker
-        IMarker marker = issuable.getResourceForMarkerOperations().findMarker(issue.getMarkerId());
+        IMarker marker = issuable.getResource().findMarker(issue.getMarkerId());
         marker.delete();
         issue.setMarkerId(null);
       }
     } else {
       // We are expecting every unresolved issue to be associated to an existing marker
-      IMarker marker = issuable.getResourceForMarkerOperations().findMarker(issue.getMarkerId());
+      IMarker marker = issuable.getResource().findMarker(issue.getMarkerId());
       updateServerMarkerAttributes(issue, marker);
     }
   }
@@ -117,10 +117,10 @@ public class SonarLintMarkerUpdater {
     TriggerType triggerType, Set<IMarker> previousMarkersToDelete, boolean createExtraLocations) throws CoreException {
     for (Trackable issue : issues) {
       if (!issue.isResolved()) {
-        if (triggerType == TriggerType.CHANGESET || issue.getMarkerId() == null || file.getResourceForMarkerOperations().findMarker(issue.getMarkerId()) == null) {
+        if (triggerType == TriggerType.CHANGESET || issue.getMarkerId() == null || file.getResource().findMarker(issue.getMarkerId()) == null) {
           createMarker(document, file, issue, triggerType, createExtraLocations);
         } else {
-          IMarker marker = file.getResourceForMarkerOperations().findMarker(issue.getMarkerId());
+          IMarker marker = file.getResource().findMarker(issue.getMarkerId());
           updateMarkerAttributes(document, issue, marker, createExtraLocations);
           previousMarkersToDelete.remove(marker);
         }
@@ -131,7 +131,7 @@ public class SonarLintMarkerUpdater {
   }
 
   private static void createMarker(IDocument document, ISonarLintFile file, Trackable trackable, TriggerType triggerType, boolean createExtraLocations) throws CoreException {
-    IMarker marker = file.getResourceForMarkerOperations()
+    IMarker marker = file.getResource()
       .createMarker(triggerType == TriggerType.CHANGESET ? SonarLintCorePlugin.MARKER_CHANGESET_ID : SonarLintCorePlugin.MARKER_ID);
     if (triggerType != TriggerType.CHANGESET) {
       trackable.setMarkerId(marker.getId());

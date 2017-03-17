@@ -30,9 +30,6 @@ public class ConfiguredFile {
   private final String path;
 
   private ConfiguredFile(IFile file, String[] includes, Map<String, String> symbols, String path) {
-    if (file == null || includes == null || symbols == null || path == null) {
-      throw new IllegalStateException("null argument");
-    }
     this.file = file;
     this.includes = includes;
     this.symbols = Collections.unmodifiableMap(symbols);

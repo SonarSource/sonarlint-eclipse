@@ -40,7 +40,7 @@ import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 public class JdtUtils {
 
   public void configure(IPreAnalysisContext context, IProgressMonitor monitor) {
-    IProject project = context.getProject().getUnderlyingProject();
+    IProject project = (IProject) context.getProject().getResource();
     if (project != null) {
       IJavaProject javaProject = JavaCore.create(project);
       configureJavaProject(javaProject, context);

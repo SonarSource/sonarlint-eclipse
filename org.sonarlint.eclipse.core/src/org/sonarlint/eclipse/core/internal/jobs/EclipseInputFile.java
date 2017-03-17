@@ -20,16 +20,19 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.List;
 import javax.annotation.Nullable;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
@@ -44,20 +47,41 @@ class EclipseInputFile implements ClientInputFile {
   private final List<PathMatcher> pathMatchersForTests;
   private final ISonarLintFile file;
   private final String language;
-  private final IDocument document;
+  private final IDocument editorDocument;
   private final Path tempDirectory;
+  private Path filePath;
 
-  EclipseInputFile(List<PathMatcher> pathMatchersForTests, ISonarLintFile file, Path tempDirectory, @Nullable IDocument document, @Nullable String language) {
+  EclipseInputFile(List<PathMatcher> pathMatchersForTests, ISonarLintFile file, Path tempDirectory, @Nullable IDocument editorDocument, @Nullable String language) {
     this.pathMatchersForTests = pathMatchersForTests;
     this.file = file;
     this.tempDirectory = tempDirectory;
     this.language = language;
-    this.document = document;
+    this.editorDocument = editorDocument;
   }
 
   @Override
   public String getPath() {
-    return file.getPhysicalPath(tempDirectory);
+    if (filePath == null) {
+      initFromFS(file, tempDirectory);
+    }
+    return filePath.toString();
+  }
+
+  private synchronized void initFromFS(ISonarLintFile file, Path temporaryDirectory) {
+    IFileStore fileStore;
+    try {
+      fileStore = EFS.getStore(file.getResource().getLocationURI());
+      File localFile = fileStore.toLocalFile(EFS.NONE, null);
+      if (localFile == null) {
+        // For analyzers to properly work we should ensure the temporary file has a "correct" name, and not a generated one
+        localFile = new File(temporaryDirectory.toFile(), file.getProjectRelativePath());
+        Files.createDirectories(localFile.getParentFile().toPath());
+        fileStore.copy(EFS.getStore(localFile.toURI()), EFS.OVERWRITE, null);
+      }
+      filePath = localFile.toPath().toAbsolutePath();
+    } catch (Exception e) {
+      throw new IllegalStateException("Unable to find path for file " + file, e);
+    }
   }
 
   @Override
@@ -78,7 +102,7 @@ class EclipseInputFile implements ClientInputFile {
 
   @Override
   public Charset getCharset() {
-    return file.getCharset();
+    return StandardCharsets.UTF_8;
   }
 
   @Override
@@ -88,32 +112,16 @@ class EclipseInputFile implements ClientInputFile {
 
   @Override
   public String contents() throws IOException {
-    // Prefer to use Document when file is already opened in an editor
-    if (document != null) {
-      return document.get();
+    // Prefer to use editor Document when file is already opened in an editor
+    if (editorDocument != null) {
+      return editorDocument.get();
     }
-    ByteArrayOutputStream result = new ByteArrayOutputStream();
-    try (InputStream is = inputStream()) {
-      byte[] buffer = new byte[1024];
-      int length;
-      while ((length = is.read(buffer)) != -1) {
-        result.write(buffer, 0, length);
-      }
-    }
-    return result.toString(getCharset().name());
+    return file.getDocument().get();
   }
 
   @Override
   public InputStream inputStream() throws IOException {
-    // Prefer to use Document when file is already opened in an editor
-    if (document != null) {
-      Charset charset = getCharset();
-      if (charset == null) {
-        charset = StandardCharsets.UTF_8;
-      }
-      return new ByteArrayInputStream(contents().getBytes(charset));
-    }
-    return file.inputStream();
+    return new ByteArrayInputStream(contents().getBytes(getCharset()));
   }
 
 }

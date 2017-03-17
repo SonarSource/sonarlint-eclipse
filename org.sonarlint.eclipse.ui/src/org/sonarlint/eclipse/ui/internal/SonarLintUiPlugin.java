@@ -77,17 +77,23 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private class SonarLintConsoleLogger implements LogListener {
     @Override
     public void info(String msg, boolean fromAnalyzer) {
-      getSonarConsole().info(msg, fromAnalyzer);
+      if (PlatformUI.isWorkbenchRunning()) {
+        getSonarConsole().info(msg, fromAnalyzer);
+      }
     }
 
     @Override
     public void error(String msg, boolean fromAnalyzer) {
-      getSonarConsole().error(msg, fromAnalyzer);
+      if (PlatformUI.isWorkbenchRunning()) {
+        getSonarConsole().error(msg, fromAnalyzer);
+      }
     }
 
     @Override
     public void debug(String msg, boolean fromAnalyzer) {
-      getSonarConsole().debug(msg, fromAnalyzer);
+      if (PlatformUI.isWorkbenchRunning()) {
+        getSonarConsole().debug(msg, fromAnalyzer);
+      }
     }
   }
 

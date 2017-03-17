@@ -21,14 +21,20 @@ package org.sonarlint.eclipse.ui.internal.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.part.FileEditorInput;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public final class PlatformUtils {
 
@@ -67,6 +73,35 @@ public final class PlatformUtils {
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
+  }
+
+  @CheckForNull
+  public static IEditorPart findEditor(IWorkbenchPage page, ISonarLintFile file) {
+    // handle the common case where the editor input is a FileEditorInput and ISonarLintFile wrap an IFile
+    if (file.getResource() instanceof IFile) {
+      IEditorPart editor = page.findEditor(new FileEditorInput((IFile) file.getResource()));
+      if (editor != null) {
+        return editor;
+      }
+    }
+    // check for editors that have their own kind of input that adapts to IFile,
+    // being careful not to force loading of the editor
+    IEditorReference[] refs = page.getEditorReferences();
+    for (int i = 0; i < refs.length; i++) {
+      IEditorReference ref = refs[i];
+      IEditorPart part = ref.getEditor(false);
+      if (part == null) {
+        continue;
+      }
+      IFile editorFile = Adapters.adapt(part.getEditorInput(), IFile.class);
+      if (editorFile != null) {
+        ISonarLintFile editorSlFile = editorFile.getAdapter(ISonarLintFile.class);
+        if (editorSlFile != null && editorSlFile.equals(file)) {
+          return part;
+        }
+      }
+    }
+    return null;
   }
 
 }

@@ -22,12 +22,15 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 
 public class DefaultPreAnalysisContext implements IPreAnalysisContext {
 
@@ -35,14 +38,17 @@ public class DefaultPreAnalysisContext implements IPreAnalysisContext {
 
   private final ISonarLintProject project;
   private final Map<String, String> analysisProperties;
-  private final Collection<ISonarLintFile> filesToAnalyze;
+  private final Map<ISonarLintFile, String> filesToAnalyze;
   private final Path tempDir;
 
-  public DefaultPreAnalysisContext(ISonarLintProject project, Map<String, String> analysisProperties, Collection<ISonarLintFile> filesToAnalyze, Path tempDir) {
+  public DefaultPreAnalysisContext(ISonarLintProject project, Map<String, String> analysisProperties, List<ClientInputFile> filesToAnalyze, Path tempDir) {
     this.project = project;
     this.analysisProperties = analysisProperties;
     this.tempDir = tempDir;
-    this.filesToAnalyze = Collections.unmodifiableCollection(filesToAnalyze);
+    this.filesToAnalyze = Collections
+      .unmodifiableMap(filesToAnalyze.stream()
+        .map(EclipseInputFile.class::cast)
+        .collect(Collectors.toMap(EclipseInputFile::getClientObject, EclipseInputFile::getPath)));
   }
 
   @Override
@@ -65,7 +71,14 @@ public class DefaultPreAnalysisContext implements IPreAnalysisContext {
 
   @Override
   public Collection<ISonarLintFile> getFilesToAnalyze() {
-    return filesToAnalyze;
+    return filesToAnalyze.keySet();
+  }
+
+  /**
+   * Used by CDT that need physical path to analyze files
+   */
+  public String getLocalPath(ISonarLintFile file) {
+    return filesToAnalyze.get(file);
   }
 
   @Override
