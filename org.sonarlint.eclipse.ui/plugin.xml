@@ -757,7 +757,7 @@
         point="org.eclipse.core.runtime.adapters">
      <factory
            adaptableType="org.eclipse.ui.IWorkingSet"
-           class="org.sonarlint.eclipse.ui.internal.adapter.DefaultSonarLintProjectContainerAdaterFactory">
+           class="org.sonarlint.eclipse.ui.internal.adapter.DefaultSonarLintProjectContainerAdapterFactory">
         <adapter
               type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer">
         </adapter>

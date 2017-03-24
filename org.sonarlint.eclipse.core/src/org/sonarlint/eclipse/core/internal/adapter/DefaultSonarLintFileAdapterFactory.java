@@ -20,47 +20,55 @@
 package org.sonarlint.eclipse.core.internal.adapter;
 
 import java.util.function.Predicate;
-import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
+import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant;
 
-public class DefaultSonarLintProjectAdaterFactory implements IAdapterFactory {
+public class DefaultSonarLintFileAdapterFactory implements IAdapterFactory {
 
   @Override
   public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
-    if (ISonarLintProject.class.equals(adapterType) && adaptableObject instanceof IAdaptable) {
-      IProject project = ((IAdaptable) adaptableObject).getAdapter(IProject.class);
-      if (project != null) {
-        return getAdapter(adapterType, project);
+    if (ISonarLintFile.class.equals(adapterType) && adaptableObject instanceof IAdaptable) {
+      IResource resource = ((IAdaptable) adaptableObject).getAdapter(IResource.class);
+      if (resource instanceof IFile) {
+        IFile file = (IFile) resource;
+        return getAdapter(adapterType, file);
       }
     }
     return null;
   }
 
-  private <T> T getAdapter(Class<T> adapterType, IProject project) {
-    Predicate<IProject> shouldExclude = SonarLintCorePlugin.getExtensionTracker().getProjectAdapterParticipants().stream()
-      .<Predicate<IProject>>map(participant -> participant::exclude)
-      .reduce(Predicate::or)
-      .orElse(x -> false);
-    if (shouldExclude.test(project)) {
+  private <T> T getAdapter(Class<T> adapterType, IFile file) {
+    if (!SonarLintUtils.shouldAnalyze(file)) {
       return null;
     }
-    for (ISonarLintProjectAdapterParticipant p : SonarLintCorePlugin.getExtensionTracker().getProjectAdapterParticipants()) {
-      ISonarLintProject adapted = p.adapt(project);
+    Predicate<IFile> shouldExclude = SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants().stream()
+      .<Predicate<IFile>>map(participant -> participant::exclude)
+      .reduce(Predicate::or)
+      .orElse(x -> false);
+    if (shouldExclude.test(file)) {
+      return null;
+    }
+    for (ISonarLintFileAdapterParticipant p : SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants()) {
+      ISonarLintFile adapted = p.adapt(file);
       if (adapted != null) {
         return adapterType.cast(adapted);
       }
     }
-    return adapterType.cast(new DefaultSonarLintProjectAdapter(project));
+    ISonarLintProject project = file.getProject().getAdapter(ISonarLintProject.class);
+    return project != null ? adapterType.cast(new DefaultSonarLintFileAdapter(project, file)) : null;
   }
 
   @Override
   public Class<?>[] getAdapterList() {
-    return new Class[] {ISonarLintProject.class};
+    return new Class[] {ISonarLintFile.class};
   }
 
 }

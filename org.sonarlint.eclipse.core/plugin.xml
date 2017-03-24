@@ -72,14 +72,14 @@
         point="org.eclipse.core.runtime.adapters">
      <factory
            adaptableType="org.eclipse.core.runtime.IAdaptable"
-           class="org.sonarlint.eclipse.core.internal.adapter.DefaultSonarLintProjectAdaterFactory">
+           class="org.sonarlint.eclipse.core.internal.adapter.DefaultSonarLintProjectAdapterFactory">
         <adapter
               type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
         </adapter>
      </factory>
      <factory
            adaptableType="org.eclipse.core.runtime.IAdaptable"
-           class="org.sonarlint.eclipse.core.internal.adapter.DefaultSonarLintFileAdaterFactory">
+           class="org.sonarlint.eclipse.core.internal.adapter.DefaultSonarLintFileAdapterFactory">
         <adapter
               type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
         </adapter>
