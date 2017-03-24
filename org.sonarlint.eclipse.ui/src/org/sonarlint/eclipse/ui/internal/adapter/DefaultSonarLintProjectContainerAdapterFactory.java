@@ -27,7 +27,7 @@ import org.eclipse.ui.IWorkingSet;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer;
 
-public class DefaultSonarLintProjectContainerAdaterFactory implements IAdapterFactory {
+public class DefaultSonarLintProjectContainerAdapterFactory implements IAdapterFactory {
 
   private static final class DefaultSonarLintProjectContainer implements ISonarLintProjectContainer {
     private final IWorkingSet workingSet;
