@@ -1,0 +1,3 @@
+update.severity = 0
+update.description = Update SonarLint for Eclipse
+update.matchExp=providedCapabilities.exists(pc | pc.namespace \=\= 'org.eclipse.equinox.p2.iu' && (pc.name \=\= 'org.sonarlint.eclipse.jdt.feature.feature.group' || pc.name \=\= 'org.sonarlint.eclipse.cdt.feature.feature.group' || pc.name \=\= 'org.sonarlint.eclipse.feature.feature.group' && pc.version < '$version$'))
