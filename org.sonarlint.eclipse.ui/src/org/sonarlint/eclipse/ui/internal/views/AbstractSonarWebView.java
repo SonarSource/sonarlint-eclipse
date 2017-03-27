@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.views;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.core.resources.IMarker;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
@@ -112,7 +113,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
         selectedSonarMarkers.add(marker);
       }
     } else if (elem instanceof IAdaptable) {
-      IMarker marker = (IMarker) ((IAdaptable) elem).getAdapter(IMarker.class);
+      IMarker marker = Adapters.adapt(elem, IMarker.class);
       if (marker != null && isSonarLintMarker(marker)) {
         selectedSonarMarkers.add(marker);
       }

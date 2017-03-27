@@ -24,7 +24,7 @@ import java.util.Map;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.Adapters;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -95,7 +95,7 @@ public final class PlatformUtils {
       }
       IFile editorFile = Adapters.adapt(part.getEditorInput(), IFile.class);
       if (editorFile != null) {
-        ISonarLintFile editorSlFile = editorFile.getAdapter(ISonarLintFile.class);
+        ISonarLintFile editorSlFile = Adapters.adapt(editorFile, ISonarLintFile.class);
         if (editorSlFile != null && editorSlFile.equals(file)) {
           return part;
         }

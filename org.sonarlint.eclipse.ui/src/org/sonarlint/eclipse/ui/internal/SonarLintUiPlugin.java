@@ -23,6 +23,7 @@ import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -251,9 +252,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     if (editor == null) {
       return null;
     }
-    IFile file = editor.getEditorInput().getAdapter(IFile.class);
+    IFile file = Adapters.adapt(editor.getEditorInput(), IFile.class);
     if (file != null) {
-      return file.getAdapter(ISonarLintFile.class);
+      return Adapters.adapt(file, ISonarLintFile.class);
     }
     return null;
   }

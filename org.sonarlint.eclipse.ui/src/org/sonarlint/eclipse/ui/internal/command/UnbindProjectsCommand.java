@@ -24,6 +24,7 @@ import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -61,7 +62,7 @@ public class UnbindProjectsCommand extends AbstractHandler {
     List elems = selection.toList();
     for (Object elem : elems) {
       if (elem instanceof IAdaptable) {
-        ISonarLintProject proj = (ISonarLintProject) ((IAdaptable) elem).getAdapter(ISonarLintProject.class);
+        ISonarLintProject proj = Adapters.adapt(elem, ISonarLintProject.class);
         if (proj != null) {
           selectedProjects.add(proj);
         }
