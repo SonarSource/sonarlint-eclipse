@@ -137,6 +137,10 @@ public class SonarLintMarkerUpdater {
       trackable.setMarkerId(marker.getId());
     }
 
+    // See MarkerViewUtils
+    marker.setAttribute("org.eclipse.ui.views.markers.name", file.getResourceNameForMarker());
+    marker.setAttribute("org.eclipse.ui.views.markers.path", file.getResourceContainerForMarker());
+
     updateMarkerAttributes(document, trackable, marker, createExtraLocations);
 
   }
