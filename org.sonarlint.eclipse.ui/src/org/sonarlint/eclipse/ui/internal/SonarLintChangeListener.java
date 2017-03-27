@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -117,11 +118,11 @@ public class SonarLintChangeListener implements IResourceChangeListener {
     if (!SonarLintUtils.shouldAnalyze(delta.getResource())) {
       return false;
     }
-    ISonarLintProject sonarLintProject = delta.getResource().getAdapter(ISonarLintProject.class);
+    ISonarLintProject sonarLintProject = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
     if (sonarLintProject != null) {
       return sonarLintProject.isAutoEnabled();
     }
-    ISonarLintFile sonarLintFile = delta.getResource().getAdapter(ISonarLintFile.class);
+    ISonarLintFile sonarLintFile = Adapters.adapt(delta.getResource(), ISonarLintFile.class);
     if (sonarLintFile != null && sonarLintFile.getProject().isAutoEnabled() && isChanged(delta)) {
       changedFiles.add(sonarLintFile);
       return true;

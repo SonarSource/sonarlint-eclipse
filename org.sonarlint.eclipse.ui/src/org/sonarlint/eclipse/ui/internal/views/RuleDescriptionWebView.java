@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.views;
 
 import java.lang.reflect.Method;
 import org.eclipse.core.resources.IMarker;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.graphics.Color;
@@ -67,7 +68,7 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
     try {
       String ruleName = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR).toString();
       String ruleKey = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR).toString();
-      ISonarLintIssuable issuable = element.getResource().getAdapter(ISonarLintIssuable.class);
+      ISonarLintIssuable issuable = Adapters.adapt(element.getResource(), ISonarLintIssuable.class);
       ISonarLintProject p = issuable.getProject();
       SonarLintProjectConfiguration configuration = SonarLintProjectConfiguration.read(p.getScopeContext());
       String htmlDescription;

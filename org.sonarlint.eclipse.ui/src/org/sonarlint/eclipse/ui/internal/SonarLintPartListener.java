@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal;
 
 import java.util.Arrays;
 import org.eclipse.core.resources.IFile;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -45,7 +46,7 @@ public class SonarLintPartListener implements IPartListener2 {
       IEditorInput input = ((IEditorPart) part).getEditorInput();
       if (input instanceof IFileEditorInput) {
         IFile file = ((IFileEditorInput) input).getFile();
-        ISonarLintFile sonarLintFile = file.getAdapter(ISonarLintFile.class);
+        ISonarLintFile sonarLintFile = Adapters.adapt(file, ISonarLintFile.class);
         if (sonarLintFile != null) {
           scheduleUpdate(editorPart, sonarLintFile);
         }

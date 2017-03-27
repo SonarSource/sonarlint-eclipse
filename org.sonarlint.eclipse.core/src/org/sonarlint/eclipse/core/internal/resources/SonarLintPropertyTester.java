@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import javax.annotation.Nullable;
 import org.eclipse.core.expressions.PropertyTester;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.IAdaptable;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -60,12 +61,11 @@ public class SonarLintPropertyTester extends PropertyTester {
       return ((ISonarLintFile) receiver).getProject();
     }
     if (receiver instanceof IAdaptable) {
-      // note: the cast to ISonarLintProject is necessary for e43 and e44
-      ISonarLintProject project = (ISonarLintProject) ((IAdaptable) receiver).getAdapter(ISonarLintProject.class);
+      ISonarLintProject project = Adapters.adapt(receiver, ISonarLintProject.class);
       if (project != null) {
         return project;
       }
-      ISonarLintFile file = (ISonarLintFile) ((IAdaptable) receiver).getAdapter(ISonarLintFile.class);
+      ISonarLintFile file = Adapters.adapt(receiver, ISonarLintFile.class);
       if (file != null) {
         return file.getProject();
       }

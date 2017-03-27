@@ -29,6 +29,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -111,7 +112,7 @@ public class AnalyzeCommand extends AbstractHandler {
     if (input instanceof IFileEditorInput) {
       IDocument doc = ((ITextEditor) activeEditor).getDocumentProvider().getDocument(activeEditor.getEditorInput());
       IFile file = ((IFileEditorInput) input).getFile();
-      ISonarLintFile sonarLintFile = (ISonarLintFile) file.getAdapter(ISonarLintFile.class);
+      ISonarLintFile sonarLintFile = Adapters.adapt(file, ISonarLintFile.class);
       return sonarLintFile != null ? new FileWithDocument(sonarLintFile, doc) : null;
     }
     return null;

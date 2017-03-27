@@ -29,6 +29,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.team.core.RepositoryProvider;
@@ -82,7 +83,7 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
           if (!SonarLintUtils.shouldAnalyze(resource)) {
             return false;
           }
-          ISonarLintFile sonarLintFile = resource.getAdapter(ISonarLintFile.class);
+          ISonarLintFile sonarLintFile = Adapters.adapt(resource, ISonarLintFile.class);
           if (sonarLintFile != null) {
             result.add(sonarLintFile);
           }
@@ -139,9 +140,9 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
   }
 
   private static void collect(Subscriber subscriber, IResource resource, Collection<ISonarLintFile> changedFiles) throws TeamException {
-    IFile file = resource.getAdapter(IFile.class);
+    IFile file = Adapters.adapt(resource, IFile.class);
     if (file != null) {
-      ISonarLintFile sonarLintFile = file.getAdapter(ISonarLintFile.class);
+      ISonarLintFile sonarLintFile = Adapters.adapt(file, ISonarLintFile.class);
       if (sonarLintFile != null) {
         SyncInfo syncInfo = subscriber.getSyncInfo(resource);
         if (syncInfo != null && !SyncInfo.isInSync(syncInfo.getKind())) {

@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.Arrays;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -162,6 +163,6 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
   }
 
   private ISonarLintProject getProject() {
-    return (ISonarLintProject) getElement().getAdapter(ISonarLintProject.class);
+    return Adapters.adapt(getElement(), ISonarLintProject.class);
   }
 }

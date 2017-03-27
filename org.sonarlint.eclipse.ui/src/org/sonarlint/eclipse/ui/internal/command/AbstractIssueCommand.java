@@ -25,6 +25,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IMarker;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
@@ -55,7 +56,7 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
       if (elem instanceof IMarker) {
         selectedSonarMarkers.add((IMarker) elem);
       } else if (elem instanceof IAdaptable) {
-        IMarker marker = (IMarker) ((IAdaptable) elem).getAdapter(IMarker.class);
+        IMarker marker = Adapters.adapt(elem, IMarker.class);
         if (marker != null) {
           selectedSonarMarkers.add(marker);
         }

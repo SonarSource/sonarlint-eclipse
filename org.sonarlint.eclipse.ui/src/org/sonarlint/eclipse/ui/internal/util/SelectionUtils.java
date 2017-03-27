@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -74,12 +75,12 @@ public final class SelectionUtils {
   }
 
   private static void collectProjects(Set<ISonarLintProject> selectedProjects, IAdaptable elem) {
-    ISonarLintProjectContainer container = elem.getAdapter(ISonarLintProjectContainer.class);
+    ISonarLintProjectContainer container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
     if (container != null) {
       selectedProjects.addAll(container.projects());
       return;
     }
-    ISonarLintProject project = elem.getAdapter(ISonarLintProject.class);
+    ISonarLintProject project = Adapters.adapt(elem, ISonarLintProject.class);
     if (project != null) {
       selectedProjects.add(project);
       return;
@@ -108,17 +109,17 @@ public final class SelectionUtils {
   }
 
   private static void collectFiles(Set<ISonarLintFile> selectedFiles, IAdaptable elem) {
-    ISonarLintProjectContainer container = elem.getAdapter(ISonarLintProjectContainer.class);
+    ISonarLintProjectContainer container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
     if (container != null) {
       container.projects().forEach(p -> selectedFiles.addAll(p.files()));
       return;
     }
-    ISonarLintProject project = elem.getAdapter(ISonarLintProject.class);
+    ISonarLintProject project = Adapters.adapt(elem, ISonarLintProject.class);
     if (project != null) {
       selectedFiles.addAll(project.files());
       return;
     }
-    ISonarLintFile file = elem.getAdapter(ISonarLintFile.class);
+    ISonarLintFile file = Adapters.adapt(elem, ISonarLintFile.class);
     if (file != null) {
       selectedFiles.add(file);
       return;

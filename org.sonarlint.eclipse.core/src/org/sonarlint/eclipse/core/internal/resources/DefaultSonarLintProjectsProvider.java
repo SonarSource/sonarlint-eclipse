@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
 
@@ -34,7 +35,7 @@ public class DefaultSonarLintProjectsProvider implements ISonarLintProjectsProvi
     List<ISonarLintProject> result = new ArrayList<>();
     for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
       if (p.isAccessible()) {
-        ISonarLintProject project = p.getAdapter(ISonarLintProject.class);
+        ISonarLintProject project = Adapters.adapt(p, ISonarLintProject.class);
         if (project != null) {
           result.add(project);
         }

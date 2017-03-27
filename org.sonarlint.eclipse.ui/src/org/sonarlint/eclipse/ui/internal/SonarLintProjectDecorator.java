@@ -20,7 +20,7 @@
 package org.sonarlint.eclipse.ui.internal;
 
 import java.util.Collection;
-import org.eclipse.core.runtime.IAdaptable;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -38,10 +38,7 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
 
   @Override
   public void decorate(Object element, IDecoration decoration) {
-    ISonarLintProject project = null;
-    if (element instanceof IAdaptable) {
-      project = (ISonarLintProject) ((IAdaptable) element).getAdapter(ISonarLintProject.class);
-    }
+    ISonarLintProject project = Adapters.adapt(element, ISonarLintProject.class);
     if (project != null && project.isOpen()) {
       SonarLintProjectConfiguration p = SonarLintProjectConfiguration.read(project.getScopeContext());
       if (!p.isAutoEnabled()) {

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.CheckForNull;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.resource.JFaceResources;
@@ -458,8 +459,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
   }
 
   private ISonarLintProject getProject() {
-    // note: the cast to IResource is necessary for e43 and e44
-    return (ISonarLintProject) getElement().getAdapter(ISonarLintProject.class);
+    return Adapters.adapt(getElement(), ISonarLintProject.class);
   }
 
   @CheckForNull
