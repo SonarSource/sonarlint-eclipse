@@ -21,31 +21,65 @@ package org.sonarlint.eclipse.core.internal.adapter;
 
 import java.util.function.Predicate;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
+import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
+import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant;
 
-public class DefaultSonarLintFileAdapterFactory implements IAdapterFactory {
+public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
 
   @Override
   public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
-    if (ISonarLintFile.class.equals(adapterType) && adaptableObject instanceof IAdaptable) {
+    if (!(adaptableObject instanceof IAdaptable)) {
+      return null;
+    }
+    if (ISonarLintProject.class.equals(adapterType) || ISonarLintIssuable.class.equals(adapterType)) {
+      IProject project = ((IAdaptable) adaptableObject).getAdapter(IProject.class);
+      if (project != null) {
+        return getProjectAdapter(adapterType, project);
+      }
+    }
+    if (ISonarLintFile.class.equals(adapterType) || ISonarLintIssuable.class.equals(adapterType)) {
+      IFile file = ((IAdaptable) adaptableObject).getAdapter(IFile.class);
+      if (file != null) {
+        return getFileAdapter(adapterType, file);
+      }
+      // Some objects may not have an adapter for IFile but only for IResource
       IResource resource = ((IAdaptable) adaptableObject).getAdapter(IResource.class);
       if (resource instanceof IFile) {
-        IFile file = (IFile) resource;
-        return getAdapter(adapterType, file);
+        return getFileAdapter(adapterType, (IFile) resource);
       }
     }
     return null;
   }
 
-  private <T> T getAdapter(Class<T> adapterType, IFile file) {
+  private <T> T getProjectAdapter(Class<T> adapterType, IProject project) {
+    Predicate<IProject> shouldExclude = SonarLintCorePlugin.getExtensionTracker().getProjectAdapterParticipants().stream()
+      .<Predicate<IProject>>map(participant -> participant::exclude)
+      .reduce(Predicate::or)
+      .orElse(x -> false);
+    if (shouldExclude.test(project)) {
+      return null;
+    }
+    for (ISonarLintProjectAdapterParticipant p : SonarLintCorePlugin.getExtensionTracker().getProjectAdapterParticipants()) {
+      ISonarLintProject adapted = p.adapt(project);
+      if (adapted != null) {
+        return adapterType.cast(adapted);
+      }
+    }
+    return adapterType.cast(new DefaultSonarLintProjectAdapter(project));
+  }
+
+  private <T> T getFileAdapter(Class<T> adapterType, IFile file) {
     if (!SonarLintUtils.shouldAnalyze(file)) {
       return null;
     }
@@ -68,7 +102,7 @@ public class DefaultSonarLintFileAdapterFactory implements IAdapterFactory {
 
   @Override
   public Class<?>[] getAdapterList() {
-    return new Class[] {ISonarLintFile.class};
+    return new Class[] {ISonarLintProject.class, ISonarLintFile.class, ISonarLintIssuable.class};
   }
 
 }

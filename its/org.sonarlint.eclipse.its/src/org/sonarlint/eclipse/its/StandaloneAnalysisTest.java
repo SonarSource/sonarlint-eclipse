@@ -104,6 +104,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(9, "Replace this usage of System.out or System.err by a logger."));
+
   }
 
   @Test
