@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
@@ -44,20 +45,20 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.RuleDescriptionWebView";
 
-  private String css() {
+  private String css(Browser b) {
     return "<style type=\"text/css\">"
       + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: 13px; line-height: 1.23076923; "
-      + "color: " + hexColor(getBrowser().getForeground()) + ";background-color: " + hexColor(getBrowser().getBackground())
+      + "color: " + hexColor(b.getForeground()) + ";background-color: " + hexColor(b.getBackground())
       + "}"
-      + "h1 { color: " + hexColor(getBrowser().getForeground()) + ";font-size: 14px;font-weight: 500; }"
-      + "h2 { line-height: 24px; color: " + hexColor(getBrowser().getForeground()) + ";}"
+      + "h1 { color: " + hexColor(b.getForeground()) + ";font-size: 14px;font-weight: 500; }"
+      + "h2 { line-height: 24px; color: " + hexColor(b.getForeground()) + ";}"
       + "a { border-bottom: 1px solid #cae3f2; color: #236a97; cursor: pointer; outline: none; text-decoration: none; transition: all .2s ease;}"
       + ".rule-desc { line-height: 1.5;}"
       + ".rule-desc { line-height: 1.5;}"
       + ".rule-desc h2 { font-size: 16px; font-weight: 400;}"
-      + ".rule-desc code { padding: .2em .45em; margin: 0; background-color: " + hexColor(getBrowser().getForeground(), 20) + "; border-radius: 3px; white-space: nowrap;}"
-      + ".rule-desc pre { padding: 10px; border-top: 1px solid " + hexColor(getBrowser().getForeground(), 100) + "; border-bottom: 1px solid "
-      + hexColor(getBrowser().getForeground(), 100)
+      + ".rule-desc code { padding: .2em .45em; margin: 0; background-color: " + hexColor(b.getForeground(), 20) + "; border-radius: 3px; white-space: nowrap;}"
+      + ".rule-desc pre { padding: 10px; border-top: 1px solid " + hexColor(b.getForeground(), 100) + "; border-bottom: 1px solid "
+      + hexColor(b.getForeground(), 100)
       + "; line-height: 18px; overflow: auto;}"
       + ".rule-desc code, .rule-desc pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace; font-size: 12px;}"
       + ".rule-desc ul { padding-left: 40px; list-style: disc;}</style>";
@@ -65,30 +66,33 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
 
   @Override
   protected void open(IMarker element) {
-    try {
-      String ruleName = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR).toString();
-      String ruleKey = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR).toString();
-      ISonarLintIssuable issuable = Adapters.adapt(element.getResource(), ISonarLintIssuable.class);
-      ISonarLintProject p = issuable.getProject();
-      SonarLintProjectConfiguration configuration = SonarLintProjectConfiguration.read(p.getScopeContext());
-      String htmlDescription;
-      if (!configuration.isBound()) {
-        htmlDescription = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade().getHtmlRuleDescription(ruleKey);
-      } else {
-        IServer server = ServersManager.getInstance().getServer(configuration.getServerId());
-        if (server == null) {
-          super.showMessage("Project " + p.getName() + " is linked to an unknown server: " + configuration.getServerId() + ". Please update configuration.");
-          return;
+    Browser b = getBrowser();
+    if (b != null) {
+      try {
+        String ruleName = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_NAME_ATTR).toString();
+        String ruleKey = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR).toString();
+        ISonarLintIssuable issuable = Adapters.adapt(element.getResource(), ISonarLintIssuable.class);
+        ISonarLintProject p = issuable.getProject();
+        SonarLintProjectConfiguration configuration = SonarLintProjectConfiguration.read(p.getScopeContext());
+        String htmlDescription;
+        if (!configuration.isBound()) {
+          htmlDescription = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade().getHtmlRuleDescription(ruleKey);
+        } else {
+          IServer server = ServersManager.getInstance().getServer(configuration.getServerId());
+          if (server == null) {
+            super.showMessage("Project " + p.getName() + " is linked to an unknown server: " + configuration.getServerId() + ". Please update configuration.");
+            return;
+          }
+          htmlDescription = server.getHtmlRuleDescription(ruleKey);
         }
-        htmlDescription = server.getHtmlRuleDescription(ruleKey);
-      }
 
-      super.showHtml("<!doctype html><html><head>" + css() + "</head><body><h1><big>"
-        + ruleName + "</big> (" + ruleKey
-        + ")</h1><div class=\"rule-desc\">" + htmlDescription
-        + "</div></body></html>");
-    } catch (CoreException e) {
-      SonarLintLogger.get().error("Unable to open rule description", e);
+        super.showHtml("<!doctype html><html><head>" + css(b) + "</head><body><h1><big>"
+          + ruleName + "</big> (" + ruleKey
+          + ")</h1><div class=\"rule-desc\">" + htmlDescription
+          + "</div></body></html>");
+      } catch (CoreException e) {
+        SonarLintLogger.get().error("Unable to open rule description", e);
+      }
     }
   }
 

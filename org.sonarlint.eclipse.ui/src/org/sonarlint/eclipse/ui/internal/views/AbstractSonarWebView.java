@@ -21,8 +21,8 @@ package org.sonarlint.eclipse.ui.internal.views;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IMarker;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 
 /**
  * Open Sonar server URL in an embedded browser
@@ -63,6 +64,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
     }
   }
 
+  @CheckForNull
   protected Browser getBrowser() {
     return browser;
   }
@@ -85,6 +87,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
     }
   }
 
+  @CheckForNull
   public static IMarker findSelectedSonarIssue(ISelection selection) {
     try {
       if (selection instanceof IStructuredSelection) {
