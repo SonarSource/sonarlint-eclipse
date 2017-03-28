@@ -16,7 +16,9 @@
   
   <properties>
     <!-- http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassdeffounderror-jdk-nashorn-internal-runtime -->
-    <tycho.testArgLine>-Dorg.osgi.framework.bundle.parent=ext</tycho.testArgLine>
+    <!-- Force webkit for old Eclipse versions -->
+    <tycho.testArgLine>-Dorg.osgi.framework.bundle.parent=ext
+    -Dorg.eclipse.swt.browser.UseWebKitGTK=true</tycho.testArgLine>
   </properties>
   
   <build>
