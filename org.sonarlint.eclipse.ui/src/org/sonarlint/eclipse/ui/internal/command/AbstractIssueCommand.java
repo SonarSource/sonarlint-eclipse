@@ -25,11 +25,10 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IMarker;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 
 /**
  * A handler for a command on an issue
@@ -53,13 +52,9 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
     @SuppressWarnings("rawtypes")
     List elems = selection.toList();
     for (Object elem : elems) {
-      if (elem instanceof IMarker) {
-        selectedSonarMarkers.add((IMarker) elem);
-      } else if (elem instanceof IAdaptable) {
-        IMarker marker = Adapters.adapt(elem, IMarker.class);
-        if (marker != null) {
-          selectedSonarMarkers.add(marker);
-        }
+      IMarker marker = Adapters.adapt(elem, IMarker.class);
+      if (marker != null) {
+        selectedSonarMarkers.add(marker);
       }
     }
 

@@ -66,6 +66,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
     SWTBotView descView = bot.viewById("org.sonarlint.eclipse.ui.views.RuleDescriptionWebView");
     assertThat(descView.isActive()).isTrue();
+    descView.show();
     Browser b = (Browser) bot.getFinder().findControls(descView.getWidget(), CoreMatchers.instanceOf(Browser.class), true).get(0);
 
     String text = UIThreadRunnable.syncExec(bot.getDisplay(), (Result<String>) b::getText);

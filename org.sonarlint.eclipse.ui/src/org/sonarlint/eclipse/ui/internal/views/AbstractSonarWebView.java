@@ -24,7 +24,6 @@ import java.util.List;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -110,16 +109,9 @@ public abstract class AbstractSonarWebView extends ViewPart {
   }
 
   private static void processElement(List<IMarker> selectedSonarMarkers, Object elem) throws CoreException {
-    if (elem instanceof IMarker) {
-      IMarker marker = (IMarker) elem;
-      if (isSonarLintMarker(marker)) {
-        selectedSonarMarkers.add(marker);
-      }
-    } else if (elem instanceof IAdaptable) {
-      IMarker marker = Adapters.adapt(elem, IMarker.class);
-      if (marker != null && isSonarLintMarker(marker)) {
-        selectedSonarMarkers.add(marker);
-      }
+    IMarker marker = Adapters.adapt(elem, IMarker.class);
+    if (marker != null && isSonarLintMarker(marker)) {
+      selectedSonarMarkers.add(marker);
     }
   }
 

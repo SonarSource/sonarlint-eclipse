@@ -24,19 +24,18 @@ import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
 
 public class BindProjectsCommand extends AbstractHandler {
 
-  public Display getDisplay() {
+  private static Display getDisplay() {
     Display display = Display.getCurrent();
     if (display == null) {
       display = Display.getDefault();
@@ -53,11 +52,9 @@ public class BindProjectsCommand extends AbstractHandler {
     @SuppressWarnings("rawtypes")
     List elems = selection.toList();
     for (Object elem : elems) {
-      if (elem instanceof IAdaptable) {
-        ISonarLintProject proj = Adapters.adapt(elem, ISonarLintProject.class);
-        if (proj != null) {
-          selectedProjects.add(proj);
-        }
+      ISonarLintProject proj = Adapters.adapt(elem, ISonarLintProject.class);
+      if (proj != null) {
+        selectedProjects.add(proj);
       }
     }
 

@@ -24,8 +24,6 @@ import java.util.List;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -36,6 +34,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -43,14 +42,6 @@ import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
 public class UnbindProjectsCommand extends AbstractHandler {
-
-  public Display getDisplay() {
-    Display display = Display.getCurrent();
-    if (display == null) {
-      display = Display.getDefault();
-    }
-    return display;
-  }
 
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -61,11 +52,9 @@ public class UnbindProjectsCommand extends AbstractHandler {
     @SuppressWarnings("rawtypes")
     List elems = selection.toList();
     for (Object elem : elems) {
-      if (elem instanceof IAdaptable) {
-        ISonarLintProject proj = Adapters.adapt(elem, ISonarLintProject.class);
-        if (proj != null) {
-          selectedProjects.add(proj);
-        }
+      ISonarLintProject proj = Adapters.adapt(elem, ISonarLintProject.class);
+      if (proj != null) {
+        selectedProjects.add(proj);
       }
     }
 

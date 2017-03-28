@@ -24,11 +24,10 @@ import java.util.List;
 import java.util.Set;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer;
@@ -64,9 +63,7 @@ public final class SelectionUtils {
     if (selection instanceof IStructuredSelection) {
       List elems = ((IStructuredSelection) selection).toList();
       for (Object elem : elems) {
-        if (elem instanceof IAdaptable) {
-          collectProjects(selectedProjects, (IAdaptable) elem);
-        }
+        collectProjects(selectedProjects, elem);
       }
     }
 
@@ -74,7 +71,7 @@ public final class SelectionUtils {
 
   }
 
-  private static void collectProjects(Set<ISonarLintProject> selectedProjects, IAdaptable elem) {
+  private static void collectProjects(Set<ISonarLintProject> selectedProjects, Object elem) {
     ISonarLintProjectContainer container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
     if (container != null) {
       selectedProjects.addAll(container.projects());
@@ -98,9 +95,7 @@ public final class SelectionUtils {
     if (selection instanceof IStructuredSelection) {
       List elems = ((IStructuredSelection) selection).toList();
       for (Object elem : elems) {
-        if (elem instanceof IAdaptable) {
-          collectFiles(selectedFiles, (IAdaptable) elem);
-        }
+        collectFiles(selectedFiles, elem);
       }
     }
 
@@ -108,7 +103,7 @@ public final class SelectionUtils {
 
   }
 
-  private static void collectFiles(Set<ISonarLintFile> selectedFiles, IAdaptable elem) {
+  private static void collectFiles(Set<ISonarLintFile> selectedFiles, Object elem) {
     ISonarLintProjectContainer container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
     if (container != null) {
       container.projects().forEach(p -> selectedFiles.addAll(p.files()));
