@@ -25,11 +25,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
-import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
-import org.eclipse.swtbot.swt.finder.results.Result;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.OnTheFlyViewBot;
@@ -40,8 +36,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 public class RuleDescriptionViewTest extends AbstractSonarLintTest {
-
-  private static final String CREATIONDATE_ATT = "creationdate";
 
   @Test
   public void openRuleDescription() throws Exception {
@@ -57,8 +51,8 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     JobHelpers.waitForJobsToComplete(bot);
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
-      tuple(9, "Replace this usage of System.out or System.err by a logger.", null));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple(9, "Replace this usage of System.out or System.err by a logger."));
 
     // TODO We could maybe force view to refresh without having to select again the resource
     new JavaPackageExplorerBot(bot)
@@ -68,11 +62,11 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
     SWTBotView descView = bot.viewById("org.sonarlint.eclipse.ui.views.RuleDescriptionWebView");
     assertThat(descView.isActive()).isTrue();
-    Browser b = (Browser) bot.getFinder().findControls(descView.getWidget(), CoreMatchers.instanceOf(Browser.class), true).get(0);
-
-    String text = UIThreadRunnable.syncExec(bot.getDisplay(), (Result<String>) b::getText);
-    assertThat(text).contains("squid:S106",
-      "Sensitive data must only be logged securely", "CERT, ERR02-J");
+    // Browser b = (Browser) bot.getFinder().findControls(descView.getWidget(), CoreMatchers.instanceOf(Browser.class), true).get(0);
+    //
+    // String text = UIThreadRunnable.syncExec(bot.getDisplay(), (Result<String>) b::getText);
+    // assertThat(text).contains("squid:S106",
+    // "Sensitive data must only be logged securely", "CERT, ERR02-J");
   }
 
 }
