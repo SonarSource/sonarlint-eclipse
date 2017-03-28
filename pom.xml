@@ -79,7 +79,7 @@
     <target.platform>e47</target.platform>
     <sonarlint.version>2.10.0.367</sonarlint.version>
     <protobuf.version>3.1.0</protobuf.version>
-
+    
     <!-- ================== -->
     <!-- For SonarQube analysis -->
     <!-- ================== -->
@@ -199,6 +199,14 @@
           <groupId>org.eclipse.tycho</groupId>
           <artifactId>tycho-p2-repository-plugin</artifactId>
           <version>${tycho.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <configuration>
+            <!-- Disable standard Maven source generation since we are already generating sources with Tycho -->
+            <skipSource>true</skipSource>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -368,11 +376,6 @@
     <!-- This profile is used to sign artifacts -->
     <profile>
       <id>sign</id>
-      <activation>
-        <property>
-          <name>jarsigner.alias</name>
-        </property>
-      </activation>
       <properties>
         <jarsigner.skip>false</jarsigner.skip>
       </properties>
