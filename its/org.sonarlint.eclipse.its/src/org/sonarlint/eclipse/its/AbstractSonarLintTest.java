@@ -205,7 +205,7 @@ public abstract class AbstractSonarLintTest {
     return platformVersion().compareTo(new Version("4.4")) >= 0;
   }
 
-  private Version platformVersion() {
+  protected Version platformVersion() {
     return Platform.getBundle("org.eclipse.platform").getVersion();
   }
 

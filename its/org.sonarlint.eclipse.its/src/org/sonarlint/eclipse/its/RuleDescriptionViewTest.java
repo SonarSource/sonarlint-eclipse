@@ -31,6 +31,7 @@ import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.results.Result;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+import org.osgi.framework.Version;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.OnTheFlyViewBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
@@ -67,11 +68,14 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     SWTBotView descView = bot.viewById("org.sonarlint.eclipse.ui.views.RuleDescriptionWebView");
     assertThat(descView.isActive()).isTrue();
     descView.show();
-    Browser b = (Browser) bot.getFinder().findControls(descView.getWidget(), CoreMatchers.instanceOf(Browser.class), true).get(0);
 
-    String text = UIThreadRunnable.syncExec(bot.getDisplay(), (Result<String>) b::getText);
-    assertThat(text).contains("squid:S106",
-      "Sensitive data must only be logged securely", "CERT, ERR02-J");
+    if (platformVersion().compareTo(new Version("4.3")) > 0) {
+      Browser b = (Browser) bot.getFinder().findControls(descView.getWidget(), CoreMatchers.instanceOf(Browser.class), true).get(0);
+
+      String text = UIThreadRunnable.syncExec(bot.getDisplay(), (Result<String>) b::getText);
+      assertThat(text).contains("squid:S106",
+        "Sensitive data must only be logged securely", "CERT, ERR02-J");
+    }
   }
 
 }
