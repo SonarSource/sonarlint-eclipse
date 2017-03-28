@@ -25,7 +25,11 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.swt.browser.Browser;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
+import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
+import org.eclipse.swtbot.swt.finder.results.Result;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.OnTheFlyViewBot;
@@ -62,11 +66,11 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
     SWTBotView descView = bot.viewById("org.sonarlint.eclipse.ui.views.RuleDescriptionWebView");
     assertThat(descView.isActive()).isTrue();
-    // Browser b = (Browser) bot.getFinder().findControls(descView.getWidget(), CoreMatchers.instanceOf(Browser.class), true).get(0);
-    //
-    // String text = UIThreadRunnable.syncExec(bot.getDisplay(), (Result<String>) b::getText);
-    // assertThat(text).contains("squid:S106",
-    // "Sensitive data must only be logged securely", "CERT, ERR02-J");
+    Browser b = (Browser) bot.getFinder().findControls(descView.getWidget(), CoreMatchers.instanceOf(Browser.class), true).get(0);
+
+    String text = UIThreadRunnable.syncExec(bot.getDisplay(), (Result<String>) b::getText);
+    assertThat(text).contains("squid:S106",
+      "Sensitive data must only be logged securely", "CERT, ERR02-J");
   }
 
 }
