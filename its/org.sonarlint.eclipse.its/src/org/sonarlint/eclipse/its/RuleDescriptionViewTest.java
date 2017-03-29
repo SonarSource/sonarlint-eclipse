@@ -69,7 +69,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     assertThat(descView.isActive()).isTrue();
     descView.show();
 
-    if (platformVersion().compareTo(new Version("4.3")) > 0) {
+    if (platformVersion().compareTo(new Version("4.4")) >= 0) {
       Browser b = (Browser) bot.getFinder().findControls(descView.getWidget(), CoreMatchers.instanceOf(Browser.class), true).get(0);
 
       String text = UIThreadRunnable.syncExec(bot.getDisplay(), (Result<String>) b::getText);
