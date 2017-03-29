@@ -72,6 +72,7 @@ public abstract class AbstractSonarLintTest {
 
   @BeforeClass
   public final static void beforeClass() throws Exception {
+    System.out.println("Eclipse: " + platformVersion());
     System.out.println("GTK: " + System.getProperty("org.eclipse.swt.internal.gtk.version"));
 
     projectsWorkdir = new File("target/projects-target");
@@ -205,7 +206,7 @@ public abstract class AbstractSonarLintTest {
     return platformVersion().compareTo(new Version("4.4")) >= 0;
   }
 
-  protected Version platformVersion() {
+  protected static Version platformVersion() {
     return Platform.getBundle("org.eclipse.platform").getVersion();
   }
 
