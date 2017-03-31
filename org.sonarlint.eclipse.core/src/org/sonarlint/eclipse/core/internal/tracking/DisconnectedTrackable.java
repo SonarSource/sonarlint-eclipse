@@ -25,10 +25,12 @@ package org.sonarlint.eclipse.core.internal.tracking;
 public class DisconnectedTrackable extends LeakedTrackable {
 
   private final String severity;
+  private final String type;
 
   public DisconnectedTrackable(Trackable trackable) {
     super(trackable);
     this.severity = trackable.getRawSeverity();
+    this.type = trackable.getRawType();
   }
 
   @Override
@@ -49,5 +51,10 @@ public class DisconnectedTrackable extends LeakedTrackable {
   @Override
   public String getSeverity() {
     return severity;
+  }
+
+  @Override
+  public String getType() {
+    return type;
   }
 }

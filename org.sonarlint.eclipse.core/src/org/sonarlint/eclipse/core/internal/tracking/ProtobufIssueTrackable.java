@@ -104,6 +104,16 @@ public class ProtobufIssueTrackable implements Trackable {
   }
 
   @Override
+  public String getType() {
+    return issue.getType();
+  }
+
+  @Override
+  public String getRawType() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public TextRange getTextRange() {
     throw new UnsupportedOperationException();
   }

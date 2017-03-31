@@ -21,9 +21,13 @@ package org.sonarlint.eclipse.ui.internal;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
+import javax.annotation.CheckForNull;
+import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.PlatformUI;
 
 public final class SonarLintImages {
@@ -49,6 +53,10 @@ public final class SonarLintImages {
   public static final Image IMG_SEVERITY_MINOR = createImage("severity/minor.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_INFO = createImage("severity/info.png"); //$NON-NLS-1$
 
+  public static final Image IMG_TYPE_BUG = createImage("type/bug.png"); //$NON-NLS-1$
+  public static final Image IMG_TYPE_CODE_SMELL = createImage("type/code_smell.png"); //$NON-NLS-1$
+  public static final Image IMG_TYPE_VULNERABILITY = createImage("type/vulnerability.png"); //$NON-NLS-1$
+
   public static final Image NOTIFICATION_CLOSE = createImage("popup/notification-close.gif"); //$NON-NLS-1$
   public static final Image NOTIFICATION_CLOSE_HOVER = createImage("popup/notification-close-active.gif"); //$NON-NLS-1$
 
@@ -56,6 +64,46 @@ public final class SonarLintImages {
   public static final ImageDescriptor SHOW_CONSOLE = createImageDescriptor("showConsole.gif"); //$NON-NLS-1$
 
   private SonarLintImages() {
+  }
+
+  @CheckForNull
+  public static Image getIssueImage(String severity, String type) {
+    String key = severity + "/" + type;
+    ImageRegistry imageRegistry = getImageRegistry();
+    if (imageRegistry != null) {
+      Image image = imageRegistry.get(key);
+      if (image == null) {
+        ImageDescriptor severityImage = createImageDescriptor("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
+        ImageDescriptor typeImage = createImageDescriptor("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
+        imageRegistry.put(key, new CompositeSeverityTypeImage(severityImage, typeImage));
+      }
+      return imageRegistry.get(key);
+    }
+    return null;
+
+  }
+
+  private static class CompositeSeverityTypeImage extends CompositeImageDescriptor {
+
+    private final ImageDescriptor severity;
+    private final ImageDescriptor type;
+
+    public CompositeSeverityTypeImage(ImageDescriptor severity, ImageDescriptor type) {
+      this.severity = severity;
+      this.type = type;
+    }
+
+    @Override
+    protected void drawCompositeImage(int width, int height) {
+      drawImage(createCachedImageDataProvider(type), 0, 0);
+      drawImage(createCachedImageDataProvider(severity), 16, 0);
+    }
+
+    @Override
+    protected Point getSize() {
+      return new Point(32, 16);
+    }
+
   }
 
   private static URL getUrl(String key) throws MalformedURLException {
@@ -68,6 +116,7 @@ public final class SonarLintImages {
     return imageRegistry != null ? imageRegistry.get(key) : null;
   }
 
+  @CheckForNull
   private static ImageDescriptor createImageDescriptor(String key) {
     ImageRegistry imageRegistry = getImageRegistry();
     if (imageRegistry != null) {
@@ -85,6 +134,7 @@ public final class SonarLintImages {
     return null;
   }
 
+  @CheckForNull
   private static ImageRegistry getImageRegistry() {
     // "org.eclipse.swt.SWTError: Invalid thread access" might be thrown during unit tests
     if (PlatformUI.isWorkbenchRunning()) {

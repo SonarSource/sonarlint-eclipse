@@ -82,6 +82,16 @@ public class WrappedTrackable implements Trackable {
   }
 
   @Override
+  public String getType() {
+    return trackable.getType();
+  }
+
+  @Override
+  public String getRawType() {
+    return trackable.getRawType();
+  }
+
+  @Override
   public TextRange getTextRange() {
     return trackable.getTextRange();
   }

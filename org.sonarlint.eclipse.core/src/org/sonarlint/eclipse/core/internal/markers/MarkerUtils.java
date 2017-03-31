@@ -43,6 +43,7 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_RULE_KEY_ATTR = "rulekey";
   public static final String SONAR_MARKER_RULE_NAME_ATTR = "rulename";
   public static final String SONAR_MARKER_ISSUE_SEVERITY_ATTR = "sonarseverity";
+  public static final String SONAR_MARKER_ISSUE_TYPE_ATTR = "issuetype";
   public static final String SONAR_MARKER_CREATION_DATE_ATTR = "creationdate";
 
   public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";

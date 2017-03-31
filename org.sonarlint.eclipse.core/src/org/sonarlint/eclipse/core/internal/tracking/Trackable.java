@@ -72,6 +72,16 @@ public interface Trackable {
    */
   String getRawSeverity();
 
+  /**
+   * Can be overriden by server side issue in connected mode
+   */
+  String getType();
+
+  /**
+   * Original type reported by the analyzer
+   */
+  String getRawType();
+
   @CheckForNull
   TextRange getTextRange();
 

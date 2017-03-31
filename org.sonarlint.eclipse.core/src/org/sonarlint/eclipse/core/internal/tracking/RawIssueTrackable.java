@@ -101,6 +101,16 @@ public class RawIssueTrackable implements Trackable {
   }
 
   @Override
+  public String getType() {
+    return issue.getType();
+  }
+
+  @Override
+  public String getRawType() {
+    return issue.getType();
+  }
+
+  @Override
   public TextRange getTextRange() {
     return textRange;
   }

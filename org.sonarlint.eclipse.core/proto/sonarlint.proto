@@ -24,6 +24,7 @@ message Issues {
         bool resolved = 8;
         int64 markerId = 9;
         string severity = 10;
+        string type = 11;
     }
 }
 

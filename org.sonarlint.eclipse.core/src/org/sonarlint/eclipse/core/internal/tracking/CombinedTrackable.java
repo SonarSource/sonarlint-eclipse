@@ -29,6 +29,7 @@ public class CombinedTrackable extends WrappedTrackable {
   private final boolean resolved;
   private final String assignee;
   private final String severity;
+  private final String type;
 
   public CombinedTrackable(Trackable serverIssue, Trackable currentIssue) {
     super(currentIssue);
@@ -39,6 +40,9 @@ public class CombinedTrackable extends WrappedTrackable {
     this.resolved = serverIssue.isResolved();
     this.assignee = serverIssue.getAssignee();
     this.severity = serverIssue.getSeverity();
+    // TODO when we are able to get server side issue type
+    // this.type = serverIssue.getType();
+    this.type = currentIssue.getType();
   }
 
   @Override
@@ -64,5 +68,10 @@ public class CombinedTrackable extends WrappedTrackable {
   @Override
   public String getSeverity() {
     return severity;
+  }
+
+  @Override
+  public String getType() {
+    return type;
   }
 }

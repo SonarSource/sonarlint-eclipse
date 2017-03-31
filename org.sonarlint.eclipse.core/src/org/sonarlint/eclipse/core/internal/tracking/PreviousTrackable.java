@@ -31,6 +31,7 @@ public class PreviousTrackable extends WrappedTrackable {
   private final boolean resolved;
   private final String assignee;
   private final String severity;
+  private final String type;
   private Long markerId;
 
   public PreviousTrackable(Trackable base, Trackable raw) {
@@ -42,8 +43,9 @@ public class PreviousTrackable extends WrappedTrackable {
     this.resolved = base.isResolved();
     this.assignee = base.getAssignee();
     this.markerId = base.getMarkerId();
-    // Migration: severity was initially not stored in protobuf file
+    // Migration: severity & type were initially not stored in protobuf file
     this.severity = StringUtils.isBlank(base.getSeverity()) ? raw.getSeverity() : base.getSeverity();
+    this.type = StringUtils.isBlank(base.getType()) ? raw.getType() : base.getType();
   }
 
   @Override
@@ -79,5 +81,10 @@ public class PreviousTrackable extends WrappedTrackable {
   @Override
   public String getSeverity() {
     return severity;
+  }
+
+  @Override
+  public String getType() {
+    return type;
   }
 }
