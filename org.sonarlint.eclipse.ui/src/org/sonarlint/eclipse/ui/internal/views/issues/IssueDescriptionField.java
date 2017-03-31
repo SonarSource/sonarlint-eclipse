@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.GC;
@@ -91,9 +92,11 @@ public class IssueDescriptionField extends MarkerField {
     return result;
   }
 
+  @CheckForNull
   private static Image getImage(MarkerItem item) {
     if (item.getMarker() != null) {
-      return getSeverityImage(getSeverity(item));
+      return SonarLintImages.getIssueImage(item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, ""),
+        item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, "code_smell"));
     } else {
       // If there is no marker maybe we have a groupBy item
       // GroupBy severity
@@ -101,6 +104,7 @@ public class IssueDescriptionField extends MarkerField {
     }
   }
 
+  @CheckForNull
   private static Image getSeverityImage(int severity) {
     final Image result;
     switch (severity) {

@@ -104,6 +104,17 @@ public class ServerIssueTrackable implements Trackable {
   }
 
   @Override
+  public String getType() {
+    // FIXME We are not able to get server side issue type
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public String getRawType() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public TextRange getTextRange() {
     return new TextRange(serverIssue.line());
   }

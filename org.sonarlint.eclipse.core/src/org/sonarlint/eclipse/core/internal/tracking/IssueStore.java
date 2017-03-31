@@ -115,7 +115,8 @@ public class IssueStore {
       .setRuleKey(localIssue.getRuleKey())
       .setMessage(localIssue.getMessage())
       .setResolved(localIssue.isResolved())
-      .setSeverity(localIssue.getSeverity());
+      .setSeverity(localIssue.getSeverity())
+      .setType(localIssue.getType());
 
     if (localIssue.getAssignee() != null) {
       builder.setAssignee(localIssue.getAssignee());
