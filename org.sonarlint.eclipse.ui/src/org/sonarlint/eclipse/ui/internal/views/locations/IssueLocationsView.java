@@ -235,10 +235,8 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
             p -> (ExtraPosition) p)
           .filter(filter).collect(Collectors.toList());
-      } catch (
-
-      BadPositionCategoryException e) {
-        SonarLintLogger.get().error("Unable to read positions", e);
+      } catch (BadPositionCategoryException e) {
+        SonarLintLogger.get().debug("No extra positions found, should maybe trigger a new analysis");
         return Collections.emptyList();
       }
     }
