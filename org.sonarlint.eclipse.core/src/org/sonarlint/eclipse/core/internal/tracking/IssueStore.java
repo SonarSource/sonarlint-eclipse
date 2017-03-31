@@ -114,7 +114,8 @@ public class IssueStore {
     Sonarlint.Issues.Issue.Builder builder = Sonarlint.Issues.Issue.newBuilder()
       .setRuleKey(localIssue.getRuleKey())
       .setMessage(localIssue.getMessage())
-      .setResolved(localIssue.isResolved());
+      .setResolved(localIssue.isResolved())
+      .setSeverity(localIssue.getSeverity());
 
     if (localIssue.getAssignee() != null) {
       builder.setAssignee(localIssue.getAssignee());

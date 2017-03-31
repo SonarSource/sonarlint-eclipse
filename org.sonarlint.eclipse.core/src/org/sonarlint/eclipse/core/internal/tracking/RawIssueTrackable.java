@@ -96,6 +96,11 @@ public class RawIssueTrackable implements Trackable {
   }
 
   @Override
+  public String getRawSeverity() {
+    return issue.getSeverity();
+  }
+
+  @Override
   public TextRange getTextRange() {
     return textRange;
   }

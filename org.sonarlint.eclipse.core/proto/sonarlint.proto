@@ -23,6 +23,7 @@ message Issues {
         int64 creationDate = 7;
         bool resolved = 8;
         int64 markerId = 9;
+        string severity = 10;
     }
 }
 

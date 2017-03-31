@@ -77,6 +77,11 @@ public class WrappedTrackable implements Trackable {
   }
 
   @Override
+  public String getRawSeverity() {
+    return trackable.getRawSeverity();
+  }
+
+  @Override
   public TextRange getTextRange() {
     return trackable.getTextRange();
   }

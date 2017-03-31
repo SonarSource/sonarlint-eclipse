@@ -57,6 +57,8 @@ public class IssueTrackerTest {
     String serverIssueKey = null;
     boolean resolved = false;
     String assignee = "";
+    String severity = "MAJOR";
+    String rawSeverity = "MAJOR";
 
     static int counter = Integer.MIN_VALUE;
 
@@ -105,6 +107,16 @@ public class IssueTrackerTest {
       return this;
     }
 
+    MockTrackableBuilder severity(String severity) {
+      this.severity = severity;
+      return this;
+    }
+
+    MockTrackableBuilder rawSeverity(String severity) {
+      this.rawSeverity = severity;
+      return this;
+    }
+
     MockTrackableBuilder copy() {
       return builder()
         .line(line)
@@ -115,7 +127,9 @@ public class IssueTrackerTest {
         .creationDate(creationDate)
         .serverIssueKey(serverIssueKey)
         .resolved(resolved)
-        .assignee(assignee);
+        .assignee(assignee)
+        .severity(severity)
+        .rawSeverity(rawSeverity);
     }
 
     Trackable build() {
@@ -129,6 +143,8 @@ public class IssueTrackerTest {
       when(mock.getServerIssueKey()).thenReturn(serverIssueKey);
       when(mock.isResolved()).thenReturn(resolved);
       when(mock.getAssignee()).thenReturn(assignee);
+      when(mock.getSeverity()).thenReturn(severity);
+      when(mock.getRawSeverity()).thenReturn(rawSeverity);
 
       // set unique values for nullable fields used by the matchers in Tracker
       if (line == null) {
@@ -414,30 +430,19 @@ public class IssueTrackerTest {
 
   @Test
   public void should_preserve_server_issue_details() {
-    MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").line(7).textRangeHash(11);
+    MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").line(7).textRangeHash(11).severity("CRITICAL");
     // note: (ab)using the assignee field to uniquely identify the trackable
     String id = "dummy id";
     String serverIssueKey = "dummy serverIssueKey";
     boolean resolved = true;
 
-    cache.put(file1, tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.copy().serverIssueKey(serverIssueKey).resolved(resolved).assignee(id).build())));
+    cache.put(file1, tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.build())));
+    cache.put(file1,
+      tracker.matchAndTrackServerIssues(file1, Collections.singletonList(base.copy().serverIssueKey(serverIssueKey).resolved(resolved).assignee(id).severity("BLOCKER").build())));
+
     cache.put(file1, tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.build())));
 
-    assertThat(cache.getCurrentTrackables(file1)).extracting("serverIssueKey", "resolved", "assignee").containsExactly(tuple(serverIssueKey, resolved, id));
-  }
-
-  @Test
-  public void should_drop_server_issue_reference_if_gone() {
-    MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").line(7).textRangeHash(11);
-    // note: (ab)using the assignee field to uniquely identify the trackable
-    String id = "dummy id";
-    String serverIssueKey = "dummy serverIssueKey";
-    boolean resolved = true;
-
-    cache.put(file1, tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.copy().serverIssueKey(serverIssueKey).resolved(resolved).assignee(id).build())));
-    cache.put(file1, tracker.matchAndTrackServerIssues(file1, Collections.singletonList(base.build())));
-
-    assertThat(cache.getCurrentTrackables(file1)).extracting("serverIssueKey", "resolved", "assignee").containsExactly(tuple(null, false, ""));
+    assertThat(cache.getCurrentTrackables(file1)).extracting("serverIssueKey", "resolved", "assignee", "severity").containsExactly(tuple(serverIssueKey, resolved, id, "BLOCKER"));
   }
 
   @Test
@@ -458,22 +463,23 @@ public class IssueTrackerTest {
     String serverIssueKey = "dummy serverIssueKey";
     boolean resolved = true;
     String assignee = "dummy assignee";
-    MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").serverIssueKey(serverIssueKey).resolved(true).assignee(assignee);
+    MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").severity("CRITICAL").rawSeverity("CRITICAL");
 
     long start = System.currentTimeMillis();
 
     // First analysis
-    cache.put(file1, tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.copy().resolved(false).assignee(null).build())));
-    cache.put(file1, tracker.matchAndTrackServerIssues(file1, Collections.singletonList(base.build())));
+    cache.put(file1, tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.build())));
+    cache.put(file1, tracker.matchAndTrackServerIssues(file1,
+      Collections.singletonList(base.copy().serverIssueKey(serverIssueKey).resolved(true).assignee(assignee).severity("BLOCKER").build())));
 
     // Second analysis with no more issue on server side
-    cache.put(file1, tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.copy().resolved(false).assignee(null).build())));
+    cache.put(file1, tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.build())));
     cache.put(file1, tracker.matchAndTrackServerIssues(file1, Collections.emptyList()));
 
     Collection<Trackable> trackables = cache.getCurrentTrackables(file1);
     assertThat(trackables)
-      .extracting("serverIssueKey", "resolved", "assignee")
-      .containsExactly(tuple(null, !resolved, ""));
+      .extracting("serverIssueKey", "resolved", "assignee", "severity")
+      .containsExactly(tuple(null, !resolved, "", "CRITICAL"));
     assertThat(trackables.iterator().next().getCreationDate()).isGreaterThanOrEqualTo(start);
   }
 

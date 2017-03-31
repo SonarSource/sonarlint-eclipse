@@ -99,6 +99,11 @@ public class ServerIssueTrackable implements Trackable {
   }
 
   @Override
+  public String getRawSeverity() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public TextRange getTextRange() {
     return new TextRange(serverIssue.line());
   }
