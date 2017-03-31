@@ -28,6 +28,7 @@ public class CombinedTrackable extends WrappedTrackable {
   private final Long creationDate;
   private final boolean resolved;
   private final String assignee;
+  private final String severity;
 
   public CombinedTrackable(Trackable serverIssue, Trackable currentIssue) {
     super(currentIssue);
@@ -37,6 +38,7 @@ public class CombinedTrackable extends WrappedTrackable {
     this.creationDate = serverIssue.getCreationDate();
     this.resolved = serverIssue.isResolved();
     this.assignee = serverIssue.getAssignee();
+    this.severity = serverIssue.getSeverity();
   }
 
   @Override
@@ -57,5 +59,10 @@ public class CombinedTrackable extends WrappedTrackable {
   @Override
   public String getAssignee() {
     return assignee;
+  }
+
+  @Override
+  public String getSeverity() {
+    return severity;
   }
 }

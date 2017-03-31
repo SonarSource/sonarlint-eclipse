@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+
 /**
  * Combine a new Trackable ("raw") with a previous state ("base")
  */
@@ -28,6 +30,7 @@ public class PreviousTrackable extends WrappedTrackable {
   private final Long creationDate;
   private final boolean resolved;
   private final String assignee;
+  private final String severity;
   private Long markerId;
 
   public PreviousTrackable(Trackable base, Trackable raw) {
@@ -39,6 +42,8 @@ public class PreviousTrackable extends WrappedTrackable {
     this.resolved = base.isResolved();
     this.assignee = base.getAssignee();
     this.markerId = base.getMarkerId();
+    // Migration: severity was initially not stored in protobuf file
+    this.severity = StringUtils.isBlank(base.getSeverity()) ? raw.getSeverity() : base.getSeverity();
   }
 
   @Override
@@ -69,5 +74,10 @@ public class PreviousTrackable extends WrappedTrackable {
   @Override
   public void setMarkerId(Long markerId) {
     this.markerId = markerId;
+  }
+
+  @Override
+  public String getSeverity() {
+    return severity;
   }
 }

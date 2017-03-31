@@ -95,6 +95,11 @@ public class ProtobufIssueTrackable implements Trackable {
 
   @Override
   public String getSeverity() {
+    return issue.getSeverity();
+  }
+
+  @Override
+  public String getRawSeverity() {
     throw new UnsupportedOperationException();
   }
 

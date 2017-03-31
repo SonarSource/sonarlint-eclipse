@@ -62,7 +62,15 @@ public interface Trackable {
   // empty if none
   String getAssignee();
 
+  /**
+   * Can be overriden by server side issue in connected mode
+   */
   String getSeverity();
+
+  /**
+   * Original severity reported by the analyzer
+   */
+  String getRawSeverity();
 
   @CheckForNull
   TextRange getTextRange();
