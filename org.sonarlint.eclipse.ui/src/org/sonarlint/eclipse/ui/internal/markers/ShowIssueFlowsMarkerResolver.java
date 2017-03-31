@@ -125,7 +125,7 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
     try {
       positions = doc.getPositions(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY);
     } catch (BadPositionCategoryException e) {
-      SonarLintLogger.get().error("Unable to read positions", e);
+      SonarLintLogger.get().debug("No extra positions found, should maybe trigger a new analysis");
       return Collections.emptyMap();
     }
     return Arrays.asList(positions)
