@@ -57,19 +57,19 @@
                 <artifactItem>
                   <groupId>org.sonarsource.java</groupId>
                   <artifactId>sonar-java-plugin</artifactId>
-                  <version>4.5.0.8398</version>
+                  <version>4.7.1.9272</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.sonarsource.javascript</groupId>
                   <artifactId>sonar-javascript-plugin</artifactId>
-                  <version>2.20.0.4207</version>
+                  <version>2.21.0.4409</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.sonarsource.php</groupId>
                   <artifactId>sonar-php-plugin</artifactId>
-                  <version>2.9.1.1705</version>
+                  <version>2.10.0.2087</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
