@@ -38,6 +38,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.python.pydev.ui.perspective.PythonPerspectiveFactory;
@@ -108,6 +109,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   }
 
   @Test
+  @Ignore("Tests are not analyzed with SonarJava 4.7.1")
   public void shouldAnalyseJavaJunit() throws Exception {
     assumeTrue(supportJunit());
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
