@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
+import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -99,7 +100,7 @@ public class JdtUtils {
    * @param javaProject the eclipse project to get the classpath from
    * @param sonarProjectProperties the sonar project properties to add the classpath to
    * @param context
-   * @param topProject indicate we are working on the project to be analysed and not on a dependent project
+   * @param topProject indicate we are working on the project to be analyzed and not on a dependent project
    * @throws JavaModelException see {@link IJavaProject#getResolvedClasspath(boolean)}
    */
   private static void addClassPathToSonarProject(IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
@@ -124,29 +125,35 @@ public class JdtUtils {
     processOutputDir(javaProject.getOutputLocation(), context, topProject);
   }
 
+  @CheckForNull
   protected static String getAbsolutePathAsString(IPath path) {
     IPath absolutePath = getAbsolutePath(path);
     return absolutePath != null ? absolutePath.toString() : null;
   }
 
+  @CheckForNull
   private static IPath getAbsolutePath(IPath path) {
     // IPath should be resolved this way in order to handle linked resources (SONARIDE-271)
     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
     IResource res = root.findMember(path);
     if (res != null) {
       if (res.getLocation() != null) {
-        return res.getLocation();
+        return pathIfExist(res.getLocation());
       } else {
         SonarLintLogger.get().error("Unable to resolve absolute path for " + res.getLocationURI());
         return null;
       }
     } else {
-      File external = path.toFile();
-      if (external.exists()) {
-        return path;
-      }
-      return null;
+      return pathIfExist(path);
     }
+  }
+
+  private static IPath pathIfExist(IPath path) {
+    File file = path.toFile();
+    if (file.exists()) {
+      return path;
+    }
+    return null;
   }
 
   private static void processOutputDir(IPath outputDir, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
@@ -159,7 +166,7 @@ public class JdtUtils {
         context.libraries().add(outDir);
       }
     } else {
-      SonarLintLogger.get().info("Binary directory was not added because it was not found. Maybe should you enable auto build of your project.");
+      SonarLintLogger.get().info("Binary directory '" + outputDir + "' was not added because it was not found. Maybe should you enable auto build of your project.");
     }
   }
 
