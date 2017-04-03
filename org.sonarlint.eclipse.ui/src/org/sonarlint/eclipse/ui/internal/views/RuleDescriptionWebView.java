@@ -19,12 +19,19 @@
  */
 package org.sonarlint.eclipse.ui.internal.views;
 
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
+import java.util.Base64;
+import java.util.Locale;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -34,9 +41,12 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 
 /**
  * Display details of a rule in a web browser
@@ -45,7 +55,7 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.RuleDescriptionWebView";
 
-  private String css(Browser b) {
+  private static String css(Browser b) {
     return "<style type=\"text/css\">"
       + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: 13px; line-height: 1.23076923; "
       + "color: " + hexColor(b.getForeground()) + ";background-color: " + hexColor(b.getBackground())
@@ -74,26 +84,61 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
         ISonarLintIssuable issuable = Adapters.adapt(element.getResource(), ISonarLintIssuable.class);
         ISonarLintProject p = issuable.getProject();
         SonarLintProjectConfiguration configuration = SonarLintProjectConfiguration.read(p.getScopeContext());
-        String htmlDescription;
+        RuleDetails ruleDetails;
         if (!configuration.isBound()) {
-          htmlDescription = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade().getHtmlRuleDescription(ruleKey);
+          ruleDetails = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade().getRuleDescription(ruleKey);
         } else {
           IServer server = ServersManager.getInstance().getServer(configuration.getServerId());
           if (server == null) {
             super.showMessage("Project " + p.getName() + " is linked to an unknown server: " + configuration.getServerId() + ". Please update configuration.");
             return;
           }
-          htmlDescription = server.getHtmlRuleDescription(ruleKey);
+          ruleDetails = server.getRuleDescription(ruleKey);
         }
 
-        super.showHtml("<!doctype html><html><head>" + css(b) + "</head><body><h1><big>"
-          + ruleName + "</big> (" + ruleKey
-          + ")</h1><div class=\"rule-desc\">" + htmlDescription
-          + "</div></body></html>");
+        if (ruleDetails != null) {
+          String htmlDescription = ruleDetails.getHtmlDescription();
+          String extendedDescription = ruleDetails.getExtendedDescription();
+          if (!extendedDescription.isEmpty()) {
+            htmlDescription += "<div>" + extendedDescription + "</div>";
+          }
+          String type = ruleDetails.getType();
+          String typeImg64 = getAsBase64(SonarLintImages.getTypeImage(type));
+          String severity = ruleDetails.getSeverity();
+          String severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
+          super.showHtml("<!doctype html><html><head>" + css(b) + "</head><body><h1><big>"
+            + ruleName + "</big> (" + ruleKey
+            + ")</h1>"
+            + "<div>"
+            + "<img style=\"padding-bottom: 1px;vertical-align: middle\" width=\"16\" height=\"16\" alt=\"" + type + "\" src=\"data:image/gif;base64," + typeImg64 + "\">&nbsp;"
+            + clean(type)
+            + "&nbsp;"
+            + "<img style=\"padding-bottom: 1px;vertical-align: middle\" width=\"16\" height=\"16\" alt=\"" + severity + "\" src=\"data:image/gif;base64," + severityImg64
+            + "\">&nbsp;"
+            + clean(severity)
+            + "</div>"
+            + "<div class=\"rule-desc\">" + htmlDescription
+            + "</div></body></html>");
+        } else {
+          super.showHtml("No rule description available");
+        }
+
       } catch (CoreException e) {
         SonarLintLogger.get().error("Unable to open rule description", e);
       }
     }
+  }
+
+  private static String clean(String txt) {
+    return StringUtils.capitalize(txt.toLowerCase(Locale.ENGLISH).replace("_", " "));
+  }
+
+  private static String getAsBase64(Image image) {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    ImageLoader loader = new ImageLoader();
+    loader.data = new ImageData[] {image.getImageData()};
+    loader.save(out, SWT.IMAGE_PNG);
+    return Base64.getEncoder().encodeToString(out.toByteArray());
   }
 
   private static String hexColor(Color color) {

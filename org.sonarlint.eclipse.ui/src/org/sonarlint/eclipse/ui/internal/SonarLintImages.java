@@ -80,7 +80,16 @@ public final class SonarLintImages {
       return imageRegistry.get(key);
     }
     return null;
+  }
 
+  @CheckForNull
+  public static Image getSeverityImage(String severity) {
+    return createImage("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
+  }
+
+  @CheckForNull
+  public static Image getTypeImage(String type) {
+    return createImage("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
   }
 
   private static class CompositeSeverityTypeImage extends CompositeImageDescriptor {

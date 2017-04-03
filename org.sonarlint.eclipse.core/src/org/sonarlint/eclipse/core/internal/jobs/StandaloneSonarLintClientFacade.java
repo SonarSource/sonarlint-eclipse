@@ -76,15 +76,13 @@ public class StandaloneSonarLintClientFacade {
     return null;
   }
 
-  public String getHtmlRuleDescription(String ruleKey) {
+  @CheckForNull
+  public RuleDetails getRuleDescription(String ruleKey) {
     StandaloneSonarLintEngine engine = getClient();
     if (engine != null) {
-      RuleDetails ruleDetails = engine.getRuleDetails(ruleKey);
-      if (ruleDetails != null) {
-        return ruleDetails.getHtmlDescription();
-      }
+      return engine.getRuleDetails(ruleKey);
     }
-    return "Not found";
+    return null;
   }
 
   public synchronized void stop() {

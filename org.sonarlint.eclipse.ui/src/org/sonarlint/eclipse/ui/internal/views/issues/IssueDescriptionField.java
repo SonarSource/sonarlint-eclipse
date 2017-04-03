@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
+import java.util.Locale;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -74,7 +75,7 @@ public class IssueDescriptionField extends MarkerField {
   }
 
   public static int convertSeverity(String severity) {
-    String severityLower = severity != null ? severity.toLowerCase() : "";
+    String severityLower = severity != null ? severity.toLowerCase(Locale.ENGLISH) : "";
     final int result;
     if (severityLower.startsWith("blocker")) {
       result = 0;
@@ -100,36 +101,12 @@ public class IssueDescriptionField extends MarkerField {
     } else {
       // If there is no marker maybe we have a groupBy item
       // GroupBy severity
-      return getSeverityImage(convertSeverity(item.getAttributeValue(IMarker.MESSAGE, "")));
+      String severity = item.getAttributeValue(IMarker.MESSAGE, "");
+      if (severity.indexOf(' ') >= 0) {
+        severity = severity.substring(0, severity.indexOf(' '));
+      }
+      return SonarLintImages.getSeverityImage(severity);
     }
-  }
-
-  @CheckForNull
-  private static Image getSeverityImage(int severity) {
-    final Image result;
-    switch (severity) {
-      case -1:
-        result = null;
-        break;
-      case 0:
-        result = SonarLintImages.IMG_SEVERITY_BLOCKER;
-        break;
-      case 1:
-        result = SonarLintImages.IMG_SEVERITY_CRITICAL;
-        break;
-      case 2:
-        result = SonarLintImages.IMG_SEVERITY_MAJOR;
-        break;
-      case 3:
-        result = SonarLintImages.IMG_SEVERITY_MINOR;
-        break;
-      case 4:
-        result = SonarLintImages.IMG_SEVERITY_INFO;
-        break;
-      default:
-        throw new IllegalArgumentException();
-    }
-    return result;
   }
 
   @Override
