@@ -166,7 +166,7 @@ public class JdtUtils {
         context.libraries().add(outDir);
       }
     } else {
-      SonarLintLogger.get().info("Binary directory '" + outputDir + "' was not added because it was not found. Maybe should you enable auto build of your project.");
+      SonarLintLogger.get().info("Binary directory '" + outputDir + "' was not added because it was not found. Maybe you should enable auto build of your project.");
     }
   }
 
