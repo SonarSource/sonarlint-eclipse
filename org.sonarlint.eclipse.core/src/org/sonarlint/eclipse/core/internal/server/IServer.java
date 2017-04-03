@@ -23,6 +23,7 @@ import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
@@ -90,7 +91,7 @@ public interface IServer {
 
   AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener);
 
-  String getHtmlRuleDescription(String ruleKey);
+  RuleDetails getRuleDescription(String ruleKey);
 
   void updateProjectStorage(String moduleKey);
 

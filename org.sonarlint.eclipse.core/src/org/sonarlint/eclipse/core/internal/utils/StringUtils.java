@@ -139,4 +139,11 @@ public class StringUtils {
     }
     return str.substring(0, pos);
   }
+
+  public static String capitalize(String s) {
+    if (s.isEmpty()) {
+      return s;
+    }
+    return Character.toUpperCase(s.charAt(0)) + s.substring(1);
+  }
 }
