@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -36,6 +37,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
@@ -99,7 +101,43 @@ public class JdtUtilsTest extends SonarTestCase {
 
     jdtUtils.configureJavaProject(project, context);
 
-    verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.binaries"), ArgumentMatchers.anyCollection());
+    ArgumentCaptor<Collection<String>> captor = ArgumentCaptor.forClass(Collection.class);
+    verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.binaries"), captor.capture());
+
+    assertThat(captor.getValue()).containsExactlyInAnyOrder(outputFolder.getAbsolutePath());
+  }
+
+  // SLE-159
+  @Test
+  public void doNotAddNonExistingPaths() throws JavaModelException, IOException {
+    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+    File workspaceRoot = root.getLocation().toFile();
+    File projectRoot = new File(workspaceRoot, "myProjectMissingOut");
+    projectRoot.mkdir();
+    File sourceFolder = new File(projectRoot, "src");
+    sourceFolder.mkdir();
+    File outputFolder = new File(projectRoot, "bin");
+
+    IJavaProject project = mock(IJavaProject.class);
+    IPreAnalysisContext context = mock(IPreAnalysisContext.class);
+
+    when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
+    when(project.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
+    when(project.getPath()).thenReturn(new Path(projectRoot.getAbsolutePath()));
+
+    IClasspathEntry[] cpes = new IClasspathEntry[] {
+      createCPE(IClasspathEntry.CPE_SOURCE, sourceFolder, outputFolder)
+    };
+
+    when(project.getResolvedClasspath(true)).thenReturn(cpes);
+    when(project.getOutputLocation()).thenReturn(new Path(outputFolder.getAbsolutePath()));
+
+    jdtUtils.configureJavaProject(project, context);
+
+    ArgumentCaptor<Collection<String>> captor = ArgumentCaptor.forClass(Collection.class);
+    verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.binaries"), captor.capture());
+
+    assertThat(captor.getValue()).isEmpty();
   }
 
   @Test
