@@ -7,11 +7,16 @@
       <category name="SonarLint for Eclipse"/>
    </feature>
    <feature id="org.sonarlint.eclipse.feature.source" version="0.0.0">
-      <category name="SonarLint for Eclipse"/>
+      <category name="SonarLint for Eclipse Developer Resources"/>
    </feature>
    <category-def name="SonarLint for Eclipse" label="SonarLint for Eclipse">
       <description>
          Allows to run SonarLint analysis on your Eclipse projects
+      </description>
+   </category-def>
+   <category-def name="SonarLint for Eclipse Developer Resources" label="SonarLint for Eclipse Developer Resources">
+      <description>
+         Source files when developing SonarLint integration
       </description>
    </category-def>
 </site>
