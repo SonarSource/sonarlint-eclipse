@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
@@ -46,6 +45,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
@@ -97,7 +97,7 @@ public class JobUtils {
     if (input instanceof IFileEditorInput) {
       IFile file = ((IFileEditorInput) input).getFile();
       ISonarLintFile sonarFile = Adapters.adapt(file, ISonarLintFile.class);
-      if (sonarFile != null && (project == null || file.getProject().equals(project))) {
+      if (sonarFile != null && (project == null || sonarFile.getProject().equals(project))) {
         filesByProject.putIfAbsent(sonarFile.getProject(), new ArrayList<>());
         IEditorPart editorPart = ResourceUtil.findEditor(page, file);
         if (editorPart instanceof ITextEditor) {
