@@ -40,7 +40,6 @@ import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 import org.eclipse.ui.navigator.ICommonViewerSite;
 import org.eclipse.ui.navigator.ICommonViewerWorkbenchSite;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
@@ -125,7 +124,7 @@ public class ServerActionProvider extends CommonActionProvider {
     }
 
     List<IServer> servers = new ArrayList<>();
-    List<SonarLintProjectConfiguration> projects = new ArrayList<>();
+    List<ISonarLintProject> projects = new ArrayList<>();
     populateServersAndProjects(selection, servers, projects);
 
     if (projects.isEmpty()) {
@@ -147,15 +146,15 @@ public class ServerActionProvider extends CommonActionProvider {
     }
   }
 
-  private static void populateServersAndProjects(IStructuredSelection selection, List<IServer> servers, List<SonarLintProjectConfiguration> projects) {
+  private static void populateServersAndProjects(IStructuredSelection selection, List<IServer> servers, List<ISonarLintProject> projects) {
     if (selection != null && !selection.isEmpty()) {
       Iterator iterator = selection.iterator();
       while (iterator.hasNext()) {
         Object obj = iterator.next();
         if (obj instanceof IServer) {
           servers.add((IServer) obj);
-        } else if (obj instanceof SonarLintProjectConfiguration) {
-          projects.add((SonarLintProjectConfiguration) obj);
+        } else if (obj instanceof ISonarLintProject) {
+          projects.add((ISonarLintProject) obj);
         }
       }
     }

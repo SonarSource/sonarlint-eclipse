@@ -138,7 +138,7 @@
 	                  value="org.sonarlint.eclipse.core.internal.server.IServer">
 	            </instanceof>
 	            <instanceof
-	                  value="org.sonarlint.eclipse.core.internal.resources.SonarLintProject">
+	                  value="org.sonarlint.eclipse.core.resource.ISonarLintProject">
 	            </instanceof>
 	         </or>
 	      </triggerPoints>
@@ -148,7 +148,7 @@
 	                  value="java.lang.Object">
 	            </instanceof>
 	            <instanceof
-	                  value="org.sonarlint.eclipse.core.internal.resources.SonarLintProject">
+	                  value="org.sonarlint.eclipse.core.resource.ISonarLintProject">
 	            </instanceof>
 	         </or>
 	      </possibleChildren>
@@ -162,7 +162,7 @@
 		                      value="org.sonarlint.eclipse.core.internal.server.IServer">
 		                </instanceof>
 		                <instanceof
-		                      value="org.sonarlint.eclipse.core.internal.resources.SonarLintProject">
+		                      value="org.sonarlint.eclipse.core.resource.ISonarLintProject">
 		                </instanceof>
 		                <instanceof
 		                      value="org.eclipse.core.resources.IWorkspaceRoot">
@@ -719,20 +719,6 @@
               label="%sonar.menu.label">
            <separator
                  name="group1">
-           </separator>
-           <menu
-                 id="mode"
-                 label="Mode">
-              <separator
-                    name="group1">
-              </separator>
-           </menu>
-           <separator
-                 name="group2">
-           </separator>
-           <separator
-                 name="group3"
-                 visible="true">
            </separator>
         </menu>
      </menuContribution>
