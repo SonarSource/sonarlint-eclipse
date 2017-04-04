@@ -43,7 +43,6 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StorageManager;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
-import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -255,8 +254,8 @@ public class Server implements IServer, StateListener {
 
   public static void unbind(ISonarLintProject project) {
     SonarLintProjectConfiguration.read(project.getScopeContext()).unbind();
-    MarkerUtils.deleteIssuesMarkers(project.getResource());
-    MarkerUtils.deleteChangeSetIssuesMarkers(project.getResource());
+    project.deleteAllMarkers(SonarLintCorePlugin.MARKER_ID);
+    project.deleteAllMarkers(SonarLintCorePlugin.MARKER_CHANGESET_ID);
     SonarLintCorePlugin.clearIssueTracker(project);
   }
 

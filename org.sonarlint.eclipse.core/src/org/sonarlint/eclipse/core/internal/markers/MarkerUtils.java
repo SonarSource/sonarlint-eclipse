@@ -54,24 +54,6 @@ public final class MarkerUtils {
   private MarkerUtils() {
   }
 
-  public static void deleteIssuesMarkers(IResource resource) {
-    deleteMarkers(resource, SonarLintCorePlugin.MARKER_ID);
-  }
-
-  public static void deleteChangeSetIssuesMarkers(IResource resource) {
-    deleteMarkers(resource, SonarLintCorePlugin.MARKER_CHANGESET_ID);
-  }
-
-  private static void deleteMarkers(IResource resource, String markerId) {
-    if (resource.isAccessible()) {
-      try {
-        resource.deleteMarkers(markerId, true, IResource.DEPTH_INFINITE);
-      } catch (CoreException e) {
-        SonarLintLogger.get().error(e.getMessage(), e);
-      }
-    }
-  }
-
   public static List<IMarker> findIssuesMarkers(IResource resource) {
     try {
       return Arrays.asList(resource.findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE));

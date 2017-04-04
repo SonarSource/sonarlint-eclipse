@@ -20,12 +20,10 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -35,8 +33,8 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
-import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
+import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -54,7 +52,9 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
     SubMonitor global = SubMonitor.convert(monitor, 100);
     try {
       global.setTaskName("Collect changed file(s) list");
-      Arrays.asList(ResourcesPlugin.getWorkspace().getRoot().getProjects()).stream().forEach(MarkerUtils::deleteChangeSetIssuesMarkers);
+      ProjectsProviderUtils.allProjects().stream()
+        .filter(ISonarLintProject::isOpen)
+        .forEach(p -> p.deleteAllMarkers(SonarLintCorePlugin.MARKER_CHANGESET_ID));
       Collection<ISonarLintFile> collectChangedFiles = collectChangedFiles(projects, global.newChild(20));
 
       if (collectChangedFiles.isEmpty()) {

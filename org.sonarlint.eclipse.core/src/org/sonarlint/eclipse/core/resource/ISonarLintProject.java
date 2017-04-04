@@ -22,8 +22,11 @@ package org.sonarlint.eclipse.core.resource;
 import java.nio.file.Path;
 import java.util.Collection;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IScopeContext;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 
 /**
@@ -88,5 +91,18 @@ public interface ISonarLintProject extends ISonarLintIssuable {
    * @return all SonarLint files contained in this project.
    */
   Collection<ISonarLintFile> files();
+
+  /**
+   * Remove recursively all markers created on this project and on children resources.
+   */
+  default void deleteAllMarkers(String markerId) {
+    if (getResource().isAccessible()) {
+      try {
+        getResource().deleteMarkers(markerId, true, IResource.DEPTH_INFINITE);
+      } catch (CoreException e) {
+        SonarLintLogger.get().error("Unable to delete markers on project " + getName(), e);
+      }
+    }
+  }
 
 }

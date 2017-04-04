@@ -68,7 +68,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.ProjectUpdateJob;
-import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
@@ -462,9 +461,8 @@ public class BindProjectsPage extends WizardPage {
   }
 
   private static void updateProjectBinding(ISonarLintProject project, String oldServerId) {
-
-    MarkerUtils.deleteIssuesMarkers(project.getResource());
-    MarkerUtils.deleteChangeSetIssuesMarkers(project.getResource());
+    project.deleteAllMarkers(SonarLintCorePlugin.MARKER_ID);
+    project.deleteAllMarkers(SonarLintCorePlugin.MARKER_CHANGESET_ID);
     SonarLintCorePlugin.clearIssueTracker(project);
     JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
     if (project.isBound()) {
