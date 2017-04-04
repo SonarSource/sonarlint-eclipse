@@ -104,8 +104,9 @@ public final class SonarLintImages {
 
     @Override
     protected void drawCompositeImage(int width, int height) {
-      drawImage(createCachedImageDataProvider(type), 0, 0);
-      drawImage(createCachedImageDataProvider(severity), 16, 0);
+      // Keep using deprecated methods for backward compatibility
+      drawImage(type.getImageData(), 0, 0);
+      drawImage(severity.getImageData(), 16, 0);
     }
 
     @Override
