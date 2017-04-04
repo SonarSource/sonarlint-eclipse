@@ -40,6 +40,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeChangedFilesJob;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
@@ -187,10 +188,10 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
             // Display changeset issues view after analysis is completed
             IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             try {
-              iw.getActivePage().showView(ChangeSetIssuesView.ID, null, IWorkbenchPage.VIEW_VISIBLE);
+              iw.getActivePage().showView(ChangeSetIssuesView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
               ChangeSetIssuesView.setRefreshTime(LocalDateTime.now());
             } catch (PartInitException e) {
-              SonarLintUiPlugin.getDefault().getLog().log(new Status(Status.ERROR, SonarLintUiPlugin.PLUGIN_ID, Status.OK, "Unable to open ChangeSet Issues View", e));
+              SonarLintLogger.get().error("Unable to open ChangeSet Issues View", e);
             }
           }
         });
