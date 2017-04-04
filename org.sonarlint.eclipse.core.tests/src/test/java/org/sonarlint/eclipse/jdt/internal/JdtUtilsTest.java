@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.jdt.internal;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -104,7 +105,7 @@ public class JdtUtilsTest extends SonarTestCase {
     ArgumentCaptor<Collection<String>> captor = ArgumentCaptor.forClass(Collection.class);
     verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.binaries"), captor.capture());
 
-    assertThat(captor.getValue()).containsExactlyInAnyOrder(outputFolder.getAbsolutePath());
+    assertThat(captor.getValue()).containsExactlyInAnyOrder(outputFolder.getAbsolutePath().replaceAll(Pattern.quote("\\"), "/"));
   }
 
   // SLE-159
