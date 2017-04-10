@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -67,14 +68,17 @@ public final class SonarLintImages {
   }
 
   @CheckForNull
-  public static Image getIssueImage(String severity, String type) {
+  public static Image getIssueImage(String severity, @Nullable String type) {
     String key = severity + "/" + type;
     ImageRegistry imageRegistry = getImageRegistry();
     if (imageRegistry != null) {
       Image image = imageRegistry.get(key);
       if (image == null) {
         ImageDescriptor severityImage = createImageDescriptor("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
-        ImageDescriptor typeImage = createImageDescriptor("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
+        ImageDescriptor typeImage = null;
+        if (type != null) {
+          typeImage = createImageDescriptor("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
+        }
         imageRegistry.put(key, new CompositeSeverityTypeImage(severityImage, typeImage));
       }
       return imageRegistry.get(key);
@@ -97,7 +101,7 @@ public final class SonarLintImages {
     private final ImageDescriptor severity;
     private final ImageDescriptor type;
 
-    public CompositeSeverityTypeImage(ImageDescriptor severity, ImageDescriptor type) {
+    public CompositeSeverityTypeImage(ImageDescriptor severity, @Nullable ImageDescriptor type) {
       this.severity = severity;
       this.type = type;
     }
@@ -105,8 +109,12 @@ public final class SonarLintImages {
     @Override
     protected void drawCompositeImage(int width, int height) {
       // Keep using deprecated methods for backward compatibility
-      drawImage(type.getImageData(), 0, 0);
-      drawImage(severity.getImageData(), 16, 0);
+      if (type != null) {
+        drawImage(type.getImageData(), 0, 0);
+        drawImage(severity.getImageData(), 16, 0);
+      } else {
+        drawImage(severity.getImageData(), 0, 0);
+      }
     }
 
     @Override
