@@ -720,6 +720,13 @@
            <separator
                  name="group1">
            </separator>
+           <visibleWhen checkEnabled="false">
+             <with variable="activePartId">
+               <not>
+	               <equals value="org.sonarlint.eclipse.ui.ServersView"/>
+	             </not>
+	           </with>
+           </visibleWhen>
         </menu>
      </menuContribution>
   </extension>
