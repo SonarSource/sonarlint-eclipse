@@ -31,8 +31,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AsyncServerMarkerUpdaterJob;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
@@ -53,9 +55,8 @@ public class ServerIssueUpdater {
   }
 
   public void updateAsync(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project, String localModuleKey,
-    String serverModuleKey,
-    Collection<ISonarLintIssuable> resources) {
-    new IssueUpdateJob(serverConfiguration, engine, project, localModuleKey, serverModuleKey, resources).schedule();
+    String serverModuleKey, Collection<ISonarLintIssuable> issuables, Map<ISonarLintFile, IDocument> docPerFile, TriggerType triggerType) {
+    new IssueUpdateJob(serverConfiguration, engine, project, localModuleKey, serverModuleKey, issuables, docPerFile, triggerType).schedule();
   }
 
   private class IssueUpdateJob extends Job {
@@ -63,44 +64,51 @@ public class ServerIssueUpdater {
     private final ConnectedSonarLintEngine engine;
     private final String localModuleKey;
     private final String serverModuleKey;
-    private final Collection<ISonarLintIssuable> resources;
+    private final Collection<ISonarLintIssuable> issuables;
     private final ISonarLintProject project;
+    private final Map<ISonarLintFile, IDocument> docPerFile;
+    private final TriggerType triggerType;
 
     private IssueUpdateJob(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project, String localModuleKey,
-      String serverModuleKey, Collection<ISonarLintIssuable> resources) {
+      String serverModuleKey, Collection<ISonarLintIssuable> issuables, Map<ISonarLintFile, IDocument> docPerFile,
+      TriggerType triggerType) {
       super("Fetch server issues for " + project.getName());
+      this.docPerFile = docPerFile;
+      this.triggerType = triggerType;
       setPriority(DECORATE);
       this.serverConfiguration = serverConfiguration;
       this.engine = engine;
       this.project = project;
       this.localModuleKey = localModuleKey;
       this.serverModuleKey = serverModuleKey;
-      this.resources = resources;
+      this.issuables = issuables;
     }
 
     @Override
     protected IStatus run(IProgressMonitor monitor) {
       Map<ISonarLintIssuable, Collection<Trackable>> trackedIssues = new HashMap<>();
       try {
-        for (ISonarLintIssuable resource : resources) {
+        for (ISonarLintIssuable issuable : issuables) {
           if (monitor.isCanceled()) {
             return Status.CANCEL_STATUS;
           }
-          if (resource instanceof ISonarLintFile) {
-            String relativePath = ((ISonarLintFile) resource).getProjectRelativePath();
+          if (issuable instanceof ISonarLintFile) {
+            String relativePath = ((ISonarLintFile) issuable).getProjectRelativePath();
             IssueTracker issueTracker = issueTrackerRegistry.getOrCreate(project, localModuleKey);
-            List<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, (ISonarLintFile) resource);
+            List<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, (ISonarLintFile) issuable);
             Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
             Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(relativePath, serverIssuesTrackable);
             issueTracker.updateCache(relativePath, tracked);
-            trackedIssues.put(resource, tracked);
+            trackedIssues.put(issuable, tracked);
           }
         }
-        new AsyncServerMarkerUpdaterJob(project, trackedIssues).schedule();
+        if (!trackedIssues.isEmpty()) {
+          new AsyncServerMarkerUpdaterJob(project, trackedIssues, docPerFile, triggerType).schedule();
+        }
         return Status.OK_STATUS;
       } catch (Throwable t) {
         // note: without catching Throwable, any exceptions raised in the thread will not be visible
-        SonarLintLogger.get().error("error while fetching and matching server issues", t);
+        SonarLintLogger.get().error("Error while fetching and matching server issues", t);
         return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, t.getMessage());
       }
     }

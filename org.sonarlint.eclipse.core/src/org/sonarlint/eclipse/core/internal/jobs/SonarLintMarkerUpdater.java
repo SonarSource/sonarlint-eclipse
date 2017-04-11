@@ -88,39 +88,46 @@ public class SonarLintMarkerUpdater {
     document.addPositionUpdater(EXTRA_POSITIONS_UPDATER);
   }
 
-  public static void updateMarkersWithServerSideData(ISonarLintIssuable resource, Collection<Trackable> issues) {
+  public static void updateMarkersWithServerSideData(ISonarLintIssuable issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType,
+    boolean createExtraLocations) {
     try {
       for (Trackable issue : issues) {
-        updateMarkerWithServerSideData(resource, issue);
+        updateMarkerWithServerSideData(issuable, document, issue, triggerType, createExtraLocations);
       }
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
   }
 
-  private static void updateMarkerWithServerSideData(ISonarLintIssuable issuable, Trackable issue) throws CoreException {
+  private static void updateMarkerWithServerSideData(ISonarLintIssuable issuable, IDocument document, Trackable issue, TriggerType triggerType, boolean createExtraLocations)
+    throws CoreException {
+    Long markerId = issue.getMarkerId();
     if (issue.isResolved()) {
-      if (issue.getMarkerId() != null) {
+      if (markerId != null) {
         // Issue is associated to a marker, means it was not marked as resolved in previous analysis, but now it is, so clear marker
-        IMarker marker = issuable.getResource().findMarker(issue.getMarkerId());
+        IMarker marker = issuable.getResource().findMarker(markerId);
         marker.delete();
         issue.setMarkerId(null);
       }
     } else {
-      // We are expecting every unresolved issue to be associated to an existing marker
-      IMarker marker = issuable.getResource().findMarker(issue.getMarkerId());
-      updateServerMarkerAttributes(issue, marker);
+      if (markerId != null) {
+        IMarker marker = issuable.getResource().findMarker(markerId);
+        updateServerMarkerAttributes(issue, marker);
+      } else {
+        // Issue was previously resolved, and is now reopen, so we need to recreate a marker
+        createMarker(document, issuable, issue, triggerType, createExtraLocations);
+      }
     }
   }
 
-  private static void createOrUpdateMarkers(IDocument document, ISonarLintFile file, Collection<Trackable> issues,
+  private static void createOrUpdateMarkers(IDocument document, ISonarLintIssuable issuable, Collection<Trackable> issues,
     TriggerType triggerType, Set<IMarker> previousMarkersToDelete, boolean createExtraLocations) throws CoreException {
     for (Trackable issue : issues) {
       if (!issue.isResolved()) {
-        if (triggerType == TriggerType.CHANGESET || issue.getMarkerId() == null || file.getResource().findMarker(issue.getMarkerId()) == null) {
-          createMarker(document, file, issue, triggerType, createExtraLocations);
+        if (triggerType == TriggerType.CHANGESET || issue.getMarkerId() == null || issuable.getResource().findMarker(issue.getMarkerId()) == null) {
+          createMarker(document, issuable, issue, triggerType, createExtraLocations);
         } else {
-          IMarker marker = file.getResource().findMarker(issue.getMarkerId());
+          IMarker marker = issuable.getResource().findMarker(issue.getMarkerId());
           updateMarkerAttributes(document, issue, marker, createExtraLocations);
           previousMarkersToDelete.remove(marker);
         }
@@ -130,19 +137,19 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  private static void createMarker(IDocument document, ISonarLintFile file, Trackable trackable, TriggerType triggerType, boolean createExtraLocations) throws CoreException {
-    IMarker marker = file.getResource()
+  private static void createMarker(IDocument document, ISonarLintIssuable issuable, Trackable trackable, TriggerType triggerType, boolean createExtraLocations)
+    throws CoreException {
+    IMarker marker = issuable.getResource()
       .createMarker(triggerType == TriggerType.CHANGESET ? SonarLintCorePlugin.MARKER_CHANGESET_ID : SonarLintCorePlugin.MARKER_ID);
     if (triggerType != TriggerType.CHANGESET) {
       trackable.setMarkerId(marker.getId());
     }
 
     // See MarkerViewUtils
-    marker.setAttribute("org.eclipse.ui.views.markers.name", file.getResourceNameForMarker());
-    marker.setAttribute("org.eclipse.ui.views.markers.path", file.getResourceContainerForMarker());
+    marker.setAttribute("org.eclipse.ui.views.markers.name", issuable.getResourceNameForMarker());
+    marker.setAttribute("org.eclipse.ui.views.markers.path", issuable.getResourceContainerForMarker());
 
     updateMarkerAttributes(document, trackable, marker, createExtraLocations);
-
   }
 
   private static void updateMarkerAttributes(IDocument document, Trackable trackable, IMarker marker, boolean createExtraLocations) throws CoreException {

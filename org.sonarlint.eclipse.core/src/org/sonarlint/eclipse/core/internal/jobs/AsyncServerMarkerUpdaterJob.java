@@ -24,22 +24,40 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.text.IDocument;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
   private final Map<ISonarLintIssuable, Collection<Trackable>> issuesPerResource;
+  private final TriggerType triggerType;
+  private final Map<ISonarLintFile, IDocument> docPerFile;
 
-  public AsyncServerMarkerUpdaterJob(ISonarLintProject project, Map<ISonarLintIssuable, Collection<Trackable>> issuesPerResource) {
+  public AsyncServerMarkerUpdaterJob(ISonarLintProject project, Map<ISonarLintIssuable, Collection<Trackable>> issuesPerResource, Map<ISonarLintFile, IDocument> docPerFile,
+    TriggerType triggerType) {
     super("Update SonarLint markers based on server side issues", project);
     this.issuesPerResource = issuesPerResource;
+    this.docPerFile = docPerFile;
+    this.triggerType = triggerType;
   }
 
   @Override
   protected IStatus doRun(IProgressMonitor monitor) {
     for (Map.Entry<ISonarLintIssuable, Collection<Trackable>> entry : issuesPerResource.entrySet()) {
-      SonarLintMarkerUpdater.updateMarkersWithServerSideData(entry.getKey(), entry.getValue());
+      ISonarLintIssuable issuable = entry.getKey();
+      if (issuable instanceof ISonarLintFile) {
+        IDocument documentOrNull = docPerFile.get((ISonarLintFile) issuable);
+        final IDocument documentNotNull;
+        if (documentOrNull == null) {
+          documentNotNull = ((ISonarLintFile) issuable).getDocument();
+        } else {
+          documentNotNull = documentOrNull;
+        }
+        SonarLintMarkerUpdater.updateMarkersWithServerSideData(issuable, documentNotNull, entry.getValue(), triggerType, documentOrNull != null);
+      }
     }
     return Status.OK_STATUS;
   }

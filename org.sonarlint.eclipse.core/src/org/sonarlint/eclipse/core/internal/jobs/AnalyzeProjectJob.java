@@ -201,9 +201,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     Map<ISonarLintIssuable, List<Issue>> issuesPerResource = new LinkedHashMap<>();
-    request.getFiles().forEach(
-
-      fileWithDoc -> issuesPerResource.put(fileWithDoc.getFile(), new ArrayList<>()));
+    request.getFiles().forEach(fileWithDoc -> issuesPerResource.put(fileWithDoc.getFile(), new ArrayList<>()));
 
     AnalysisResults result = runAndCheckCancellation(server, config, issuesPerResource, monitor);
     if (!monitor.isCanceled() && result != null) {
@@ -334,7 +332,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     if (server != null && shouldUpdateServerIssuesAsync(triggerType)) {
-      trackServerIssuesAsync(server, rawIssuesPerResource.keySet(), monitor);
+      trackServerIssuesAsync(server, rawIssuesPerResource.keySet(), docPerFile, triggerType);
     }
   }
 
@@ -394,11 +392,12 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return IssueTracker.matchAndTrackServerIssues(serverIssuesTrackable, tracked);
   }
 
-  private void trackServerIssuesAsync(Server server, Collection<ISonarLintIssuable> resources, final IProgressMonitor monitor) {
+  private void trackServerIssuesAsync(Server server, Collection<ISonarLintIssuable> resources, Map<ISonarLintFile, IDocument> docPerFile, TriggerType triggerType) {
     ServerConfiguration serverConfiguration = server.getConfig();
     ConnectedSonarLintEngine engine = server.getEngine();
     String localModuleKey = getProject().getName();
-    SonarLintCorePlugin.getDefault().getServerIssueUpdater().updateAsync(serverConfiguration, engine, getProject(), localModuleKey, getProjectConfig().getModuleKey(), resources);
+    SonarLintCorePlugin.getDefault().getServerIssueUpdater().updateAsync(serverConfiguration, engine, getProject(), localModuleKey, getProjectConfig().getModuleKey(), resources,
+      docPerFile, triggerType);
   }
 
   private static void analysisCompleted(Collection<ProjectConfigurator> usedDeprecatedConfigurators, Collection<IAnalysisConfigurator> usedConfigurators,
