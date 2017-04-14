@@ -88,13 +88,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private final List<SonarLintProperty> extraProps;
   private final AnalyzeProjectRequest request;
 
-  static final ISchedulingRule SONARLINT_ANALYSIS_RULE = ResourcesPlugin.getWorkspace().getRuleFactory().buildRule();
-
   public AnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
     this.request = request;
     this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(request.getProject());
-    setRule(SONARLINT_ANALYSIS_RULE);
   }
 
   private static String jobTitle(AnalyzeProjectRequest request) {
@@ -326,7 +323,13 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       if (server != null && shouldUpdateServerIssuesSync(triggerType)) {
         tracked = trackServerIssuesSync(server, resource, tracked);
       }
-      SonarLintMarkerUpdater.createOrUpdateMarkers(resource, documentNotNull, tracked, triggerType, documentOrNull != null);
+      ISchedulingRule markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(resource.getResource());
+      try {
+        getJobManager().beginRule(markerRule, monitor);
+        SonarLintMarkerUpdater.createOrUpdateMarkers(resource, documentNotNull, tracked, triggerType, documentOrNull != null);
+      } finally {
+        getJobManager().endRule(markerRule);
+      }
       // Now that markerId are set, store issues in cache
       issueTracker.updateCache(relativePath, tracked);
     }
