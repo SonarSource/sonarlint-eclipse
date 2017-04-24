@@ -46,6 +46,7 @@ public class ServersManager {
   private static final String INITIALIZED_ATTRIBUTE = "initialized";
   private static final String AUTH_ATTRIBUTE = "auth";
   private static final String URL_ATTRIBUTE = "url";
+  private static final String ORG_ATTRIBUTE = "org";
   private static final String USERNAME_ATTRIBUTE = "username";
   private static final String PASSWORD_ATTRIBUTE = "password";
 
@@ -155,6 +156,9 @@ public class ServersManager {
       for (IServer server : serversById.values()) {
         Preferences serverNode = serversNode.node(server.getId());
         serverNode.put(URL_ATTRIBUTE, server.getHost());
+        if (server.getOrganization() != null) {
+          serverNode.put(ORG_ATTRIBUTE, server.getOrganization());
+        }
         serverNode.putBoolean(AUTH_ATTRIBUTE, server.hasAuth());
       }
       serversNode.flush();
@@ -172,7 +176,8 @@ public class ServersManager {
         Preferences serverNode = serversNode.node(serverId);
         boolean auth = serverNode.getBoolean(AUTH_ATTRIBUTE, false);
         String url = serverNode.get(URL_ATTRIBUTE, "");
-        Server sonarServer = new Server(serverId, url, auth);
+        String organization = serverNode.get(ORG_ATTRIBUTE, null);
+        Server sonarServer = new Server(serverId, url, organization, auth);
         serversById.put(serverId, sonarServer);
       }
     } catch (BackingStoreException e) {
@@ -318,8 +323,8 @@ public class ServersManager {
     return null;
   }
 
-  public IServer create(String id, String url, String username, String password) {
-    return new Server(id, url, StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password));
+  public IServer create(String id, String url, @Nullable String organization, String username, String password) {
+    return new Server(id, url, organization, StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password));
   }
 
 }
