@@ -29,6 +29,7 @@ import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.IssueStore;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerCacheFactory;
@@ -55,6 +56,7 @@ public class SonarLintCorePlugin extends Plugin {
   private final SonarLintExtensionTracker extensionTracker = new SonarLintExtensionTracker();
 
   private AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
+  private SonarLintTelemetry telemetry = new SonarLintTelemetry();
 
   public SonarLintCorePlugin() {
     plugin = this;
@@ -86,10 +88,14 @@ public class SonarLintCorePlugin extends Plugin {
     issueTrackerRegistry = new IssueTrackerRegistry(factory);
 
     serverIssueUpdater = new ServerIssueUpdater(issueTrackerRegistry);
+
+    telemetry.init();
   }
 
   @Override
   public void stop(BundleContext context) throws Exception {
+    telemetry.stop();
+
     if (sonarlint != null) {
       sonarlint.stop();
     }
@@ -130,5 +136,9 @@ public class SonarLintCorePlugin extends Plugin {
 
   public static SonarLintExtensionTracker getExtensionTracker() {
     return getDefault().extensionTracker;
+  }
+
+  public static SonarLintTelemetry getTelemetry() {
+    return getDefault().telemetry;
   }
 }
