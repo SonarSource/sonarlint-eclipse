@@ -25,9 +25,9 @@ import java.util.Enumeration;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.osgi.framework.FrameworkUtil;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
@@ -43,7 +43,7 @@ public class StandaloneSonarLintClientFacade {
   @CheckForNull
   private synchronized StandaloneSonarLintEngine getClient() {
     if (client == null) {
-      SonarLintLogger.get().info("Starting standalone SonarLint engine " + FrameworkUtil.getBundle(this.getClass()).getVersion().toString() + "...");
+      SonarLintLogger.get().info("Starting standalone SonarLint engine " + SonarLintUtils.getPluginVersion() + "...");
       Enumeration<URL> pluginEntriesEnum = SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false);
       if (pluginEntriesEnum != null) {
         List<URL> pluginEntries = Collections.list(pluginEntriesEnum);

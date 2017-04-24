@@ -19,6 +19,7 @@
     <!-- Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=397015 -->
     <sonar.sources></sonar.sources>
     <sonar.tests>src</sonar.tests>
+    <tycho.testArgLine>-Dsonarlint.telemetry.disabled=true</tycho.testArgLine>
   </properties>
 
 </project>

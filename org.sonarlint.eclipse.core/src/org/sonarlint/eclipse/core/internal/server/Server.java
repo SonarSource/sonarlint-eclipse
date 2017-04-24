@@ -46,6 +46,7 @@ import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
@@ -362,7 +363,7 @@ public class Server implements IServer, StateListener {
     Builder builder = ServerConfiguration.builder()
       .url(getHost())
       .organizationKey(organization)
-      .userAgent("SonarLint Eclipse " + SonarLintCorePlugin.getDefault().getBundle().getVersion().toString());
+      .userAgent("SonarLint Eclipse " + SonarLintUtils.getPluginVersion());
 
     IProxyService proxyService = SonarLintCorePlugin.getDefault().getProxyService();
     IProxyData[] proxyDataForHost;

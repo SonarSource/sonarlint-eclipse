@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.utils;
 
 import org.eclipse.core.resources.IResource;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
 public class SonarLintUtils {
 
@@ -37,6 +38,10 @@ public class SonarLintUtils {
       return false;
     }
     return true;
+  }
+
+  public static String getPluginVersion() {
+    return SonarLintCorePlugin.getDefault().getBundle().getVersion().toString();
   }
 
 }

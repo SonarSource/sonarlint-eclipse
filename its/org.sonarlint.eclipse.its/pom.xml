@@ -16,7 +16,7 @@
   
   <properties>
     <!-- http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassdeffounderror-jdk-nashorn-internal-runtime -->
-    <tycho.testArgLine>-Dorg.osgi.framework.bundle.parent=ext</tycho.testArgLine>
+    <tycho.testArgLine>-Dorg.osgi.framework.bundle.parent=ext -Dsonarlint.telemetry.disabled=true</tycho.testArgLine>
   </properties>
   
   <build>
