@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
+import javax.annotation.Nullable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
@@ -37,8 +38,8 @@ public class NewServerLocationWizard extends AbstractServerLocationWizard {
   }
 
   @Override
-  protected void doFinish(String serverId, String url, String username, String password) {
-    IServer newServer = ServersManager.getInstance().create(serverId, url, username, password);
+  protected void doFinish(String serverId, String url, @Nullable String organization, String username, String password) {
+    IServer newServer = ServersManager.getInstance().create(serverId, url, organization, username, password);
     ServersManager.getInstance().addServer(newServer, username, password);
 
     Job j = new ServerUpdateJob(newServer);

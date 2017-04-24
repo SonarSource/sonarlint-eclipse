@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
+import javax.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
@@ -33,8 +34,8 @@ public class EditServerLocationWizard extends AbstractServerLocationWizard {
   }
 
   @Override
-  protected void doFinish(String serverId, String url, String username, String password) {
-    sonarServer.updateConfig(url, username, password);
+  protected void doFinish(String serverId, String url, @Nullable String organization, String username, String password) {
+    sonarServer.updateConfig(url, organization, username, password);
     JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(sonarServer, TriggerType.BINDING_CHANGE);
   }
 }

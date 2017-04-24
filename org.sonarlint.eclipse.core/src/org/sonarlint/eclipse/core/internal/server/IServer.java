@@ -20,6 +20,8 @@
 package org.sonarlint.eclipse.core.internal.server;
 
 import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -28,6 +30,7 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
+import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public interface IServer {
@@ -51,6 +54,9 @@ public interface IServer {
    * @see java.net.URL#getHost()
    */
   String getHost();
+
+  @CheckForNull
+  String getOrganization();
 
   boolean hasAuth();
 
@@ -103,12 +109,14 @@ public interface IServer {
 
   boolean isUpdating();
 
-  void updateConfig(String url, String username, String password);
+  void updateConfig(String url, @Nullable String organization, String username, String password);
 
   void checkForUpdates(IProgressMonitor progress);
 
   boolean hasUpdates();
 
   void updateModuleList(IProgressMonitor monitor);
+
+  TextSearchIndex<RemoteOrganization> getOrganizationsIndex(String username, String password);
 
 }

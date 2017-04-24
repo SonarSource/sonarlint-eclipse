@@ -102,16 +102,18 @@ public class SonarLintMarkerUpdater {
   private static void updateMarkerWithServerSideData(ISonarLintIssuable issuable, IDocument document, Trackable issue, TriggerType triggerType, boolean createExtraLocations)
     throws CoreException {
     Long markerId = issue.getMarkerId();
+    IMarker marker = null;
+    if (markerId != null) {
+      marker = issuable.getResource().findMarker(markerId);
+    }
     if (issue.isResolved()) {
-      if (markerId != null) {
+      if (marker != null) {
         // Issue is associated to a marker, means it was not marked as resolved in previous analysis, but now it is, so clear marker
-        IMarker marker = issuable.getResource().findMarker(markerId);
         marker.delete();
-        issue.setMarkerId(null);
       }
+      issue.setMarkerId(null);
     } else {
-      if (markerId != null) {
-        IMarker marker = issuable.getResource().findMarker(markerId);
+      if (marker != null) {
         updateServerMarkerAttributes(issue, marker);
       } else {
         // Issue was previously resolved, and is now reopen, so we need to recreate a marker

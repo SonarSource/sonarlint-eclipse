@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -59,6 +60,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEng
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.GlobalStorageStatus;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
+import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration.Builder;
 import org.sonarsource.sonarlint.core.client.api.connected.StateListener;
@@ -73,15 +75,17 @@ public class Server implements IServer, StateListener {
   private static final String NEED_UPDATE = "Need data update";
   private final String id;
   private String host;
+  private String organization;
   private boolean hasAuth;
   private final ConnectedSonarLintEngine client;
   private final List<IServerListener> listeners = new ArrayList<>();
   private GlobalStorageStatus updateStatus;
   private boolean hasUpdates;
 
-  Server(String id, String host, boolean hasAuth) {
+  Server(String id, String host, @Nullable String organization, boolean hasAuth) {
     this.id = id;
     this.host = host;
+    this.organization = organization;
     this.hasAuth = hasAuth;
     ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
       .setServerId(getId())
@@ -114,6 +118,11 @@ public class Server implements IServer, StateListener {
   @Override
   public String getHost() {
     return host;
+  }
+
+  @Override
+  public String getOrganization() {
+    return organization;
   }
 
   @Override
@@ -260,8 +269,9 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public void updateConfig(String url, String username, String password) {
+  public void updateConfig(String url, @Nullable String organization, String username, String password) {
     this.host = url;
+    this.organization = organization;
     this.hasAuth = StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
     ServersManager.getInstance().updateServer(this, username, password);
     Job job = new ServerUpdateJob(this);
@@ -351,6 +361,7 @@ public class Server implements IServer, StateListener {
   private Builder getConfigBuilderNoCredentials() {
     Builder builder = ServerConfiguration.builder()
       .url(getHost())
+      .organizationKey(organization)
       .userAgent("SonarLint Eclipse " + SonarLintCorePlugin.getDefault().getBundle().getVersion().toString());
 
     IProxyService proxyService = SonarLintCorePlugin.getDefault().getProxyService();
@@ -379,6 +390,20 @@ public class Server implements IServer, StateListener {
     TextSearchIndex<RemoteModule> index = new TextSearchIndex<>();
     for (RemoteModule module : allModulesByKey.values()) {
       index.index(module, module.getKey() + " " + module.getName());
+    }
+    return index;
+  }
+
+  @Override
+  public TextSearchIndex<RemoteOrganization> getOrganizationsIndex(String username, String password) {
+    Builder builder = getConfigBuilderNoCredentials();
+    if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
+      builder.credentials(username, password);
+    }
+    WsHelper helper = new WsHelperImpl();
+    TextSearchIndex<RemoteOrganization> index = new TextSearchIndex<>();
+    for (RemoteOrganization org : helper.listOrganizations(builder.build())) {
+      index.index(org, org.getKey() + " " + org.getName());
     }
     return index;
   }

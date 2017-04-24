@@ -28,6 +28,9 @@ import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.IContentProposalListener2;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -39,8 +42,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.fieldassist.ContentAssistCommandAdapter;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
@@ -58,6 +63,7 @@ public class ServerLocationWizardPage extends WizardPage {
 
   private Text serverIdText;
   private Text serverUrlText;
+  private Text organizationText;
   private Text serverUsernameText;
   private Text serverPasswordText;
   private IStatus status;
@@ -108,14 +114,16 @@ public class ServerLocationWizardPage extends WizardPage {
     // SonarQube Server URL
     createServerUrlField(form);
 
-    createServerIdField(form);
-
     // Sonar Server Username/Token
     createUsernameField(parent, form);
     createOpenSecurityPageButton(form.getBody());
 
     // Sonar Server password
     createPasswordField(form);
+
+    createOrganizationField(form);
+
+    createServerIdField(form);
 
     // Test connection button
     createTestConnectionButton(form.getBody());
@@ -125,6 +133,44 @@ public class ServerLocationWizardPage extends WizardPage {
     }
     Dialog.applyDialogFont(parent);
     setControl(form.getBody());
+  }
+
+  private void createOrganizationField(final ScrolledForm form) {
+    Label labelOrganization = new Label(form.getBody(), SWT.NULL);
+    labelOrganization.setText("Organization:");
+    organizationText = new Text(form.getBody(), SWT.BORDER | SWT.SINGLE);
+    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    gd.horizontalSpan = 2;
+    organizationText.setLayoutData(gd);
+    if (edit) {
+      organizationText.setText(StringUtils.defaultString(server.getOrganization()));
+    } else {
+      organizationText.setText("");
+    }
+    organizationText.addModifyListener(e -> suggestServerId());
+    ContentProposalAdapter contentProposalAdapter = new ContentAssistCommandAdapter(
+      organizationText,
+      new TextContentAdapter(),
+      new OrganizationProvider(this),
+      ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
+      null,
+      true);
+    contentProposalAdapter.setAutoActivationCharacters(null);
+    contentProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
+    contentProposalAdapter.setFilterStyle(ContentProposalAdapter.FILTER_NONE);
+    contentProposalAdapter.setAutoActivationDelay(100);
+    contentProposalAdapter.addContentProposalListener(new IContentProposalListener2() {
+
+      @Override
+      public void proposalPopupOpened(ContentProposalAdapter adapter) {
+        // Nothing
+      }
+
+      @Override
+      public void proposalPopupClosed(ContentProposalAdapter adapter) {
+        dialogChanged();
+      }
+    });
   }
 
   private void createPasswordField(final ScrolledForm form) {
@@ -181,19 +227,26 @@ public class ServerLocationWizardPage extends WizardPage {
     }
     serverUrlText.setFocus();
     serverUrlText.setSelection(serverUrlText.getText().length());
-    serverUrlText.addModifyListener(e -> {
-      if (!edit && !serverIdManuallyChanged) {
-        try {
-          URL url = new URL(serverUrlText.getText());
-          serverIdText.removeModifyListener(idModifyListener);
-          serverIdText.setText(StringUtils.substringBefore(url.getHost(), "."));
-          serverIdText.addModifyListener(idModifyListener);
-        } catch (MalformedURLException e1) {
-          // Ignore
+    serverUrlText.addModifyListener(e -> suggestServerId());
+  }
+
+  private void suggestServerId() {
+    if (!edit && !serverIdManuallyChanged) {
+      try {
+        URL url = new URL(serverUrlText.getText());
+        String organization = organizationText.getText();
+        String suggestedId = url.getHost();
+        if (StringUtils.isNotBlank(organization)) {
+          suggestedId += "/" + organization;
         }
+        serverIdText.removeModifyListener(idModifyListener);
+        serverIdText.setText(suggestedId);
+        serverIdText.addModifyListener(idModifyListener);
+      } catch (MalformedURLException e1) {
+        // Ignore
       }
-      dialogChanged();
-    });
+    }
+    dialogChanged();
   }
 
   private void createServerIdField(final ScrolledForm form) {
@@ -297,6 +350,10 @@ public class ServerLocationWizardPage extends WizardPage {
     return StringUtils.removeEnd(serverUrlText.getText(), "/");
   }
 
+  public String getOrganization() {
+    return organizationText.getText();
+  }
+
   public String getUsername() {
     return serverUsernameText.getText();
   }
@@ -305,8 +362,8 @@ public class ServerLocationWizardPage extends WizardPage {
     return serverPasswordText.getText();
   }
 
-  private IServer transcientServer() {
-    return ServersManager.getInstance().create(getServerId(), getServerUrl(), getUsername(), getPassword());
+  IServer transcientServer() {
+    return ServersManager.getInstance().create(getServerId(), getServerUrl(), getOrganization(), getUsername(), getPassword());
   }
 
 }

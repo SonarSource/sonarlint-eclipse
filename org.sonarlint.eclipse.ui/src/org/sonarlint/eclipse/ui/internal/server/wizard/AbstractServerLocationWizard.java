@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
 import java.lang.reflect.InvocationTargetException;
+import javax.annotation.Nullable;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -52,12 +53,13 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
   public boolean performFinish() {
     final String serverId = page.getServerId();
     final String serverUrl = page.getServerUrl();
+    final String organization = page.getOrganization();
     final String username = page.getUsername();
     final String password = page.getPassword();
     IRunnableWithProgress op = monitor -> {
       monitor.beginTask("Saving '" + serverId + "'", 1);
       try {
-        doFinish(serverId, serverUrl, username, password);
+        doFinish(serverId, serverUrl, organization, username, password);
       } finally {
         monitor.done();
       }
@@ -74,5 +76,5 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
     return true;
   }
 
-  protected abstract void doFinish(String serverId, String url, String username, String password);
+  protected abstract void doFinish(String serverId, String url, @Nullable String organization, String username, String password);
 }
