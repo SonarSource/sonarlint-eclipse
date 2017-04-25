@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.bind;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.list.WritableList;
@@ -197,9 +198,10 @@ public class BindProjectsPage extends WizardPage {
       TextSearchIndex<RemoteModule> moduleIndex = selectedServer.getModuleIndex();
       for (Object object : viewer.getCheckedElements()) {
         ProjectBindModel bind = (ProjectBindModel) object;
-        List<RemoteModule> results = moduleIndex.search(bind.getEclipseName());
+        Map<RemoteModule, Double> results = moduleIndex.search(bind.getEclipseName());
         if (!results.isEmpty()) {
-          bind.associate(selectedServer.getId(), results.get(0).getKey());
+          // Take first highest scoring
+          bind.associate(selectedServer.getId(), results.keySet().iterator().next().getKey());
         } else {
           bind.setAutoBindFailed(true);
         }

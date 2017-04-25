@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.server.wizard;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -92,13 +93,13 @@ public class OrganizationProvider implements IContentProposalProvider {
       return new IContentProposal[0];
     }
     List<IContentProposal> list = new ArrayList<>();
-    List<RemoteOrganization> filtered = orgs.search(contents);
+    Map<RemoteOrganization, Double> filtered = orgs.search(contents);
     if (filtered.isEmpty()) {
       parentPage.setMessage("No results", IMessageProvider.INFORMATION);
     } else {
       parentPage.setMessage("", IMessageProvider.NONE);
     }
-    for (RemoteOrganization o : filtered) {
+    for (RemoteOrganization o : filtered.keySet()) {
       list.add(new ContentProposal(o.getKey(), o.getName(), o.getDescription()));
     }
     return list.toArray(new IContentProposal[list.size()]);
