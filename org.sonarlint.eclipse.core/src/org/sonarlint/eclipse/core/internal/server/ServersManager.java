@@ -156,7 +156,7 @@ public class ServersManager {
       for (IServer server : serversById.values()) {
         Preferences serverNode = serversNode.node(server.getId());
         serverNode.put(URL_ATTRIBUTE, server.getHost());
-        if (server.getOrganization() != null) {
+        if (StringUtils.isNotBlank(server.getOrganization())) {
           serverNode.put(ORG_ATTRIBUTE, server.getOrganization());
         }
         serverNode.putBoolean(AUTH_ATTRIBUTE, server.hasAuth());

@@ -363,7 +363,7 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   IServer transcientServer() {
-    return ServersManager.getInstance().create(getServerId(), getServerUrl(), getOrganization(), getUsername(), getPassword());
+    return ServersManager.getInstance().create(getServerId(), getServerUrl(), StringUtils.trimToNull(getOrganization()), getUsername(), getPassword());
   }
 
 }

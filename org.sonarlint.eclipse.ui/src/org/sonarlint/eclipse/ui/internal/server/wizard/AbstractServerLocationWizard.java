@@ -27,6 +27,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public abstract class AbstractServerLocationWizard extends Wizard implements INewWizard {
 
@@ -53,7 +54,7 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
   public boolean performFinish() {
     final String serverId = page.getServerId();
     final String serverUrl = page.getServerUrl();
-    final String organization = page.getOrganization();
+    final String organization = StringUtils.trimToNull(page.getOrganization());
     final String username = page.getUsername();
     final String password = page.getPassword();
     IRunnableWithProgress op = monitor -> {
