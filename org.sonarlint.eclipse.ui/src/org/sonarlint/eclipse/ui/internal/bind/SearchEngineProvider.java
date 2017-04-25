@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.bind;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
@@ -63,8 +64,8 @@ public class SearchEngineProvider implements IContentProposalProvider {
     }
     List<IContentProposal> list = new ArrayList<>();
     try {
-      List<RemoteModule> modules = getModuleIndex().search(contents);
-      for (RemoteModule m : modules) {
+      Map<RemoteModule, Double> modules = getModuleIndex().search(contents);
+      for (RemoteModule m : modules.keySet()) {
         RemoteSonarProject prj = new RemoteSonarProject(server.getId(), m.getKey(), m.getName());
         list.add(new ContentProposal(prj.asString(), m.getName(), prj.getDescription()));
       }
