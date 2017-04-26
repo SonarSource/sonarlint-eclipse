@@ -20,21 +20,21 @@
 package org.sonarlint.eclipse.ui.internal;
 
 import java.util.Collection;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProviderChangedEvent;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
 
   public static final String ID = "org.sonarlint.eclipse.ui.sonarlintDecorator";
 
-  private ListenerList fListeners;
+  private ListenerList<ILabelProviderListener> fListeners = new ListenerList<>();
 
   @Override
   public void decorate(Object element, IDecoration decoration) {
@@ -44,7 +44,7 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
       if (!p.isAutoEnabled()) {
         return;
       }
-      if (p.getServerId() != null && ServersManager.getInstance().getServer(p.getServerId()) != null) {
+      if (p.getServerId() != null && SonarLintCorePlugin.getServersManager().getServer(p.getServerId()) != null) {
         decoration.addOverlay(SonarLintImages.SQ_LABEL_DECORATOR);
       }
     }
@@ -52,22 +52,14 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
 
   @Override
   public void addListener(ILabelProviderListener listener) {
-
-    if (fListeners == null) {
-      fListeners = new ListenerList();
-    }
-
     fListeners.add(listener);
   }
 
   @Override
   public void dispose() {
-    if (fListeners != null) {
-      Object[] listeners = fListeners.getListeners();
-      for (int i = 0; i < listeners.length; i++) {
-        fListeners.remove(listeners[i]);
-      }
-      fListeners = null;
+    Object[] listeners = fListeners.getListeners();
+    for (int i = 0; i < listeners.length; i++) {
+      fListeners.remove(listeners[i]);
     }
   }
 

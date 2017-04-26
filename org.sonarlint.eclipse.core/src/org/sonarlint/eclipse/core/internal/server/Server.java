@@ -83,11 +83,8 @@ public class Server implements IServer, StateListener {
   private GlobalStorageStatus updateStatus;
   private boolean hasUpdates;
 
-  Server(String id, String host, @Nullable String organization, boolean hasAuth) {
+  Server(String id) {
     this.id = id;
-    this.host = host;
-    this.organization = organization;
-    this.hasAuth = hasAuth;
     ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
       .setServerId(getId())
       .setWorkDir(StorageManager.getServerWorkDir(getId()))
@@ -121,14 +118,29 @@ public class Server implements IServer, StateListener {
     return host;
   }
 
+  public Server setHost(String host) {
+    this.host = host;
+    return this;
+  }
+
   @Override
   public String getOrganization() {
     return organization;
   }
 
+  public Server setOrganization(@Nullable String organization) {
+    this.organization = organization;
+    return this;
+  }
+
   @Override
   public boolean hasAuth() {
     return hasAuth;
+  }
+
+  public Server setHasAuth(boolean hasAuth) {
+    this.hasAuth = hasAuth;
+    return this;
   }
 
   @Override
@@ -259,7 +271,7 @@ public class Server implements IServer, StateListener {
     for (ISonarLintProject sonarLintProject : getBoundProjects()) {
       unbind(sonarLintProject);
     }
-    ServersManager.getInstance().removeServer(this);
+    SonarLintCorePlugin.getServersManager().removeServer(this);
   }
 
   public static void unbind(ISonarLintProject project) {
@@ -274,7 +286,7 @@ public class Server implements IServer, StateListener {
     this.host = url;
     this.organization = organization;
     this.hasAuth = StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
-    ServersManager.getInstance().updateServer(this, username, password);
+    SonarLintCorePlugin.getServersManager().updateServer(this, username, password);
     Job job = new ServerUpdateJob(this);
     job.schedule();
   }
@@ -365,7 +377,7 @@ public class Server implements IServer, StateListener {
       .organizationKey(organization)
       .userAgent("SonarLint Eclipse " + SonarLintUtils.getPluginVersion());
 
-    IProxyService proxyService = SonarLintCorePlugin.getDefault().getProxyService();
+    IProxyService proxyService = SonarLintCorePlugin.getInstance().getProxyService();
     IProxyData[] proxyDataForHost;
     try {
       proxyDataForHost = proxyService.select(new URL(host).toURI());

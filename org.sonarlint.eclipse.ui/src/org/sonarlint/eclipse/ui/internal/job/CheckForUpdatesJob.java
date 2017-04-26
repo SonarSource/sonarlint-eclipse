@@ -25,8 +25,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.ui.internal.popup.ServerUpdateAvailablePopup;
 
 public class CheckForUpdatesJob extends Job {
@@ -39,9 +39,9 @@ public class CheckForUpdatesJob extends Job {
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
-      SubMonitor subMonitor = SubMonitor.convert(monitor, ServersManager.getInstance().getServers().size());
+      SubMonitor subMonitor = SubMonitor.convert(monitor, SonarLintCorePlugin.getServersManager().getServers().size());
       subMonitor.setTaskName("Checking for configuration updates on SonarQube servers");
-      for (final IServer server : ServersManager.getInstance().getServers()) {
+      for (final IServer server : SonarLintCorePlugin.getServersManager().getServers()) {
         subMonitor.subTask("Checking for updates from server '" + server.getId() + "'");
         SubMonitor serverMonitor = subMonitor.newChild(1);
 

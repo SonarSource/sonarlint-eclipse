@@ -47,6 +47,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -334,7 +335,7 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   private void dialogChanged() {
-    updateStatus(ServersManager.getInstance().validate(getServerId(), getServerUrl(), edit));
+    updateStatus(SonarLintCorePlugin.getServersManager().validate(getServerId(), getServerUrl(), edit));
   }
 
   private void updateStatus(String message) {
@@ -363,7 +364,7 @@ public class ServerLocationWizardPage extends WizardPage {
   }
 
   IServer transcientServer() {
-    return ServersManager.getInstance().create(getServerId(), getServerUrl(), StringUtils.trimToNull(getOrganization()), getUsername(), getPassword());
+    return SonarLintCorePlugin.getServersManager().create(getServerId(), getServerUrl(), StringUtils.trimToNull(getOrganization()), getUsername(), getPassword());
   }
 
 }

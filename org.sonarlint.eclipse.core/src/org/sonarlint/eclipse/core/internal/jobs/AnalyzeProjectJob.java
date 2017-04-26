@@ -63,7 +63,6 @@ import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueTrackable;
@@ -184,7 +183,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     Path projectBaseDir = projectLocation != null ? projectLocation.toFile().toPath() : analysisWorkDir;
     Server server;
     if (getProject().isBound()) {
-      server = (Server) ServersManager.getInstance().getServer(getProjectConfig().getServerId());
+      server = (Server) SonarLintCorePlugin.getServersManager().getServer(getProjectConfig().getServerId());
       if (server == null) {
         throw new IllegalStateException(
           "Project '" + getProject().getName() + "' is bound to an unknow server: '" + getProjectConfig().getServerId() + "'. Please fix project binding.");
@@ -399,7 +398,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     ServerConfiguration serverConfiguration = server.getConfig();
     ConnectedSonarLintEngine engine = server.getEngine();
     String localModuleKey = getProject().getName();
-    SonarLintCorePlugin.getDefault().getServerIssueUpdater().updateAsync(serverConfiguration, engine, getProject(), localModuleKey, getProjectConfig().getModuleKey(), resources,
+    SonarLintCorePlugin.getInstance().getServerIssueUpdater().updateAsync(serverConfiguration, engine, getProject(), localModuleKey, getProjectConfig().getModuleKey(), resources,
       docPerFile, triggerType);
   }
 
@@ -471,7 +470,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     if (server != null) {
       result = server.runAnalysis((ConnectedAnalysisConfiguration) analysisConfig, issueListener);
     } else {
-      StandaloneSonarLintClientFacade facadeToUse = SonarLintCorePlugin.getDefault().getDefaultSonarLintClientFacade();
+      StandaloneSonarLintClientFacade facadeToUse = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade();
       result = facadeToUse.runAnalysis(analysisConfig, issueListener);
     }
     SonarLintLogger.get().info("Found " + issueListener.getIssueCount() + " issue(s)");

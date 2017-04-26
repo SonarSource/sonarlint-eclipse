@@ -41,7 +41,7 @@ public class SonarLintUtils {
   }
 
   public static String getPluginVersion() {
-    return SonarLintCorePlugin.getDefault().getBundle().getVersion().toString();
+    return SonarLintCorePlugin.getInstance().getBundle().getVersion().toString();
   }
 
 }

@@ -19,9 +19,9 @@
  */
 package org.sonarlint.eclipse.ui.internal.bind;
 
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -44,7 +44,7 @@ public class ProjectBindModel extends AbstractModelObject {
     SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(project.getScopeContext());
     this.moduleKey = projectConfig.getModuleKey();
     this.serverId = projectConfig.getServerId();
-    this.server = ServersManager.getInstance().getServer(this.serverId);
+    this.server = SonarLintCorePlugin.getServersManager().getServer(this.serverId);
   }
 
   public ISonarLintProject getProject() {
@@ -76,7 +76,7 @@ public class ProjectBindModel extends AbstractModelObject {
     String oldValue = getSonarFullName();
     this.moduleKey = key;
     this.serverId = serverId;
-    this.server = ServersManager.getInstance().getServer(this.serverId);
+    this.server = SonarLintCorePlugin.getServersManager().getServer(this.serverId);
     firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());
   }
 

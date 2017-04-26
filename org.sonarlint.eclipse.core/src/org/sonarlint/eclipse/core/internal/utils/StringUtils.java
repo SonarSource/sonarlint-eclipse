@@ -19,6 +19,10 @@
  */
 package org.sonarlint.eclipse.core.internal.utils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -145,5 +149,21 @@ public class StringUtils {
       return s;
     }
     return Character.toUpperCase(s.charAt(0)) + s.substring(1);
+  }
+
+  public static String urlEncode(String toEncode) {
+    try {
+      return URLEncoder.encode(toEncode, StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      throw new IllegalStateException("Should never happen", e);
+    }
+  }
+
+  public static String urlDecode(String toDecode) {
+    try {
+      return URLDecoder.decode(toDecode, StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      throw new IllegalStateException("Should never happen", e);
+    }
   }
 }
