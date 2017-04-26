@@ -44,6 +44,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
@@ -51,7 +52,6 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
@@ -168,13 +168,13 @@ public class JobUtils {
     SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(sonarProject.getScopeContext());
     String serverId = projectConfig.getServerId();
     if (oldServerId != null && !Objects.equals(serverId, oldServerId)) {
-      IServer oldServer = ServersManager.getInstance().getServer(oldServerId);
+      IServer oldServer = SonarLintCorePlugin.getServersManager().getServer(oldServerId);
       if (oldServer != null) {
         oldServer.notifyAllListeners();
       }
     }
     if (serverId != null) {
-      IServer server = ServersManager.getInstance().getServer(serverId);
+      IServer server = SonarLintCorePlugin.getServersManager().getServer(serverId);
       if (server != null) {
         server.notifyAllListeners();
       }

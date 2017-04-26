@@ -72,7 +72,6 @@ import org.sonarlint.eclipse.core.internal.jobs.ProjectUpdateJob;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
@@ -105,14 +104,14 @@ public class BindProjectsPage extends WizardPage {
         + "Bind your Eclipse projects to some SonarQube projects in order to get the same issues in Eclipse and in SonarQube.");
     this.projects = projects;
     if (!projects.isEmpty()) {
-      selectedServer = ServersManager.getInstance().getServer(SonarLintProjectConfiguration.read(projects.get(0).getScopeContext()).getServerId());
+      selectedServer = SonarLintCorePlugin.getServersManager().getServer(SonarLintProjectConfiguration.read(projects.get(0).getScopeContext()).getServerId());
     }
   }
 
   @Override
   public void dispose() {
     if (serverListener != null) {
-      ServersManager.getInstance().removeServerLifecycleListener(serverListener);
+      SonarLintCorePlugin.getServersManager().removeServerLifecycleListener(serverListener);
     }
   }
 
@@ -270,7 +269,7 @@ public class BindProjectsPage extends WizardPage {
     });
 
     serverListener = new ServerChangeListener();
-    ServersManager.getInstance().addServerLifecycleListener(serverListener);
+    SonarLintCorePlugin.getServersManager().addServerLifecycleListener(serverListener);
 
     /* within the selection event, tell the object it was selected */
     serverCombo.addSelectionChangedListener(event -> {
@@ -350,7 +349,7 @@ public class BindProjectsPage extends WizardPage {
   }
 
   private void toggleServerPage() {
-    List<IServer> servers = ServersManager.getInstance().getServers();
+    List<IServer> servers = SonarLintCorePlugin.getServersManager().getServers();
     if (servers.isEmpty()) {
       book.showPage(noServersPage);
       selectedServer = null;

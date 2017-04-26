@@ -50,10 +50,10 @@ import org.eclipse.ui.navigator.CommonViewerSiteFactory;
 import org.eclipse.ui.navigator.ICommonViewerSite;
 import org.eclipse.ui.navigator.NavigatorActionService;
 import org.eclipse.ui.part.PageBook;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
 import org.sonarlint.eclipse.core.internal.server.IServerListener;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
@@ -247,7 +247,7 @@ public class ServersView extends CommonNavigator {
         server.removeServerListener(serverListener);
       }
     };
-    ServersManager.getInstance().addServerLifecycleListener(serverResourceListener);
+    SonarLintCorePlugin.getServersManager().addServerLifecycleListener(serverResourceListener);
 
     serverListener = server -> {
       refreshServerState();
@@ -255,7 +255,7 @@ public class ServersView extends CommonNavigator {
     };
 
     // add listeners to servers
-    for (IServer server : ServersManager.getInstance().getServers()) {
+    for (IServer server : SonarLintCorePlugin.getServersManager().getServers()) {
       server.addServerListener(serverListener);
     }
 
@@ -270,14 +270,14 @@ public class ServersView extends CommonNavigator {
 
   protected void removeServer(final IServer server) {
     Display.getDefault().asyncExec(() -> {
-      tableViewer.remove(server);
+      tableViewer.remove(tableViewer.getInput(), new Object[] {server});
       toggleDefaultPage();
     });
   }
 
   @Override
   public void dispose() {
-    ServersManager.getInstance().removeServerLifecycleListener(serverResourceListener);
+    SonarLintCorePlugin.getServersManager().removeServerLifecycleListener(serverResourceListener);
     super.dispose();
   }
 

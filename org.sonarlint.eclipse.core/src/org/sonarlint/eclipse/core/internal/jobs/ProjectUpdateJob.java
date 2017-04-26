@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class ProjectUpdateJob extends Job {
@@ -42,7 +41,7 @@ public class ProjectUpdateJob extends Job {
     try {
       SonarLintProjectConfiguration config = SonarLintProjectConfiguration.read(project.getScopeContext());
       String serverId = config.getServerId();
-      IServer server = ServersManager.getInstance().getServer(serverId);
+      IServer server = SonarLintCorePlugin.getServersManager().getServer(serverId);
       if (server == null) {
         return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID,
           "Unable to update project '" + project.getName() + "' since it is bound to an unknow server: '" + serverId + "'");

@@ -21,9 +21,9 @@ package org.sonarlint.eclipse.ui.internal.server.wizard;
 
 import javax.annotation.Nullable;
 import org.eclipse.core.runtime.jobs.Job;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 
 public class NewServerLocationWizard extends AbstractServerLocationWizard {
 
@@ -39,8 +39,8 @@ public class NewServerLocationWizard extends AbstractServerLocationWizard {
 
   @Override
   protected void doFinish(String serverId, String url, @Nullable String organization, String username, String password) {
-    IServer newServer = ServersManager.getInstance().create(serverId, url, organization, username, password);
-    ServersManager.getInstance().addServer(newServer, username, password);
+    IServer newServer = SonarLintCorePlugin.getServersManager().create(serverId, url, organization, username, password);
+    SonarLintCorePlugin.getServersManager().addServer(newServer, username, password);
 
     Job j = new ServerUpdateJob(newServer);
     j.schedule();

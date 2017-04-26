@@ -52,7 +52,7 @@ public class SonarLintTelemetry implements AnalysisListener {
   private TelemetryJob scheduledJob;
 
   private static Path getStorageFilePath() {
-    return SonarLintCorePlugin.getDefault().getStateLocation().toFile().toPath().resolve(STORAGE_FILENAME);
+    return SonarLintCorePlugin.getInstance().getStateLocation().toFile().toPath().resolve(STORAGE_FILENAME);
   }
 
   public void optOut(boolean optOut) {
@@ -122,7 +122,7 @@ public class SonarLintTelemetry implements AnalysisListener {
   public static TelemetryClientConfig getTelemetryClientConfig() {
     TelemetryClientConfig.Builder clientConfigBuilder = new TelemetryClientConfig.Builder()
       .userAgent("SonarLint");
-    IProxyService proxyService = SonarLintCorePlugin.getDefault().getProxyService();
+    IProxyService proxyService = SonarLintCorePlugin.getInstance().getProxyService();
     IProxyData[] proxyDataForHost;
     try {
       proxyDataForHost = proxyService.select(new URL(Telemetry.TELEMETRY_ENDPOINT).toURI());

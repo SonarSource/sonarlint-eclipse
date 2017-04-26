@@ -44,7 +44,7 @@ public class StandaloneSonarLintClientFacade {
   private synchronized StandaloneSonarLintEngine getClient() {
     if (client == null) {
       SonarLintLogger.get().info("Starting standalone SonarLint engine " + SonarLintUtils.getPluginVersion() + "...");
-      Enumeration<URL> pluginEntriesEnum = SonarLintCorePlugin.getDefault().getBundle().findEntries("/plugins", "*.jar", false);
+      Enumeration<URL> pluginEntriesEnum = SonarLintCorePlugin.getInstance().getBundle().findEntries("/plugins", "*.jar", false);
       if (pluginEntriesEnum != null) {
         List<URL> pluginEntries = Collections.list(pluginEntriesEnum);
         SonarLintLogger.get().debug("Loading embedded analyzers...");

@@ -29,6 +29,7 @@ import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
+import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.IssueStore;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
@@ -57,6 +58,7 @@ public class SonarLintCorePlugin extends Plugin {
 
   private AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
   private SonarLintTelemetry telemetry = new SonarLintTelemetry();
+  private ServersManager serversManager = new ServersManager();
 
   public SonarLintCorePlugin() {
     plugin = this;
@@ -64,7 +66,7 @@ public class SonarLintCorePlugin extends Plugin {
     proxyTracker.open();
   }
 
-  public static SonarLintCorePlugin getDefault() {
+  public static SonarLintCorePlugin getInstance() {
     return plugin;
   }
 
@@ -79,6 +81,7 @@ public class SonarLintCorePlugin extends Plugin {
   public void start(BundleContext context) throws Exception {
     super.start(context);
     extensionTracker.start();
+    serversManager.init();
 
     IssueTrackerCacheFactory factory = (project, localModuleKey) -> {
       Path storeBasePath = StorageManager.getIssuesDir(localModuleKey);
@@ -102,6 +105,7 @@ public class SonarLintCorePlugin extends Plugin {
     proxyTracker.close();
 
     issueTrackerRegistry.shutdown();
+    serversManager.stop();
     extensionTracker.close();
 
     super.stop(context);
@@ -123,22 +127,26 @@ public class SonarLintCorePlugin extends Plugin {
   }
 
   public static IssueTracker getOrCreateIssueTracker(ISonarLintProject project, String localModulePath) {
-    return getDefault().issueTrackerRegistry.getOrCreate(project, localModulePath);
+    return getInstance().issueTrackerRegistry.getOrCreate(project, localModulePath);
   }
 
   public static void clearIssueTracker(ISonarLintProject project) {
-    getDefault().issueTrackerRegistry.get(project).ifPresent(IssueTracker::clear);
+    getInstance().issueTrackerRegistry.get(project).ifPresent(IssueTracker::clear);
   }
 
   public static AnalysisListenerManager getAnalysisListenerManager() {
-    return getDefault().analysisListenerManager;
+    return getInstance().analysisListenerManager;
   }
 
   public static SonarLintExtensionTracker getExtensionTracker() {
-    return getDefault().extensionTracker;
+    return getInstance().extensionTracker;
   }
 
   public static SonarLintTelemetry getTelemetry() {
-    return getDefault().telemetry;
+    return getInstance().telemetry;
+  }
+
+  public static ServersManager getServersManager() {
+    return getInstance().serversManager;
   }
 }

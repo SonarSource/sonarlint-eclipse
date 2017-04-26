@@ -40,11 +40,11 @@ public class SonarLintProjectConfiguration {
   }
 
   public static SonarLintProjectConfiguration read(IScopeContext projectScope) {
-    return SonarLintCorePlugin.getDefault().getProjectManager().readSonarLintConfiguration(projectScope);
+    return SonarLintCorePlugin.getInstance().getProjectManager().readSonarLintConfiguration(projectScope);
   }
 
   public void save() {
-    SonarLintCorePlugin.getDefault().getProjectManager().saveSonarLintConfiguration(projectScope, this);
+    SonarLintCorePlugin.getInstance().getProjectManager().saveSonarLintConfiguration(projectScope, this);
   }
 
   public List<SonarLintProperty> getExtraProperties() {

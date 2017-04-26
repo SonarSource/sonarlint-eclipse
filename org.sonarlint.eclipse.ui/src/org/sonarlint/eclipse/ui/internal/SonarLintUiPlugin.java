@@ -48,7 +48,6 @@ import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -139,7 +138,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   }
 
   private static void checkServersStatus() {
-    for (final IServer server : ServersManager.getInstance().getServers()) {
+    for (final IServer server : SonarLintCorePlugin.getServersManager().getServers()) {
       if (!server.isStorageUpdated()) {
         Display.getDefault().asyncExec(() -> {
           ServerStorageNeedUpdatePopup popup = new ServerStorageNeedUpdatePopup(Display.getCurrent(), server);

@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.Arrays;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -34,9 +33,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
@@ -131,7 +131,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
       boundDetails.setText("Bound to the project '" + moduleKey + "' on server '" + serverName(serverId) + "'");
       bindLink.setText("<a>Update project binding</a>");
     }
-    if (serverId != null && ServersManager.getInstance().getServer(serverId) == null) {
+    if (serverId != null && SonarLintCorePlugin.getServersManager().getServer(serverId) == null) {
       addServerLink.setText("<a>Connect to SonarQube server '" + serverId + "'</a>");
       addServerLink.setVisible(true);
     } else {
@@ -144,7 +144,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     if (serverId == null) {
       return "";
     }
-    IServer server = ServersManager.getInstance().getServer(serverId);
+    IServer server = SonarLintCorePlugin.getServersManager().getServer(serverId);
     return server != null ? server.getId() : ("Unknown server: '" + serverId + "'");
   }
 
