@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.server.wizard;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -99,10 +100,22 @@ public class OrganizationProvider implements IContentProposalProvider {
     } else {
       parentPage.setMessage("", IMessageProvider.NONE);
     }
-    for (RemoteOrganization o : filtered.keySet()) {
-      list.add(new ContentProposal(o.getKey(), o.getName(), o.getDescription()));
+    List<Map.Entry<RemoteOrganization, Double>> entries = new ArrayList<>(filtered.entrySet());
+    entries.sort(
+      Comparator.comparing(Map.Entry<RemoteOrganization, Double>::getValue).reversed()
+        .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)));
+    for (Map.Entry<RemoteOrganization, Double> e : entries) {
+      list.add(new ContentProposal(e.getKey().getKey(), e.getKey().getName(), toDescription(e.getKey())));
     }
     return list.toArray(new IContentProposal[list.size()]);
+  }
+
+  private static String toDescription(RemoteOrganization org) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Name: ").append(org.getName()).append("\n");
+    sb.append("Key: ").append(org.getKey()).append("\n");
+    sb.append("Description: ").append(org.getDescription());
+    return sb.toString();
   }
 
 }

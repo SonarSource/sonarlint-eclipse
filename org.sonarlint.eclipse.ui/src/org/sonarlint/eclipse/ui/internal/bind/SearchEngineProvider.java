@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.bind;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -65,9 +66,13 @@ public class SearchEngineProvider implements IContentProposalProvider {
     List<IContentProposal> list = new ArrayList<>();
     try {
       Map<RemoteModule, Double> modules = getModuleIndex().search(contents);
-      for (RemoteModule m : modules.keySet()) {
-        RemoteSonarProject prj = new RemoteSonarProject(server.getId(), m.getKey(), m.getName());
-        list.add(new ContentProposal(prj.asString(), m.getName(), prj.getDescription()));
+      List<Map.Entry<RemoteModule, Double>> entries = new ArrayList<>(modules.entrySet());
+      entries.sort(
+        Comparator.comparing(Map.Entry<RemoteModule, Double>::getValue).reversed()
+          .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)));
+      for (Map.Entry<RemoteModule, Double> e : entries) {
+        RemoteSonarProject prj = new RemoteSonarProject(server.getId(), e.getKey().getKey(), e.getKey().getName());
+        list.add(new ContentProposal(prj.asString(), e.getKey().getName(), prj.getDescription()));
       }
     } catch (Exception e) {
       SonarLintLogger.get().debug("Unable to search modules from server " + server.getId(), e);
