@@ -22,7 +22,7 @@
           category="org.sonarlint.eclipse.ui.preferences.SonarLintPreferencePage"
           class="org.sonarlint.eclipse.ui.internal.properties.AboutPropertyPage"
           id="org.sonarlint.eclipse.ui.properties.AboutPropertyPage"
-          name="About">
+          name="Miscellaneous">
           <keywordReference id="org.sonarlint.eclipse.ui.SonarLintKeyword"/>
     </page>
   </extension>

@@ -43,7 +43,7 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
   private Button enabledBtn;
 
   public AboutPropertyPage() {
-    setTitle("About");
+    setTitle("Miscellaneous");
   }
 
   @Override
