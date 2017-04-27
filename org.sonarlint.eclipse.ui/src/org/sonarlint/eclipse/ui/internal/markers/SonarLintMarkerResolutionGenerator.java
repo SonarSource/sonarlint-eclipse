@@ -40,9 +40,9 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
   @Override
   public IMarkerResolution[] getResolutions(final IMarker marker) {
     if (hasResolutions(marker)) {
-      return new IMarkerResolution[] {new ShowIssueFlowsMarkerResolver()};
+      return new IMarkerResolution[] {new ShowIssueFlowsMarkerResolver(marker), new ShowRuleDescriptionMarkerResolver(marker)};
     } else {
-      return new IMarkerResolution[0];
+      return new IMarkerResolution[] {new ShowRuleDescriptionMarkerResolver(marker)};
     }
   }
 

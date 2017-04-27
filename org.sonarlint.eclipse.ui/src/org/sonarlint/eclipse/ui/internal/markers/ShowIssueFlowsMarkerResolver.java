@@ -52,10 +52,15 @@ import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
 
   private static final String ISSUE_FLOW_ANNOTATION_TYPE = "org.sonarlint.eclipse.issueFlowAnnotationType";
+  private final IMarker marker;
+
+  public ShowIssueFlowsMarkerResolver(IMarker marker) {
+    this.marker = marker;
+  }
 
   @Override
   public String getDescription() {
-    return "Show/Hide all locations to better understand the issue";
+    return "Show/Hide all locations to better understand the issue: " + marker.getAttribute(IMarker.MESSAGE, "unknown");
   }
 
   @Override
