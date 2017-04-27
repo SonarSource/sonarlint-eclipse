@@ -7,15 +7,22 @@
   <extension point="org.eclipse.ui.preferencePages">
     <page
         class="org.sonarlint.eclipse.ui.internal.preferences.SonarLintPreferencePage"
-        id="org.sonarlint.eclipse.ui.preferences.SonarPreferencePage"
+        id="org.sonarlint.eclipse.ui.preferences.SonarLintPreferencePage"
         name="%sonar.preference.page.name">
         <keywordReference id="org.sonarlint.eclipse.ui.SonarLintKeyword"/>
     </page>
     <page
-          category="org.sonarlint.eclipse.ui.preferences.SonarPreferencePage"
+          category="org.sonarlint.eclipse.ui.preferences.SonarLintPreferencePage"
           class="org.sonarlint.eclipse.ui.internal.properties.SonarLintExtraArgumentsPreferenceAndPropertyPage"
           id="org.sonarlint.eclipse.ui.properties.SonarExtraArgumentsPreferenceAndPropertyPage"
           name="%sonar.preference.extraProps.page.name">
+          <keywordReference id="org.sonarlint.eclipse.ui.SonarLintKeyword"/>
+    </page>
+    <page
+          category="org.sonarlint.eclipse.ui.preferences.SonarLintPreferencePage"
+          class="org.sonarlint.eclipse.ui.internal.properties.AboutPropertyPage"
+          id="org.sonarlint.eclipse.ui.properties.AboutPropertyPage"
+          name="About">
           <keywordReference id="org.sonarlint.eclipse.ui.SonarLintKeyword"/>
     </page>
   </extension>

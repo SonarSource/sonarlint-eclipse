@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.preferences;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -34,11 +33,6 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
  * Preference page for the workspace.
  */
 public class SonarLintPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
-
-  /**
-   * Value is persisted by the telemetry framework. We use an Eclipse property "just" to benefit from automatic UI.
-   */
-  public static final String PREF_TELEMETRY = "telemetry";
 
   public SonarLintPreferencePage() {
     super(Messages.SonarPreferencePage_title, GRID);
@@ -62,10 +56,6 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
       getFieldEditorParent()));
     addField(new StringFieldEditor(PreferencesUtils.PREF_TEST_FILE_REGEXPS,
       Messages.SonarPreferencePage_label_test_file_regexps, getFieldEditorParent()));
-    addField(new LabelFieldEditor("Telemetry", "By sharing anonymous SonarLint usage statistics, you help us understand\nhow SonarLint is used so "
-      + "we can improve the plugin to work even better for you.\nWe don't collect source code, IP addresses, or any personally identifying "
-      + "information.\n And we don't share the data with anyone else.", getFieldEditorParent()));
-    addField(new BooleanFieldEditor(PREF_TELEMETRY, "Share anonymous SonarLint statistics", BooleanFieldEditor.SEPARATE_LABEL, getFieldEditorParent()));
   }
 
 }

@@ -54,7 +54,6 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
-import org.sonarlint.eclipse.ui.internal.preferences.SonarLintPreferencePage;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
@@ -111,7 +110,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     addSonarLintPartListener();
 
-    SonarLintUiPlugin.getDefault().getPreferenceStore().setValue(SonarLintPreferencePage.PREF_TELEMETRY, SonarLintCorePlugin.getTelemetry().optedIn());
     prefListener = event -> {
       if (event.getProperty().equals(PreferencesUtils.PREF_MARKER_SEVERITY)) {
         try {
@@ -119,9 +117,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         } catch (CoreException e) {
           SonarLintLogger.get().error("Unable to update marker severity", e);
         }
-      }
-      if (event.getProperty().equals(SonarLintPreferencePage.PREF_TELEMETRY)) {
-        SonarLintCorePlugin.getTelemetry().optOut(!(Boolean) event.getNewValue());
       }
     };
 
