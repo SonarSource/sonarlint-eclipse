@@ -313,7 +313,7 @@ public class Server implements IServer, StateListener {
 
   @Override
   public void updateModuleList(IProgressMonitor monitor) {
-    client.downloadAllModules(getConfig());
+    client.downloadAllModules(getConfig(), new WrappedProgressMonitor(monitor, "Download modules list from server '" + getId() + "'"));
   }
 
   @Override
@@ -331,8 +331,8 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public synchronized void updateProjectStorage(String moduleKey) {
-    client.updateModule(getConfig(), moduleKey);
+  public synchronized void updateProjectStorage(String moduleKey, IProgressMonitor monitor) {
+    client.updateModule(getConfig(), moduleKey, new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "' for module '" + moduleKey + "'"));
   }
 
   @Override
@@ -408,14 +408,14 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public TextSearchIndex<RemoteOrganization> getOrganizationsIndex(String username, String password) {
+  public TextSearchIndex<RemoteOrganization> getOrganizationsIndex(String username, String password, IProgressMonitor monitor) {
     Builder builder = getConfigBuilderNoCredentials();
     if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
       builder.credentials(username, password);
     }
     WsHelper helper = new WsHelperImpl();
     TextSearchIndex<RemoteOrganization> index = new TextSearchIndex<>();
-    for (RemoteOrganization org : helper.listOrganizations(builder.build())) {
+    for (RemoteOrganization org : helper.listOrganizations(builder.build(), new WrappedProgressMonitor(monitor, "Fetch organizations"))) {
       index.index(org, org.getKey() + " " + org.getName());
     }
     return index;

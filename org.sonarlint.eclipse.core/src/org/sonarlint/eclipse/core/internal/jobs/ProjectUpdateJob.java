@@ -46,7 +46,7 @@ public class ProjectUpdateJob extends Job {
         return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID,
           "Unable to update project '" + project.getName() + "' since it is bound to an unknow server: '" + serverId + "'");
       }
-      server.updateProjectStorage(config.getModuleKey());
+      server.updateProjectStorage(config.getModuleKey(), monitor);
       return Status.OK_STATUS;
     } catch (Exception e) {
       return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update project " + project.getName(), e);

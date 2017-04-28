@@ -55,7 +55,7 @@ public class ServerUpdateJob extends Job {
         return Status.CANCEL_STATUS;
       }
       try {
-        server.updateProjectStorage(SonarLintProjectConfiguration.read(projectToUpdate.getScopeContext()).getModuleKey());
+        server.updateProjectStorage(SonarLintProjectConfiguration.read(projectToUpdate.getScopeContext()).getModuleKey(), monitor);
       } catch (Exception e) {
         failures.add(new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding for project '" + projectToUpdate.getName() + "'", e));
       }

@@ -99,7 +99,7 @@ public interface IServer {
 
   RuleDetails getRuleDescription(String ruleKey);
 
-  void updateProjectStorage(String moduleKey);
+  void updateProjectStorage(String moduleKey, IProgressMonitor monitor);
 
   boolean isStorageUpdated();
 
@@ -117,6 +117,6 @@ public interface IServer {
 
   void updateModuleList(IProgressMonitor monitor);
 
-  TextSearchIndex<RemoteOrganization> getOrganizationsIndex(String username, String password);
+  TextSearchIndex<RemoteOrganization> getOrganizationsIndex(String username, String password, IProgressMonitor monitor);
 
 }

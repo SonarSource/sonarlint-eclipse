@@ -34,7 +34,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
-import org.sonarsource.sonarlint.core.client.api.exceptions.UnsupportedServerException;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class OrganizationProvider implements IContentProposalProvider {
@@ -61,26 +60,24 @@ public class OrganizationProvider implements IContentProposalProvider {
       previousUsername = parentPage.getUsername();
       previousPassword = parentPage.getPassword();
       try {
-        parentPage.getWizard().getContainer().run(false, false, new IRunnableWithProgress() {
+        parentPage.getWizard().getContainer().run(true, true, new IRunnableWithProgress() {
 
           @Override
           public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            orgs = transcientServer.getOrganizationsIndex(parentPage.getUsername(), parentPage.getPassword());
+            orgs = transcientServer.getOrganizationsIndex(previousUsername, previousPassword, monitor);
+            parentPage.setMessage("", IMessageProvider.NONE);
           }
         });
+      } catch (InvocationTargetException e) {
+        SonarLintLogger.get().debug("Unable to download organizations", e.getCause());
+        orgs = null;
+        parentPage.setMessage(e.getCause().getMessage(), IMessageProvider.ERROR);
+      } catch (InterruptedException e) {
+        orgs = null;
         parentPage.setMessage("", IMessageProvider.NONE);
-        return filtered(contents);
-      } catch (UnsupportedServerException e) {
-        parentPage.setMessage("No organizations on this server", IMessageProvider.INFORMATION);
-        return new IContentProposal[0];
-      } catch (Exception e) {
-        SonarLintLogger.get().debug("Unable to search organizations on server " + transcientServer.getHost(), e);
-        parentPage.setMessage(e.getMessage(), IMessageProvider.ERROR);
-        return new IContentProposal[0];
       }
-    } else {
-      return filtered(contents);
     }
+    return filtered(contents);
 
   }
 
