@@ -47,9 +47,9 @@ public class ServersManagerTest {
   @Before
   public void prepare() throws Exception {
     manager = SonarLintCorePlugin.getServersManager();
-    manager.stop();
     ROOT.node(PREF_SERVERS).removeNode();
     ROOT_SECURE.node(PREF_SERVERS).removeNode();
+    manager.stop();
     manager.init();
   }
 
@@ -158,9 +158,12 @@ public class ServersManagerTest {
 
     added.clear();
 
+    IServer server = manager.getServer("foo/bar");
+
+    ROOT.node(PREF_SERVERS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo:9000");
     ROOT.node(PREF_SERVERS).node("foo%2Fbar").putBoolean(AUTH_ATTRIBUTE, true);
     assertThat(removed).isEmpty();
-    assertThat(changed).hasSize(1);
+    assertThat(changed).hasSize(2);
     assertThat(added).isEmpty();
 
     changed.clear();
@@ -173,9 +176,10 @@ public class ServersManagerTest {
     changed.clear();
 
     assertThat(manager.getServers()).hasSize(1);
-    assertThat(manager.getServer("foo/bar").getId()).isEqualTo("foo/bar");
-    assertThat(manager.getServer("foo/bar").getOrganization()).isEqualTo("bar");
-    assertThat(manager.getServer("foo/bar").hasAuth()).isTrue();
+    assertThat(server.getId()).isEqualTo("foo/bar");
+    assertThat(server.getHost()).isEqualTo("http://foo:9000");
+    assertThat(server.getOrganization()).isEqualTo("bar");
+    assertThat(server.hasAuth()).isTrue();
 
     ROOT.node(PREF_SERVERS).removeNode();
     assertThat(manager.getServers()).hasSize(1);
@@ -186,7 +190,40 @@ public class ServersManagerTest {
     assertThat(changed).isEmpty();
     assertThat(added).hasSize(1);
     assertThat(added.get(0).getId()).isEqualTo("default");
+  }
 
+  @Test
+  public void test_external_changes_on_existing_servers() throws Exception {
+    IServer defaultServer = manager.getServer("default");
+    manager.removeServer(defaultServer);
+
+    manager.stop();
+
+    // Add a server entry like if it was existing previously
+    ROOT.node(PREF_SERVERS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo");
+
+    manager.init();
+
+    List<IServer> removed = new ArrayList<>();
+    List<IServer> changed = new ArrayList<>();
+    List<IServer> added = new ArrayList<>();
+    addListener(removed, changed, added);
+
+    IServer server = manager.getServer("foo/bar");
+    assertThat(server.getId()).isEqualTo("foo/bar");
+    assertThat(server.getHost()).isEqualTo("http://foo");
+
+    ROOT.node(PREF_SERVERS).node("foo%2Fbar").put(URL_ATTRIBUTE, "http://foo:9000");
+    ROOT.node(PREF_SERVERS).node("foo%2Fbar").putBoolean(AUTH_ATTRIBUTE, true);
+    assertThat(removed).isEmpty();
+    assertThat(changed).hasSize(2);
+    assertThat(added).isEmpty();
+
+    changed.clear();
+
+    assertThat(manager.getServers()).hasSize(1);
+    assertThat(server.getId()).isEqualTo("foo/bar");
+    assertThat(server.getHost()).isEqualTo("http://foo:9000");
   }
 
   private void addListener(List<IServer> removed, List<IServer> changed, List<IServer> added) {

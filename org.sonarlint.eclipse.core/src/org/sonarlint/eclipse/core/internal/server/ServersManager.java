@@ -134,26 +134,39 @@ public class ServersManager {
 
   public void init() {
     IEclipsePreferences rootNode = getSonarLintPreferenceNode();
-    try {
-      Preferences serversNode = rootNode.nodeExists(PREF_SERVERS) ? rootNode.node(PREF_SERVERS) : DefaultScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID).node(PREF_SERVERS);
-      serversById.putAll(loadServersList(serversNode));
-    } catch (BackingStoreException e) {
-      throw new IllegalStateException("Unable to read preference store", e);
-    }
     rootNode.addNodeChangeListener(rootNodeChangeListener);
-    boolean hasServerNode;
     try {
-      hasServerNode = rootNode.nodeExists(PREF_SERVERS);
+      if (rootNode.nodeExists(PREF_SERVERS)) {
+        Preferences serversNode = rootNode.node(PREF_SERVERS);
+        ((IEclipsePreferences) serversNode).addNodeChangeListener(serversNodeChangeListener);
+        serversById.putAll(loadServersList(serversNode));
+        for (String serverNodeName : serversNode.childrenNames()) {
+          IEclipsePreferences serverNode = ((IEclipsePreferences) serversNode.node(serverNodeName));
+          serverNode.addPreferenceChangeListener(serverChangeListener);
+        }
+      } else {
+        serversById.putAll(loadServersList(DefaultScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID).node(PREF_SERVERS)));
+      }
     } catch (BackingStoreException e) {
       throw new IllegalStateException("Unable to load server list", e);
-    }
-    if (hasServerNode) {
-      ((IEclipsePreferences) rootNode.node(PREF_SERVERS)).addNodeChangeListener(serversNodeChangeListener);
     }
   }
 
   public void stop() {
-    getSonarLintPreferenceNode().removeNodeChangeListener(rootNodeChangeListener);
+    IEclipsePreferences rootNode = getSonarLintPreferenceNode();
+    rootNode.removeNodeChangeListener(rootNodeChangeListener);
+    try {
+      if (rootNode.nodeExists(PREF_SERVERS)) {
+        Preferences serversNode = rootNode.node(PREF_SERVERS);
+        ((IEclipsePreferences) serversNode).removeNodeChangeListener(serversNodeChangeListener);
+        for (String serverNodeName : serversNode.childrenNames()) {
+          IEclipsePreferences serverNode = ((IEclipsePreferences) serversNode.node(serverNodeName));
+          serverNode.removePreferenceChangeListener(serverChangeListener);
+        }
+      }
+    } catch (BackingStoreException e) {
+      throw new IllegalStateException("Unable to load server list", e);
+    }
     serverListeners.clear();
   }
 
