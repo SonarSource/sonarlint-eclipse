@@ -307,7 +307,7 @@ public class Server implements IServer, StateListener {
 
   @Override
   public synchronized void updateStorage(IProgressMonitor monitor) {
-    updateStatus = client.update(getConfig(), new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "'"));
+    updateStatus = client.update(getConfig(), new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "'")).status();
     hasUpdates = false;
   }
 
