@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.its.bots;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.waits.Conditions;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
+import org.sonarlint.eclipse.its.AbstractSonarLintTest;
 
 public class SonarLintProjectPropertiesBot {
   private final SWTWorkbenchBot bot;
@@ -41,7 +42,11 @@ public class SonarLintProjectPropertiesBot {
   }
 
   public void ok() {
-    bot.button("OK").click();
+    if (AbstractSonarLintTest.isOxygenOrGreater()) {
+      bot.button("Apply and Close").click();
+    } else {
+      bot.button("OK").click();
+    }
     bot.waitUntil(Conditions.shellCloses(shell));
   }
 
