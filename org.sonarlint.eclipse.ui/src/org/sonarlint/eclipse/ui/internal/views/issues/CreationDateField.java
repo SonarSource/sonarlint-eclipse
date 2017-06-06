@@ -19,15 +19,12 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-
-import static java.lang.Math.max;
+import org.sonarsource.sonarlint.core.client.api.util.DateUtils;
 
 public class CreationDateField extends MarkerField {
 
@@ -41,29 +38,7 @@ public class CreationDateField extends MarkerField {
       // Persistent markers before 1.2 don't have creation date attribute
       return null;
     }
-    Date date = new Date(Long.valueOf(time));
-    Date now = new Date();
-    long days = TimeUnit.MILLISECONDS.toDays(now.getTime() - date.getTime());
-    if (days > 0) {
-      return pluralize(days, "day", "days");
-    }
-    long hours = TimeUnit.MILLISECONDS.toHours(now.getTime() - date.getTime());
-    if (hours > 0) {
-      return pluralize(hours, "hour", "hours");
-    }
-    long minutes = TimeUnit.MILLISECONDS.toMinutes(now.getTime() - date.getTime());
-    if (minutes > 0) {
-      return pluralize(minutes, "minute", "minutes");
-    }
-    long seconds = TimeUnit.MILLISECONDS.toSeconds(now.getTime() - date.getTime());
-    return pluralize(max(1, seconds), "second", "seconds");
-  }
-
-  private static String pluralize(long strictlyPositiveCount, String singular, String plural) {
-    if (strictlyPositiveCount == 1) {
-      return "1 " + singular + " ago";
-    }
-    return strictlyPositiveCount + " " + plural + " ago";
+    return DateUtils.toAge(Long.valueOf(time));
   }
 
   @Override
