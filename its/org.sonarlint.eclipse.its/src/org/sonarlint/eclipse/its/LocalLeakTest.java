@@ -84,7 +84,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
       .expandAndSelect("leak", "src", "hello", "Hello.java");
 
     assertThat(view.bot().tree().getAllItems()).hasSize(2);
-    assertThat(view.bot().tree().cell(0, 0)).isEqualTo("1 second ago");
+    assertThat(view.bot().tree().cell(0, 0)).isEqualTo("few seconds ago");
     assertThat(view.bot().tree().cell(1, 0)).isEqualTo("");
   }
 

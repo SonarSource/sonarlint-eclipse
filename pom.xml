@@ -65,10 +65,6 @@
     <system>JIRA</system>
     <url>https://jira.sonarsource.com/browse/SLE</url>
   </issueManagement>
-  <ciManagement>
-    <system>Travis</system>
-    <url>https://travis-ci.org/SonarSource/sonar-eclipse</url>
-  </ciManagement>
 
   <properties>
     <license.title>SonarLint for Eclipse</license.title>
@@ -77,7 +73,7 @@
     <tycho.version>1.0.0</tycho.version>
     <tycho-extras.version>${tycho.version}</tycho-extras.version>
     <target.platform>e47</target.platform>
-    <sonarlint.version>2.14.0.658</sonarlint.version>
+    <sonarlint.version>2.15.0.683</sonarlint.version>
     <protobuf.version>3.1.0</protobuf.version>
     
     <!-- ================== -->
