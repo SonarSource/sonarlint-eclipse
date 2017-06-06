@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class ServerDecorator extends LabelProvider implements ILightweightLabelDecorator {
 
@@ -34,9 +35,9 @@ public class ServerDecorator extends LabelProvider implements ILightweightLabelD
     if (element instanceof IServer) {
       IServer server = (IServer) element;
       addSuffix(decoration, server.getSonarLintEngineState());
-    } else if (element instanceof SonarLintProjectConfiguration) {
-      SonarLintProjectConfiguration project = (SonarLintProjectConfiguration) element;
-      addSuffix(decoration, project.getModuleKey());
+    } else if (element instanceof ISonarLintProject) {
+      SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(((ISonarLintProject) element).getScopeContext());
+      addSuffix(decoration, projectConfig.getModuleKey());
     }
   }
 
