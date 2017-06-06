@@ -136,7 +136,7 @@ public class SonarLintTelemetry implements AnalysisListener {
         clientConfigBuilder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(data.getHost(), data.getPort())));
         if (data.isRequiresAuthentication()) {
           clientConfigBuilder.proxyLogin(data.getUserId());
-          clientConfigBuilder.proxyPassword(data.getUserId());
+          clientConfigBuilder.proxyPassword(data.getPassword());
         }
         break;
       }
