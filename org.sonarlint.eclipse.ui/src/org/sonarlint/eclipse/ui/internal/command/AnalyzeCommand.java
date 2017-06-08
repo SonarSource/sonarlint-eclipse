@@ -83,7 +83,7 @@ public class AnalyzeCommand extends AbstractHandler {
 
   private void runAnalysisJobs(Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject) {
     for (Map.Entry<ISonarLintProject, Collection<FileWithDocument>> entry : filesPerProject.entrySet()) {
-      AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(entry.getKey(), entry.getValue(), TriggerType.ACTION));
+      AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(entry.getKey(), entry.getValue(), TriggerType.MANUAL));
       showIssuesViewAfterJobSuccess(job);
     }
   }

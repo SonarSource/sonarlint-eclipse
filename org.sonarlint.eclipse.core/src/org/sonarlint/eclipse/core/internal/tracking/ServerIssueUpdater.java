@@ -119,7 +119,7 @@ public class ServerIssueUpdater {
     String fileKey = resource.getProjectRelativePath();
 
     try {
-      SonarLintLogger.get().debug("fetchServerIssues moduleKey=" + moduleKey + ", filepath=" + fileKey);
+      SonarLintLogger.get().debug("Download server issues for " + resource.getName());
       return engine.downloadServerIssues(serverConfiguration, moduleKey, fileKey);
     } catch (DownloadException e) {
       SonarLintLogger.get().info(e.getMessage());
