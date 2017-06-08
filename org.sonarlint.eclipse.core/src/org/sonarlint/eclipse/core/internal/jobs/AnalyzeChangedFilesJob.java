@@ -80,7 +80,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
         Collection<FileWithDocument> filesToAnalyze = entry.getValue().stream()
           .map(f -> new FileWithDocument(f, null))
           .collect(Collectors.toList());
-        AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.CHANGESET);
+        AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.MANUAL_CHANGESET);
         AnalyzeProjectJob job = new AnalyzeProjectJob(req);
         job.runInWorkspace(projectAnalysisMonitor);
       }

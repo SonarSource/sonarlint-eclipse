@@ -58,7 +58,7 @@ public class SonarLintMarkerUpdater {
   public static void createOrUpdateMarkers(ISonarLintFile issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType, boolean createExtraLocations) {
     try {
       Set<IMarker> previousMarkersToDelete;
-      if (triggerType == TriggerType.CHANGESET) {
+      if (triggerType == TriggerType.MANUAL_CHANGESET) {
         previousMarkersToDelete = Collections.emptySet();
       } else {
         previousMarkersToDelete = new HashSet<>(Arrays.asList(issuable.getResource().findMarkers(SonarLintCorePlugin.MARKER_ID, false, IResource.DEPTH_ZERO)));
@@ -126,7 +126,7 @@ public class SonarLintMarkerUpdater {
     TriggerType triggerType, Set<IMarker> previousMarkersToDelete, boolean createExtraLocations) throws CoreException {
     for (Trackable issue : issues) {
       if (!issue.isResolved()) {
-        if (triggerType == TriggerType.CHANGESET || issue.getMarkerId() == null || issuable.getResource().findMarker(issue.getMarkerId()) == null) {
+        if (triggerType == TriggerType.MANUAL_CHANGESET || issue.getMarkerId() == null || issuable.getResource().findMarker(issue.getMarkerId()) == null) {
           createMarker(document, issuable, issue, triggerType, createExtraLocations);
         } else {
           IMarker marker = issuable.getResource().findMarker(issue.getMarkerId());
@@ -142,8 +142,8 @@ public class SonarLintMarkerUpdater {
   private static void createMarker(IDocument document, ISonarLintIssuable issuable, Trackable trackable, TriggerType triggerType, boolean createExtraLocations)
     throws CoreException {
     IMarker marker = issuable.getResource()
-      .createMarker(triggerType == TriggerType.CHANGESET ? SonarLintCorePlugin.MARKER_CHANGESET_ID : SonarLintCorePlugin.MARKER_ID);
-    if (triggerType != TriggerType.CHANGESET) {
+      .createMarker(triggerType == TriggerType.MANUAL_CHANGESET ? SonarLintCorePlugin.MARKER_CHANGESET_ID : SonarLintCorePlugin.MARKER_ID);
+    if (triggerType != TriggerType.MANUAL_CHANGESET) {
       trackable.setMarkerId(marker.getId());
     }
 

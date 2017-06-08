@@ -302,6 +302,13 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
     String localModuleKey = getProject().getName();
 
+    if (server != null && triggerType.shouldUpdateProjectIssuesSync(rawIssuesPerResource.size())) {
+      ServerConfiguration serverConfiguration = server.getConfig();
+      ConnectedSonarLintEngine engine = server.getEngine();
+      SonarLintLogger.get().debug("Download server issues for project " + getProject().getName());
+      engine.downloadServerIssues(serverConfiguration, getProjectConfig().getModuleKey());
+    }
+
     for (Map.Entry<ISonarLintIssuable, List<Issue>> entry : rawIssuesPerResource.entrySet()) {
       if (monitor.isCanceled()) {
         return;
@@ -319,8 +326,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       IssueTracker issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(getProject(), localModuleKey);
       String relativePath = resource.getProjectRelativePath();
       Collection<Trackable> tracked = issueTracker.matchAndTrackAsNew(relativePath, trackables);
-      if (server != null && shouldUpdateServerIssuesSync(triggerType)) {
-        tracked = trackServerIssuesSync(server, resource, tracked);
+      if (server != null) {
+        tracked = trackServerIssuesSync(server, resource, tracked, triggerType.shouldUpdateFileIssuesSync(rawIssuesPerResource.size()));
       }
       ISchedulingRule markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(resource.getResource());
       try {
@@ -333,20 +340,9 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       issueTracker.updateCache(relativePath, tracked);
     }
 
-    if (server != null && shouldUpdateServerIssuesAsync(triggerType)) {
+    if (server != null && triggerType.shouldUpdateFileIssuesAsync()) {
       trackServerIssuesAsync(server, rawIssuesPerResource.keySet(), docPerFile, triggerType);
     }
-  }
-
-  private static boolean shouldUpdateServerIssuesSync(TriggerType trigger) {
-    return trigger != TriggerType.EDITOR_CHANGE && trigger != TriggerType.EDITOR_OPEN;
-  }
-
-  /**
-   * To not have a delay when opening editor, server issues will be processed asynchronously
-   */
-  private static boolean shouldUpdateServerIssuesAsync(TriggerType trigger) {
-    return trigger == TriggerType.EDITOR_OPEN;
   }
 
   private static RawIssueTrackable transform(Issue issue, ISonarLintFile resource, IDocument document) {
@@ -386,10 +382,15 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return null;
   }
 
-  private Collection<Trackable> trackServerIssuesSync(Server server, ISonarLintFile resource, Collection<Trackable> tracked) {
+  private Collection<Trackable> trackServerIssuesSync(Server server, ISonarLintFile resource, Collection<Trackable> tracked, boolean updateServerIssues) {
     ServerConfiguration serverConfiguration = server.getConfig();
     ConnectedSonarLintEngine engine = server.getEngine();
-    List<ServerIssue> serverIssues = ServerIssueUpdater.fetchServerIssues(serverConfiguration, engine, getProjectConfig().getModuleKey(), resource);
+    List<ServerIssue> serverIssues;
+    if (updateServerIssues) {
+      serverIssues = ServerIssueUpdater.fetchServerIssues(serverConfiguration, engine, getProjectConfig().getModuleKey(), resource);
+    } else {
+      serverIssues = engine.getServerIssues(getProjectConfig().getModuleKey(), resource.getProjectRelativePath());
+    }
     Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
     return IssueTracker.matchAndTrackServerIssues(serverIssuesTrackable, tracked);
   }
