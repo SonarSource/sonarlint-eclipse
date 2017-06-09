@@ -643,7 +643,7 @@
       icon="icons/sonarlint-run-16x16.png" />
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeChangeSetCommand"
-      icon="icons/sonarlint-run-16x16.png" />
+      icon="icons/sonarlint-run-changed-16x16.png" />
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
       icon="icons/synced.gif" />
