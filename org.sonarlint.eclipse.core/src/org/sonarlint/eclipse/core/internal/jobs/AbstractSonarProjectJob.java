@@ -36,7 +36,6 @@ public abstract class AbstractSonarProjectJob extends WorkspaceJob {
     this.project = project;
     this.config = SonarLintProjectConfiguration.read(project.getScopeContext());
     setPriority(Job.DECORATE);
-    // TODO see MultiRule for every touched file setRule(ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(project.getResource()));
   }
 
   @Override
