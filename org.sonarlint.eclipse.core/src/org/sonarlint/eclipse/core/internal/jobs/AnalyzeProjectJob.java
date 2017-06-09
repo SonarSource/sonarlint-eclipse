@@ -170,7 +170,17 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
 
       if (!inputFiles.isEmpty()) {
-        runAnalysisAndUpdateMarkers(filesToAnalyze, monitor, mergedExtraProps, inputFiles, analysisWorkDir);
+        Server server = null;
+        if (getProject().isBound()) {
+          server = (Server) SonarLintCorePlugin.getServersManager().getServer(getProjectConfig().getServerId());
+          if (server == null) {
+            return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID,
+              "Project '" + getProject().getName() + "' is bound to an unknown SonarQube server: '" + getProjectConfig().getServerId()
+                + "'. Please fix project binding or unbind project.");
+          }
+        }
+
+        runAnalysisAndUpdateMarkers(server, filesToAnalyze, monitor, mergedExtraProps, inputFiles, analysisWorkDir);
       }
 
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
@@ -188,24 +198,18 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
   }
 
-  private void runAnalysisAndUpdateMarkers(Map<ISonarLintFile, IDocument> docPerFiles, final IProgressMonitor monitor, Map<String, String> mergedExtraProps,
+  private void runAnalysisAndUpdateMarkers(@Nullable Server server, Map<ISonarLintFile, IDocument> docPerFiles, final IProgressMonitor monitor,
+    Map<String, String> mergedExtraProps,
     List<ClientInputFile> inputFiles, Path analysisWorkDir) throws CoreException {
     StandaloneAnalysisConfiguration config;
     IPath projectLocation = getProject().getResource().getLocation();
     // In some unfrequent cases the project may be virtual and don't have physical location
     // so fallback to use analysis work dir
     Path projectBaseDir = projectLocation != null ? projectLocation.toFile().toPath() : analysisWorkDir;
-    Server server;
-    if (getProject().isBound()) {
-      server = (Server) SonarLintCorePlugin.getServersManager().getServer(getProjectConfig().getServerId());
-      if (server == null) {
-        throw new IllegalStateException(
-          "Project '" + getProject().getName() + "' is bound to an unknow server: '" + getProjectConfig().getServerId() + "'. Please fix project binding.");
-      }
+    if (server != null) {
       SonarLintLogger.get().debug("Connected mode (using configuration of '" + getProjectConfig().getModuleKey() + "' in server '" + getProjectConfig().getServerId() + "')");
       config = new ConnectedAnalysisConfiguration(trimToNull(getProjectConfig().getModuleKey()), projectBaseDir, getProject().getWorkingDir(), inputFiles, mergedExtraProps);
     } else {
-      server = null;
       SonarLintLogger.get().debug("Standalone mode (project not bound)");
       config = new StandaloneAnalysisConfiguration(projectBaseDir, getProject().getWorkingDir(), inputFiles, mergedExtraProps);
     }
