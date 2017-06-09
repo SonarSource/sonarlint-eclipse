@@ -46,17 +46,17 @@ public class MavenTest extends AbstractSonarLintTest {
       .expandAndDoubleClick("sample-maven", "sample-module1", "src", "main", "java", "hello", "Hello1.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    assertThat(Arrays.asList(root.findMember("sample-module1/src/main/java/hello/Hello1.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE))).isEmpty();
-    assertThat(Arrays.asList(root.findMarkers(MARKER_ID, true, IResource.DEPTH_INFINITE))).isEmpty();
+    assertThat(Arrays.asList(root.findMember("sample-module1/src/main/java/hello/Hello1.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE))).isEmpty();
+    assertThat(Arrays.asList(root.findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE))).isEmpty();
 
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("sample-module1", "src/main/java", "hello", "Hello1.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    assertThat(Arrays.asList(root.findMember("sample-module1/src/main/java/hello/Hello1.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE))).isEmpty();
-    assertThat(Arrays.asList(root.findMarkers(MARKER_ID, true, IResource.DEPTH_INFINITE))).isEmpty();
+    assertThat(Arrays.asList(root.findMember("sample-module1/src/main/java/hello/Hello1.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE))).isEmpty();
+    assertThat(Arrays.asList(root.findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE))).isEmpty();
 
-    assertThat(Arrays.asList(module1.findMember("src/main/java/hello/Hello1.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE)))
+    assertThat(Arrays.asList(module1.findMember("src/main/java/hello/Hello1.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
       .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
         tuple(9, "Replace this usage of System.out or System.err by a logger."));
 
@@ -64,7 +64,7 @@ public class MavenTest extends AbstractSonarLintTest {
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("sample-maven", "pom.xml");
     JobHelpers.waitForJobsToComplete(bot);
-    assertThat(Arrays.asList(root.findMember("pom.xml").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE)))
+    assertThat(Arrays.asList(root.findMember("pom.xml").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
       .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
         tuple(11, "Replace \"pom.name\" with \"project.name\"."));
   }

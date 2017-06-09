@@ -43,7 +43,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
   private final Collection<ISonarLintProject> projects;
 
   public AnalyzeChangedFilesJob(Collection<ISonarLintProject> projects) {
-    super("Analyze changeset");
+    super("Analyze changed files");
     this.projects = projects;
   }
 
@@ -66,14 +66,17 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
 
       long fileCount = changedFilesPerProject.values().stream().flatMap(Collection::stream).count();
 
-      SonarLintLogger.get().info("Analyzing " + fileCount + " changed file(s) in " + changedFilesPerProject.keySet().size() + " project(s)");
+      SonarLintLogger.get().info("Analyzing " + fileCount + " changed file(s) in " + changedFilesPerProject.size() + " project(s)");
 
       global.setTaskName("Analysis");
-      SubMonitor analysisMonitor = SubMonitor.convert(global.newChild(80), changedFilesPerProject.entrySet().size());
+      SubMonitor analysisMonitor = SubMonitor.convert(global.newChild(80), changedFilesPerProject.size());
       for (Map.Entry<ISonarLintProject, List<ISonarLintFile>> entry : changedFilesPerProject.entrySet()) {
-        SubMonitor projectAnalysisMonitor = analysisMonitor.newChild(1);
+        if (monitor.isCanceled()) {
+          return Status.CANCEL_STATUS;
+        }
         ISonarLintProject project = entry.getKey();
         if (!project.isOpen()) {
+          analysisMonitor.worked(1);
           continue;
         }
         global.setTaskName("Analysing project " + project.getName());
@@ -82,7 +85,9 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
           .collect(Collectors.toList());
         AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.MANUAL_CHANGESET);
         AnalyzeProjectJob job = new AnalyzeProjectJob(req);
-        job.runInWorkspace(projectAnalysisMonitor);
+        SubMonitor subMonitor = analysisMonitor.newChild(1);
+        job.runInWorkspace(subMonitor);
+        subMonitor.done();
       }
 
     } catch (Exception e) {

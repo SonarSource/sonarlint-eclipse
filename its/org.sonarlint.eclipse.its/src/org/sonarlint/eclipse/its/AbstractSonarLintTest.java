@@ -50,15 +50,12 @@ import org.sonarlint.eclipse.its.utils.WorkspaceHelpers;
 
 import static org.junit.Assert.assertTrue;
 
-/**
- * Common test case for sonar-ide/eclipse projects.
- */
 public abstract class AbstractSonarLintTest {
 
   public static final String PLUGIN_ID = "org.sonarlint.eclipse.core";
   public static final String UI_PLUGIN_ID = "org.sonarlint.eclipse.ui";
-  public static final String MARKER_ID = PLUGIN_ID + ".sonarlintProblem";
-  public static final String MARKER_CHANGESET_ID = PLUGIN_ID + ".sonarlintChangeSetProblem";
+  public static final String MARKER_ON_THE_FLY_ID = PLUGIN_ID + ".sonarlintOnTheFlyProblem";
+  public static final String MARKER_REPORT_ID = PLUGIN_ID + ".sonarlintReportProblem";
 
   protected static SWTWorkbenchBot bot;
 

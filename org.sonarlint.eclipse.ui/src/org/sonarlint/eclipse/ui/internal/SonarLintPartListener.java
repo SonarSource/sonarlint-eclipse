@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal;
 
 import java.util.Arrays;
 import org.eclipse.core.resources.IFile;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -31,11 +30,11 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
 
 public class SonarLintPartListener implements IPartListener2 {
   @Override
@@ -52,7 +51,6 @@ public class SonarLintPartListener implements IPartListener2 {
         }
       }
     }
-    SonarLintReportView.notifyEditorChanged();
   }
 
   private static void scheduleUpdate(IEditorPart editorPart, ISonarLintFile sonarLintFile) {
@@ -75,37 +73,37 @@ public class SonarLintPartListener implements IPartListener2 {
 
   @Override
   public void partVisible(IWorkbenchPartReference partRef) {
-    SonarLintReportView.notifyEditorChanged();
+    // Nothing to do
   }
 
   @Override
   public void partInputChanged(IWorkbenchPartReference partRef) {
-    SonarLintReportView.notifyEditorChanged();
+    // Nothing to do
   }
 
   @Override
   public void partHidden(IWorkbenchPartReference partRef) {
-    SonarLintReportView.notifyEditorChanged();
+    // Nothing to do
   }
 
   @Override
   public void partDeactivated(IWorkbenchPartReference partRef) {
-    SonarLintReportView.notifyEditorChanged();
+    // Nothing to do
   }
 
   @Override
   public void partClosed(IWorkbenchPartReference partRef) {
-    SonarLintReportView.notifyEditorChanged();
+    // Nothing to do
   }
 
   @Override
   public void partBroughtToTop(IWorkbenchPartReference partRef) {
-    SonarLintReportView.notifyEditorChanged();
+    // Nothing to do
   }
 
   @Override
   public void partActivated(IWorkbenchPartReference partRef) {
-    SonarLintReportView.notifyEditorChanged();
+    // Nothing to do
   }
 
 }

@@ -25,38 +25,29 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectsJob;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
-import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
 
 public class AnalyzeCommand extends AbstractHandler {
 
@@ -75,17 +66,35 @@ public class AnalyzeCommand extends AbstractHandler {
     }
 
     if (!filesPerProject.isEmpty()) {
-      runAnalysisJobs(filesPerProject);
+      runAnalysisJob(HandlerUtil.getActiveShell(event), filesPerProject);
     }
 
     return null;
   }
 
-  private void runAnalysisJobs(Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject) {
-    for (Map.Entry<ISonarLintProject, Collection<FileWithDocument>> entry : filesPerProject.entrySet()) {
-      AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(entry.getKey(), entry.getValue(), TriggerType.MANUAL));
-      showReportViewAfterJobSuccess(job);
+  private static void runAnalysisJob(Shell shell, Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject) {
+    AnalyzeProjectsJob job = new AnalyzeProjectsJob(filesPerProject);
+    String reportTitle;
+    int totalFileCount = filesPerProject.values().stream().mapToInt(Collection::size).sum();
+    if (totalFileCount > 1 && !MessageDialog.open(MessageDialog.CONFIRM, shell, "Confirmation",
+      "Analyzing multiple files may take a long time to complete. "
+        + "To get the best from SonarLint, you should preferably use the on-the-fly analysis for files you're working on.",
+      SWT.NONE)) {
+      return;
     }
+    if (filesPerProject.size() == 1) {
+      Entry<ISonarLintProject, Collection<FileWithDocument>> entry = filesPerProject.entrySet().iterator().next();
+      int fileCount = entry.getValue().size();
+      if (fileCount > 1) {
+        reportTitle = fileCount + " files of project " + entry.getKey().getName();
+      } else {
+        reportTitle = "File " + entry.getValue().iterator().next().getFile().getName();
+      }
+    } else {
+      reportTitle = "All files of " + filesPerProject.size() + " projects";
+    }
+    AnalyzeChangeSetCommand.registerJobListener(job, reportTitle);
+    job.schedule();
   }
 
   protected Map<ISonarLintProject, Collection<FileWithDocument>> findSelectedFilesPerProject(ExecutionEvent event) throws ExecutionException {
@@ -116,26 +125,6 @@ public class AnalyzeCommand extends AbstractHandler {
       return sonarLintFile != null ? new FileWithDocument(sonarLintFile, doc) : null;
     }
     return null;
-  }
-
-  protected void showReportViewAfterJobSuccess(Job job) {
-    // Display issues view after analysis is completed
-    job.addJobChangeListener(new JobChangeAdapter() {
-      @Override
-      public void done(IJobChangeEvent event) {
-        if (Status.OK_STATUS == event.getResult()) {
-          Display.getDefault().asyncExec(() -> {
-            IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-            try {
-              iw.getActivePage().showView(SonarLintReportView.ID, null, IWorkbenchPage.VIEW_VISIBLE);
-            } catch (PartInitException e) {
-              SonarLintLogger.get().error("Unable to open Report View", e);
-            }
-          });
-        }
-      }
-    });
-    job.schedule();
   }
 
 }

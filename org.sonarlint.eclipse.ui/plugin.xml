@@ -331,8 +331,8 @@
         <!-- Default Filtering -->
         <markerFieldConfiguration
               enabled="true"
-              id="org.sonarlint.eclipse.ui.issues.allIssuesOnChangeSet"
-              name="All Issues on Changed Files"
+              id="org.sonarlint.eclipse.ui.issues.allIssuesOnReport"
+              name="All Issues"
               scope="ON_ANY">
         </markerFieldConfiguration>
     </markerContentGenerator>
