@@ -10,8 +10,8 @@
 
 
    <extension
-        id="sonarlintProblem"
-        name="SonarLint Issue"
+        id="sonarlintOnTheFlyProblem"
+        name="SonarLint On-The-Fly Issue"
         point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.problemmarker">
@@ -31,8 +31,8 @@
    </extension>
    
    <extension
-        id="sonarlintChangeSetProblem"
-        name="SonarLint Issue on Changed Files"
+        id="sonarlintReportProblem"
+        name="SonarLint Report Issue"
         point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.problemmarker">

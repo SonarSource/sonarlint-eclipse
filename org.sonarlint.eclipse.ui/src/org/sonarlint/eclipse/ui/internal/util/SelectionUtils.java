@@ -106,7 +106,7 @@ public final class SelectionUtils {
   private static void collectFiles(Set<ISonarLintFile> selectedFiles, Object elem) {
     ISonarLintProjectContainer container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
     if (container != null) {
-      container.projects().forEach(p -> selectedFiles.addAll(p.files()));
+      container.projects().stream().filter(ISonarLintProject::isOpen).forEach(p -> selectedFiles.addAll(p.files()));
       return;
     }
     ISonarLintProject project = Adapters.adapt(elem, ISonarLintProject.class);

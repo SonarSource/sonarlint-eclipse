@@ -54,7 +54,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
       global.setTaskName("Collect changed file(s) list");
       ProjectsProviderUtils.allProjects().stream()
         .filter(ISonarLintProject::isOpen)
-        .forEach(p -> p.deleteAllMarkers(SonarLintCorePlugin.MARKER_CHANGESET_ID));
+        .forEach(p -> p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID));
       Collection<ISonarLintFile> collectChangedFiles = collectChangedFiles(projects, global.newChild(20));
 
       if (collectChangedFiles.isEmpty()) {

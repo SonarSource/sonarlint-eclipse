@@ -58,10 +58,10 @@ public class SonarLintMarkerUpdater {
   public static void createOrUpdateMarkers(ISonarLintFile issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType, boolean createExtraLocations) {
     try {
       Set<IMarker> previousMarkersToDelete;
-      if (triggerType == TriggerType.MANUAL_CHANGESET) {
-        previousMarkersToDelete = Collections.emptySet();
+      if (triggerType.isOnTheFly()) {
+        previousMarkersToDelete = new HashSet<>(Arrays.asList(issuable.getResource().findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, false, IResource.DEPTH_ZERO)));
       } else {
-        previousMarkersToDelete = new HashSet<>(Arrays.asList(issuable.getResource().findMarkers(SonarLintCorePlugin.MARKER_ID, false, IResource.DEPTH_ZERO)));
+        previousMarkersToDelete = Collections.emptySet();
       }
 
       if (createExtraLocations) {
@@ -126,7 +126,7 @@ public class SonarLintMarkerUpdater {
     TriggerType triggerType, Set<IMarker> previousMarkersToDelete, boolean createExtraLocations) throws CoreException {
     for (Trackable issue : issues) {
       if (!issue.isResolved()) {
-        if (triggerType == TriggerType.MANUAL_CHANGESET || issue.getMarkerId() == null || issuable.getResource().findMarker(issue.getMarkerId()) == null) {
+        if (!triggerType.isOnTheFly() || issue.getMarkerId() == null || issuable.getResource().findMarker(issue.getMarkerId()) == null) {
           createMarker(document, issuable, issue, triggerType, createExtraLocations);
         } else {
           IMarker marker = issuable.getResource().findMarker(issue.getMarkerId());
@@ -142,8 +142,8 @@ public class SonarLintMarkerUpdater {
   private static void createMarker(IDocument document, ISonarLintIssuable issuable, Trackable trackable, TriggerType triggerType, boolean createExtraLocations)
     throws CoreException {
     IMarker marker = issuable.getResource()
-      .createMarker(triggerType == TriggerType.MANUAL_CHANGESET ? SonarLintCorePlugin.MARKER_CHANGESET_ID : SonarLintCorePlugin.MARKER_ID);
-    if (triggerType != TriggerType.MANUAL_CHANGESET) {
+      .createMarker(triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_ID : SonarLintCorePlugin.MARKER_REPORT_ID);
+    if (triggerType.isOnTheFly()) {
       trackable.setMarkerId(marker.getId());
     }
 

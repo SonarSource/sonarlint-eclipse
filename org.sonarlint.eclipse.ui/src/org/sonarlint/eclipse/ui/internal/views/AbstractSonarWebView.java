@@ -116,7 +116,7 @@ public abstract class AbstractSonarWebView extends ViewPart {
   }
 
   private static boolean isSonarLintMarker(IMarker marker) throws CoreException {
-    return SonarLintCorePlugin.MARKER_ID.equals(marker.getType()) || SonarLintCorePlugin.MARKER_CHANGESET_ID.equals(marker.getType());
+    return SonarLintCorePlugin.MARKER_ON_THE_FLY_ID.equals(marker.getType()) || SonarLintCorePlugin.MARKER_REPORT_ID.equals(marker.getType());
   }
 
 }

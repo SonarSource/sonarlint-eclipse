@@ -63,4 +63,8 @@ public enum TriggerType {
     return updateStrategy == ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC && fileCount > PER_FILE_THRESHOLD;
   }
 
+  public boolean isOnTheFly() {
+    return this != MANUAL && this != MANUAL_CHANGESET;
+  }
+
 }

@@ -56,7 +56,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
-import org.sonarlint.eclipse.ui.internal.views.issues.IssuesView;
+import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
 
 public class AnalyzeCommand extends AbstractHandler {
 
@@ -84,7 +84,7 @@ public class AnalyzeCommand extends AbstractHandler {
   private void runAnalysisJobs(Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject) {
     for (Map.Entry<ISonarLintProject, Collection<FileWithDocument>> entry : filesPerProject.entrySet()) {
       AnalyzeProjectJob job = new AnalyzeProjectJob(new AnalyzeProjectRequest(entry.getKey(), entry.getValue(), TriggerType.MANUAL));
-      showIssuesViewAfterJobSuccess(job);
+      showReportViewAfterJobSuccess(job);
     }
   }
 
@@ -118,7 +118,7 @@ public class AnalyzeCommand extends AbstractHandler {
     return null;
   }
 
-  protected void showIssuesViewAfterJobSuccess(Job job) {
+  protected void showReportViewAfterJobSuccess(Job job) {
     // Display issues view after analysis is completed
     job.addJobChangeListener(new JobChangeAdapter() {
       @Override
@@ -127,9 +127,9 @@ public class AnalyzeCommand extends AbstractHandler {
           Display.getDefault().asyncExec(() -> {
             IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             try {
-              iw.getActivePage().showView(IssuesView.ID, null, IWorkbenchPage.VIEW_VISIBLE);
+              iw.getActivePage().showView(SonarLintReportView.ID, null, IWorkbenchPage.VIEW_VISIBLE);
             } catch (PartInitException e) {
-              SonarLintLogger.get().error("Unable to open Issues View", e);
+              SonarLintLogger.get().error("Unable to open Report View", e);
             }
           });
         }

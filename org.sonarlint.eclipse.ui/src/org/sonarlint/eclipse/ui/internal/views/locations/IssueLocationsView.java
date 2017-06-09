@@ -187,7 +187,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     public Object[] getElements(Object inputElement) {
       IMarker sonarlintMarker = (IMarker) inputElement;
       try {
-        if (SonarLintCorePlugin.MARKER_CHANGESET_ID.equals(sonarlintMarker.getType())) {
+        if (SonarLintCorePlugin.MARKER_REPORT_ID.equals(sonarlintMarker.getType())) {
           return new Object[] {"Information not available from the Report view"};
         }
       } catch (CoreException e) {

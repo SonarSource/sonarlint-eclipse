@@ -81,7 +81,7 @@
     <view
         allowMultiple="false"
         category="org.sonarlint.eclipse"
-        class="org.sonarlint.eclipse.ui.internal.views.issues.IssuesView"
+        class="org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView"
         icon="icons/sonarlint-16x16.png"
         id="org.sonarlint.eclipse.ui.views.issues.IssuesView"
         name="%sonar.issues.view.name">
@@ -89,7 +89,7 @@
     <view
         allowMultiple="false"
         category="org.sonarlint.eclipse"
-        class="org.sonarlint.eclipse.ui.internal.views.issues.ChangeSetIssuesView"
+        class="org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView"
         icon="icons/sonarlint-16x16.png"
         id="org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView"
         name="%sonar.changesetissues.view.name">
@@ -210,10 +210,10 @@
   <extension
       point="org.eclipse.ui.ide.markerSupport">
     <markerContentGenerator
-         id="org.sonarlint.eclipse.ui.views.issues.issueMarkerGenerator"
-         name="SonarLint Issue Marker Generator">
+         id="org.sonarlint.eclipse.ui.views.issues.onTheFlyIssueMarkerGenerator"
+         name="SonarLint On-The-Fly Marker Generator">
         <markerTypeReference
-              id="org.sonarlint.eclipse.core.sonarlintProblem"/>
+              id="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem"/>
         <markerFieldReference
               id="org.sonarlint.eclipse.ui.views.issues.issueCreationDateField"
               visible="true"/>
@@ -278,7 +278,7 @@
          </markerGroupingEntry>
          <markerAttributeGrouping
                attribute="sonarseverity"
-               markerType="org.sonarlint.eclipse.core.sonarlintProblem">
+               markerType="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem">
             <markerAttributeMapping
                   markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
                   value="BLOCKER">
@@ -303,10 +303,10 @@
       </markerGrouping>
     </markerContentGenerator>
     <markerContentGenerator
-         id="org.sonarlint.eclipse.ui.views.issues.changeSetIssueMarkerGenerator"
-         name="SonarLint ChangeSet Issue Marker Generator">
+         id="org.sonarlint.eclipse.ui.views.issues.reportIssueMarkerGenerator"
+         name="SonarLint Report Issue Marker Generator">
         <markerTypeReference
-              id="org.sonarlint.eclipse.core.sonarlintChangeSetProblem"/>
+              id="org.sonarlint.eclipse.core.sonarlintReportProblem"/>
         <markerFieldReference
               id="org.eclipse.ui.ide.resourceField"
               visible="true"/>
@@ -366,7 +366,7 @@
 
     <markerTypeCategory
           name="SonarLint">
-       <markerTypeReference id="org.sonarlint.eclipse.core.sonarlintProblem">
+       <markerTypeReference id="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem">
        </markerTypeReference>
     </markerTypeCategory>
   </extension>
@@ -442,6 +442,34 @@
          </command>
       </menuContribution>
       <menuContribution
+            locationURI="menu:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
+         <menu
+           id="org.eclipse.ui.ide.problems.filtersMenu"
+           label="Show"
+           mnemonic="S">
+         </menu>
+     <menu
+           id="problemsGroupByMenu"
+           label="Group By"
+           mnemonic="G">
+         </menu>
+         <menu
+               id="org.eclipse.ui.ide.problems.markerSortMenu"
+               label="Sort By"
+               mnemonic="S">
+         </menu>
+         <command
+               commandId="org.eclipse.ui.ide.configureFilters"
+               mnemonic="%command.configureFilters.mnemonic"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.ide.configureColumns"
+               mnemonic="%command.configureColumns.mnemonic"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
@@ -456,9 +484,13 @@
 	      <visibleWhen>
 	         <with variable="activeMenuSelection">
 	            <iterate ifEmpty="false">
-						    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
-                 	<test property="org.sonarlint.eclipse.core.autoAnalysisEnabled" value="false"/>
-			    			</adapt>
+	            	<or>
+	            		<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+							<test property="org.sonarlint.eclipse.core.open"/>
+						</adapt>
+					    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
+					    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
+			    	</or>
 	            </iterate>
 	         </with>
 	      </visibleWhen>
@@ -471,8 +503,8 @@
 	            <iterate ifEmpty="false">
 	              <or>
 							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
-										<test property="org.sonarlint.eclipse.core.open"/>
-									</adapt>
+									<test property="org.sonarlint.eclipse.core.open"/>
+								</adapt>
 							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
 				  			</or>
 	            </iterate>
@@ -623,8 +655,8 @@
    <extension
         point="org.eclipse.ui.editors.annotationTypes">
         <type
-            name="org.sonarlint.eclipse.issueAnnotationType"
-            markerType="org.sonarlint.eclipse.core.sonarlintProblem"/>
+            name="org.sonarlint.eclipse.onTheFlyIssueAnnotationType"
+            markerType="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem"/>
         <type
             name="org.sonarlint.eclipse.issueFlowAnnotationType"/>
     </extension>
@@ -632,15 +664,15 @@
     <extension
         point="org.eclipse.ui.editors.annotationTypes">
         <type
-            name="org.sonarlint.eclipse.changeSetIssueAnnotationType"
-            markerType="org.sonarlint.eclipse.core.sonarlintChangeSetProblem"/>
+            name="org.sonarlint.eclipse.reportIssueAnnotationType"
+            markerType="org.sonarlint.eclipse.core.sonarlintReportProblem"/>
     </extension>
 
     <extension
         point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
               annotationImageProvider="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerImageProvider"
-              annotationType="org.sonarlint.eclipse.issueAnnotationType"
+              annotationType="org.sonarlint.eclipse.onTheFlyIssueAnnotationType"
               colorPreferenceKey="org.sonarlint.eclipse.ui.issue.color"
               colorPreferenceValue="30,144,255"
               highlightPreferenceKey="org.sonarlint.eclipse.ui.issue.highlight"
@@ -693,7 +725,7 @@
         point="org.eclipse.ui.ide.markerResolution">
      <markerResolutionGenerator
            class="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerResolutionGenerator"
-           markerType="org.sonarlint.eclipse.core.sonarlintProblem">
+           markerType="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem">
      </markerResolutionGenerator>
   </extension>
 

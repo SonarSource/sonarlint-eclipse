@@ -95,7 +95,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
     DefaultSonarLintFileAdapter sonarLintFile = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), file);
     SonarLintMarkerUpdater.createOrUpdateMarkers(sonarLintFile, sonarLintFile.getDocument(), Collections.singletonList(trackable), TriggerType.EDITOR_CHANGE, false);
 
-    IMarker[] markers = project.getFile(relativePath).findMarkers(SonarLintCorePlugin.MARKER_ID, true, IResource.DEPTH_INFINITE);
+    IMarker[] markers = project.getFile(relativePath).findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE);
     assertThat(markers).hasSize(1);
 
     return markers[0];

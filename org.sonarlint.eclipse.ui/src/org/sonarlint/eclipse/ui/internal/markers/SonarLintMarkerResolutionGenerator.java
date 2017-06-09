@@ -31,7 +31,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
   @Override
   public boolean hasResolutions(final IMarker marker) {
     try {
-      return SonarLintCorePlugin.MARKER_ID.equals(marker.getType()) && marker.getAttribute(MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, false);
+      return SonarLintCorePlugin.MARKER_ON_THE_FLY_ID.equals(marker.getType()) && marker.getAttribute(MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, false);
     } catch (final CoreException e) {
       return false;
     }
