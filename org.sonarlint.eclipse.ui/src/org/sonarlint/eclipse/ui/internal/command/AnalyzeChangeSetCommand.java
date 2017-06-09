@@ -27,7 +27,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
-import org.sonarlint.eclipse.ui.internal.views.issues.ChangeSetIssuesView;
+import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
 
 public class AnalyzeChangeSetCommand extends AbstractHandler {
 
@@ -42,7 +42,7 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
       }
     }
 
-    ChangeSetIssuesView.triggerAnalysis(selectedProjects);
+    SonarLintReportView.triggerAnalysis(selectedProjects);
 
     return null;
   }

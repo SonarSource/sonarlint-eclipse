@@ -26,12 +26,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
-public class IssuesView extends MarkerViewWithBottomPanel {
+public class OnTheFlyIssuesView extends MarkerViewWithBottomPanel {
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.issues.IssuesView";
 
-  public IssuesView() {
-    super(SonarLintUiPlugin.PLUGIN_ID + ".views.issues.issueMarkerGenerator");
+  public OnTheFlyIssuesView() {
+    super(SonarLintUiPlugin.PLUGIN_ID + ".views.issues.onTheFlyIssueMarkerGenerator");
   }
 
   @Override

@@ -35,7 +35,7 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.ui.internal.views.issues.ChangeSetIssuesView;
+import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
 
 public class SonarLintPartListener implements IPartListener2 {
   @Override
@@ -52,7 +52,7 @@ public class SonarLintPartListener implements IPartListener2 {
         }
       }
     }
-    ChangeSetIssuesView.notifyEditorChanged();
+    SonarLintReportView.notifyEditorChanged();
   }
 
   private static void scheduleUpdate(IEditorPart editorPart, ISonarLintFile sonarLintFile) {
@@ -75,37 +75,37 @@ public class SonarLintPartListener implements IPartListener2 {
 
   @Override
   public void partVisible(IWorkbenchPartReference partRef) {
-    ChangeSetIssuesView.notifyEditorChanged();
+    SonarLintReportView.notifyEditorChanged();
   }
 
   @Override
   public void partInputChanged(IWorkbenchPartReference partRef) {
-    ChangeSetIssuesView.notifyEditorChanged();
+    SonarLintReportView.notifyEditorChanged();
   }
 
   @Override
   public void partHidden(IWorkbenchPartReference partRef) {
-    ChangeSetIssuesView.notifyEditorChanged();
+    SonarLintReportView.notifyEditorChanged();
   }
 
   @Override
   public void partDeactivated(IWorkbenchPartReference partRef) {
-    ChangeSetIssuesView.notifyEditorChanged();
+    SonarLintReportView.notifyEditorChanged();
   }
 
   @Override
   public void partClosed(IWorkbenchPartReference partRef) {
-    ChangeSetIssuesView.notifyEditorChanged();
+    SonarLintReportView.notifyEditorChanged();
   }
 
   @Override
   public void partBroughtToTop(IWorkbenchPartReference partRef) {
-    ChangeSetIssuesView.notifyEditorChanged();
+    SonarLintReportView.notifyEditorChanged();
   }
 
   @Override
   public void partActivated(IWorkbenchPartReference partRef) {
-    ChangeSetIssuesView.notifyEditorChanged();
+    SonarLintReportView.notifyEditorChanged();
   }
 
 }

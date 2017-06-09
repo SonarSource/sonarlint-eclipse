@@ -276,8 +276,8 @@ public class Server implements IServer, StateListener {
 
   public static void unbind(ISonarLintProject project) {
     SonarLintProjectConfiguration.read(project.getScopeContext()).unbind();
-    project.deleteAllMarkers(SonarLintCorePlugin.MARKER_ID);
-    project.deleteAllMarkers(SonarLintCorePlugin.MARKER_CHANGESET_ID);
+    project.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
+    project.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
     SonarLintCorePlugin.clearIssueTracker(project);
   }
 

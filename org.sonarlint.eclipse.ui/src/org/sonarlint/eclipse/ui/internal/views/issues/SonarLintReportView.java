@@ -51,19 +51,19 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
-public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
+public class SonarLintReportView extends MarkerViewWithBottomPanel {
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.issues.ChangeSetIssuesView";
   private static LocalDateTime lastRefresh;
-  private static ChangeSetIssuesView instance;
+  private static SonarLintReportView instance;
   private Label label;
   private Button btnPrj;
   private Composite btnPrjWrapper;
   private Button btnAll;
   private Composite bottom;
 
-  public ChangeSetIssuesView() {
-    super(SonarLintUiPlugin.PLUGIN_ID + ".views.issues.changeSetIssueMarkerGenerator");
+  public SonarLintReportView() {
+    super(SonarLintUiPlugin.PLUGIN_ID + ".views.issues.reportIssueMarkerGenerator");
     instance = this;
   }
 
@@ -144,15 +144,15 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
   }
 
   public static void notifyEditorChanged() {
-    if (ChangeSetIssuesView.instance != null) {
+    if (SonarLintReportView.instance != null) {
       instance.refreshBtnState();
       instance.requestLayout();
     }
   }
 
   public static void setRefreshTime(LocalDateTime now) {
-    ChangeSetIssuesView.lastRefresh = now;
-    if (ChangeSetIssuesView.instance != null) {
+    SonarLintReportView.lastRefresh = now;
+    if (SonarLintReportView.instance != null) {
       instance.refreshText();
       instance.requestLayout();
     }
@@ -165,9 +165,9 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
 
   public static void triggerAnalysis(Collection<ISonarLintProject> selectedProjects) {
     // Disable button if view is visible
-    if (ChangeSetIssuesView.instance != null) {
-      ChangeSetIssuesView.instance.btnAll.setEnabled(false);
-      ChangeSetIssuesView.instance.btnPrj.setEnabled(false);
+    if (SonarLintReportView.instance != null) {
+      SonarLintReportView.instance.btnAll.setEnabled(false);
+      SonarLintReportView.instance.btnPrj.setEnabled(false);
     }
     AnalyzeChangedFilesJob job = new AnalyzeChangedFilesJob(selectedProjects);
     registerJobListener(job);
@@ -180,16 +180,16 @@ public class ChangeSetIssuesView extends MarkerViewWithBottomPanel {
       public void done(IJobChangeEvent event) {
         Display.getDefault().asyncExec(() -> {
           // Enable button if view is visible
-          if (ChangeSetIssuesView.instance != null) {
-            ChangeSetIssuesView.instance.btnAll.setEnabled(true);
-            ChangeSetIssuesView.instance.refreshBtnState();
+          if (SonarLintReportView.instance != null) {
+            SonarLintReportView.instance.btnAll.setEnabled(true);
+            SonarLintReportView.instance.refreshBtnState();
           }
           if (Status.OK_STATUS == event.getResult()) {
             // Display changeset issues view after analysis is completed
             IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
             try {
-              iw.getActivePage().showView(ChangeSetIssuesView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
-              ChangeSetIssuesView.setRefreshTime(LocalDateTime.now());
+              iw.getActivePage().showView(SonarLintReportView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+              SonarLintReportView.setRefreshTime(LocalDateTime.now());
             } catch (PartInitException e) {
               SonarLintLogger.get().error("Unable to open ChangeSet Issues View", e);
             }
