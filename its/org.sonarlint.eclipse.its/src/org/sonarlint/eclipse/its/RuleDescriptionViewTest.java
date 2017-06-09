@@ -57,7 +57,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(9, "Replace this usage of System.out or System.err by a logger."));
+      tuple(9, "Replace this use of System.out or System.err by a logger."));
 
     // TODO We could maybe force view to refresh without having to select again the resource
     new JavaPackageExplorerBot(bot)

@@ -69,7 +69,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(9, "Replace this usage of System.out or System.err by a logger."));
+      tuple(9, "Replace this use of System.out or System.err by a logger."));
 
     bot.editorByTitle("Hello.java").close();
 
@@ -104,7 +104,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_REPORT_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(9, "Replace this usage of System.out or System.err by a logger."));
+      tuple(9, "Replace this use of System.out or System.err by a logger."));
 
   }
 
@@ -122,7 +122,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(11, "Replace this usage of System.out or System.err by a logger."),
+      tuple(11, "Replace this use of System.out or System.err by a logger."),
       tuple(15, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set
 
     new JavaPackageExplorerBot(bot)
@@ -216,7 +216,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/HelloLinked.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(13, "Replace this usage of System.out or System.err by a logger."));
+      tuple(13, "Replace this use of System.out or System.err by a logger."));
   }
 
   @Test
@@ -250,7 +250,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(rseProject.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(9, "Replace this usage of System.out or System.err by a logger."));
+      tuple(9, "Replace this use of System.out or System.err by a logger."));
   }
 
 }
