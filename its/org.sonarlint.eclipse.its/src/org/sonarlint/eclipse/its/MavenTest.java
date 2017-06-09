@@ -58,7 +58,7 @@ public class MavenTest extends AbstractSonarLintTest {
 
     assertThat(Arrays.asList(module1.findMember("src/main/java/hello/Hello1.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
       .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-        tuple(9, "Replace this usage of System.out or System.err by a logger."));
+        tuple(9, "Replace this use of System.out or System.err by a logger."));
 
     // Issues on pom.xml
     new JavaPackageExplorerBot(bot)
