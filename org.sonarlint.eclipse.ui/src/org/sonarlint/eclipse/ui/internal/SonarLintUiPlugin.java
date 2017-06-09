@@ -108,8 +108,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     logListener = new SonarLintConsoleLogger();
     SonarLintLogger.get().addLogListener(logListener);
 
-    addSonarLintPartListener();
-
     prefListener = event -> {
       if (event.getProperty().equals(PreferencesUtils.PREF_MARKER_SEVERITY)) {
         try {
@@ -128,7 +126,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     new CheckForUpdatesJob().schedule((long) 10 * 1000);
 
-    analyzeCurrentFile();
+    analyzeOpenedFiles();
 
   }
 
@@ -179,13 +177,18 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
   }
 
-  private static class RegisterSonarLintPartListenerJob extends UIJob {
-    RegisterSonarLintPartListenerJob() {
-      super("Register SonarLint part listener");
+  private static class AnalyzeOpenedFilesJob extends UIJob {
+
+    AnalyzeOpenedFilesJob() {
+      super("Analyze opened files");
     }
 
     @Override
     public IStatus runInUIThread(IProgressMonitor monitor) {
+
+      JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
+
+      // Now we can monitor newly opened editor
       for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
         addListenerToAllPages(window);
       }
@@ -229,21 +232,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         page.addPartListener(SONARLINT_PART_LISTENER);
       }
     }
-  }
-
-  private static class AnalyzeCurrentFileJob extends UIJob {
-
-    AnalyzeCurrentFileJob() {
-      super("Analyze current file");
-    }
-
-    @Override
-    public IStatus runInUIThread(IProgressMonitor monitor) {
-
-      JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
-
-      return Status.OK_STATUS;
-    }
 
   }
 
@@ -274,13 +262,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     return page.getActiveEditor();
   }
 
-  public static void analyzeCurrentFile() {
+  public static void analyzeOpenedFiles() {
     // SLE-122 Delay a little bit to let the time to the workspace to initialize (and avoid NPE)
-    new AnalyzeCurrentFileJob().schedule(2000);
-  }
-
-  public static void addSonarLintPartListener() {
-    new RegisterSonarLintPartListenerJob().schedule();
+    new AnalyzeOpenedFilesJob().schedule(2000);
   }
 
 }

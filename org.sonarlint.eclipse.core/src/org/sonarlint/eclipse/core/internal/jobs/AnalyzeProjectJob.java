@@ -87,8 +87,22 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private final List<SonarLintProperty> extraProps;
   private final AnalyzeProjectRequest request;
 
+  private static final ISchedulingRule SINGLE_INSTANCE_RULE = new ISchedulingRule() {
+    @Override
+    public boolean contains(ISchedulingRule rule) {
+      return rule == this;
+    }
+
+    @Override
+    public boolean isConflicting(ISchedulingRule rule) {
+      return rule == this;
+    }
+  };
+
   public AnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
+    // Prevent concurrent analysis
+    setRule(SINGLE_INSTANCE_RULE);
     this.request = request;
     this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(request.getProject());
   }
