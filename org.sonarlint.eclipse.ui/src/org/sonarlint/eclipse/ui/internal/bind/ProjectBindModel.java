@@ -55,7 +55,7 @@ public class ProjectBindModel extends AbstractModelObject {
     return project.getName();
   }
 
-  public String getSonarFullName() {
+  public String computeDisplayName() {
     if (StringUtils.isBlank(moduleKey)) {
       if (autoBindFailed) {
         return "<Auto-bind failed. Type here to start searching for a remote SonarQube project...>";
@@ -73,19 +73,19 @@ public class ProjectBindModel extends AbstractModelObject {
   }
 
   public void associate(String serverId, String key) {
-    String oldValue = getSonarFullName();
+    String oldValue = computeDisplayName();
+    this.autoBindFailed = false;
     this.moduleKey = key;
     this.serverId = serverId;
     this.server = SonarLintCorePlugin.getServersManager().getServer(this.serverId);
-    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());
+    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, computeDisplayName());
   }
 
   public void unassociate() {
-    String oldValue = getSonarFullName();
-    this.moduleKey = null;
-    this.serverId = null;
-    this.server = null;
-    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());
+    String oldValue = computeDisplayName();
+    this.autoBindFailed = false;
+    resetBinding();
+    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, computeDisplayName());
   }
 
   public String getServerId() {
@@ -93,9 +93,16 @@ public class ProjectBindModel extends AbstractModelObject {
   }
 
   public void setAutoBindFailed(boolean autoBindFailed) {
-    String oldValue = getSonarFullName();
+    String oldValue = computeDisplayName();
     this.autoBindFailed = autoBindFailed;
-    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getSonarFullName());
+    resetBinding();
+    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, computeDisplayName());
+  }
+
+  private void resetBinding() {
+    this.moduleKey = null;
+    this.serverId = null;
+    this.server = null;
   }
 
 }
