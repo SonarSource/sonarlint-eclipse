@@ -55,7 +55,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
       .expandAndDoubleClick("leak", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
       tuple(9, "Replace this usage of System.out or System.err by a logger.", null));
 
@@ -74,7 +74,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     JobHelpers.waitForJobsToComplete(bot);
 
-    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(9, "Replace this usage of System.out or System.err by a logger."),
       tuple(10, "Replace this usage of System.out or System.err by a logger."));
@@ -99,7 +99,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
       .expandAndDoubleClick("js-simple", "src", "hello.js");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
       tuple(2, "Remove this usage of alert(...).", null));
     long markerId = markers.get(0).getId();
@@ -112,7 +112,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     JobHelpers.waitForJobsToComplete(bot);
 
-    markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(2, "Remove this usage of alert(...)."),
       tuple(3, "Remove the declaration of the unused 'i' variable."));
@@ -128,7 +128,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     JobHelpers.waitForJobsToComplete(bot);
 
     // Issues are still there
-    markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
       tuple(2, "Remove this usage of alert(...).", null),
       tuple(3, "Remove the declaration of the unused 'i' variable.", timestamp));

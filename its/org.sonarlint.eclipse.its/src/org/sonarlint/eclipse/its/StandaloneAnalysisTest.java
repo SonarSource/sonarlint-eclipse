@@ -67,7 +67,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(9, "Replace this usage of System.out or System.err by a logger."));
 
@@ -79,12 +79,12 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new SonarLintProjectPropertiesBot(bot, "java-simple")
       .clickAutoAnalysis()
       .ok();
-    project.deleteMarkers(MARKER_ID, true, IResource.DEPTH_INFINITE);
+    project.deleteMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE);
 
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
-    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).isEmpty();
 
     // Disable auto-analysis on save
@@ -94,7 +94,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     editor.save();
     JobHelpers.waitForJobsToComplete(bot);
 
-    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).isEmpty();
 
     // Trigger manual analysis
@@ -102,7 +102,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .triggerManualAnalysis("java-simple", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_REPORT_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(9, "Replace this usage of System.out or System.err by a logger."));
 
@@ -120,7 +120,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .expandAndDoubleClick("java-junit", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(11, "Replace this usage of System.out or System.err by a logger."),
       tuple(15, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set
@@ -129,7 +129,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .expandAndDoubleClick("java-junit", "src", "hello", "HelloTest.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> testMarkers = Arrays.asList(project.findMember("src/hello/HelloTest.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> testMarkers = Arrays.asList(project.findMember("src/hello/HelloTest.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(testMarkers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(10, "Fix or remove this skipped unit test"));
   }
@@ -145,7 +145,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .expandAndDoubleClick("java8", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(13, "Make this anonymous inner class a lambda")); // Test that sonar.java.source is set
   }
@@ -168,7 +168,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .expandAndDoubleClick("java-main-project", "src", "use", "UseUtils.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(mainProject.findMember("src/use/UseUtils.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> markers = Arrays.asList(mainProject.findMember("src/use/UseUtils.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(9, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set on dependent project
   }
@@ -191,7 +191,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/root/nested/exemple.py").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> markers = Arrays.asList(project.findMember("src/root/nested/exemple.py").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(9, "Merge this if statement with the enclosing one."),
       tuple(10, "Replace print statement by built-in function."),
@@ -214,7 +214,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .expandAndDoubleClick("java-linked", "src", "hello", "HelloLinked.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/HelloLinked.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/HelloLinked.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(13, "Replace this usage of System.out or System.err by a logger."));
   }
@@ -248,7 +248,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .expandAndDoubleClick("Local_java-simple", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(rseProject.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> markers = Arrays.asList(rseProject.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(9, "Replace this usage of System.out or System.err by a logger."));
   }

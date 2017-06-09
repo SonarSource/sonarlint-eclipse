@@ -21,45 +21,22 @@ package org.sonarlint.eclipse.ui.internal.views.issues;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import javax.annotation.Nullable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeChangedFilesJob;
-import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
-import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
 
 public class SonarLintReportView extends MarkerViewWithBottomPanel {
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.issues.ChangeSetIssuesView";
-  private static LocalDateTime lastRefresh;
+  private static LocalDateTime reportDate;
+  private static String reportTitle;
   private static SonarLintReportView instance;
   private Label label;
-  private Button btnPrj;
-  private Composite btnPrjWrapper;
-  private Button btnAll;
   private Composite bottom;
 
   public SonarLintReportView() {
@@ -82,76 +59,21 @@ public class SonarLintReportView extends MarkerViewWithBottomPanel {
     GridData bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     bottom.setLayoutData(bottomLayoutData);
 
-    Label caption = new Label(bottom, SWT.NONE);
-    caption.setText("Run the analysis and find issues on the files in the SCM change set:");
-
-    btnPrjWrapper = new Composite(bottom, SWT.NONE);
-    // default values so it doesn't grab excess space
-    btnPrjWrapper.setLayoutData(new RowData());
-    btnPrjWrapper.setLayout(new FillLayout());
-    btnPrj = new Button(btnPrjWrapper, SWT.PUSH);
-    btnPrj.setText("Current project");
-    refreshBtnState();
-
-    btnPrj.addListener(SWT.Selection, e -> {
-      ISonarLintFile editedFile = SonarLintUiPlugin.findCurrentEditedFile();
-      if (editedFile != null) {
-        triggerAnalysis(asList(editedFile.getProject()));
-      }
-    });
-
-    btnAll = new Button(bottom, SWT.PUSH);
-    btnAll.setText("All projects");
-    btnAll.setToolTipText("Analyze all changed files in all projects");
-    btnAll.addListener(SWT.Selection, e -> triggerAnalysis(
-      ProjectsProviderUtils.allProjects().stream()
-        .filter(ISonarLintProject::isOpen)
-        .collect(toList())));
     label = new Label(bottom, SWT.NONE);
     refreshText();
   }
 
-  private void refreshBtnState() {
-    ISonarLintFile editedFile = SonarLintUiPlugin.findCurrentEditedFile();
-    if (editedFile == null) {
-      btnPrjWrapper.setToolTipText("No editor opened or current file not analyzable");
-      btnPrj.setEnabled(false);
-    } else {
-      String msgNoScm;
-      ISonarLintProject project = editedFile.getProject();
-      if (project instanceof DefaultSonarLintProjectAdapter) {
-        DefaultSonarLintProjectAdapter slProject = (DefaultSonarLintProjectAdapter) project;
-        msgNoScm = slProject.getNoScmSupportCause();
-      } else {
-        msgNoScm = "SCM not supported on the current project";
-      }
-      if (msgNoScm != null) {
-        btnPrjWrapper.setToolTipText(msgNoScm);
-        btnPrj.setEnabled(false);
-      } else {
-        btnPrjWrapper.setToolTipText(project.getName());
-        btnPrj.setEnabled(true);
-      }
-    }
-  }
-
   private void refreshText() {
-    if (lastRefresh != null) {
-      label.setText("Report generated on " + DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(lastRefresh));
+    if (reportTitle != null) {
+      label.setText(reportTitle + " (at " + DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(reportDate) + ")");
     } else {
-      label.setText("");
+      label.setText("Run the analysis from the SonarLint context menu to find issues in the SCM change set or in all your project files");
     }
   }
 
-  public static void notifyEditorChanged() {
-    if (SonarLintReportView.instance != null) {
-      instance.refreshBtnState();
-      instance.requestLayout();
-    }
-  }
-
-  public static void setRefreshTime(LocalDateTime now) {
-    SonarLintReportView.lastRefresh = now;
+  public static void setReportTitle(@Nullable String title) {
+    SonarLintReportView.reportDate = title != null ? LocalDateTime.now() : null;
+    SonarLintReportView.reportTitle = title;
     if (SonarLintReportView.instance != null) {
       instance.refreshText();
       instance.requestLayout();
@@ -161,42 +83,6 @@ public class SonarLintReportView extends MarkerViewWithBottomPanel {
   private void requestLayout() {
     // TODO replace by requestLayout() when supporting only Eclipse 4.6+
     bottom.getShell().layout(new Control[] {instance.bottom}, SWT.DEFER);
-  }
-
-  public static void triggerAnalysis(Collection<ISonarLintProject> selectedProjects) {
-    // Disable button if view is visible
-    if (SonarLintReportView.instance != null) {
-      SonarLintReportView.instance.btnAll.setEnabled(false);
-      SonarLintReportView.instance.btnPrj.setEnabled(false);
-    }
-    AnalyzeChangedFilesJob job = new AnalyzeChangedFilesJob(selectedProjects);
-    registerJobListener(job);
-    job.schedule();
-  }
-
-  private static void registerJobListener(Job job) {
-    job.addJobChangeListener(new JobChangeAdapter() {
-      @Override
-      public void done(IJobChangeEvent event) {
-        Display.getDefault().asyncExec(() -> {
-          // Enable button if view is visible
-          if (SonarLintReportView.instance != null) {
-            SonarLintReportView.instance.btnAll.setEnabled(true);
-            SonarLintReportView.instance.refreshBtnState();
-          }
-          if (Status.OK_STATUS == event.getResult()) {
-            // Display changeset issues view after analysis is completed
-            IWorkbenchWindow iw = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-            try {
-              iw.getActivePage().showView(SonarLintReportView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
-              SonarLintReportView.setRefreshTime(LocalDateTime.now());
-            } catch (PartInitException e) {
-              SonarLintLogger.get().error("Unable to open ChangeSet Issues View", e);
-            }
-          }
-        });
-      }
-    });
   }
 
 }

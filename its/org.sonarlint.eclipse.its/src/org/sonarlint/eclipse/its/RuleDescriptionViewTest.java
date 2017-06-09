@@ -55,7 +55,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
       .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple(9, "Replace this usage of System.out or System.err by a logger."));
 
