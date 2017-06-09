@@ -479,6 +479,22 @@
       </menuContribution>
 	<menuContribution locationURI="popup:sonar.menu?after=group1">
 	   <command
+	         commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeChangeSetCommand"
+	         style="push">
+	      <visibleWhen>
+	         <with variable="activeMenuSelection">
+	            <iterate ifEmpty="false">
+	              <or>
+							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+									<test property="org.sonarlint.eclipse.core.open"/>
+								</adapt>
+							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
+				  			</or>
+	            </iterate>
+	         </with>
+	      </visibleWhen>
+	   </command>
+	   <command
 	         commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
 	         style="push">
 	      <visibleWhen>
@@ -491,22 +507,6 @@
 					    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
 					    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
 			    	</or>
-	            </iterate>
-	         </with>
-	      </visibleWhen>
-	   </command>
-	   <command
-	         commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeChangeSetCommand"
-	         style="push">
-	      <visibleWhen>
-	         <with variable="activeMenuSelection">
-	            <iterate ifEmpty="false">
-	              <or>
-							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
-									<test property="org.sonarlint.eclipse.core.open"/>
-								</adapt>
-							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
-				  			</or>
 	            </iterate>
 	         </with>
 	      </visibleWhen>

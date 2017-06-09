@@ -38,6 +38,9 @@ import static org.sonarlint.eclipse.core.internal.server.ServersManager.PREF_SER
 import static org.sonarlint.eclipse.core.internal.server.ServersManager.URL_ATTRIBUTE;
 import static org.sonarlint.eclipse.core.internal.server.ServersManager.USERNAME_ATTRIBUTE;
 
+/**
+ * To have this test pass when launched from the IDE, you have to set -pluginCustomization argument (see pom.xml).
+ */
 public class ServersManagerTest {
 
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(SonarLintCorePlugin.PLUGIN_ID);
