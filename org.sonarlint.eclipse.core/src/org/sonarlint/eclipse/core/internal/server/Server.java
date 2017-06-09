@@ -27,9 +27,11 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
@@ -39,6 +41,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.security.storage.StorageException;
+import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StorageManager;
@@ -64,8 +67,10 @@ import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration.Builder;
+import org.sonarsource.sonarlint.core.client.api.connected.SonarAnalyzer;
 import org.sonarsource.sonarlint.core.client.api.connected.StateListener;
 import org.sonarsource.sonarlint.core.client.api.connected.StorageUpdateCheckResult;
+import org.sonarsource.sonarlint.core.client.api.connected.UpdateResult;
 import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
 import org.sonarsource.sonarlint.core.client.api.connected.WsHelper;
 import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
@@ -307,8 +312,32 @@ public class Server implements IServer, StateListener {
 
   @Override
   public synchronized void updateStorage(IProgressMonitor monitor) {
-    updateStatus = client.update(getConfig(), new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "'")).status();
+    UpdateResult updateResult = client.update(getConfig(), new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "'"));
+    Collection<SonarAnalyzer> tooOld = updateResult.analyzers().stream()
+      .filter(SonarAnalyzer::sonarlintCompatible)
+      .filter(Server::tooOld)
+      .collect(Collectors.toList());
+    if (!tooOld.isEmpty()) {
+      SonarLintLogger.get().error(buildMinimumVersionFailMessage(tooOld));
+    }
+    updateStatus = updateResult.status();
     hasUpdates = false;
+  }
+
+  private static boolean tooOld(SonarAnalyzer analyzer) {
+    if (analyzer.minimumVersion() != null && analyzer.version() != null) {
+      Version minimum = Version.parseVersion(analyzer.minimumVersion());
+      Version version = Version.parseVersion(analyzer.version());
+      return version.compareTo(minimum) < 0;
+    }
+    return false;
+  }
+
+  private static String buildMinimumVersionFailMessage(Collection<SonarAnalyzer> failingAnalyzers) {
+    return "The following plugins do not meet the required minimum versions, please upgrade them on your SonarQube server:\n  " +
+      failingAnalyzers.stream()
+        .map(p -> p.key() + " (installed: " + p.version() + ", minimum: " + p.minimumVersion() + ")")
+        .collect(Collectors.joining("\n  "));
   }
 
   @Override
