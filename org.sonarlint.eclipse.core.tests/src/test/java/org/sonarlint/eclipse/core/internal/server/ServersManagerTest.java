@@ -108,6 +108,18 @@ public class ServersManagerTest {
   }
 
   @Test
+  public void edit_defaults_from_plugin_customization() throws Exception {
+    assertThat(ROOT.nodeExists(PREF_SERVERS)).isFalse();
+    assertThat(manager.getServers()).hasSize(1);
+    assertThat(manager.getServer("default").getId()).isEqualTo("default");
+
+    manager.updateServer(manager.create("default", "http://foo2", "bar2", "toto", null), "toto", null);
+    assertThat(manager.getServer("default").getId()).isEqualTo("default");
+    assertThat(manager.getServer("default").getHost()).isEqualTo("http://foo2");
+    assertThat(manager.getServer("default").hasAuth()).isTrue();
+  }
+
+  @Test
   public void test_listeners() {
     List<IServer> removed = new ArrayList<>();
     List<IServer> changed = new ArrayList<>();

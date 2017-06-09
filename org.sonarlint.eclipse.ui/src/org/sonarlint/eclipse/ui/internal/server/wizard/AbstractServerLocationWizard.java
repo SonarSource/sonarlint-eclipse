@@ -21,13 +21,16 @@ package org.sonarlint.eclipse.ui.internal.server.wizard;
 
 import java.lang.reflect.InvocationTargetException;
 import javax.annotation.Nullable;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 public abstract class AbstractServerLocationWizard extends Wizard implements INewWizard {
 
@@ -70,8 +73,10 @@ public abstract class AbstractServerLocationWizard extends Wizard implements INe
     } catch (InterruptedException e) {
       return false;
     } catch (InvocationTargetException e) {
-      Throwable realException = e.getTargetException();
-      MessageDialog.openError(getShell(), "Error", realException.getMessage());
+      Throwable realException = e.getCause();
+      // show error dialog
+      ErrorDialog.openError(getShell(), "Error", "Error when editing server configuration",
+        new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, realException.getLocalizedMessage(), realException));
       return false;
     }
     return true;

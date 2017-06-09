@@ -316,6 +316,20 @@ public class ServersManager {
       throw new IllegalStateException("There is no server with id '" + server.getId() + "'");
     }
 
+    IEclipsePreferences rootNode = getSonarLintPreferenceNode();
+    try {
+      if (!rootNode.nodeExists(PREF_SERVERS)) {
+        // User is probably editing a default server. So we have to make them persistent.
+        Collection<IServer> defaultServers = new ArrayList<>(serversById.values());
+        serversById.clear();
+        for (IServer iServer : defaultServers) {
+          addServer(iServer, null, null);
+        }
+      }
+    } catch (BackingStoreException e) {
+      throw new IllegalStateException("Unable to save server", e);
+    }
+
     addOrUpdateProperties(server);
     if (server.hasAuth()) {
       storeCredentials(server, username, password);
@@ -330,8 +344,8 @@ public class ServersManager {
     IEclipsePreferences rootNode = getSonarLintPreferenceNode();
     Preferences serversNode = rootNode.node(PREF_SERVERS);
     IEclipsePreferences serverNode = (IEclipsePreferences) serversNode.node(getServerNodeName(server));
-    serverNode.removePreferenceChangeListener(serverChangeListener);
     try {
+      serverNode.removePreferenceChangeListener(serverChangeListener);
       serverNode.put(URL_ATTRIBUTE, server.getHost());
       if (StringUtils.isNotBlank(server.getOrganization())) {
         serverNode.put(ORG_ATTRIBUTE, server.getOrganization());
