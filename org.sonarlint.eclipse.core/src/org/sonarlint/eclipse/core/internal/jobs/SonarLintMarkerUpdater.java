@@ -19,10 +19,12 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -185,7 +187,9 @@ public class SonarLintMarkerUpdater {
     boolean hasExtraLocation = false;
     for (Flow f : trackable.getFlows()) {
       ExtraPosition parent = null;
-      for (IssueLocation l : f.locations()) {
+      List<IssueLocation> locations = new ArrayList<>(f.locations());
+      Collections.reverse(locations);
+      for (IssueLocation l : locations) {
         ExtraPosition extraPosition = MarkerUtils.getExtraPosition(document,
           l.getStartLine(), l.getStartLineOffset(), l.getEndLine(), l.getEndLineOffset(),
           l.getMessage(),
