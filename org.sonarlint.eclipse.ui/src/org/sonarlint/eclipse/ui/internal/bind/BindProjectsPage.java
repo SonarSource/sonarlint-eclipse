@@ -421,7 +421,7 @@ public class BindProjectsPage extends WizardPage {
 
     @Override
     protected Object getValue(Object element) {
-      return StringUtils.trimToEmpty(((ProjectBindModel) element).getSonarFullName());
+      return StringUtils.trimToEmpty(((ProjectBindModel) element).computeDisplayName());
     }
 
     @Override
