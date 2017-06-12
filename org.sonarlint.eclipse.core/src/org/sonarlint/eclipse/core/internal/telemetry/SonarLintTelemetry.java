@@ -41,18 +41,25 @@ import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.client.api.common.TelemetryClientConfig;
 import org.sonarsource.sonarlint.core.telemetry.Telemetry;
+import org.sonarsource.sonarlint.core.telemetry.TelemetryPathManager;
 
 public class SonarLintTelemetry implements AnalysisListener {
+  private static final String TELEMETRY_PRODUCT_KEY = "eclipse";
   private static final String PRODUCT = "SonarLint Eclipse";
-  private static final String STORAGE_FILENAME = "sonarlint_usage";
+  private static final String OLD_STORAGE_FILENAME = "sonarlint_usage";
   public static final String DISABLE_PROPERTY_KEY = "sonarlint.telemetry.disabled";
   private boolean enabled;
   private Telemetry telemetryEngine;
 
   private TelemetryJob scheduledJob;
 
-  private static Path getStorageFilePath() {
-    return SonarLintCorePlugin.getInstance().getStateLocation().toFile().toPath().resolve(STORAGE_FILENAME);
+  static Path getStorageFilePath() {
+    TelemetryPathManager.migrate(TELEMETRY_PRODUCT_KEY, getOldStorageFilePath());
+    return TelemetryPathManager.getPath(TELEMETRY_PRODUCT_KEY);
+  }
+
+  private static Path getOldStorageFilePath() {
+    return SonarLintCorePlugin.getInstance().getStateLocation().toFile().toPath().resolve(OLD_STORAGE_FILENAME);
   }
 
   public void optOut(boolean optOut) {
