@@ -109,11 +109,11 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   static List<FlowNode> toFlowNodes(List<ExtraPosition> positions) {
     List<FlowNode> result = new ArrayList<>();
-    int id = positions.size();
+    int id = 1;
     for (ExtraPosition extraPosition : positions) {
       String childLabel = positions.size() > 1 ? (id + ": " + positionLabel(extraPosition.getMessage())) : positionLabel(extraPosition.getMessage());
       result.add(new FlowNode(childLabel, extraPosition));
-      id--;
+      id++;
     }
     return result;
   }
