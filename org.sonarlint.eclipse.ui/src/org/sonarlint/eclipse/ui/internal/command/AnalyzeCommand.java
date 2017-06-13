@@ -30,11 +30,11 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -76,10 +76,7 @@ public class AnalyzeCommand extends AbstractHandler {
     AnalyzeProjectsJob job = new AnalyzeProjectsJob(filesPerProject);
     String reportTitle;
     int totalFileCount = filesPerProject.values().stream().mapToInt(Collection::size).sum();
-    if (totalFileCount > 1 && !MessageDialog.open(MessageDialog.CONFIRM, shell, "Confirmation",
-      "Analyzing multiple files may take a long time to complete. "
-        + "To get the best from SonarLint, you should preferably use the on-the-fly analysis for files you're working on.",
-      SWT.NONE)) {
+    if (totalFileCount > 1 && !askConfirmation(shell)) {
       return;
     }
     if (filesPerProject.size() == 1) {
@@ -95,6 +92,13 @@ public class AnalyzeCommand extends AbstractHandler {
     }
     AnalyzeChangeSetCommand.registerJobListener(job, reportTitle);
     job.schedule();
+  }
+
+  private static boolean askConfirmation(Shell shell) {
+    MessageDialog dialog = new MessageDialog(shell, "Confirmation", null, "Analyzing multiple files may take a long time to complete.\n"
+      + "To get the best from SonarLint, you should preferably use the on-the-fly analysis for the files you're working on.", MessageDialog.CONFIRM, 0, "Proceed",
+      IDialogConstants.CANCEL_LABEL);
+    return dialog.open() == 0;
   }
 
   protected Map<ISonarLintProject, Collection<FileWithDocument>> findSelectedFilesPerProject(ExecutionEvent event) throws ExecutionException {
