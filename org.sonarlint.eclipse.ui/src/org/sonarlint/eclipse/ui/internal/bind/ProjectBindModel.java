@@ -31,7 +31,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
  */
 public class ProjectBindModel extends AbstractModelObject {
   public static final String PROPERTY_PROJECT_ECLIPSE_NAME = "eclipseName";
-  public static final String PROPERTY_PROJECT_SONAR_FULLNAME = "sonarFullName";
+  public static final String PROPERTY_PROJECT_SONAR_FULLNAME = "displayName";
 
   private final ISonarLintProject project;
   private String moduleKey;
@@ -55,7 +55,7 @@ public class ProjectBindModel extends AbstractModelObject {
     return project.getName();
   }
 
-  public String computeDisplayName() {
+  public String getDisplayName() {
     if (StringUtils.isBlank(moduleKey)) {
       if (autoBindFailed) {
         return "<Auto-bind failed. Type here to start searching for a remote SonarQube project...>";
@@ -73,19 +73,19 @@ public class ProjectBindModel extends AbstractModelObject {
   }
 
   public void associate(String serverId, String key) {
-    String oldValue = computeDisplayName();
+    String oldValue = getDisplayName();
     this.autoBindFailed = false;
     this.moduleKey = key;
     this.serverId = serverId;
     this.server = SonarLintCorePlugin.getServersManager().getServer(this.serverId);
-    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, computeDisplayName());
+    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getDisplayName());
   }
 
   public void unassociate() {
-    String oldValue = computeDisplayName();
+    String oldValue = getDisplayName();
     this.autoBindFailed = false;
     resetBinding();
-    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, computeDisplayName());
+    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getDisplayName());
   }
 
   public String getServerId() {
@@ -93,10 +93,10 @@ public class ProjectBindModel extends AbstractModelObject {
   }
 
   public void setAutoBindFailed(boolean autoBindFailed) {
-    String oldValue = computeDisplayName();
+    String oldValue = getDisplayName();
     this.autoBindFailed = autoBindFailed;
     resetBinding();
-    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, computeDisplayName());
+    firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getDisplayName());
   }
 
   private void resetBinding() {
