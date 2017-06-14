@@ -19,23 +19,24 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
-import javax.annotation.Nullable;
-import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
+import org.eclipse.core.databinding.validation.IValidator;
+import org.eclipse.core.databinding.validation.ValidationStatus;
+import org.eclipse.core.runtime.IStatus;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
-public class EditServerLocationWizard extends AbstractServerLocationWizard {
+public class MandatoryAndUniqueServerIdValidator implements IValidator {
 
-  private final IServer sonarServer;
+  private final boolean edit;
 
-  public EditServerLocationWizard(IServer sonarServer) {
-    super(new ServerLocationWizardPage(sonarServer), "Edit connection to a SonarQube Server");
-    this.sonarServer = sonarServer;
+  public MandatoryAndUniqueServerIdValidator(boolean edit) {
+    this.edit = edit;
   }
 
-  @Override
-  protected void doFinish(String serverId, String url, @Nullable String organization, String username, String password) {
-    sonarServer.updateConfig(url, organization, username, password);
-    JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(sonarServer, TriggerType.BINDING_CHANGE);
+  public IStatus validate(Object value) {
+    String errorMsg = SonarLintCorePlugin.getServersManager().validate((String) value, edit);
+    if (errorMsg != null) {
+      return ValidationStatus.error(errorMsg);
+    }
+    return ValidationStatus.ok();
   }
 }

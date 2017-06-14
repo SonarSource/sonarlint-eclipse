@@ -222,8 +222,15 @@ public class ServersManager {
   }
 
   private static void loadServer(Preferences serverNode, Server server) {
+    String url = serverNode.get(URL_ATTRIBUTE, "");
+    url = StringUtils.removeEnd(url, "/");
+    if (Server.OLD_SONARCLOUD_URL.equals(url)) {
+      // Migration
+      url = Server.SONARCLOUD_URL;
+      serverNode.put(URL_ATTRIBUTE, url);
+    }
     update(server,
-      serverNode.get(URL_ATTRIBUTE, ""),
+      url,
       serverNode.get(ORG_ATTRIBUTE, null),
       serverNode.getBoolean(AUTH_ATTRIBUTE, false));
   }
@@ -385,10 +392,7 @@ public class ServersManager {
     return StringUtils.urlEncode(server.getId());
   }
 
-  public String validate(String serverId, String serverUrl, boolean editExisting) {
-    if (StringUtils.isBlank(serverUrl)) {
-      return "Server url must be specified";
-    }
+  public String validate(String serverId, boolean editExisting) {
     if (StringUtils.isBlank(serverId)) {
       return "Server id must be specified";
     }

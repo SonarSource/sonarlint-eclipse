@@ -40,7 +40,7 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
-import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
+import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
 
 /**
  * Property page for projects. It store in
@@ -92,7 +92,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
       @Override
       public void widgetSelected(SelectionEvent e) {
         String serverId = SonarLintProjectConfiguration.read(getProject().getScopeContext()).getServerId();
-        NewServerLocationWizard wizard = new NewServerLocationWizard(serverId);
+        ServerConnectionWizard wizard = new ServerConnectionWizard(serverId);
         WizardDialog wd = new WizardDialog(container.getShell(), wizard);
         if (wd.open() == Window.OK) {
           updateState();

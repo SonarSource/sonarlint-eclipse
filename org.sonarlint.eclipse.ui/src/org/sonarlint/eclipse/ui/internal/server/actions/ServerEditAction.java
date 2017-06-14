@@ -22,20 +22,16 @@ package org.sonarlint.eclipse.ui.internal.server.actions;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.SelectionProviderAction;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
-import org.sonarlint.eclipse.ui.internal.server.wizard.EditServerLocationWizard;
+import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
+import org.sonarlint.eclipse.ui.internal.server.wizard.CustomWizardDialog;
 
 public class ServerEditAction extends SelectionProviderAction {
   private List<IServer> servers;
@@ -87,26 +83,14 @@ public class ServerEditAction extends SelectionProviderAction {
     }
 
     if (servers != null && !servers.isEmpty()) {
-
       openEditWizard(shell, servers.get(0));
     }
   }
 
   public static void openEditWizard(Shell shell, IServer server) {
-    IWorkbench workbench = PlatformUI.getWorkbench();
-    IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
-    ISelection selection = workbenchWindow.getSelectionService().getSelection();
-
-    IStructuredSelection selectionToPass;
-    if (selection instanceof IStructuredSelection) {
-      selectionToPass = (IStructuredSelection) selection;
-    } else {
-      selectionToPass = StructuredSelection.EMPTY;
-    }
-    EditServerLocationWizard wizard = new EditServerLocationWizard(server);
-    wizard.init(workbench, selectionToPass);
-    WizardDialog dialog = new WizardDialog(shell, wizard);
+    WizardDialog dialog = new CustomWizardDialog(shell, new ServerConnectionWizard(server));
     dialog.open();
+
   }
 
 }
