@@ -19,29 +19,38 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
+import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.Server;
 
 final class ServerConnectionTestJob implements IRunnableWithProgress {
 
   private IStatus status;
-  private final IServer server;
+  private final String url;
   private final String username;
   private final String password;
+  private final String organization;
 
-  ServerConnectionTestJob(IServer server, String username, String password) {
-    this.server = server;
+  ServerConnectionTestJob(String url, @Nullable String organization, String username, String password) {
+    this.url = url;
+    this.organization = organization;
     this.username = username;
     this.password = password;
   }
 
   @Override
   public void run(IProgressMonitor monitor) {
-    monitor.beginTask("Testing", IProgressMonitor.UNKNOWN);
+    String msg;
+    if (organization != null) {
+      msg = "Testing access to the organization";
+    } else {
+      msg = "Testing connection";
+    }
+    monitor.beginTask(msg, IProgressMonitor.UNKNOWN);
     try {
-      status = server.testConnection(username, password);
+      status = Server.testConnection(url, organization, username, password);
     } finally {
       monitor.done();
     }

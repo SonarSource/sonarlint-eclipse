@@ -23,14 +23,12 @@ import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public interface IServer {
@@ -69,8 +67,6 @@ public interface IServer {
   String getSonarLintEngineState();
 
   void updateStorage(IProgressMonitor monitor);
-
-  IStatus testConnection(String username, String password);
 
   /**
    * Adds the given server state listener to this server.
@@ -117,6 +113,6 @@ public interface IServer {
 
   void updateModuleList(IProgressMonitor monitor);
 
-  TextSearchIndex<RemoteOrganization> getOrganizationsIndex(String username, String password, IProgressMonitor monitor);
+  boolean isSonarCloud();
 
 }

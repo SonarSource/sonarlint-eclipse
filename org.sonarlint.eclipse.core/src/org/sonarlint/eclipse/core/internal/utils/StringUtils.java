@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 import static java.util.stream.Collectors.joining;
 
@@ -37,7 +38,7 @@ public class StringUtils {
   private StringUtils() {
   }
 
-  public static boolean isBlank(String str) {
+  public static boolean isBlank(@Nullable String str) {
     int strLen;
     if (str == null || (strLen = str.length()) == 0) {
       return true;
@@ -50,15 +51,15 @@ public class StringUtils {
     return true;
   }
 
-  public static boolean isNotBlank(String str) {
+  public static boolean isNotBlank(@Nullable String str) {
     return !StringUtils.isBlank(str);
   }
 
-  public static boolean isEmpty(String str) {
+  public static boolean isEmpty(@Nullable String str) {
     return str == null || str.isEmpty();
   }
 
-  public static String substringAfterLast(String str, String separator) {
+  public static String substringAfterLast(@Nullable String str, @Nullable String separator) {
     if (isEmpty(str)) {
       return str;
     }

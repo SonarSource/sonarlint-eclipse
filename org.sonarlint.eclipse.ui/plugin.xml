@@ -43,7 +43,7 @@
 	  <wizard
 	      id="org.sonarlint.eclipse.ui.new.server"
 	      name="New Server"
-	      class="org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard"
+	      class="org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard"
 	      category="org.sonarlint.eclipse"
 	      icon="icons/onde-sonar-16.png">
 	    <description>Connect to a new SonarQube server</description>

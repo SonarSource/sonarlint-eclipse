@@ -45,7 +45,6 @@ public final class SonarLintImages {
   public static final ImageDescriptor SQ_LABEL_DECORATOR = createImageDescriptor("onde-label-decorator.gif"); //$NON-NLS-1$
 
   public static final Image BALLOON_IMG = createImage("sonarlint-16x16.png"); //$NON-NLS-1$
-  public static final Image SERVER_ICON_IMG = createImage("onde-sonar-16.png"); //$NON-NLS-1$
   public static final Image IMG_ISSUE = createImage("issue_annotation.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_CRITICAL = createImage("severity/critical.png"); //$NON-NLS-1$
@@ -56,6 +55,13 @@ public final class SonarLintImages {
   public static final Image IMG_TYPE_BUG = createImage("type/bug.png"); //$NON-NLS-1$
   public static final Image IMG_TYPE_CODE_SMELL = createImage("type/code_smell.png"); //$NON-NLS-1$
   public static final Image IMG_TYPE_VULNERABILITY = createImage("type/vulnerability.png"); //$NON-NLS-1$
+
+  public static final Image SONARQUBE_SERVER_ICON_IMG = createImage("logo/sonarqube-16px.png"); //$NON-NLS-1$
+  public static final Image SONARCLOUD_SERVER_ICON_IMG = createImage("logo/sonarcloud-16px.png"); //$NON-NLS-1$
+  public static final Image IMG_SONARQUBE_LOGO = createImage("logo/sonarqube-black-256px.png"); //$NON-NLS-1$
+  public static final Image IMG_SONARCLOUD_LOGO = createImage("logo/sonarcloud-black-256px.png"); //$NON-NLS-1$
+
+  public static final Image IMG_OPEN_EXTERNAL = createImage("black-external-link-24.png"); //$NON-NLS-1$
 
   public static final Image NOTIFICATION_CLOSE = createImage("popup/notification-close.gif"); //$NON-NLS-1$
   public static final Image NOTIFICATION_CLOSE_HOVER = createImage("popup/notification-close-active.gif"); //$NON-NLS-1$

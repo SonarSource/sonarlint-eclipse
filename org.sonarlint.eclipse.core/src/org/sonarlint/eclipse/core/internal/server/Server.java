@@ -78,6 +78,9 @@ import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class Server implements IServer, StateListener {
 
+  public static final String SONARCLOUD_URL = "https://sonarcloud.io";
+  public static final String OLD_SONARCLOUD_URL = "https://sonarqube.com";
+
   private static final String NEED_UPDATE = "Need data update";
   private final String id;
   private String host;
@@ -364,10 +367,9 @@ public class Server implements IServer, StateListener {
     client.updateModule(getConfig(), moduleKey, new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "' for module '" + moduleKey + "'"));
   }
 
-  @Override
-  public IStatus testConnection(String username, String password) {
+  public static IStatus testConnection(String url, @Nullable String organization, @Nullable String username, @Nullable String password) {
     try {
-      Builder builder = getConfigBuilderNoCredentials();
+      Builder builder = getConfigBuilderNoCredentials(url, organization);
       if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
         builder.credentials(username, password);
       }
@@ -380,15 +382,27 @@ public class Server implements IServer, StateListener {
       }
     } catch (Exception e) {
       if (e.getCause() instanceof UnknownHostException) {
-        return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unknown host: " + getHost());
+        return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unknown host: " + url);
       }
-      SonarLintLogger.get().error(e.getMessage(), e);
       return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
     }
   }
 
+  public static TextSearchIndex<RemoteOrganization> getOrganizationsIndex(String url, String username, String password, IProgressMonitor monitor) {
+    Builder builder = getConfigBuilderNoCredentials(url, null);
+    if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
+      builder.credentials(username, password);
+    }
+    WsHelper helper = new WsHelperImpl();
+    TextSearchIndex<RemoteOrganization> index = new TextSearchIndex<>();
+    for (RemoteOrganization org : helper.listOrganizations(builder.build(), new WrappedProgressMonitor(monitor, "Fetch organizations"))) {
+      index.index(org, org.getKey() + " " + org.getName());
+    }
+    return index;
+  }
+
   public ServerConfiguration getConfig() {
-    Builder builder = getConfigBuilderNoCredentials();
+    Builder builder = getConfigBuilderNoCredentials(getHost(), getOrganization());
 
     if (hasAuth()) {
       try {
@@ -400,18 +414,18 @@ public class Server implements IServer, StateListener {
     return builder.build();
   }
 
-  private Builder getConfigBuilderNoCredentials() {
+  private static Builder getConfigBuilderNoCredentials(String url, @Nullable String organization) {
     Builder builder = ServerConfiguration.builder()
-      .url(getHost())
+      .url(url)
       .organizationKey(organization)
       .userAgent("SonarLint Eclipse " + SonarLintUtils.getPluginVersion());
 
     IProxyService proxyService = SonarLintCorePlugin.getInstance().getProxyService();
     IProxyData[] proxyDataForHost;
     try {
-      proxyDataForHost = proxyService.select(new URL(host).toURI());
+      proxyDataForHost = proxyService.select(new URL(url).toURI());
     } catch (MalformedURLException | URISyntaxException e) {
-      throw new IllegalStateException("Invalid URL for server " + id + ": " + host, e);
+      throw new IllegalStateException("Invalid URL for server: " + url, e);
     }
 
     for (IProxyData data : proxyDataForHost) {
@@ -432,20 +446,6 @@ public class Server implements IServer, StateListener {
     TextSearchIndex<RemoteModule> index = new TextSearchIndex<>();
     for (RemoteModule module : allModulesByKey.values()) {
       index.index(module, module.getKey() + " " + module.getName());
-    }
-    return index;
-  }
-
-  @Override
-  public TextSearchIndex<RemoteOrganization> getOrganizationsIndex(String username, String password, IProgressMonitor monitor) {
-    Builder builder = getConfigBuilderNoCredentials();
-    if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
-      builder.credentials(username, password);
-    }
-    WsHelper helper = new WsHelperImpl();
-    TextSearchIndex<RemoteOrganization> index = new TextSearchIndex<>();
-    for (RemoteOrganization org : helper.listOrganizations(builder.build(), new WrappedProgressMonitor(monitor, "Fetch organizations"))) {
-      index.index(org, org.getKey() + " " + org.getName());
     }
     return index;
   }
@@ -475,6 +475,11 @@ public class Server implements IServer, StateListener {
 
   public ConnectedSonarLintEngine getEngine() {
     return client;
+  }
+
+  @Override
+  public boolean isSonarCloud() {
+    return SONARCLOUD_URL.equals(this.host);
   }
 
 }

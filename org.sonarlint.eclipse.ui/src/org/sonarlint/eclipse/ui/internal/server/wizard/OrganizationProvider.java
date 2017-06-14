@@ -19,79 +19,32 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
-import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.eclipse.jface.wizard.WizardPage;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
-import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class OrganizationProvider implements IContentProposalProvider {
 
-  private final ServerLocationWizardPage parentPage;
-  private String previousHost;
-  private String previousUsername;
-  private String previousPassword;
-  private TextSearchIndex<RemoteOrganization> orgs;
+  private final ServerConnectionModel model;
+  private final WizardPage parentPage;
 
-  public OrganizationProvider(ServerLocationWizardPage parentPage) {
+  public OrganizationProvider(ServerConnectionModel model, WizardPage parentPage) {
+    this.model = model;
     this.parentPage = parentPage;
   }
 
   @Override
   public IContentProposal[] getProposals(String contents, int position) {
-    IServer transcientServer = parentPage.transcientServer();
-
-    if (!Objects.equals(previousHost, transcientServer.getHost())
-      || !Objects.equals(previousUsername, parentPage.getUsername())
-      || !Objects.equals(previousPassword, parentPage.getPassword())) {
-
-      previousHost = transcientServer.getHost();
-      previousUsername = parentPage.getUsername();
-      previousPassword = parentPage.getPassword();
-      try {
-        parentPage.getWizard().getContainer().run(true, true, new IRunnableWithProgress() {
-
-          @Override
-          public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            orgs = transcientServer.getOrganizationsIndex(previousUsername, previousPassword, monitor);
-            parentPage.setMessage("", IMessageProvider.NONE);
-          }
-        });
-      } catch (InvocationTargetException e) {
-        SonarLintLogger.get().debug("Unable to download organizations", e.getCause());
-        orgs = null;
-        parentPage.setMessage(e.getCause().getMessage(), IMessageProvider.ERROR);
-      } catch (InterruptedException e) {
-        orgs = null;
-        parentPage.setMessage("", IMessageProvider.NONE);
-      }
-    }
-    return filtered(contents);
-
-  }
-
-  private IContentProposal[] filtered(String contents) {
-    if (orgs == null) {
-      // Keep previous message
-      return new IContentProposal[0];
-    }
-    if (orgs.isEmpty()) {
-      parentPage.setMessage("No organizations on this server", IMessageProvider.INFORMATION);
-      return new IContentProposal[0];
-    }
     List<IContentProposal> list = new ArrayList<>();
-    Map<RemoteOrganization, Double> filtered = orgs.search(contents);
+    Map<RemoteOrganization, Double> filtered = model.getOrganizationsIndex() != null ? model.getOrganizationsIndex().search(contents) : Collections.emptyMap();
     if (filtered.isEmpty()) {
       parentPage.setMessage("No results", IMessageProvider.INFORMATION);
     } else {

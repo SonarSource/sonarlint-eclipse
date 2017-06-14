@@ -77,7 +77,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
-import org.sonarlint.eclipse.ui.internal.server.wizard.NewServerLocationWizard;
+import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
@@ -339,7 +339,7 @@ public class BindProjectsPage extends WizardPage {
     hlink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        NewServerLocationWizard wizard = new NewServerLocationWizard();
+        ServerConnectionWizard wizard = new ServerConnectionWizard();
         WizardDialog wd = new WizardDialog(book.getShell(), wizard);
         if (wd.open() == Window.OK) {
           toggleServerPage();
