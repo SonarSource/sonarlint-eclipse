@@ -76,14 +76,15 @@ public class JobUtils {
 
   private static void collectOpenedFiles(ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject) {
     for (IWorkbenchWindow win : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-      IWorkbenchPage page = win.getActivePage();
-      for (IEditorReference ref : page.getEditorReferences()) {
-        collectOpenedFiles(project, filesByProject, page, ref);
+      for (IWorkbenchPage page : win.getPages()) {
+        for (IEditorReference ref : page.getEditorReferences()) {
+          collectOpenedFiles(project, filesByProject, ref);
+        }
       }
     }
   }
 
-  private static void collectOpenedFiles(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject, IWorkbenchPage page,
+  private static void collectOpenedFiles(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject,
     IEditorReference ref) {
     try {
       IEditorInput input = ref.getEditorInput();
