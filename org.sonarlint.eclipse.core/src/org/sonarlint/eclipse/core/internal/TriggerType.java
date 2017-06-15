@@ -56,11 +56,11 @@ public enum TriggerType {
   }
 
   public boolean shouldUpdateFileIssuesSync(int fileCount) {
-    return updateStrategy == ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC && fileCount <= PER_FILE_THRESHOLD;
+    return updateStrategy == ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC && fileCount < PER_FILE_THRESHOLD;
   }
 
   public boolean shouldUpdateProjectIssuesSync(int fileCount) {
-    return updateStrategy == ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC && fileCount > PER_FILE_THRESHOLD;
+    return updateStrategy == ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC && fileCount >= PER_FILE_THRESHOLD;
   }
 
   public boolean isOnTheFly() {
