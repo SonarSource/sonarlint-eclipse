@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -38,7 +39,6 @@ import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.eclipse.ui.progress.UIJob;
 import org.osgi.framework.BundleContext;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
@@ -177,14 +177,14 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
   }
 
-  private static class AnalyzeOpenedFilesJob extends UIJob {
+  private static class AnalyzeOpenedFilesJob extends Job {
 
     AnalyzeOpenedFilesJob() {
       super("Analyze opened files");
     }
 
     @Override
-    public IStatus runInUIThread(IProgressMonitor monitor) {
+    public IStatus run(IProgressMonitor monitor) {
 
       JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
 

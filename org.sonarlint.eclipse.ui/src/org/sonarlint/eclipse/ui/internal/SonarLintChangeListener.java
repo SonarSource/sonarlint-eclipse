@@ -32,12 +32,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.TriggerType;
@@ -69,7 +66,7 @@ public class SonarLintChangeListener implements IResourceChangeListener {
     }
   }
 
-  private static class AnalyzeOpenedFiles extends UIJob {
+  private static class AnalyzeOpenedFiles extends Job {
 
     private final Map<ISonarLintProject, List<ISonarLintFile>> changedFilesPerProject;
 
@@ -79,20 +76,12 @@ public class SonarLintChangeListener implements IResourceChangeListener {
     }
 
     @Override
-    public IStatus runInUIThread(IProgressMonitor monitor) {
-      IWorkbenchWindow win = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-      if (win == null) {
-        return Status.OK_STATUS;
-      }
-      IWorkbenchPage page = win.getActivePage();
-      if (page == null) {
-        return Status.OK_STATUS;
-      }
+    public IStatus run(IProgressMonitor monitor) {
       for (Map.Entry<ISonarLintProject, List<ISonarLintFile>> entry : changedFilesPerProject.entrySet()) {
         ISonarLintProject project = entry.getKey();
         Collection<FileWithDocument> filesToAnalyze = entry.getValue().stream()
           .map(f -> {
-            IEditorPart editorPart = PlatformUtils.findEditor(page, f);
+            IEditorPart editorPart = PlatformUtils.findEditor(f);
             if (editorPart instanceof ITextEditor) {
               ITextEditor textEditor = (ITextEditor) editorPart;
               ShowIssueFlowsMarkerResolver.removeAnnotations(textEditor);

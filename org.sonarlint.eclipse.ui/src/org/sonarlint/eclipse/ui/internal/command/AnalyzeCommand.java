@@ -105,7 +105,7 @@ public class AnalyzeCommand extends AbstractHandler {
     Map<ISonarLintProject, Collection<FileWithDocument>> filesToAnalyzePerProject = new LinkedHashMap<>();
     for (ISonarLintFile file : SelectionUtils.allSelectedFiles(event)) {
       filesToAnalyzePerProject.putIfAbsent(file.getProject(), new ArrayList<FileWithDocument>());
-      IEditorPart editorPart = PlatformUtils.findEditor(HandlerUtil.getActivePart(event).getSite().getPage(), file);
+      IEditorPart editorPart = PlatformUtils.findEditor(file);
       if (editorPart instanceof ITextEditor) {
         IDocument doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
         filesToAnalyzePerProject.get(file.getProject()).add(new FileWithDocument(file, doc));

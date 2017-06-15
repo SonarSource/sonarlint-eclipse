@@ -32,12 +32,12 @@ import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -60,16 +60,10 @@ public class JobUtils {
     // utility class, forbidden constructor
   }
 
-  // Make sure you only call this from within a Display, otherwise the workbench is not available
-  // See: http://stackoverflow.com/questions/1265174/nullpointerexception-in-platformui-getworkbench-getactiveworkbenchwindow-get
   public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType) {
     Map<ISonarLintProject, List<FileWithDocument>> filesByProject = new HashMap<>();
 
-    if (Display.getCurrent() != null) {
-      collectOpenedFiles(project, filesByProject);
-    } else {
-      Display.getDefault().syncExec(() -> collectOpenedFiles(project, filesByProject));
-    }
+    collectOpenedFiles(project, filesByProject);
 
     for (Map.Entry<ISonarLintProject, List<FileWithDocument>> entry : filesByProject.entrySet()) {
       ISonarLintProject aProject = entry.getKey();
@@ -81,9 +75,11 @@ public class JobUtils {
   }
 
   private static void collectOpenedFiles(ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject) {
-    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-    for (IEditorReference ref : page.getEditorReferences()) {
-      collectOpenedFiles(project, filesByProject, page, ref);
+    for (IWorkbenchWindow win : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+      IWorkbenchPage page = win.getActivePage();
+      for (IEditorReference ref : page.getEditorReferences()) {
+        collectOpenedFiles(project, filesByProject, page, ref);
+      }
     }
   }
 
