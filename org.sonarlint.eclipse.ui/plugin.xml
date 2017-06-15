@@ -486,8 +486,8 @@
 	            <iterate ifEmpty="false">
 	              <or>
 							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
-									<test property="org.sonarlint.eclipse.core.open"/>
-								</adapt>
+										<test property="org.sonarlint.eclipse.core.open"/>
+									</adapt>
 							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
 				  			</or>
 	            </iterate>
@@ -499,16 +499,38 @@
 	         style="push">
 	      <visibleWhen>
 	         <with variable="activeMenuSelection">
+	            <count value="1"/>
 	            <iterate ifEmpty="false">
-	            	<or>
-	            		<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
-							<test property="org.sonarlint.eclipse.core.open"/>
-						</adapt>
-					    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
-					    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
-			    	</or>
+  					    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
 	            </iterate>
 	         </with>
+	      </visibleWhen>
+	   </command>
+	   <command
+	         commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeAllFilesCommand"
+	         style="push">
+	      <visibleWhen>
+           <and>
+  	         <with variable="activeMenuSelection">
+		            <iterate ifEmpty="false">
+		            	<or>
+		            		<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+								      <test property="org.sonarlint.eclipse.core.open"/>
+							      </adapt>
+						        <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
+						        <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
+				    	    </or>
+		            </iterate>
+  	         </with>
+  	         <not>
+  	           <with variable="activeMenuSelection">
+			            <count value="1"/>
+			            <iterate ifEmpty="false">
+	  				        <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
+			            </iterate>
+  	           </with>
+		         </not>
+          </and>
 	      </visibleWhen>
 	   </command>
 	   <command
@@ -575,9 +597,15 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
-          description="Analyze with SonarLint"
+          description="Analyze selected file with SonarLint"
           id="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
           name="Analyze"
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
+    <command
+          description="Analyze all selected files with SonarLint"
+          id="org.sonarlint.eclipse.ui.internal.command.AnalyzeAllFilesCommand"
+          name="Analyze all files"
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
@@ -620,6 +648,10 @@
           commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand">
     </handler>
     <handler
+          class="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeAllFilesCommand">
+    </handler>
+    <handler
           class="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand">
     </handler>
@@ -640,6 +672,9 @@
   <extension point="org.eclipse.ui.commandImages">
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
+      icon="icons/sonarlint-run-16x16.png" />
+    <image
+      commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeAllFilesCommand"
       icon="icons/sonarlint-run-16x16.png" />
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeChangeSetCommand"
