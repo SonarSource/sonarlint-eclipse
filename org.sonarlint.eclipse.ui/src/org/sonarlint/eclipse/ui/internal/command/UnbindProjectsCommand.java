@@ -30,7 +30,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonarlint.eclipse.core.internal.TriggerType;
@@ -70,7 +69,6 @@ public class UnbindProjectsCommand extends AbstractHandler {
           JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE);
           JobUtils.notifyServerViewAfterBindingChange(p, oldServerId);
           monitor.worked(1);
-          Display.getDefault().asyncExec(() -> JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE));
         }
         IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
         if (labelProvider != null) {

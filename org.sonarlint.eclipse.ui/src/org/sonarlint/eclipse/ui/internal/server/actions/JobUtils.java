@@ -38,10 +38,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -67,20 +65,10 @@ public class JobUtils {
   public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType) {
     Map<ISonarLintProject, List<FileWithDocument>> filesByProject = new HashMap<>();
 
-    IWorkbenchWindow workbench = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-    if (workbench == null) {
-      SonarLintLogger.get().debug("possible attempt to get workbench window outside of a Display");
-      return;
-    }
-
-    IWorkbenchPage page = workbench.getActivePage();
-    for (IEditorReference ref : page.getEditorReferences()) {
-      try {
-        IEditorInput input = ref.getEditorInput();
-        collectOpenedFiles(project, filesByProject, page, input);
-      } catch (PartInitException e) {
-        SonarLintLogger.get().error("could not get editor content", e);
-      }
+    if (Display.getCurrent() != null) {
+      collectOpenedFiles(project, filesByProject);
+    } else {
+      Display.getDefault().syncExec(() -> collectOpenedFiles(project, filesByProject));
     }
 
     for (Map.Entry<ISonarLintProject, List<FileWithDocument>> entry : filesByProject.entrySet()) {
@@ -92,30 +80,39 @@ public class JobUtils {
     }
   }
 
+  private static void collectOpenedFiles(ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject) {
+    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    for (IEditorReference ref : page.getEditorReferences()) {
+      collectOpenedFiles(project, filesByProject, page, ref);
+    }
+  }
+
   private static void collectOpenedFiles(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject, IWorkbenchPage page,
-    IEditorInput input) {
-    if (input instanceof IFileEditorInput) {
-      IFile file = ((IFileEditorInput) input).getFile();
-      ISonarLintFile sonarFile = Adapters.adapt(file, ISonarLintFile.class);
-      if (sonarFile != null && (project == null || sonarFile.getProject().equals(project))) {
-        filesByProject.putIfAbsent(sonarFile.getProject(), new ArrayList<>());
-        IEditorPart editorPart = ResourceUtil.findEditor(page, file);
-        if (editorPart instanceof ITextEditor) {
-          IDocument doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
-          filesByProject.get(sonarFile.getProject()).add(new FileWithDocument(sonarFile, doc));
-        } else {
-          filesByProject.get(sonarFile.getProject()).add(new FileWithDocument(sonarFile, null));
+    IEditorReference ref) {
+    try {
+      IEditorInput input = ref.getEditorInput();
+      if (input instanceof IFileEditorInput) {
+        IFile file = ((IFileEditorInput) input).getFile();
+        ISonarLintFile sonarFile = Adapters.adapt(file, ISonarLintFile.class);
+        if (sonarFile != null && (project == null || sonarFile.getProject().equals(project))) {
+          filesByProject.putIfAbsent(sonarFile.getProject(), new ArrayList<>());
+          IEditorPart editorPart = ref.getEditor(false);
+          if (editorPart instanceof ITextEditor) {
+            IDocument doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(input);
+            filesByProject.get(sonarFile.getProject()).add(new FileWithDocument(sonarFile, doc));
+          } else {
+            filesByProject.get(sonarFile.getProject()).add(new FileWithDocument(sonarFile, null));
+          }
         }
       }
+    } catch (PartInitException e) {
+      SonarLintLogger.get().error("could not get editor content", e);
+      return;
     }
   }
 
   public static void scheduleAnalysisOfOpenFiles(List<ISonarLintProject> projects, TriggerType triggerType) {
-    if (Display.getCurrent() != null) {
-      projects.forEach(p -> scheduleAnalysisOfOpenFiles(p, triggerType));
-    } else {
-      Display.getDefault().asyncExec(() -> projects.forEach(p -> scheduleAnalysisOfOpenFiles(p, triggerType)));
-    }
+    projects.forEach(p -> scheduleAnalysisOfOpenFiles(p, triggerType));
   }
 
   public static void scheduleAnalysisOfOpenFilesInBoundProjects(IServer server, TriggerType triggerType) {
