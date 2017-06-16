@@ -45,7 +45,7 @@
 	      name="New Server"
 	      class="org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard"
 	      category="org.sonarlint.eclipse"
-	      icon="icons/onde-sonar-16.png">
+	      icon="icons/logo/sonarqube-16px.png">
 	    <description>Connect to a new SonarQube server</description>
 	  </wizard>
 	</extension>
@@ -54,7 +54,7 @@
       point="org.eclipse.ui.decorators">
    <decorator
          class="org.sonarlint.eclipse.ui.internal.server.ServerDecorator"
-         icon="icons/onde-sonar-16.png"
+         icon="icons/logo/sonarqube-16px.png"
          id="org.sonarlint.eclipse.ui.navigatorDecorator"
          label="SonarLint Server State Decorator"
          lightweight="true"
@@ -114,7 +114,7 @@
 	        allowMultiple="false"
 	        category="org.sonarlint.eclipse"
 	        class="org.sonarlint.eclipse.ui.internal.server.ServersView"
-	        icon="icons/onde-sonar-16.png"
+	        icon="icons/logo/sonarqube-16px.png"
 	        id="org.sonarlint.eclipse.ui.ServersView"
 	        name="SonarQube Servers">
 	  </view>
@@ -134,7 +134,7 @@
 	   <navigatorContent
 	         activeByDefault="true"
 	         contentProvider="org.sonarlint.eclipse.ui.internal.server.ServerContentProvider"
-	         icon="icons/onde-sonar-16.png"
+	         icon="icons/logo/sonarqube-16px.png"
 	         id="org.sonarlint.eclipse.ui.ServersView.content.root"
 	         labelProvider="org.sonarlint.eclipse.ui.internal.server.ServerLabelProvider"
 	         name="Server Provider"
@@ -677,7 +677,7 @@
               colorPreferenceValue="30,144,255"
               highlightPreferenceKey="org.sonarlint.eclipse.ui.issue.highlight"
               highlightPreferenceValue="false"
-              icon="icons/onde-sonar-16.png"
+              icon="icons/sonarlint-16x16.png"
               isGoToNextNavigationTarget="true"
               isGoToNextNavigationTargetKey="org.sonarlint.eclipse.issue.next"
               isGoToPreviousNavigationTarget="true"
@@ -702,7 +702,7 @@
               colorPreferenceValue="141,169,201"
               highlightPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.highlight"
               highlightPreferenceValue="true"
-              icon="icons/onde-sonar-16.png"
+              icon="icons/sonarlint-16x16.png"
               isGoToNextNavigationTarget="true"
               isGoToNextNavigationTargetKey="org.sonarlint.eclipse.issueFlow.next"
               isGoToPreviousNavigationTarget="true"
