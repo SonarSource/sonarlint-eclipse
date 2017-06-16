@@ -315,8 +315,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private void trackIssues(@Nullable Server server, Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,
-    final IProgressMonitor monitor)
-    throws CoreException {
+    final IProgressMonitor monitor) {
 
     String localModuleKey = getProject().getName();
 
@@ -344,7 +343,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       IssueTracker issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(getProject(), localModuleKey);
       String relativePath = resource.getProjectRelativePath();
       Collection<Trackable> tracked = issueTracker.matchAndTrackAsNew(relativePath, trackables);
-      if (server != null) {
+      if (server != null && !tracked.isEmpty()) {
         tracked = trackServerIssuesSync(server, resource, tracked, triggerType.shouldUpdateFileIssuesSync(rawIssuesPerResource.size()));
       }
       ISchedulingRule markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(resource.getResource());
@@ -359,8 +358,18 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     if (server != null && triggerType.shouldUpdateFileIssuesAsync()) {
-      trackServerIssuesAsync(server, rawIssuesPerResource.keySet(), docPerFile, triggerType);
+      List<ISonarLintIssuable> filesWithAtLeastOneIssue = filesWithAtLeastOneIssue(rawIssuesPerResource);
+      if (!filesWithAtLeastOneIssue.isEmpty()) {
+        trackServerIssuesAsync(server, filesWithAtLeastOneIssue, docPerFile, triggerType);
+      }
     }
+  }
+
+  private static List<ISonarLintIssuable> filesWithAtLeastOneIssue(Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource) {
+    return rawIssuesPerResource.entrySet().stream()
+      .filter(e -> !e.getValue().isEmpty())
+      .map(Map.Entry::getKey)
+      .collect(Collectors.toList());
   }
 
   private static RawIssueTrackable transform(Issue issue, ISonarLintFile resource, IDocument document) {
