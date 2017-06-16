@@ -183,15 +183,10 @@ public class ServerConnectionWizard extends Wizard implements INewWizard {
 
   public boolean beforeNextPressed() {
     IWizardPage currentPage = getContainer().getCurrentPage();
-    if (currentPage == credentialsPage || currentPage == tokenPage) {
-      if (!testConnection(null)) {
-        return false;
-      }
-    }
-    if (currentPage == orgPage && !testConnection(model.getOrganization())) {
+    if ((currentPage == credentialsPage || currentPage == tokenPage) && !testConnection(null)) {
       return false;
     }
-    return true;
+    return currentPage != orgPage || testConnection(model.getOrganization());
   }
 
   private boolean testConnection(@Nullable String organization) {
