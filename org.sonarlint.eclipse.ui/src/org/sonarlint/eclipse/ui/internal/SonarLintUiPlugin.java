@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
-import javax.annotation.CheckForNull;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -30,7 +28,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -44,12 +41,10 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
-import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
@@ -233,33 +228,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       }
     }
 
-  }
-
-  @CheckForNull
-  public static ISonarLintFile findCurrentEditedFile() {
-    IEditorPart editor = findActiveEditor();
-    if (editor == null) {
-      return null;
-    }
-    IFile file = Adapters.adapt(editor.getEditorInput(), IFile.class);
-    if (file != null) {
-      return Adapters.adapt(file, ISonarLintFile.class);
-    }
-    return null;
-  }
-
-  @CheckForNull
-  public static IEditorPart findActiveEditor() {
-    // Super defensing programming because we don't really understand what is initialized at startup (SLE-122)
-    IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-    if (window == null) {
-      return null;
-    }
-    IWorkbenchPage page = window.getActivePage();
-    if (page == null) {
-      return null;
-    }
-    return page.getActiveEditor();
   }
 
   public static void analyzeOpenedFiles() {

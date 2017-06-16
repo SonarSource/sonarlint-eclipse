@@ -75,7 +75,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     layout.verticalSpacing = 9;
 
     enabledBtn = new Button(container, SWT.CHECK);
-    enabledBtn.setText("Enable SonarLint On-The-Fly");
+    enabledBtn.setText("Run SonarLint automatically");
     enabledBtn.setSelection(projectConfig.isAutoEnabled());
     GridData layoutData = new GridData();
     layoutData.horizontalSpan = 2;

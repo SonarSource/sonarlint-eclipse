@@ -87,9 +87,7 @@ public final class SelectionUtils {
   /** 
    * Return all {@link ISonarLintFile} based on current selection.
    */
-  public static Set<ISonarLintFile> allSelectedFiles(ExecutionEvent event) throws ExecutionException {
-    ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
-
+  public static Set<ISonarLintFile> allSelectedFiles(ISelection selection) {
     final Set<ISonarLintFile> selectedFiles = new HashSet<>();
 
     if (selection instanceof IStructuredSelection) {

@@ -103,7 +103,7 @@ public class AnalyzeCommand extends AbstractHandler {
 
   protected Map<ISonarLintProject, Collection<FileWithDocument>> findSelectedFilesPerProject(ExecutionEvent event) throws ExecutionException {
     Map<ISonarLintProject, Collection<FileWithDocument>> filesToAnalyzePerProject = new LinkedHashMap<>();
-    for (ISonarLintFile file : SelectionUtils.allSelectedFiles(event)) {
+    for (ISonarLintFile file : SelectionUtils.allSelectedFiles(HandlerUtil.getCurrentSelectionChecked(event))) {
       filesToAnalyzePerProject.putIfAbsent(file.getProject(), new ArrayList<FileWithDocument>());
       IEditorPart editorPart = PlatformUtils.findEditor(file);
       if (editorPart instanceof ITextEditor) {
