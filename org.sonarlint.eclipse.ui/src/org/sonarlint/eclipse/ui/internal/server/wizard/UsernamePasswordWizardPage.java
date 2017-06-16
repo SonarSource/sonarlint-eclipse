@@ -19,8 +19,11 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
+import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.wizard.WizardPage;
@@ -39,6 +42,10 @@ public class UsernamePasswordWizardPage extends WizardPage {
 
   private Text serverUsernameText;
   private Text serverPasswordText;
+
+  private Binding usernameTextBinding;
+
+  private Binding passwordTextBinding;
 
   public UsernamePasswordWizardPage(ServerConnectionModel model) {
     super("server_credentials_page", "SonarQube Server Credentials", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
@@ -61,14 +68,22 @@ public class UsernamePasswordWizardPage extends WizardPage {
     createPasswordField(container);
 
     DataBindingContext dbc = new DataBindingContext();
-    dbc.bindValue(
+    usernameTextBinding = dbc.bindValue(
       WidgetProperties.text(SWT.Modify).observe(serverUsernameText),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_USERNAME)
-        .observe(model));
-    dbc.bindValue(
+        .observe(model),
+      new UpdateValueStrategy().setBeforeSetValidator(
+        new MandatoryValidator("You must provide a login")),
+      null);
+    ControlDecorationSupport.create(usernameTextBinding, SWT.LEFT | SWT.TOP);
+    passwordTextBinding = dbc.bindValue(
       WidgetProperties.text(SWT.Modify).observe(serverPasswordText),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_PASSWORD)
-        .observe(model));
+        .observe(model),
+      new UpdateValueStrategy().setBeforeSetValidator(
+        new MandatoryValidator("You must provide a password")),
+      null);
+    ControlDecorationSupport.create(passwordTextBinding, SWT.LEFT | SWT.TOP);
 
     WizardPageSupport.create(this, dbc);
 
@@ -92,8 +107,10 @@ public class UsernamePasswordWizardPage extends WizardPage {
   @Override
   public void setVisible(boolean visible) {
     super.setVisible(visible);
-    // Clear validation message when coming back to this page
-    setMessage(null);
+    if (visible) {
+      usernameTextBinding.validateTargetToModel();
+      passwordTextBinding.validateTargetToModel();
+    }
   }
 
 }

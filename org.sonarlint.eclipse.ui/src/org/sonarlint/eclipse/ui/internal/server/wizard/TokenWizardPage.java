@@ -21,8 +21,11 @@ package org.sonarlint.eclipse.ui.internal.server.wizard;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -46,6 +49,8 @@ public class TokenWizardPage extends WizardPage {
 
   private Text serverTokenText;
 
+  private Binding tokenTextBinding;
+
   public TokenWizardPage(ServerConnectionModel model) {
     super("server_token_page", "SonarQube Server Authentication Token", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
     this.model = model;
@@ -67,10 +72,14 @@ public class TokenWizardPage extends WizardPage {
     createOpenSecurityPageButton(container);
 
     DataBindingContext dbc = new DataBindingContext();
-    dbc.bindValue(
+    tokenTextBinding = dbc.bindValue(
       WidgetProperties.text(SWT.Modify).observe(serverTokenText),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_USERNAME)
-        .observe(model));
+        .observe(model),
+      new UpdateValueStrategy().setBeforeSetValidator(
+        new MandatoryValidator("You must provide an authentication token")),
+      null);
+    ControlDecorationSupport.create(tokenTextBinding, SWT.LEFT | SWT.TOP);
 
     WizardPageSupport.create(this, dbc);
 
@@ -109,8 +118,9 @@ public class TokenWizardPage extends WizardPage {
   @Override
   public void setVisible(boolean visible) {
     super.setVisible(visible);
-    // Clear validation message when coming back to this page
-    setMessage(null);
+    if (visible) {
+      tokenTextBinding.validateTargetToModel();
+    }
   }
 
 }

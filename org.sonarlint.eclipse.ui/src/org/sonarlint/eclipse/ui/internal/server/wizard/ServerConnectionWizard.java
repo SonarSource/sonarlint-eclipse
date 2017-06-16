@@ -151,7 +151,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard {
   @Override
   public boolean canFinish() {
     IWizardPage currentPage = getContainer().getCurrentPage();
-    return currentPage == endPage && super.canFinish();
+    return currentPage == endPage;
   }
 
   @Override
