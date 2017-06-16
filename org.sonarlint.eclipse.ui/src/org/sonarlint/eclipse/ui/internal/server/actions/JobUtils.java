@@ -38,10 +38,8 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
@@ -78,33 +76,32 @@ public class JobUtils {
     for (IWorkbenchWindow win : PlatformUI.getWorkbench().getWorkbenchWindows()) {
       for (IWorkbenchPage page : win.getPages()) {
         for (IEditorReference ref : page.getEditorReferences()) {
-          collectOpenedFiles(project, filesByProject, ref);
+          collectOpenedFile(project, filesByProject, ref);
         }
       }
     }
   }
 
-  private static void collectOpenedFiles(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject,
+  private static void collectOpenedFile(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject,
     IEditorReference ref) {
-    try {
-      IEditorInput input = ref.getEditorInput();
-      if (input instanceof IFileEditorInput) {
-        IFile file = ((IFileEditorInput) input).getFile();
-        ISonarLintFile sonarFile = Adapters.adapt(file, ISonarLintFile.class);
-        if (sonarFile != null && (project == null || sonarFile.getProject().equals(project))) {
-          filesByProject.putIfAbsent(sonarFile.getProject(), new ArrayList<>());
-          IEditorPart editorPart = ref.getEditor(false);
-          if (editorPart instanceof ITextEditor) {
-            IDocument doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(input);
-            filesByProject.get(sonarFile.getProject()).add(new FileWithDocument(sonarFile, doc));
-          } else {
-            filesByProject.get(sonarFile.getProject()).add(new FileWithDocument(sonarFile, null));
-          }
+    // Be careful to not trigger editor activation
+    IEditorPart editor = ref.getEditor(false);
+    if (editor == null) {
+      return;
+    }
+    IEditorInput input = editor.getEditorInput();
+    if (input instanceof IFileEditorInput) {
+      IFile file = ((IFileEditorInput) input).getFile();
+      ISonarLintFile sonarFile = Adapters.adapt(file, ISonarLintFile.class);
+      if (sonarFile != null && (project == null || sonarFile.getProject().equals(project))) {
+        filesByProject.putIfAbsent(sonarFile.getProject(), new ArrayList<>());
+        if (editor instanceof ITextEditor) {
+          IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(input);
+          filesByProject.get(sonarFile.getProject()).add(new FileWithDocument(sonarFile, doc));
+        } else {
+          filesByProject.get(sonarFile.getProject()).add(new FileWithDocument(sonarFile, null));
         }
       }
-    } catch (PartInitException e) {
-      SonarLintLogger.get().error("could not get editor content", e);
-      return;
     }
   }
 
