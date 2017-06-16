@@ -30,6 +30,7 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
+import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class OrganizationProvider implements IContentProposalProvider {
 
@@ -44,7 +45,8 @@ public class OrganizationProvider implements IContentProposalProvider {
   @Override
   public IContentProposal[] getProposals(String contents, int position) {
     List<IContentProposal> list = new ArrayList<>();
-    Map<RemoteOrganization, Double> filtered = model.getOrganizationsIndex() != null ? model.getOrganizationsIndex().search(contents) : Collections.emptyMap();
+    TextSearchIndex<RemoteOrganization> organizationsIndex = model.getOrganizationsIndex();
+    Map<RemoteOrganization, Double> filtered = organizationsIndex != null ? organizationsIndex.search(contents) : Collections.emptyMap();
     if (filtered.isEmpty()) {
       parentPage.setMessage("No results", IMessageProvider.INFORMATION);
     } else {
