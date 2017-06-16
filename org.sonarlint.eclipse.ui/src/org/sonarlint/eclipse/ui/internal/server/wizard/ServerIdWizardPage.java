@@ -26,42 +26,24 @@ import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.ui.internal.Messages;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
-public class ServerIdWizardPage extends WizardPage {
+public class ServerIdWizardPage extends AbstractGridLayoutWizardPage {
 
-  private final ServerConnectionModel model;
   private Binding serverIdTextBinding;
 
   public ServerIdWizardPage(ServerConnectionModel model) {
-    super("server_id_page", "SonarQube Server Connection Identifier", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
-    this.model = model;
+    super("server_id_page", "SonarQube Server Connection Identifier", model, 2);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public void createControl(Composite parent) {
-    Composite container = new Composite(parent, SWT.NONE);
-    GridLayout layout = new GridLayout();
-    layout.numColumns = 2;
-    container.setLayout(layout);
-
-    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    container.setLayoutData(layoutData);
-
-    createServerIdField(container);
-
-    setControl(container);
-  }
-
-  private void createServerIdField(final Composite container) {
+  protected void doCreateControl(Composite container) {
     Label labelId = new Label(container, SWT.NULL);
     labelId.setText(Messages.ServerLocationWizardPage_label_id);
     Text serverIdText = new Text(container, SWT.BORDER | SWT.SINGLE);

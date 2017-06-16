@@ -26,40 +26,27 @@ import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
-public class UrlWizardPage extends WizardPage {
+public class UrlWizardPage extends AbstractGridLayoutWizardPage {
 
   private static final String DEFAULT_URL_SUGGESTION = "https://";
 
-  private final ServerConnectionModel model;
   private Text serverUrlText;
 
   public UrlWizardPage(ServerConnectionModel model) {
-    super("server_url_page", "SonarQube Server URL", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
-    this.model = model;
+    super("server_url_page", "SonarQube Server URL", model, 2);
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public void createControl(Composite parent) {
-    Composite container = new Composite(parent, SWT.NONE);
-
-    GridLayout layout = new GridLayout();
-    layout.numColumns = 2;
-    container.setLayout(layout);
-
-    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    container.setLayoutData(layoutData);
+  protected void doCreateControl(Composite container) {
 
     Label labelUrl = new Label(container, SWT.NULL);
     labelUrl.setText(Messages.ServerLocationWizardPage_label_host);
@@ -78,7 +65,6 @@ public class UrlWizardPage extends WizardPage {
 
     WizardPageSupport.create(this, dbc);
 
-    setControl(container);
   }
 
   @Override

@@ -29,10 +29,8 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -40,35 +38,18 @@ import org.eclipse.ui.fieldassist.ContentAssistCommandAdapter;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.server.Server;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
-public class OrganizationWizardPage extends WizardPage {
-
-  private final ServerConnectionModel model;
+public class OrganizationWizardPage extends AbstractGridLayoutWizardPage {
 
   public OrganizationWizardPage(ServerConnectionModel model) {
-    super("server_organization_page", "SonarQube Server Organization", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
-    this.model = model;
+    super("server_organization_page", "SonarQube Server Organization", model, 2);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public void createControl(Composite parent) {
-    Composite container = new Composite(parent, SWT.NONE);
-
-    GridLayout layout = new GridLayout();
-    layout.numColumns = 2;
-    container.setLayout(layout);
-
-    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    container.setLayoutData(layoutData);
-
-    createOrganizationField(container);
-    setControl(container);
-  }
-
-  private void createOrganizationField(final Composite container) {
+  protected void doCreateControl(Composite container) {
     Label labelOrganization = new Label(container, SWT.NULL);
     labelOrganization.setText("Organization:");
     Text organizationText = new Text(container, SWT.BORDER | SWT.SINGLE);

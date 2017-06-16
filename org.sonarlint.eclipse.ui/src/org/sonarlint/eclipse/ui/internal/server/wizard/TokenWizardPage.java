@@ -29,10 +29,8 @@ import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -43,30 +41,19 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
-public class TokenWizardPage extends WizardPage {
-
-  private final ServerConnectionModel model;
+public class TokenWizardPage extends AbstractGridLayoutWizardPage {
 
   private Text serverTokenText;
 
   private Binding tokenTextBinding;
 
   public TokenWizardPage(ServerConnectionModel model) {
-    super("server_token_page", "SonarQube Server Authentication Token", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
-    this.model = model;
+    super("server_token_page", "SonarQube Server Authentication Token", model, 3);
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public void createControl(Composite parent) {
-    Composite container = new Composite(parent, SWT.NONE);
-
-    GridLayout layout = new GridLayout();
-    layout.numColumns = 3;
-    container.setLayout(layout);
-
-    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    container.setLayoutData(layoutData);
+  protected void doCreateControl(Composite container) {
 
     createTokenField(container);
     createOpenSecurityPageButton(container);
@@ -82,8 +69,6 @@ public class TokenWizardPage extends WizardPage {
     ControlDecorationSupport.create(tokenTextBinding, SWT.LEFT | SWT.TOP);
 
     WizardPageSupport.create(this, dbc);
-
-    setControl(container);
   }
 
   private void createTokenField(final Composite container) {

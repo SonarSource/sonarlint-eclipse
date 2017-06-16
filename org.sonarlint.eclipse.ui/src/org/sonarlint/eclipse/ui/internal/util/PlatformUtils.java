@@ -86,32 +86,48 @@ public final class PlatformUtils {
     for (IWorkbenchWindow win : workbench.getWorkbenchWindows()) {
       for (IWorkbenchPage page : win.getPages()) {
         // handle the common case where the editor input is a FileEditorInput and ISonarLintFile wrap an IFile
-        if (file.getResource() instanceof IFile) {
-          IEditorPart editor = page.findEditor(new FileEditorInput((IFile) file.getResource()));
-          if (editor != null) {
-            return editor;
-          }
+        IEditorPart result = findInFileEditorInput(file, page);
+        if (result != null) {
+          return result;
         }
-        // check for editors that have their own kind of input that adapts to IFile,
-        // being careful not to force loading of the editor
-        IEditorReference[] refs = page.getEditorReferences();
-        for (int i = 0; i < refs.length; i++) {
-          IEditorReference ref = refs[i];
-          IEditorPart part = ref.getEditor(false);
-          if (part == null) {
-            continue;
-          }
-          IFile editorFile = Adapters.adapt(part.getEditorInput(), IFile.class);
-          if (editorFile != null) {
-            ISonarLintFile editorSlFile = Adapters.adapt(editorFile, ISonarLintFile.class);
-            if (editorSlFile != null && editorSlFile.equals(file)) {
-              return part;
-            }
-          }
+
+        result = findInOtherEditors(file, page);
+        if (result != null) {
+          return result;
         }
       }
     }
     return null;
   }
 
+  @CheckForNull
+  private static IEditorPart findInFileEditorInput(ISonarLintFile file, IWorkbenchPage page) {
+    if (file.getResource() instanceof IFile) {
+      IEditorPart editor = page.findEditor(new FileEditorInput((IFile) file.getResource()));
+      if (editor != null) {
+        return editor;
+      }
+    }
+    return null;
+  }
+
+  @CheckForNull
+  private static IEditorPart findInOtherEditors(ISonarLintFile file, IWorkbenchPage page) {
+    // check for editors that have their own kind of input that adapts to IFile,
+    // being careful not to force loading of the editor
+    for (IEditorReference ref : page.getEditorReferences()) {
+      IEditorPart part = ref.getEditor(false);
+      if (part == null) {
+        continue;
+      }
+      IFile editorFile = Adapters.adapt(part.getEditorInput(), IFile.class);
+      if (editorFile != null) {
+        ISonarLintFile editorSlFile = Adapters.adapt(editorFile, ISonarLintFile.class);
+        if (editorSlFile != null && editorSlFile.equals(file)) {
+          return part;
+        }
+      }
+    }
+    return null;
+  }
 }

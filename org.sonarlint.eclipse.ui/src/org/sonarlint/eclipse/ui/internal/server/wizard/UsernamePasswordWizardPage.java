@@ -26,19 +26,14 @@ import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.ui.internal.Messages;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
-public class UsernamePasswordWizardPage extends WizardPage {
-
-  private final ServerConnectionModel model;
+public class UsernamePasswordWizardPage extends AbstractGridLayoutWizardPage {
 
   private Text serverUsernameText;
   private Text serverPasswordText;
@@ -48,22 +43,12 @@ public class UsernamePasswordWizardPage extends WizardPage {
   private Binding passwordTextBinding;
 
   public UsernamePasswordWizardPage(ServerConnectionModel model) {
-    super("server_credentials_page", "SonarQube Server Credentials", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
-    this.model = model;
+    super("server_credentials_page", "SonarQube Server Credentials", model, 2);
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public void createControl(Composite parent) {
-    Composite container = new Composite(parent, SWT.NONE);
-
-    GridLayout layout = new GridLayout();
-    layout.numColumns = 2;
-    container.setLayout(layout);
-
-    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    container.setLayoutData(layoutData);
-
+  protected void doCreateControl(Composite container) {
     createUsernameOrTokenField(container);
     createPasswordField(container);
 
@@ -86,8 +71,6 @@ public class UsernamePasswordWizardPage extends WizardPage {
     ControlDecorationSupport.create(passwordTextBinding, SWT.LEFT | SWT.TOP);
 
     WizardPageSupport.create(this, dbc);
-
-    setControl(container);
   }
 
   private void createPasswordField(final Composite container) {
