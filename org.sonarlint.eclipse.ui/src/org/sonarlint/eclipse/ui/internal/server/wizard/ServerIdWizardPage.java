@@ -84,7 +84,9 @@ public class ServerIdWizardPage extends WizardPage {
   @Override
   public void setVisible(boolean visible) {
     super.setVisible(visible);
-    serverIdTextBinding.validateTargetToModel();
+    if (visible) {
+      serverIdTextBinding.validateTargetToModel();
+    }
   }
 
 }

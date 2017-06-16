@@ -72,8 +72,7 @@ public class UrlWizardPage extends WizardPage {
       WidgetProperties.text(SWT.Modify).observe(serverUrlText),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_SERVER_URL)
         .observe(model),
-      new UpdateValueStrategy().setBeforeSetValidator(
-        new MandatoryURLValidator()).setAfterGetValidator(new MandatoryURLValidator()),
+      new UpdateValueStrategy().setBeforeSetValidator(new MandatoryURLValidator()),
       null);
     ControlDecorationSupport.create(serverUrlTextBinding, SWT.LEFT | SWT.TOP);
 
