@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
@@ -45,6 +46,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
   public AnalyzeChangedFilesJob(Collection<ISonarLintProject> projects) {
     super("Analyze changed files");
     this.projects = projects;
+    setPriority(Job.LONG);
   }
 
   @Override
