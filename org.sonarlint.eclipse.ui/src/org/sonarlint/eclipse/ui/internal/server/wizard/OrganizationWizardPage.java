@@ -19,7 +19,9 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
+import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
@@ -35,6 +37,8 @@ import org.eclipse.ui.fieldassist.ContentAssistCommandAdapter;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
 public class OrganizationWizardPage extends AbstractGridLayoutWizardPage {
+
+  private Binding orgaTextBinding;
 
   public OrganizationWizardPage(ServerConnectionModel model) {
     super("server_organization_page", "SonarQube Server Organization", model, 2);
@@ -52,10 +56,12 @@ public class OrganizationWizardPage extends AbstractGridLayoutWizardPage {
     organizationText.setLayoutData(gd);
 
     DataBindingContext dbc = new DataBindingContext();
-    dbc.bindValue(
+    orgaTextBinding = dbc.bindValue(
       WidgetProperties.text(SWT.Modify).observe(organizationText),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_ORGANIZATION)
-        .observe(model));
+        .observe(model),
+      new UpdateValueStrategy().setBeforeSetValidator(new MandatoryValidator("You must select an organization")),
+      null);
 
     WizardPageSupport.create(this, dbc);
 
@@ -75,13 +81,16 @@ public class OrganizationWizardPage extends AbstractGridLayoutWizardPage {
   @Override
   public void setVisible(boolean visible) {
     super.setVisible(visible);
-    if (visible && !model.hasOrganizations()) {
-      // Skip organization selection
-      IWizardPage nextPage = getNextPage();
-      IWizardPage previousPage = getPreviousPage();
-      getContainer().showPage(nextPage);
-      // Ensure that when pressing back on next page we don't return on organization page
-      nextPage.setPreviousPage(previousPage);
+    if (visible) {
+      orgaTextBinding.validateTargetToModel();
+      if (!model.hasOrganizations()) {
+        // Skip organization selection
+        IWizardPage nextPage = getNextPage();
+        IWizardPage previousPage = getPreviousPage();
+        getContainer().showPage(nextPage);
+        // Ensure that when pressing back on next page we don't return on organization page
+        nextPage.setPreviousPage(previousPage);
+      }
     }
   }
 

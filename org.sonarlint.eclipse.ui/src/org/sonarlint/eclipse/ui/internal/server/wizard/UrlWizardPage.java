@@ -35,6 +35,8 @@ import org.sonarlint.eclipse.ui.internal.Messages;
 
 public class UrlWizardPage extends AbstractGridLayoutWizardPage {
 
+  private Binding serverUrlTextBinding;
+
   public UrlWizardPage(ServerConnectionModel model) {
     super("server_url_page", "SonarQube Server URL", model, 2);
   }
@@ -52,7 +54,7 @@ public class UrlWizardPage extends AbstractGridLayoutWizardPage {
     serverUrlText.setMessage("https://sonarqube.mycompany.com");
 
     DataBindingContext dbc = new DataBindingContext();
-    Binding serverUrlTextBinding = dbc.bindValue(
+    serverUrlTextBinding = dbc.bindValue(
       WidgetProperties.text(SWT.Modify).observe(serverUrlText),
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_SERVER_URL)
         .observe(model),
@@ -61,6 +63,15 @@ public class UrlWizardPage extends AbstractGridLayoutWizardPage {
     ControlDecorationSupport.create(serverUrlTextBinding, SWT.LEFT | SWT.TOP);
 
     WizardPageSupport.create(this, dbc);
+  }
+
+  @Override
+  public void setVisible(boolean visible) {
+    super.setVisible(visible);
+    if (visible) {
+      serverUrlTextBinding.validateTargetToModel();
+      getContainer().updateMessage();
+    }
   }
 
 }
