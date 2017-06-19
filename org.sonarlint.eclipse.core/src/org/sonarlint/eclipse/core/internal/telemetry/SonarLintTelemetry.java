@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.telemetry;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
@@ -40,7 +39,8 @@ import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.client.api.common.TelemetryClientConfig;
-import org.sonarsource.sonarlint.core.telemetry.Telemetry;
+import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
+import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryPathManager;
 
 public class SonarLintTelemetry implements AnalysisListener {
@@ -48,8 +48,8 @@ public class SonarLintTelemetry implements AnalysisListener {
   private static final String PRODUCT = "SonarLint Eclipse";
   private static final String OLD_STORAGE_FILENAME = "sonarlint_usage";
   public static final String DISABLE_PROPERTY_KEY = "sonarlint.telemetry.disabled";
-  private boolean enabled;
-  private Telemetry telemetryEngine;
+
+  private TelemetryManager telemetry;
 
   private TelemetryJob scheduledJob;
 
@@ -63,46 +63,43 @@ public class SonarLintTelemetry implements AnalysisListener {
   }
 
   public void optOut(boolean optOut) {
-    if (telemetryEngine != null) {
-      if (optOut == !telemetryEngine.enabled()) {
-        return;
-      }
-      telemetryEngine.enable(!optOut);
+    if (telemetry != null) {
       if (optOut) {
-        try {
-          TelemetryClientConfig clientConfig = getTelemetryClientConfig();
-          telemetryEngine.getClient().optOut(clientConfig, isAnyProjectConnected());
-        } catch (Exception e) {
-          // Silently ignore
+        if (telemetry.isEnabled()) {
+          telemetry.disable();
+        }
+      } else {
+        if (!telemetry.isEnabled()) {
+          telemetry.enable();
         }
       }
     }
   }
 
   public boolean enabled() {
-    return enabled;
-  }
-
-  public boolean optedIn() {
-    return enabled && this.telemetryEngine.enabled();
+    return telemetry != null && telemetry.isEnabled();
   }
 
   public void init() {
     if ("true".equals(System.getProperty(DISABLE_PROPERTY_KEY))) {
-      this.enabled = false;
       SonarLintLogger.get().info("Telemetry disabled by system property");
       return;
     }
     try {
-      this.telemetryEngine = new Telemetry(getStorageFilePath(), PRODUCT, SonarLintUtils.getPluginVersion());
+      TelemetryClientConfig clientConfig = getTelemetryClientConfig();
+      TelemetryClient client = new TelemetryClient(clientConfig, PRODUCT, SonarLintUtils.getPluginVersion());
+      this.telemetry = newTelemetryManager(getStorageFilePath(), client);
       SonarLintCorePlugin.getAnalysisListenerManager().addListener(this);
       this.scheduledJob = new TelemetryJob();
       scheduledJob.schedule(TimeUnit.MINUTES.toMillis(1));
-      this.enabled = true;
     } catch (Exception e) {
       // Silently ignore
-      enabled = false;
     }
+  }
+
+  // visible for testing
+  public TelemetryManager newTelemetryManager(Path path, TelemetryClient client) {
+    return new TelemetryManager(getStorageFilePath(), client);
   }
 
   private class TelemetryJob extends Job {
@@ -113,14 +110,7 @@ public class SonarLintTelemetry implements AnalysisListener {
 
     protected IStatus run(IProgressMonitor monitor) {
       schedule(TimeUnit.HOURS.toMillis(6));
-      if (enabled) {
-        try {
-          TelemetryClientConfig clientConfig = getTelemetryClientConfig();
-          telemetryEngine.getClient().tryUpload(clientConfig, isAnyProjectConnected());
-        } catch (Exception e) {
-          // Silently ignore
-        }
-      }
+      upload();
       return Status.OK_STATUS;
     }
 
@@ -132,9 +122,9 @@ public class SonarLintTelemetry implements AnalysisListener {
     IProxyService proxyService = SonarLintCorePlugin.getInstance().getProxyService();
     IProxyData[] proxyDataForHost;
     try {
-      proxyDataForHost = proxyService.select(new URL(Telemetry.TELEMETRY_ENDPOINT).toURI());
+      proxyDataForHost = proxyService.select(new URL(TelemetryManager.TELEMETRY_ENDPOINT).toURI());
     } catch (MalformedURLException | URISyntaxException e) {
-      // URL is a constant, should never occurs
+      // URL is a constant, should never occur
       throw new IllegalStateException(e);
     }
 
@@ -151,10 +141,18 @@ public class SonarLintTelemetry implements AnalysisListener {
     return clientConfigBuilder.build();
   }
 
+  // visible for testing
+  public void upload() {
+    if (enabled()) {
+      telemetry.usedConnectedMode(isAnyProjectConnected());
+      telemetry.uploadLazily();
+    }
+  }
+
   @Override
-  public void analysisCompleted(AnalysisEvent event) {
-    if (enabled) {
-      telemetryEngine.getDataCollection().analysisDone();
+  public void usedAnalysis(AnalysisEvent event) {
+    if (enabled()) {
+      telemetry.usedAnalysis();
     }
   }
 
@@ -164,16 +162,17 @@ public class SonarLintTelemetry implements AnalysisListener {
       scheduledJob.cancel();
       scheduledJob = null;
     }
-    try {
-      if (telemetryEngine != null) {
-        telemetryEngine.save();
-      }
-    } catch (IOException e) {
-      // Silently ignore
+    if (enabled()) {
+      telemetry.stop();
     }
   }
 
   private static boolean isAnyProjectConnected() {
     return ProjectsProviderUtils.allProjects().stream().anyMatch(p -> p.isOpen() && p.isBound());
+  }
+
+  // visible for testing
+  public Job getScheduledJob() {
+    return scheduledJob;
   }
 }

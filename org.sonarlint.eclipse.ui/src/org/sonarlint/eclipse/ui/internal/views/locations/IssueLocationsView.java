@@ -437,7 +437,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   }
 
   @Override
-  public void analysisCompleted(AnalysisEvent event) {
+  public void usedAnalysis(AnalysisEvent event) {
     IMarker marker = (IMarker) locationsViewer.getInput();
     Display.getDefault().asyncExec(() -> {
       if (marker != null && marker.exists()) {
