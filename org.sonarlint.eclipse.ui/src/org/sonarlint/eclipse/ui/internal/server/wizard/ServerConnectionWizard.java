@@ -51,6 +51,9 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionModel.ConnectionType;
+import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
+import org.sonarsource.sonarlint.core.client.api.exceptions.UnsupportedServerException;
+import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class ServerConnectionWizard extends Wizard implements INewWizard, IPageChangingListener {
 
@@ -224,14 +227,17 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   }
 
   private boolean tryLoadOrganizations(WizardPage currentPage) {
+    currentPage.setMessage(null);
     try {
       getContainer().run(true, true, new IRunnableWithProgress() {
 
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
           try {
-            model.setOrganizationsIndex(Server.getOrganizationsIndex(model.getServerUrl(), model.getUsername(), model.getPassword(), monitor));
-            currentPage.setMessage(null);
+            TextSearchIndex<RemoteOrganization> organizationsIndex = Server.getOrganizationsIndex(model.getServerUrl(), model.getUsername(), model.getPassword(), monitor);
+            model.setOrganizationsIndex(organizationsIndex);
+          } catch (UnsupportedServerException e) {
+            model.setOrganizationsIndex(null);
           } finally {
             monitor.done();
           }
