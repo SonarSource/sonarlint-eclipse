@@ -339,8 +339,7 @@ public class BindProjectsPage extends WizardPage {
     hlink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        ServerConnectionWizard wizard = new ServerConnectionWizard();
-        WizardDialog wd = new WizardDialog(book.getShell(), wizard);
+        WizardDialog wd = ServerConnectionWizard.createDialog(book.getShell());
         if (wd.open() == Window.OK) {
           toggleServerPage();
         }

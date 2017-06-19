@@ -31,7 +31,6 @@ import org.eclipse.ui.actions.SelectionProviderAction;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
-import org.sonarlint.eclipse.ui.internal.server.wizard.CustomWizardDialog;
 
 public class ServerEditAction extends SelectionProviderAction {
   private List<IServer> servers;
@@ -88,9 +87,8 @@ public class ServerEditAction extends SelectionProviderAction {
   }
 
   public static void openEditWizard(Shell shell, IServer server) {
-    WizardDialog dialog = new CustomWizardDialog(shell, new ServerConnectionWizard(server));
+    WizardDialog dialog = ServerConnectionWizard.createDialog(shell, server);
     dialog.open();
-
   }
 
 }

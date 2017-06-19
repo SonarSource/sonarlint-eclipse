@@ -19,16 +19,13 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
-import java.lang.reflect.InvocationTargetException;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
-import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
-import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -36,10 +33,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.fieldassist.ContentAssistCommandAdapter;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.server.Server;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
-import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class OrganizationWizardPage extends AbstractGridLayoutWizardPage {
 
@@ -53,6 +46,7 @@ public class OrganizationWizardPage extends AbstractGridLayoutWizardPage {
     Label labelOrganization = new Label(container, SWT.NULL);
     labelOrganization.setText("Organization:");
     Text organizationText = new Text(container, SWT.BORDER | SWT.SINGLE);
+    organizationText.setMessage("Start typing to search for your organization");
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     organizationText.setLayoutData(gd);
 
@@ -80,41 +74,13 @@ public class OrganizationWizardPage extends AbstractGridLayoutWizardPage {
   @Override
   public void setVisible(boolean visible) {
     super.setVisible(visible);
-    if (visible) {
-      tryLoadOrganizations();
-      TextSearchIndex<RemoteOrganization> organizationsIndex = model.getOrganizationsIndex();
-      if (organizationsIndex != null && organizationsIndex.size() <= 1) {
-        CustomWizardDialog customWizardDialog = (CustomWizardDialog) getContainer();
-        if (!customWizardDialog.isMovingBackward()) {
-          // Skip organization selection
-          customWizardDialog.showPage(getNextPage());
-          // Ensure that when pressing back on next page we don't return on organization page
-          getNextPage().setPreviousPage(getPreviousPage());
-        }
-      }
-    }
-  }
-
-  private void tryLoadOrganizations() {
-    try {
-      getContainer().run(true, true, new IRunnableWithProgress() {
-
-        @Override
-        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-          try {
-            model.setOrganizationsIndex(Server.getOrganizationsIndex(model.getServerUrl(), model.getUsername(), model.getPassword(), monitor));
-            setMessage(null);
-          } finally {
-            monitor.done();
-          }
-        }
-      });
-    } catch (InvocationTargetException e) {
-      SonarLintLogger.get().debug("Unable to download organizations", e.getCause());
-      setMessage(e.getCause().getMessage(), IMessageProvider.ERROR);
-      model.setOrganizationsIndex(null);
-    } catch (InterruptedException e) {
-      model.setOrganizationsIndex(null);
+    if (visible && !model.hasOrganizations()) {
+      // Skip organization selection
+      IWizardPage nextPage = getNextPage();
+      IWizardPage previousPage = getPreviousPage();
+      getContainer().showPage(nextPage);
+      // Ensure that when pressing back on next page we don't return on organization page
+      nextPage.setPreviousPage(previousPage);
     }
   }
 

@@ -102,6 +102,7 @@ public class ServerConnectionModel extends ModelObject {
       setServerUrl(null);
     } else {
       setServerUrl(Server.SONARCLOUD_URL);
+      setAuthMethod(AuthMethod.TOKEN);
     }
   }
 
@@ -172,6 +173,10 @@ public class ServerConnectionModel extends ModelObject {
   @CheckForNull
   public TextSearchIndex<RemoteOrganization> getOrganizationsIndex() {
     return organizationsIndex;
+  }
+
+  public boolean hasOrganizations() {
+    return organizationsIndex != null && organizationsIndex.size() > 1;
   }
 
   public void setOrganizationsIndex(@Nullable TextSearchIndex<RemoteOrganization> organizationsIndex) {

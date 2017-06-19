@@ -92,8 +92,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
       @Override
       public void widgetSelected(SelectionEvent e) {
         String serverId = SonarLintProjectConfiguration.read(getProject().getScopeContext()).getServerId();
-        ServerConnectionWizard wizard = new ServerConnectionWizard(serverId);
-        WizardDialog wd = new WizardDialog(container.getShell(), wizard);
+        WizardDialog wd = ServerConnectionWizard.createDialog(container.getShell(), serverId);
         if (wd.open() == Window.OK) {
           updateState();
         }

@@ -42,7 +42,7 @@
 	
 	  <wizard
 	      id="org.sonarlint.eclipse.ui.new.server"
-	      name="New Server"
+	      name="New Server Connection"
 	      class="org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard"
 	      category="org.sonarlint.eclipse"
 	      icon="icons/logo/sonarqube-16px.png">

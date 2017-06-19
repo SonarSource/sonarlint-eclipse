@@ -19,7 +19,9 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
+import java.lang.reflect.InvocationTargetException;
 import javax.annotation.Nullable;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
@@ -27,23 +29,30 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.dialogs.IPageChangingListener;
+import org.eclipse.jface.dialogs.PageChangingEvent;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionModel.ConnectionType;
 
-public class ServerConnectionWizard extends Wizard implements INewWizard {
+public class ServerConnectionWizard extends Wizard implements INewWizard, IPageChangingListener {
 
   private final ServerConnectionModel model;
   private final ConnectionTypeWizardPage connectionTypeWizardPage;
@@ -73,22 +82,37 @@ public class ServerConnectionWizard extends Wizard implements INewWizard {
     endPage = new EndWizardPage(model);
   }
 
-  @Override
-  public void init(IWorkbench workbench, IStructuredSelection selection) {
-    // Nothing to do
-  }
-
+  /**
+   * Should remain public for File -> New -> SonarQube Server
+   */
   public ServerConnectionWizard() {
     this("Connect to a SonarQube Server", new ServerConnectionModel(), null);
   }
 
-  public ServerConnectionWizard(String serverId) {
+  private ServerConnectionWizard(String serverId) {
     this();
     model.setServerId(serverId);
   }
 
-  public ServerConnectionWizard(IServer sonarServer) {
+  private ServerConnectionWizard(IServer sonarServer) {
     this("Edit connection to a SonarQube Server", new ServerConnectionModel(sonarServer), sonarServer);
+  }
+
+  public static WizardDialog createDialog(Shell parent) {
+    return new WizardDialog(parent, new ServerConnectionWizard());
+  }
+
+  public static WizardDialog createDialog(Shell parent, String serverId) {
+    return new WizardDialog(parent, new ServerConnectionWizard(serverId));
+  }
+
+  public static WizardDialog createDialog(Shell parent, IServer sonarServer) {
+    return new WizardDialog(parent, new ServerConnectionWizard(sonarServer));
+  }
+
+  @Override
+  public void init(IWorkbench workbench, IStructuredSelection selection) {
+    // Nothing to do
   }
 
   @Override
@@ -181,12 +205,48 @@ public class ServerConnectionWizard extends Wizard implements INewWizard {
     return true;
   }
 
-  public boolean beforeNextPressed() {
-    IWizardPage currentPage = getContainer().getCurrentPage();
-    if ((currentPage == credentialsPage || currentPage == tokenPage) && !testConnection(null)) {
+  @Override
+  public void handlePageChanging(PageChangingEvent event) {
+    WizardPage currentPage = (WizardPage) event.getCurrentPage();
+    boolean advance = getNextPage(currentPage) == event.getTargetPage();
+    if (advance && (currentPage == credentialsPage || currentPage == tokenPage) && !testConnection(null)) {
+      event.doit = false;
+      return;
+    }
+    if (advance && event.getTargetPage() == orgPage) {
+      event.doit = tryLoadOrganizations(currentPage);
+      return;
+    }
+    if (advance && currentPage == orgPage && model.hasOrganizations() && !testConnection(model.getOrganization())) {
+      event.doit = false;
+      return;
+    }
+  }
+
+  private boolean tryLoadOrganizations(WizardPage currentPage) {
+    try {
+      getContainer().run(true, true, new IRunnableWithProgress() {
+
+        @Override
+        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+          try {
+            model.setOrganizationsIndex(Server.getOrganizationsIndex(model.getServerUrl(), model.getUsername(), model.getPassword(), monitor));
+            currentPage.setMessage(null);
+          } finally {
+            monitor.done();
+          }
+        }
+      });
+    } catch (InvocationTargetException e) {
+      SonarLintLogger.get().debug("Unable to download organizations", e.getCause());
+      currentPage.setMessage(e.getCause().getMessage(), IMessageProvider.ERROR);
+      model.setOrganizationsIndex(null);
+      return false;
+    } catch (InterruptedException e) {
+      model.setOrganizationsIndex(null);
       return false;
     }
-    return currentPage != orgPage || testConnection(model.getOrganization());
+    return true;
   }
 
   private boolean testConnection(@Nullable String organization) {

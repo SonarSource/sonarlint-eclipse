@@ -26,7 +26,6 @@ import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
-import org.sonarlint.eclipse.ui.internal.server.wizard.CustomWizardDialog;
 
 /**
  * An action to invoke the new server and server configuration wizard.
@@ -46,7 +45,7 @@ public class NewServerWizardAction extends Action {
   @Override
   public void run() {
     IWorkbench workbench = PlatformUI.getWorkbench();
-    WizardDialog dialog = new CustomWizardDialog(workbench.getActiveWorkbenchWindow().getShell(), new ServerConnectionWizard());
+    WizardDialog dialog = ServerConnectionWizard.createDialog(workbench.getActiveWorkbenchWindow().getShell());
     dialog.open();
   }
 

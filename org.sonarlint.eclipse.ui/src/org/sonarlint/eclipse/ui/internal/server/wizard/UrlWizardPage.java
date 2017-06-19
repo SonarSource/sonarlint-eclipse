@@ -31,14 +31,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
 
 public class UrlWizardPage extends AbstractGridLayoutWizardPage {
-
-  private static final String DEFAULT_URL_SUGGESTION = "https://";
-
-  private Text serverUrlText;
 
   public UrlWizardPage(ServerConnectionModel model) {
     super("server_url_page", "SonarQube Server URL", model, 2);
@@ -50,9 +45,10 @@ public class UrlWizardPage extends AbstractGridLayoutWizardPage {
 
     Label labelUrl = new Label(container, SWT.NULL);
     labelUrl.setText(Messages.ServerLocationWizardPage_label_host);
-    serverUrlText = new Text(container, SWT.BORDER | SWT.SINGLE);
+    Text serverUrlText = new Text(container, SWT.BORDER | SWT.SINGLE);
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     serverUrlText.setLayoutData(gd);
+    serverUrlText.setMessage("https://sonarqube.mycompany.com");
 
     DataBindingContext dbc = new DataBindingContext();
     Binding serverUrlTextBinding = dbc.bindValue(
@@ -64,15 +60,6 @@ public class UrlWizardPage extends AbstractGridLayoutWizardPage {
     ControlDecorationSupport.create(serverUrlTextBinding, SWT.LEFT | SWT.TOP);
 
     WizardPageSupport.create(this, dbc);
-
-  }
-
-  @Override
-  public void setVisible(boolean visible) {
-    super.setVisible(visible);
-    if (StringUtils.isEmpty(model.getServerUrl())) {
-      serverUrlText.setText(DEFAULT_URL_SUGGESTION);
-    }
   }
 
 }

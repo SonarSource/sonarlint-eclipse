@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -51,6 +52,8 @@ public abstract class AbstractGridLayoutWizardPage extends WizardPage {
     doCreateControl(container);
 
     setControl(container);
+
+    ((WizardDialog) getContainer()).addPageChangingListener((ServerConnectionWizard) getWizard());
   }
 
   protected abstract void doCreateControl(Composite container);
