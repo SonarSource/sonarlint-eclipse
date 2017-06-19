@@ -47,6 +47,7 @@ public class UrlWizardPage extends AbstractGridLayoutWizardPage {
     labelUrl.setText(Messages.ServerLocationWizardPage_label_host);
     Text serverUrlText = new Text(container, SWT.BORDER | SWT.SINGLE);
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    gd.horizontalIndent = 10;
     serverUrlText.setLayoutData(gd);
     serverUrlText.setMessage("https://sonarqube.mycompany.com");
 

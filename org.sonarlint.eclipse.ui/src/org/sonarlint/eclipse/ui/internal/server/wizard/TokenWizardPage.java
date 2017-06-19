@@ -75,7 +75,9 @@ public class TokenWizardPage extends AbstractGridLayoutWizardPage {
     Label labelUsername = new Label(container, SWT.NULL);
     labelUsername.setText("Token:");
     serverTokenText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    serverTokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    gd.horizontalIndent = 10;
+    serverTokenText.setLayoutData(gd);
   }
 
   private void createOpenSecurityPageButton(Composite container) {

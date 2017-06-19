@@ -77,14 +77,18 @@ public class UsernamePasswordWizardPage extends AbstractGridLayoutWizardPage {
     Label labelPassword = new Label(container, SWT.NULL);
     labelPassword.setText(Messages.ServerLocationWizardPage_label_password);
     serverPasswordText = new Text(container, SWT.BORDER | SWT.SINGLE | SWT.PASSWORD);
-    serverPasswordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    gd.horizontalIndent = 10;
+    serverPasswordText.setLayoutData(gd);
   }
 
   private void createUsernameOrTokenField(final Composite container) {
     Label labelUsername = new Label(container, SWT.NULL);
     labelUsername.setText("Username:");
     serverUsernameText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    serverUsernameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    gd.horizontalIndent = 10;
+    serverUsernameText.setLayoutData(gd);
   }
 
   @Override

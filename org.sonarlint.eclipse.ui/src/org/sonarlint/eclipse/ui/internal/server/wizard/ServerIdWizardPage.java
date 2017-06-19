@@ -47,8 +47,9 @@ public class ServerIdWizardPage extends AbstractGridLayoutWizardPage {
     Label labelId = new Label(container, SWT.NULL);
     labelId.setText(Messages.ServerLocationWizardPage_label_id);
     Text serverIdText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    GridData gdId = new GridData(GridData.FILL_HORIZONTAL);
-    serverIdText.setLayoutData(gdId);
+    GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    gd.horizontalIndent = 10;
+    serverIdText.setLayoutData(gd);
 
     DataBindingContext dbc = new DataBindingContext();
     serverIdTextBinding = dbc.bindValue(

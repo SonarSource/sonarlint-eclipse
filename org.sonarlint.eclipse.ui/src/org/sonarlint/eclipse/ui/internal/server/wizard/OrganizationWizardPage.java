@@ -48,6 +48,7 @@ public class OrganizationWizardPage extends AbstractGridLayoutWizardPage {
     Text organizationText = new Text(container, SWT.BORDER | SWT.SINGLE);
     organizationText.setMessage("Start typing to search for your organization");
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+    gd.horizontalIndent = 10;
     organizationText.setLayoutData(gd);
 
     DataBindingContext dbc = new DataBindingContext();
