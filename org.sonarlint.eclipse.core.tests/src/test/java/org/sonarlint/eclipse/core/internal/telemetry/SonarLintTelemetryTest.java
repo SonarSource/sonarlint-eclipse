@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.core.internal.telemetry;
 import java.nio.file.Path;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
@@ -35,16 +34,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-// works in Eclipse, mvn clean verify complains, why???
-/*
-Failed tests: 
-SonarLintTelemetryTest.upload_should_not_trigger_upload_when_disabled:133 
-Wanted but not invoked:
-telemetryManager.isEnabled();
--> at org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetryTest.upload_should_not_trigger_upload_when_disabled(SonarLintTelemetryTest.java:133)
-Actually, there were zero interactions with this mock.
- */
-@Ignore
 public class SonarLintTelemetryTest {
   private SonarLintTelemetry telemetry;
   private TelemetryManager engine = mock(TelemetryManager.class);
