@@ -49,6 +49,11 @@ public final class JobHelpers {
     }
   }
 
+  public static void waitForServerUpdateJob(SWTWorkbenchBot bot) {
+    bot.sleep(2000);
+    waitForJobs(SonarLintServerUpdateJobMatcher.INSTANCE, 60 * 1000);
+  }
+
   public static void waitForJobsToComplete(IProgressMonitor monitor) throws InterruptedException, CoreException {
     waitForBuildJobs();
 
@@ -178,6 +183,17 @@ public final class JobHelpers {
     public boolean matches(Job job) {
       return (job instanceof WorkspaceJob) || job.getClass().getName().matches("(.*\\.AutoBuild.*)")
         || job.getClass().getName().endsWith("JREUpdateJob");
+    }
+
+  }
+
+  static class SonarLintServerUpdateJobMatcher implements IJobMatcher {
+
+    public static final IJobMatcher INSTANCE = new SonarLintServerUpdateJobMatcher();
+
+    @Override
+    public boolean matches(Job job) {
+      return job.getClass().getName().endsWith("ServerUpdateJob");
     }
 
   }

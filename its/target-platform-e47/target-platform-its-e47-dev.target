@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e47-dev" sequenceNumber="11">
+<?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e47-dev" sequenceNumber="12">
 <locations>
 <location path="${M2_REPO}/commons-io/commons-io/2.5" type="Directory"/>
 <location path="${M2_REPO}/org/mockito/mockito-core/2.2.9" type="Directory"/>
@@ -10,17 +10,18 @@
 <location path="${M2_REPO}/com/google/code/findbugs/jsr305/3.0.1" type="Directory"/>
 <location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/2.15.0.770" type="Directory"/>
 <location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/2.15.0.770" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.15.0.1105" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/technology/m2e/milestones/1.8"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.platform.ide" version="0.0.0"/>
-<unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.team.svn.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.platform.ide" version="0.0.0"/>
 <unit id="org.eclipse.rse.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.team.svn.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.wst.jsdt.feature.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/oxygen/"/>
 </location>
@@ -29,8 +30,8 @@
 <repository location="http://community.polarion.com/projects/subversive/download/eclipse/6.0/neon-site/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.5.0.201609021837"/>
-<repository location="http://download.eclipse.org/technology/swtbot/releases/2.5.0/"/>
+<unit id="org.eclipse.swtbot.eclipse.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/technology/swtbot/snapshots"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.python.pydev.feature.feature.group" version="0.0.0"/>

@@ -394,10 +394,10 @@ public class ServersManager {
 
   public String validate(String serverId, boolean editExisting) {
     if (StringUtils.isBlank(serverId)) {
-      return "Server id must be specified";
+      return "Connection name must be specified";
     }
     if (!editExisting && serversById.containsKey(serverId)) {
-      return "Server id already exists";
+      return "Connection name already exists";
     }
 
     try {

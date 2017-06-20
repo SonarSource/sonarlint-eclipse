@@ -404,7 +404,7 @@
            label="Show"
            mnemonic="S">
          </menu>
-     <menu
+         <menu
            id="problemsGroupByMenu"
            label="Group By"
            mnemonic="G">

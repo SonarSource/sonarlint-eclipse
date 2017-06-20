@@ -58,6 +58,11 @@
       <artifactId>junit</artifactId>
       <version>4.12</version>
     </dependency>
+    <dependency>
+      <groupId>org.sonarsource.orchestrator</groupId>
+      <artifactId>sonar-orchestrator-osgi</artifactId>
+      <version>3.15.0.1105</version>
+    </dependency>
   </dependencies>
 
   <build>
