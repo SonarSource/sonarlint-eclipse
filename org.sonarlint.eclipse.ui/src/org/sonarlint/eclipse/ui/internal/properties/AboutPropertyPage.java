@@ -87,7 +87,7 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
 
     enabledBtn = new Button(composite, SWT.CHECK);
     enabledBtn.setText("Share anonymous SonarLint statistics");
-    enabledBtn.setSelection(SonarLintCorePlugin.getTelemetry().optedIn());
+    enabledBtn.setSelection(SonarLintCorePlugin.getTelemetry().enabled());
     GridData layoutData = new GridData();
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
