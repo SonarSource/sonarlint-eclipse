@@ -51,7 +51,7 @@ public class UrlWizardPage extends AbstractGridLayoutWizardPage {
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
     serverUrlText.setLayoutData(gd);
-    serverUrlText.setMessage("https://sonarqube.mycompany.com");
+    serverUrlText.setMessage("Example: https://sonarqube.mycompany.com");
 
     DataBindingContext dbc = new DataBindingContext();
     serverUrlTextBinding = dbc.bindValue(

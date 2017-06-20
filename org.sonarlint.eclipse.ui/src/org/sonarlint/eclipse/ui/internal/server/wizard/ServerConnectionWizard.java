@@ -40,6 +40,8 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
@@ -48,6 +50,7 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.server.ServersView;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionModel.ConnectionType;
@@ -193,6 +196,11 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     } else {
       server = SonarLintCorePlugin.getServersManager().create(model.getServerId(), model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword());
       SonarLintCorePlugin.getServersManager().addServer(server, model.getUsername(), model.getPassword());
+      try {
+        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ServersView.ID);
+      } catch (PartInitException e) {
+        SonarLintLogger.get().error("Unable to open server view", e);
+      }
     }
 
     Job j = new ServerUpdateJob(server);
