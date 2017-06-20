@@ -40,6 +40,8 @@ public class SonarLintTelemetryTest {
 
   @Before
   public void start() throws Exception {
+    // Clear property that is set in the surefire arguments (see pom.xml)
+    System.clearProperty(SonarLintTelemetry.DISABLE_PROPERTY_KEY);
     this.telemetry = createTelemetry();
   }
 
