@@ -99,7 +99,7 @@ public class SonarLintTelemetry implements AnalysisListener {
 
   // visible for testing
   public TelemetryManager newTelemetryManager(Path path, TelemetryClient client) {
-    return new TelemetryManager(getStorageFilePath(), client);
+    return new TelemetryManager(path, client);
   }
 
   private class TelemetryJob extends Job {
