@@ -68,7 +68,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(9, "Replace this use of System.out or System.err by a logger."));
+      tuple("/java-simple/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."));
 
     bot.editorByTitle("Hello.java").close();
 
@@ -86,7 +86,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).isEmpty();
 
-    // Disable auto-analysis on save
     SWTBotEclipseEditor editor = bot.editorByTitle("Hello.java").toTextEditor();
     editor.navigateTo(8, 29);
     editor.insertText("2");
@@ -96,15 +95,27 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).isEmpty();
 
-    // Trigger manual analysis
+    // Trigger manual analysis of a single file
     new JavaPackageExplorerBot(bot)
       .triggerManualAnalysis("java-simple", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
 
     markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_REPORT_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(9, "Replace this use of System.out or System.err by a logger."));
+      tuple("/java-simple/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."));
 
+    // Trigger manual analysis of all files
+    new JavaPackageExplorerBot(bot)
+      .triggerManualAnalysis("java-simple");
+
+    bot.shell("Confirmation").bot().button("Proceed").click();
+
+    JobHelpers.waitForJobsToComplete(bot);
+
+    markers = Arrays.asList(project.findMarkers(MARKER_REPORT_ID, true, IResource.DEPTH_INFINITE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple("/java-simple/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."),
+      tuple("/java-simple/src/hello/Hello2.java", 9, "Replace this use of System.out or System.err by a logger."));
   }
 
   @Test
@@ -120,8 +131,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(11, "Replace this use of System.out or System.err by a logger."),
-      tuple(15, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set
+      tuple("/java-junit/src/hello/Hello.java", 11, "Replace this use of System.out or System.err by a logger."),
+      tuple("/java-junit/src/hello/Hello.java", 15, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set
 
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("java-junit", "src", "hello", "HelloTest.java");
@@ -129,7 +140,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> testMarkers = Arrays.asList(project.findMember("src/hello/HelloTest.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(testMarkers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(10, "Fix or remove this skipped unit test"));
+      tuple("/java-junit/src/hello/HelloTest.java", 10, "Fix or remove this skipped unit test"));
   }
 
   @Test
@@ -145,7 +156,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(13, "Make this anonymous inner class a lambda")); // Test that sonar.java.source is set
+      tuple("/java8/src/hello/Hello.java", 13, "Make this anonymous inner class a lambda")); // Test that sonar.java.source is set
   }
 
   // SONARIDE-349
@@ -168,7 +179,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(mainProject.findMember("src/use/UseUtils.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(9, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set on dependent project
+      tuple("/java-main-project/src/use/UseUtils.java", 9, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries
+                                                                                                         // is
+                                                                                                         // set on dependent project
   }
 
   @Test
@@ -182,19 +195,19 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     JobHelpers.waitForJobsToComplete(bot);
 
     new PydevPackageExplorerBot(bot)
-      .expandAndOpen("python", "src", "root", "nested", "exemple.py");
+      .expandAndOpen("python", "src", "root", "nested", "example.py");
 
     bot.shell("Default Eclipse preferences for PyDev").activate();
     bot.button("OK").click();
 
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/root/nested/exemple.py").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> markers = Arrays.asList(project.findMember("src/root/nested/example.py").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(9, "Merge this if statement with the enclosing one."),
-      tuple(10, "Replace print statement by built-in function."),
-      tuple(9, "Replace \"<>\" by \"!=\"."),
-      tuple(1, "Remove this commented out code."));
+      tuple("/python/src/root/nested/example.py", 9, "Merge this if statement with the enclosing one."),
+      tuple("/python/src/root/nested/example.py", 10, "Replace print statement by built-in function."),
+      tuple("/python/src/root/nested/example.py", 9, "Replace \"<>\" by \"!=\"."),
+      tuple("/python/src/root/nested/example.py", 1, "Remove this commented out code."));
   }
 
   @Test
@@ -214,7 +227,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/HelloLinked.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(13, "Replace this use of System.out or System.err by a logger."));
+      tuple("/java-linked/src/hello/HelloLinked.java", 13, "Replace this use of System.out or System.err by a logger."));
   }
 
   @Test
@@ -248,7 +261,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(rseProject.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(9, "Replace this use of System.out or System.err by a logger."));
+      tuple("/Local_java-simple/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."));
   }
 
 }

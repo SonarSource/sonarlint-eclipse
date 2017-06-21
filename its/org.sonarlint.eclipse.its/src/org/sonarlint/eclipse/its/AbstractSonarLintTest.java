@@ -178,6 +178,7 @@ public abstract class AbstractSonarLintTest {
     @Override
     public Tuple extract(IMarker marker) {
       Tuple result = new Tuple();
+      result.addData(marker.getResource().getFullPath().toPortableString());
       for (String attribute : attributes) {
         try {
           result.addData(marker.getAttribute(attribute));
