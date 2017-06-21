@@ -96,8 +96,10 @@ public class AnalyzeCommand extends AbstractHandler {
 
   private static boolean askConfirmation(Shell shell) {
     MessageDialog dialog = new MessageDialog(shell, "Confirmation", null, "Analyzing multiple files may take a long time to complete.\n"
-      + "To get the best from SonarLint, you should preferably use the on-the-fly analysis for the files you're working on.", MessageDialog.CONFIRM, 0, "Proceed",
-      IDialogConstants.CANCEL_LABEL);
+      + "To get the best from SonarLint, you should preferably use the on-the-fly analysis for the files you're working on.", MessageDialog.CONFIRM,
+      new String[] {"Proceed",
+        IDialogConstants.CANCEL_LABEL},
+      0);
     return dialog.open() == 0;
   }
 

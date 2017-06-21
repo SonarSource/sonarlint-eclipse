@@ -57,7 +57,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
-      tuple(9, "Replace this use of System.out or System.err by a logger.", null));
+      tuple("/leak/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger.", null));
 
     // TODO We could maybe force view to refresh without having to select again the resource
     new JavaPackageExplorerBot(bot)
@@ -76,8 +76,8 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(9, "Replace this use of System.out or System.err by a logger."),
-      tuple(10, "Replace this use of System.out or System.err by a logger."));
+      tuple("/leak/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."),
+      tuple("/leak/src/hello/Hello.java", 10, "Replace this use of System.out or System.err by a logger."));
 
     // TODO We could maybe force view to refresh without having to select again the resource
     new JavaPackageExplorerBot(bot)
@@ -101,7 +101,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
-      tuple(2, "Remove this usage of alert(...).", null));
+      tuple("/js-simple/src/hello.js", 2, "Remove this usage of alert(...).", null));
     long markerId = markers.get(0).getId();
 
     // Change content
@@ -114,8 +114,8 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple(2, "Remove this usage of alert(...)."),
-      tuple(3, "Remove the declaration of the unused 'i' variable."));
+      tuple("/js-simple/src/hello.js", 2, "Remove this usage of alert(...)."),
+      tuple("/js-simple/src/hello.js", 3, "Remove the declaration of the unused 'i' variable."));
 
     IMarker newIssue = markers.stream().filter(m -> m.getId() != markerId).findFirst().get();
     String timestamp = (String) newIssue.getAttribute(CREATIONDATE_ATT);
@@ -130,8 +130,8 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     // Issues are still there
     markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
-      tuple(2, "Remove this usage of alert(...).", null),
-      tuple(3, "Remove the declaration of the unused 'i' variable.", timestamp));
+      tuple("/js-simple/src/hello.js", 2, "Remove this usage of alert(...).", null),
+      tuple("/js-simple/src/hello.js", 3, "Remove the declaration of the unused 'i' variable.", timestamp));
 
   }
 
