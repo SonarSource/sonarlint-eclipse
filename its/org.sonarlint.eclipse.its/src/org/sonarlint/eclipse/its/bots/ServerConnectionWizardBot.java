@@ -19,15 +19,28 @@
  */
 package org.sonarlint.eclipse.its.bots;
 
+import java.util.List;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.SWTBot;
 import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
+import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
+import org.eclipse.swtbot.swt.finder.results.VoidResult;
+import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
+import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotText;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.eclipse.swtbot.swt.finder.matchers.WidgetOfType.widgetOfType;
 
 public class ServerConnectionWizardBot {
+  private static final String ORGANIZATION_LABEL = "Organization:";
   private static final String CONNECTION_NAME_LABEL = "Connection name:";
   private static final String NEXT_MNEMONIC = "Next >";
   private final SWTWorkbenchBot bot;
@@ -96,6 +109,10 @@ public class ServerConnectionWizardBot {
     wizardBot.textWithLabel("Password:").setText(password);
   }
 
+  public void setToken(String token) {
+    wizardBot.textWithLabel("Token:").setText(token);
+  }
+
   public String getConnectionName() {
     return wizardBot.textWithLabel(CONNECTION_NAME_LABEL).getText();
   }
@@ -106,6 +123,80 @@ public class ServerConnectionWizardBot {
 
   public void clickFinish() {
     wizardBot.button("Finish").click();
+  }
+
+  public void waitForOrganizationsToBeFetched() {
+    wizardBot.waitUntilWidgetAppears(new DefaultCondition() {
+
+      @Override
+      public boolean test() throws Exception {
+        return wizardBot.textWithLabel(ORGANIZATION_LABEL).isVisible();
+      }
+
+      @Override
+      public String getFailureMessage() {
+        return "Expected organization step";
+      }
+    });
+  }
+
+  public String getOrganization() {
+    return wizardBot.textWithLabel(ORGANIZATION_LABEL).getText();
+  }
+
+  public void typeOrganizationAndSelectFirst(String orgaFragment) {
+    SWTBotText orgaTextField = wizardBot.textWithLabel(ORGANIZATION_LABEL);
+    orgaTextField.typeText(orgaFragment, 100);
+    SWTBotTable proposalsTable = getCompletionProposalsTable(wizardBot, orgaTextField);
+    selectProposal(proposalsTable, 0);
+  }
+
+  private static SWTBotTable getCompletionProposalsTable(SWTBot bot, SWTBotText textField) {
+
+    bot.sleep(100); // Wait for auto-completion shell to be displayed
+    List<Shell> shells = bot.shells("");
+    Table proposalsTable = null;
+
+    long timeout = SWTBotPreferences.TIMEOUT;
+    SWTBotPreferences.TIMEOUT = 200;
+    boolean findInvisibleControls = bot.getFinder().shouldFindInvisibleControls();
+    bot.getFinder().setShouldFindInvisibleControls(true);
+
+    try {
+      for (Shell shell : shells) {
+        try {
+          proposalsTable = bot.widget(widgetOfType(Table.class), shell);
+        } catch (WidgetNotFoundException ex) {
+          continue;
+        }
+        break;
+      }
+    } finally {
+      bot.getFinder().setShouldFindInvisibleControls(findInvisibleControls);
+      SWTBotPreferences.TIMEOUT = timeout;
+    }
+
+    if (proposalsTable == null) {
+      throw new RuntimeException("Did not find any completion proposals table ...");
+    }
+    return new SWTBotTable(proposalsTable);
+  }
+
+  private static void selectProposal(final SWTBotTable proposalsTable, final int proposalIndex) {
+    UIThreadRunnable.asyncExec(new VoidResult() {
+
+      @Override
+      public void run() {
+        Table table = proposalsTable.widget;
+        table.setSelection(proposalIndex);
+        Event event = new Event();
+        event.type = SWT.Selection;
+        event.widget = table;
+        event.item = table.getItem(proposalIndex);
+        table.notifyListeners(SWT.Selection, event);
+        table.notifyListeners(SWT.DefaultSelection, event);
+      }
+    });
   }
 
 }

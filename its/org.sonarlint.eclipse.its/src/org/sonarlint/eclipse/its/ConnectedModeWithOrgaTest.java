@@ -20,21 +20,29 @@
 package org.sonarlint.eclipse.its;
 
 import com.sonar.orchestrator.Orchestrator;
-import com.sonar.orchestrator.container.Server;
+import com.sonar.orchestrator.http.HttpMethod;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.sonar.wsclient.services.PropertyCreateQuery;
+import org.sonar.wsclient.user.UserParameters;
 import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
+import org.sonarqube.ws.WsUserTokens.GenerateWsResponse;
 import org.sonarqube.ws.client.WsClient;
-import org.sonarqube.ws.client.setting.SetRequest;
+import org.sonarqube.ws.client.organization.CreateWsRequest;
+import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeTrue;
 
-public class ConnectedModeTest extends AbstractSonarLintTest {
+public class ConnectedModeWithOrgaTest extends AbstractSonarLintTest {
+
+  private static final String SONARLINT_USER = "sonarlint";
+  private static final String SONARLINT_PWD = "sonarlintpwd";
+  private static final String ORGANIZATION_KEY = "test-org";
+  private static final String ORGANIZATION_NAME = "Test organization";
 
   @ClassRule
   public static TemporaryFolder temp = new TemporaryFolder();
@@ -44,19 +52,31 @@ public class ConnectedModeTest extends AbstractSonarLintTest {
     .build();
 
   private static WsClient adminWsClient;
+  private static String token;
 
   @BeforeClass
   public static void prepare() {
+    assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals("6.3"));
     adminWsClient = newAdminWsClient(orchestrator);
-    if (orchestrator.getServer().version().isGreaterThanOrEquals("6.3")) {
-      adminWsClient.settingsService().set(SetRequest.builder().setKey("sonar.forceAuthentication").setValue("true").build());
-    } else {
-      orchestrator.getServer().getAdminWsClient().create(new PropertyCreateQuery("sonar.forceAuthentication", "true"));
-    }
+
+    orchestrator.getServer().adminWsClient().userClient()
+      .create(UserParameters.create()
+        .login(SONARLINT_USER)
+        .password(SONARLINT_PWD)
+        .passwordConfirmation(SONARLINT_PWD)
+        .name("SonarLint"));
+
+    enableOrganizationsSupport();
+    createOrganization();
+
+    GenerateWsResponse wsResponse = adminWsClient.userTokens().generate(new GenerateWsRequest()
+      .setLogin(SONARLINT_USER)
+      .setName("For SonarLint"));
+    token = wsResponse.getToken();
   }
 
   @Test
-  public void configureServerFromNewWizard() {
+  public void configureServerWithTokenAndOrganization() {
     ServerConnectionWizardBot wizardBot = new ServerConnectionWizardBot(bot);
     wizardBot.openFromFileNewWizard();
 
@@ -65,51 +85,30 @@ public class ConnectedModeTest extends AbstractSonarLintTest {
     wizardBot.selectSonarQube();
     wizardBot.clickNext();
 
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-
-    wizardBot.setServerUrl("Foo");
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.assertErrorMessage("This is not a valid URL");
-
-    wizardBot.setServerUrl("http://");
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.assertErrorMessage("Please provide a valid URL");
-
-    wizardBot.setServerUrl("");
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.assertErrorMessage("You must provide a server URL");
-
     wizardBot.setServerUrl(orchestrator.getServer().getUrl());
-    assertThat(wizardBot.isNextEnabled()).isTrue();
     wizardBot.clickNext();
 
-    wizardBot.selectUsernamePassword();
+    wizardBot.selectToken();
     wizardBot.clickNext();
 
     assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.setUsername(Server.ADMIN_LOGIN);
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.setPassword("wrong");
+    wizardBot.setToken("Foo");
     assertThat(wizardBot.isNextEnabled()).isTrue();
 
     wizardBot.clickNext();
-    if (orchestrator.getServer().version().isGreaterThanOrEquals("6.0")) {
-      wizardBot.assertErrorMessage("Authentication failed");
-    } else {
-      wizardBot.assertErrorMessage("Not authorized. Please check server credentials.");
-    }
+    wizardBot.assertErrorMessage("Authentication failed");
 
-    wizardBot.setPassword(Server.ADMIN_PASSWORD);
+    wizardBot.setToken(token);
+    wizardBot.clickNext();
+    wizardBot.waitForOrganizationsToBeFetched();
+
+    wizardBot.typeOrganizationAndSelectFirst("test");
+    assertThat(wizardBot.getOrganization()).isEqualTo(ORGANIZATION_KEY);
+    assertThat(wizardBot.isNextEnabled()).isTrue();
     wizardBot.clickNext();
 
-    assertThat(wizardBot.getConnectionName()).isEqualTo("127.0.0.1");
-    assertThat(wizardBot.isNextEnabled()).isTrue();
-
-    wizardBot.setConnectionName("");
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.assertErrorMessage("Connection name must be specified");
-
-    wizardBot.setConnectionName("test");
+    assertThat(wizardBot.getConnectionName()).isEqualTo("127.0.0.1/" + ORGANIZATION_KEY);
+    wizardBot.setConnectionName("testWithOrga");
     wizardBot.clickNext();
 
     assertThat(wizardBot.isNextEnabled()).isFalse();
@@ -118,7 +117,18 @@ public class ConnectedModeTest extends AbstractSonarLintTest {
     JobHelpers.waitForServerUpdateJob(bot);
 
     SWTBotView serversView = bot.viewById("org.sonarlint.eclipse.ui.ServersView");
-    assertThat(serversView.bot().tree().getAllItems()[0].getText()).matches("test \\[Version: " + orchestrator.getServer().version() + "(.*), Last update: (.*)\\]");
+    assertThat(serversView.bot().tree().getAllItems()[0].getText()).matches("testWithOrga \\[Version: " + orchestrator.getServer().version() + "(.*), Last update: (.*)\\]");
+  }
+
+  public static void enableOrganizationsSupport() {
+    orchestrator.getServer().newHttpCall("/api/organizations/enable_support")
+      .setMethod(HttpMethod.POST)
+      .setAdminCredentials()
+      .execute();
+  }
+
+  private static void createOrganization() {
+    adminWsClient.organizations().create(new CreateWsRequest.Builder().setKey(ORGANIZATION_KEY).setName(ORGANIZATION_NAME).build());
   }
 
 }
