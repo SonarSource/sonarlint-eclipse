@@ -30,7 +30,8 @@ Require-Bundle: org.eclipse.jdt.core,
  org.assertj.core;bundle-version="3.5.2",
  org.python.pydev,
  org.eclipse.wst.jsdt.core,
- org.sonarsource.orchestrator.sonar-orchestrator-osgi
+ org.sonarsource.orchestrator.sonar-orchestrator-osgi,
+ org.eclipse.equinox.security
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonarlint.eclipse.its,

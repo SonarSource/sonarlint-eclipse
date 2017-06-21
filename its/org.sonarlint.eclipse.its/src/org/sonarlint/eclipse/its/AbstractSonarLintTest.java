@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.its;
 
+import com.sonar.orchestrator.Orchestrator;
+import com.sonar.orchestrator.container.Server;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -38,6 +40,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.junit.AfterClass;
@@ -47,6 +53,9 @@ import org.osgi.framework.Version;
 import org.sonarlint.eclipse.its.utils.CaptureScreenshotOnFailure;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 import org.sonarlint.eclipse.its.utils.WorkspaceHelpers;
+import org.sonarqube.ws.client.HttpConnector;
+import org.sonarqube.ws.client.WsClient;
+import org.sonarqube.ws.client.WsClientFactories;
 
 import static org.junit.Assert.assertTrue;
 
@@ -67,6 +76,9 @@ public abstract class AbstractSonarLintTest {
   protected static File projectsWorkdir;
   private static final ReadWriteLock copyProjectLock = new ReentrantReadWriteLock();
 
+  private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
+  private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
+
   @BeforeClass
   public final static void beforeClass() throws Exception {
     System.out.println("Eclipse: " + platformVersion());
@@ -75,6 +87,9 @@ public abstract class AbstractSonarLintTest {
     projectsWorkdir = new File("target/projects-target");
 
     workspace = ResourcesPlugin.getWorkspace();
+
+    ROOT.node("servers").removeNode();
+    ROOT_SECURE.node("servers").removeNode();
 
     bot = new SWTWorkbenchBot();
 
@@ -210,6 +225,14 @@ public abstract class AbstractSonarLintTest {
 
   protected static Version platformVersion() {
     return Platform.getBundle("org.eclipse.platform").getVersion();
+  }
+
+  protected static WsClient newAdminWsClient(Orchestrator orchestrator) {
+    Server server = orchestrator.getServer();
+    return WsClientFactories.getDefault().newClient(HttpConnector.newBuilder()
+      .url(server.getUrl())
+      .credentials(Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD)
+      .build());
   }
 
 }
