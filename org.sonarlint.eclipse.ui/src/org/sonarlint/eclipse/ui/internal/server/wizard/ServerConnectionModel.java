@@ -55,10 +55,10 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   private final boolean edit;
-  private ConnectionType connectionType = ConnectionType.ONPREMISE;
+  private ConnectionType connectionType = ConnectionType.SONARCLOUD;
   private AuthMethod authMethod = AuthMethod.TOKEN;
   private String serverId;
-  private String serverUrl;
+  private String serverUrl = Server.SONARCLOUD_URL;
   private String organization;
   private String username;
   private String password;

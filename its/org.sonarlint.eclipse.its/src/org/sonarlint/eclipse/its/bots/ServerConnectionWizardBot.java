@@ -73,11 +73,11 @@ public class ServerConnectionWizardBot {
   }
 
   public void selectSonarQube() {
-    wizardBot.radio(0).click();
+    wizardBot.radio(1).click();
   }
 
   public void selectSonarCloud() {
-    wizardBot.radio(1).click();
+    wizardBot.radio(0).click();
   }
 
   public void selectUsernamePassword() {
