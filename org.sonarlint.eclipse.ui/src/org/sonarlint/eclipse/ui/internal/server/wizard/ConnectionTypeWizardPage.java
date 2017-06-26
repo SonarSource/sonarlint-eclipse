@@ -61,19 +61,16 @@ public class ConnectionTypeWizardPage extends WizardPage {
     layout.makeColumnsEqualWidth = true;
     radioButtonGroupContainer.setLayout(layout);
 
-    Button onPremiseButton = new Button(radioButtonGroupContainer, SWT.RADIO);
-    onPremiseButton.setImage(SonarLintImages.IMG_SONARQUBE_LOGO);
-
     Button sonarCloudButton = new Button(radioButtonGroupContainer, SWT.RADIO);
     sonarCloudButton.setImage(SonarLintImages.IMG_SONARCLOUD_LOGO);
 
+    Button onPremiseButton = new Button(radioButtonGroupContainer, SWT.RADIO);
+    onPremiseButton.setImage(SonarLintImages.IMG_SONARQUBE_LOGO);
+
     GridData gd = new GridData(GridData.FILL_BOTH);
     gd.widthHint = 300;
-    Label onPremiseLabel = new Label(radioButtonGroupContainer, SWT.WRAP);
-    onPremiseLabel.setText("Connect to your SonarQube server");
-    onPremiseLabel.setLayoutData(gd);
     Link sonarCloudLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
-    sonarCloudLabel.setText("Continuous Code Quality as a Service. Connect to SonarCloud (<a>https://sonarcloud.io</a>), the service operated by SonarSource.");
+    sonarCloudLabel.setText("Connect to (<a>the online service</a>)");
     sonarCloudLabel.setLayoutData(gd);
     sonarCloudLabel.addListener(SWT.Selection, e -> {
       try {
@@ -82,6 +79,9 @@ public class ConnectionTypeWizardPage extends WizardPage {
         SonarLintLogger.get().error("Unable to open the browser", ex);
       }
     });
+    Label onPremiseLabel = new Label(radioButtonGroupContainer, SWT.WRAP);
+    onPremiseLabel.setText("Connect to a server");
+    onPremiseLabel.setLayoutData(gd);
 
     IObservableValue<Boolean> sonarCloudSelection = WidgetProperties.selection().observe(sonarCloudButton);
     IObservableValue<Boolean> onPremSelection = WidgetProperties.selection().observe(onPremiseButton);
