@@ -91,7 +91,7 @@ public interface IServer {
 
   TextSearchIndex<RemoteModule> getModuleIndex();
 
-  AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener);
+  AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor);
 
   RuleDetails getRuleDescription(String ruleKey);
 

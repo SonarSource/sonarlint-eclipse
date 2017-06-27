@@ -47,6 +47,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StorageManager;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
+import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
@@ -54,7 +55,6 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.WsHelperImpl;
-import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
@@ -198,35 +198,6 @@ public class Server implements IServer, StateListener {
     return hasUpdates;
   }
 
-  private static class WrappedProgressMonitor extends ProgressMonitor {
-
-    private final IProgressMonitor wrapped;
-    private int worked = 0;
-
-    public WrappedProgressMonitor(IProgressMonitor wrapped, String taskName) {
-      this.wrapped = wrapped;
-      wrapped.beginTask(taskName, 100);
-    }
-
-    @Override
-    public boolean isCanceled() {
-      return wrapped.isCanceled();
-    }
-
-    @Override
-    public void setFraction(float fraction) {
-      int total = (int) (fraction * 100);
-      wrapped.worked(total - worked);
-      this.worked = total;
-    }
-
-    @Override
-    public void setMessage(String msg) {
-      wrapped.subTask(msg);
-    }
-
-  }
-
   @Override
   public String getServerVersion() {
     if (!isStorageUpdated()) {
@@ -300,8 +271,8 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener) {
-    return client.analyze(config, issueListener);
+  public AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor) {
+    return client.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
   }
 
   @Override

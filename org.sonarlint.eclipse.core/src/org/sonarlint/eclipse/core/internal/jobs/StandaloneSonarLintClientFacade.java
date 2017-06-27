@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
@@ -68,10 +69,10 @@ public class StandaloneSonarLintClientFacade {
   }
 
   @CheckForNull
-  public AnalysisResults runAnalysis(StandaloneAnalysisConfiguration config, IssueListener issueListener) {
+  public AnalysisResults runAnalysis(StandaloneAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor) {
     StandaloneSonarLintEngine engine = getClient();
     if (engine != null) {
-      return engine.analyze(config, issueListener);
+      return engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
     }
     return null;
   }
