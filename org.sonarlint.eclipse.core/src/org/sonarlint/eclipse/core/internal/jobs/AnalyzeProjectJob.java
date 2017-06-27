@@ -78,6 +78,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConf
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
+import org.sonarsource.sonarlint.core.client.api.exceptions.CanceledException;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
 
@@ -145,6 +146,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
       SonarLintCorePlugin.getAnalysisListenerManager().notifyListeners();
       SonarLintLogger.get().debug(String.format("Done in %d ms", System.currentTimeMillis() - startTime));
+    } catch (CanceledException e) {
+      return Status.CANCEL_STATUS;
     } catch (Exception e) {
       SonarLintLogger.get().error("Error during execution of SonarLint analysis", e);
       return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
@@ -176,7 +179,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     Map<ISonarLintIssuable, List<Issue>> issuesPerResource = new LinkedHashMap<>();
     request.getFiles().forEach(fileWithDoc -> issuesPerResource.put(fileWithDoc.getFile(), new ArrayList<>()));
 
-    AnalysisResults result = runAndCheckCancellation(server, config, issuesPerResource, monitor);
+    AnalysisResults result = run(server, config, issuesPerResource, monitor);
     if (!monitor.isCanceled() && result != null) {
       updateMarkers(server, docPerFiles, issuesPerResource, result, request.getTriggerType(), monitor);
     }
@@ -414,18 +417,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   @CheckForNull
-  public AnalysisResults runAndCheckCancellation(@Nullable IServer server, final StandaloneAnalysisConfiguration config,
-    final Map<ISonarLintIssuable, List<Issue>> issuesPerResource,
-    final IProgressMonitor monitor) {
-    SonarLintLogger.get().debug("Starting analysis with configuration:\n" + config.toString());
-    return run(server, config, getProject(), issuesPerResource, monitor);
-  }
-
-  // Visible for testing
-  @CheckForNull
-  public AnalysisResults run(@Nullable IServer server, final StandaloneAnalysisConfiguration analysisConfig, final ISonarLintProject project,
+  public AnalysisResults run(@Nullable IServer server, final StandaloneAnalysisConfiguration analysisConfig,
     final Map<ISonarLintIssuable, List<Issue>> issuesPerResource, IProgressMonitor monitor) {
-    SonarLintIssueListener issueListener = new SonarLintIssueListener(project, issuesPerResource);
+    SonarLintLogger.get().debug("Starting analysis with configuration:\n" + analysisConfig.toString());
+    SonarLintIssueListener issueListener = new SonarLintIssueListener(getProject(), issuesPerResource);
     AnalysisResults result;
     if (server != null) {
       result = server.runAnalysis((ConnectedAnalysisConfiguration) analysisConfig, issueListener, monitor);
