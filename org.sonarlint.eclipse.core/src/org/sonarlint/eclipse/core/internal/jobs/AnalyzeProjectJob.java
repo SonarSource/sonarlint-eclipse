@@ -103,33 +103,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return "SonarLint analysis of project " + request.getProject().getName() + " (" + request.getFiles().size() + " files)";
   }
 
-  private final class AnalysisThread extends Thread {
-    private final Map<ISonarLintIssuable, List<Issue>> issuesPerResource;
-    private final StandaloneAnalysisConfiguration config;
-    private final ISonarLintProject project;
-    private final IServer server;
-    @Nullable
-    private volatile AnalysisResults result;
-
-    private AnalysisThread(@Nullable IServer server, Map<ISonarLintIssuable, List<Issue>> issuesPerResource, StandaloneAnalysisConfiguration config, ISonarLintProject project) {
-      super("SonarLint analysis");
-      this.server = server;
-      this.issuesPerResource = issuesPerResource;
-      this.config = config;
-      this.project = project;
-    }
-
-    @Override
-    public void run() {
-      result = AnalyzeProjectJob.this.run(server, config, project, issuesPerResource);
-    }
-
-    @CheckForNull
-    public AnalysisResults getResult() {
-      return result;
-    }
-  }
-
   @Override
   protected IStatus doRun(final IProgressMonitor monitor) {
     if (monitor.isCanceled()) {
@@ -445,47 +418,20 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     final Map<ISonarLintIssuable, List<Issue>> issuesPerResource,
     final IProgressMonitor monitor) {
     SonarLintLogger.get().debug("Starting analysis with configuration:\n" + config.toString());
-    AnalysisThread t = new AnalysisThread(server, issuesPerResource, config, getProject());
-    t.setDaemon(true);
-    t.setUncaughtExceptionHandler((th, ex) -> SonarLintLogger.get().error("Error during analysis", ex));
-    t.start();
-    waitForThread(monitor, t);
-    return t.getResult();
-  }
-
-  private static void waitForThread(final IProgressMonitor monitor, Thread t) {
-    while (t.isAlive()) {
-      if (monitor.isCanceled()) {
-        t.interrupt();
-        try {
-          t.join(5000);
-        } catch (InterruptedException e) {
-          // just quit
-        }
-        if (t.isAlive()) {
-          SonarLintLogger.get().error("Unable to properly terminate SonarLint analysis");
-        }
-        break;
-      }
-      try {
-        Thread.sleep(100);
-      } catch (InterruptedException e) {
-        // Here we don't care
-      }
-    }
+    return run(server, config, getProject(), issuesPerResource, monitor);
   }
 
   // Visible for testing
   @CheckForNull
   public AnalysisResults run(@Nullable IServer server, final StandaloneAnalysisConfiguration analysisConfig, final ISonarLintProject project,
-    final Map<ISonarLintIssuable, List<Issue>> issuesPerResource) {
+    final Map<ISonarLintIssuable, List<Issue>> issuesPerResource, IProgressMonitor monitor) {
     SonarLintIssueListener issueListener = new SonarLintIssueListener(project, issuesPerResource);
     AnalysisResults result;
     if (server != null) {
-      result = server.runAnalysis((ConnectedAnalysisConfiguration) analysisConfig, issueListener);
+      result = server.runAnalysis((ConnectedAnalysisConfiguration) analysisConfig, issueListener, monitor);
     } else {
       StandaloneSonarLintClientFacade facadeToUse = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade();
-      result = facadeToUse.runAnalysis(analysisConfig, issueListener);
+      result = facadeToUse.runAnalysis(analysisConfig, issueListener, monitor);
     }
     SonarLintLogger.get().info("Found " + issueListener.getIssueCount() + " issue(s)");
     return result;
