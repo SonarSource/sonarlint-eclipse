@@ -103,10 +103,12 @@ public final class PlatformUtils {
   @CheckForNull
   private static IEditorPart findInFileEditorInput(ISonarLintFile file, IWorkbenchPage page) {
     if (file.getResource() instanceof IFile) {
-      IEditorPart editor = page.findEditor(new FileEditorInput((IFile) file.getResource()));
-      if (editor != null) {
-        return editor;
+      // Don't use page.findEditor(IEditorInput) because it will try to restore the editor before returning it
+      IEditorReference[] references = page.findEditors(new FileEditorInput((IFile) file.getResource()), null, IWorkbenchPage.MATCH_INPUT);
+      if (references.length == 0) {
+        return null;
       }
+      return references[0].getEditor(false);
     }
     return null;
   }
