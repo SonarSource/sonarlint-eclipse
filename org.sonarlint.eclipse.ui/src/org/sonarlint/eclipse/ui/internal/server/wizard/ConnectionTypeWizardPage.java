@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
 /**
@@ -70,11 +71,11 @@ public class ConnectionTypeWizardPage extends WizardPage {
     GridData gd = new GridData(GridData.FILL_BOTH);
     gd.widthHint = 300;
     Link sonarCloudLabel = new Link(radioButtonGroupContainer, SWT.WRAP);
-    sonarCloudLabel.setText("Connect to (<a>the online service</a>)");
+    sonarCloudLabel.setText("Connect to <a>the online service</a>");
     sonarCloudLabel.setLayoutData(gd);
     sonarCloudLabel.addListener(SWT.Selection, e -> {
       try {
-        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(e.text));
+        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(Server.SONARCLOUD_URL));
       } catch (PartInitException | MalformedURLException ex) {
         SonarLintLogger.get().error("Unable to open the browser", ex);
       }
