@@ -453,4 +453,9 @@ public class Server implements IServer, StateListener {
     return SONARCLOUD_URL.equals(this.host);
   }
 
+  @Override
+  public boolean enableNotifications() {
+    // TODO
+    return true;
+  }
 }

@@ -115,4 +115,5 @@ public interface IServer {
 
   boolean isSonarCloud();
 
+  boolean enableNotifications();
 }
