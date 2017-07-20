@@ -66,6 +66,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private static final SonarLintPartListener SONARLINT_PART_LISTENER = new SonarLintPartListener();
   private static final SonarLintChangeListener SONARLINT_CHANGE_LISTENER = new SonarLintChangeListener();
+  private static final SonarLintProjectEventListener SONARLINT_PROJECT_EVENT_LISTENER = new SonarLintProjectEventListener();
 
   public SonarLintUiPlugin() {
     plugin = this;
@@ -98,6 +99,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public void start(final BundleContext context) throws Exception {
     super.start(context);
 
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
     ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_CHANGE_LISTENER, IResourceChangeEvent.POST_CHANGE);
 
     logListener = new SonarLintConsoleLogger();
