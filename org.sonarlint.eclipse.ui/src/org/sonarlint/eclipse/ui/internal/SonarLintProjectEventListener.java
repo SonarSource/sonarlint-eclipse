@@ -27,8 +27,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
-import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class SonarLintProjectEventListener implements IResourceChangeListener {
@@ -49,14 +47,10 @@ public class SonarLintProjectEventListener implements IResourceChangeListener {
     if ((resource.getType() & IResource.PROJECT) != 0 && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
       ISonarLintProject project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
       if (project != null && project.isBound()) {
-        SonarLintProjectConfiguration config = SonarLintProjectConfiguration.read(project.getScopeContext());
-        String moduleKey = config.getModuleKey();
-        Server server = (Server) SonarLintCorePlugin.getServersManager().getServer(config.getServerId());
-        System.out.printf("Register %s for server %s? -> %s\n", moduleKey, server.getId(), project.isOpen());
         if (project.isOpen()) {
-          // TODO register
+          SonarLintCorePlugin.notificationsManager().subscribe(project);
         } else {
-          // TODO unregister
+          SonarLintCorePlugin.notificationsManager().unsubscribe(project);
         }
       }
       return false;

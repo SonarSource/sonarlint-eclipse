@@ -31,6 +31,7 @@ public class SonarLintProjectConfiguration {
 
   private final IScopeContext projectScope;
   private List<SonarLintProperty> extraProperties = new ArrayList<>();
+  private String projectKey;
   private String moduleKey;
   private String serverId;
   private boolean autoEnabled = true;
@@ -56,6 +57,11 @@ public class SonarLintProjectConfiguration {
   }
 
   @CheckForNull
+  public String getProjectKey() {
+    return StringUtils.trimToNull(projectKey);
+  }
+
+  @CheckForNull
   public String getModuleKey() {
     return StringUtils.trimToNull(moduleKey);
   }
@@ -63,6 +69,10 @@ public class SonarLintProjectConfiguration {
   @CheckForNull
   public String getServerId() {
     return StringUtils.trimToNull(serverId);
+  }
+
+  public void setProjectKey(@Nullable String projectKey) {
+    this.projectKey = projectKey;
   }
 
   public void setModuleKey(@Nullable String moduleKey) {
@@ -87,6 +97,7 @@ public class SonarLintProjectConfiguration {
 
   public void unbind() {
     setServerId(null);
+    setProjectKey(null);
     setModuleKey(null);
     save();
   }
