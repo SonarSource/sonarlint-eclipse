@@ -153,7 +153,12 @@ public class NotificationsManager {
 
   static class SonarLintProjectConfigurationReader {
     SonarLintProjectConfiguration read(ISonarLintProject project) {
-      return SonarLintProjectConfiguration.read(project.getScopeContext());
+      SonarLintProjectConfiguration config = SonarLintProjectConfiguration.read(project.getScopeContext());
+      // TODO remove this temporary hack (this helps testing with single-module projects)
+      if (config.getProjectKey() == null) {
+        config.setProjectKey(config.getModuleKey());
+      }
+      return config;
     }
   }
 }
