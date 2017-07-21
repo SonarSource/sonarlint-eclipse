@@ -43,34 +43,38 @@ public class NotificationsManager {
   private final Map<String, SonarQubeNotificationListener> listeners = new HashMap<>();
 
   private final ListenerFactory listenerFactory;
+  private final Subscriber subscriber;
+  private final ModuleInfoFinder moduleInfoFinder;
 
   public NotificationsManager(ListenerFactory listenerFactory) {
+    this(listenerFactory, new Subscriber(), new ModuleInfoFinder());
+  }
+
+  // only for testing
+  NotificationsManager(ListenerFactory listenerFactory, Subscriber subscriber, ModuleInfoFinder moduleInfoFinder) {
     this.listenerFactory = listenerFactory;
+    this.subscriber = subscriber;
+    this.moduleInfoFinder = moduleInfoFinder;
+  }
+
+  // only for testing
+  int getSubscriberCount() {
+    return subscribers.size();
   }
 
   public synchronized void subscribe(ISonarLintProject project) {
-    String projectKey = getProjectKey(project);
+    String projectKey = moduleInfoFinder.getProjectKey(project);
     Set<String> moduleKeys = subscribers.get(projectKey);
     if (moduleKeys == null) {
       moduleKeys = new HashSet<>();
       subscribers.put(projectKey, moduleKeys);
       SonarQubeNotificationListener listener = listenerFactory.create();
       listeners.put(projectKey, listener);
-      subscribe(project, projectKey, listener);
+      subscriber.subscribe(project, projectKey, listener);
     }
-    
-    String moduleKey = getModuleKey(project);
+
+    String moduleKey = moduleInfoFinder.getModuleKey(project);
     moduleKeys.add(moduleKey);
-  }
-
-  private void subscribe(ISonarLintProject project, String projectKey, SonarQubeNotificationListener listener) {
-    LastNotificationTime notificationTime = new ProjectNotificationTime();
-    
-    SonarLintProjectConfiguration config = SonarLintProjectConfiguration.read(project.getScopeContext());
-    Server server = (Server) SonarLintCorePlugin.getServersManager().getServer(config.getServerId());
-
-    NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, projectKey, server.getConfig());
-    SonarQubeNotifications.get().register(configuration);
   }
 
   /**
@@ -78,17 +82,17 @@ public class NotificationsManager {
    * Any changes in the project settings will affect the next request.
    */
   private static class ProjectNotificationTime implements LastNotificationTime {
-    
+
     final ProjectState projectState = new ProjectState();
-    
+
     // TODO make this persist when changed, load from storage when started
     static class ProjectState {
       ZonedDateTime lastEventPolling = ZonedDateTime.now();
-      
+
       ZonedDateTime getLastEventPolling() {
         return lastEventPolling;
       }
-      
+
       void setLastEventPolling(ZonedDateTime time) {
         lastEventPolling = time;
       }
@@ -112,35 +116,53 @@ public class NotificationsManager {
       }
     }
   }
-  
+
   public synchronized void unsubscribe(ISonarLintProject project) {
-    String projectKey = getProjectKey(project);
+    String projectKey = moduleInfoFinder.getProjectKey(project);
     Set<String> moduleKeys = subscribers.get(projectKey);
     if (moduleKeys == null) {
       return;
     }
-    
-    String moduleKey = getModuleKey(project);
+
+    String moduleKey = moduleInfoFinder.getModuleKey(project);
     moduleKeys.remove(moduleKey);
-    
+
     if (moduleKeys.isEmpty()) {
       subscribers.remove(projectKey);
-      unsubscribe(listeners.get(projectKey));
+      subscriber.unsubscribe(listeners.get(projectKey));
     }
   }
-  
-  private void unsubscribe(SonarQubeNotificationListener listener) {
-    SonarQubeNotifications.get().remove(listener);
+
+  static SonarLintProjectConfiguration readSonarLintProjectConfiguration(ISonarLintProject project) {
+    return SonarLintProjectConfiguration.read(project.getScopeContext());
   }
 
-  private String getModuleKey(ISonarLintProject project) {
-    return SonarLintProjectConfiguration.read(project.getScopeContext()).getModuleKey();
+  static class Subscriber {
+    void subscribe(ISonarLintProject project, String projectKey, SonarQubeNotificationListener listener) {
+      LastNotificationTime notificationTime = new ProjectNotificationTime();
+
+      SonarLintProjectConfiguration config = readSonarLintProjectConfiguration(project);
+      Server server = (Server) SonarLintCorePlugin.getServersManager().getServer(config.getServerId());
+
+      NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, projectKey, server.getConfig());
+      SonarQubeNotifications.get().register(configuration);
+    }
+
+    void unsubscribe(SonarQubeNotificationListener listener) {
+      SonarQubeNotifications.get().remove(listener);
+    }
   }
 
-  private String getProjectKey(ISonarLintProject project) {
-    String projectKey = SonarLintProjectConfiguration.read(project.getScopeContext()).getProjectKey();
-    // TODO remove before release
-    String dummyProjectKey = "org.sonarsource.scanner.cli:sonar-scanner-cli";
-    return StringUtils.isEmpty(projectKey) ? dummyProjectKey : projectKey;
+  static class ModuleInfoFinder {
+    String getModuleKey(ISonarLintProject project) {
+      return readSonarLintProjectConfiguration(project).getModuleKey();
+    }
+
+    String getProjectKey(ISonarLintProject project) {
+      String projectKey = readSonarLintProjectConfiguration(project).getProjectKey();
+      // TODO remove before release
+      String dummyProjectKey = "org.sonarsource.scanner.cli:sonar-scanner-cli";
+      return StringUtils.isEmpty(projectKey) ? dummyProjectKey : projectKey;
+    }
   }
 }
