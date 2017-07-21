@@ -146,6 +146,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   @Override
   public void stop(final BundleContext context) throws Exception {
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_CHANGE_LISTENER);
+    ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
     SonarLintLogger.get().removeLogListener(logListener);
     try {
       getPreferenceStore().removePropertyChangeListener(prefListener);
