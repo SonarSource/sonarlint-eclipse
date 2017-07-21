@@ -454,7 +454,7 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public boolean enableNotifications() {
+  public boolean areNotificationsEnabled() {
     // TODO
     return true;
   }
