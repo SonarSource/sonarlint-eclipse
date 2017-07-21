@@ -24,16 +24,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.popup.SonarQubeNotificationPopup;
 import org.sonarsource.sonarlint.core.client.api.common.NotificationConfiguration;
 import org.sonarsource.sonarlint.core.client.api.notifications.LastNotificationTime;
-import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotification;
 import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotificationListener;
 import org.sonarsource.sonarlint.core.notifications.SonarQubeNotifications;
 
@@ -42,7 +39,14 @@ public class NotificationsManager {
   // project key -> module keys
   private final Map<String, Set<String>> subscribers = new HashMap<>();
 
+  // project key -> listener
   private final Map<String, SonarQubeNotificationListener> listeners = new HashMap<>();
+
+  private final ListenerFactory listenerFactory;
+
+  public NotificationsManager(ListenerFactory listenerFactory) {
+    this.listenerFactory = listenerFactory;
+  }
 
   public synchronized void subscribe(ISonarLintProject project) {
     String projectKey = getProjectKey(project);
@@ -50,7 +54,7 @@ public class NotificationsManager {
     if (moduleKeys == null) {
       moduleKeys = new HashSet<>();
       subscribers.put(projectKey, moduleKeys);
-      SonarQubeNotificationListener listener = newListener();
+      SonarQubeNotificationListener listener = listenerFactory.create();
       listeners.put(projectKey, listener);
       subscribe(project, projectKey, listener);
     }
@@ -67,20 +71,6 @@ public class NotificationsManager {
 
     NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, projectKey, server.getConfig());
     SonarQubeNotifications.get().register(configuration);
-  }
-
-  // TODO inject in constructor for testing
-  private SonarQubeNotificationListener newListener() {
-    return new SonarQubeNotificationListener() {
-      @Override
-      public void handle(SonarQubeNotification notification) {
-        Display.getDefault().asyncExec(() -> {
-          SonarQubeNotificationPopup popup = new SonarQubeNotificationPopup(Display.getCurrent(), notification);
-          popup.create();
-          popup.open();
-        });
-      }
-    };
   }
 
   /**

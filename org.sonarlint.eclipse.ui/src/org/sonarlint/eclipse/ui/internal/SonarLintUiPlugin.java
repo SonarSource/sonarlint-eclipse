@@ -48,8 +48,10 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
+import org.sonarlint.eclipse.ui.internal.notifications.ListenerFactory;
 import org.sonarlint.eclipse.ui.internal.notifications.NotificationsManager;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
+import org.sonarlint.eclipse.ui.internal.popup.SonarQubeNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
@@ -127,7 +129,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     new CheckForUpdatesJob().schedule((long) 10 * 1000);
 
     analyzeOpenedFiles();
-
   }
 
   private static void checkServersStatus() {
@@ -179,7 +180,12 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   public synchronized NotificationsManager notificationsManager() {
     if (notificationsManager == null) {
-      notificationsManager = new NotificationsManager();
+      ListenerFactory listenerFactory = () -> notification -> Display.getDefault().asyncExec(() -> {
+        SonarQubeNotificationPopup popup = new SonarQubeNotificationPopup(Display.getCurrent(), notification);
+        popup.create();
+        popup.open();
+      });
+      notificationsManager = new NotificationsManager(listenerFactory);
     }
     return notificationsManager;
   }
