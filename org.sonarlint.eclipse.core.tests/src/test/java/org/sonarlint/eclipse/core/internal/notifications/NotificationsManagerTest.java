@@ -19,14 +19,16 @@
  */
 package org.sonarlint.eclipse.core.internal.notifications;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
-import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.ModuleInfoFinder;
+import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.SonarLintProjectConfigurationReader;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotificationListener;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -50,30 +52,41 @@ public class NotificationsManagerTest {
   private ISonarLintProject project2mod1 = mock(ISonarLintProject.class);
   private ISonarLintProject project2mod2 = mock(ISonarLintProject.class);
 
+  SonarLintProjectConfigurationReader configReader = new SonarLintProjectConfigurationReader() {
+    Map<ISonarLintProject, SonarLintProjectConfiguration> configs = new HashMap<>();
+    {
+      configs.put(project1mod1, mockConfig(projectKey1, moduleKey1));
+      configs.put(project1mod2, mockConfig(projectKey1, moduleKey2));
+      configs.put(project2mod1, mockConfig(projectKey2, moduleKey1));
+      configs.put(project2mod2, mockConfig(projectKey2, moduleKey2));
+    }
+
+    @Override
+    SonarLintProjectConfiguration read(ISonarLintProject project) {
+      return configs.get(project);
+    };
+  };
+
   @Before
   public void setUp() {
     subscriber = mock(NotificationsManager.Subscriber.class);
 
     ListenerFactory listenerFactory = () -> listener;
 
-    ModuleInfoFinder moduleInfoFinder = mock(ModuleInfoFinder.class);
-    when(moduleInfoFinder.getProjectKey(eq(project1mod1))).thenReturn(projectKey1);
-    when(moduleInfoFinder.getModuleKey(eq(project1mod1))).thenReturn(moduleKey1);
-    when(moduleInfoFinder.getProjectKey(eq(project1mod2))).thenReturn(projectKey1);
-    when(moduleInfoFinder.getModuleKey(eq(project1mod2))).thenReturn(moduleKey2);
-
-    when(moduleInfoFinder.getProjectKey(eq(project2mod1))).thenReturn(projectKey2);
-    when(moduleInfoFinder.getModuleKey(eq(project2mod1))).thenReturn(moduleKey1);
-    when(moduleInfoFinder.getProjectKey(eq(project2mod2))).thenReturn(projectKey2);
-    when(moduleInfoFinder.getModuleKey(eq(project2mod2))).thenReturn(moduleKey2);
-
-    notificationsManager = new NotificationsManager(listenerFactory, subscriber, moduleInfoFinder);
+    notificationsManager = new NotificationsManager(listenerFactory, subscriber, configReader);
+  }
+  
+  SonarLintProjectConfiguration mockConfig(String projectKey, String moduleKey) {
+    SonarLintProjectConfiguration config = mock(SonarLintProjectConfiguration.class);
+    when(config.getProjectKey()).thenReturn(projectKey);
+    when(config.getModuleKey()).thenReturn(moduleKey);
+    return config;
   }
 
   @Test
   public void test_subscribe_and_unsubscribe_one_module_one_project() {
     notificationsManager.subscribe(project1mod1);
-    verify(subscriber).subscribe(project1mod1, projectKey1, listener);
+    verify(subscriber).subscribe(configReader.read(project1mod1), listener);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(1);
 
     notificationsManager.unsubscribe(project1mod1);
@@ -86,7 +99,7 @@ public class NotificationsManagerTest {
   public void test_subscribe_and_unsubscribe_two_modules_one_project() {
     notificationsManager.subscribe(project1mod1);
     notificationsManager.subscribe(project1mod2);
-    verify(subscriber).subscribe(project1mod1, projectKey1, listener);
+    verify(subscriber).subscribe(configReader.read(project1mod1), listener);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(1);
 
     notificationsManager.unsubscribe(project1mod1);
@@ -99,11 +112,11 @@ public class NotificationsManagerTest {
   @Test
   public void test_subscribe_and_unsubscribe_one_module_each_of_two_projects() {
     notificationsManager.subscribe(project1mod1);
-    verify(subscriber).subscribe(project1mod1, projectKey1, listener);
+    verify(subscriber).subscribe(configReader.read(project1mod1), listener);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(1);
 
     notificationsManager.subscribe(project2mod1);
-    verify(subscriber).subscribe(project2mod1, projectKey2, listener);
+    verify(subscriber).subscribe(configReader.read(project2mod1), listener);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(2);
 
     notificationsManager.unsubscribe(project1mod1);
@@ -120,7 +133,7 @@ public class NotificationsManagerTest {
   @Test
   public void second_module_per_project_should_not_trigger_subscription() {
     notificationsManager.subscribe(project1mod1);
-    verify(subscriber).subscribe(project1mod1, projectKey1, listener);
+    verify(subscriber).subscribe(configReader.read(project1mod1), listener);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(1);
 
     notificationsManager.subscribe(project1mod2);
@@ -131,7 +144,7 @@ public class NotificationsManagerTest {
   @Test
   public void unsubscribe_non_last_module_should_not_unsubscribe_from_project() {
     notificationsManager.subscribe(project1mod1);
-    verify(subscriber).subscribe(project1mod1, projectKey1, listener);
+    verify(subscriber).subscribe(configReader.read(project1mod1), listener);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(1);
 
     notificationsManager.subscribe(project1mod2);
