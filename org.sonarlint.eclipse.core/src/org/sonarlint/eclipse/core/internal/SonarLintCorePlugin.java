@@ -28,7 +28,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
-import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
@@ -49,7 +48,6 @@ public class SonarLintCorePlugin extends Plugin {
 
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectManager projectManager;
-  private static NotificationsManager notificationsManager;
 
   private IssueTrackerRegistry issueTrackerRegistry;
   private ServerIssueUpdater serverIssueUpdater;
@@ -77,13 +75,6 @@ public class SonarLintCorePlugin extends Plugin {
       projectManager = new SonarLintProjectManager();
     }
     return projectManager;
-  }
-
-  public static synchronized NotificationsManager notificationsManager() {
-    if (notificationsManager == null) {
-      notificationsManager = new NotificationsManager();
-    }
-    return notificationsManager;
   }
 
   @Override

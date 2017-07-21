@@ -48,6 +48,7 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
+import org.sonarlint.eclipse.ui.internal.notifications.NotificationsManager;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
@@ -63,6 +64,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private LogListener logListener;
 
   private SonarLintConsole console;
+
+  private NotificationsManager notificationsManager;
 
   private static final SonarLintPartListener SONARLINT_PART_LISTENER = new SonarLintPartListener();
   private static final SonarLintChangeListener SONARLINT_CHANGE_LISTENER = new SonarLintChangeListener();
@@ -99,8 +102,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public void start(final BundleContext context) throws Exception {
     super.start(context);
 
-    ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
     ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_CHANGE_LISTENER, IResourceChangeEvent.POST_CHANGE);
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
 
     logListener = new SonarLintConsoleLogger();
     SonarLintLogger.get().addLogListener(logListener);
@@ -172,6 +175,13 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       manager.removeConsoles(new IConsole[] {console});
       this.console = null;
     }
+  }
+
+  public synchronized NotificationsManager notificationsManager() {
+    if (notificationsManager == null) {
+      notificationsManager = new NotificationsManager();
+    }
+    return notificationsManager;
   }
 
   private static class AnalyzeOpenedFilesJob extends Job {

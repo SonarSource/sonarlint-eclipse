@@ -17,18 +17,20 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.notifications;
+package org.sonarlint.eclipse.ui.internal.notifications;
 
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.popup.SonarQubeNotificationPopup;
 import org.sonarsource.sonarlint.core.client.api.common.NotificationConfiguration;
 import org.sonarsource.sonarlint.core.client.api.notifications.LastNotificationTime;
 import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotification;
@@ -72,8 +74,11 @@ public class NotificationsManager {
     return new SonarQubeNotificationListener() {
       @Override
       public void handle(SonarQubeNotification notification) {
-        System.out.println(notification.message());
-        System.out.println(notification.link());
+        Display.getDefault().asyncExec(() -> {
+          SonarQubeNotificationPopup popup = new SonarQubeNotificationPopup(Display.getCurrent(), notification);
+          popup.create();
+          popup.open();
+        });
       }
     };
   }
