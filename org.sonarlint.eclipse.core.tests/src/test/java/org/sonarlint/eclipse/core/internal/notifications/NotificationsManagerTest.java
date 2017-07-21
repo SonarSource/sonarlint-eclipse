@@ -19,10 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.notifications;
 
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
+import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.ProjectNotificationTime;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.SonarLintProjectConfigurationReader;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -75,7 +78,7 @@ public class NotificationsManagerTest {
 
     notificationsManager = new NotificationsManager(listenerFactory, subscriber, configReader);
   }
-  
+
   SonarLintProjectConfiguration mockConfig(String projectKey, String moduleKey) {
     SonarLintProjectConfiguration config = mock(SonarLintProjectConfiguration.class);
     when(config.getProjectKey()).thenReturn(projectKey);
@@ -158,5 +161,35 @@ public class NotificationsManagerTest {
     notificationsManager.unsubscribe(project1mod1);
     verifyNoMoreInteractions(subscriber);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(0);
+  }
+
+  @Test
+  public void project_notification_time_should_use_previous_timestamp_when_nothing_changed() {
+    ProjectNotificationTime time = new ProjectNotificationTime();
+    ZonedDateTime previous = time.get();
+    assertThat(previous).isNotNull();
+    assertThat(time.get()).isEqualTo(previous);
+  }
+
+  @Test
+  public void project_notification_time_should_use_latest_timestamp() {
+    ProjectNotificationTime time = new ProjectNotificationTime();
+
+    ZonedDateTime previous = time.get();
+    ZonedDateTime next = previous.plus(1, ChronoUnit.MINUTES);
+    time.set(next);
+
+    assertThat(time.get()).isEqualTo(next);
+  }
+
+  @Test
+  public void project_notification_time_should_not_update_to_older_timestamp() {
+    ProjectNotificationTime time = new ProjectNotificationTime();
+
+    ZonedDateTime previous = time.get();
+    ZonedDateTime next = previous.minus(1, ChronoUnit.MINUTES);
+    time.set(next);
+
+    assertThat(time.get()).isEqualTo(previous);
   }
 }

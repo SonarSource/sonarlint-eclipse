@@ -82,13 +82,13 @@ public class NotificationsManager {
    * Read and save directly from the mutable object.
    * Any changes in the project settings will affect the next request.
    */
-  private static class ProjectNotificationTime implements LastNotificationTime {
+  static class ProjectNotificationTime implements LastNotificationTime {
 
     final ProjectState projectState = new ProjectState();
 
     // TODO make this persist when changed, load from storage when started
     static class ProjectState {
-      ZonedDateTime lastEventPolling = ZonedDateTime.now();
+      ZonedDateTime lastEventPolling;
 
       ZonedDateTime getLastEventPolling() {
         return lastEventPolling;
