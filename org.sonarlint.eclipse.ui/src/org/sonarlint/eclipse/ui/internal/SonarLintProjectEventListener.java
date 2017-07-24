@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
@@ -43,8 +42,7 @@ public class SonarLintProjectEventListener implements IResourceChangeListener {
   }
 
   private boolean visitDelta(IResourceDelta delta) {
-    IResource resource = delta.getResource();
-    if ((resource.getType() & IResource.PROJECT) != 0 && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
+    if ((delta.getFlags() & IResourceDelta.OPEN) != 0) {
       ISonarLintProject project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
       if (project != null && project.isBound()) {
         if (project.isOpen()) {
