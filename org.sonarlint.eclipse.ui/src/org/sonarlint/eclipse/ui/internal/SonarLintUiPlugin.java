@@ -44,7 +44,7 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.notifications.ListenerFactory;
-import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager;
+import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -67,7 +67,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private SonarLintConsole console;
 
-  private NotificationsManager notificationsManager;
+  private ListenerFactory listenerFactory;
 
   private static final SonarLintPartListener SONARLINT_PART_LISTENER = new SonarLintPartListener();
   private static final SonarLintChangeListener SONARLINT_CHANGE_LISTENER = new SonarLintChangeListener();
@@ -129,6 +129,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     new CheckForUpdatesJob().schedule((long) 10 * 1000);
 
     analyzeOpenedFiles();
+
+    subscribeToNotifications();
   }
 
   private static void checkServersStatus() {
@@ -179,16 +181,15 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
   }
 
-  public synchronized NotificationsManager notificationsManager() {
-    if (notificationsManager == null) {
-      ListenerFactory listenerFactory = () -> notification -> Display.getDefault().asyncExec(() -> {
+  public synchronized ListenerFactory listenerFactory() {
+    if (listenerFactory == null) {
+      listenerFactory = () -> notification -> Display.getDefault().asyncExec(() -> {
         SonarQubeNotificationPopup popup = new SonarQubeNotificationPopup(Display.getCurrent(), notification);
         popup.create();
         popup.open();
       });
-      notificationsManager = new NotificationsManager(listenerFactory);
     }
-    return notificationsManager;
+    return listenerFactory;
   }
 
   private static class AnalyzeOpenedFilesJob extends Job {
@@ -246,7 +247,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         page.addPartListener(SONARLINT_PART_LISTENER);
       }
     }
-
   }
 
   public static void analyzeOpenedFiles() {
@@ -254,4 +254,13 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     new AnalyzeOpenedFilesJob().schedule(2000);
   }
 
+  private void subscribeToNotifications() {
+    ProjectsProviderUtils.allProjects().stream()
+      .filter(ISonarLintProject::isBound)
+      .forEach(SonarLintUiPlugin::subscribeToNotifications);
+  }
+
+  public static void subscribeToNotifications(ISonarLintProject project) {
+    SonarLintCorePlugin.getInstance().notificationsManager().subscribe(project, getDefault().listenerFactory().create());
+  }
 }

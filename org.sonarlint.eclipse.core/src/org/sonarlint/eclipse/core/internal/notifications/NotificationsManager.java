@@ -41,27 +41,25 @@ public class NotificationsManager {
   // project key -> listener
   private final Map<String, SonarQubeNotificationListener> listeners = new HashMap<>();
 
-  private final ListenerFactory listenerFactory;
   private final Subscriber subscriber;
   private final SonarLintProjectConfigurationReader configReader;
 
-  public NotificationsManager(ListenerFactory listenerFactory) {
-    this(listenerFactory, new Subscriber(), new SonarLintProjectConfigurationReader());
+  public NotificationsManager() {
+    this(new Subscriber(), new SonarLintProjectConfigurationReader());
   }
 
   // only for testing
-  NotificationsManager(ListenerFactory listenerFactory, Subscriber subscriber, SonarLintProjectConfigurationReader configReader) {
-    this.listenerFactory = listenerFactory;
+  public NotificationsManager(Subscriber subscriber, SonarLintProjectConfigurationReader configReader) {
     this.subscriber = subscriber;
     this.configReader = configReader;
   }
 
   // only for testing
-  int getSubscriberCount() {
+  public int getSubscriberCount() {
     return subscribers.size();
   }
 
-  public synchronized void subscribe(ISonarLintProject project) {
+  public synchronized void subscribe(ISonarLintProject project, SonarQubeNotificationListener listener) {
     SonarLintProjectConfiguration config = configReader.read(project);
 
     String projectKey = config.getProjectKey();
@@ -69,7 +67,6 @@ public class NotificationsManager {
     if (moduleKeys == null) {
       moduleKeys = new HashSet<>();
       subscribers.put(projectKey, moduleKeys);
-      SonarQubeNotificationListener listener = listenerFactory.create();
       listeners.put(projectKey, listener);
       subscriber.subscribe(config, listener);
     }
@@ -82,7 +79,8 @@ public class NotificationsManager {
    * Read and save directly from the mutable object.
    * Any changes in the project settings will affect the next request.
    */
-  static class ProjectNotificationTime implements LastNotificationTime {
+  // visible for testing
+  public static class ProjectNotificationTime implements LastNotificationTime {
 
     final ProjectState projectState = new ProjectState();
 
@@ -136,8 +134,10 @@ public class NotificationsManager {
     }
   }
 
-  static class Subscriber {
-    void subscribe(SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
+  // visible for testing
+  public static class Subscriber {
+    // visible for testing
+    public void subscribe(SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
       LastNotificationTime notificationTime = new ProjectNotificationTime();
 
       Server server = (Server) SonarLintCorePlugin.getServersManager().getServer(config.getServerId());
@@ -146,13 +146,16 @@ public class NotificationsManager {
       SonarQubeNotifications.get().register(configuration);
     }
 
-    void unsubscribe(SonarQubeNotificationListener listener) {
+    // visible for testing
+    public void unsubscribe(SonarQubeNotificationListener listener) {
       SonarQubeNotifications.get().remove(listener);
     }
   }
 
-  static class SonarLintProjectConfigurationReader {
-    SonarLintProjectConfiguration read(ISonarLintProject project) {
+  // visible for testing
+  public static class SonarLintProjectConfigurationReader {
+    // visible for testing
+    public SonarLintProjectConfiguration read(ISonarLintProject project) {
       SonarLintProjectConfiguration config = SonarLintProjectConfiguration.read(project.getScopeContext());
       // TODO remove this temporary hack (this helps testing with single-module projects)
       if (config.getProjectKey() == null) {

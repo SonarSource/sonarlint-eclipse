@@ -19,12 +19,12 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -42,14 +42,13 @@ public class SonarLintProjectEventListener implements IResourceChangeListener {
   }
 
   private static boolean visitDelta(IResourceDelta delta) {
-    IResource resource = delta.getResource();
-    if ((resource.getType() & IResource.PROJECT) != 0 && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
+    if ((delta.getFlags() & IResourceDelta.OPEN) != 0) {
       ISonarLintProject project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
       if (project != null && project.isBound()) {
         if (project.isOpen()) {
-          SonarLintUiPlugin.getDefault().notificationsManager().subscribe(project);
+          SonarLintUiPlugin.subscribeToNotifications(project);
         } else {
-          SonarLintUiPlugin.getDefault().notificationsManager().unsubscribe(project);
+          SonarLintCorePlugin.getInstance().notificationsManager().unsubscribe(project);
         }
       }
       return false;
