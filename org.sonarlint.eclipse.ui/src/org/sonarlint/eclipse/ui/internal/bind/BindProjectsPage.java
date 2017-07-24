@@ -201,7 +201,8 @@ public class BindProjectsPage extends WizardPage {
         Map<RemoteModule, Double> results = moduleIndex.search(bind.getEclipseName());
         if (!results.isEmpty()) {
           // Take first highest scoring
-          bind.associate(selectedServer.getId(), results.keySet().iterator().next().getKey());
+          RemoteModule remoteModule = results.keySet().iterator().next();
+          bind.associate(selectedServer.getId(), remoteModule.getProjectKey(), remoteModule.getKey());
         } else {
           bind.setAutoBindFailed(true);
         }
@@ -449,6 +450,10 @@ public class BindProjectsPage extends WizardPage {
     String oldServerId = projectConfig.getServerId();
     if (!Objects.equals(projectBinding.getServerId(), oldServerId)) {
       projectConfig.setServerId(projectBinding.getServerId());
+      changed = true;
+    }
+    if (!Objects.equals(projectBinding.getProjectKey(), projectConfig.getProjectKey())) {
+      projectConfig.setProjectKey(projectBinding.getProjectKey());
       changed = true;
     }
     if (!Objects.equals(projectBinding.getModuleKey(), projectConfig.getModuleKey())) {

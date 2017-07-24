@@ -34,11 +34,13 @@ public class RemoteSonarProject {
 
   private String serverId;
   private String name;
-  private String key;
+  private String projectKey;
+  private String moduleKey;
 
-  public RemoteSonarProject(String serverId, String key, String name) {
+  public RemoteSonarProject(String serverId, String projectKey, String moduleKey, String name) {
     this.serverId = serverId;
-    this.key = key;
+    this.projectKey = projectKey;
+    this.moduleKey = moduleKey;
     this.name = name;
   }
 
@@ -50,12 +52,20 @@ public class RemoteSonarProject {
     this.serverId = url;
   }
 
-  public String getKey() {
-    return key;
+  public String getProjectKey() {
+    return projectKey;
   }
 
-  public void setKey(String key) {
-    this.key = key;
+  public void setProjectKey(String projectKey) {
+    this.projectKey = projectKey;
+  }
+
+  public String getModuleKey() {
+    return moduleKey;
+  }
+
+  public void setModuleKey(String moduleKey) {
+    this.moduleKey = moduleKey;
   }
 
   public String getName() {
@@ -67,7 +77,7 @@ public class RemoteSonarProject {
   }
 
   public String asString() {
-    return serverId + SEPARATOR + key + SEPARATOR + name;
+    return serverId + SEPARATOR + moduleKey + SEPARATOR + name;
   }
 
   /**
@@ -77,13 +87,13 @@ public class RemoteSonarProject {
     StringBuilder sb = new StringBuilder();
     sb.append("Project/Module name: ").append(name).append("\n");
     sb.append("Server: ").append(serverId).append("\n");
-    sb.append("Project/Module key: ").append(key);
+    sb.append("Project/Module key: ").append(moduleKey);
     return sb.toString();
   }
 
   public static RemoteSonarProject fromString(String asString) {
     String[] parts = asString.split("\\" + SEPARATOR);
-    return new RemoteSonarProject(parts[0], parts[1], parts[2]);
+    return new RemoteSonarProject(parts[0], parts[1], parts[2], parts[3]);
   }
 
 }
