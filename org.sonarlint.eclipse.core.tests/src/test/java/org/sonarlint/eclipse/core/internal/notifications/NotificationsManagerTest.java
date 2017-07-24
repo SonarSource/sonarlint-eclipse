@@ -65,7 +65,7 @@ public class NotificationsManagerTest {
     }
 
     @Override
-    SonarLintProjectConfiguration read(ISonarLintProject project) {
+    public SonarLintProjectConfiguration read(ISonarLintProject project) {
       return configs.get(project);
     };
   };
