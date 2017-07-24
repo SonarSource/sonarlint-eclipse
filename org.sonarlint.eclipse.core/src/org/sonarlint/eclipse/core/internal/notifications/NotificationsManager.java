@@ -65,10 +65,12 @@ public class NotificationsManager {
     String projectKey = config.getProjectKey();
     Set<String> moduleKeys = subscribers.get(projectKey);
     if (moduleKeys == null) {
+      if (!subscriber.subscribe(config, listener)) {
+        return;
+      }
       moduleKeys = new HashSet<>();
       subscribers.put(projectKey, moduleKeys);
       listeners.put(projectKey, listener);
-      subscriber.subscribe(config, listener);
     }
 
     String moduleKey = config.getModuleKey();
@@ -137,13 +139,18 @@ public class NotificationsManager {
   // visible for testing
   public static class Subscriber {
     // visible for testing
-    public void subscribe(SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
-      LastNotificationTime notificationTime = new ProjectNotificationTime();
-
+    public boolean subscribe(SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
       Server server = (Server) SonarLintCorePlugin.getServersManager().getServer(config.getServerId());
+      if (!server.areNotificationsEnabled()) {
+        return false;
+      }
+
+      LastNotificationTime notificationTime = new ProjectNotificationTime();
 
       NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, config.getProjectKey(), server.getConfig());
       SonarQubeNotifications.get().register(configuration);
+
+      return true;
     }
 
     // visible for testing

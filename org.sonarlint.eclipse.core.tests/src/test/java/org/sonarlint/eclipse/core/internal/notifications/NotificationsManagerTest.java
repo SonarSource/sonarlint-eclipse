@@ -37,6 +37,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 
 public class NotificationsManagerTest {
 
@@ -73,6 +74,7 @@ public class NotificationsManagerTest {
   @Before
   public void setUp() {
     subscriber = mock(NotificationsManager.Subscriber.class);
+    when(subscriber.subscribe(any(), any())).thenReturn(true);
 
     notificationsManager = new NotificationsManager(subscriber, configReader);
   }
