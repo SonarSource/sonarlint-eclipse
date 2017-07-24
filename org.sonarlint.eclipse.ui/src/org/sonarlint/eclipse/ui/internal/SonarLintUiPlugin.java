@@ -45,6 +45,7 @@ import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.notifications.ListenerFactory;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager;
+import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -129,6 +130,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     new CheckForUpdatesJob().schedule((long) 10 * 1000);
 
     analyzeOpenedFiles();
+
+    subscribeToNotifications();
   }
 
   private static void checkServersStatus() {
@@ -254,4 +257,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     new AnalyzeOpenedFilesJob().schedule(2000);
   }
 
+  private void subscribeToNotifications() {
+    ProjectsProviderUtils.allProjects().stream()
+    .filter(ISonarLintProject::isBound)
+    .forEach(p -> notificationsManager().subscribe(p));
+  }
 }
