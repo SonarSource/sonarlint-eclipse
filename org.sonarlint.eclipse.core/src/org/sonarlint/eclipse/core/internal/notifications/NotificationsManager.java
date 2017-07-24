@@ -54,11 +54,6 @@ public class NotificationsManager {
     this.configReader = configReader;
   }
 
-  // only for testing
-  public int getSubscriberCount() {
-    return subscribers.size();
-  }
-
   public synchronized void subscribe(ISonarLintProject project, SonarQubeNotificationListener listener) {
     SonarLintProjectConfiguration config = configReader.read(project);
 
