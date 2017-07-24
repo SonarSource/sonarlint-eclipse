@@ -76,6 +76,7 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
@@ -467,6 +468,7 @@ public class BindProjectsPage extends WizardPage {
     JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
     if (project.isBound()) {
       new ProjectUpdateJob(project).schedule();
+      SonarLintCorePlugin.getInstance().notificationsManager().subscribe(project, SonarLintUiPlugin.getDefault().listenerFactory().create());
     }
     JobUtils.notifyServerViewAfterBindingChange(project, oldServerId);
   }
