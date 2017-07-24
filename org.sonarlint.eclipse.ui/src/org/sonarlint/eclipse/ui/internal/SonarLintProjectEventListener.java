@@ -34,14 +34,14 @@ public class SonarLintProjectEventListener implements IResourceChangeListener {
   public void resourceChanged(IResourceChangeEvent event) {
     if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
       try {
-        event.getDelta().accept(this::visitDelta);
+        event.getDelta().accept(SonarLintProjectEventListener::visitDelta);
       } catch (CoreException e) {
         SonarLintLogger.get().error(e.getMessage(), e);
       }
     }
   }
 
-  private boolean visitDelta(IResourceDelta delta) {
+  private static boolean visitDelta(IResourceDelta delta) {
     if ((delta.getFlags() & IResourceDelta.OPEN) != 0) {
       ISonarLintProject project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
       if (project != null && project.isBound()) {
