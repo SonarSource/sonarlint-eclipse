@@ -48,7 +48,7 @@ public class SonarLintProjectEventListener implements IResourceChangeListener {
       ISonarLintProject project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
       if (project != null && project.isBound()) {
         if (project.isOpen()) {
-          SonarLintCorePlugin.getInstance().notificationsManager().subscribe(project, SonarLintUiPlugin.getDefault().listenerFactory().create());
+          SonarLintUiPlugin.subscribeToNotifications(project);
         } else {
           SonarLintCorePlugin.getInstance().notificationsManager().unsubscribe(project);
         }

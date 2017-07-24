@@ -468,7 +468,7 @@ public class BindProjectsPage extends WizardPage {
     JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
     if (project.isBound()) {
       new ProjectUpdateJob(project).schedule();
-      SonarLintCorePlugin.getInstance().notificationsManager().subscribe(project, SonarLintUiPlugin.getDefault().listenerFactory().create());
+      SonarLintUiPlugin.subscribeToNotifications(project);
     }
     JobUtils.notifyServerViewAfterBindingChange(project, oldServerId);
   }
