@@ -44,7 +44,6 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.notifications.ListenerFactory;
-import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
@@ -68,7 +67,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private SonarLintConsole console;
 
-  private NotificationsManager notificationsManager;
   private ListenerFactory listenerFactory;
 
   private static final SonarLintPartListener SONARLINT_PART_LISTENER = new SonarLintPartListener();
@@ -183,13 +181,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
   }
 
-  public synchronized NotificationsManager notificationsManager() {
-    if (notificationsManager == null) {
-      notificationsManager = new NotificationsManager();
-    }
-    return notificationsManager;
-  }
-
   public synchronized ListenerFactory listenerFactory() {
     if (listenerFactory == null) {
       listenerFactory = () -> notification -> Display.getDefault().asyncExec(() -> {
@@ -266,6 +257,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private void subscribeToNotifications() {
     ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isBound)
-      .forEach(p -> notificationsManager().subscribe(p, listenerFactory().create()));
+      .forEach(p -> SonarLintCorePlugin.getInstance().notificationsManager().subscribe(p, listenerFactory().create()));
   }
 }

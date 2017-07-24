@@ -25,6 +25,7 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -47,9 +48,9 @@ public class SonarLintProjectEventListener implements IResourceChangeListener {
       ISonarLintProject project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
       if (project != null && project.isBound()) {
         if (project.isOpen()) {
-          SonarLintUiPlugin.getDefault().notificationsManager().subscribe(project, SonarLintUiPlugin.getDefault().listenerFactory().create());
+          SonarLintCorePlugin.getInstance().notificationsManager().subscribe(project, SonarLintUiPlugin.getDefault().listenerFactory().create());
         } else {
-          SonarLintUiPlugin.getDefault().notificationsManager().unsubscribe(project);
+          SonarLintCorePlugin.getInstance().notificationsManager().unsubscribe(project);
         }
       }
       return false;
