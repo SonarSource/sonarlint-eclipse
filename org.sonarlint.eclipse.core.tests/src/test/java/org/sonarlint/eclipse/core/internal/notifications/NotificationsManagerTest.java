@@ -154,6 +154,23 @@ public class NotificationsManagerTest {
   }
 
   @Test
+  public void should_not_subscribe_when_notifications_are_disabled() {
+    FakeSubscriber disabled = new FakeSubscriber() {
+      @Override
+      public boolean subscribe(SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
+        return false;
+      }
+    };
+
+    NotificationsManager notificationsManager = new NotificationsManager(disabled, configReader);
+    notificationsManager.subscribe(project1mod1, listener);
+    notificationsManager.unsubscribe(project1mod1);
+
+    // should be 0 if unsubscribe was correctly ignored, otherwise it would be -1
+    assertThat(disabled.count).isEqualTo(0);
+  }
+
+  @Test
   public void project_notification_time_should_use_previous_timestamp_when_nothing_changed() {
     ProjectNotificationTime time = new ProjectNotificationTime();
     ZonedDateTime previous = time.get();
