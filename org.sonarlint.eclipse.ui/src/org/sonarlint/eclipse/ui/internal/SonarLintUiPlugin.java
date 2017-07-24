@@ -69,6 +69,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private SonarLintConsole console;
 
   private NotificationsManager notificationsManager;
+  private ListenerFactory listenerFactory;
 
   private static final SonarLintPartListener SONARLINT_PART_LISTENER = new SonarLintPartListener();
   private static final SonarLintChangeListener SONARLINT_CHANGE_LISTENER = new SonarLintChangeListener();
@@ -184,14 +185,20 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   public synchronized NotificationsManager notificationsManager() {
     if (notificationsManager == null) {
-      ListenerFactory listenerFactory = () -> notification -> Display.getDefault().asyncExec(() -> {
+      notificationsManager = new NotificationsManager();
+    }
+    return notificationsManager;
+  }
+
+  public synchronized ListenerFactory listenerFactory() {
+    if (listenerFactory == null) {
+      listenerFactory = () -> notification -> Display.getDefault().asyncExec(() -> {
         SonarQubeNotificationPopup popup = new SonarQubeNotificationPopup(Display.getCurrent(), notification);
         popup.create();
         popup.open();
       });
-      notificationsManager = new NotificationsManager(listenerFactory);
     }
-    return notificationsManager;
+    return listenerFactory;
   }
 
   private static class AnalyzeOpenedFilesJob extends Job {
@@ -249,7 +256,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         page.addPartListener(SONARLINT_PART_LISTENER);
       }
     }
-
   }
 
   public static void analyzeOpenedFiles() {
@@ -259,7 +265,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private void subscribeToNotifications() {
     ProjectsProviderUtils.allProjects().stream()
-    .filter(ISonarLintProject::isBound)
-    .forEach(p -> notificationsManager().subscribe(p));
+      .filter(ISonarLintProject::isBound)
+      .forEach(p -> notificationsManager().subscribe(p, listenerFactory().create()));
   }
 }

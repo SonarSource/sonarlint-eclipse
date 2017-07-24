@@ -41,17 +41,15 @@ public class NotificationsManager {
   // project key -> listener
   private final Map<String, SonarQubeNotificationListener> listeners = new HashMap<>();
 
-  private final ListenerFactory listenerFactory;
   private final Subscriber subscriber;
   private final SonarLintProjectConfigurationReader configReader;
 
-  public NotificationsManager(ListenerFactory listenerFactory) {
-    this(listenerFactory, new Subscriber(), new SonarLintProjectConfigurationReader());
+  public NotificationsManager() {
+    this(new Subscriber(), new SonarLintProjectConfigurationReader());
   }
 
   // only for testing
-  NotificationsManager(ListenerFactory listenerFactory, Subscriber subscriber, SonarLintProjectConfigurationReader configReader) {
-    this.listenerFactory = listenerFactory;
+  public NotificationsManager(Subscriber subscriber, SonarLintProjectConfigurationReader configReader) {
     this.subscriber = subscriber;
     this.configReader = configReader;
   }
@@ -61,7 +59,7 @@ public class NotificationsManager {
     return subscribers.size();
   }
 
-  public synchronized void subscribe(ISonarLintProject project) {
+  public synchronized void subscribe(ISonarLintProject project, SonarQubeNotificationListener listener) {
     SonarLintProjectConfiguration config = configReader.read(project);
 
     String projectKey = config.getProjectKey();
@@ -69,7 +67,6 @@ public class NotificationsManager {
     if (moduleKeys == null) {
       moduleKeys = new HashSet<>();
       subscribers.put(projectKey, moduleKeys);
-      SonarQubeNotificationListener listener = listenerFactory.create();
       listeners.put(projectKey, listener);
       subscriber.subscribe(config, listener);
     }

@@ -74,12 +74,10 @@ public class NotificationsManagerTest {
   public void setUp() {
     subscriber = mock(NotificationsManager.Subscriber.class);
 
-    ListenerFactory listenerFactory = () -> listener;
-
-    notificationsManager = new NotificationsManager(listenerFactory, subscriber, configReader);
+    notificationsManager = new NotificationsManager(subscriber, configReader);
   }
 
-  SonarLintProjectConfiguration mockConfig(String projectKey, String moduleKey) {
+  private SonarLintProjectConfiguration mockConfig(String projectKey, String moduleKey) {
     SonarLintProjectConfiguration config = mock(SonarLintProjectConfiguration.class);
     when(config.getProjectKey()).thenReturn(projectKey);
     when(config.getModuleKey()).thenReturn(moduleKey);
@@ -88,7 +86,7 @@ public class NotificationsManagerTest {
 
   @Test
   public void test_subscribe_and_unsubscribe_one_module_one_project() {
-    notificationsManager.subscribe(project1mod1);
+    notificationsManager.subscribe(project1mod1, listener);
     verify(subscriber).subscribe(configReader.read(project1mod1), listener);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(1);
 
@@ -100,8 +98,8 @@ public class NotificationsManagerTest {
 
   @Test
   public void test_subscribe_and_unsubscribe_two_modules_one_project() {
-    notificationsManager.subscribe(project1mod1);
-    notificationsManager.subscribe(project1mod2);
+    notificationsManager.subscribe(project1mod1, listener);
+    notificationsManager.subscribe(project1mod2, listener);
     verify(subscriber).subscribe(configReader.read(project1mod1), listener);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(1);
 
@@ -114,11 +112,11 @@ public class NotificationsManagerTest {
 
   @Test
   public void test_subscribe_and_unsubscribe_one_module_each_of_two_projects() {
-    notificationsManager.subscribe(project1mod1);
+    notificationsManager.subscribe(project1mod1, listener);
     verify(subscriber).subscribe(configReader.read(project1mod1), listener);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(1);
 
-    notificationsManager.subscribe(project2mod1);
+    notificationsManager.subscribe(project2mod1, listener);
     verify(subscriber).subscribe(configReader.read(project2mod1), listener);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(2);
 
@@ -135,22 +133,22 @@ public class NotificationsManagerTest {
 
   @Test
   public void second_module_per_project_should_not_trigger_subscription() {
-    notificationsManager.subscribe(project1mod1);
+    notificationsManager.subscribe(project1mod1, listener);
     verify(subscriber).subscribe(configReader.read(project1mod1), listener);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(1);
 
-    notificationsManager.subscribe(project1mod2);
+    notificationsManager.subscribe(project1mod2, listener);
     verifyNoMoreInteractions(subscriber);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(1);
   }
 
   @Test
   public void unsubscribe_non_last_module_should_not_unsubscribe_from_project() {
-    notificationsManager.subscribe(project1mod1);
+    notificationsManager.subscribe(project1mod1, listener);
     verify(subscriber).subscribe(configReader.read(project1mod1), listener);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(1);
 
-    notificationsManager.subscribe(project1mod2);
+    notificationsManager.subscribe(project1mod2, listener);
     notificationsManager.unsubscribe(project1mod1);
     verifyNoMoreInteractions(subscriber);
     assertThat(notificationsManager.getSubscriberCount()).isEqualTo(1);

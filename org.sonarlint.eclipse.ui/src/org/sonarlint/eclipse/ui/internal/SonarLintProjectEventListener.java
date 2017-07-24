@@ -34,20 +34,20 @@ public class SonarLintProjectEventListener implements IResourceChangeListener {
   public void resourceChanged(IResourceChangeEvent event) {
     if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
       try {
-        event.getDelta().accept(SonarLintProjectEventListener::visitDelta);
+        event.getDelta().accept(this::visitDelta);
       } catch (CoreException e) {
         SonarLintLogger.get().error(e.getMessage(), e);
       }
     }
   }
 
-  private static boolean visitDelta(IResourceDelta delta) {
+  private boolean visitDelta(IResourceDelta delta) {
     IResource resource = delta.getResource();
     if ((resource.getType() & IResource.PROJECT) != 0 && (delta.getFlags() & IResourceDelta.OPEN) != 0) {
       ISonarLintProject project = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
       if (project != null && project.isBound()) {
         if (project.isOpen()) {
-          SonarLintUiPlugin.getDefault().notificationsManager().subscribe(project);
+          SonarLintUiPlugin.getDefault().notificationsManager().subscribe(project, SonarLintUiPlugin.getDefault().listenerFactory().create());
         } else {
           SonarLintUiPlugin.getDefault().notificationsManager().unsubscribe(project);
         }
