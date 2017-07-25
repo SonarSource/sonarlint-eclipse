@@ -19,12 +19,15 @@
  */
 package org.sonarlint.eclipse.core.internal.notifications;
 
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.ProjectNotificationTime;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.SonarLintProjectConfigurationReader;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
@@ -36,6 +39,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class NotificationsManagerTest {
+
+  @Rule
+  public TemporaryFolder tmp = new TemporaryFolder();
 
   private NotificationsManager notificationsManager;
   private SonarQubeNotificationListener listener;
@@ -73,7 +79,7 @@ public class NotificationsManagerTest {
     int count;
 
     @Override
-    public boolean subscribe(SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
+    public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
       count++;
       return true;
     }
@@ -152,7 +158,7 @@ public class NotificationsManagerTest {
   public void should_not_subscribe_when_notifications_are_disabled() {
     FakeSubscriber disabled = new FakeSubscriber() {
       @Override
-      public boolean subscribe(SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
+      public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
         return false;
       }
     };
@@ -173,17 +179,33 @@ public class NotificationsManagerTest {
     assertThat(subscriber.count).isEqualTo(0);
   }
 
+  private NotificationsTracker fakeNotificationsTracker() throws IOException {
+    return new NotificationsTracker(tmp.newFolder().toPath()) {
+      private ZonedDateTime time;
+
+      @Override
+      synchronized ZonedDateTime getLastEventPolling() {
+        return time;
+      }
+
+      @Override
+      synchronized void setLastEventPolling(ZonedDateTime time) {
+        this.time = time;
+      }
+    };
+  }
+
   @Test
-  public void project_notification_time_should_use_previous_timestamp_when_nothing_changed() {
-    ProjectNotificationTime time = new ProjectNotificationTime();
+  public void project_notification_time_should_use_previous_timestamp_when_nothing_changed() throws IOException {
+    ProjectNotificationTime time = new ProjectNotificationTime(fakeNotificationsTracker());
     ZonedDateTime previous = time.get();
     assertThat(previous).isNotNull();
     assertThat(time.get()).isEqualTo(previous);
   }
 
   @Test
-  public void project_notification_time_should_use_latest_timestamp() {
-    ProjectNotificationTime time = new ProjectNotificationTime();
+  public void project_notification_time_should_use_latest_timestamp() throws IOException {
+    ProjectNotificationTime time = new ProjectNotificationTime(fakeNotificationsTracker());
 
     ZonedDateTime previous = time.get();
     ZonedDateTime next = previous.plus(1, ChronoUnit.MINUTES);
@@ -193,8 +215,8 @@ public class NotificationsManagerTest {
   }
 
   @Test
-  public void project_notification_time_should_not_update_to_older_timestamp() {
-    ProjectNotificationTime time = new ProjectNotificationTime();
+  public void project_notification_time_should_not_update_to_older_timestamp() throws IOException {
+    ProjectNotificationTime time = new ProjectNotificationTime(fakeNotificationsTracker());
 
     ZonedDateTime previous = time.get();
     ZonedDateTime next = previous.minus(1, ChronoUnit.MINUTES);

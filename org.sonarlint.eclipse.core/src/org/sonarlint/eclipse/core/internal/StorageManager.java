@@ -47,4 +47,8 @@ public class StorageManager {
   public static Path getIssuesDir(String localModuleKey) {
     return getSonarLintUserHome().append("modules").append(localModuleKey).append("issues").toFile().toPath();
   }
+
+  public static Path getNotificationsDir(String localModuleKey) {
+    return getSonarLintUserHome().append("modules").append(localModuleKey).append("notifications").toFile().toPath();
+  }
 }

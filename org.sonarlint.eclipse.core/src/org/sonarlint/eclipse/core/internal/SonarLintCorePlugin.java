@@ -29,6 +29,8 @@ import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager;
+import org.sonarlint.eclipse.core.internal.notifications.NotificationsTracker;
+import org.sonarlint.eclipse.core.internal.notifications.NotificationsTrackerRegistry;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
@@ -61,6 +63,8 @@ public class SonarLintCorePlugin extends Plugin {
   private AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
   private SonarLintTelemetry telemetry = new SonarLintTelemetry();
   private ServersManager serversManager = new ServersManager();
+
+  private NotificationsTrackerRegistry notificationsTrackerRegistry;
 
   public SonarLintCorePlugin() {
     plugin = this;
@@ -102,6 +106,8 @@ public class SonarLintCorePlugin extends Plugin {
     serverIssueUpdater = new ServerIssueUpdater(issueTrackerRegistry);
 
     telemetry.init();
+
+    notificationsTrackerRegistry = new NotificationsTrackerRegistry();
   }
 
   @Override
@@ -157,5 +163,9 @@ public class SonarLintCorePlugin extends Plugin {
 
   public static ServersManager getServersManager() {
     return getInstance().serversManager;
+  }
+
+  public static NotificationsTracker getOrCreateNotificationsTracker(ISonarLintProject project) {
+    return getInstance().notificationsTrackerRegistry.getOrCreate(project);
   }
 }
