@@ -65,7 +65,7 @@ public class NotificationsManager {
 
     Set<String> moduleKeys = subscribers.get(projectKey);
     if (moduleKeys == null) {
-      if (!subscriber.subscribe(config, listener)) {
+      if (!subscriber.subscribe(project, config, listener)) {
         return;
       }
       moduleKeys = new HashSet<>();
@@ -84,27 +84,23 @@ public class NotificationsManager {
   // visible for testing
   public static class ProjectNotificationTime implements LastNotificationTime {
 
-    final ProjectState projectState = new ProjectState();
+    private final NotificationsTracker tracker;
 
-    // TODO make this persist when changed, load from storage when started
-    static class ProjectState {
-      ZonedDateTime lastEventPolling;
+    // visible for testing
+    public ProjectNotificationTime(NotificationsTracker tracker) {
+      this.tracker = tracker;
+    }
 
-      ZonedDateTime getLastEventPolling() {
-        return lastEventPolling;
-      }
-
-      void setLastEventPolling(ZonedDateTime time) {
-        lastEventPolling = time;
-      }
+    public ProjectNotificationTime(ISonarLintProject project) {
+      this(SonarLintCorePlugin.getOrCreateNotificationsTracker(project));
     }
 
     @Override
     public ZonedDateTime get() {
-      ZonedDateTime lastEventPolling = projectState.getLastEventPolling();
+      ZonedDateTime lastEventPolling = tracker.getLastEventPolling();
       if (lastEventPolling == null) {
         lastEventPolling = ZonedDateTime.now();
-        projectState.setLastEventPolling(lastEventPolling);
+        tracker.setLastEventPolling(lastEventPolling);
       }
       return lastEventPolling;
     }
@@ -112,8 +108,8 @@ public class NotificationsManager {
     @Override
     public void set(ZonedDateTime dateTime) {
       // this could be false if the settings changed between the read and write
-      if (dateTime.isAfter(projectState.getLastEventPolling())) {
-        projectState.setLastEventPolling(dateTime);
+      if (dateTime.isAfter(tracker.getLastEventPolling())) {
+        tracker.setLastEventPolling(dateTime);
       }
     }
   }
@@ -139,13 +135,13 @@ public class NotificationsManager {
   // visible for testing
   public static class Subscriber {
     // visible for testing
-    public boolean subscribe(SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
+    public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
       Server server = (Server) SonarLintCorePlugin.getServersManager().getServer(config.getServerId());
       if (!server.areNotificationsEnabled()) {
         return false;
       }
 
-      LastNotificationTime notificationTime = new ProjectNotificationTime();
+      LastNotificationTime notificationTime = new ProjectNotificationTime(project);
 
       NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, config.getProjectKey(), server.getConfig());
       SonarQubeNotifications.get().register(configuration);
