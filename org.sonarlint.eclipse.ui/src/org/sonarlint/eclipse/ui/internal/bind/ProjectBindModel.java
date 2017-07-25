@@ -34,6 +34,7 @@ public class ProjectBindModel extends AbstractModelObject {
   public static final String PROPERTY_PROJECT_SONAR_FULLNAME = "displayName";
 
   private final ISonarLintProject project;
+  private String projectKey;
   private String moduleKey;
   private String serverId;
   private IServer server;
@@ -42,6 +43,7 @@ public class ProjectBindModel extends AbstractModelObject {
   public ProjectBindModel(ISonarLintProject project) {
     this.project = project;
     SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(project.getScopeContext());
+    this.projectKey = projectConfig.getProjectKey();
     this.moduleKey = projectConfig.getModuleKey();
     this.serverId = projectConfig.getServerId();
     this.server = SonarLintCorePlugin.getServersManager().getServer(this.serverId);
@@ -64,18 +66,23 @@ public class ProjectBindModel extends AbstractModelObject {
     } else if (server == null) {
       return "<Bound to an unknown server: '" + this.serverId + "'>";
     } else {
-      return "'" + moduleKey + "' on server '" + server.getId() + "'";
+      return String.format("'%s' on server '%s'", moduleKey, server.getId());
     }
+  }
+
+  public String getProjectKey() {
+    return projectKey;
   }
 
   public String getModuleKey() {
     return moduleKey;
   }
 
-  public void associate(String serverId, String key) {
+  public void associate(String serverId, String projectKey, String moduleKey) {
     String oldValue = getDisplayName();
     this.autoBindFailed = false;
-    this.moduleKey = key;
+    this.projectKey = projectKey;
+    this.moduleKey = moduleKey;
     this.serverId = serverId;
     this.server = SonarLintCorePlugin.getServersManager().getServer(this.serverId);
     firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getDisplayName());
@@ -100,6 +107,7 @@ public class ProjectBindModel extends AbstractModelObject {
   }
 
   private void resetBinding() {
+    this.projectKey = null;
     this.moduleKey = null;
     this.serverId = null;
     this.server = null;
