@@ -25,9 +25,9 @@ import org.eclipse.core.resources.ResourcesPlugin;
 /**
  * Utility class to centralize access to relevant global paths.
  */
-public class StorageManager {
+public class StoragePathManager {
 
-  private StorageManager() {
+  private StoragePathManager() {
     // utility class, forbidden constructor
   }
 

@@ -22,7 +22,7 @@ package org.sonarlint.eclipse.core.internal.notifications;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import org.sonarlint.eclipse.core.internal.StorageManager;
+import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
@@ -47,6 +47,6 @@ public class NotificationsTrackerRegistry {
   }
 
   private NotificationsTracker newTracker(ISonarLintProject project) {
-    return new NotificationsTracker(StorageManager.getNotificationsDir(project.getName()));
+    return new NotificationsTracker(StoragePathManager.getNotificationsDir(project.getName()));
   }
 }
