@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal;
 
 import java.nio.file.Path;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
 
 /**
  * Utility class to centralize access to relevant global paths.
@@ -32,23 +31,27 @@ public class StorageManager {
     // utility class, forbidden constructor
   }
 
-  private static IPath getSonarLintUserHome() {
-    return ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint");
+  private static Path getSonarLintUserHome() {
+    return ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").toFile().toPath();
   }
 
   public static Path getServerWorkDir(String serverId) {
-    return getSonarLintUserHome().append("work").append(serverId).toFile().toPath();
+    return getSonarLintUserHome().resolve("work").resolve(serverId);
   }
 
   public static Path getServerStorageRoot() {
-    return getSonarLintUserHome().append("storage").toFile().toPath();
+    return getSonarLintUserHome().resolve("storage");
+  }
+
+  private static Path getModuleStorageDir(String localModuleKey) {
+    return getSonarLintUserHome().resolve("modules").resolve(localModuleKey);
   }
 
   public static Path getIssuesDir(String localModuleKey) {
-    return getSonarLintUserHome().append("modules").append(localModuleKey).append("issues").toFile().toPath();
+    return getModuleStorageDir(localModuleKey).resolve("issues");
   }
 
   public static Path getNotificationsDir(String localModuleKey) {
-    return getSonarLintUserHome().append("modules").append(localModuleKey).append("notifications").toFile().toPath();
+    return getModuleStorageDir(localModuleKey).resolve("notifications");
   }
 }
