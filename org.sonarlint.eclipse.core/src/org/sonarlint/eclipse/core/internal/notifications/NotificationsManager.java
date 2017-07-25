@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.Server;
@@ -45,7 +46,7 @@ public class NotificationsManager {
   private final SonarLintProjectConfigurationReader configReader;
 
   public NotificationsManager() {
-    this(new Subscriber(), new SonarLintProjectConfigurationReader());
+    this(new Subscriber(), p -> SonarLintProjectConfiguration.read(p.getScopeContext()));
   }
 
   // only for testing
@@ -55,9 +56,13 @@ public class NotificationsManager {
   }
 
   public synchronized void subscribe(ISonarLintProject project, SonarQubeNotificationListener listener) {
-    SonarLintProjectConfiguration config = configReader.read(project);
+    SonarLintProjectConfiguration config = configReader.apply(project);
 
     String projectKey = config.getProjectKey();
+    if (projectKey == null) {
+      return;
+    }
+
     Set<String> moduleKeys = subscribers.get(projectKey);
     if (moduleKeys == null) {
       if (!subscriber.subscribe(config, listener)) {
@@ -114,7 +119,7 @@ public class NotificationsManager {
   }
 
   public synchronized void unsubscribe(ISonarLintProject project) {
-    SonarLintProjectConfiguration config = configReader.read(project);
+    SonarLintProjectConfiguration config = configReader.apply(project);
 
     String projectKey = config.getProjectKey();
     Set<String> moduleKeys = subscribers.get(projectKey);
@@ -155,10 +160,7 @@ public class NotificationsManager {
   }
 
   // visible for testing
-  public static class SonarLintProjectConfigurationReader {
-    // visible for testing
-    public SonarLintProjectConfiguration read(ISonarLintProject project) {
-      return SonarLintProjectConfiguration.read(project.getScopeContext());
-    }
+  public interface SonarLintProjectConfigurationReader extends Function<ISonarLintProject, SonarLintProjectConfiguration> {
+    SonarLintProjectConfiguration apply(ISonarLintProject project);
   }
 }

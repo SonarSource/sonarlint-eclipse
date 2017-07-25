@@ -52,20 +52,22 @@ public class NotificationsManagerTest {
   private ISonarLintProject project2mod1 = mock(ISonarLintProject.class);
   private ISonarLintProject project2mod2 = mock(ISonarLintProject.class);
 
-  SonarLintProjectConfigurationReader configReader = new SonarLintProjectConfigurationReader() {
-    Map<ISonarLintProject, SonarLintProjectConfiguration> configs = new HashMap<>();
-    {
-      configs.put(project1mod1, mockConfig(projectKey1, moduleKey1));
-      configs.put(project1mod2, mockConfig(projectKey1, moduleKey2));
-      configs.put(project2mod1, mockConfig(projectKey2, moduleKey1));
-      configs.put(project2mod2, mockConfig(projectKey2, moduleKey2));
-    }
+  Map<ISonarLintProject, SonarLintProjectConfiguration> configs = new HashMap<>();
+  {
+    configs.put(project1mod1, mockConfig(projectKey1, moduleKey1));
+    configs.put(project1mod2, mockConfig(projectKey1, moduleKey2));
+    configs.put(project2mod1, mockConfig(projectKey2, moduleKey1));
+    configs.put(project2mod2, mockConfig(projectKey2, moduleKey2));
+  }
 
-    @Override
-    public SonarLintProjectConfiguration read(ISonarLintProject project) {
-      return configs.get(project);
-    };
-  };
+  SonarLintProjectConfigurationReader configReader = p -> configs.get(p);
+
+  private SonarLintProjectConfiguration mockConfig(String projectKey, String moduleKey) {
+    SonarLintProjectConfiguration config = mock(SonarLintProjectConfiguration.class);
+    when(config.getProjectKey()).thenReturn(projectKey);
+    when(config.getModuleKey()).thenReturn(moduleKey);
+    return config;
+  }
 
   static class FakeSubscriber extends NotificationsManager.Subscriber {
     int count;
@@ -84,13 +86,6 @@ public class NotificationsManagerTest {
   @Before
   public void setUp() {
     notificationsManager = new NotificationsManager(subscriber, configReader);
-  }
-
-  private SonarLintProjectConfiguration mockConfig(String projectKey, String moduleKey) {
-    SonarLintProjectConfiguration config = mock(SonarLintProjectConfiguration.class);
-    when(config.getProjectKey()).thenReturn(projectKey);
-    when(config.getModuleKey()).thenReturn(moduleKey);
-    return config;
   }
 
   @Test
@@ -168,6 +163,14 @@ public class NotificationsManagerTest {
 
     // should be 0 if unsubscribe was correctly ignored, otherwise it would be -1
     assertThat(disabled.count).isEqualTo(0);
+  }
+
+  @Test
+  public void should_not_subscribe_when_project_key_null() {
+    ISonarLintProject moduleWithoutProjectKey = mock(ISonarLintProject.class);
+    configs.put(moduleWithoutProjectKey, mockConfig(null, "dummy moduleKey"));
+    notificationsManager.subscribe(moduleWithoutProjectKey, listener);
+    assertThat(subscriber.count).isEqualTo(0);
   }
 
   @Test
