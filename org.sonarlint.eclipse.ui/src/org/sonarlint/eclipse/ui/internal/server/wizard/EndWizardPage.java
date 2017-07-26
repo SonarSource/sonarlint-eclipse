@@ -63,18 +63,20 @@ public class EndWizardPage extends WizardPage {
       label.setText("SonarQube Server connection successfully created. Click finish to save and schedule an update of all project bindings.");
     }
 
-    Button notificationsEnabledCheckbox = new Button(container, SWT.CHECK);
-    notificationsEnabledCheckbox.setText("Receive notifications about events in this server");
+    if (model.getNotificationsSupported()) {
+      Button notificationsEnabledCheckbox = new Button(container, SWT.CHECK);
+      notificationsEnabledCheckbox.setText("Receive notifications about events in this server");
 
-    DataBindingContext dbc = new DataBindingContext();
-    notificationsEnabledBinding = dbc.bindValue(
-      WidgetProperties.selection().observe(notificationsEnabledCheckbox),
-      BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_NOTIFICATIONS_ENABLED)
-        .observe(model),
-      null,
-      null);
+      DataBindingContext dbc = new DataBindingContext();
+      notificationsEnabledBinding = dbc.bindValue(
+        WidgetProperties.selection().observe(notificationsEnabledCheckbox),
+        BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_NOTIFICATIONS_ENABLED)
+          .observe(model),
+        null,
+        null);
 
-    WizardPageSupport.create(this, dbc);
+      WizardPageSupport.create(this, dbc);
+    }
 
     setControl(container);
   }
