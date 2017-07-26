@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
-import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
@@ -36,8 +35,6 @@ import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 public class EndWizardPage extends WizardPage {
 
   private final ServerConnectionModel model;
-
-  private Binding notificationsEnabledBinding;
 
   public EndWizardPage(ServerConnectionModel model) {
     super("server_end_page", "Configuration completed", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
@@ -68,7 +65,7 @@ public class EndWizardPage extends WizardPage {
       notificationsEnabledCheckbox.setText("Receive notifications about events in this server");
 
       DataBindingContext dbc = new DataBindingContext();
-      notificationsEnabledBinding = dbc.bindValue(
+      dbc.bindValue(
         WidgetProperties.selection().observe(notificationsEnabledCheckbox),
         BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_NOTIFICATIONS_ENABLED)
           .observe(model),
