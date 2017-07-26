@@ -193,6 +193,12 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     if (model.isEdit()) {
       editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsEnabled());
       server = editedServer;
+
+      if (model.getNotificationsEnabled()) {
+        server.getBoundProjects().forEach(SonarLintUiPlugin::subscribeToNotifications);
+      } else {
+        server.getBoundProjects().forEach(SonarLintUiPlugin::unsubscribeToNotifications);
+      }
     } else {
       server = SonarLintCorePlugin.getServersManager().create(model.getServerId(), model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsEnabled());
       SonarLintCorePlugin.getServersManager().addServer(server, model.getUsername(), model.getPassword());
