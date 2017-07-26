@@ -22,6 +22,10 @@ package org.sonarlint.eclipse.its;
 import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.http.HttpMethod;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
+import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
+import org.eclipse.swtbot.swt.finder.results.BoolResult;
+import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -117,10 +121,24 @@ public class ConnectedModeWithOrgaTest extends AbstractSonarLintTest {
     assertThat(wizardBot.isNextEnabled()).isFalse();
     wizardBot.clickFinish();
 
-    JobHelpers.waitForServerUpdateJob(bot);
-
     SWTBotView serversView = bot.viewById("org.sonarlint.eclipse.ui.ServersView");
-    assertThat(serversView.bot().tree().getAllItems()[0].getText()).matches("testWithOrga \\[Version: " + orchestrator.getServer().version() + "(.*), Last update: (.*)\\]");
+    final SWTBotTreeItem serverCell = serversView.bot().tree().getAllItems()[0];
+    bot.waitUntil(new DefaultCondition() {
+      @Override
+      public boolean test() throws Exception {
+        return UIThreadRunnable.syncExec(new BoolResult() {
+          @Override
+          public Boolean run() {
+            return serverCell.getText().matches("testWithOrga \\[Version: " + orchestrator.getServer().version() + "(.*), Last update: (.*)\\]");
+          }
+        });
+      };
+      
+      @Override
+      public String getFailureMessage() {
+        return "Server status is: " + serverCell.getText();
+      }
+    }, 20_000);
   }
 
   public static void enableOrganizationsSupport() {
