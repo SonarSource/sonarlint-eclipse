@@ -90,6 +90,7 @@ public class Server implements IServer, StateListener {
   private final List<IServerListener> listeners = new ArrayList<>();
   private GlobalStorageStatus updateStatus;
   private boolean hasUpdates;
+  private boolean notificationsEnabled;
 
   Server(String id) {
     this.id = id;
@@ -262,10 +263,11 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public void updateConfig(String url, @Nullable String organization, String username, String password) {
+  public void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsEnabled) {
     this.host = url;
     this.organization = organization;
     this.hasAuth = StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
+    this.notificationsEnabled = notificationsEnabled;
     SonarLintCorePlugin.getServersManager().updateServer(this, username, password);
     Job job = new ServerUpdateJob(this);
     job.schedule();
@@ -456,7 +458,11 @@ public class Server implements IServer, StateListener {
 
   @Override
   public boolean areNotificationsEnabled() {
-    // TODO
-    return true;
+    return notificationsEnabled;
+  }
+
+  public Server setNotificationsEnabled(boolean value) {
+    this.notificationsEnabled = value;
+    return this;
   }
 }

@@ -105,7 +105,7 @@ public interface IServer {
 
   boolean isUpdating();
 
-  void updateConfig(String url, @Nullable String organization, String username, String password);
+  void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsEnabled);
 
   void checkForUpdates(IProgressMonitor progress);
 

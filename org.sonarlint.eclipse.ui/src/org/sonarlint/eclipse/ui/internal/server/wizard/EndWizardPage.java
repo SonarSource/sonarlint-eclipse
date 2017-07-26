@@ -19,10 +19,16 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
+import org.eclipse.core.databinding.Binding;
+import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.jface.databinding.swt.WidgetProperties;
+import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -30,6 +36,8 @@ import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 public class EndWizardPage extends WizardPage {
 
   private final ServerConnectionModel model;
+
+  private Binding notificationsEnabledBinding;
 
   public EndWizardPage(ServerConnectionModel model) {
     super("server_end_page", "Configuration completed", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
@@ -54,6 +62,19 @@ public class EndWizardPage extends WizardPage {
     } else {
       label.setText("SonarQube Server connection successfully created. Click finish to save and schedule an update of all project bindings.");
     }
+
+    Button notificationsEnabledCheckbox = new Button(container, SWT.CHECK);
+    notificationsEnabledCheckbox.setText("Receive notifications about events in this server");
+
+    DataBindingContext dbc = new DataBindingContext();
+    notificationsEnabledBinding = dbc.bindValue(
+      WidgetProperties.selection().observe(notificationsEnabledCheckbox),
+      BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_NOTIFICATIONS_ENABLED)
+        .observe(model),
+      null,
+      null);
+
+    WizardPageSupport.create(this, dbc);
 
     setControl(container);
   }
