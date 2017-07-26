@@ -64,6 +64,7 @@ public class ServerConnectionModel extends ModelObject {
   private String username;
   private String password;
   private TextSearchIndex<RemoteOrganization> organizationsIndex;
+  private boolean notificationsSupported;
   private boolean notificationsEnabled;
 
   public ServerConnectionModel() {
@@ -204,6 +205,10 @@ public class ServerConnectionModel extends ModelObject {
         // Ignore, should not occurs
       }
     }
+  }
+
+  public boolean getNotificationsSupported() {
+    return notificationsSupported;
   }
 
   public boolean getNotificationsEnabled() {

@@ -203,10 +203,12 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       }
     }
 
-    if (model.getNotificationsEnabled()) {
-      server.getBoundProjects().forEach(SonarLintUiPlugin::subscribeToNotifications);
-    } else {
-      server.getBoundProjects().forEach(SonarLintUiPlugin::unsubscribeToNotifications);
+    if (model.getNotificationsSupported()) {
+      if (model.getNotificationsEnabled()) {
+        server.getBoundProjects().forEach(SonarLintUiPlugin::subscribeToNotifications);
+      } else {
+        server.getBoundProjects().forEach(SonarLintUiPlugin::unsubscribeToNotifications);
+      }
     }
 
     Job j = new ServerUpdateJob(server);
