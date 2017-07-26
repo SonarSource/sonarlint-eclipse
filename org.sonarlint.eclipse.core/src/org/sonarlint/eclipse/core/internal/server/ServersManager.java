@@ -360,6 +360,7 @@ public class ServersManager {
         serverNode.put(ORG_ATTRIBUTE, server.getOrganization());
       }
       serverNode.putBoolean(AUTH_ATTRIBUTE, server.hasAuth());
+      serverNode.putBoolean(NOTIFICATIONS_ENABLED_ATTRIBUTE, server.areNotificationsEnabled());
       serversNode.flush();
     } catch (BackingStoreException e) {
       throw new IllegalStateException("Unable to save server list", e);
