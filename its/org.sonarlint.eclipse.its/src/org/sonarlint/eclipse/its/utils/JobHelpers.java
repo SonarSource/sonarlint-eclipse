@@ -28,17 +28,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunch;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.junit.Assert;
 
 /**
  * Inspired by https://github.com/eclipse/m2e-core/blob/master/org.eclipse.m2e.tests.common/src/org/eclipse/m2e/tests/common/JobHelpers.java
  */
 public final class JobHelpers {
-
-  private static final int POLLING_DELAY = 10;
 
   public static void waitForJobsToComplete(SWTWorkbenchBot bot) {
     bot.sleep(1000);
@@ -50,7 +45,7 @@ public final class JobHelpers {
   }
 
   public static void waitForServerUpdateJob(SWTWorkbenchBot bot) {
-    bot.sleep(2000);
+    System.out.println("Wait for server update job to complete...");
     waitForJobs(SonarLintServerUpdateJobMatcher.INSTANCE, 60 * 1000);
   }
 
@@ -97,20 +92,18 @@ public final class JobHelpers {
     waitForJobs(BuildJobMatcher.INSTANCE, 60 * 1000);
   }
 
-  public static void waitForJobs(IJobMatcher matcher, int maxWaitMillis) {
-    final long limit = System.currentTimeMillis() + maxWaitMillis;
+  private static void waitForJobs(IJobMatcher matcher, int maxWaitMillis) {
     while (true) {
       Job job = getJob(matcher);
       if (job == null) {
         return;
       }
-      boolean timeout = System.currentTimeMillis() > limit;
-      Assert.assertFalse("Timeout while waiting for completion of job: " + job, timeout);
-      job.wakeUp();
       try {
-        Thread.sleep(POLLING_DELAY);
+        System.out.println("Waiting for job " + job.getName() + " to complete...");
+        job.join();
+        System.out.println("Job " + job.getName() + " completed");
       } catch (InterruptedException e) {
-        // ignore and keep waiting
+        // ignore and loop
       }
     }
   }
@@ -118,41 +111,10 @@ public final class JobHelpers {
   private static Job getJob(IJobMatcher matcher) {
     Job[] jobs = Job.getJobManager().find(null);
     for (Job job : jobs) {
+      System.out.println("Background job: " + job.getName());
       if (matcher.matches(job)) {
+        System.out.println("Matched!");
         return job;
-      }
-    }
-    return null;
-  }
-
-  public static void waitForLaunchesToComplete(int maxWaitMillis) {
-    // wait for any jobs that actually start the launch
-    waitForJobs(LaunchJobMatcher.INSTANCE, maxWaitMillis);
-
-    // wait for the launches themselves
-    final long limit = System.currentTimeMillis() + maxWaitMillis;
-    while (true) {
-      ILaunch launch = getActiveLaunch();
-      if (launch == null) {
-        return;
-      }
-      boolean timeout = System.currentTimeMillis() > limit;
-      Assert.assertFalse("Timeout while waiting for completion of launch: " + launch.getLaunchConfiguration(), timeout);
-      try {
-        Thread.sleep(POLLING_DELAY);
-      } catch (InterruptedException e) {
-        // ignore and keep waiting
-      }
-    }
-  }
-
-  private static ILaunch getActiveLaunch() {
-    ILaunch[] launches = DebugPlugin.getDefault().getLaunchManager().getLaunches();
-    if (launches != null) {
-      for (ILaunch launch : launches) {
-        if (!launch.isTerminated()) {
-          return launch;
-        }
       }
     }
     return null;
@@ -161,17 +123,6 @@ public final class JobHelpers {
   public static interface IJobMatcher {
 
     boolean matches(Job job);
-
-  }
-
-  static class LaunchJobMatcher implements IJobMatcher {
-
-    public static final IJobMatcher INSTANCE = new LaunchJobMatcher();
-
-    @Override
-    public boolean matches(Job job) {
-      return job.getClass().getName().matches("(.*\\.DebugUIPlugin.*)");
-    }
 
   }
 
