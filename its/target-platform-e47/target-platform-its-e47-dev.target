@@ -8,8 +8,8 @@
 <location path="${M2_REPO}/org/objenesis/objenesis/2.4" type="Directory"/>
 <location path="${M2_REPO}/org/assertj/assertj-core/3.5.2" type="Directory"/>
 <location path="${M2_REPO}/com/google/code/findbugs/jsr305/3.0.1" type="Directory"/>
-<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/2.17-SNAPSHOT" type="Directory"/>
-<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/2.17-SNAPSHOT" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/2.17.0.890" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/2.17.0.890" type="Directory"/>
 <location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.15.0.1106" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
