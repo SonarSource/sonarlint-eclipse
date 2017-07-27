@@ -19,16 +19,17 @@
  */
 package org.sonarlint.eclipse.core.internal.notifications;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 public class NotificationsTracker {
+
+  // visible for testing
+  public static final String FILENAME = "lastEventPolling.data";
 
   private ZonedDateTime lastEventPolling;
 
@@ -42,7 +43,7 @@ public class NotificationsTracker {
         // ignore
       }
     }
-    lastEventPollingPath = basedir.resolve("lastEventPolling.obj");
+    lastEventPollingPath = basedir.resolve(FILENAME);
   }
 
   synchronized ZonedDateTime getLastEventPolling() {
@@ -64,22 +65,19 @@ public class NotificationsTracker {
     if (!lastEventPollingPath.toFile().isFile()) {
       return null;
     }
-    try (
-      FileInputStream fis = new FileInputStream(lastEventPollingPath.toFile());
-      ObjectInputStream ois = new ObjectInputStream(fis)) {
-      return (ZonedDateTime) ois.readObject();
-    } catch (Exception e) {
+    try {
+      long millis = Long.parseLong(new String(Files.readAllBytes(lastEventPollingPath)));
+      return ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.systemDefault());
+    } catch (IOException | NumberFormatException e) {
       // ignore
     }
     return null;
   }
 
   private void writeToFile(ZonedDateTime time) {
-    try (
-      FileOutputStream fos = new FileOutputStream(lastEventPollingPath.toFile());
-      ObjectOutputStream oos = new ObjectOutputStream(fos)) {
-      oos.writeObject(time);
-    } catch (Exception e) {
+    try {
+      Files.write(lastEventPollingPath, Long.toString(time.toInstant().toEpochMilli()).getBytes());
+    } catch (IOException e) {
       // ignore
     }
   }
