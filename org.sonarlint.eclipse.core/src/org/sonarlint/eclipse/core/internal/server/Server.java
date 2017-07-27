@@ -75,6 +75,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
 import org.sonarsource.sonarlint.core.client.api.connected.WsHelper;
 import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
+import org.sonarsource.sonarlint.core.notifications.SonarQubeNotifications;
 
 public class Server implements IServer, StateListener {
 
@@ -412,6 +413,15 @@ public class Server implements IServer, StateListener {
       }
     }
     return builder;
+  }
+
+  public static boolean checkNotificationsSupported(String url, String organization, String username, String password) {
+    Builder builder = Server.getConfigBuilderNoCredentials(url, organization);
+    if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
+      builder.credentials(username, password);
+    }
+
+    return SonarQubeNotifications.get().isSupported(builder.build());
   }
 
   @Override

@@ -35,6 +35,7 @@ import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 public class EndWizardPage extends WizardPage {
 
   private final ServerConnectionModel model;
+  private Button notificationsEnabledCheckbox;
 
   public EndWizardPage(ServerConnectionModel model) {
     super("server_end_page", "Configuration completed", SonarLintImages.IMG_WIZBAN_NEW_SERVER);
@@ -60,22 +61,24 @@ public class EndWizardPage extends WizardPage {
       label.setText("SonarQube Server connection successfully created. Click finish to save and schedule an update of all project bindings.");
     }
 
-    if (model.getNotificationsSupported()) {
-      Button notificationsEnabledCheckbox = new Button(container, SWT.CHECK);
-      notificationsEnabledCheckbox.setText("Receive notifications about events in this server");
+    notificationsEnabledCheckbox = new Button(container, SWT.CHECK);
+    notificationsEnabledCheckbox.setText("Receive notifications about events in this server");
 
-      DataBindingContext dbc = new DataBindingContext();
-      dbc.bindValue(
-        WidgetProperties.selection().observe(notificationsEnabledCheckbox),
-        BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_NOTIFICATIONS_ENABLED)
-          .observe(model),
-        null,
-        null);
+    DataBindingContext dbc = new DataBindingContext();
+    dbc.bindValue(
+      WidgetProperties.selection().observe(notificationsEnabledCheckbox),
+      BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_NOTIFICATIONS_ENABLED)
+        .observe(model),
+      null,
+      null);
 
-      WizardPageSupport.create(this, dbc);
-    }
+    WizardPageSupport.create(this, dbc);
 
     setControl(container);
+  }
+
+  public void setNotificationsSupported(boolean notificationsSupported) {
+    notificationsEnabledCheckbox.setVisible(notificationsSupported);
   }
 
 }

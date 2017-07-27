@@ -211,6 +211,10 @@ public class ServerConnectionModel extends ModelObject {
     return notificationsSupported;
   }
 
+  public void setNotificationsSupported(boolean value) {
+    notificationsSupported = value;
+  }
+
   public boolean getNotificationsEnabled() {
     return notificationsEnabled;
   }

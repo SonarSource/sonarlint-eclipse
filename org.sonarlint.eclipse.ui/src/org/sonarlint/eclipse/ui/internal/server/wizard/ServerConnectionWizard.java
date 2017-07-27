@@ -194,7 +194,8 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsEnabled());
       server = editedServer;
     } else {
-      server = SonarLintCorePlugin.getServersManager().create(model.getServerId(), model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsEnabled());
+      server = SonarLintCorePlugin.getServersManager().create(model.getServerId(), model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(),
+        model.getNotificationsEnabled());
       SonarLintCorePlugin.getServersManager().addServer(server, model.getUsername(), model.getPassword());
       try {
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ServersView.ID);
@@ -203,12 +204,10 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       }
     }
 
-    if (model.getNotificationsSupported()) {
-      if (model.getNotificationsEnabled()) {
-        server.getBoundProjects().forEach(SonarLintUiPlugin::subscribeToNotifications);
-      } else {
-        server.getBoundProjects().forEach(SonarLintUiPlugin::unsubscribeToNotifications);
-      }
+    if (model.getNotificationsSupported() && model.getNotificationsEnabled()) {
+      server.getBoundProjects().forEach(SonarLintUiPlugin::subscribeToNotifications);
+    } else {
+      server.getBoundProjects().forEach(SonarLintUiPlugin::unsubscribeToNotifications);
     }
 
     Job j = new ServerUpdateJob(server);
@@ -239,6 +238,11 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     if (advance && currentPage == orgPage && model.hasOrganizations() && !testConnection(model.getOrganization())) {
       event.doit = false;
       return;
+    }
+    if (advance && event.getTargetPage() == endPage) {
+      boolean notificationsSupported = Server.checkNotificationsSupported(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword());
+      endPage.setNotificationsSupported(notificationsSupported);
+      model.setNotificationsSupported(notificationsSupported);
     }
   }
 
@@ -293,5 +297,4 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
 
     return true;
   }
-
 }
