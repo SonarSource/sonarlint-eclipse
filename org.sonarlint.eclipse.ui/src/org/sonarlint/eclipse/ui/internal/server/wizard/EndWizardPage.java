@@ -63,6 +63,7 @@ public class EndWizardPage extends WizardPage {
 
     notificationsEnabledCheckbox = new Button(container, SWT.CHECK);
     notificationsEnabledCheckbox.setText("Receive notifications about events in this server");
+    notificationsEnabledCheckbox.setVisible(false);
 
     DataBindingContext dbc = new DataBindingContext();
     dbc.bindValue(
