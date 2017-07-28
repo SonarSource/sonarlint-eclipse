@@ -77,7 +77,7 @@ public class RemoteSonarProject {
   }
 
   public String asString() {
-    return serverId + SEPARATOR + moduleKey + SEPARATOR + name;
+    return serverId + SEPARATOR + projectKey + SEPARATOR + moduleKey + SEPARATOR + name;
   }
 
   /**
