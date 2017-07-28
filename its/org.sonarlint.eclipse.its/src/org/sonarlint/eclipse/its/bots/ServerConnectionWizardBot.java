@@ -140,6 +140,21 @@ public class ServerConnectionWizardBot {
     });
   }
 
+  public void waitForNotificationSupportCheckToBeFetched() {
+    wizardBot.waitUntilWidgetAppears(new DefaultCondition() {
+
+      @Override
+      public boolean test() throws Exception {
+        return wizardBot.checkBoxWithLabel("Receive notifications about events in this server").isEnabled();
+      }
+
+      @Override
+      public String getFailureMessage() {
+        return "Expected notifications checkbox";
+      }
+    });
+  }
+
   public String getOrganization() {
     return wizardBot.textWithLabel(ORGANIZATION_LABEL).getText();
   }
