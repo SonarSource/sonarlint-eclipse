@@ -254,7 +254,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     new AnalyzeOpenedFilesJob().schedule(2000);
   }
 
-  private void subscribeToNotifications() {
+  private static void subscribeToNotifications() {
     ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isBound)
       .forEach(SonarLintUiPlugin::subscribeToNotifications);

@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.notifications;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -68,7 +69,7 @@ public class NotificationsTracker {
       return null;
     }
     try {
-      long millis = Long.parseLong(new String(Files.readAllBytes(lastEventPollingPath)));
+      long millis = Long.parseLong(new String(Files.readAllBytes(lastEventPollingPath), Charset.defaultCharset()));
       return ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneOffset.systemDefault());
     } catch (IOException | NumberFormatException e) {
       // ignore
@@ -78,7 +79,7 @@ public class NotificationsTracker {
 
   private void writeToFile(ZonedDateTime time) {
     try {
-      Files.write(lastEventPollingPath, Long.toString(time.toInstant().toEpochMilli()).getBytes());
+      Files.write(lastEventPollingPath, Long.toString(time.toInstant().toEpochMilli()).getBytes(Charset.defaultCharset()));
     } catch (IOException e) {
       // ignore
     }

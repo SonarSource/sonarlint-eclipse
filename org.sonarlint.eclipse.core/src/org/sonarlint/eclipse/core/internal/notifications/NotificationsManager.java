@@ -137,7 +137,7 @@ public class NotificationsManager {
     // visible for testing
     public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
       Server server = (Server) SonarLintCorePlugin.getServersManager().getServer(config.getServerId());
-      if (!server.areNotificationsEnabled()) {
+      if (server == null || !server.areNotificationsEnabled()) {
         return false;
       }
 

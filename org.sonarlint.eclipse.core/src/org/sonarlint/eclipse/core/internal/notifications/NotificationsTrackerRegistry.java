@@ -46,7 +46,7 @@ public class NotificationsTrackerRegistry {
     return Optional.ofNullable(registry.get(project.getName()));
   }
 
-  private NotificationsTracker newTracker(ISonarLintProject project) {
+  private static NotificationsTracker newTracker(ISonarLintProject project) {
     return new NotificationsTracker(StoragePathManager.getNotificationsDir(project.getName()));
   }
 }
