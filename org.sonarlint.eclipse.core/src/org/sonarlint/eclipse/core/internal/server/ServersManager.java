@@ -50,6 +50,7 @@ public class ServersManager {
   static final String ORG_ATTRIBUTE = "org";
   static final String USERNAME_ATTRIBUTE = "username";
   static final String PASSWORD_ATTRIBUTE = "password";
+  static final String NOTIFICATIONS_ENABLED_ATTRIBUTE = "notificationsEnabled";
 
   private static final byte EVENT_ADDED = 0;
   private static final byte EVENT_CHANGED = 1;
@@ -232,7 +233,8 @@ public class ServersManager {
     update(server,
       url,
       serverNode.get(ORG_ATTRIBUTE, null),
-      serverNode.getBoolean(AUTH_ATTRIBUTE, false));
+      serverNode.getBoolean(AUTH_ATTRIBUTE, false),
+      serverNode.getBoolean(NOTIFICATIONS_ENABLED_ATTRIBUTE, false));
   }
 
   private static String getServerIdFromNodeName(String name) {
@@ -342,7 +344,7 @@ public class ServersManager {
       storeCredentials(server, username, password);
     }
     Server serverToUpdate = (Server) serversById.get(server.getId());
-    update(serverToUpdate, server.getHost(), server.getOrganization(), server.hasAuth());
+    update(serverToUpdate, server.getHost(), server.getOrganization(), server.hasAuth(), server.areNotificationsEnabled());
 
     fireServerEvent(serverToUpdate, EVENT_CHANGED);
   }
@@ -358,6 +360,7 @@ public class ServersManager {
         serverNode.put(ORG_ATTRIBUTE, server.getOrganization());
       }
       serverNode.putBoolean(AUTH_ATTRIBUTE, server.hasAuth());
+      serverNode.putBoolean(NOTIFICATIONS_ENABLED_ATTRIBUTE, server.areNotificationsEnabled());
       serversNode.flush();
     } catch (BackingStoreException e) {
       throw new IllegalStateException("Unable to save server list", e);
@@ -411,14 +414,15 @@ public class ServersManager {
     return null;
   }
 
-  public IServer create(String id, String url, @Nullable String organization, String username, String password) {
-    return update(new Server(id), url, organization, StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password));
+  public IServer create(String id, String url, @Nullable String organization, String username, String password, boolean notificationsEnabled) {
+    return update(new Server(id), url, organization, StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password), notificationsEnabled);
   }
 
-  private static Server update(Server server, String url, @Nullable String organization, boolean hasAuth) {
+  private static Server update(Server server, String url, @Nullable String organization, boolean hasAuth, boolean notificationsEnabled) {
     return server.setHost(url)
       .setOrganization(organization)
-      .setHasAuth(hasAuth);
+      .setHasAuth(hasAuth)
+      .setNotificationsEnabled(notificationsEnabled);
   }
 
 }

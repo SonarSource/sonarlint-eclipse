@@ -76,6 +76,7 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
@@ -200,7 +201,8 @@ public class BindProjectsPage extends WizardPage {
         Map<RemoteModule, Double> results = moduleIndex.search(bind.getEclipseName());
         if (!results.isEmpty()) {
           // Take first highest scoring
-          bind.associate(selectedServer.getId(), results.keySet().iterator().next().getKey());
+          RemoteModule remoteModule = results.keySet().iterator().next();
+          bind.associate(selectedServer.getId(), remoteModule.getProjectKey(), remoteModule.getKey());
         } else {
           bind.setAutoBindFailed(true);
         }
@@ -450,6 +452,10 @@ public class BindProjectsPage extends WizardPage {
       projectConfig.setServerId(projectBinding.getServerId());
       changed = true;
     }
+    if (!Objects.equals(projectBinding.getProjectKey(), projectConfig.getProjectKey())) {
+      projectConfig.setProjectKey(projectBinding.getProjectKey());
+      changed = true;
+    }
     if (!Objects.equals(projectBinding.getModuleKey(), projectConfig.getModuleKey())) {
       projectConfig.setModuleKey(projectBinding.getModuleKey());
       changed = true;
@@ -467,6 +473,7 @@ public class BindProjectsPage extends WizardPage {
     JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
     if (project.isBound()) {
       new ProjectUpdateJob(project).schedule();
+      SonarLintUiPlugin.subscribeToNotifications(project);
     }
     JobUtils.notifyServerViewAfterBindingChange(project, oldServerId);
   }

@@ -32,6 +32,7 @@ public class SonarLintProjectManager {
 
   private static final String P_EXTRA_PROPS = "extraProperties";
   private static final String P_SERVER_ID = "serverId";
+  private static final String P_PROJECT_KEY = "projectKey";
   private static final String P_MODULE_KEY = "moduleKey";
   private static final String P_AUTO_ENABLED_KEY = "autoEnabled";
 
@@ -56,6 +57,7 @@ public class SonarLintProjectManager {
       }
     }
     sonarProject.setExtraProperties(sonarProperties);
+    sonarProject.setProjectKey(projectNode.get(P_PROJECT_KEY, ""));
     sonarProject.setModuleKey(projectNode.get(P_MODULE_KEY, ""));
     sonarProject.setServerId(projectNode.get(P_SERVER_ID, ""));
     sonarProject.setAutoEnabled(projectNode.getBoolean(P_AUTO_ENABLED_KEY, true));
@@ -81,16 +83,25 @@ public class SonarLintProjectManager {
     } else {
       projectNode.remove(P_EXTRA_PROPS);
     }
+
+    if (StringUtils.isNotBlank(configuration.getProjectKey())) {
+      projectNode.put(P_PROJECT_KEY, configuration.getProjectKey());
+    } else {
+      projectNode.remove(P_PROJECT_KEY);
+    }
+
     if (StringUtils.isNotBlank(configuration.getModuleKey())) {
       projectNode.put(P_MODULE_KEY, configuration.getModuleKey());
     } else {
       projectNode.remove(P_MODULE_KEY);
     }
+
     if (StringUtils.isNotBlank(configuration.getServerId())) {
       projectNode.put(P_SERVER_ID, configuration.getServerId());
     } else {
       projectNode.remove(P_SERVER_ID);
     }
+
     projectNode.putBoolean(P_AUTO_ENABLED_KEY, configuration.isAutoEnabled());
     try {
       projectNode.flush();

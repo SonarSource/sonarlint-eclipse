@@ -45,6 +45,7 @@ public class ServerConnectionModel extends ModelObject {
   public static final String PROPERTY_PASSWORD = "password";
   public static final String PROPERTY_ORGANIZATION = "organization";
   public static final String PROPERTY_SERVER_ID = "serverId";
+  public static final String PROPERTY_NOTIFICATIONS_ENABLED = "notificationsEnabled";
 
   public enum ConnectionType {
     SONARCLOUD, ONPREMISE
@@ -63,6 +64,8 @@ public class ServerConnectionModel extends ModelObject {
   private String username;
   private String password;
   private TextSearchIndex<RemoteOrganization> organizationsIndex;
+  private boolean notificationsSupported;
+  private boolean notificationsEnabled;
 
   public ServerConnectionModel() {
     this.edit = false;
@@ -84,6 +87,7 @@ public class ServerConnectionModel extends ModelObject {
       }
       this.authMethod = StringUtils.isBlank(password) ? AuthMethod.TOKEN : AuthMethod.PASSWORD;
     }
+    this.notificationsEnabled = server.areNotificationsEnabled();
   }
 
   public boolean isEdit() {
@@ -203,4 +207,21 @@ public class ServerConnectionModel extends ModelObject {
     }
   }
 
+  public boolean getNotificationsSupported() {
+    return notificationsSupported;
+  }
+
+  public void setNotificationsSupported(boolean value) {
+    notificationsSupported = value;
+  }
+
+  public boolean getNotificationsEnabled() {
+    return notificationsEnabled;
+  }
+
+  public void setNotificationsEnabled(boolean value) {
+    boolean old = this.notificationsEnabled;
+    this.notificationsEnabled = value;
+    firePropertyChange(PROPERTY_NOTIFICATIONS_ENABLED, old, this.notificationsEnabled);
+  }
 }

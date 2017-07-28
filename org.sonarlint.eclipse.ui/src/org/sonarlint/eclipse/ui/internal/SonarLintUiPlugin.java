@@ -43,12 +43,15 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.notifications.ListenerFactory;
+import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
+import org.sonarlint.eclipse.ui.internal.popup.SonarQubeNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
@@ -64,8 +67,11 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private SonarLintConsole console;
 
+  private ListenerFactory listenerFactory;
+
   private static final SonarLintPartListener SONARLINT_PART_LISTENER = new SonarLintPartListener();
   private static final SonarLintChangeListener SONARLINT_CHANGE_LISTENER = new SonarLintChangeListener();
+  private static final SonarLintProjectEventListener SONARLINT_PROJECT_EVENT_LISTENER = new SonarLintProjectEventListener();
 
   public SonarLintUiPlugin() {
     plugin = this;
@@ -99,6 +105,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     super.start(context);
 
     ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_CHANGE_LISTENER, IResourceChangeEvent.POST_CHANGE);
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
 
     logListener = new SonarLintConsoleLogger();
     SonarLintLogger.get().addLogListener(logListener);
@@ -123,6 +130,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     analyzeOpenedFiles();
 
+    subscribeToNotifications();
   }
 
   private static void checkServersStatus() {
@@ -140,6 +148,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   @Override
   public void stop(final BundleContext context) throws Exception {
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_CHANGE_LISTENER);
+    ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
     SonarLintLogger.get().removeLogListener(logListener);
     try {
       getPreferenceStore().removePropertyChangeListener(prefListener);
@@ -170,6 +179,17 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       manager.removeConsoles(new IConsole[] {console});
       this.console = null;
     }
+  }
+
+  public synchronized ListenerFactory listenerFactory() {
+    if (listenerFactory == null) {
+      listenerFactory = () -> notification -> Display.getDefault().asyncExec(() -> {
+        SonarQubeNotificationPopup popup = new SonarQubeNotificationPopup(Display.getCurrent(), notification);
+        popup.create();
+        popup.open();
+      });
+    }
+    return listenerFactory;
   }
 
   private static class AnalyzeOpenedFilesJob extends Job {
@@ -227,7 +247,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         page.addPartListener(SONARLINT_PART_LISTENER);
       }
     }
-
   }
 
   public static void analyzeOpenedFiles() {
@@ -235,4 +254,17 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     new AnalyzeOpenedFilesJob().schedule(2000);
   }
 
+  private static void subscribeToNotifications() {
+    ProjectsProviderUtils.allProjects().stream()
+      .filter(ISonarLintProject::isBound)
+      .forEach(SonarLintUiPlugin::subscribeToNotifications);
+  }
+
+  public static void subscribeToNotifications(ISonarLintProject project) {
+    SonarLintCorePlugin.getInstance().notificationsManager().subscribe(project, getDefault().listenerFactory().create());
+  }
+
+  public static void unsubscribeToNotifications(ISonarLintProject project) {
+    SonarLintCorePlugin.getInstance().notificationsManager().unsubscribe(project);
+  }
 }

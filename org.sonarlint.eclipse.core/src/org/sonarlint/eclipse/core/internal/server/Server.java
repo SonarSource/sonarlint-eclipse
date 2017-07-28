@@ -44,7 +44,7 @@ import org.eclipse.equinox.security.storage.StorageException;
 import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.StorageManager;
+import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
 import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
@@ -75,6 +75,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
 import org.sonarsource.sonarlint.core.client.api.connected.WsHelper;
 import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
+import org.sonarsource.sonarlint.core.notifications.SonarQubeNotifications;
 
 public class Server implements IServer, StateListener {
 
@@ -90,13 +91,14 @@ public class Server implements IServer, StateListener {
   private final List<IServerListener> listeners = new ArrayList<>();
   private GlobalStorageStatus updateStatus;
   private boolean hasUpdates;
+  private boolean notificationsEnabled;
 
   Server(String id) {
     this.id = id;
     ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
       .setServerId(getId())
-      .setWorkDir(StorageManager.getServerWorkDir(getId()))
-      .setStorageRoot(StorageManager.getServerStorageRoot())
+      .setWorkDir(StoragePathManager.getServerWorkDir(getId()))
+      .setStorageRoot(StoragePathManager.getServerStorageRoot())
       .setLogOutput(new SonarLintAnalyzerLogOutput())
       .build();
     this.client = new ConnectedSonarLintEngineImpl(globalConfig);
@@ -254,6 +256,7 @@ public class Server implements IServer, StateListener {
   }
 
   public static void unbind(ISonarLintProject project) {
+    SonarLintCorePlugin.getInstance().notificationsManager().unsubscribe(project);
     SonarLintProjectConfiguration.read(project.getScopeContext()).unbind();
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
@@ -261,10 +264,11 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public void updateConfig(String url, @Nullable String organization, String username, String password) {
+  public void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsEnabled) {
     this.host = url;
     this.organization = organization;
     this.hasAuth = StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
+    this.notificationsEnabled = notificationsEnabled;
     SonarLintCorePlugin.getServersManager().updateServer(this, username, password);
     Job job = new ServerUpdateJob(this);
     job.schedule();
@@ -411,6 +415,15 @@ public class Server implements IServer, StateListener {
     return builder;
   }
 
+  public static boolean checkNotificationsSupported(String url, String organization, String username, String password) {
+    Builder builder = Server.getConfigBuilderNoCredentials(url, organization);
+    if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
+      builder.credentials(username, password);
+    }
+
+    return SonarQubeNotifications.get().isSupported(builder.build());
+  }
+
   @Override
   public TextSearchIndex<RemoteModule> getModuleIndex() {
     Map<String, RemoteModule> allModulesByKey = client.allModulesByKey();
@@ -453,4 +466,13 @@ public class Server implements IServer, StateListener {
     return SONARCLOUD_URL.equals(this.host);
   }
 
+  @Override
+  public boolean areNotificationsEnabled() {
+    return notificationsEnabled;
+  }
+
+  public Server setNotificationsEnabled(boolean value) {
+    this.notificationsEnabled = value;
+    return this;
+  }
 }

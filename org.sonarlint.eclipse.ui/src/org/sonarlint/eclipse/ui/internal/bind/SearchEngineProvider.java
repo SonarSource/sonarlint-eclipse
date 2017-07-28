@@ -71,7 +71,8 @@ public class SearchEngineProvider implements IContentProposalProvider {
         Comparator.comparing(Map.Entry<RemoteModule, Double>::getValue).reversed()
           .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)));
       for (Map.Entry<RemoteModule, Double> e : entries) {
-        RemoteSonarProject prj = new RemoteSonarProject(server.getId(), e.getKey().getKey(), e.getKey().getName());
+        RemoteModule module = e.getKey();
+        RemoteSonarProject prj = new RemoteSonarProject(server.getId(), module.getProjectKey(), module.getKey(), module.getName());
         list.add(new ContentProposal(prj.asString(), e.getKey().getName(), prj.getDescription()));
       }
     } catch (Exception e) {

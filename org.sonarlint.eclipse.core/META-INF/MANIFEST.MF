@@ -24,6 +24,7 @@ Export-Package: org.sonarlint.eclipse.core,
  org.sonarlint.eclipse.core.internal.resources;x-friends:="org.sonarlint.eclipse.ui,org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.core.internal.server;x-friends:="org.sonarlint.eclipse.ui,org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.core.internal.telemetry;x-friends:="org.sonarlint.eclipse.ui",
+ org.sonarlint.eclipse.core.internal.notifications;x-friends:="org.sonarlint.eclipse.ui,org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.core.internal.tracking;x-friends:="org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.core.internal.utils;x-friends:="org.sonarlint.eclipse.core.tests,org.sonarlint.eclipse.ui",
  org.sonarlint.eclipse.core.resource

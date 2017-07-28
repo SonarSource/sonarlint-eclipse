@@ -61,7 +61,7 @@ public class ServersManagerTest {
     assertThat(ROOT.nodeExists(PREF_SERVERS)).isFalse();
     assertThat(ROOT_SECURE.nodeExists(PREF_SERVERS)).isFalse();
     String id = "foo/bar";
-    IServer server = manager.create(id, "http://foo", "bar", "login", "pwd");
+    IServer server = manager.create(id, "http://foo", "bar", "login", "pwd", false);
     manager.addServer(server, "login", "pwd");
     assertThat(manager.getServers()).containsExactly(server);
     assertThat(manager.getServer(id)).isEqualTo(server);
@@ -77,7 +77,7 @@ public class ServersManagerTest {
     assertThat(ROOT_SECURE.node(PREF_SERVERS).node("foo%2Fbar").get(USERNAME_ATTRIBUTE, null)).isEqualTo("login");
     assertThat(ROOT_SECURE.node(PREF_SERVERS).node("foo%2Fbar").get(PASSWORD_ATTRIBUTE, null)).isEqualTo("pwd");
 
-    IServer serverUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2");
+    IServer serverUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2", false);
     try {
       manager.addServer(serverUpdated, "login2", "pwd2");
       fail("Expected exception");
@@ -116,7 +116,7 @@ public class ServersManagerTest {
     assertThat(manager.getServers()).hasSize(1);
     assertThat(manager.getServer("default").getId()).isEqualTo("default");
 
-    manager.updateServer(manager.create("default", "http://foo2", "bar2", "toto", null), "toto", null);
+    manager.updateServer(manager.create("default", "http://foo2", "bar2", "toto", null, false), "toto", null);
     assertThat(manager.getServer("default").getId()).isEqualTo("default");
     assertThat(manager.getServer("default").getHost()).isEqualTo("http://foo2");
     assertThat(manager.getServer("default").hasAuth()).isTrue();
@@ -139,7 +139,7 @@ public class ServersManagerTest {
     removed.clear();
 
     String id = "foo/bar";
-    IServer newServer = manager.create(id, "http://foo", "bar", "login", "pwd");
+    IServer newServer = manager.create(id, "http://foo", "bar", "login", "pwd", false);
     manager.addServer(newServer, "login", "pwd");
     assertThat(removed).isEmpty();
     assertThat(changed).isEmpty();
@@ -147,7 +147,7 @@ public class ServersManagerTest {
 
     added.clear();
 
-    IServer serverUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2");
+    IServer serverUpdated = manager.create(id, "http://foo2", "bar2", "login2", "pwd2", false);
     manager.updateServer(serverUpdated, "login2", "pwd2");
     assertThat(removed).isEmpty();
     assertThat(changed).containsExactly(serverUpdated);
