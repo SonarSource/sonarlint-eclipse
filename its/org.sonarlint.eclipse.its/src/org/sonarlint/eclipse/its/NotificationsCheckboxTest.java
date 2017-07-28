@@ -21,13 +21,16 @@ package org.sonarlint.eclipse.its;
 
 import com.sonar.orchestrator.Orchestrator;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
+import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
+import org.eclipse.swtbot.swt.finder.results.BoolResult;
+import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.sonar.wsclient.user.UserParameters;
 import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
-import org.sonarlint.eclipse.its.utils.JobHelpers;
 import org.sonarqube.ws.WsUserTokens.GenerateWsResponse;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
@@ -69,7 +72,7 @@ public class NotificationsCheckboxTest extends AbstractSonarLintTest {
   }
 
   @Test
-  public void configureServerWithTokenAndOrganization() {
+  public void configureServerWithoutNotifications() {
     ServerConnectionWizardBot wizardBot = new ServerConnectionWizardBot(bot);
     wizardBot.openFromFileNewWizard();
 
@@ -96,9 +99,23 @@ public class NotificationsCheckboxTest extends AbstractSonarLintTest {
     assertThat(wizardBot.isNextEnabled()).isFalse();
     wizardBot.clickFinish();
 
-    JobHelpers.waitForServerUpdateJob(bot);
-
     SWTBotView serversView = bot.viewById("org.sonarlint.eclipse.ui.ServersView");
-    assertThat(serversView.bot().tree().getAllItems()[0].getText()).matches(connectionName + " \\[Version: " + orchestrator.getServer().version() + "(.*), Last update: (.*)\\]");
+    final SWTBotTreeItem serverCell = serversView.bot().tree().getAllItems()[0];
+    bot.waitUntil(new DefaultCondition() {
+      @Override
+      public boolean test() throws Exception {
+        return UIThreadRunnable.syncExec(new BoolResult() {
+          @Override
+          public Boolean run() {
+            return serverCell.getText().matches(connectionName + " \\[Version: " + orchestrator.getServer().version() + "(.*), Last update: (.*)\\]");
+          }
+        });
+      };
+
+      @Override
+      public String getFailureMessage() {
+        return "Server status is: " + serverCell.getText();
+      }
+    }, 20_000);
   }
 }
