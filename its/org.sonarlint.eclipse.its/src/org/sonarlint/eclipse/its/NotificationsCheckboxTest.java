@@ -81,12 +81,16 @@ public class NotificationsCheckboxTest extends AbstractSonarLintTest {
     wizardBot.setServerUrl(orchestrator.getServer().getUrl());
     wizardBot.clickNext();
 
-    wizardBot.selectUsernamePassword();
+    wizardBot.selectToken();
     wizardBot.clickNext();
 
-    wizardBot.setUsername(SONARLINT_USER);
-    wizardBot.setPassword(SONARLINT_PWD);
+    wizardBot.setToken(token);
     wizardBot.clickNext();
+
+    String connectionName = "local";
+    wizardBot.setConnectionName(connectionName);
+    wizardBot.clickNext();
+
     wizardBot.waitForNotificationSupportCheckToBeFetched();
 
     assertThat(wizardBot.isNextEnabled()).isFalse();
@@ -95,6 +99,6 @@ public class NotificationsCheckboxTest extends AbstractSonarLintTest {
     JobHelpers.waitForServerUpdateJob(bot);
 
     SWTBotView serversView = bot.viewById("org.sonarlint.eclipse.ui.ServersView");
-    assertThat(serversView.bot().tree().getAllItems()[0].getText()).matches("testWithOrga \\[Version: " + orchestrator.getServer().version() + "(.*), Last update: (.*)\\]");
+    assertThat(serversView.bot().tree().getAllItems()[0].getText()).matches(connectionName + " \\[Version: " + orchestrator.getServer().version() + "(.*), Last update: (.*)\\]");
   }
 }

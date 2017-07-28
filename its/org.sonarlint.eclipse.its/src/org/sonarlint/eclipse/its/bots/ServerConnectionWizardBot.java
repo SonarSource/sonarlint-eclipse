@@ -145,12 +145,18 @@ public class ServerConnectionWizardBot {
 
       @Override
       public boolean test() throws Exception {
-        return wizardBot.checkBoxWithLabel("Receive notifications about events in this server").isEnabled();
+        try {
+          // note: actually we expect this to throw always,
+          // because swtbot doesn't match invisible elements
+          return !wizardBot.checkBox(0).isVisible();
+        } catch (WidgetNotFoundException e) {
+          return true;
+        }
       }
 
       @Override
       public String getFailureMessage() {
-        return "Expected notifications checkbox";
+        return "Expected notifications checkbox to be missing";
       }
     });
   }
