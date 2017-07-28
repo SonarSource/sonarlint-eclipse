@@ -46,7 +46,8 @@ public class NotificationsTracker {
     lastEventPollingPath = basedir.resolve(FILENAME);
   }
 
-  synchronized ZonedDateTime getLastEventPolling() {
+  // visible for testing
+  public synchronized ZonedDateTime getLastEventPolling() {
     if (lastEventPolling == null) {
       lastEventPolling = readFromFile();
       if (lastEventPolling == null) {
@@ -56,7 +57,8 @@ public class NotificationsTracker {
     return lastEventPolling;
   }
 
-  synchronized void setLastEventPolling(ZonedDateTime time) {
+  // visible for testing
+  public synchronized void setLastEventPolling(ZonedDateTime time) {
     lastEventPolling = time;
     writeToFile(time);
   }

@@ -184,12 +184,12 @@ public class NotificationsManagerTest {
       private ZonedDateTime time;
 
       @Override
-      synchronized ZonedDateTime getLastEventPolling() {
+      public synchronized ZonedDateTime getLastEventPolling() {
         return time;
       }
 
       @Override
-      synchronized void setLastEventPolling(ZonedDateTime time) {
+      public synchronized void setLastEventPolling(ZonedDateTime time) {
         this.time = time;
       }
     };
