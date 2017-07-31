@@ -53,6 +53,8 @@ import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
 import org.sonarlint.eclipse.ui.internal.popup.SonarQubeNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
+import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotification;
+import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotificationListener;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
 
@@ -183,11 +185,17 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   public synchronized ListenerFactory listenerFactory() {
     if (listenerFactory == null) {
-      listenerFactory = () -> notification -> Display.getDefault().asyncExec(() -> {
-        SonarQubeNotificationPopup popup = new SonarQubeNotificationPopup(Display.getCurrent(), notification);
-        popup.create();
-        popup.open();
-      });
+      // don't replace the anon class with lambda, because then the factory's "create" will always return the same listener instance
+      listenerFactory = () -> new SonarQubeNotificationListener() {
+        @Override
+        public void handle(SonarQubeNotification notification) {
+          Display.getDefault().asyncExec(() -> {
+            SonarQubeNotificationPopup popup = new SonarQubeNotificationPopup(Display.getCurrent(), notification);
+            popup.create();
+            popup.open();
+          });
+        }
+      };
     }
     return listenerFactory;
   }

@@ -83,6 +83,8 @@ public class ServerUpdateAction extends SelectionProviderAction {
     if (servers != null) {
       for (final IServer server : servers) {
         Job job = new ServerUpdateJob(server);
+        // note: this is only necessary for projects bound before SQ 6.6
+        JobUtils.scheduleSubscribeToNotifications(job, server);
         JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
         job.schedule();
       }

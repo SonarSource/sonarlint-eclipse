@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.server;
 
 import java.util.List;
+import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -90,6 +91,8 @@ public interface IServer {
   void removeServerListener(IServerListener listener);
 
   TextSearchIndex<RemoteModule> getModuleIndex();
+
+  Map<String, RemoteModule> getRemoteModules();
 
   AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor);
 

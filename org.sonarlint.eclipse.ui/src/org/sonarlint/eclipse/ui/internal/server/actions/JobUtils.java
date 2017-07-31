@@ -51,6 +51,7 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
+import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 public class JobUtils {
 
@@ -126,6 +127,17 @@ public class JobUtils {
 
   public static void scheduleAnalysisOfOpenFilesInBoundProjects(Job job, IServer server, TriggerType triggerType) {
     scheduleAnalysisOfOpenFiles(job, server.getBoundProjects(), triggerType);
+  }
+
+  public static void scheduleSubscribeToNotifications(Job job, IServer server) {
+    job.addJobChangeListener(new JobCompletionListener() {
+      @Override
+      public void done(IJobChangeEvent event) {
+        if (event.getResult().isOK()) {
+          server.getBoundProjects().forEach(SonarLintUiPlugin::subscribeToNotifications);
+        }
+      }
+    });
   }
 
   abstract static class JobCompletionListener implements IJobChangeListener {
