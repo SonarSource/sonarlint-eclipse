@@ -243,6 +243,9 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       boolean notificationsSupported = Server.checkNotificationsSupported(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword());
       endPage.setNotificationsSupported(notificationsSupported);
       model.setNotificationsSupported(notificationsSupported);
+      if (notificationsSupported && !model.isEdit()) {
+        model.setNotificationsEnabled(true);
+      }
     }
   }
 
