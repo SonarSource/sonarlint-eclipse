@@ -128,7 +128,7 @@ public class NotificationsManager {
 
     if (moduleKeys.isEmpty()) {
       subscribers.remove(projectKey);
-      subscriber.unsubscribe(listeners.get(projectKey));
+      subscriber.unsubscribe(listeners.remove(projectKey));
     }
   }
 
