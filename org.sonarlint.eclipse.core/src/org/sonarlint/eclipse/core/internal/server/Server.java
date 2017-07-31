@@ -435,6 +435,11 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
+  public Map<String, RemoteModule> getRemoteModules() {
+    return client.allModulesByKey();
+  }
+
+  @Override
   public void addServerListener(IServerListener listener) {
     listeners.add(listener);
   }
