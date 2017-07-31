@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
