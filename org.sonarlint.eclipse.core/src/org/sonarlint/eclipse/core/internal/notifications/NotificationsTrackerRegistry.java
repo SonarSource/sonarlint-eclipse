@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.notifications;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -40,10 +39,6 @@ public class NotificationsTrackerRegistry {
       registry.put(project.getName(), tracker);
     }
     return tracker;
-  }
-
-  public synchronized Optional<NotificationsTracker> get(ISonarLintProject project) {
-    return Optional.ofNullable(registry.get(project.getName()));
   }
 
   private static NotificationsTracker newTracker(ISonarLintProject project) {
