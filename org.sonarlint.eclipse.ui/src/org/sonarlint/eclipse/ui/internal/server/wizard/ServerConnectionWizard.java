@@ -208,7 +208,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
             return Status.OK_STATUS;
           }
         };
-        JobUtils.scheduleAfter(job, () -> subscribeToNotificationsJob.schedule());
+        JobUtils.scheduleAfter(job, subscribeToNotificationsJob::schedule);
       } else {
         boundProjects.forEach(SonarLintUiPlugin::unsubscribeToNotifications);
       }
