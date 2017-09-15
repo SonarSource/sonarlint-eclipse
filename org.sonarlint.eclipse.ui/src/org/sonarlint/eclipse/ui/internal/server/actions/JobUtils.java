@@ -125,6 +125,21 @@ public class JobUtils {
     });
   }
 
+  /**
+   * Schedule a second job after a first is done with success.
+   * Important: do not schedule the first job before calling this, schedule it after.
+   */
+  public static void scheduleAfter(Job first, Job second) {
+    first.addJobChangeListener(new JobCompletionListener() {
+      @Override
+      public void done(IJobChangeEvent event) {
+        if (event.getResult().isOK()) {
+          second.schedule();
+        }
+      }
+    });
+  }
+
   public static void scheduleAnalysisOfOpenFilesInBoundProjects(Job job, IServer server, TriggerType triggerType) {
     scheduleAnalysisOfOpenFiles(job, server.getBoundProjects(), triggerType);
   }
