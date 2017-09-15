@@ -179,25 +179,13 @@ public class NotificationsManagerTest {
     assertThat(subscriber.count).isEqualTo(0);
   }
 
-  private NotificationsTracker fakeNotificationsTracker() throws IOException {
-    return new NotificationsTracker(tmp.newFolder().toPath()) {
-      private ZonedDateTime time;
-
-      @Override
-      public synchronized ZonedDateTime getLastEventPolling() {
-        return time;
-      }
-
-      @Override
-      public synchronized void setLastEventPolling(ZonedDateTime time) {
-        this.time = time;
-      }
-    };
+  ProjectNotificationTime newProjectNotificationTime() throws IOException {
+    return new ProjectNotificationTime(new NotificationsTracker(tmp.newFolder().toPath()));
   }
 
   @Test
   public void project_notification_time_should_use_previous_timestamp_when_nothing_changed() throws IOException {
-    ProjectNotificationTime time = new ProjectNotificationTime(fakeNotificationsTracker());
+    ProjectNotificationTime time = newProjectNotificationTime();
     ZonedDateTime previous = time.get();
     assertThat(previous).isNotNull();
     assertThat(time.get()).isEqualTo(previous);
@@ -205,7 +193,7 @@ public class NotificationsManagerTest {
 
   @Test
   public void project_notification_time_should_use_latest_timestamp() throws IOException {
-    ProjectNotificationTime time = new ProjectNotificationTime(fakeNotificationsTracker());
+    ProjectNotificationTime time = newProjectNotificationTime();
 
     ZonedDateTime previous = time.get();
     ZonedDateTime next = previous.plus(1, ChronoUnit.MINUTES);
@@ -216,7 +204,7 @@ public class NotificationsManagerTest {
 
   @Test
   public void project_notification_time_should_not_update_to_older_timestamp() throws IOException {
-    ProjectNotificationTime time = new ProjectNotificationTime(fakeNotificationsTracker());
+    ProjectNotificationTime time = newProjectNotificationTime();
 
     ZonedDateTime previous = time.get();
     ZonedDateTime next = previous.minus(1, ChronoUnit.MINUTES);

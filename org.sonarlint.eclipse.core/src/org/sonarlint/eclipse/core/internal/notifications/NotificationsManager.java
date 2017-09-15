@@ -97,20 +97,12 @@ public class NotificationsManager {
 
     @Override
     public ZonedDateTime get() {
-      ZonedDateTime lastEventPolling = tracker.getLastEventPolling();
-      if (lastEventPolling == null) {
-        lastEventPolling = ZonedDateTime.now();
-        tracker.setLastEventPolling(lastEventPolling);
-      }
-      return lastEventPolling;
+      return tracker.getLastEventPolling();
     }
 
     @Override
     public void set(ZonedDateTime dateTime) {
-      // this could be false if the settings changed between the read and write
-      if (dateTime.isAfter(tracker.getLastEventPolling())) {
-        tracker.setLastEventPolling(dateTime);
-      }
+      tracker.updateLastEventPolling(dateTime);
     }
   }
 

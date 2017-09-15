@@ -64,6 +64,15 @@ public class NotificationsTracker {
     writeToFile(time);
   }
 
+  public synchronized void updateLastEventPolling(ZonedDateTime time) {
+    synchronized (this) {
+      // this could be false if the settings changed between the read and write
+      if (lastEventPolling == null || time.isAfter(lastEventPolling)) {
+        setLastEventPolling(time);
+      }
+    }
+  }
+
   private ZonedDateTime readFromFile() {
     if (!lastEventPollingPath.toFile().isFile()) {
       return null;
