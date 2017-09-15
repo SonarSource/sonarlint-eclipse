@@ -31,6 +31,7 @@ import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 public class ServerUpdateAction extends SelectionProviderAction {
   private List<IServer> servers;
@@ -84,7 +85,7 @@ public class ServerUpdateAction extends SelectionProviderAction {
       for (final IServer server : servers) {
         Job job = new ServerUpdateJob(server);
         // note: this is only necessary for projects bound before SQ 6.6
-        JobUtils.scheduleSubscribeToNotifications(job, server);
+        JobUtils.scheduleAfter(job, () -> server.getBoundProjects().forEach(SonarLintUiPlugin::subscribeToNotifications));
         JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
         job.schedule();
       }

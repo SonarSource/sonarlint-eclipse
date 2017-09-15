@@ -51,7 +51,6 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
-import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 public class JobUtils {
 
@@ -115,26 +114,19 @@ public class JobUtils {
   }
 
   public static void scheduleAnalysisOfOpenFiles(Job job, List<ISonarLintProject> projects, TriggerType triggerType) {
+    scheduleAfter(job, () -> scheduleAnalysisOfOpenFiles(projects, triggerType));
+  }
+
+  /**
+   * Run something after the job is done.
+   * Important: do not schedule the job before calling this method. Schedule it after.
+   */
+  public static void scheduleAfter(Job job, Runnable runnable) {
     job.addJobChangeListener(new JobCompletionListener() {
       @Override
       public void done(IJobChangeEvent event) {
         if (event.getResult().isOK()) {
-          scheduleAnalysisOfOpenFiles(projects, triggerType);
-        }
-      }
-    });
-  }
-
-  /**
-   * Schedule a second job after a first is done with success.
-   * Important: do not schedule the first job before calling this, schedule it after.
-   */
-  public static void scheduleAfter(Job first, Job second) {
-    first.addJobChangeListener(new JobCompletionListener() {
-      @Override
-      public void done(IJobChangeEvent event) {
-        if (event.getResult().isOK()) {
-          second.schedule();
+          runnable.run();
         }
       }
     });
@@ -142,17 +134,6 @@ public class JobUtils {
 
   public static void scheduleAnalysisOfOpenFilesInBoundProjects(Job job, IServer server, TriggerType triggerType) {
     scheduleAnalysisOfOpenFiles(job, server.getBoundProjects(), triggerType);
-  }
-
-  public static void scheduleSubscribeToNotifications(Job job, IServer server) {
-    job.addJobChangeListener(new JobCompletionListener() {
-      @Override
-      public void done(IJobChangeEvent event) {
-        if (event.getResult().isOK()) {
-          server.getBoundProjects().forEach(SonarLintUiPlugin::subscribeToNotifications);
-        }
-      }
-    });
   }
 
   abstract static class JobCompletionListener implements IJobChangeListener {

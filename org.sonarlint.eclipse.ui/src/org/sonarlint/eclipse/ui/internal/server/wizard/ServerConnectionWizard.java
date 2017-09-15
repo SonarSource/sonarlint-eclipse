@@ -201,13 +201,14 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
 
       List<ISonarLintProject> boundProjects = server.getBoundProjects();
       if (model.getNotificationsSupported() && model.getNotificationsEnabled() && !boundProjects.isEmpty()) {
-        JobUtils.scheduleAfter(job, new Job("Subscribe to notifications") {
+        Job subscribeToNotificationsJob = new Job("Subscribe to notifications") {
           @Override
           protected IStatus run(IProgressMonitor monitor) {
             boundProjects.forEach(SonarLintUiPlugin::subscribeToNotifications);
             return Status.OK_STATUS;
           }
-        });
+        };
+        JobUtils.scheduleAfter(job, () -> subscribeToNotificationsJob.schedule());
       } else {
         boundProjects.forEach(SonarLintUiPlugin::unsubscribeToNotifications);
       }
