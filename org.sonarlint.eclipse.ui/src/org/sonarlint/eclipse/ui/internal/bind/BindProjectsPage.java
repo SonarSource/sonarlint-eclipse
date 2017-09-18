@@ -461,6 +461,7 @@ public class BindProjectsPage extends WizardPage {
       changed = true;
     }
     if (changed) {
+      SonarLintUiPlugin.unsubscribeToNotifications(project);
       projectConfig.save();
       updateProjectBinding(project, oldServerId);
     }

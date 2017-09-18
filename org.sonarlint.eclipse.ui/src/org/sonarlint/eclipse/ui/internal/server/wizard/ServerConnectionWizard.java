@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -48,6 +49,7 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.ServersView;
@@ -190,15 +192,28 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       return false;
     }
     IServer server;
+
     if (model.isEdit()) {
       editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsEnabled());
       server = editedServer;
 
-      if (model.getNotificationsSupported() && model.getNotificationsEnabled()) {
-        server.getBoundProjects().forEach(SonarLintUiPlugin::subscribeToNotifications);
+      Job job = new ServerUpdateJob(server);
+
+      List<ISonarLintProject> boundProjects = server.getBoundProjects();
+      if (model.getNotificationsSupported() && model.getNotificationsEnabled() && !boundProjects.isEmpty()) {
+        Job subscribeToNotificationsJob = new Job("Subscribe to notifications") {
+          @Override
+          protected IStatus run(IProgressMonitor monitor) {
+            boundProjects.forEach(SonarLintUiPlugin::subscribeToNotifications);
+            return Status.OK_STATUS;
+          }
+        };
+        JobUtils.scheduleAfter(job, subscribeToNotificationsJob::schedule);
       } else {
-        server.getBoundProjects().forEach(SonarLintUiPlugin::unsubscribeToNotifications);
+        boundProjects.forEach(SonarLintUiPlugin::unsubscribeToNotifications);
       }
+
+      job.schedule();
     } else {
       server = SonarLintCorePlugin.getServersManager().create(model.getServerId(), model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(),
         model.getNotificationsEnabled());

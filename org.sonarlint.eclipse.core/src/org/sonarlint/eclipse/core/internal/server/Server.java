@@ -39,13 +39,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
-import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
 import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
@@ -270,8 +268,6 @@ public class Server implements IServer, StateListener {
     this.hasAuth = StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
     this.notificationsEnabled = notificationsEnabled;
     SonarLintCorePlugin.getServersManager().updateServer(this, username, password);
-    Job job = new ServerUpdateJob(this);
-    job.schedule();
   }
 
   @Override

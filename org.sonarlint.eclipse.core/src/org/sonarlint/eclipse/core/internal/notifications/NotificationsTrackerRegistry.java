@@ -33,15 +33,16 @@ public class NotificationsTrackerRegistry {
   private final Map<String, NotificationsTracker> registry = new HashMap<>();
 
   public synchronized NotificationsTracker getOrCreate(ISonarLintProject project) {
-    NotificationsTracker tracker = registry.get(project.getName());
+    String projectName = project.getName();
+    NotificationsTracker tracker = registry.get(projectName);
     if (tracker == null) {
-      tracker = newTracker(project);
-      registry.put(project.getName(), tracker);
+      tracker = newTracker(projectName);
+      registry.put(projectName, tracker);
     }
     return tracker;
   }
 
-  private static NotificationsTracker newTracker(ISonarLintProject project) {
-    return new NotificationsTracker(StoragePathManager.getNotificationsDir(project.getName()));
+  private static NotificationsTracker newTracker(String projectName) {
+    return new NotificationsTracker(StoragePathManager.getNotificationsDir(projectName));
   }
 }
