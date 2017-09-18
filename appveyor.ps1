@@ -4,10 +4,10 @@ $PSVersionTable.PSVersion
 
 function InstallAppveyorTools
 {
-	$travisUtilsVersion = "33"
+	$travisUtilsVersion = "632f394e55e23cec5c336ccfbeb525d8577cc3fe"
 	$localPath = "$env:USERPROFILE\.local"
 	$tmp = [IO.Path]::GetTempFileName() | Rename-Item -NewName { [IO.Path]::ChangeExtension($_,".tmp.zip") } -PassThru
-	wget "https://github.com/SonarSource/travis-utils/archive/v$travisUtilsVersion.zip" -OutFile $tmp
+	wget "https://github.com/SonarSource/travis-utils/archive/$travisUtilsVersion.zip" -OutFile $tmp
 	
 	Expand-Archive -Force -Path $tmp -DestinationPath $localPath
     
