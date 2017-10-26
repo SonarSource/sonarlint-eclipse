@@ -42,7 +42,8 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
       -Pcoverage \
       -Dtycho.localArtifacts=ignore \
       -Dtycho.disableP2Mirrors=true \
-      -Dsonarlint-eclipse.p2.url=$REPO_URL
+      -Dsonarlint-eclipse.p2.url=$REPO_URL \
+      -B -e
       
   cd ..
   mvn sonar:sonar \
