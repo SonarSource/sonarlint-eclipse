@@ -72,7 +72,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private ListenerFactory listenerFactory;
 
   private static final SonarLintPartListener SONARLINT_PART_LISTENER = new SonarLintPartListener();
-  private static final SonarLintChangeListener SONARLINT_CHANGE_LISTENER = new SonarLintChangeListener();
+  private static final SonarLintPostBuildListener SONARLINT_POST_BUILD_LISTENER = new SonarLintPostBuildListener();
   private static final SonarLintProjectEventListener SONARLINT_PROJECT_EVENT_LISTENER = new SonarLintProjectEventListener();
 
   public SonarLintUiPlugin() {
@@ -106,7 +106,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public void start(final BundleContext context) throws Exception {
     super.start(context);
 
-    ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_CHANGE_LISTENER, IResourceChangeEvent.POST_CHANGE);
+    ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_POST_BUILD_LISTENER, IResourceChangeEvent.POST_BUILD);
     ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
 
     logListener = new SonarLintConsoleLogger();
@@ -149,7 +149,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   @Override
   public void stop(final BundleContext context) throws Exception {
-    ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_CHANGE_LISTENER);
+    ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_POST_BUILD_LISTENER);
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
     SonarLintLogger.get().removeLogListener(logListener);
     try {
