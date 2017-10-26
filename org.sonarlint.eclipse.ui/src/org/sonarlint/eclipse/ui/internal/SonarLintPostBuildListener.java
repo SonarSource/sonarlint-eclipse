@@ -48,11 +48,11 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
-public class SonarLintChangeListener implements IResourceChangeListener {
+public class SonarLintPostBuildListener implements IResourceChangeListener {
 
   @Override
   public void resourceChanged(IResourceChangeEvent event) {
-    if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+    if (event.getType() == IResourceChangeEvent.POST_BUILD) {
       final Collection<ISonarLintFile> changedFiles = new ArrayList<>();
       try {
         event.getDelta().accept(delta -> visitDelta(changedFiles, delta));
