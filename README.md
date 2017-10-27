@@ -1,4 +1,4 @@
-SonarLint Eclipse Plugin
+SonarLint for Eclipse
 =============
 
 Building
