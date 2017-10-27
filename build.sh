@@ -52,6 +52,10 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
       -Dsonar.host.url=$SONAR_HOST_URL \
       -Dsonar.login=$SONAR_TOKEN \
       -Dsonar.projectVersion=$CURRENT_VERSION \
+      -Dsonar.analysis.buildNumber=$BUILD_ID \
+      -Dsonar.analysis.pipeline=$BUILD_ID \
+      -Dsonar.analysis.sha1=$GIT_SHA1  \
+      -Dsonar.analysis.repository=$GITHUB_REPO \
       -B -e -V $*
 
 elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
@@ -68,6 +72,18 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
       -Dsonar.host.url=$SONAR_HOST_URL \
       -Dsonar.login=$SONAR_TOKEN \
       -B -e -V $*
+
+    mvn sonar:sonar \
+      -Dtycho.disableP2Mirrors=true \
+      -Dsonar.host.url=$SONAR_HOST_URL \
+      -Dsonar.login=$SONAR_TOKEN \
+      -Dsonar.analysis.buildNumber=$BUILD_ID \
+      -Dsonar.analysis.pipeline=$BUILD_ID \
+      -Dsonar.analysis.sha1=$GIT_SHA1  \
+      -Dsonar.analysis.repository=$GITHUB_REPO \
+      -Dsonar.analysis.prNumber=$PULL_REQUEST \
+      -Dsonar.branch.name=$GITHUB_BASE_BRANCH \
+      -Dsonar.branch.target=$GITHUB_TARGET_BRANCH
 
 elif [[ "${TRAVIS_BRANCH}" == "branch-"* ]] && [ "$IS_PULLREQUEST" == "false" ]; then
     echo '======= Build, no analysis'
