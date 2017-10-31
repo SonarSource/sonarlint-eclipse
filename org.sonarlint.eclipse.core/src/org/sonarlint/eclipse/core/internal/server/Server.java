@@ -355,6 +355,7 @@ public class Server implements IServer, StateListener {
       if (e.getCause() instanceof UnknownHostException) {
         return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unknown host: " + url);
       }
+      SonarLintLogger.get().debug(e.getMessage(), e);
       return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
     }
   }
