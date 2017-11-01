@@ -20,7 +20,9 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
@@ -51,6 +53,7 @@ public class ServerUpdateJob extends Job {
     }
     monitor.worked(1);
 
+    Set<String> seenModuleKeys = new HashSet<>();
     List<IStatus> failures = new ArrayList<>();
     for (ISonarLintProject projectToUpdate : projectsToUpdate) {
       if (monitor.isCanceled()) {
@@ -59,7 +62,9 @@ public class ServerUpdateJob extends Job {
       try {
         SonarLintProjectConfiguration config = SonarLintProjectConfiguration.read(projectToUpdate.getScopeContext());
         fixProjectKeyIfMissing(config);
-        server.updateProjectStorage(config.getModuleKey(), monitor);
+        if (seenModuleKeys.add(config.getModuleKey())) {
+          server.updateProjectStorage(config.getModuleKey(), monitor);
+        }
       } catch (Exception e) {
         failures.add(new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding for project '" + projectToUpdate.getName() + "'", e));
       }
