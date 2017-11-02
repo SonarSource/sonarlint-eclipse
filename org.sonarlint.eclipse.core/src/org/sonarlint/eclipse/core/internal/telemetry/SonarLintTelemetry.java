@@ -93,7 +93,9 @@ public class SonarLintTelemetry implements AnalysisListener {
       this.scheduledJob = new TelemetryJob();
       scheduledJob.schedule(TimeUnit.MINUTES.toMillis(1));
     } catch (Exception e) {
-      // Silently ignore
+      if (org.sonarsource.sonarlint.core.client.api.util.SonarLintUtils.isInternalDebugEnabled()) {
+        SonarLintLogger.get().error("Failed during periodic telemetry job", e);
+      }
     }
   }
 
