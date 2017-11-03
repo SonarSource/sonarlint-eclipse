@@ -156,7 +156,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java8/src/hello/Hello.java", 13, "Make this anonymous inner class a lambda")); // Test that sonar.java.source is set
+      tuple("/java8/src/hello/Hello.java", 13, "Make this anonymous inner class a lambda"),
+      tuple("/java8/src/hello/Hello.java", 13, "Refactor the code so this stream pipeline is used.")); // Test that sonar.java.source is set
   }
 
   // SONARIDE-349
