@@ -114,14 +114,27 @@ public class JobUtils {
   }
 
   public static void scheduleAnalysisOfOpenFiles(Job job, List<ISonarLintProject> projects, TriggerType triggerType) {
-    scheduleAfter(job, () -> scheduleAnalysisOfOpenFiles(projects, triggerType));
+    scheduleAfterSuccess(job, () -> scheduleAnalysisOfOpenFiles(projects, triggerType));
   }
 
   /**
-   * Run something after the job is done.
-   * Important: do not schedule the job before calling this method. Schedule it after.
+   * Run something after the job is done, regardless of result.
+   * Important: call job.schedule() after calling this method, NOT before.
    */
   public static void scheduleAfter(Job job, Runnable runnable) {
+    job.addJobChangeListener(new JobCompletionListener() {
+      @Override
+      public void done(IJobChangeEvent event) {
+        runnable.run();
+      }
+    });
+  }
+
+  /**
+   * Run something after the job is done, with success. Do nothing if failed.
+   * Important: call job.schedule() after calling this method, NOT before.
+   */
+  public static void scheduleAfterSuccess(Job job, Runnable runnable) {
     job.addJobChangeListener(new JobCompletionListener() {
       @Override
       public void done(IJobChangeEvent event) {

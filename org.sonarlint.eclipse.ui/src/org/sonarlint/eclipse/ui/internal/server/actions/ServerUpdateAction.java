@@ -85,7 +85,7 @@ public class ServerUpdateAction extends SelectionProviderAction {
       for (final IServer server : servers) {
         Job job = new ServerUpdateJob(server);
         // note: this is only necessary for projects bound before SQ 6.6
-        JobUtils.scheduleAfter(job, () -> server.getBoundProjects().forEach(SonarLintUiPlugin::subscribeToNotifications));
+        JobUtils.scheduleAfterSuccess(job, () -> server.getBoundProjects().forEach(SonarLintUiPlugin::subscribeToNotifications));
         JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
         job.schedule();
       }

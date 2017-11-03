@@ -46,6 +46,7 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
+import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 public class SonarLintPostBuildListener implements IResourceChangeListener {
@@ -61,7 +62,10 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
       }
 
       if (!changedFiles.isEmpty()) {
-        new AnalyzeOpenedFiles(changedFiles.stream().collect(Collectors.groupingBy(ISonarLintFile::getProject, Collectors.toList()))).schedule();
+        SonarLintUiPlugin.removeChangeListener();
+        Job job = new AnalyzeOpenedFiles(changedFiles.stream().collect(Collectors.groupingBy(ISonarLintFile::getProject, Collectors.toList())));
+        JobUtils.scheduleAfter(job, SonarLintUiPlugin::addChangeListener);
+        job.schedule();
       }
     }
   }
