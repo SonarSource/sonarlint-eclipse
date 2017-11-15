@@ -60,7 +60,7 @@ public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, 
   @Override
   public boolean exclude(IFile file) {
     if (jdtPresent) {
-      return !JdtUtils.isValidJavaFile(file);
+      return JdtUtils.shouldExclude(file);
     }
     return false;
   }

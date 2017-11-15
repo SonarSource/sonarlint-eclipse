@@ -209,10 +209,10 @@ public class JdtUtilsTest extends SonarTestCase {
     IFile outsideClassPath = (IFile) jdtProject.findMember("ClassOutsideSourceFolder.java");
     IFile nonJava = (IFile) jdtProject.findMember("src/main/sample.js");
 
-    assertThat(JdtUtils.isValidJavaFile(onClassPath)).isTrue();
-    assertThat(JdtUtils.isValidJavaFile(compileError)).isFalse();
-    assertThat(JdtUtils.isValidJavaFile(outsideClassPath)).isFalse();
-    assertThat(JdtUtils.isValidJavaFile(nonJava)).isTrue();
+    assertThat(JdtUtils.shouldExclude(onClassPath)).isFalse();
+    assertThat(JdtUtils.shouldExclude(compileError)).isTrue();
+    assertThat(JdtUtils.shouldExclude(outsideClassPath)).isTrue();
+    assertThat(JdtUtils.shouldExclude(nonJava)).isFalse();
   }
 
   @Test
@@ -220,8 +220,10 @@ public class JdtUtilsTest extends SonarTestCase {
     IProject nonJdtProject = importEclipseProject("SimpleNonJdtProject");
     IFile java = (IFile) nonJdtProject.findMember("src/main/ClassOnDefaultPackage.java");
     IFile nonJava = (IFile) nonJdtProject.findMember("src/main/sample.js");
+    IFile contentTypeExtendingJava = (IFile) nonJdtProject.findMember("src/main/Program.cbl");
 
-    assertThat(JdtUtils.isValidJavaFile(java)).isFalse();
-    assertThat(JdtUtils.isValidJavaFile(nonJava)).isTrue();
+    assertThat(JdtUtils.shouldExclude(java)).isTrue();
+    assertThat(JdtUtils.shouldExclude(nonJava)).isFalse();
+    assertThat(JdtUtils.shouldExclude(contentTypeExtendingJava)).isFalse();
   }
 }
