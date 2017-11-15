@@ -76,7 +76,7 @@ To verify the content of the package: `mvn clean package` and check content of t
 
 ### For Eclipse
 
-Add to `target-platform-e46/target-platform-e46-dev.target` (or whatever target you use) the path of the artifact in your local maven repository as a filesystem path, similar to already existing dependencies.
+Add to `its/target-platform-e47/target-platform-e47-dev.target` the path of the artifact in your local maven repository as a filesystem path, similar to already existing dependencies.
 
 In the target editor (or open `plugin.xml`), click **Set as Target Platform**.
 Note that this will trigger a compilation in Eclipse.
