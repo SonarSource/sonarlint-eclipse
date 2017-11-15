@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
+import java.util.Arrays;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -29,6 +30,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaModel;
@@ -60,11 +63,21 @@ public class JdtUtils {
   /**
    * SLE-34 Remove Java files that are not compiled.This should automatically exclude files that are excluded / unparseable. 
    */
-  public static boolean isValidJavaFile(IFile file) {
-    boolean hasJavaNature = hasJavaNature(file.getProject());
-    IJavaProject javaProject = JavaCore.create(file.getProject());
+  public static boolean shouldExclude(IFile file) {
     IJavaElement javaElt = JavaCore.create(file);
-    return javaElt == null || (hasJavaNature && isStructureKnown(javaElt) && javaProject.isOnClasspath(javaElt));
+    if (javaElt == null) {
+      // Not a Java file, don't exclude it
+      return false;
+    }
+    if (!javaElt.exists()) {
+      // SLE-218 Visual Cobol with JVM Development make JDT think .cbl files are Java files. But still we want to analyze them, so only
+      // exclude
+      // files having the original java source content type.
+      IContentType javaContentType = Platform.getContentTypeManager().getContentType(JavaCore.JAVA_SOURCE_CONTENT_TYPE);
+      String[] fileExtensions = javaContentType.getFileSpecs(IContentType.FILE_EXTENSION_SPEC);
+      return Arrays.asList(fileExtensions).contains(file.getFileExtension());
+    }
+    return !javaElt.getJavaProject().isOnClasspath(javaElt) || !isStructureKnown(javaElt);
   }
 
   private static boolean isStructureKnown(IJavaElement javaElt) {
