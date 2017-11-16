@@ -70,9 +70,8 @@ public class JdtUtils {
       return false;
     }
     if (!javaElt.exists()) {
-      // SLE-218 Visual Cobol with JVM Development make JDT think .cbl files are Java files. But still we want to analyze them, so only
-      // exclude
-      // files having the original java source content type.
+      // SLE-218 Visual Cobol with JVM Development make JDT think .cbl files are Java files.
+      // But still we want to analyze them, so only exclude files having the original java source content type.
       IContentType javaContentType = Platform.getContentTypeManager().getContentType(JavaCore.JAVA_SOURCE_CONTENT_TYPE);
       String[] fileExtensions = javaContentType.getFileSpecs(IContentType.FILE_EXTENSION_SPEC);
       return Arrays.asList(fileExtensions).contains(file.getFileExtension());
