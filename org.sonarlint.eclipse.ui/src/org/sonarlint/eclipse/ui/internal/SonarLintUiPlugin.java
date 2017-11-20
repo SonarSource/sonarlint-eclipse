@@ -271,9 +271,13 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   }
 
   private static void subscribeToNotifications() {
-    ProjectsProviderUtils.allProjects().stream()
-      .filter(ISonarLintProject::isBound)
-      .forEach(SonarLintUiPlugin::subscribeToNotifications);
+    try {
+      ProjectsProviderUtils.allProjects().stream()
+        .filter(ISonarLintProject::isBound)
+        .forEach(SonarLintUiPlugin::subscribeToNotifications);
+    } catch (IllegalStateException e) {
+      SonarLintLogger.get().error("Could not subscribe to notifications", e);
+    }
   }
 
   public static void subscribeToNotifications(ISonarLintProject project) {
