@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -108,6 +109,11 @@ class EclipseInputFile implements ClientInputFile {
   @Override
   public <G> G getClientObject() {
     return (G) file;
+  }
+
+  @Override
+  public URI uri() {
+    return file.uri();
   }
 
   @Override

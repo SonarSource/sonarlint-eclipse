@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.resource;
 
+import java.net.URI;
 import java.nio.charset.Charset;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.jface.text.IDocument;
@@ -46,5 +47,13 @@ public interface ISonarLintFile extends ISonarLintIssuable {
    * {@link EFS} will be queried for a physical copy of the file, and content will be read using this charset.
    */
   Charset getCharset();
+
+  /**
+   * Unique URI to identify this file
+   * @since 3.3
+   */
+  default URI uri() {
+    return getResource().getLocationURI();
+  }
 
 }
