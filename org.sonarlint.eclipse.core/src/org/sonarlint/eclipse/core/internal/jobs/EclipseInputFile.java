@@ -86,6 +86,11 @@ class EclipseInputFile implements ClientInputFile {
   }
 
   @Override
+  public String relativePath() {
+    return file.getProjectRelativePath();
+  }
+
+  @Override
   public boolean isTest() {
     Path absolutePath = Paths.get(file.getProject().getName()).resolve(file.getProjectRelativePath());
     for (PathMatcher matcher : pathMatchersForTests) {
