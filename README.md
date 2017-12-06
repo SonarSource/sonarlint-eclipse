@@ -1,6 +1,10 @@
 SonarLint for Eclipse
 =============
 
+## Installing and Using
+
+See https://www.sonarlint.org/eclipse and https://marketplace.eclipse.org/content/sonarlint
+
 Building
 --------
 
