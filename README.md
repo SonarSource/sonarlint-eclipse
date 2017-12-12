@@ -4,7 +4,9 @@ SonarLint for Eclipse
 Installing and using
 --------------------
 
-See https://www.sonarlint.org/eclipse and https://marketplace.eclipse.org/content/sonarlint
+See https://www.sonarlint.org/eclipse and https://marketplace.eclipse.org/content/sonarlint  
+
+For offline installation and older versions see the update site archive at https://bintray.com/sonarsource/SonarLint-for-Eclipse/releases
 
 Building
 --------
