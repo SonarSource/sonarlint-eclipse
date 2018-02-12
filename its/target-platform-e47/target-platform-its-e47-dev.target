@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e47-dev" sequenceNumber="13">
+<?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e47-dev" sequenceNumber="19">
 <locations>
 <location path="${M2_REPO}/commons-io/commons-io/2.5" type="Directory"/>
 <location path="${M2_REPO}/org/mockito/mockito-core/2.2.9" type="Directory"/>
@@ -8,8 +8,6 @@
 <location path="${M2_REPO}/org/objenesis/objenesis/2.4" type="Directory"/>
 <location path="${M2_REPO}/org/assertj/assertj-core/3.5.2" type="Directory"/>
 <location path="${M2_REPO}/com/google/code/findbugs/jsr305/3.0.1" type="Directory"/>
-<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/3.0.1.1181" type="Directory"/>
-<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/3.0.1.1181" type="Directory"/>
 <location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.15.0.1106" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
@@ -41,6 +39,8 @@
 <unit id="com.google.eclipse.mechanic.feature.feature.group" version="0.5.2.201702100021"/>
 <repository location="https://alfsch.github.io/eclipse-updates/workspacemechanic"/>
 </location>
+<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/3.2.0.1403" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/3.2.0.1403" type="Directory"/>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 </target>
