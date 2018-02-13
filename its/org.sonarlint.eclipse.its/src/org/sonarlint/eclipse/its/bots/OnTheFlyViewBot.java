@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.its.bots;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 
@@ -36,9 +37,15 @@ public class OnTheFlyViewBot {
     showViewMenu.click();
     SWTBotMenu otherMenu = showViewMenu.menu("Other...");
     otherMenu.click();
-    SWTBotTree tree = bot.tree(0);
+    SWTBotShell showViewDialog = bot.shell("Show View");
+    SWTBotTree tree = showViewDialog.bot().tree(0);
     SWTBotTreeItem tItem = tree.getTreeItem("SonarLint").expand();
-    tItem.getNode("SonarLint On-The-Fly").doubleClick();
+    try {
+      tItem.getNode("SonarLint On-The-Fly").doubleClick();
+    } catch (Exception e) {
+      // https://bugs.eclipse.org/bugs/show_bug.cgi?id=519306
+    }
+
   }
 
   public SWTBotView show() {

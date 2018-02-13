@@ -13,13 +13,13 @@
   <packaging>eclipse-test-plugin</packaging>
 
   <name>SonarLint Integration Tests</name>
-  
+
   <properties>
     <!-- http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassdeffounderror-jdk-nashorn-internal-runtime -->
     <tycho.testArgLine>-Dorg.osgi.framework.bundle.parent=ext -Dsonarlint.telemetry.disabled=true</tycho.testArgLine>
     <sonar.runtimeVersion>LATEST_RELEASE</sonar.runtimeVersion>
   </properties>
-  
+
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
@@ -29,7 +29,8 @@
         <configuration>
           <useUIHarness>true</useUIHarness>
           <useUIThread>false</useUIThread>
-          <appArgLine>-eclipse.keyring target/keyring -eclipse.password secure-storage-password.txt -pluginCustomization ${project.basedir}/plugin_customization.ini</appArgLine>
+          <appArgLine>-eclipse.keyring target/keyring -eclipse.password secure-storage-password.txt -pluginCustomization
+            ${project.basedir}/plugin_customization.ini</appArgLine>
           <forkedProcessTimeoutInSeconds>7200</forkedProcessTimeoutInSeconds>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemProperties>
