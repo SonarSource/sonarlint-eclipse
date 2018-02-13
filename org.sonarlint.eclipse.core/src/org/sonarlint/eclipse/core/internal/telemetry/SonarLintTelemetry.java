@@ -108,7 +108,6 @@ public class SonarLintTelemetry implements AnalysisListener {
 
     public TelemetryJob() {
       super("SonarLint Telemetry");
-      setSystem(true);
     }
 
     protected IStatus run(IProgressMonitor monitor) {

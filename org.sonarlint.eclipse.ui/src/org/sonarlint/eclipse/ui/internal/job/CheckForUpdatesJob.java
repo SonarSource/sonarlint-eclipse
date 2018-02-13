@@ -34,7 +34,6 @@ public class CheckForUpdatesJob extends Job {
   public CheckForUpdatesJob() {
     super("Check for configuration updates on SonarQube servers");
     setPriority(DECORATE);
-    setSystem(true);
   }
 
   @Override
