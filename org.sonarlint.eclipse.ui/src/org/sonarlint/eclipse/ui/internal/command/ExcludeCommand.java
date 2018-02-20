@@ -37,7 +37,7 @@ public class ExcludeCommand extends AbstractHandler {
     for (ISonarLintFile file : SelectionUtils.allSelectedFiles(HandlerUtil.getCurrentSelectionChecked(event))) {
       ISonarLintProject project = file.getProject();
       if (!FileExclusionsUtils.isPathAlreadyExcludedInProject(file)) {
-        FileExclusionsUtils.addProjectFileExclusion(project, new ExclusionItem(Type.FILE, file.getProjectRelativePath()));
+        FileExclusionsUtils.addProjectFileExclusion(project, file, new ExclusionItem(Type.FILE, file.getProjectRelativePath()));
       }
     }
     return null;

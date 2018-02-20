@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
@@ -56,14 +57,14 @@ public class FileExclusionsUtils {
 
     if (globalExclusions.test(file.getProjectRelativePath())) {
       if (log) {
-        SonarLintLogger.get().info("File excluded from analysis due to configured global exclusions: " + file.getProjectRelativePath());
+        SonarLintLogger.get().debug("File excluded from analysis due to configured global exclusions: " + file.getProjectRelativePath());
       }
       return false;
     }
 
     if (projectExclusions.test(file.getProjectRelativePath())) {
       if (log) {
-        SonarLintLogger.get().info("File excluded from analysis due to configured project exclusions: " + file.getProjectRelativePath());
+        SonarLintLogger.get().debug("File excluded from analysis due to configured project exclusions: " + file.getProjectRelativePath());
       }
       return false;
     }
@@ -71,12 +72,13 @@ public class FileExclusionsUtils {
     return true;
   }
 
-  public static void addProjectFileExclusion(ISonarLintProject project, ExclusionItem exclusion) {
+  public static void addProjectFileExclusion(ISonarLintProject project, ISonarLintFile file, ExclusionItem exclusion) {
     SonarLintProjectConfiguration projectConfiguration = SonarLintProjectConfiguration.read(project.getScopeContext());
     List<ExclusionItem> fileExclusions = projectConfiguration.getFileExclusions();
     fileExclusions.add(exclusion);
     projectConfiguration.setFileExclusions(fileExclusions);
     projectConfiguration.save();
+    SonarLintMarkerUpdater.clearMarkers(file);
   }
 
   public static boolean isPathAlreadyExcludedInProject(ISonarLintFile file) {

@@ -514,21 +514,6 @@
 	      </visibleWhen>
 	   </command>
 	   <command
-	         commandId="org.sonarlint.eclipse.ui.internal.command.ExcludeCommand"
-	         style="push">
-	     <visibleWhen>
-	       <with variable="activeMenuSelection">
-	         <iterate ifEmpty="false">
-	           <or>
-			    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
-			  </or>
-	           </iterate>
-	        </with>
-	     </visibleWhen>
-	     
-	   </command>
-	    
-	   <command
 	         commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
 	         style="push">
 	      <visibleWhen>
@@ -544,6 +529,20 @@
 	            </iterate>
 	         </with>
 	      </visibleWhen>
+	   </command>
+	   <command
+	         commandId="org.sonarlint.eclipse.ui.internal.command.ExcludeCommand"
+	         style="push">
+	     <visibleWhen>
+	       <with variable="activeMenuSelection">
+	         <iterate ifEmpty="false">
+	           <or>
+			    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
+			  </or>
+	           </iterate>
+	        </with>
+	     </visibleWhen>
+	     
 	   </command>
 	   <command
              commandId="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
@@ -664,7 +663,7 @@
           commandId="org.sonarlint.eclipse.ui.internal.command.ExcludeCommand">
            <enabledWhen>
 	        <with variable="activeMenuSelection">
-	          <iterate ifEmpty="false">
+	          <iterate ifEmpty="false" operator="or">
 	            <or>
                  <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
                  <not>

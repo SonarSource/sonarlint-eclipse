@@ -90,6 +90,15 @@ public class SonarLintMarkerUpdater {
     document.addPositionUpdater(EXTRA_POSITIONS_UPDATER);
   }
 
+  public static void clearMarkers(ISonarLintFile file) {
+    resetExtraPositions(file.getDocument());
+    try {
+      file.getResource().deleteMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, false, IResource.DEPTH_ZERO);
+    } catch (CoreException e) {
+      SonarLintLogger.get().error(e.getMessage(), e);
+    }
+  }
+
   public static void updateMarkersWithServerSideData(ISonarLintIssuable issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType,
     boolean createExtraLocations) {
     try {
