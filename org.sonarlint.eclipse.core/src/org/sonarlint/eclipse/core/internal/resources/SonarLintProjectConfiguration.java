@@ -21,8 +21,10 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
+
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -31,6 +33,7 @@ public class SonarLintProjectConfiguration {
 
   private final IScopeContext projectScope;
   private List<SonarLintProperty> extraProperties = new ArrayList<>();
+  private List<ExclusionItem> fileExclusions = new ArrayList<>();
   private String projectKey;
   private String moduleKey;
   private String serverId;
@@ -46,6 +49,14 @@ public class SonarLintProjectConfiguration {
 
   public void save() {
     SonarLintCorePlugin.getInstance().getProjectManager().saveSonarLintConfiguration(projectScope, this);
+  }
+
+  public List<ExclusionItem> getFileExclusions() {
+    return fileExclusions;
+  }
+
+  public void setFileExclusions(List<ExclusionItem> fileExclusions) {
+    this.fileExclusions = new ArrayList<>(fileExclusions);
   }
 
   public List<SonarLintProperty> getExtraProperties() {

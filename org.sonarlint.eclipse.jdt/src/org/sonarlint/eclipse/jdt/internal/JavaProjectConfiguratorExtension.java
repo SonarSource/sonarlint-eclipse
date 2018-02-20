@@ -30,7 +30,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, ISonarLintFileAdapterParticipant {
 
   private final JdtUtils javaProjectConfigurator;
-  private boolean jdtPresent;
+  private final boolean jdtPresent;
 
   public JavaProjectConfiguratorExtension() {
     jdtPresent = isJdtPresent();

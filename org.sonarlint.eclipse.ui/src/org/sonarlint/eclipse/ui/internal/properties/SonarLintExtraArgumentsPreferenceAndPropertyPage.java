@@ -22,8 +22,9 @@ package org.sonarlint.eclipse.ui.internal.properties;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import javax.annotation.CheckForNull;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.resource.JFaceResources;
@@ -53,11 +54,10 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.PreferencesUtils;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -416,15 +416,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     sonarProperties = new ArrayList<>();
     if (isGlobal()) {
       String props = getPreferenceStore().getString(PreferencesUtils.PREF_EXTRA_ARGS);
-      try {
-        String[] keyValuePairs = StringUtils.split(props, "\r\n");
-        for (String keyValuePair : keyValuePairs) {
-          String[] keyValue = StringUtils.split(keyValuePair, "=");
-          sonarProperties.add(new SonarLintProperty(keyValue[0], keyValue[1]));
-        }
-      } catch (Exception e) {
-        SonarLintLogger.get().error("Error while loading SonarLint analyzer properties" + props, e);
-      }
+      sonarProperties.addAll(PreferencesUtils.deserializeExtraProperties(props));
     } else {
       SonarLintProjectConfiguration sonarProject = getProjectConfig();
       if (sonarProject != null) {
@@ -435,12 +427,8 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
 
   @Override
   public boolean performOk() {
-    List<String> keyValuePairs = new ArrayList<>(sonarProperties.size());
-    for (SonarLintProperty prop : sonarProperties) {
-      keyValuePairs.add(prop.getName() + "=" + prop.getValue());
-    }
-    String props = StringUtils.joinSkipNull(keyValuePairs, "\r\n");
     if (isGlobal()) {
+      String props = PreferencesUtils.serializeExtraProperties(sonarProperties);
       getPreferenceStore().setValue(PreferencesUtils.PREF_EXTRA_ARGS, props);
     } else {
       SonarLintProjectConfiguration sonarProject = getProjectConfig();
@@ -458,6 +446,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     fTableViewer.refresh();
   }
 
+  @CheckForNull
   private ISonarLintProject getProject() {
     return Adapters.adapt(getElement(), ISonarLintProject.class);
   }

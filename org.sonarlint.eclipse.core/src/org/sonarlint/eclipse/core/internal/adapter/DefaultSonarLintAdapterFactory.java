@@ -80,7 +80,12 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
   }
 
   private <T> T getFileAdapter(Class<T> adapterType, IFile file) {
-    if (!SonarLintUtils.shouldAnalyze(file)) {
+    ISonarLintProject project = file.getProject().getAdapter(ISonarLintProject.class);
+    if (project == null) {
+      return null;
+    }
+
+    if (!SonarLintUtils.isSonarLintFileCandidate(file)) {
       return null;
     }
     Predicate<IFile> shouldExclude = SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants().stream()
@@ -96,8 +101,7 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
         return adapterType.cast(adapted);
       }
     }
-    ISonarLintProject project = file.getProject().getAdapter(ISonarLintProject.class);
-    return project != null ? adapterType.cast(new DefaultSonarLintFileAdapter(project, file)) : null;
+    return adapterType.cast(new DefaultSonarLintFileAdapter(project, file));
   }
 
   @Override
