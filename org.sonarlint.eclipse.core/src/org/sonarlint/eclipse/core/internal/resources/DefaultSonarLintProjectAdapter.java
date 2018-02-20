@@ -25,11 +25,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.team.core.RepositoryProvider;
@@ -38,6 +38,7 @@ import org.eclipse.team.core.subscribers.Subscriber;
 import org.eclipse.team.core.synchronize.SyncInfo;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -77,10 +78,9 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
     List<ISonarLintFile> result = new ArrayList<>();
     try {
       project.accept(new IResourceVisitor() {
-
         @Override
         public boolean visit(IResource resource) throws CoreException {
-          if (!SonarLintUtils.shouldAnalyze(resource)) {
+          if (!SonarLintUtils.isSonarLintFileCandidate(resource)) {
             return false;
           }
           ISonarLintFile sonarLintFile = Adapters.adapt(resource, ISonarLintFile.class);

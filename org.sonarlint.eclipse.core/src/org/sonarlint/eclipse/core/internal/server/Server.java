@@ -31,6 +31,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.eclipse.core.net.proxy.IProxyData;
@@ -434,6 +436,11 @@ public class Server implements IServer, StateListener {
   @Override
   public Map<String, RemoteModule> getRemoteModules() {
     return client.allModulesByKey();
+  }
+
+  @Override
+  public Set<String> getServerFileExclusions(String moduleKey, Collection<String> filePaths, Predicate<String> testFilePredicate) {
+    return client.getExcludedFiles(moduleKey, filePaths, testFilePredicate);
   }
 
   @Override

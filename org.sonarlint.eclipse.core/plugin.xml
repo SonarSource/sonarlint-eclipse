@@ -57,14 +57,14 @@
            class="org.sonarlint.eclipse.core.internal.resources.SonarLintPropertyTester"
            id="org.sonarlint.eclipse.core.internal.resources.SonarLintProjectTester"
            namespace="org.sonarlint.eclipse.core"
-           properties="bound,autoAnalysisEnabled,open"
+           properties="bound,autoAnalysisEnabled,open,excluded"
            type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
      </propertyTester>
      <propertyTester
            class="org.sonarlint.eclipse.core.internal.resources.SonarLintPropertyTester"
            id="org.sonarlint.eclipse.core.internal.resources.SonarLintFileTester"
            namespace="org.sonarlint.eclipse.core"
-           properties="bound,autoAnalysisEnabled,open"
+           properties="bound,autoAnalysisEnabled,open,excluded"
            type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
      </propertyTester>
   </extension>

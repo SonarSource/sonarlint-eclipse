@@ -19,8 +19,12 @@
  */
 package org.sonarlint.eclipse.core.internal.server;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -119,4 +123,6 @@ public interface IServer {
   boolean isSonarCloud();
 
   boolean areNotificationsEnabled();
+
+  Set<String> getServerFileExclusions(String moduleKey, Collection<String> filePaths, Predicate<String> testFilePredicate);
 }

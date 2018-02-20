@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
@@ -168,11 +169,9 @@ public class EditSonarPropertyDialog extends StatusDialog {
     StatusInfo status = fValidationStatus;
     boolean isEmpty = fNameText != null && fNameText.getText().length() == 0;
     if (!fSuppressError && isEmpty) {
-      status = new StatusInfo();
-      status.setError("Please input a name");
+      status = new StatusInfo(IStatus.ERROR, "Please input a name");
     } else if (fNameText != null && !isValidPropertyName(fNameText.getText())) {
-      status = new StatusInfo();
-      status.setError("Invalid property name");
+      status = new StatusInfo(IStatus.ERROR, "Invalid property name");
     }
     updateStatus(status);
   }

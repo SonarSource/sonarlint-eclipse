@@ -19,18 +19,20 @@
  */
 package org.sonarlint.eclipse.core.internal.resources;
 
-import java.util.ArrayList;
 import java.util.List;
+
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public class SonarLintProjectManager {
 
   private static final String P_EXTRA_PROPS = "extraProperties";
+  private static final String P_FILE_EXCLUSIONS = "fileExclusions";
   private static final String P_SERVER_ID = "serverId";
   private static final String P_PROJECT_KEY = "projectKey";
   private static final String P_MODULE_KEY = "moduleKey";
@@ -44,19 +46,12 @@ public class SonarLintProjectManager {
     }
 
     String extraArgsAsString = projectNode.get(P_EXTRA_PROPS, null);
-    List<SonarLintProperty> sonarProperties = new ArrayList<>();
-    if (extraArgsAsString != null) {
-      try {
-        String[] props = StringUtils.split(extraArgsAsString, "\r\n");
-        for (String keyValuePair : props) {
-          String[] keyValue = keyValuePair.split("=");
-          sonarProperties.add(new SonarLintProperty(keyValue[0], keyValue.length > 1 ? keyValue[1] : ""));
-        }
-      } catch (Exception e) {
-        SonarLintLogger.get().error("Error while loading SonarLint properties", e);
-      }
-    }
+    List<SonarLintProperty> sonarProperties = PreferencesUtils.deserializeExtraProperties(extraArgsAsString);
+    String fileExclusionsAsString = projectNode.get(P_FILE_EXCLUSIONS, null);
+    List<ExclusionItem> fileExclusions = PreferencesUtils.deserializeFileExclusions(fileExclusionsAsString);
+
     sonarProject.setExtraProperties(sonarProperties);
+    sonarProject.setFileExclusions(fileExclusions);
     sonarProject.setProjectKey(projectNode.get(P_PROJECT_KEY, ""));
     sonarProject.setModuleKey(projectNode.get(P_MODULE_KEY, ""));
     sonarProject.setServerId(projectNode.get(P_SERVER_ID, ""));
@@ -74,14 +69,17 @@ public class SonarLintProjectManager {
     }
 
     if (configuration.getExtraProperties() != null) {
-      List<String> keyValuePairs = new ArrayList<>(configuration.getExtraProperties().size());
-      for (SonarLintProperty prop : configuration.getExtraProperties()) {
-        keyValuePairs.add(prop.getName() + "=" + prop.getValue());
-      }
-      String props = StringUtils.joinSkipNull(keyValuePairs, "\r\n");
+      String props = PreferencesUtils.serializeExtraProperties(configuration.getExtraProperties());
       projectNode.put(P_EXTRA_PROPS, props);
     } else {
       projectNode.remove(P_EXTRA_PROPS);
+    }
+
+    if (configuration.getFileExclusions() != null) {
+      String props = PreferencesUtils.serializeFileExclusions(configuration.getFileExclusions());
+      projectNode.put(P_FILE_EXCLUSIONS, props);
+    } else {
+      projectNode.remove(P_FILE_EXCLUSIONS);
     }
 
     if (StringUtils.isNotBlank(configuration.getProjectKey())) {
