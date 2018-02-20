@@ -59,6 +59,11 @@ public class EditGlobalExclusionDialog extends EditExclusionDialog {
     this.editing = (editItem != null);
     this.editItem = editItem;
   }
+  
+  @Override
+  public boolean isHelpAvailable() {
+    return false;
+  }
 
   /**
    * Configures this dialog's shell, setting the shell's text.

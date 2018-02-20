@@ -90,6 +90,12 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
     this.project = project;
     this.editing = (editItem != null);
     this.editItem = editItem;
+    super.setHelpAvailable(false);
+  }
+  
+  @Override
+  public boolean isHelpAvailable() {
+    return false;
   }
 
   /**
