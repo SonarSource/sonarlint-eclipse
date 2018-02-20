@@ -61,12 +61,12 @@ public class MavenTest extends AbstractSonarLintTest {
         tuple("/sample-module1/src/main/java/hello/Hello1.java", 9, "Replace this use of System.out or System.err by a logger."));
 
     // Issues on pom.xml
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("sample-maven", "pom.xml");
-    JobHelpers.waitForJobsToComplete(bot);
-    assertThat(Arrays.asList(root.findMember("pom.xml").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
-      .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-        tuple("/sample-maven/pom.xml", 11, "Replace \"pom.name\" with \"project.name\"."));
+    // new JavaPackageExplorerBot(bot)
+    // .expandAndDoubleClick("sample-maven", "pom.xml");
+    // JobHelpers.waitForJobsToComplete(bot);
+    // assertThat(Arrays.asList(root.findMember("pom.xml").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
+    // .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+    // tuple("/sample-maven/pom.xml", 11, "Replace \"pom.name\" with \"project.name\"."));
   }
 
 }
