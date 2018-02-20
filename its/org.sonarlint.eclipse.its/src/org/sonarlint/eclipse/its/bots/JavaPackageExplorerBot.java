@@ -58,6 +58,10 @@ public class JavaPackageExplorerBot {
     viewBot.bot().tree().select(projectName);
     clickContextMenu("Properties");
   }
+  
+  public void excludeFile(String... nodes) {
+    viewBot.bot().tree().expandNode(nodes).contextMenu("SonarLint").menu("Exclude").click();
+  }
 
   public void triggerManualAnalysis(String... nodes) {
     viewBot.bot().tree().expandNode(nodes).contextMenu("SonarLint").menu("Analyze").click();
