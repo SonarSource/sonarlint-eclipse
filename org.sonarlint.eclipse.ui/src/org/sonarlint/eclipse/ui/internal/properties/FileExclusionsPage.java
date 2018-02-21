@@ -22,9 +22,12 @@ package org.sonarlint.eclipse.ui.internal.properties;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.CheckForNull;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
@@ -58,10 +61,14 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
@@ -302,8 +309,23 @@ public class FileExclusionsPage extends PropertyPage implements IWorkbenchPrefer
       if (sonarProject != null) {
         sonarProject.setFileExclusions(exclusions);
         sonarProject.save();
+        Set<IResource> resourceWithMarkers;
+        try {
+          ISonarLintProject project = getProject();
+          FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(project);
+          resourceWithMarkers = SonarLintMarkerUpdater.getResourcesWithMarkers(project);
+          for (IResource resource : resourceWithMarkers) {
+            ISonarLintFile sonarlintFile = Adapters.adapt(resource, ISonarLintFile.class);
+            if (sonarlintFile == null || !exclusionsChecker.shouldAnalyze(sonarlintFile, false)) {
+              SonarLintMarkerUpdater.clearMarkers(sonarlintFile);
+            }
+          }
+        } catch (CoreException e) {
+          SonarLintLogger.get().error("Failed to clean markers", e);
+        }
       }
     }
+
     return true;
   }
 

@@ -34,7 +34,7 @@ import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
-import org.sonarlint.eclipse.core.internal.utils.FileExclusionsUtils;
+import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 /**
@@ -68,7 +68,8 @@ public class SonarLintPartListener implements IPartListener2 {
 
   private static void scheduleUpdate(FileWithDocument fileWithDoc) {
     ISonarLintFile file = fileWithDoc.getFile();
-    if (!file.getProject().isAutoEnabled() || !FileExclusionsUtils.shouldAnalyze(file, true)) {
+    FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(file.getProject());
+    if (!file.getProject().isAutoEnabled() || !exclusionsChecker.shouldAnalyze(file, true)) {
       return;
     }
     AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Arrays.asList(fileWithDoc), TriggerType.EDITOR_OPEN);

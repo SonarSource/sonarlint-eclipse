@@ -55,6 +55,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
+import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -92,7 +93,7 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
     this.editItem = editItem;
     super.setHelpAvailable(false);
   }
-  
+
   @Override
   public boolean isHelpAvailable() {
     return false;
@@ -334,7 +335,11 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
     ViewerFilter viewFilter = new ViewerFilter() {
       @Override
       public boolean select(Viewer viewer, Object parentElement, Object element) {
-        return (element instanceof IFolder);
+        if (element instanceof IFolder) {
+          IFolder folder = (IFolder) element;
+          return SonarLintUtils.isSonarLintFileCandidate(folder);
+        }
+        return false;
       }
     };
 
@@ -382,7 +387,8 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
       @Override
       public boolean select(Viewer viewer, Object parentElement, Object element) {
         if (element instanceof IFolder) {
-          return true;
+          IFolder folder = (IFolder) element;
+          return SonarLintUtils.isSonarLintFileCandidate(folder);
         }
 
         if (element instanceof IFile) {
