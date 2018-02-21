@@ -33,38 +33,43 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.FileExclusions;
 
-public class FileExclusionsUtils {
-  private FileExclusionsUtils() {
-    // static only
-  }
+public class FileExclusionsChecker {
+  private FileExclusions projectExclusions;
+  private FileExclusions globalExclusions;
 
-  public static boolean shouldAnalyze(ISonarLintFile file) {
-    return shouldAnalyze(file, false);
-  }
-
-  public static boolean shouldAnalyze(ISonarLintFile file, boolean log) {
-    SonarLintProjectConfiguration projectConfiguration = SonarLintProjectConfiguration.read(file.getProject().getScopeContext());
+  public FileExclusionsChecker(ISonarLintProject project) {
+    SonarLintProjectConfiguration projectConfiguration = SonarLintProjectConfiguration.read(project.getScopeContext());
     List<ExclusionItem> projectExclusionItems = projectConfiguration.getFileExclusions();
-    List<ExclusionItem> globalExclusionItems = PreferencesUtils.getFileExclusions(file.getProject());
+    List<ExclusionItem> globalExclusionItems = PreferencesUtils.getFileExclusions(project);
 
     Set<String> projectFileExclusions = getExclusionsOfType(projectExclusionItems, Type.FILE);
     Set<String> projectDirectoryExclusions = getExclusionsOfType(projectExclusionItems, Type.DIRECTORY);
     Set<String> projectGlobExclusions = getExclusionsOfType(projectExclusionItems, Type.GLOB);
     Set<String> globalGlobExclusions = getExclusionsOfType(globalExclusionItems, Type.GLOB);
 
-    FileExclusions projectExclusions = new FileExclusions(projectFileExclusions, projectDirectoryExclusions, projectGlobExclusions);
-    FileExclusions globalExclusions = new FileExclusions(globalGlobExclusions);
+    projectExclusions = new FileExclusions(projectFileExclusions, projectDirectoryExclusions, projectGlobExclusions);
+    globalExclusions = new FileExclusions(globalGlobExclusions);
+  }
 
-    if (globalExclusions.test(file.getProjectRelativePath())) {
+  public boolean shouldAnalyze(ISonarLintFile file) {
+    return shouldAnalyze(file, false);
+  }
+
+  public boolean shouldAnalyze(ISonarLintFile file, boolean log) {
+    return shouldAnalyze(file.getProjectRelativePath(), log);
+  }
+
+  public boolean shouldAnalyze(String relativePath, boolean log) {
+    if (globalExclusions.test(relativePath)) {
       if (log) {
-        SonarLintLogger.get().debug("File excluded from analysis due to configured global exclusions: " + file.getProjectRelativePath());
+        SonarLintLogger.get().debug("File excluded from analysis due to configured global exclusions: " + relativePath);
       }
       return false;
     }
 
-    if (projectExclusions.test(file.getProjectRelativePath())) {
+    if (projectExclusions.test(relativePath)) {
       if (log) {
-        SonarLintLogger.get().debug("File excluded from analysis due to configured project exclusions: " + file.getProjectRelativePath());
+        SonarLintLogger.get().debug("File excluded from analysis due to configured project exclusions: " + relativePath);
       }
       return false;
     }

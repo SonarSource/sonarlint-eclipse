@@ -25,7 +25,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
-import org.sonarlint.eclipse.core.internal.utils.FileExclusionsUtils;
+import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
@@ -36,8 +36,8 @@ public class ExcludeCommand extends AbstractHandler {
   public Object execute(ExecutionEvent event) throws ExecutionException {
     for (ISonarLintFile file : SelectionUtils.allSelectedFiles(HandlerUtil.getCurrentSelectionChecked(event))) {
       ISonarLintProject project = file.getProject();
-      if (!FileExclusionsUtils.isPathAlreadyExcludedInProject(file)) {
-        FileExclusionsUtils.addProjectFileExclusion(project, file, new ExclusionItem(Type.FILE, file.getProjectRelativePath()));
+      if (!FileExclusionsChecker.isPathAlreadyExcludedInProject(file)) {
+        FileExclusionsChecker.addProjectFileExclusion(project, file, new ExclusionItem(Type.FILE, file.getProjectRelativePath()));
       }
     }
     return null;

@@ -43,7 +43,7 @@ import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
-import org.sonarlint.eclipse.core.internal.utils.FileExclusionsUtils;
+import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -130,12 +130,14 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
     }
 
     ISonarLintFile sonarLintFile = Adapters.adapt(delta.getResource(), ISonarLintFile.class);
-
-    if (sonarLintFile != null && sonarLintFile.getProject().isAutoEnabled() && isChanged(delta)
-      && FileExclusionsUtils.shouldAnalyze(sonarLintFile, true)) {
-      changedFiles.add(sonarLintFile);
-      return true;
+    if (sonarLintFile != null && sonarLintFile.getProject().isAutoEnabled() && isChanged(delta)) {
+      FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(sonarLintFile.getProject());
+      if (exclusionsChecker.shouldAnalyze(sonarLintFile, true)) {
+        changedFiles.add(sonarLintFile);
+        return true;
+      }
     }
+
     return true;
   }
 
