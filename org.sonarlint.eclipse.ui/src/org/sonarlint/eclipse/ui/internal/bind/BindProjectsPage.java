@@ -405,6 +405,7 @@ public class BindProjectsPage extends WizardPage {
   }
 
   private class ProjectAssociationModelEditingSupport extends EditingSupport {
+    private TextCellEditorWithContentProposal textCellEditor;
 
     public ProjectAssociationModelEditingSupport(TableViewer viewer) {
       super(viewer);
@@ -417,7 +418,8 @@ public class BindProjectsPage extends WizardPage {
 
     @Override
     protected CellEditor getCellEditor(Object element) {
-      return new TextCellEditorWithContentProposal(viewer.getTable(), new SearchEngineProvider(selectedServer, BindProjectsPage.this), (ProjectBindModel) element);
+      textCellEditor = new TextCellEditorWithContentProposal(viewer.getTable(), new SearchEngineProvider(selectedServer, BindProjectsPage.this), (ProjectBindModel) element);
+      return textCellEditor;
     }
 
     @Override
@@ -427,7 +429,12 @@ public class BindProjectsPage extends WizardPage {
 
     @Override
     protected void setValue(Object element, Object value) {
-      // Don't set value as the model was already updated in the text adapter
+      boolean open = textCellEditor != null && textCellEditor.isContentProposalOpen();
+
+      if (!open && element instanceof ProjectBindModel) {
+        ProjectBindModel model = (ProjectBindModel) element;
+        model.associate(selectedServer.getId(), null, (String) value);
+      }
     }
 
   }

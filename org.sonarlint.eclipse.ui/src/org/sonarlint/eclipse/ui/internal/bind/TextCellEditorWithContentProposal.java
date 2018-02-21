@@ -27,6 +27,7 @@ import org.eclipse.ui.fieldassist.ContentAssistCommandAdapter;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
 public class TextCellEditorWithContentProposal extends TextCellEditor {
+  private ContentProposalAdapter contentProposalAdapter;
 
   public TextCellEditorWithContentProposal(Composite parent, IContentProposalProvider contentProposalProvider,
     ProjectBindModel sonarProject) {
@@ -36,7 +37,7 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
   }
 
   private void enableContentProposal(IContentProposalProvider contentProposalProvider, ProjectBindModel sonarProject) {
-    ContentProposalAdapter contentProposalAdapter = new ContentAssistCommandAdapter(
+    contentProposalAdapter = new ContentAssistCommandAdapter(
       text,
       new RemoteProjectTextContentAdapter(sonarProject),
       contentProposalProvider,
@@ -48,5 +49,9 @@ public class TextCellEditorWithContentProposal extends TextCellEditor {
     contentProposalAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
     contentProposalAdapter.setFilterStyle(ContentProposalAdapter.FILTER_NONE);
     contentProposalAdapter.setAutoActivationDelay(100);
+  }
+  
+  public boolean isContentProposalOpen() {
+    return contentProposalAdapter.isProposalPopupOpen();
   }
 }
