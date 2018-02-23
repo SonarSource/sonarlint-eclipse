@@ -19,12 +19,17 @@
  */
 package org.sonarlint.eclipse.its;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -37,6 +42,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
+import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -47,10 +53,6 @@ import org.sonarlint.eclipse.its.bots.SonarLintProjectPropertiesBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-import static org.junit.Assume.assumeTrue;
-
 public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @ClassRule
@@ -58,6 +60,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseJava() throws Exception {
+    System.out.println("shouldAnalyseJava");
+    Assume.assumeFalse(platformVersion().toString().startsWith("4.4"));
+
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
     IProject project = importEclipseProject("java/java-simple", "java-simple");
     JobHelpers.waitForJobsToComplete(bot);
@@ -120,6 +125,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseJavaJunit() throws Exception {
+    System.out.println("shouldAnalyseJavaJunit");
     assumeTrue(supportJunit());
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
     IProject project = importEclipseProject("java/java-junit", "java-junit");
@@ -145,6 +151,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseJava8() throws Exception {
+    System.out.println("shouldAnalyseJava8");
+
     assumeTrue(supportJava8());
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
     IProject project = importEclipseProject("java/java8", "java8");
@@ -165,6 +173,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   // SONARIDE-353
   @Test
   public void shouldAnalyseJavaWithDependentProject() throws Exception {
+    System.out.println("shouldAnalyseJavaWithDependentProject");
+
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
     importEclipseProject("java/java-dependent-projects/java-dependent-project", "java-dependent-project");
     IProject mainProject = importEclipseProject("java/java-dependent-projects/java-main-project", "java-main-project");
@@ -187,6 +197,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalysePython() throws Exception {
+    System.out.println("shouldAnalysePython");
+
     SwtBotUtils.openPerspective(bot, PythonPerspectiveFactory.PERSPECTIVE_ID);
     IProject project = importEclipseProject("python", "python");
 
@@ -213,6 +225,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseLinkedFile() throws Exception {
+    System.out.println("shouldAnalyseLinkedFile");
+
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
     IProject project = importEclipseProject("java/java-linked", "java-linked");
     JobHelpers.waitForJobsToComplete(bot);
@@ -233,6 +247,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseVirtualProject() throws Exception {
+    System.out.println("shouldAnalyseVirtualProject");
+
     File remoteProjectDir = temp.newFolder();
     FileUtils.copyDirectory(new File("projects/java/java-simple"), remoteProjectDir);
 

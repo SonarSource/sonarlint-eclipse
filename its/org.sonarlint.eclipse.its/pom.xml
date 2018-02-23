@@ -31,7 +31,7 @@
           <useUIThread>false</useUIThread>
           <appArgLine>-eclipse.keyring target/keyring -eclipse.password secure-storage-password.txt -pluginCustomization
             ${project.basedir}/plugin_customization.ini</appArgLine>
-          <forkedProcessTimeoutInSeconds>7200</forkedProcessTimeoutInSeconds>
+          <forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemProperties>
             <sonar.runtimeVersion>${sonar.runtimeVersion}</sonar.runtimeVersion>
