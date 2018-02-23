@@ -60,7 +60,7 @@ public class MavenTest extends AbstractSonarLintTest {
       .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
         tuple("/sample-module1/src/main/java/hello/Hello1.java", 9, "Replace this use of System.out or System.err by a logger."));
 
-    if (!platformVersion().toString().startsWith("4.4")) {
+    if (!platformVersion().toString().startsWith("4.4") && !platformVersion().toString().startsWith("4.5")) {
       // Issues on pom.xml
       new JavaPackageExplorerBot(bot)
         .expandAndDoubleClick("sample-maven", "pom.xml");
