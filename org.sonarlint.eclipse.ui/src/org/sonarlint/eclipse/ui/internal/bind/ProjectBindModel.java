@@ -62,7 +62,7 @@ public class ProjectBindModel extends AbstractModelObject {
       if (autoBindFailed) {
         return "<Auto-bind failed. Type here to start searching for a remote SonarQube project...>";
       }
-      return "<Type here to start searching for a remote SonarQube project...>";
+      return "< Type here to start searching for a remote project or enter the exact project key...>";
     } else if (server == null) {
       return "<Bound to an unknown server: '" + this.serverId + "'>";
     } else {
