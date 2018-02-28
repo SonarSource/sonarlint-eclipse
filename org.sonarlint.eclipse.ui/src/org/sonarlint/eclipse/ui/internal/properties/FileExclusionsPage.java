@@ -60,7 +60,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
@@ -72,7 +71,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
-public class FileExclusionsPage extends PropertyPage implements IWorkbenchPreferencePage {
+public class FileExclusionsPage extends AbstractListPropertyPage implements IWorkbenchPreferencePage {
   private static final String PREFERENCE_ID = "org.sonarlint.eclipse.ui.properties.FileExclusionsPage";
   private static final Image FILE_IMG = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
   private static final Image FOLDER_IMG = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
@@ -171,32 +170,7 @@ public class FileExclusionsPage extends PropertyPage implements IWorkbenchPrefer
     return pageComponent;
   }
 
-  private void createButtons(Composite innerParent) {
-    GridLayout layout;
-    Composite buttons = new Composite(innerParent, SWT.NONE);
-    buttons.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-    layout = new GridLayout();
-    layout.marginHeight = 0;
-    layout.marginWidth = 0;
-    buttons.setLayout(layout);
-
-    Button addButton = new Button(buttons, SWT.PUSH);
-    addButton.setText("New...");
-    addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    addButton.addListener(SWT.Selection, e -> add());
-
-    editButton = new Button(buttons, SWT.PUSH);
-    editButton.setText("Edit...");
-    editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    editButton.addListener(SWT.Selection, e -> edit());
-
-    removeButton = new Button(buttons, SWT.PUSH);
-    removeButton.setText("Remove");
-    removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    removeButton.addListener(SWT.Selection, e -> remove());
-  }
-
-  private void add() {
+  protected void add() {
     EditExclusionDialog dialog;
 
     if (isGlobal()) {
@@ -216,7 +190,7 @@ public class FileExclusionsPage extends PropertyPage implements IWorkbenchPrefer
     table.refresh();
   }
 
-  private void edit() {
+  protected void edit() {
     ExclusionItem exclusion = (ExclusionItem) table.getStructuredSelection().getFirstElement();
     EditExclusionDialog dialog;
 
@@ -237,7 +211,7 @@ public class FileExclusionsPage extends PropertyPage implements IWorkbenchPrefer
     }
   }
 
-  private void remove() {
+  protected void remove() {
     IStructuredSelection selection = (IStructuredSelection) table.getSelection();
 
     int idx = table.getTable().getSelectionIndex();

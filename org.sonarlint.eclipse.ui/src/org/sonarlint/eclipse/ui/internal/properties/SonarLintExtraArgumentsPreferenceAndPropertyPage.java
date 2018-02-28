@@ -53,7 +53,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
@@ -73,7 +72,7 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
  * framework methods.
  * </p>
  */
-public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPage implements IWorkbenchPreferencePage {
+public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractListPropertyPage implements IWorkbenchPreferencePage {
 
   private static final String VALUE = "Value";
 
@@ -232,29 +231,9 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     return parent;
   }
 
-  private void createButtons(Composite innerParent) {
-    GridLayout layout;
-    Composite buttons = new Composite(innerParent, SWT.NONE);
-    buttons.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-    layout = new GridLayout();
-    layout.marginHeight = 0;
-    layout.marginWidth = 0;
-    buttons.setLayout(layout);
-
-    Button addButton = new Button(buttons, SWT.PUSH);
-    addButton.setText("New...");
-    addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    addButton.addListener(SWT.Selection, e -> add());
-
-    editButton = new Button(buttons, SWT.PUSH);
-    editButton.setText("Edit...");
-    editButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    editButton.addListener(SWT.Selection, e -> edit());
-
-    removeButton = new Button(buttons, SWT.PUSH);
-    removeButton.setText("Remove");
-    removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    removeButton.addListener(SWT.Selection, e -> remove());
+  @Override
+  protected Composite createButtons(Composite innerParent) {
+    Composite buttons = super.createButtons(innerParent);
 
     upButton = new Button(buttons, SWT.PUSH);
     upButton.setText("Up");
@@ -265,6 +244,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     downButton.setText("Down");
     downButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     downButton.addListener(SWT.Selection, e -> downPressed());
+    return buttons;
   }
 
   private static void createLinkToGlobal(final Composite ancestor, Composite parent) {
@@ -280,7 +260,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     fLink.addSelectionListener(sl);
   }
 
-  private void edit() {
+  protected void edit() {
     IStructuredSelection selection = (IStructuredSelection) fTableViewer.getSelection();
 
     Object[] objects = selection.toArray();
@@ -292,7 +272,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     edit(data);
   }
 
-  private void add() {
+  protected void add() {
     SonarLintProperty newProperty = editSonarProperty(new SonarLintProperty("", ""), false, true);
     if (newProperty != null) {
       sonarProperties.add(newProperty);
@@ -301,10 +281,10 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     }
   }
 
-  private void remove() {
+  protected void remove() {
     IStructuredSelection selection = (IStructuredSelection) fTableViewer.getSelection();
 
-    Iterator elements = selection.iterator();
+    Iterator<?> elements = selection.iterator();
     while (elements.hasNext()) {
       SonarLintProperty data = (SonarLintProperty) elements.next();
       sonarProperties.remove(data);
@@ -313,7 +293,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends PropertyPa
     fTableViewer.refresh();
   }
 
-  private void edit(SonarLintProperty data) {
+  protected void edit(SonarLintProperty data) {
     SonarLintProperty oldProp = data;
     SonarLintProperty newProp = editSonarProperty(new SonarLintProperty(oldProp), true, false);
     if (newProp != null) {
