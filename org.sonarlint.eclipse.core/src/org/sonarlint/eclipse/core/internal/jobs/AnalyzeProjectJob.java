@@ -186,14 +186,12 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
 
   private static List<ClientInputFile> buildInputFiles(Path tempDirectory, final Map<ISonarLintFile, IDocument> filesToAnalyze) {
     List<ClientInputFile> inputFiles = new ArrayList<>(filesToAnalyze.size());
-    String allTestPattern = PreferencesUtils.getTestFileRegexps();
-    String[] testPatterns = allTestPattern.split(",");
-    final List<PathMatcher> pathMatchersForTests = createMatchersForTests(testPatterns);
 
     for (final Map.Entry<ISonarLintFile, IDocument> fileWithDoc : filesToAnalyze.entrySet()) {
       ISonarLintFile file = fileWithDoc.getKey();
       String language = tryDetectLanguage(file);
-      ClientInputFile inputFile = new EclipseInputFile(pathMatchersForTests, file, tempDirectory, fileWithDoc.getValue(), language);
+      boolean isTest = TestFileClassifier.get().isTest(file);
+      ClientInputFile inputFile = new EclipseInputFile(isTest, file, tempDirectory, fileWithDoc.getValue(), language);
       inputFiles.add(inputFile);
     }
     return inputFiles;
@@ -213,15 +211,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       }
     }
     return language;
-  }
-
-  private static List<PathMatcher> createMatchersForTests(String[] testPatterns) {
-    final List<PathMatcher> pathMatchersForTests = new ArrayList<>();
-    FileSystem fs = FileSystems.getDefault();
-    for (String testPattern : testPatterns) {
-      pathMatchersForTests.add(fs.getPathMatcher("glob:" + testPattern));
-    }
-    return pathMatchersForTests;
   }
 
   private static Collection<ProjectConfigurator> configureDeprecated(final ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze,

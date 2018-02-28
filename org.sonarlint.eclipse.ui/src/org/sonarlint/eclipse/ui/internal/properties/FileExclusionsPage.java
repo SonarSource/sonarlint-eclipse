@@ -316,7 +316,7 @@ public class FileExclusionsPage extends PropertyPage implements IWorkbenchPrefer
           resourceWithMarkers = SonarLintMarkerUpdater.getResourcesWithMarkers(project);
           for (IResource resource : resourceWithMarkers) {
             ISonarLintFile sonarlintFile = Adapters.adapt(resource, ISonarLintFile.class);
-            if (sonarlintFile == null || !exclusionsChecker.shouldAnalyze(sonarlintFile, false)) {
+            if (sonarlintFile == null || exclusionsChecker.isExcluded(sonarlintFile, false)) {
               SonarLintMarkerUpdater.clearMarkers(sonarlintFile);
             }
           }

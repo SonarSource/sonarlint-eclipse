@@ -28,9 +28,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
-import java.util.List;
 import javax.annotation.Nullable;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -45,15 +42,15 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile
  *
  */
 class EclipseInputFile implements ClientInputFile {
-  private final List<PathMatcher> pathMatchersForTests;
+  private final boolean isTestFile;
   private final ISonarLintFile file;
   private final String language;
   private final IDocument editorDocument;
   private final Path tempDirectory;
   private Path filePath;
 
-  EclipseInputFile(List<PathMatcher> pathMatchersForTests, ISonarLintFile file, Path tempDirectory, @Nullable IDocument editorDocument, @Nullable String language) {
-    this.pathMatchersForTests = pathMatchersForTests;
+  EclipseInputFile(boolean isTestFile, ISonarLintFile file, Path tempDirectory, @Nullable IDocument editorDocument, @Nullable String language) {
+    this.isTestFile = isTestFile;
     this.file = file;
     this.tempDirectory = tempDirectory;
     this.language = language;
@@ -92,13 +89,7 @@ class EclipseInputFile implements ClientInputFile {
 
   @Override
   public boolean isTest() {
-    Path absolutePath = Paths.get(file.getProject().getName()).resolve(file.getProjectRelativePath());
-    for (PathMatcher matcher : pathMatchersForTests) {
-      if (matcher.matches(absolutePath)) {
-        return true;
-      }
-    }
-    return false;
+    return isTestFile;
   }
 
   @Override

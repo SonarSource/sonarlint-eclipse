@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -67,27 +68,43 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
       }
 
       if (!changedFiles.isEmpty()) {
-        SonarLintUiPlugin.removeChangeListener();
-        Job job = new AnalyzeOpenedFiles(changedFiles.stream().collect(Collectors.groupingBy(ISonarLintFile::getProject, Collectors.toList())));
-        JobUtils.scheduleAfter(job, SonarLintUiPlugin::addChangeListener);
-        job.schedule();
+        Map<ISonarLintProject, List<ISonarLintFile>> filesPerProject = changedFiles.stream()
+          .collect(Collectors.groupingBy(ISonarLintFile::getProject, Collectors.toList()));
+        Map<ISonarLintProject, Collection<ISonarLintFile>> filesPerProjectAfterExclusions = new HashMap<>();
+
+        for (Map.Entry<ISonarLintProject, List<ISonarLintFile>> e : filesPerProject.entrySet()) {
+          FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(e.getKey());
+          Collection<ISonarLintFile> filteredFiles = exclusionsChecker.filterExcludedFiles(e.getKey(), e.getValue());
+
+          if (!filteredFiles.isEmpty()) {
+            filesPerProjectAfterExclusions.put(e.getKey(), filteredFiles);
+          }
+        }
+
+        if (!filesPerProjectAfterExclusions.isEmpty()) {
+          SonarLintUiPlugin.removeChangeListener();
+          Job job = new AnalyzeOpenedFiles(filesPerProjectAfterExclusions);
+          JobUtils.scheduleAfter(job, SonarLintUiPlugin::addChangeListener);
+          job.schedule();
+        }
       }
     }
   }
 
   private static class AnalyzeOpenedFiles extends Job {
 
-    private final Map<ISonarLintProject, List<ISonarLintFile>> changedFilesPerProject;
+    private final Map<ISonarLintProject, Collection<ISonarLintFile>> changedFilesPerProject;
 
-    AnalyzeOpenedFiles(Map<ISonarLintProject, List<ISonarLintFile>> changedFilesPerProject) {
+    AnalyzeOpenedFiles(Map<ISonarLintProject, Collection<ISonarLintFile>> changedFilesPerProject) {
       super("Find opened files");
       this.changedFilesPerProject = changedFilesPerProject;
     }
 
     @Override
     public IStatus run(IProgressMonitor monitor) {
-      for (Map.Entry<ISonarLintProject, List<ISonarLintFile>> entry : changedFilesPerProject.entrySet()) {
+      for (Map.Entry<ISonarLintProject, Collection<ISonarLintFile>> entry : changedFilesPerProject.entrySet()) {
         ISonarLintProject project = entry.getKey();
+
         Collection<FileWithDocument> filesToAnalyze = entry.getValue().stream()
           .map(f -> {
             IEditorPart editorPart = PlatformUtils.findEditor(f);
@@ -131,11 +148,8 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
 
     ISonarLintFile sonarLintFile = Adapters.adapt(delta.getResource(), ISonarLintFile.class);
     if (sonarLintFile != null && sonarLintFile.getProject().isAutoEnabled() && isChanged(delta)) {
-      FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(sonarLintFile.getProject());
-      if (exclusionsChecker.shouldAnalyze(sonarLintFile, true)) {
-        changedFiles.add(sonarLintFile);
-        return true;
-      }
+      changedFiles.add(sonarLintFile);
+      return true;
     }
 
     return true;
