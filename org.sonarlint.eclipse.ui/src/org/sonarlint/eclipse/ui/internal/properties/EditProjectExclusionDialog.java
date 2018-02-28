@@ -19,7 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
-import java.util.regex.Pattern;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.util.regex.PatternSyntaxException;
 
 import javax.annotation.Nullable;
@@ -258,8 +259,10 @@ public class EditProjectExclusionDialog extends EditExclusionDialog {
         validationStatus = IMessageProvider.ERROR;
       }
     } else {
+      
       try {
-        Pattern.compile("glob:" + editItem.item());
+        FileSystem fs = FileSystems.getDefault();
+        fs.getPathMatcher("glob:" + editItem);
       } catch (PatternSyntaxException e) {
         validationMessage = "The pattern has an invalid syntax";
         validationStatus = IMessageProvider.ERROR;
