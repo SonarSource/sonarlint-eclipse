@@ -132,16 +132,6 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
   private List<SonarLintProperty> sonarProperties;
 
   /**
-   * The Remove button.
-   */
-  private Button removeButton;
-
-  /**
-   * The Edit button.
-   */
-  private Button editButton;
-
-  /**
    * The Up button.
    */
   private Button upButton;
