@@ -25,6 +25,7 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.sonarlint.eclipse.core.internal.jobs.TestFileClassifier;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -56,6 +57,13 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
       getFieldEditorParent()));
     addField(new StringFieldEditor(PreferencesUtils.PREF_TEST_FILE_REGEXPS,
       Messages.SonarPreferencePage_label_test_file_regexps, getFieldEditorParent()));
+  }
+
+  @Override
+  public boolean performOk() {
+    boolean result = super.performOk();
+    TestFileClassifier.get().reload();
+    return result;
   }
 
 }

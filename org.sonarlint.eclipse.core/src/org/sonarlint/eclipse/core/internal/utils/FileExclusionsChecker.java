@@ -20,15 +20,21 @@
 package org.sonarlint.eclipse.core.internal.utils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
+import org.sonarlint.eclipse.core.internal.jobs.TestFileClassifier;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.FileExclusions;
@@ -51,15 +57,46 @@ public class FileExclusionsChecker {
     globalExclusions = new FileExclusions(globalGlobExclusions);
   }
 
-  public boolean shouldAnalyze(ISonarLintFile file) {
-    return shouldAnalyze(file, false);
+  public Collection<ISonarLintFile> filterExcludedFiles(ISonarLintProject project, Collection<ISonarLintFile> files) {
+    return filterExcludedFiles(project, files, true);
   }
 
-  public boolean shouldAnalyze(ISonarLintFile file, boolean log) {
-    return shouldAnalyze(file.getProjectRelativePath(), log);
+  public Collection<ISonarLintFile> filterExcludedFiles(ISonarLintProject project, Collection<ISonarLintFile> files, boolean log) {
+    Server server = null;
+    SonarLintProjectConfiguration projectConfiguration = SonarLintProjectConfiguration.read(project.getScopeContext());
+    Stream<ISonarLintFile> fileStream = files.stream().filter(file -> shouldAnalyze(file, log));
+
+    if (project.isBound()) {
+      server = (Server) SonarLintCorePlugin.getServersManager().getServer(projectConfiguration.getServerId());
+      if (server == null) {
+        SonarLintLogger.get().error("Project '" + project.getName() + "' is bound to an unknown SonarQube server: '" + projectConfiguration.getServerId()
+          + "'. Please fix project binding or unbind project.");
+        return Collections.emptyList();
+      }
+      Map<String, ISonarLintFile> filePerRelativePath = fileStream
+        .collect(Collectors.toMap(ISonarLintFile::getProjectRelativePath, f -> f));
+      TestFileClassifier testFileClassifier = TestFileClassifier.get();
+      Set<String> serverFileExclusions = server.getServerFileExclusions(projectConfiguration.getModuleKey(), filePerRelativePath.keySet(),
+        path -> testFileClassifier.isTest(filePerRelativePath.get(path)));
+      serverFileExclusions.forEach(fileRelativePath -> {
+        filePerRelativePath.remove(fileRelativePath);
+        if (log) {
+          SonarLintLogger.get().debug("File excluded from analysis due to exclusions configured in SonarQube: " + fileRelativePath);
+        }
+      });
+      return filePerRelativePath.values();
+    } else {
+      return fileStream.collect(Collectors.toList());
+    }
   }
 
-  public boolean shouldAnalyze(String relativePath, boolean log) {
+  public boolean isExcluded(ISonarLintFile file, boolean log) {
+    return filterExcludedFiles(file.getProject(), Collections.singletonList(file), log).isEmpty();
+  }
+
+  private boolean shouldAnalyze(ISonarLintFile file, boolean log) {
+    String relativePath = file.getProjectRelativePath();
+
     if (globalExclusions.test(relativePath)) {
       if (log) {
         SonarLintLogger.get().debug("File excluded from analysis due to configured global exclusions: " + relativePath);
