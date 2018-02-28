@@ -72,9 +72,11 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
     tip.setText("{\n"
       + "    \"days_since_installation\": 120,\n"
       + "    \"days_of_use\": 40,\n"
-      + "    \"sonarlint_version\": \"3.0.0\",\n"
-      + "    \"sonarlint_product\": \"SonarLint Eclipse\",\n"
+      + "    \"sonarlint_version\": \"2.9\",\n"
+      + "    \"sonarlint_product\": \"SonarLint IntelliJ\",\n"
       + "    \"connected_mode_used\": true\n"
+      + "    \"system_time\":\"2018-02-27T16:31:49.173+01:00\",\n"
+      + "    \"install_time\":\"2018-02-27T16:30:49.124+01:00\"\n"
       + "}");
 
     text.addSelectionListener(new SelectionAdapter() {
