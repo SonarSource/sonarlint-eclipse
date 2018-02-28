@@ -25,13 +25,10 @@ import java.nio.file.FileSystems;
 import javax.annotation.Nullable;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -41,12 +38,9 @@ import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public class EditGlobalExclusionDialog extends EditExclusionDialog {
-  private Button okButton;
-
   private Text field;
 
   private String editItem;
-  private boolean editing;
   private boolean initialized = false;
 
   /**
@@ -59,25 +53,10 @@ public class EditGlobalExclusionDialog extends EditExclusionDialog {
     this.editing = (editItem != null);
     this.editItem = editItem;
   }
-  
-  @Override
-  public boolean isHelpAvailable() {
-    return false;
-  }
 
-  /**
-   * Configures this dialog's shell, setting the shell's text.
-   *
-   * @see org.eclipse.jface.window.Window#configureShell(Shell)
-   */
   @Override
-  protected void configureShell(Shell shell) {
-    super.configureShell(shell);
-    if (editing) {
-      shell.setText("Edit Exclusion");
-    } else {
-      shell.setText("Create Exclusion");
-    }
+  public String standardMessage() {
+    return STANDARD_MESSAGE;
   }
 
   /**
@@ -93,36 +72,13 @@ public class EditGlobalExclusionDialog extends EditExclusionDialog {
     initializeDialogUnits(parentComposite);
 
     // creates dialog area composite
-    Composite contents = createComposite(parentComposite);
+    Composite contents = createComposite(parentComposite, 1);
 
     // creates and lay outs dialog area widgets
     createWidgets(contents);
 
     Dialog.applyDialogFont(parentComposite);
     initialized = true;
-    return contents;
-  }
-
-  /**
-   * Creates and configures this dialog's main composite.
-   *
-   * @param parentComposite
-   *            parent's composite
-   * @return this dialog's main composite
-   */
-  private Composite createComposite(Composite parentComposite) {
-    // creates a composite with standard margins and spacing
-    Composite contents = new Composite(parentComposite, SWT.NONE);
-
-    contents.setLayout(new GridLayout(1, false));
-    contents.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-    if (editing) {
-      setTitle("Edit a File Exclusion");
-    } else {
-      setTitle("Create a New File Exclusion");
-    }
-    setMessage(STANDARD_MESSAGE);
     return contents;
   }
 
@@ -171,23 +127,6 @@ public class EditGlobalExclusionDialog extends EditExclusionDialog {
     } else {
       okButton.setEnabled(false);
     }
-  }
-
-  /**
-   * Adds buttons to this dialog's button bar.
-   *
-   * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar
-   */
-  @Override
-  protected void createButtonsForButtonBar(Composite parent) {
-    okButton = createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-    okButton.setEnabled(editing);
-    createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-  }
-
-  @Override
-  protected boolean isResizable() {
-    return true;
   }
 
   @Override
