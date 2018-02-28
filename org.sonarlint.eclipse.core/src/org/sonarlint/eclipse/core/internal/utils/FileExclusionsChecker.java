@@ -45,8 +45,8 @@ public class FileExclusionsChecker {
 
   public FileExclusionsChecker(ISonarLintProject project) {
     SonarLintProjectConfiguration projectConfiguration = SonarLintProjectConfiguration.read(project.getScopeContext());
-    List<ExclusionItem> projectExclusionItems = projectConfiguration.getFileExclusions();
-    List<ExclusionItem> globalExclusionItems = PreferencesUtils.getFileExclusions(project);
+    List<ExclusionItem> globalExclusionItems = projectConfiguration.getFileExclusions();
+    List<ExclusionItem> projectExclusionItems = PreferencesUtils.getFileExclusions(project);
 
     Set<String> projectFileExclusions = getExclusionsOfType(projectExclusionItems, Type.FILE);
     Set<String> projectDirectoryExclusions = getExclusionsOfType(projectExclusionItems, Type.DIRECTORY);
