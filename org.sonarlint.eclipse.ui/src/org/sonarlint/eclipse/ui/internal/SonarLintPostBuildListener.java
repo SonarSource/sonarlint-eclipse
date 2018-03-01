@@ -21,12 +21,9 @@ package org.sonarlint.eclipse.ui.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
@@ -44,7 +41,6 @@ import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
-import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -68,25 +64,13 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
       }
 
       if (!changedFiles.isEmpty()) {
-        Map<ISonarLintProject, List<ISonarLintFile>> filesPerProject = changedFiles.stream()
-          .collect(Collectors.groupingBy(ISonarLintFile::getProject, Collectors.toList()));
-        Map<ISonarLintProject, Collection<ISonarLintFile>> filesPerProjectAfterExclusions = new HashMap<>();
+        Map<ISonarLintProject, Collection<ISonarLintFile>> filesPerProject = changedFiles.stream()
+          .collect(Collectors.groupingBy(ISonarLintFile::getProject, Collectors.toCollection(ArrayList::new)));
 
-        for (Map.Entry<ISonarLintProject, List<ISonarLintFile>> e : filesPerProject.entrySet()) {
-          FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(e.getKey());
-          Collection<ISonarLintFile> filteredFiles = exclusionsChecker.filterExcludedFiles(e.getKey(), e.getValue());
-
-          if (!filteredFiles.isEmpty()) {
-            filesPerProjectAfterExclusions.put(e.getKey(), filteredFiles);
-          }
-        }
-
-        if (!filesPerProjectAfterExclusions.isEmpty()) {
-          SonarLintUiPlugin.removeChangeListener();
-          Job job = new AnalyzeOpenedFiles(filesPerProjectAfterExclusions);
-          JobUtils.scheduleAfter(job, SonarLintUiPlugin::addChangeListener);
-          job.schedule();
-        }
+        SonarLintUiPlugin.removeChangeListener();
+        Job job = new AnalyzeOpenedFiles(filesPerProject);
+        JobUtils.scheduleAfter(job, SonarLintUiPlugin::addChangeListener);
+        job.schedule();
       }
     }
   }

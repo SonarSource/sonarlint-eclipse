@@ -19,18 +19,21 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class AnalyzeProjectRequest {
 
   private final ISonarLintProject project;
-  private final Collection<FileWithDocument> files;
+  private final Collection<FileWithDocument> filesToAnalyze = new ArrayList<>();
+  private final Collection<ISonarLintFile> excludedFiles = new ArrayList<>();
   private final TriggerType triggerType;
 
   public static class FileWithDocument {
@@ -55,16 +58,27 @@ public class AnalyzeProjectRequest {
 
   public AnalyzeProjectRequest(ISonarLintProject project, Collection<FileWithDocument> files, TriggerType triggerType) {
     this.project = project;
-    this.files = files;
     this.triggerType = triggerType;
+    FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(project);
+    files.forEach(fWithDoc -> {
+      if (exclusionsChecker.isExcluded(fWithDoc.getFile(), true)) {
+        excludedFiles.add(fWithDoc.getFile());
+      } else {
+        filesToAnalyze.add(fWithDoc);
+      }
+    });
   }
 
   public ISonarLintProject getProject() {
     return project;
   }
 
-  public Collection<FileWithDocument> getFiles() {
-    return files;
+  public Collection<FileWithDocument> getFilesToAnalyze() {
+    return filesToAnalyze;
+  }
+
+  public Collection<ISonarLintFile> getExcludedFiles() {
+    return excludedFiles;
   }
 
   public TriggerType getTriggerType() {

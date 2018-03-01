@@ -19,11 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,26 +79,31 @@ import org.sonarsource.sonarlint.core.client.api.exceptions.CanceledException;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
 
+import static java.text.MessageFormat.format;
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.trimToNull;
 
 public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private final List<SonarLintProperty> extraProps;
-  private final AnalyzeProjectRequest request;
+  private final Map<ISonarLintFile, IDocument> filesToAnalyze;
+  private final Collection<ISonarLintFile> excludedFiles;
+  private final TriggerType triggerType;
 
   public AnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
-    this.request = request;
     this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(request.getProject());
+    this.filesToAnalyze = request.getFilesToAnalyze()
+      .stream()
+      .collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()), HashMap::putAll);
+    this.excludedFiles = request.getExcludedFiles();
+    this.triggerType = request.getTriggerType();
   }
 
   private static String jobTitle(AnalyzeProjectRequest request) {
-    if (request.getFiles() == null) {
-      return "SonarLint analysis of project " + request.getProject().getName();
+    if (request.getFilesToAnalyze().size() == 1) {
+      return "SonarLint analysis of file " + request.getFilesToAnalyze().iterator().next().getFile().getName();
     }
-    if (request.getFiles().size() == 1) {
-      return "SonarLint analysis of file " + request.getFiles().iterator().next().getFile().getName();
-    }
-    return "SonarLint analysis of project " + request.getProject().getName() + " (" + request.getFiles().size() + " files)";
+    return format("SonarLint analysis of project {0} ({1} files to analyze, {2} excluded)", request.getProject().getName(), request.getFilesToAnalyze().size(),
+      request.getExcludedFiles().size());
   }
 
   @Override
@@ -110,15 +112,20 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       return Status.CANCEL_STATUS;
     }
     long startTime = System.currentTimeMillis();
-    SonarLintLogger.get().debug("Trigger: " + request.getTriggerType().name());
-    SonarLintLogger.get().info(this.getName() + "...");
+    SonarLintLogger.get().debug("Trigger: " + triggerType.name());
+    SonarLintLogger.get().debug("Clear markers on " + excludedFiles.size() + " excluded files");
+    excludedFiles.forEach(SonarLintMarkerUpdater::clearMarkers);
+
+    if (filesToAnalyze.isEmpty()) {
+      return Status.OK_STATUS;
+    }
+
     // Analyze
+    SonarLintLogger.get().info(this.getName() + "...");
     Path analysisWorkDir = null;
     try {
       // Configure
       Map<String, String> mergedExtraProps = new LinkedHashMap<>();
-      final Map<ISonarLintFile, IDocument> filesToAnalyze = request.getFiles().stream().collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()),
-        HashMap::putAll);
       Collection<ProjectConfigurator> usedDeprecatedConfigurators = configureDeprecated(getProject(), filesToAnalyze.keySet(), mergedExtraProps, monitor);
 
       analysisWorkDir = Files.createTempDirectory(getProject().getWorkingDir(), "sonarlint");
@@ -176,11 +183,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     Map<ISonarLintIssuable, List<Issue>> issuesPerResource = new LinkedHashMap<>();
-    request.getFiles().forEach(fileWithDoc -> issuesPerResource.put(fileWithDoc.getFile(), new ArrayList<>()));
+    filesToAnalyze.keySet().forEach(slFile -> issuesPerResource.put(slFile, new ArrayList<>()));
 
     AnalysisResults result = run(server, config, issuesPerResource, monitor);
     if (!monitor.isCanceled() && result != null) {
-      updateMarkers(server, docPerFiles, issuesPerResource, result, request.getTriggerType(), monitor);
+      updateMarkers(server, docPerFiles, issuesPerResource, result, triggerType, monitor);
     }
   }
 

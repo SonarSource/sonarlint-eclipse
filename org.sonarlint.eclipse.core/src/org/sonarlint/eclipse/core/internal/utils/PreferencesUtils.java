@@ -24,16 +24,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Platform;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class PreferencesUtils {
@@ -107,20 +104,10 @@ public class PreferencesUtils {
       .collect(Collectors.toList());
   }
 
-  public static List<ExclusionItem> getFileExclusions(ISonarLintProject project) {
-    List<ExclusionItem> exclusions = new ArrayList<>();
-
+  public static List<ExclusionItem> getGlobalExclusions() {
     // add globally-configured exclusions
     String props = getPreferenceString(PreferencesUtils.PREF_FILE_EXCLUSIONS);
-    exclusions.addAll(deserializeFileExclusions(props));
-
-    // add project-configured exclusions
-    SonarLintProjectConfiguration sonarProject = SonarLintProjectConfiguration.read(project.getScopeContext());
-    if (sonarProject.getFileExclusions() != null) {
-      exclusions.addAll(sonarProject.getFileExclusions());
-    }
-
-    return exclusions;
+    return deserializeFileExclusions(props);
   }
 
   private static String getPreferenceString(String key) {

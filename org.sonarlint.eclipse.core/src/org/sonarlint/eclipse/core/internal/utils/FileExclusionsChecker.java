@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
@@ -45,8 +44,8 @@ public class FileExclusionsChecker {
 
   public FileExclusionsChecker(ISonarLintProject project) {
     SonarLintProjectConfiguration projectConfiguration = SonarLintProjectConfiguration.read(project.getScopeContext());
-    List<ExclusionItem> globalExclusionItems = projectConfiguration.getFileExclusions();
-    List<ExclusionItem> projectExclusionItems = PreferencesUtils.getFileExclusions(project);
+    List<ExclusionItem> globalExclusionItems = PreferencesUtils.getGlobalExclusions();
+    List<ExclusionItem> projectExclusionItems = projectConfiguration.getFileExclusions();
 
     Set<String> projectFileExclusions = getExclusionsOfType(projectExclusionItems, Type.FILE);
     Set<String> projectDirectoryExclusions = getExclusionsOfType(projectExclusionItems, Type.DIRECTORY);
@@ -99,14 +98,14 @@ public class FileExclusionsChecker {
 
     if (globalExclusions.test(relativePath)) {
       if (log) {
-        SonarLintLogger.get().debug("File excluded from analysis due to configured global exclusions: " + relativePath);
+        SonarLintLogger.get().debug("File '" + file.getName() + "' excluded from analysis due to configured global exclusions");
       }
       return false;
     }
 
     if (projectExclusions.test(relativePath)) {
       if (log) {
-        SonarLintLogger.get().debug("File excluded from analysis due to configured project exclusions: " + relativePath);
+        SonarLintLogger.get().debug("File '" + file.getName() + "' excluded from analysis due to configured project exclusions");
       }
       return false;
     }

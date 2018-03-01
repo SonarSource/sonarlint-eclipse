@@ -41,7 +41,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectsJob;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -73,25 +76,28 @@ public class AnalyzeCommand extends AbstractHandler {
   }
 
   private static void runAnalysisJob(Shell shell, Map<ISonarLintProject, Collection<FileWithDocument>> filesPerProject) {
-    AnalyzeProjectsJob job = new AnalyzeProjectsJob(filesPerProject);
-    String reportTitle;
     int totalFileCount = filesPerProject.values().stream().mapToInt(Collection::size).sum();
     if (totalFileCount > 1 && !askConfirmation(shell)) {
       return;
     }
     if (filesPerProject.size() == 1) {
       Entry<ISonarLintProject, Collection<FileWithDocument>> entry = filesPerProject.entrySet().iterator().next();
-      int fileCount = entry.getValue().size();
-      if (fileCount > 1) {
-        reportTitle = fileCount + " files of project " + entry.getKey().getName();
+      AnalyzeProjectRequest req = new AnalyzeProjectRequest(entry.getKey(), entry.getValue(), TriggerType.MANUAL);
+      int fileCount = req.getFilesToAnalyze().size();
+      String reportTitle;
+      if (fileCount == 1) {
+        reportTitle = "File " + req.getFilesToAnalyze().iterator().next().getFile().getName();
       } else {
-        reportTitle = "File " + entry.getValue().iterator().next().getFile().getName();
+        reportTitle = fileCount + " files of project " + entry.getKey().getName();
       }
+      AnalyzeProjectJob job = new AnalyzeProjectJob(req);
+      AnalyzeChangeSetCommand.registerJobListener(job, reportTitle);
+      job.schedule();
     } else {
-      reportTitle = "All files of " + filesPerProject.size() + " projects";
+      AnalyzeProjectsJob job = new AnalyzeProjectsJob(filesPerProject);
+      AnalyzeChangeSetCommand.registerJobListener(job, "All files of " + filesPerProject.size() + " projects");
+      job.schedule();
     }
-    AnalyzeChangeSetCommand.registerJobListener(job, reportTitle);
-    job.schedule();
   }
 
   private static boolean askConfirmation(Shell shell) {
