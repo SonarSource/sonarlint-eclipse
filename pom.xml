@@ -70,7 +70,7 @@
     <license.title>SonarLint for Eclipse</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>1.0.0</tycho.version>
+    <tycho.version>1.1.0</tycho.version>
     <tycho-extras.version>${tycho.version}</tycho-extras.version>
     <target.platform>e47</target.platform>
     <sonarlint.version>3.1.1.1431</sonarlint.version>
@@ -130,7 +130,7 @@
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
-      <version>3.0.1</version>
+      <version>3.0.2</version>
     </dependency>
   </dependencies>
 
