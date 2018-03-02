@@ -19,12 +19,8 @@
  */
 package org.sonarlint.eclipse.its;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
 import java.util.Arrays;
 import java.util.List;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -33,9 +29,13 @@ import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.osgi.framework.Version;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 public class FileExclusionsTest extends AbstractSonarLintTest {
   @ClassRule
@@ -47,7 +47,8 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     IProject project = importEclipseProject("java/java-simple", "java-simple");
     JobHelpers.waitForJobsToComplete(bot);
 
-    new JavaPackageExplorerBot(bot)
+    JavaPackageExplorerBot javaBot = new JavaPackageExplorerBot(bot);
+    javaBot
       .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
 
@@ -58,12 +59,15 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     bot.editorByTitle("Hello.java").close();
 
     // Exclude file
-    new JavaPackageExplorerBot(bot)
-      .excludeFile("java-simple", "src", "hello", "Hello.java");
-    project.deleteMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE);
+    javaBot.excludeFile("java-simple", "src", "hello", "Hello.java");
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
+    // Seems that isEnabled of swtbot doesn't work on older Eclipse
+    if (platformVersion().compareTo(new Version("4.6")) >= 0) {
+      assertThat(javaBot.isExcludeEnabled("java-simple", "src", "hello", "Hello.java")).isFalse();
+      assertThat(javaBot.isManualAnalysisEnabled("java-simple", "src", "hello", "Hello.java")).isFalse();
+    }
+
+    javaBot.expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
     markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).isEmpty();
@@ -77,12 +81,11 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).isEmpty();
 
-    // Trigger manual analysis of a single file
-    new JavaPackageExplorerBot(bot)
-      .triggerManualAnalysis("java-simple", "src", "hello", "Hello.java");
+    // Trigger manual analysis of the project
+    javaBot.triggerManualAnalysis("java-simple");
     JobHelpers.waitForJobsToComplete(bot);
 
-    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_REPORT_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).isEmpty();
   }
 
