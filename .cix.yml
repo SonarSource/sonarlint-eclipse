@@ -2,11 +2,11 @@
 # Based on https://wiki.jenkins-ci.org/display/JENKINS/Yaml+Axis+Plugin
 
 TARGET_PLATFORM:
-  - e43
   - e44
   - e45
   - e46
   - e47
+  - e48
 
 SQ_VERSION:
   - LTS
@@ -14,12 +14,8 @@ SQ_VERSION:
   - DEV
 
 exclude:
-  - TARGET_PLATFORM: e43
+  - TARGET_PLATFORM: e44
     SQ_VERSION: LATEST_RELEASE
-  - TARGET_PLATFORM: e43
-    SQ_VERSION: DEV
-  - TARGET_PLATFORM: e44
-    SQ_VERSION: LTS
   - TARGET_PLATFORM: e44
     SQ_VERSION: DEV
   - TARGET_PLATFORM: e45
@@ -33,4 +29,8 @@ exclude:
   - TARGET_PLATFORM: e47
     SQ_VERSION: LTS
   - TARGET_PLATFORM: e47
+    SQ_VERSION: DEV
+  - TARGET_PLATFORM: e48
+    SQ_VERSION: LTS
+  - TARGET_PLATFORM: e48
     SQ_VERSION: LATEST_RELEASE
