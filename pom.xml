@@ -73,7 +73,7 @@
     <tycho.version>1.1.0</tycho.version>
     <tycho-extras.version>${tycho.version}</tycho-extras.version>
     <target.platform>e47</target.platform>
-    <sonarlint.version>3.1.1.1431</sonarlint.version>
+    <sonarlint.version>3.1.1.1436</sonarlint.version>
     <protobuf.version>3.1.0</protobuf.version>
     
     <!-- ================== -->
