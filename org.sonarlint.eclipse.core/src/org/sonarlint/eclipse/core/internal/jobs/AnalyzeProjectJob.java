@@ -164,7 +164,11 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
     } finally {
       if (analysisWorkDir != null) {
-        FileUtils.deleteRecursively(analysisWorkDir);
+        try {
+          FileUtils.deleteRecursively(analysisWorkDir);
+        } catch (Exception e) {
+          SonarLintLogger.get().debug("Unable to delete temp directory: " + analysisWorkDir, e);
+        }
       }
     }
 
