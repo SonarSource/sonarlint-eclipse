@@ -6,5 +6,17 @@
        base-type="org.eclipse.jdt.core.javaSource"      
        file-extensions="cbl">
       </content-type> 
+   </extension>
+   <extension
+         point="org.sonarlint.eclipse.core.projectAdapterParticipant">
+      <participant
+            class="org.sonarlint.eclipse.core.internal.adapter.DefaultSonarLintAdapterFactoryTest$CobolSLProjectParticipant">
+      </participant>
+   </extension>
+   <extension
+         point="org.sonarlint.eclipse.core.fileAdapterParticipant">
+      <participant
+            class="org.sonarlint.eclipse.core.internal.adapter.DefaultSonarLintAdapterFactoryTest$CobolSLFileAdapterParticipant">
+      </participant>
    </extension> 
 </plugin>

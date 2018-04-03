@@ -79,15 +79,15 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
     return adapterType.cast(new DefaultSonarLintProjectAdapter(project));
   }
 
+  /**
+   * Change this method with caution since it is critical for some Cobol IDEs integration
+   */
   private <T> T getFileAdapter(Class<T> adapterType, IFile file) {
-    ISonarLintProject project = file.getProject().getAdapter(ISonarLintProject.class);
-    if (project == null) {
-      return null;
-    }
-
+    // First do some very cheap checks to see if we can exclude the physical file
     if (!SonarLintUtils.isSonarLintFileCandidate(file)) {
       return null;
     }
+    // Not let's call the ISonarLintFileAdapterParticipant#exclude
     Predicate<IFile> shouldExclude = SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants().stream()
       .<Predicate<IFile>>map(participant -> participant::exclude)
       .reduce(Predicate::or)
@@ -95,11 +95,18 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
     if (shouldExclude.test(file)) {
       return null;
     }
+    // Try to find one ISonarLintFileAdapterParticipant that will adapt the IFile
     for (ISonarLintFileAdapterParticipant p : SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants()) {
       ISonarLintFile adapted = p.adapt(file);
       if (adapted != null) {
         return adapterType.cast(adapted);
       }
+    }
+    // Fallback to our default behavior
+    ISonarLintProject project = file.getProject().getAdapter(ISonarLintProject.class);
+    if (project == null) {
+      // IProject was likely excluded by a ISonarLintProjectAdapterParticipant, so don't try to adapt the file
+      return null;
     }
     return adapterType.cast(new DefaultSonarLintFileAdapter(project, file));
   }
