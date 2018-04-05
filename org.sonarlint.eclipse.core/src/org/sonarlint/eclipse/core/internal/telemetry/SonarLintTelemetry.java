@@ -34,8 +34,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
-import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.client.api.common.TelemetryClientConfig;
@@ -43,7 +41,7 @@ import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryPathManager;
 
-public class SonarLintTelemetry implements AnalysisListener {
+public class SonarLintTelemetry {
   private static final String TELEMETRY_PRODUCT_KEY = "eclipse";
   private static final String PRODUCT = "SonarLint Eclipse";
   private static final String OLD_STORAGE_FILENAME = "sonarlint_usage";
@@ -89,7 +87,6 @@ public class SonarLintTelemetry implements AnalysisListener {
       TelemetryClientConfig clientConfig = getTelemetryClientConfig();
       TelemetryClient client = new TelemetryClient(clientConfig, PRODUCT, SonarLintUtils.getPluginVersion());
       this.telemetry = newTelemetryManager(getStorageFilePath(), client);
-      SonarLintCorePlugin.getAnalysisListenerManager().addListener(this);
       this.scheduledJob = new TelemetryJob();
       scheduledJob.schedule(TimeUnit.MINUTES.toMillis(1));
     } catch (Exception e) {
@@ -152,15 +149,19 @@ public class SonarLintTelemetry implements AnalysisListener {
     }
   }
 
-  @Override
-  public void usedAnalysis(AnalysisEvent event) {
+  public void analysisDoneOnMultipleFiles() {
     if (enabled()) {
-      telemetry.usedAnalysis();
+      telemetry.analysisDoneOnMultipleFiles();
+    }
+  }
+
+  public void analysisDoneOnSingleFile(String fileExtension, int time) {
+    if (enabled()) {
+      telemetry.analysisDoneOnSingleFile(fileExtension, time);
     }
   }
 
   public void stop() {
-    SonarLintCorePlugin.getAnalysisListenerManager().removeListener(this);
     if (scheduledJob != null) {
       scheduledJob.cancel();
       scheduledJob = null;
@@ -178,4 +179,5 @@ public class SonarLintTelemetry implements AnalysisListener {
   public Job getScheduledJob() {
     return scheduledJob;
   }
+
 }

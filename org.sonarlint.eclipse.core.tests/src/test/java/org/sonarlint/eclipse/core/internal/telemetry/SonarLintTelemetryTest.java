@@ -126,17 +126,37 @@ public class SonarLintTelemetryTest {
   }
 
   @Test
-  public void usedAnalysis_should_trigger_usedAnalysis_when_enabled() {
+  public void analysisDoneOnMultipleFiles_should_trigger_analysisDoneOnMultipleFiles_when_enabled() {
     when(engine.isEnabled()).thenReturn(true);
-    telemetry.usedAnalysis(mock(AnalysisEvent.class));
+    telemetry.analysisDoneOnMultipleFiles();
     verify(engine).isEnabled();
-    verify(engine).usedAnalysis();
+    verify(engine).analysisDoneOnMultipleFiles();
   }
 
   @Test
-  public void usedAnalysis_should_not_trigger_usedAnalysis_when_disabled() {
+  public void analysisDoneOnMultipleFiles_should_not_trigger_analysisDoneOnMultipleFiles_when_disabled() {
     when(engine.isEnabled()).thenReturn(false);
-    telemetry.usedAnalysis(mock(AnalysisEvent.class));
+    telemetry.analysisDoneOnMultipleFiles();
+    verify(engine).isEnabled();
+    verifyNoMoreInteractions(engine);
+  }
+
+  @Test
+  public void analysisDoneOnSingleFile_should_trigger_analysisDoneOnSingleFile_when_enabled() {
+    when(engine.isEnabled()).thenReturn(true);
+    String fileExtension = "java";
+    int time = 123;
+    telemetry.analysisDoneOnSingleFile(fileExtension, time);
+    verify(engine).isEnabled();
+    verify(engine).analysisDoneOnSingleFile(fileExtension, time);
+  }
+
+  @Test
+  public void analysisDoneOnSingleFile_should_not_trigger_analysisDoneOnSingleFile_when_disabled() {
+    when(engine.isEnabled()).thenReturn(false);
+    String fileExtension = "java";
+    int time = 123;
+    telemetry.analysisDoneOnSingleFile(fileExtension, time);
     verify(engine).isEnabled();
     verifyNoMoreInteractions(engine);
   }
