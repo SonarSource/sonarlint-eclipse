@@ -59,6 +59,7 @@ import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueTrackable;
@@ -185,10 +186,27 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     Map<ISonarLintIssuable, List<Issue>> issuesPerResource = new LinkedHashMap<>();
     filesToAnalyze.keySet().forEach(slFile -> issuesPerResource.put(slFile, new ArrayList<>()));
 
+    long start = System.currentTimeMillis();
     AnalysisResults result = run(server, config, issuesPerResource, monitor);
     if (!monitor.isCanceled() && result != null) {
+      updateTelemetry(inputFiles, start);
       updateMarkers(server, docPerFiles, issuesPerResource, result, triggerType, monitor);
     }
+  }
+
+  private void updateTelemetry(List<ClientInputFile> inputFiles, long start) {
+    SonarLintTelemetry telemetry = SonarLintCorePlugin.getTelemetry();
+    if (inputFiles.size() == 1) {
+      telemetry.analysisDoneOnSingleFile(getExtension(inputFiles.iterator().next()), (int) (System.currentTimeMillis() - start));
+    } else {
+      telemetry.analysisDoneOnMultipleFiles();
+    }
+  }
+
+  private String getExtension(ClientInputFile next) {
+    String path = next.getPath();
+    int lastDot = path.lastIndexOf('.');
+    return lastDot >= 0 ? path.substring(lastDot) : "";
   }
 
   private static List<ClientInputFile> buildInputFiles(Path tempDirectory, final Map<ISonarLintFile, IDocument> filesToAnalyze) {
