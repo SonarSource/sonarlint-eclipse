@@ -189,8 +189,8 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     long start = System.currentTimeMillis();
     AnalysisResults result = run(server, config, issuesPerResource, monitor);
     if (!monitor.isCanceled() && result != null) {
-      updateTelemetry(inputFiles, start);
       updateMarkers(server, docPerFiles, issuesPerResource, result, triggerType, monitor);
+      updateTelemetry(inputFiles, start);
     }
   }
 
@@ -203,7 +203,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private String getExtension(ClientInputFile next) {
+  private static String getExtension(ClientInputFile next) {
     String path = next.getPath();
     int lastDot = path.lastIndexOf('.');
     return lastDot >= 0 ? path.substring(lastDot) : "";
