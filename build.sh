@@ -65,25 +65,19 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
       -Pdeploy-sonarsource \
       -Dtycho.disableP2Mirrors=true \
       -Dmaven.test.redirectTestOutputToFile=false \
-      -Dsonar.analysis.mode=issues \
-      -Dsonar.github.pullRequest=$PULL_REQUEST \
-      -Dsonar.github.repository=$GITHUB_REPO \
-      -Dsonar.github.oauth=$GITHUB_TOKEN \
       -Dsonar.host.url=$SONAR_HOST_URL \
       -Dsonar.login=$SONAR_TOKEN \
-      -B -e -V $*
-
-    mvn sonar:sonar \
-      -Dtycho.disableP2Mirrors=true \
-      -Dsonar.host.url=$SONAR_HOST_URL \
-      -Dsonar.login=$SONAR_TOKEN \
+      -Dsonar.pullrequest.branch=$GITHUB_BASE_BRANCH \
+      -Dsonar.pullrequest.base=$GITHUB_TARGET_BRANCH \
+      -Dsonar.pullrequest.key=$PULL_REQUEST \
+      -Dsonar.pullrequest.provider=github \
+      -Dsonar.pullrequest.github.repository=$GITHUB_REPO \
       -Dsonar.analysis.buildNumber=$BUILD_ID \
       -Dsonar.analysis.pipeline=$BUILD_ID \
       -Dsonar.analysis.sha1=$GIT_SHA1  \
       -Dsonar.analysis.repository=$GITHUB_REPO \
       -Dsonar.analysis.prNumber=$PULL_REQUEST \
-      -Dsonar.branch.name=$GITHUB_BASE_BRANCH \
-      -Dsonar.branch.target=$GITHUB_TARGET_BRANCH
+      -B -e -V $*
 
 elif [[ "${TRAVIS_BRANCH}" == "branch-"* ]] && [ "$IS_PULLREQUEST" == "false" ]; then
     echo '======= Build, no analysis'
