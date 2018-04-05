@@ -194,7 +194,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
   }
 
-  private void updateTelemetry(List<ClientInputFile> inputFiles, long start) {
+  private static void updateTelemetry(List<ClientInputFile> inputFiles, long start) {
     SonarLintTelemetry telemetry = SonarLintCorePlugin.getTelemetry();
     if (inputFiles.size() == 1) {
       telemetry.analysisDoneOnSingleFile(getExtension(inputFiles.iterator().next()), (int) (System.currentTimeMillis() - start));
