@@ -8,7 +8,7 @@
 <location path="${M2_REPO}/org/objenesis/objenesis/2.4" type="Directory"/>
 <location path="${M2_REPO}/org/assertj/assertj-core/3.5.2" type="Directory"/>
 <location path="${M2_REPO}/com/google/code/findbugs/jsr305/3.0.2" type="Directory"/>
-<location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.15.0.1106" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.15.1.1274" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/technology/m2e/milestones/1.8"/>
