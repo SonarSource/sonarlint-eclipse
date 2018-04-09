@@ -48,7 +48,7 @@ public class DeactivateRuleCommand extends AbstractIssueCommand {
 
     PreferencesUtils.excludeRule(ruleKey);
     Predicate<ISonarLintFile> filter = f -> !f.getProject().isBound();
-    JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.EDITOR_CHANGE, filter);
+    JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.EXCLUSION_CHANGE, filter);
   }
 
   private static void removeReportIssuesMarkers(IResource resource, RuleKey ruleKey) {
