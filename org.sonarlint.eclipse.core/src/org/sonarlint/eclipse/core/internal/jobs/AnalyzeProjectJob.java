@@ -69,6 +69,7 @@ import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
@@ -87,6 +88,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private final List<SonarLintProperty> extraProps;
   private final Map<ISonarLintFile, IDocument> filesToAnalyze;
   private final Collection<ISonarLintFile> excludedFiles;
+  private final Collection<RuleKey> excludedRules;
   private final TriggerType triggerType;
 
   public AnalyzeProjectJob(AnalyzeProjectRequest request) {
@@ -96,6 +98,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       .stream()
       .collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()), HashMap::putAll);
     this.excludedFiles = request.getExcludedFiles();
+    this.excludedRules = PreferencesUtils.getExcludedRules();
     this.triggerType = request.getTriggerType();
   }
 
@@ -148,7 +151,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           }
         }
 
-        runAnalysisAndUpdateMarkers(server, filesToAnalyze, monitor, mergedExtraProps, inputFiles, analysisWorkDir);
+        runAnalysisAndUpdateMarkers(server, filesToAnalyze, monitor, mergedExtraProps, inputFiles, analysisWorkDir, excludedRules);
       }
 
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
@@ -169,7 +172,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private void runAnalysisAndUpdateMarkers(@Nullable Server server, Map<ISonarLintFile, IDocument> docPerFiles, final IProgressMonitor monitor,
-    Map<String, String> mergedExtraProps, List<ClientInputFile> inputFiles, Path analysisWorkDir) throws CoreException {
+    Map<String, String> mergedExtraProps, List<ClientInputFile> inputFiles, Path analysisWorkDir, Collection<RuleKey> excludedRules) throws CoreException {
     StandaloneAnalysisConfiguration config;
     IPath projectLocation = getProject().getResource().getLocation();
     // In some unfrequent cases the project may be virtual and don't have physical location
@@ -180,7 +183,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       config = new ConnectedAnalysisConfiguration(trimToNull(getProjectConfig().getModuleKey()), projectBaseDir, getProject().getWorkingDir(), inputFiles, mergedExtraProps);
     } else {
       SonarLintLogger.get().debug("Standalone mode (project not bound)");
-      config = new StandaloneAnalysisConfiguration(projectBaseDir, getProject().getWorkingDir(), inputFiles, mergedExtraProps);
+      config = new StandaloneAnalysisConfiguration(projectBaseDir, getProject().getWorkingDir(), inputFiles, mergedExtraProps, excludedRules);
     }
 
     Map<ISonarLintIssuable, List<Issue>> issuesPerResource = new LinkedHashMap<>();

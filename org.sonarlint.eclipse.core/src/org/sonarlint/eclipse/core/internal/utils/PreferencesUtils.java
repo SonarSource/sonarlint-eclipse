@@ -21,17 +21,25 @@ package org.sonarlint.eclipse.core.internal.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.osgi.service.prefs.BackingStoreException;
+import org.osgi.service.prefs.Preferences;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 public class PreferencesUtils {
 
@@ -39,6 +47,7 @@ public class PreferencesUtils {
   public static final int PREF_MARKER_SEVERITY_DEFAULT = IMarker.SEVERITY_INFO;
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
   public static final String PREF_FILE_EXCLUSIONS = "fileExclusions"; //$NON-NLS-1$
+  public static final String PREF_RULE_EXCLUSIONS = "ruleExclusions"; //$NON-NLS-1$
   public static final String PREF_DEFAULT = ""; //$NON-NLS-1$
   public static final String PREF_TEST_FILE_REGEXPS = "testFileRegexps"; //$NON-NLS-1$
   public static final String PREF_TEST_FILE_REGEXPS_DEFAULT = "**/*Test.*,**/test/**/*"; //$NON-NLS-1$
@@ -114,4 +123,57 @@ public class PreferencesUtils {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, key, PREF_DEFAULT, null);
   }
 
+  private static void setPreferenceString(String key, String value) {
+    Preferences preferences = ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID);
+    preferences.put(key, value);
+    try {
+      preferences.flush();
+    } catch (BackingStoreException e) {
+      SonarLintLogger.get().error("Could not save preference: " + key + " = " + value, e);
+    }
+  }
+
+  private static String serializeRuleKey(RuleKey ruleKey) {
+    return ruleKey.repository() + ":" + ruleKey.rule();
+  }
+
+  @CheckForNull
+  public static RuleKey deserializeRuleKey(String serialized) {
+    int indexOfSeparator = serialized.indexOf(':');
+    if (indexOfSeparator == -1) {
+      return null;
+    }
+    String repository = serialized.substring(0, indexOfSeparator);
+    String key = serialized.substring(indexOfSeparator + 1);
+    return new RuleKey(repository, key);
+  }
+
+  private static String serializeRuleExclusions(Collection<RuleKey> exclusions) {
+    return exclusions.stream()
+      .map(PreferencesUtils::serializeRuleKey)
+      .sorted()
+      .collect(Collectors.joining(";"));
+  }
+
+  private static Set<RuleKey> deserializeRuleExclusions(@Nullable String property) {
+    String[] values = StringUtils.split(property, ";");
+    return Arrays.stream(values)
+      .map(PreferencesUtils::deserializeRuleKey)
+      .filter(Objects::nonNull)
+      .collect(Collectors.toSet());
+  }
+
+  public static void excludeRule(RuleKey ruleKey) {
+    Collection<RuleKey> excludedRules = getExcludedRules();
+    excludedRules.add(ruleKey);
+    setExcludedRules(excludedRules);
+  }
+
+  public static Collection<RuleKey> getExcludedRules() {
+    return deserializeRuleExclusions(getPreferenceString(PREF_RULE_EXCLUSIONS));
+  }
+
+  public static void setExcludedRules(Collection<RuleKey> excludedRules) {
+    setPreferenceString(PREF_RULE_EXCLUSIONS, serializeRuleExclusions(excludedRules));
+  }
 }

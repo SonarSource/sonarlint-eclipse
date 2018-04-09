@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -58,10 +59,14 @@ public class JobUtils {
     // utility class, forbidden constructor
   }
 
-  public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType) {
+  /**
+   * Schedule analysis of open files of a project.
+   * Use null for project parameter to analyze open files in all projects.
+   */
+  public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType, Predicate<ISonarLintFile> filter) {
     Map<ISonarLintProject, List<FileWithDocument>> filesByProject = new HashMap<>();
 
-    collectOpenedFiles(project, filesByProject);
+    collectOpenedFiles(project, filesByProject, filter);
 
     for (Map.Entry<ISonarLintProject, List<FileWithDocument>> entry : filesByProject.entrySet()) {
       ISonarLintProject aProject = entry.getKey();
@@ -72,18 +77,23 @@ public class JobUtils {
     }
   }
 
-  private static void collectOpenedFiles(ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject) {
+  public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType) {
+    scheduleAnalysisOfOpenFiles(project, triggerType, f -> true);
+  }
+
+  private static void collectOpenedFiles(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject,
+    Predicate<ISonarLintFile> filter) {
     for (IWorkbenchWindow win : PlatformUI.getWorkbench().getWorkbenchWindows()) {
       for (IWorkbenchPage page : win.getPages()) {
         for (IEditorReference ref : page.getEditorReferences()) {
-          collectOpenedFile(project, filesByProject, ref);
+          collectOpenedFile(project, filesByProject, ref, filter);
         }
       }
     }
   }
 
   private static void collectOpenedFile(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject,
-    IEditorReference ref) {
+    IEditorReference ref, Predicate<ISonarLintFile> filter) {
     // Be careful to not trigger editor activation
     IEditorPart editor = ref.getEditor(false);
     if (editor == null) {
@@ -93,7 +103,7 @@ public class JobUtils {
     if (input instanceof IFileEditorInput) {
       IFile file = ((IFileEditorInput) input).getFile();
       ISonarLintFile sonarFile = Adapters.adapt(file, ISonarLintFile.class);
-      if (sonarFile != null && (project == null || sonarFile.getProject().equals(project))) {
+      if (sonarFile != null && (project == null || sonarFile.getProject().equals(project)) && filter.test(sonarFile)) {
         filesByProject.putIfAbsent(sonarFile.getProject(), new ArrayList<>());
         if (editor instanceof ITextEditor) {
           IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(input);

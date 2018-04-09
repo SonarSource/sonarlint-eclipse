@@ -20,16 +20,20 @@
 package org.sonarlint.eclipse.core.internal.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
+import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PreferencesUtilsTest {
+
   @Test
   public void should_serialize_exclusions() {
     List<ExclusionItem> list = new ArrayList<>();
@@ -52,5 +56,60 @@ public class PreferencesUtilsTest {
     List<SonarLintProperty> desList = PreferencesUtils.deserializeExtraProperties(serialized);
 
     assertThat(desList).isEqualTo(list);
+  }
+
+  @Test
+  public void should_serialize_and_deserialize_excluded_rules() {
+    List<RuleKey> excludedRules = Arrays.asList(new RuleKey("squid", "S123"), new RuleKey("php", "S456"));
+
+    PreferencesUtils.setExcludedRules(excludedRules);
+    Collection<RuleKey> deserialized = PreferencesUtils.getExcludedRules();
+
+    assertThat(deserialized).containsExactlyInAnyOrder(excludedRules.toArray(new RuleKey[0]));
+  }
+
+  @Test
+  public void should_exclude_rule() {
+    assertThat(PreferencesUtils.getExcludedRules()).isEmpty();
+
+    RuleKey ruleKey1 = new RuleKey("squid", "S123");
+    PreferencesUtils.excludeRule(ruleKey1);
+    assertThat(PreferencesUtils.getExcludedRules()).isEqualTo(Collections.singleton(ruleKey1));
+
+    RuleKey ruleKey2 = new RuleKey("php", "S456");
+    PreferencesUtils.excludeRule(ruleKey2);
+    assertThat(PreferencesUtils.getExcludedRules()).containsExactlyInAnyOrder(ruleKey1, ruleKey2);
+  }
+
+  @Test
+  public void should_ignore_duplicates() {
+    RuleKey ruleKey1 = new RuleKey("squid", "S123");
+    RuleKey ruleKey2 = new RuleKey("php", "S456");
+    List<RuleKey> excludedRules = Arrays.asList(ruleKey1, ruleKey2);
+    PreferencesUtils.setExcludedRules(excludedRules);
+
+    Collection<RuleKey> orig = PreferencesUtils.getExcludedRules();
+
+    PreferencesUtils.excludeRule(ruleKey1);
+    assertThat(PreferencesUtils.getExcludedRules()).isEqualTo(orig);
+
+    PreferencesUtils.excludeRule(ruleKey2);
+    assertThat(PreferencesUtils.getExcludedRules()).isEqualTo(orig);
+  }
+
+  @Test
+  public void should_store_rule_keys_in_consistent_order() {
+    RuleKey ruleKey1 = new RuleKey("squid", "S123");
+    RuleKey ruleKey2 = new RuleKey("php", "S456");
+    List<RuleKey> ordering1 = Arrays.asList(ruleKey1, ruleKey2);
+    List<RuleKey> ordering2 = Arrays.asList(ruleKey2, ruleKey1);
+
+    PreferencesUtils.setExcludedRules(ordering1);
+    Collection<RuleKey> deserialized1 = PreferencesUtils.getExcludedRules();
+
+    PreferencesUtils.setExcludedRules(ordering2);
+    Collection<RuleKey> deserialized2 = PreferencesUtils.getExcludedRules();
+
+    assertThat(deserialized1).isEqualTo(deserialized2);
   }
 }

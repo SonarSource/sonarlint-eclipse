@@ -37,6 +37,7 @@ import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
+import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 public final class MarkerUtils {
 
@@ -141,6 +142,18 @@ public final class MarkerUtils {
     int start = startLineStartOffset + startLineOffset;
     int end = endLineStartOffset + endLineOffset;
     return function.apply(start, end - start);
+  }
+
+  @CheckForNull
+  public static RuleKey getRuleKey(IMarker marker) {
+    String repositoryAndKey;
+    try {
+      repositoryAndKey = marker.getAttribute(SONAR_MARKER_RULE_KEY_ATTR).toString();
+    } catch (CoreException e) {
+      SonarLintLogger.get().error("Unable to extract rule key from marker", e);
+      return null;
+    }
+    return PreferencesUtils.deserializeRuleKey(repositoryAndKey);
   }
 
   public static class ExtraPosition extends Position {

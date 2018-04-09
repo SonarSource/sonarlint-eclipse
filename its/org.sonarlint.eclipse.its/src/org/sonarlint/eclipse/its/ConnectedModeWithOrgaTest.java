@@ -55,6 +55,7 @@ public class ConnectedModeWithOrgaTest extends AbstractSonarLintTest {
   public static Orchestrator orchestrator = Orchestrator.builderEnv()
     // Need at least one plugin to avoid bug SONAR-8918
     .setOrchestratorProperty("javaVersion", "LATEST_RELEASE")
+    .setServerProperty("sonar.sonarcloud.enabled", "true")
     .addPlugin("java")
     .build();
 
