@@ -461,6 +461,14 @@
          </command>
       </menuContribution>
       <menuContribution
+            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
+           <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
+                 style="push"
+                 mnemonic="u">
+         </command>
+      </menuContribution>
+      <menuContribution
             locationURI="menu:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
          <menu
            id="org.eclipse.ui.ide.problems.filtersMenu"
@@ -494,6 +502,14 @@
                  commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
                  style="push"
                  mnemonic="R">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
+           <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
+                 style="push"
+                 mnemonic="u">
          </command>
       </menuContribution>
 	<menuContribution locationURI="popup:sonar.menu?after=group1">
@@ -608,6 +624,12 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
+          description="Deactivate the rule of this issue"
+          id="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
+          name="Deactivate rule"
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
+    <command
           description="Analyze with SonarLint"
           id="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
           name="Analyze"
@@ -653,6 +675,10 @@
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.ShowIssueLocationsCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.ShowIssueLocationsCommand">
+    </handler>
+    <handler
+          class="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand">
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
