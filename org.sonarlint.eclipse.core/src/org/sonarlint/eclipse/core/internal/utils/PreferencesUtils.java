@@ -133,7 +133,7 @@ public class PreferencesUtils {
     }
   }
 
-  public static String serializeRuleKey(RuleKey ruleKey) {
+  private static String serializeRuleKey(RuleKey ruleKey) {
     return ruleKey.repository() + ":" + ruleKey.rule();
   }
 
@@ -148,14 +148,14 @@ public class PreferencesUtils {
     return new RuleKey(repository, key);
   }
 
-  public static String serializeRuleExclusions(Collection<RuleKey> exclusions) {
+  private static String serializeRuleExclusions(Collection<RuleKey> exclusions) {
     return exclusions.stream()
       .map(PreferencesUtils::serializeRuleKey)
       .sorted()
       .collect(Collectors.joining(";"));
   }
 
-  public static Set<RuleKey> deserializeRuleExclusions(@Nullable String property) {
+  private static Set<RuleKey> deserializeRuleExclusions(@Nullable String property) {
     String[] values = StringUtils.split(property, ";");
     return Arrays.stream(values)
       .map(PreferencesUtils::deserializeRuleKey)
