@@ -473,6 +473,15 @@
                  commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
                  style="push"
                  mnemonic="u">
+          <visibleWhen>
+             <with variable="activeMenuSelection">
+                <iterate ifEmpty="false">
+                    <adapt type="org.eclipse.core.resources.IMarker">
+                        <test property="org.sonarlint.eclipse.core.standalone"/>
+                    </adapt>
+                </iterate>
+             </with>
+          </visibleWhen>
          </command>
       </menuContribution>
       <menuContribution

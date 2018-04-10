@@ -67,6 +67,13 @@
            properties="bound,autoAnalysisEnabled,open,excluded"
            type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
      </propertyTester>
+     <propertyTester
+           class="org.sonarlint.eclipse.core.internal.resources.MarkerPropertyTester"
+           id="org.sonarlint.eclipse.core.internal.resources.MarkerPropertyTester"
+           namespace="org.sonarlint.eclipse.core"
+           properties="standalone"
+           type="org.eclipse.core.resources.IMarker">
+     </propertyTester>
   </extension>
   <extension
         point="org.eclipse.core.runtime.adapters">
