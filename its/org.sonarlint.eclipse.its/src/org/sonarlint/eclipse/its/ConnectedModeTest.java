@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.its;
 
 import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.container.Server;
-import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.results.BoolResult;
@@ -33,7 +32,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.sonar.wsclient.services.PropertyCreateQuery;
 import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
-import org.sonarlint.eclipse.its.utils.JobHelpers;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.setting.SetRequest;
 
