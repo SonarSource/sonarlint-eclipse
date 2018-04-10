@@ -146,11 +146,8 @@ public final class MarkerUtils {
 
   @CheckForNull
   public static RuleKey getRuleKey(IMarker marker) {
-    String repositoryAndKey;
-    try {
-      repositoryAndKey = marker.getAttribute(SONAR_MARKER_RULE_KEY_ATTR).toString();
-    } catch (CoreException e) {
-      SonarLintLogger.get().error("Unable to extract rule key from marker", e);
+    String repositoryAndKey = marker.getAttribute(SONAR_MARKER_RULE_KEY_ATTR, null);
+    if (repositoryAndKey == null) {
       return null;
     }
     return PreferencesUtils.deserializeRuleKey(repositoryAndKey);
