@@ -51,6 +51,7 @@ import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
+import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPreferencePage {
@@ -186,7 +187,17 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
     PreferencesUtils.getExcludedRules()
       .stream()
       .sorted(Comparator.comparing(RuleKey::repository).thenComparing(RuleKey::rule))
-      .forEach(ruleKey -> excludedRules.add(new RuleExclusionItem(ruleKey, standaloneEngine.getRuleDescription(ruleKey.toString()).getName())));
+      .forEach(ruleKey -> {
+        String ruleName;
+        try {
+          RuleDetails ruleDetails = standaloneEngine.getRuleDescription(ruleKey.toString());
+          ruleName = ruleDetails != null ? ruleDetails.getName() : "(unknown)";
+        } catch (IllegalArgumentException e) {
+          // no such rule: probably it was removed in new version of the plugin
+          ruleName = "(unavailable)";
+        }
+        excludedRules.add(new RuleExclusionItem(ruleKey, ruleName));
+      });
   }
 
   @Override
