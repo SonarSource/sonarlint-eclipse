@@ -17,15 +17,40 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.command;
+package org.sonarlint.eclipse.ui.internal.markers;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IMarkerResolution2;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.DeactivateRuleUtils;
 
-public class DeactivateRuleCommand extends AbstractIssueCommand {
+public class DeactivateRuleMarkerResolver implements IMarkerResolution2 {
+
+  private final IMarker marker;
+
+  public DeactivateRuleMarkerResolver(IMarker marker) {
+    this.marker = marker;
+  }
 
   @Override
-  protected void execute(IMarker marker) {
+  public String getDescription() {
+    return "Deactivate rule in standalone analysis: " + marker.getAttribute(IMarker.MESSAGE, "unknown");
+  }
+
+  @Override
+  public String getLabel() {
+    return "Deactivate rule " + marker.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "unknown");
+  }
+
+  @Override
+  public void run(IMarker marker) {
     DeactivateRuleUtils.deactivateRule(marker);
+  }
+
+  @Override
+  public Image getImage() {
+    return SonarLintImages.IMG_ISSUE;
   }
 }

@@ -19,12 +19,16 @@
  */
 package org.sonarlint.eclipse.ui.internal.markers;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGenerator2 {
 
@@ -39,11 +43,28 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
 
   @Override
   public IMarkerResolution[] getResolutions(final IMarker marker) {
+    List<IMarkerResolution> resolutions = new ArrayList<>();
+    resolutions.add(new ShowRuleDescriptionMarkerResolver(marker));
+
     if (hasResolutions(marker)) {
-      return new IMarkerResolution[] {new ShowIssueFlowsMarkerResolver(marker), new ShowRuleDescriptionMarkerResolver(marker)};
-    } else {
-      return new IMarkerResolution[] {new ShowRuleDescriptionMarkerResolver(marker)};
+      resolutions.add(new ShowIssueFlowsMarkerResolver(marker));
     }
+
+    if (isStandalone(marker)) {
+      resolutions.add(new DeactivateRuleMarkerResolver(marker));
+    }
+
+    // note: the display order seems independent from the order in this array
+    return resolutions.toArray(new IMarkerResolution[resolutions.size()]);
+  }
+
+  private static boolean isStandalone(IMarker marker) {
+    ISonarLintFile sonarLintFile = Adapters.adapt(marker.getResource(), ISonarLintFile.class);
+    if (sonarLintFile == null) {
+      return false;
+    }
+
+    return !sonarLintFile.getProject().isBound();
   }
 
 }
