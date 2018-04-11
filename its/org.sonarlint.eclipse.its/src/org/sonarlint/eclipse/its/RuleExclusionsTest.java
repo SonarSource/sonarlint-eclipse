@@ -52,9 +52,8 @@ public class RuleExclusionsTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Complete the task associated to this TODO comment."),
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 10, "Replace this use of System.out or System.err by a logger."),
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 11, "Replace this use of System.out or System.err by a logger."));
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."),
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 12, "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed."));
 
     new JavaPackageExplorerBot(bot).expandAndSelect("java-exclude-rules", "src", "hello", "Hello3.java");
 
@@ -63,15 +62,15 @@ public class RuleExclusionsTest extends AbstractSonarLintTest {
     JobHelpers.waitForJobsToComplete(bot);
     markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Complete the task associated to this TODO comment."));
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."));
 
     bot.menu("Window").menu("Preferences").click();
     bot.shell("Preferences").activate();
     bot.tree().getTreeItem("SonarLint").select().expand().click()
       .getNode("Rules configuration").select().click();
 
-    assertThat(bot.table().cell(0, 0)).isEqualTo("squid:S106");
-    assertThat(bot.table().cell(0, 1)).isEqualTo("Standard outputs should not be used directly to log anything");
+    assertThat(bot.table().cell(0, 0)).isEqualTo("squid:S3776");
+    assertThat(bot.table().cell(0, 1)).isEqualTo("Cognitive Complexity of methods should not be too high");
     bot.table().click(0, 0);
 
     bot.button("Remove").click();
@@ -80,8 +79,7 @@ public class RuleExclusionsTest extends AbstractSonarLintTest {
     JobHelpers.waitForJobsToComplete(bot);
     markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Complete the task associated to this TODO comment."),
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 10, "Replace this use of System.out or System.err by a logger."),
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 11, "Replace this use of System.out or System.err by a logger."));
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."),
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 12, "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed."));
   }
 }
