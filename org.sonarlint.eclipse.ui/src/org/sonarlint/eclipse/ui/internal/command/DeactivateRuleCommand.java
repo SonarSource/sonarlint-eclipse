@@ -48,7 +48,7 @@ public class DeactivateRuleCommand extends AbstractIssueCommand {
 
     PreferencesUtils.excludeRule(ruleKey);
     Predicate<ISonarLintFile> filter = f -> !f.getProject().isBound();
-    JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.EDITOR_CHANGE, filter);
+    JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.EXCLUSION_CHANGE, filter);
   }
 
   private static void removeReportIssuesMarkers(IResource resource, RuleKey ruleKey) {
@@ -57,7 +57,11 @@ public class DeactivateRuleCommand extends AbstractIssueCommand {
       .stream()
       .filter(m -> ruleKey.equals(MarkerUtils.getRuleKey(m)))
       .filter(m -> {
-        ISonarLintProject project = Adapters.adapt(m.getResource(), ISonarLintFile.class).getProject();
+        ISonarLintFile sonarLintFile = Adapters.adapt(m.getResource(), ISonarLintFile.class);
+        if (sonarLintFile == null) {
+          return false;
+        }
+        ISonarLintProject project = sonarLintFile.getProject();
         return !isBoundCache.computeIfAbsent(project.getName(), key -> project.isBound());
       })
       .forEach(m -> {

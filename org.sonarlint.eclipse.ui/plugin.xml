@@ -27,6 +27,13 @@
     </page>
     <page
           category="org.sonarlint.eclipse.ui.preferences.SonarLintPreferencePage"
+          class="org.sonarlint.eclipse.ui.internal.properties.RuleExclusionsPage"
+          id="org.sonarlint.eclipse.ui.properties.RuleExclusionsPage"
+          name="Rules configuration">
+          <keywordReference id="org.sonarlint.eclipse.ui.SonarLintKeyword"/>
+    </page>
+    <page
+          category="org.sonarlint.eclipse.ui.preferences.SonarLintPreferencePage"
           class="org.sonarlint.eclipse.ui.internal.properties.AboutPropertyPage"
           id="org.sonarlint.eclipse.ui.properties.AboutPropertyPage"
           name="Miscellaneous">
