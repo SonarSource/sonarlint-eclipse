@@ -76,7 +76,11 @@ public class RuleExclusionsTest extends AbstractSonarLintTest {
 
     bot.button("Remove").click();
     bot.button("Apply").click();
-    bot.button("OK").click();
+    if (isOxygenOrGreater()) {
+      bot.button("Apply and Close").click();
+    } else {
+      bot.button("OK").click();
+    }
 
     JobHelpers.waitForJobsToComplete(bot);
     markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
