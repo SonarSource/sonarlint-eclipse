@@ -64,7 +64,6 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
 
   public RuleExclusionsPage() {
     setTitle("Rules configuration");
-    noDefaultButton();
   }
 
   @Override
@@ -205,6 +204,12 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
     PreferencesUtils.setExcludedRules(this.excludedRules.stream().map(item -> item.ruleKey).collect(Collectors.toList()));
     JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.EXCLUSION_CHANGE);
     return true;
+  }
+
+  @Override
+  protected void performDefaults() {
+    this.excludedRules.clear();
+    this.table.refresh();
   }
 
   private static class RuleExclusionItem {
