@@ -34,11 +34,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
 
   @Override
   public boolean hasResolutions(final IMarker marker) {
-    try {
-      return SonarLintCorePlugin.MARKER_ON_THE_FLY_ID.equals(marker.getType()) && marker.getAttribute(MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, false);
-    } catch (final CoreException e) {
-      return false;
-    }
+    return isSonarLintIssueMarker(marker);
   }
 
   @Override
@@ -46,11 +42,11 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
     List<IMarkerResolution> resolutions = new ArrayList<>();
     resolutions.add(new ShowRuleDescriptionMarkerResolver(marker));
 
-    if (hasResolutions(marker)) {
+    if (hasExtraLocations(marker)) {
       resolutions.add(new ShowIssueFlowsMarkerResolver(marker));
     }
 
-    if (isStandalone(marker)) {
+    if (isStandaloneIssue(marker)) {
       resolutions.add(new DeactivateRuleMarkerResolver(marker));
     }
 
@@ -58,7 +54,19 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
     return resolutions.toArray(new IMarkerResolution[resolutions.size()]);
   }
 
-  private static boolean isStandalone(IMarker marker) {
+  private static boolean isSonarLintIssueMarker(IMarker marker) {
+    try {
+      return SonarLintCorePlugin.MARKER_ON_THE_FLY_ID.equals(marker.getType()) || SonarLintCorePlugin.MARKER_REPORT_ID.equals(marker.getType());
+    } catch (final CoreException e) {
+      return false;
+    }
+  }
+
+  private static boolean hasExtraLocations(IMarker marker) {
+    return marker.getAttribute(MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, false);
+  }
+
+  private static boolean isStandaloneIssue(IMarker marker) {
     ISonarLintFile sonarLintFile = Adapters.adapt(marker.getResource(), ISonarLintFile.class);
     if (sonarLintFile == null) {
       return false;
