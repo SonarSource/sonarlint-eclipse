@@ -32,6 +32,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.jface.window.Window;
@@ -140,7 +141,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
 
     table.getTable().setToolTipText(null);
     table.setContentProvider(new ContentProvider());
-    table.setInput(this);
+    table.setInput(exclusions);
 
     createButtons(pageComponent);
     updateButtons();
@@ -309,6 +310,16 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     @Override
     public Object[] getElements(Object inputElement) {
       return exclusions.toArray();
+    }
+
+    @Override
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      // nothing to do; seems to be required by e45 and older
+    }
+
+    @Override
+    public void dispose() {
+      // nothing to do; seems to be required by e45 and older
     }
   }
 
