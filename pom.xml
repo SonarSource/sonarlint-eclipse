@@ -86,6 +86,7 @@
     <jarsigner.skip>true</jarsigner.skip>
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
+    <artifactsToPublish>${project.groupId}:org.sonarlint.eclipse.site:zip</artifactsToPublish>
   </properties>
 
   <!-- These dependencies will be added to the target platform -->
