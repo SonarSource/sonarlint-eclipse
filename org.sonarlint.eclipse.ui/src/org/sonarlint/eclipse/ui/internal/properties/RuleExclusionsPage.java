@@ -64,7 +64,7 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
   private TableViewer table;
 
   public RuleExclusionsPage() {
-    setTitle("Rules configuration");
+    setTitle("Rules Configuration");
   }
 
   @Override
