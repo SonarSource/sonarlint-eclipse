@@ -26,9 +26,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
-import org.junit.ClassRule;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.osgi.framework.Version;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
@@ -36,13 +35,12 @@ import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.junit.Assume.assumeTrue;
 
 public class FileExclusionsTest extends AbstractSonarLintTest {
-  @ClassRule
-  public static TemporaryFolder temp = new TemporaryFolder();
 
   @Test
-  public void shouldExcludeFile() throws Exception {
+  public void should_exclude_file() throws Exception {
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
     IProject project = importEclipseProject("java/java-simple", "java-simple");
     JobHelpers.waitForJobsToComplete(bot);
@@ -83,10 +81,42 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
 
     // Trigger manual analysis of the project
     javaBot.triggerManualAnalysis("java-simple");
+    bot.shell("Confirmation").activate();
+    bot.button("Proceed").click();
     JobHelpers.waitForJobsToComplete(bot);
 
     markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_REPORT_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).isEmpty();
+  }
+
+  @Test
+  public void should_add_new_entry() {
+    // The preference menu seems very flaky in Luna
+    assumeTrue(isMarsOrGreater());
+
+    bot.menu("Window").menu("Preferences").click();
+    bot.shell("Preferences").activate();
+    bot.tree().getTreeItem("SonarLint").select().expand().click()
+      .getNode("File Exclusions").select().click();
+
+    SWTBotButton newButton = bot.button("New...");
+
+    if (isNeonOrGreater()) {
+      // mars is not able to find the dialog "Create Exclusion" :(
+
+      newButton.click();
+      bot.shell("Create Exclusion").activate();
+      String value = "foo";
+      bot.text().setText(value);
+      bot.button("OK").click();
+      bot.shell("Preferences").activate();
+      assertThat(bot.table().cell(0, 1)).isEqualTo(value);
+
+      bot.table().click(0, 1);
+      bot.button("Remove").click();
+    }
+
+    bot.button("Cancel").click();
   }
 
 }

@@ -227,6 +227,10 @@ public abstract class AbstractSonarLintTest {
     return platformVersion().compareTo(new Version("4.5")) >= 0;
   }
 
+  public static boolean isNeonOrGreater() {
+    return platformVersion().compareTo(new Version("4.6")) >= 0;
+  }
+
   protected static Version platformVersion() {
     return Platform.getBundle("org.eclipse.platform").getVersion();
   }
