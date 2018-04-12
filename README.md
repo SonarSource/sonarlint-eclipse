@@ -45,8 +45,8 @@ Running
 
 Open `plugin.xml` of `org.sonarline.eclipse.core` (for example), and see the **Run** and **Debug** buttons in the top-right corner.
 
-Running tests
--------------
+Running plugin unit tests
+-------------------------
 
 In Eclipse:
 
@@ -60,6 +60,26 @@ In Eclipse:
 With Maven:
 
     mvn clean verify
+
+Running ITs
+-----------
+
+To run ITs for the default target platform and SonarQube version you can use a helper script:
+
+    ./scripts/run-its.sh --init  # start X server for windows opened by the tests
+    ./scripts/run-its.sh
+
+This assumes that the project was already `mvn` installed. You may want to run a specific test to avoid running everything:
+
+    ./scripts/run-its.sh -Dtest=SimpleNameOfClass
+
+Run with `-h` or `--help` to see other options.
+
+The script uses Xephyr and assumes the `metacity` window manager is present.
+The purpose of this is to open windows in an isolated X server to avoid interference with your desktop.
+
+If you get some error when opening the JS Editor, read:
+http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassdeffounderror-jdk-nashorn-internal-runtime
 
 Adding a dependency
 -------------------
