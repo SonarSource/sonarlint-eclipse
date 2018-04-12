@@ -84,7 +84,7 @@ public class RuleExclusionsTest extends AbstractSonarLintTest {
     bot.menu("Window").menu("Preferences").click();
     bot.shell("Preferences").activate();
     bot.tree().getTreeItem("SonarLint").select().expand().click()
-      .getNode("Rules configuration").select().click();
+      .getNode("Rules Configuration").select().click();
 
     assertThat(bot.table().cell(0, 0)).isEqualTo("squid:S3776");
     assertThat(bot.table().cell(0, 1)).isEqualTo("Cognitive Complexity of methods should not be too high");
