@@ -209,7 +209,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private static String getExtension(ClientInputFile next) {
     String path = next.getPath();
     int lastDot = path.lastIndexOf('.');
-    return lastDot >= 0 ? path.substring(lastDot) : "";
+    return lastDot >= 0 ? path.substring(lastDot + 1) : "";
   }
 
   private static List<ClientInputFile> buildInputFiles(Path tempDirectory, final Map<ISonarLintFile, IDocument> filesToAnalyze) {
