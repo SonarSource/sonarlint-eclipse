@@ -32,6 +32,7 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
@@ -64,7 +65,6 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
 
   public RuleExclusionsPage() {
     setTitle("Rules configuration");
-    noDefaultButton();
   }
 
   @Override
@@ -125,7 +125,7 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
 
     table.getTable().setToolTipText(null);
     table.setContentProvider(new ContentProvider());
-    table.setInput(this);
+    table.setInput(excludedRules);
 
     createButtons(pageComponent);
     updateButtons();
@@ -158,11 +158,10 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
     updateButtons();
   }
 
-  protected Composite createButtons(Composite innerParent) {
-    GridLayout layout;
+  protected void createButtons(Composite innerParent) {
     Composite buttons = new Composite(innerParent, SWT.NONE);
     buttons.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-    layout = new GridLayout();
+    GridLayout layout = new GridLayout();
     layout.marginHeight = 0;
     layout.marginWidth = 0;
     buttons.setLayout(layout);
@@ -171,7 +170,6 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
     removeButton.setText("Remove");
     removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     removeButton.addListener(SWT.Selection, e -> remove());
-    return buttons;
   }
 
   protected void updateButtons() {
@@ -207,6 +205,12 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
     return true;
   }
 
+  @Override
+  protected void performDefaults() {
+    this.excludedRules.clear();
+    this.table.refresh();
+  }
+
   private static class RuleExclusionItem {
     private final RuleKey ruleKey;
     private final String ruleName;
@@ -221,6 +225,16 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
     @Override
     public Object[] getElements(Object inputElement) {
       return excludedRules.toArray();
+    }
+
+    @Override
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+      // nothing to do; seems to be required by e45 and older
+    }
+
+    @Override
+    public void dispose() {
+      // nothing to do; seems to be required by e45 and older
     }
   }
 
