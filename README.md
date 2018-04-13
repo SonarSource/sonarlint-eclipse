@@ -16,21 +16,24 @@ Building
 Development setup in Eclipse
 ----------------------------
 
-Install `m2eclipse` and then Tycho extension to `m2eclipse`:
 
-1. Window -> Preferences -> Maven -> Discovery -> Open Catalog
-2. Install **Tycho Configurator**
-3. Import everything as Maven project
-4. Run `mvn compile` on the command line to fetch artifacts referenced in the parent pom
-5. Open `target-platform-e47-dev.target`
+1. Run `mvn compile` on the command line to fetch artifacts referenced in the parent pom
+2. In Eclipse, import the project root as Maven project
+3. In Eclipse, import the `its/` folder as Maven project
+4. Open `target-platform-its-e47/target-platform-its-e47-dev.target`
     - Click on **Environment** tab and add `M2_REPO` variable pointing to your local maven repo (for example `/home/youruser/.m2/repository`)
-    - On the **Definition** tab, if there are problems with the **Locations** entries, click **Reload**
-    - Click **Set as Target Platform** in the top-right corner
+    - On the **Definition** tab, click **Reload**
+    - Click **Set as Target Platform** (or **Reload Target Platform**) in the top-right corner
 
 At this point you should be all set, unless Eclipse is not able to generate protobuf sources.
 Following the explanations [here](https://github.com/trustin/os-maven-plugin) may help.
 As a workaround, you can run `mvn compile` on the command line to generate protobuf sources,
 and in Eclipse hit `F5` on the project with build errors.
+
+In some (older?) flavors of Eclipse, you may need to install `m2eclipse` and then Tycho extension to `m2eclipse`:
+
+1. Window -> Preferences -> Maven -> Discovery -> Open Catalog
+2. Install **Tycho Configurator**
 
 ### Eclipse quirks
 
@@ -103,7 +106,7 @@ To verify the content of the package: `mvn clean package` and check content of t
 
 ### For Eclipse
 
-Add to `target-platform-e46/target-platform-e46-dev.target` (or whatever target you use) the path of the artifact in your local maven repository as a filesystem path, similar to already existing dependencies.
+Add to `target-platform-its-e47/target-platform-its-e47-dev.target` (or whatever target you use) the path of the artifact in your local maven repository as a filesystem path, similar to already existing dependencies.
 
 In the target editor (or open `plugin.xml`), click **Set as Target Platform**.
 Note that this will trigger a compilation in Eclipse.
