@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
@@ -51,6 +52,7 @@ public class PreferencesUtils {
   public static final String PREF_DEFAULT = ""; //$NON-NLS-1$
   public static final String PREF_TEST_FILE_REGEXPS = "testFileRegexps"; //$NON-NLS-1$
   public static final String PREF_TEST_FILE_REGEXPS_DEFAULT = "**/*Test.*,**/test/**/*"; //$NON-NLS-1$
+  public static final String PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES = "skipConfirmAnalyzeMultipleFiles"; //$NON-NLS-1$
 
   private PreferencesUtils() {
     // Utility class
@@ -119,18 +121,30 @@ public class PreferencesUtils {
     return deserializeFileExclusions(props);
   }
 
-  private static String getPreferenceString(String key) {
-    return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, key, PREF_DEFAULT, null);
-  }
-
-  private static void setPreferenceString(String key, String value) {
+  private static void savePreferences(Consumer<Preferences> updater, String key, Object value) {
     Preferences preferences = ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID);
-    preferences.put(key, value);
+    updater.accept(preferences);
     try {
       preferences.flush();
     } catch (BackingStoreException e) {
       SonarLintLogger.get().error("Could not save preference: " + key + " = " + value, e);
     }
+  }
+
+  private static String getPreferenceString(String key) {
+    return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, key, PREF_DEFAULT, null);
+  }
+
+  private static void setPreferenceString(String key, String value) {
+    savePreferences(p -> p.put(key, value), key, value);
+  }
+
+  private static boolean getPreferenceBoolean(String key) {
+    return Platform.getPreferencesService().getBoolean(SonarLintCorePlugin.UI_PLUGIN_ID, key, false, null);
+  }
+
+  private static void setPreferenceBoolean(String key, boolean value) {
+    savePreferences(p -> p.putBoolean(key, value), key, value);
   }
 
   private static String serializeRuleKey(RuleKey ruleKey) {
@@ -175,5 +189,13 @@ public class PreferencesUtils {
 
   public static void setExcludedRules(Collection<RuleKey> excludedRules) {
     setPreferenceString(PREF_RULE_EXCLUSIONS, serializeRuleExclusions(excludedRules));
+  }
+
+  public static void setSkipConfirmAnalyzeMultipleFiles() {
+    setPreferenceBoolean(PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES, true);
+  }
+
+  public static boolean skipConfirmAnalyzeMultipleFiles() {
+    return getPreferenceBoolean(PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES);
   }
 }

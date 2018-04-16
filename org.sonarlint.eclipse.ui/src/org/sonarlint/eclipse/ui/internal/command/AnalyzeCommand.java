@@ -47,6 +47,7 @@ import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectsJob;
+import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
@@ -101,12 +102,31 @@ public class AnalyzeCommand extends AbstractHandler {
   }
 
   private static boolean askConfirmation(Shell shell) {
+    if (PreferencesUtils.skipConfirmAnalyzeMultipleFiles()) {
+      return true;
+    }
+
+    // The general order is left to right, but the default button will be moved to the right.
+    // http://www.vogella.com/tutorials/EclipseDialogs/article.html
+    String[] buttonLabels = {
+      "Proceed",
+      IDialogConstants.CANCEL_LABEL,
+      "Proceed and don't ask again",
+    };
+
     MessageDialog dialog = new MessageDialog(shell, "Confirmation", null, "Analyzing multiple files may take a long time to complete.\n"
       + "To get the best from SonarLint, you should preferably use the on-the-fly analysis for the files you're working on.", MessageDialog.CONFIRM,
-      new String[] {"Proceed",
-        IDialogConstants.CANCEL_LABEL},
-      0);
-    return dialog.open() == 0;
+      buttonLabels, 0);
+
+    switch (dialog.open()) {
+      case 0:
+        return true;
+      case 2:
+        PreferencesUtils.setSkipConfirmAnalyzeMultipleFiles();
+        return true;
+      default:
+        return false;
+    }
   }
 
   protected Map<ISonarLintProject, Collection<FileWithDocument>> findSelectedFilesPerProject(ExecutionEvent event) throws ExecutionException {
