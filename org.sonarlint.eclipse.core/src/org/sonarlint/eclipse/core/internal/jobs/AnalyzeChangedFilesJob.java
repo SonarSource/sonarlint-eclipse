@@ -81,7 +81,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
           analysisMonitor.worked(1);
           continue;
         }
-        global.setTaskName("Analysing project " + project.getName());
+        global.setTaskName("Analyzing project " + project.getName());
         Collection<FileWithDocument> filesToAnalyze = entry.getValue().stream()
           .map(f -> new FileWithDocument(f, null))
           .collect(Collectors.toList());

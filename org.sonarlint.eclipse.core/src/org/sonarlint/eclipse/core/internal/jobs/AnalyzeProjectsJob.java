@@ -62,7 +62,7 @@ public class AnalyzeProjectsJob extends WorkspaceJob {
           analysisMonitor.worked(1);
           continue;
         }
-        global.setTaskName("Analysing project " + project.getName());
+        global.setTaskName("Analyzing project " + project.getName());
         AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, entry.getValue(), TriggerType.MANUAL);
         AnalyzeProjectJob job = new AnalyzeProjectJob(req);
         SubMonitor subMonitor = analysisMonitor.newChild(1);
