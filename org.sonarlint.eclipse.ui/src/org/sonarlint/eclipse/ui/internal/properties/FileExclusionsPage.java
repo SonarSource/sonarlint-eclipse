@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import org.eclipse.jface.layout.TableColumnLayout;
@@ -160,6 +159,12 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     return pageComponent;
   }
 
+  @Override
+  protected TableViewer getTableViewer() {
+    return table;
+  }
+
+  @Override
   protected void add() {
     EditExclusionDialog dialog;
 
@@ -180,6 +185,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     table.refresh();
   }
 
+  @Override
   protected void edit() {
     ExclusionItem exclusion = (ExclusionItem) table.getStructuredSelection().getFirstElement();
     EditExclusionDialog dialog;
@@ -204,27 +210,14 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     }
   }
 
-  protected void remove() {
-    IStructuredSelection selection = (IStructuredSelection) table.getSelection();
+  @Override
+  protected void remove(Object item) {
+    exclusions.remove(item);
+  }
 
-    int idx = table.getTable().getSelectionIndex();
-    Iterator<?> elements = selection.iterator();
-    while (elements.hasNext()) {
-      ExclusionItem data = (ExclusionItem) elements.next();
-      exclusions.remove(data);
-    }
-    table.refresh();
-
-    int count = table.getTable().getItemCount();
-    if (count > 0) {
-      if (idx < 0) {
-        table.getTable().select(0);
-      } else if (idx < count) {
-        table.getTable().select(idx);
-      } else {
-        table.getTable().select(count - 1);
-      }
-    }
+  @Override
+  protected void removeSelection() {
+    super.removeSelection();
     updateButtons();
   }
 

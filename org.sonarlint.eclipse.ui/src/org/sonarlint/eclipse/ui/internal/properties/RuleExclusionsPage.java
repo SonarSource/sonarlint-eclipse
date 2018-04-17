@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.eclipse.jface.layout.TableColumnLayout;
@@ -135,26 +134,7 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
   }
 
   private void remove() {
-    IStructuredSelection selection = (IStructuredSelection) table.getSelection();
-
-    int idx = table.getTable().getSelectionIndex();
-    Iterator<?> elements = selection.iterator();
-    while (elements.hasNext()) {
-      RuleExclusionItem data = (RuleExclusionItem) elements.next();
-      excludedRules.remove(data);
-    }
-    table.refresh();
-
-    int count = table.getTable().getItemCount();
-    if (count > 0) {
-      if (idx < 0) {
-        table.getTable().select(0);
-      } else if (idx < count) {
-        table.getTable().select(idx);
-      } else {
-        table.getTable().select(count - 1);
-      }
-    }
+    AbstractListPropertyPage.removeSelection(table, excludedRules::remove);
     updateButtons();
   }
 

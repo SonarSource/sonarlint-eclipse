@@ -19,6 +19,10 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
+import java.util.Iterator;
+import java.util.function.Consumer;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -52,14 +56,42 @@ public abstract class AbstractListPropertyPage extends PropertyPage {
     removeButton = new Button(buttons, SWT.PUSH);
     removeButton.setText("Remove");
     removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    removeButton.addListener(SWT.Selection, e -> remove());
+    removeButton.addListener(SWT.Selection, e -> removeSelection());
     return buttons;
   }
+
+  protected abstract TableViewer getTableViewer();
 
   protected abstract void add();
 
   protected abstract void edit();
 
-  protected abstract void remove();
+  protected abstract void remove(Object item);
+
+  protected void removeSelection() {
+    removeSelection(getTableViewer(), this::remove);
+  }
+
+  protected static void removeSelection(TableViewer table, Consumer<Object> remover) {
+    IStructuredSelection selection = (IStructuredSelection) table.getSelection();
+
+    int idx = table.getTable().getSelectionIndex();
+    Iterator<?> elements = selection.iterator();
+    while (elements.hasNext()) {
+      remover.accept(elements.next());
+    }
+    table.refresh();
+
+    int count = table.getTable().getItemCount();
+    if (count > 0) {
+      if (idx < 0) {
+        table.getTable().select(0);
+      } else if (idx < count) {
+        table.getTable().select(idx);
+      } else {
+        table.getTable().select(count - 1);
+      }
+    }
+  }
 
 }
