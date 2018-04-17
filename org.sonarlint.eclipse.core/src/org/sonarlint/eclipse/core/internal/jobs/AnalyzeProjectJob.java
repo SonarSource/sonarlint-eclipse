@@ -120,6 +120,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     SonarLintLogger.get().debug("Clear markers on " + excludedFiles.size() + " excluded files");
     excludedFiles.forEach(SonarLintMarkerUpdater::clearMarkers);
 
+    if (!triggerType.isOnTheFly()) {
+      SonarLintMarkerUpdater.deleteAllMarkersFromReport();
+    }
+
     if (filesToAnalyze.isEmpty()) {
       return Status.OK_STATUS;
     }
@@ -292,10 +296,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       // TODO handle non-file-level issues
       .filter(e -> e.getKey() instanceof ISonarLintFile)
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-
-    if (triggerType == TriggerType.MANUAL) {
-      SonarLintMarkerUpdater.deleteAllMarkersFromReport();
-    }
 
     trackIssues(server, docPerFile, successfulFiles, triggerType, monitor);
   }
