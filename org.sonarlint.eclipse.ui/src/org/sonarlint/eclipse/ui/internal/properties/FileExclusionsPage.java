@@ -43,7 +43,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -328,26 +327,6 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
 
   private static class TypeLabelProvider extends CellLabelProvider {
     @Override
-    public String getToolTipText(Object element) {
-      return null;
-    }
-
-    @Override
-    public Point getToolTipShift(Object object) {
-      return new Point(5, 5);
-    }
-
-    @Override
-    public int getToolTipDisplayDelayTime(Object object) {
-      return 0;
-    }
-
-    @Override
-    public int getToolTipTimeDisplayed(Object object) {
-      return 15000;
-    }
-
-    @Override
     public void update(ViewerCell cell) {
       ExclusionItem exclusion = (ExclusionItem) cell.getElement();
       cell.setText(exclusion.type().toString());
@@ -366,21 +345,6 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     public String getToolTipText(Object element) {
       ExclusionItem exclusion = (ExclusionItem) element;
       return exclusion.item();
-    }
-
-    @Override
-    public Point getToolTipShift(Object object) {
-      return new Point(5, 5);
-    }
-
-    @Override
-    public int getToolTipDisplayDelayTime(Object object) {
-      return 0;
-    }
-
-    @Override
-    public int getToolTipTimeDisplayed(Object object) {
-      return 15000;
     }
 
     @Override
