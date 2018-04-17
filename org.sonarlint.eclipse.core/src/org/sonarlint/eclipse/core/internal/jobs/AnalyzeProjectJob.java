@@ -142,9 +142,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       List<ClientInputFile> inputFiles = buildInputFiles(analysisWorkDir, filesToAnalyze);
       Collection<IAnalysisConfigurator> usedConfigurators = configure(getProject(), inputFiles, mergedExtraProps, analysisWorkDir, monitor);
 
-      for (SonarLintProperty sonarProperty : extraProps) {
-        mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue());
-      }
+      extraProps.forEach(sonarProperty -> mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue()));
 
       if (!inputFiles.isEmpty()) {
         Server server = null;
