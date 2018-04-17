@@ -198,7 +198,10 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
 
     ExclusionItem newExclusion = dialog.get();
     if (newExclusion != null) {
+      int index = exclusions.indexOf(exclusion);
+      exclusions.set(index, newExclusion);
       table.setSelection(new StructuredSelection(newExclusion));
+      table.refresh();
     }
   }
 

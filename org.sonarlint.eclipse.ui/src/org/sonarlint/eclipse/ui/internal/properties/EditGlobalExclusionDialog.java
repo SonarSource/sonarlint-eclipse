@@ -90,7 +90,10 @@ public class EditGlobalExclusionDialog extends EditExclusionDialog {
    */
   private void createWidgets(Composite contents) {
     field = new Text(contents, SWT.SINGLE | SWT.BORDER);
-    field.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+    field.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    if (editing) {
+      field.setText(editItem);
+    }
 
     ModifyListener fieldListener = e -> onFieldChanged();
     field.addModifyListener(fieldListener);
