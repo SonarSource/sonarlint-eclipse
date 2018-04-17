@@ -90,6 +90,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private final Collection<ISonarLintFile> excludedFiles;
   private final Collection<RuleKey> excludedRules;
   private final TriggerType triggerType;
+  private final boolean shouldClearReport;
 
   public AnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
@@ -100,6 +101,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     this.excludedFiles = request.getExcludedFiles();
     this.excludedRules = PreferencesUtils.getExcludedRules();
     this.triggerType = request.getTriggerType();
+    this.shouldClearReport = request.shouldClearReport();
   }
 
   private static String jobTitle(AnalyzeProjectRequest request) {
@@ -120,7 +122,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     SonarLintLogger.get().debug("Clear markers on " + excludedFiles.size() + " excluded files");
     excludedFiles.forEach(SonarLintMarkerUpdater::clearMarkers);
 
-    if (!triggerType.isOnTheFly()) {
+    if (shouldClearReport) {
       SonarLintMarkerUpdater.deleteAllMarkersFromReport();
     }
 
