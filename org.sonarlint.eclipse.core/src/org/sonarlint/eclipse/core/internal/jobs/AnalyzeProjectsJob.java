@@ -31,7 +31,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class AnalyzeProjectsJob extends WorkspaceJob {
@@ -49,9 +48,7 @@ public class AnalyzeProjectsJob extends WorkspaceJob {
     SubMonitor global = SubMonitor.convert(monitor, 100);
     try {
       global.setTaskName("Analysis");
-      ProjectsProviderUtils.allProjects().stream()
-        .filter(ISonarLintProject::isOpen)
-        .forEach(p -> p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID));
+      SonarLintMarkerUpdater.deleteAllMarkersFromReport();
       SubMonitor analysisMonitor = SubMonitor.convert(global.newChild(100), filesPerProject.size());
       for (Map.Entry<ISonarLintProject, Collection<FileWithDocument>> entry : filesPerProject.entrySet()) {
         if (monitor.isCanceled()) {

@@ -35,6 +35,7 @@ public class AnalyzeProjectRequest {
   private final Collection<FileWithDocument> filesToAnalyze = new ArrayList<>();
   private final Collection<ISonarLintFile> excludedFiles = new ArrayList<>();
   private final TriggerType triggerType;
+  private final boolean shouldClearReport;
 
   public static class FileWithDocument {
     private final ISonarLintFile file;
@@ -56,7 +57,7 @@ public class AnalyzeProjectRequest {
 
   }
 
-  public AnalyzeProjectRequest(ISonarLintProject project, Collection<FileWithDocument> files, TriggerType triggerType) {
+  public AnalyzeProjectRequest(ISonarLintProject project, Collection<FileWithDocument> files, TriggerType triggerType, boolean shouldClearReport) {
     this.project = project;
     this.triggerType = triggerType;
     FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(project);
@@ -67,6 +68,11 @@ public class AnalyzeProjectRequest {
         filesToAnalyze.add(fWithDoc);
       }
     });
+    this.shouldClearReport = shouldClearReport;
+  }
+
+  public AnalyzeProjectRequest(ISonarLintProject project, Collection<FileWithDocument> files, TriggerType triggerType) {
+    this(project, files, triggerType, false);
   }
 
   public ISonarLintProject getProject() {
@@ -83,6 +89,10 @@ public class AnalyzeProjectRequest {
 
   public TriggerType getTriggerType() {
     return triggerType;
+  }
+
+  public boolean shouldClearReport() {
+    return shouldClearReport;
   }
 
 }

@@ -55,15 +55,6 @@ public final class MarkerUtils {
   private MarkerUtils() {
   }
 
-  public static List<IMarker> findOnTheFlyIssuesMarkers(IResource resource) {
-    try {
-      return Arrays.asList(resource.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE));
-    } catch (CoreException e) {
-      SonarLintLogger.get().error(e.getMessage(), e);
-      return Collections.emptyList();
-    }
-  }
-
   public static List<IMarker> findReportIssuesMarkers(IResource resource) {
     try {
       return Arrays.asList(resource.findMarkers(SonarLintCorePlugin.MARKER_REPORT_ID, true, IResource.DEPTH_INFINITE));
