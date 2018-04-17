@@ -56,7 +56,6 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
@@ -295,9 +294,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
     if (triggerType == TriggerType.MANUAL) {
-      ProjectsProviderUtils.allProjects().stream()
-        .filter(ISonarLintProject::isOpen)
-        .forEach(p -> p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID));
+      SonarLintMarkerUpdater.deleteAllMarkersFromReport();
     }
 
     trackIssues(server, docPerFile, successfulFiles, triggerType, monitor);
