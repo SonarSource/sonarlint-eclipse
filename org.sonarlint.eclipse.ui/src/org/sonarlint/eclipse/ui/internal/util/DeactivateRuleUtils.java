@@ -24,6 +24,14 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
@@ -33,7 +41,10 @@ import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+
+import static org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver.ISSUE_FLOW_ANNOTATION_TYPE;
 
 public class DeactivateRuleUtils {
 
@@ -51,10 +62,40 @@ public class DeactivateRuleUtils {
     }
 
     removeReportIssuesMarkers(ruleKey);
+    removeAnnotations(marker);
 
     PreferencesUtils.excludeRule(ruleKey);
     Predicate<ISonarLintFile> filter = f -> !f.getProject().isBound();
     JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.EXCLUSION_CHANGE, filter);
+  }
+
+  private static void removeAnnotations(IMarker marker) {
+    IEditorPart editorPart;
+    try {
+      IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+      editorPart = IDE.openEditor(page, marker);
+    } catch (PartInitException e) {
+      SonarLintLogger.get().error("Could not get IEditorPart to remove annotations for deactivated rule");
+      return;
+    }
+
+    if (!(editorPart instanceof ITextEditor)) {
+      return;
+    }
+
+    ITextEditor textEditor = (ITextEditor) editorPart;
+    IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IssueLocationsView.ID);
+    if (view != null) {
+      view.setShowAnnotations(false);
+    }
+    IEditorInput editorInput = textEditor.getEditorInput();
+    IAnnotationModel annotationModel = textEditor.getDocumentProvider().getAnnotationModel(editorInput);
+
+    annotationModel.getAnnotationIterator().forEachRemaining(a -> {
+      if (ISSUE_FLOW_ANNOTATION_TYPE.equals(a.getType())) {
+        annotationModel.removeAnnotation(a);
+      }
+    });
   }
 
   private static void removeReportIssuesMarkers(RuleKey ruleKey) {

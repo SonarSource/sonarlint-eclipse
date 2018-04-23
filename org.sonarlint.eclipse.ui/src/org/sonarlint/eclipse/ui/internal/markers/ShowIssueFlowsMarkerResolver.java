@@ -51,7 +51,7 @@ import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
 public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
 
-  private static final String ISSUE_FLOW_ANNOTATION_TYPE = "org.sonarlint.eclipse.issueFlowAnnotationType";
+  public static final String ISSUE_FLOW_ANNOTATION_TYPE = "org.sonarlint.eclipse.issueFlowAnnotationType";
   private final IMarker marker;
 
   public ShowIssueFlowsMarkerResolver(IMarker marker) {
