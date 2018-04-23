@@ -20,11 +20,8 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-
 import javax.annotation.CheckForNull;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.resource.JFaceResources;
@@ -250,6 +247,12 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
     fLink.addSelectionListener(sl);
   }
 
+  @Override
+  protected TableViewer getTableViewer() {
+    return fTableViewer;
+  }
+
+  @Override
   protected void edit() {
     IStructuredSelection selection = (IStructuredSelection) fTableViewer.getSelection();
 
@@ -262,6 +265,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
     edit(data);
   }
 
+  @Override
   protected void add() {
     SonarLintProperty newProperty = editSonarProperty(new SonarLintProperty("", ""), false, true);
     if (newProperty != null) {
@@ -271,16 +275,15 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
     }
   }
 
-  protected void remove() {
-    IStructuredSelection selection = (IStructuredSelection) fTableViewer.getSelection();
+  @Override
+  protected void remove(Object item) {
+    sonarProperties.remove(item);
+  }
 
-    Iterator<?> elements = selection.iterator();
-    while (elements.hasNext()) {
-      SonarLintProperty data = (SonarLintProperty) elements.next();
-      sonarProperties.remove(data);
-    }
-
-    fTableViewer.refresh();
+  @Override
+  protected void removeSelection() {
+    super.removeSelection();
+    updateButtons();
   }
 
   protected void edit(SonarLintProperty data) {

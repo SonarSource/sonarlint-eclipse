@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.CheckForNull;
 import org.eclipse.jface.layout.TableColumnLayout;
@@ -43,7 +42,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -161,6 +159,12 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     return pageComponent;
   }
 
+  @Override
+  protected TableViewer getTableViewer() {
+    return table;
+  }
+
+  @Override
   protected void add() {
     EditExclusionDialog dialog;
 
@@ -181,6 +185,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     table.refresh();
   }
 
+  @Override
   protected void edit() {
     ExclusionItem exclusion = (ExclusionItem) table.getStructuredSelection().getFirstElement();
     EditExclusionDialog dialog;
@@ -205,27 +210,14 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     }
   }
 
-  protected void remove() {
-    IStructuredSelection selection = (IStructuredSelection) table.getSelection();
+  @Override
+  protected void remove(Object item) {
+    exclusions.remove(item);
+  }
 
-    int idx = table.getTable().getSelectionIndex();
-    Iterator<?> elements = selection.iterator();
-    while (elements.hasNext()) {
-      ExclusionItem data = (ExclusionItem) elements.next();
-      exclusions.remove(data);
-    }
-    table.refresh();
-
-    int count = table.getTable().getItemCount();
-    if (count > 0) {
-      if (idx < 0) {
-        table.getTable().select(0);
-      } else if (idx < count) {
-        table.getTable().select(idx);
-      } else {
-        table.getTable().select(count - 1);
-      }
-    }
+  @Override
+  protected void removeSelection() {
+    super.removeSelection();
     updateButtons();
   }
 
@@ -328,26 +320,6 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
 
   private static class TypeLabelProvider extends CellLabelProvider {
     @Override
-    public String getToolTipText(Object element) {
-      return null;
-    }
-
-    @Override
-    public Point getToolTipShift(Object object) {
-      return new Point(5, 5);
-    }
-
-    @Override
-    public int getToolTipDisplayDelayTime(Object object) {
-      return 0;
-    }
-
-    @Override
-    public int getToolTipTimeDisplayed(Object object) {
-      return 15000;
-    }
-
-    @Override
     public void update(ViewerCell cell) {
       ExclusionItem exclusion = (ExclusionItem) cell.getElement();
       cell.setText(exclusion.type().toString());
@@ -366,21 +338,6 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     public String getToolTipText(Object element) {
       ExclusionItem exclusion = (ExclusionItem) element;
       return exclusion.item();
-    }
-
-    @Override
-    public Point getToolTipShift(Object object) {
-      return new Point(5, 5);
-    }
-
-    @Override
-    public int getToolTipDisplayDelayTime(Object object) {
-      return 0;
-    }
-
-    @Override
-    public int getToolTipTimeDisplayed(Object object) {
-      return 15000;
     }
 
     @Override
