@@ -19,16 +19,16 @@
  */
 package org.sonarlint.eclipse.ui.internal.util;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -50,33 +50,34 @@ public class DeactivateRuleUtils {
       return;
     }
 
-    removeReportIssuesMarkers(marker.getResource(), ruleKey);
+    removeReportIssuesMarkers(ruleKey);
 
     PreferencesUtils.excludeRule(ruleKey);
     Predicate<ISonarLintFile> filter = f -> !f.getProject().isBound();
     JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.EXCLUSION_CHANGE, filter);
   }
 
-  private static void removeReportIssuesMarkers(IResource resource, RuleKey ruleKey) {
-    Map<String, Boolean> isBoundCache = new HashMap<>();
-    MarkerUtils.findReportIssuesMarkers(resource)
-      .stream()
-      .filter(m -> ruleKey.equals(MarkerUtils.getRuleKey(m)))
-      .filter(m -> {
-        ISonarLintFile sonarLintFile = Adapters.adapt(m.getResource(), ISonarLintFile.class);
-        if (sonarLintFile == null) {
-          return false;
-        }
-        ISonarLintProject project = sonarLintFile.getProject();
-        return !isBoundCache.computeIfAbsent(project.getName(), key -> project.isBound());
-      })
-      .forEach(m -> {
-        try {
-          m.delete();
-        } catch (CoreException e) {
-          SonarLintLogger.get().error("Could not delete marker for deactivated rule: " + ruleKey);
-        }
-      });
+  private static void removeReportIssuesMarkers(RuleKey ruleKey) {
+    ProjectsProviderUtils.allProjects().stream()
+      .filter(p -> p.isOpen() && !p.isBound())
+      .forEach(p -> findReportMarkers(p)
+        .filter(m -> ruleKey.equals(MarkerUtils.getRuleKey(m)))
+        .forEach(m -> {
+          try {
+            m.delete();
+          } catch (CoreException e) {
+            SonarLintLogger.get().error("Could not delete marker for deactivated rule: " + ruleKey);
+          }
+        }));
   }
 
+  private static Stream<IMarker> findReportMarkers(ISonarLintProject project) {
+    try {
+      IMarker[] markers = project.getResource().findMarkers(SonarLintCorePlugin.MARKER_REPORT_ID, false, IResource.DEPTH_INFINITE);
+      return Stream.of(markers);
+    } catch (CoreException e) {
+      SonarLintLogger.get().error("Could not get report markers for project: " + project.getName());
+      return Stream.empty();
+    }
+  }
 }
