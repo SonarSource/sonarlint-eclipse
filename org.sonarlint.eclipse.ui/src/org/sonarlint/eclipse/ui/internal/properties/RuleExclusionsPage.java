@@ -68,7 +68,7 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
 
   @Override
   public void init(IWorkbench workbench) {
-    setDescription("Configure rules to be excluded from SonarLint analysis. When a project is connected to a SonarQube server, exclusions from the server apply.");
+    setDescription("Configure rules to be excluded from SonarLint analysis. When a project is connected to a SonarQube server, configuration from the server apply.");
     setPreferenceStore(SonarLintUiPlugin.getDefault().getPreferenceStore());
   }
 
