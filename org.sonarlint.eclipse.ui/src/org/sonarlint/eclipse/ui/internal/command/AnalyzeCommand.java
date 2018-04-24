@@ -30,11 +30,12 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -106,27 +107,21 @@ public class AnalyzeCommand extends AbstractHandler {
       return true;
     }
 
-    // The general order is left to right, but the default button will be moved to the right.
-    // http://www.vogella.com/tutorials/EclipseDialogs/article.html
-    String[] buttonLabels = {
-      "Proceed",
-      IDialogConstants.CANCEL_LABEL,
-      "Proceed and don't ask again",
-    };
+    // Note: in oxygen and later another overload exists that allows setting custom button labels
+    MessageDialogWithToggle dialog = MessageDialogWithToggle.open(
+      MessageDialog.CONFIRM, shell, "Confirmation",
+      "Analyzing multiple files may take a long time to complete. "
+        + "To get the best from SonarLint, you should preferably use the on-the-fly analysis for the files you're working on."
+        + "\n\nWould you like to proceed?",
+      "Always proceed without asking", false, null, null, SWT.NONE);
 
-    MessageDialog dialog = new MessageDialog(shell, "Confirmation", null, "Analyzing multiple files may take a long time to complete.\n"
-      + "To get the best from SonarLint, you should preferably use the on-the-fly analysis for the files you're working on.", MessageDialog.CONFIRM,
-      buttonLabels, 0);
+    boolean proceed = dialog.getReturnCode() == 0;
 
-    switch (dialog.open()) {
-      case 0:
-        return true;
-      case 2:
-        PreferencesUtils.setSkipConfirmAnalyzeMultipleFiles();
-        return true;
-      default:
-        return false;
+    if (proceed && dialog.getToggleState()) {
+      PreferencesUtils.setSkipConfirmAnalyzeMultipleFiles();
     }
+
+    return proceed;
   }
 
   protected Map<ISonarLintProject, Collection<FileWithDocument>> findSelectedFilesPerProject(ExecutionEvent event) throws ExecutionException {

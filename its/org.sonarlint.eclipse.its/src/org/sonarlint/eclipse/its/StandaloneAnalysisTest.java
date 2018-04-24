@@ -112,7 +112,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new JavaPackageExplorerBot(bot)
       .triggerManualAnalysis("java-simple");
 
-    bot.shell("Confirmation").bot().button("Proceed").click();
+    bot.shell("Confirmation").bot().button("OK").click();
 
     JobHelpers.waitForJobsToComplete(bot);
 
