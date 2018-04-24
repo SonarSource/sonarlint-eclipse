@@ -82,7 +82,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     // Trigger manual analysis of the project
     javaBot.triggerManualAnalysis("java-simple");
     bot.shell("Confirmation").activate();
-    bot.button("Proceed").click();
+    bot.button("OK").click();
     JobHelpers.waitForJobsToComplete(bot);
 
     markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_REPORT_ID, true, IResource.DEPTH_ONE));
