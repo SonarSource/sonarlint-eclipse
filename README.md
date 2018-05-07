@@ -4,7 +4,7 @@ SonarLint for Eclipse
 Installing and using
 --------------------
 
-See https://www.sonarlint.org/eclipse and https://marketplace.eclipse.org/content/sonarlint  
+See https://www.sonarlint.org and https://marketplace.eclipse.org/content/sonarlint  
 
 For offline installation and older versions see the update site archive at https://bintray.com/sonarsource/SonarLint-for-Eclipse/releases
 
@@ -115,6 +115,6 @@ At this point, and if the artifact exists at the specified path, it should be us
 
 ### License
 
-Copyright 2015-2017 SonarSource.
+Copyright 2015-2018 SonarSource.
 
 Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.gnu.org/licenses/lgpl.txt)
