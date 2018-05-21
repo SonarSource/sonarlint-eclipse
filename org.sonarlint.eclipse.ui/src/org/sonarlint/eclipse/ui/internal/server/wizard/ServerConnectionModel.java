@@ -143,6 +143,7 @@ public class ServerConnectionModel extends ModelObject {
     suggestServerId();
   }
 
+  @CheckForNull
   public String getOrganization() {
     return organization;
   }
