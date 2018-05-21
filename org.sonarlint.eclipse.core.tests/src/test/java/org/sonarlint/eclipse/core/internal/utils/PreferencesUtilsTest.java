@@ -58,6 +58,19 @@ public class PreferencesUtilsTest {
     assertThat(desList).isEqualTo(list);
   }
 
+  // SLE-267
+  @Test
+  public void should_serialize_extra_properties_empty_value() {
+    List<SonarLintProperty> list = new ArrayList<>();
+    list.add(new SonarLintProperty("key1", ""));
+    list.add(new SonarLintProperty("key2", "value2"));
+
+    String serialized = PreferencesUtils.serializeExtraProperties(list);
+    List<SonarLintProperty> desList = PreferencesUtils.deserializeExtraProperties(serialized);
+
+    assertThat(desList).isEqualTo(list);
+  }
+
   @Test
   public void should_serialize_and_deserialize_excluded_rules() {
     List<RuleKey> excludedRules = Arrays.asList(new RuleKey("squid", "S123"), new RuleKey("php", "S456"));
