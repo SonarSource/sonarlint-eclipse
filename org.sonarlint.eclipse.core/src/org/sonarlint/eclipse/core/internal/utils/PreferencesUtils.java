@@ -87,7 +87,7 @@ public class PreferencesUtils {
     String[] keyValuePairs = StringUtils.split(property, "\r\n");
     for (String keyValuePair : keyValuePairs) {
       String[] keyValue = StringUtils.split(keyValuePair, "=");
-      props.add(new SonarLintProperty(keyValue[0], keyValue[1]));
+      props.add(new SonarLintProperty(keyValue[0], keyValue.length > 1 ? keyValue[1] : ""));
     }
 
     return props;
