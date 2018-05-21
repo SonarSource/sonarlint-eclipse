@@ -33,6 +33,7 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfigurati
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
+import org.sonarsource.sonarlint.core.client.api.exceptions.CanceledException;
 
 public class ServerUpdateJob extends Job {
   private final IServer server;
@@ -49,6 +50,9 @@ public class ServerUpdateJob extends Job {
     try {
       server.updateStorage(monitor);
     } catch (Exception e) {
+      if (e instanceof CanceledException && monitor.isCanceled()) {
+        return Status.CANCEL_STATUS;
+      }
       return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update data from server '" + server.getId() + "'", e);
     }
     monitor.worked(1);
@@ -66,6 +70,9 @@ public class ServerUpdateJob extends Job {
           server.updateProjectStorage(config.getModuleKey(), monitor);
         }
       } catch (Exception e) {
+        if (e instanceof CanceledException && monitor.isCanceled()) {
+          return Status.CANCEL_STATUS;
+        }
         failures.add(new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding for project '" + projectToUpdate.getName() + "'", e));
       }
       monitor.worked(1);
