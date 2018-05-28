@@ -27,8 +27,8 @@
     </page>
     <page
           category="org.sonarlint.eclipse.ui.preferences.SonarLintPreferencePage"
-          class="org.sonarlint.eclipse.ui.internal.properties.RuleExclusionsPage"
-          id="org.sonarlint.eclipse.ui.properties.RuleExclusionsPage"
+          class="org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage"
+          id="org.sonarlint.eclipse.ui.properties.RulesConfigurationPage"
           name="Rules Configuration">
           <keywordReference id="org.sonarlint.eclipse.ui.SonarLintKeyword"/>
     </page>

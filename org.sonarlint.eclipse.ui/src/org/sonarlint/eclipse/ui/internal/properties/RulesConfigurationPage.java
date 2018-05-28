@@ -54,7 +54,7 @@ import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
-public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPreferencePage {
+public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
 
   private Button removeButton;
 
@@ -62,7 +62,7 @@ public class RuleExclusionsPage extends PropertyPage implements IWorkbenchPrefer
 
   private TableViewer table;
 
-  public RuleExclusionsPage() {
+  public RulesConfigurationPage() {
     setTitle("Rules Configuration");
   }
 
