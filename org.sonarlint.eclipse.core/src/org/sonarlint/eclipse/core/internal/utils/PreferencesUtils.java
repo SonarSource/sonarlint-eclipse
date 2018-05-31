@@ -27,7 +27,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Platform;
@@ -148,24 +147,9 @@ public class PreferencesUtils {
     savePreferences(p -> p.putBoolean(key, value), key, value);
   }
 
-  private static String serializeRuleKey(RuleKey ruleKey) {
-    return ruleKey.repository() + ":" + ruleKey.rule();
-  }
-
-  @CheckForNull
-  public static RuleKey deserializeRuleKey(String serialized) {
-    int indexOfSeparator = serialized.indexOf(':');
-    if (indexOfSeparator == -1) {
-      return null;
-    }
-    String repository = serialized.substring(0, indexOfSeparator);
-    String key = serialized.substring(indexOfSeparator + 1);
-    return new RuleKey(repository, key);
-  }
-
   private static String serializeRuleKeyList(Collection<RuleKey> exclusions) {
     return exclusions.stream()
-      .map(PreferencesUtils::serializeRuleKey)
+      .map(RuleKey::toString)
       .sorted()
       .collect(Collectors.joining(";"));
   }
@@ -173,8 +157,7 @@ public class PreferencesUtils {
   private static Set<RuleKey> deserializeRuleKeyList(@Nullable String property) {
     String[] values = StringUtils.split(property, ";");
     return Arrays.stream(values)
-      .map(PreferencesUtils::deserializeRuleKey)
-      .filter(Objects::nonNull)
+      .map(RuleKey::parse)
       .collect(Collectors.toSet());
   }
 

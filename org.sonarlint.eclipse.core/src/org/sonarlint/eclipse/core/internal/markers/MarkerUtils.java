@@ -141,7 +141,7 @@ public final class MarkerUtils {
     if (repositoryAndKey == null) {
       return null;
     }
-    return PreferencesUtils.deserializeRuleKey(repositoryAndKey);
+    return RuleKey.parse(repositoryAndKey);
   }
 
   public static class ExtraPosition extends Position {

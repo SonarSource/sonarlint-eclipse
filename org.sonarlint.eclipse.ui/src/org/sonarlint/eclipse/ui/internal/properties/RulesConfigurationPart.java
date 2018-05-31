@@ -44,7 +44,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
@@ -243,7 +242,7 @@ public class RulesConfigurationPart {
     }
 
     private static boolean computeIsActive(String key, boolean activeByDefault, Collection<RuleKey> excluded, Collection<RuleKey> included) {
-      RuleKey ruleKey = PreferencesUtils.deserializeRuleKey(key);
+      RuleKey ruleKey = RuleKey.parse(key);
       return !excluded.contains(ruleKey) && (activeByDefault || included.contains(ruleKey));
     }
 
@@ -279,7 +278,7 @@ public class RulesConfigurationPart {
       .flatMap(e -> e.getValue().stream())
       .filter(w -> w.isActive != w.ruleDetails.isActiveByDefault())
       .forEach(w -> {
-        RuleKey ruleKey = PreferencesUtils.deserializeRuleKey(w.ruleDetails.getKey());
+        RuleKey ruleKey = RuleKey.parse(w.ruleDetails.getKey());
         if (w.isActive) {
           included.add(ruleKey);
         } else {
