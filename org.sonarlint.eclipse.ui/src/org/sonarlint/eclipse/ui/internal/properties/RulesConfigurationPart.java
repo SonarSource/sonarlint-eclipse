@@ -103,7 +103,7 @@ public class RulesConfigurationPart {
     createContextMenu();
   }
 
-  protected void createContextMenu() {
+  private void createContextMenu() {
     MenuManager contextMenu = new MenuManager("#ViewerMenu"); //$NON-NLS-1$
     contextMenu.setRemoveAllWhenShown(true);
     contextMenu.addMenuListener(this::fillContextMenu);
@@ -111,7 +111,7 @@ public class RulesConfigurationPart {
     viewer.getControl().setMenu(menu);
   }
 
-  protected void fillContextMenu(IMenuManager contextMenu) {
+  private void fillContextMenu(IMenuManager contextMenu) {
     contextMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
     contextMenu.add(new Action("Activate") {
@@ -252,7 +252,8 @@ public class RulesConfigurationPart {
     }
   }
 
-  static class ExclusionsAndInclusions {
+  // visible for testing
+  public static class ExclusionsAndInclusions {
     private final Collection<RuleKey> excluded;
     private final Collection<RuleKey> included;
 
@@ -270,7 +271,8 @@ public class RulesConfigurationPart {
     }
   }
 
-  ExclusionsAndInclusions computeExclusionsAndInclusions() {
+  // visible for testing
+  public ExclusionsAndInclusions computeExclusionsAndInclusions() {
     Collection<RuleKey> excluded = new ArrayList<>();
     Collection<RuleKey> included = new ArrayList<>();
     ruleDetailsWrappersByLanguage.entrySet().stream()
@@ -288,10 +290,14 @@ public class RulesConfigurationPart {
     return new ExclusionsAndInclusions(excluded, included);
   }
 
+  // visible for testing
   public void resetToDefaults() {
     ruleDetailsWrappersByLanguage.entrySet().stream()
       .flatMap(e -> e.getValue().stream())
       .forEach(w -> w.isActive = w.ruleDetails.isActiveByDefault());
+  }
+
+  void refresh() {
     viewer.refresh();
   }
 }

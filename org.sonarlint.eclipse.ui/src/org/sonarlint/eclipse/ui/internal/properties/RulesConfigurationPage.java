@@ -87,5 +87,6 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
   @Override
   protected void performDefaults() {
     rulesConfigurationPart.resetToDefaults();
+    rulesConfigurationPart.refresh();
   }
 }
