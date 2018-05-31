@@ -206,7 +206,7 @@ public abstract class AbstractNotificationPopup extends Window {
   }
 
   private void initResources() {
-    color = new GradientColors(display, resources);
+    color = new GradientColors();
   }
 
   @Override
