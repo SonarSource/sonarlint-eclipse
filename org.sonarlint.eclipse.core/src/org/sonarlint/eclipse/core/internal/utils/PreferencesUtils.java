@@ -49,6 +49,7 @@ public class PreferencesUtils {
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
   public static final String PREF_FILE_EXCLUSIONS = "fileExclusions"; //$NON-NLS-1$
   public static final String PREF_RULE_EXCLUSIONS = "ruleExclusions"; //$NON-NLS-1$
+  public static final String PREF_RULE_INCLUSIONS = "ruleInclusions"; //$NON-NLS-1$
   public static final String PREF_DEFAULT = ""; //$NON-NLS-1$
   public static final String PREF_TEST_FILE_REGEXPS = "testFileRegexps"; //$NON-NLS-1$
   public static final String PREF_TEST_FILE_REGEXPS_DEFAULT = "**/*Test.*,**/test/**/*"; //$NON-NLS-1$
@@ -162,14 +163,14 @@ public class PreferencesUtils {
     return new RuleKey(repository, key);
   }
 
-  private static String serializeRuleExclusions(Collection<RuleKey> exclusions) {
+  private static String serializeRuleKeyList(Collection<RuleKey> exclusions) {
     return exclusions.stream()
       .map(PreferencesUtils::serializeRuleKey)
       .sorted()
       .collect(Collectors.joining(";"));
   }
 
-  private static Set<RuleKey> deserializeRuleExclusions(@Nullable String property) {
+  private static Set<RuleKey> deserializeRuleKeyList(@Nullable String property) {
     String[] values = StringUtils.split(property, ";");
     return Arrays.stream(values)
       .map(PreferencesUtils::deserializeRuleKey)
@@ -184,11 +185,19 @@ public class PreferencesUtils {
   }
 
   public static Collection<RuleKey> getExcludedRules() {
-    return deserializeRuleExclusions(getPreferenceString(PREF_RULE_EXCLUSIONS));
+    return deserializeRuleKeyList(getPreferenceString(PREF_RULE_EXCLUSIONS));
   }
 
   public static void setExcludedRules(Collection<RuleKey> excludedRules) {
-    setPreferenceString(PREF_RULE_EXCLUSIONS, serializeRuleExclusions(excludedRules));
+    setPreferenceString(PREF_RULE_EXCLUSIONS, serializeRuleKeyList(excludedRules));
+  }
+
+  public static Collection<RuleKey> getIncludedRules() {
+    return deserializeRuleKeyList(getPreferenceString(PREF_RULE_INCLUSIONS));
+  }
+
+  public static void setIncludedRules(Collection<RuleKey> includedRules) {
+    setPreferenceString(PREF_RULE_INCLUSIONS, serializeRuleKeyList(includedRules));
   }
 
   public static void setSkipConfirmAnalyzeMultipleFiles() {

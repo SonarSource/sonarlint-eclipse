@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class PreferencesUtilsTest {
 
   @Test
-  public void should_serialize_exclusions() {
+  public void should_serialize_file_exclusions() {
     List<ExclusionItem> list = new ArrayList<>();
     list.add(new ExclusionItem(Type.FILE, "file"));
     list.add(new ExclusionItem(Type.DIRECTORY, "dir"));
@@ -82,6 +82,16 @@ public class PreferencesUtilsTest {
   }
 
   @Test
+  public void should_serialize_and_deserialize_included_rules() {
+    List<RuleKey> includedRules = Arrays.asList(new RuleKey("squid", "S123"), new RuleKey("php", "S456"));
+
+    PreferencesUtils.setIncludedRules(includedRules);
+    Collection<RuleKey> deserialized = PreferencesUtils.getIncludedRules();
+
+    assertThat(deserialized).containsExactlyInAnyOrder(includedRules.toArray(new RuleKey[0]));
+  }
+
+  @Test
   public void should_exclude_rule() {
     assertThat(PreferencesUtils.getExcludedRules()).isEmpty();
 
@@ -95,7 +105,7 @@ public class PreferencesUtilsTest {
   }
 
   @Test
-  public void should_ignore_duplicates() {
+  public void should_ignore_duplicate_excluded_rules() {
     RuleKey ruleKey1 = new RuleKey("squid", "S123");
     RuleKey ruleKey2 = new RuleKey("php", "S456");
     List<RuleKey> excludedRules = Arrays.asList(ruleKey1, ruleKey2);
