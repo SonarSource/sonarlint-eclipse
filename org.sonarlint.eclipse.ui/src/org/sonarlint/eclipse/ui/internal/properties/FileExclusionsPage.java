@@ -264,13 +264,13 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     if (isGlobal()) {
       String serialized = PreferencesUtils.serializeFileExclusions(this.exclusions);
       getPreferenceStore().setValue(PreferencesUtils.PREF_FILE_EXCLUSIONS, serialized);
-      JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.EXCLUSION_CHANGE);
+      JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
     } else {
       SonarLintProjectConfiguration sonarProject = getProjectConfig();
       if (sonarProject != null) {
         sonarProject.setFileExclusions(exclusions);
         sonarProject.save();
-        JobUtils.scheduleAnalysisOfOpenFiles(getProject(), TriggerType.EXCLUSION_CHANGE);
+        JobUtils.scheduleAnalysisOfOpenFiles(getProject(), TriggerType.STANDALONE_CONFIG_CHANGE);
       }
     }
 

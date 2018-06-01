@@ -28,6 +28,8 @@ import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.OnTheFlyViewBot;
@@ -36,8 +38,9 @@ import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.junit.Assume.assumeTrue;
 
-public class RuleExclusionsTest extends AbstractSonarLintTest {
+public class RulesConfigurationTest extends AbstractSonarLintTest {
   private static final String PREF_RULE_EXCLUSIONS = "ruleExclusions";
 
   @Test
@@ -80,23 +83,43 @@ public class RuleExclusionsTest extends AbstractSonarLintTest {
       tuple("/java-exclude-rules/src/hello/Hello3.java", 12, "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed."));
   }
 
-  void reactivateRuleUsingUI() {
+  @Test
+  public void open_rules_configuration() {
+    assumeTrue(isMarsOrGreater());
+
+    openRulesConfiguration();
+
+    SWTBotTree tree = bot.tree(1);
+    assertThat(tree.columnCount()).isEqualTo(4);
+    SWTBotTreeItem javaNode = tree.getAllItems()[0];
+
+    assertThat(javaNode.getText()).matches("^java \\( [1-9]\\d+ \\) $");
+
+    javaNode.expand();
+    assertThat(javaNode.cell(1, 2)).isEqualTo("squid:CallToDeprecatedMethod");
+
+    bot.button("Cancel").click();
+  }
+
+  void openRulesConfiguration() {
     bot.menu("Window").menu("Preferences").click();
     bot.shell("Preferences").activate();
     bot.tree().getTreeItem("SonarLint").select().expand().click()
       .getNode("Rules Configuration").select().click();
+  }
 
-    assertThat(bot.table().cell(0, 0)).isEqualTo("squid:S3776");
-    assertThat(bot.table().cell(0, 1)).isEqualTo("Cognitive Complexity of methods should not be too high");
-    bot.table().click(0, 0);
+  void reactivateRuleUsingUI() {
+    openRulesConfiguration();
 
-    bot.button("Remove").click();
-    bot.button("Apply").click();
+    bot.button("Restore Defaults").click();
     if (isOxygenOrGreater()) {
       bot.button("Apply and Close").click();
     } else {
       bot.button("OK").click();
     }
+
+    // attempt to solve occasional flaky behavior (reset not getting triggered soon enough)
+    bot.sleep(1000);
   }
 
   private void clearRulesProgrammatically() {

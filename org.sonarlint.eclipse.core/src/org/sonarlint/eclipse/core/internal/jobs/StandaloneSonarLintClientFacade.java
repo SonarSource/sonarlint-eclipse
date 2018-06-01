@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -84,6 +85,14 @@ public class StandaloneSonarLintClientFacade {
       return engine.getRuleDetails(ruleKey);
     }
     return null;
+  }
+
+  public Collection<RuleDetails> getAllRuleDetails() {
+    StandaloneSonarLintEngine engine = getClient();
+    if (engine != null) {
+      return engine.getAllRuleDetails();
+    }
+    return Collections.emptyList();
   }
 
   public synchronized void stop() {

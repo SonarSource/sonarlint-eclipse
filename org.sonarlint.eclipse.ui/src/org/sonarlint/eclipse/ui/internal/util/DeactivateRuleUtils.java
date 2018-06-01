@@ -66,7 +66,7 @@ public class DeactivateRuleUtils {
 
     PreferencesUtils.excludeRule(ruleKey);
     Predicate<ISonarLintFile> filter = f -> !f.getProject().isBound();
-    JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.EXCLUSION_CHANGE, filter);
+    JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE, filter);
   }
 
   private static void removeAnnotations(IMarker marker) {
