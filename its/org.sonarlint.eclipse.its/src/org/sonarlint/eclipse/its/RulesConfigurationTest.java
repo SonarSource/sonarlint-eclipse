@@ -90,7 +90,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     openRulesConfiguration();
 
     SWTBotTree tree = bot.tree(1);
-    assertThat(tree.columnCount()).isEqualTo(4);
+    assertThat(tree.columnCount()).isEqualTo(3);
     SWTBotTreeItem javaNode = tree.getAllItems()[0];
 
     assertThat(javaNode.getText()).matches("^java \\( [1-9]\\d+ \\) $");
@@ -119,7 +119,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     }
 
     // attempt to solve occasional flaky behavior (reset not getting triggered soon enough)
-    bot.sleep(1000);
+    bot.sleep(3000);
   }
 
   private void clearRulesProgrammatically() {
