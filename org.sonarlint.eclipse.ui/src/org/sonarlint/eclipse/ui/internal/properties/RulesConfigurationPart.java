@@ -30,7 +30,9 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -38,11 +40,13 @@ import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeNodeContentProvider;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
@@ -68,6 +72,8 @@ public class RulesConfigurationPart {
 
   private final RuleDetailsWrapperComparator comparator = new RuleDetailsWrapperComparator();
 
+  private final RuleDetailsWrapperFilter filter = new RuleDetailsWrapperFilter();
+
   private CheckboxTreeViewer viewer;
 
   private RuleDescriptionPart ruleDescriptionPart;
@@ -86,6 +92,8 @@ public class RulesConfigurationPart {
     layout.marginHeight = 0;
     pageComponent.setLayout(layout);
 
+    createFilterPart(pageComponent);
+
     Composite treeComposite = new Composite(pageComponent, SWT.NONE);
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
     treeComposite.setLayout(new FillLayout());
@@ -98,11 +106,37 @@ public class RulesConfigurationPart {
     createRuleDescriptionPart(descriptionComposite);
   }
 
+  private void createFilterPart(Composite parent) {
+    ComboViewer combo = new ComboViewer(parent, SWT.READ_ONLY);
+    combo.setContentProvider(ArrayContentProvider.getInstance());
+    combo.setLabelProvider(new LabelProvider() {
+      @Override
+      public String getText(Object element) {
+        if (element instanceof RuleDetailsWrapperFilter.Type) {
+          RuleDetailsWrapperFilter.Type type = (RuleDetailsWrapperFilter.Type) element;
+          return type.label;
+        }
+        return super.getText(element);
+      }
+    });
+    combo.setInput(RuleDetailsWrapperFilter.Type.values());
+    combo.setSelection(new StructuredSelection(RuleDetailsWrapperFilter.Type.ALL));
+    ISelectionChangedListener selectionChangedListener = event -> {
+      IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+      if (selection.size() > 0) {
+        filter.setType((RuleDetailsWrapperFilter.Type) selection.getFirstElement());
+        viewer.refresh();
+      }
+    };
+    combo.addSelectionChangedListener(selectionChangedListener);
+  }
+
   private void createTreeViewer(Composite parent) {
     viewer = new CheckboxTreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
     viewer.setContentProvider(new ViewContentProvider());
     viewer.getTree().setHeaderVisible(true);
     viewer.setComparator(comparator);
+    viewer.addFilter(filter);
 
     TreeViewerColumn languageColumn = new TreeViewerColumn(viewer, SWT.NONE);
     languageColumn.getColumn().setText("Language");
@@ -245,6 +279,47 @@ public class RulesConfigurationPart {
         viewer.refresh();
       }
     };
+  }
+
+  private static class RuleDetailsWrapperFilter extends ViewerFilter {
+    enum Type {
+      ALL("All rules"),
+      ACTIVE("Active rules"),
+      INACTIVE("Inactive rules"),
+      CHANGED("Changed rules");
+
+      private final String label;
+
+      private Type(String label) {
+        this.label = label;
+      }
+    }
+
+    private Type type = Type.ALL;
+
+    private void setType(Type type) {
+      this.type = type;
+    }
+
+    @Override
+    public boolean select(Viewer viewer, Object parentElement, Object element) {
+      if (type == Type.ALL || !(element instanceof RuleDetailsWrapper)) {
+        return true;
+      }
+      RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
+      switch (type) {
+        case ALL:
+          return true;
+        case ACTIVE:
+          return wrapper.isActive;
+        case INACTIVE:
+          return !wrapper.isActive;
+        case CHANGED:
+          return wrapper.isActive != wrapper.ruleDetails.isActiveByDefault();
+        default:
+          return false;
+      }
+    }
   }
 
   private static class RuleDetailsWrapperComparator extends ViewerComparator {
