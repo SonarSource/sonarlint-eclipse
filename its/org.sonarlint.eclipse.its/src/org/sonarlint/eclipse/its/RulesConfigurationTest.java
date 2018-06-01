@@ -93,7 +93,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     assertThat(tree.columnCount()).isEqualTo(3);
     SWTBotTreeItem javaNode = tree.getAllItems()[0];
 
-    assertThat(javaNode.getText()).matches("^java \\( [1-9]\\d+ \\) $");
+    assertThat(javaNode.getText()).isEqualTo("java");
 
     javaNode.expand();
     assertThat(javaNode.cell(1, 2)).isEqualTo("squid:CallToDeprecatedMethod");

@@ -406,9 +406,7 @@ public class RulesConfigurationPart {
     public StyledString getStyledText(Object element) {
       if (element instanceof String) {
         String language = (String) element;
-        StyledString styledString = new StyledString(language);
-        styledString.append(" ( " + ruleDetailsWrappersByLanguage.get(language).size() + " ) ", StyledString.COUNTER_STYLER);
-        return styledString;
+        return new StyledString(language);
       }
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
