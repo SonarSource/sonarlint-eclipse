@@ -31,14 +31,16 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
+import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -61,7 +63,7 @@ public class RulesConfigurationPart {
 
   private final Map<String, List<RuleDetailsWrapper>> ruleDetailsWrappersByLanguage;
 
-  private TreeViewer viewer;
+  private CheckboxTreeViewer viewer;
 
   private RuleDescriptionPart ruleDescriptionPart;
 
@@ -94,7 +96,7 @@ public class RulesConfigurationPart {
   }
 
   private void createTreeViewer(Composite parent) {
-    viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+    viewer = new CheckboxTreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
     viewer.setContentProvider(new ViewContentProvider());
     viewer.getTree().setHeaderVisible(true);
 
@@ -103,34 +105,19 @@ public class RulesConfigurationPart {
     languageColumn.getColumn().setWidth(100);
     languageColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new LanguageLabelProvider()));
 
-    TreeViewerColumn isActiveColumn = new TreeViewerColumn(viewer, SWT.NONE);
-    isActiveColumn.getColumn().setText("Active");
-    isActiveColumn.getColumn().setWidth(50);
-    isActiveColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new IsActiveLabelProvider()));
+    TreeViewerColumn ruleNameColumn = new TreeViewerColumn(viewer, SWT.NONE);
+    ruleNameColumn.getColumn().setText("Rule name");
+    ruleNameColumn.getColumn().setWidth(300);
+    ruleNameColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new RuleNameLabelProvider()));
 
     TreeViewerColumn ruleKeyColumn = new TreeViewerColumn(viewer, SWT.NONE);
     ruleKeyColumn.getColumn().setText("Rule key");
     ruleKeyColumn.getColumn().setWidth(100);
     ruleKeyColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new RuleKeyLabelProvider()));
 
-    TreeViewerColumn ruleNameColumn = new TreeViewerColumn(viewer, SWT.NONE);
-    ruleNameColumn.getColumn().setText("Rule name");
-    ruleNameColumn.getColumn().setWidth(300);
-    ruleNameColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new RuleNameLabelProvider()));
-
     viewer.setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new String[ruleDetailsWrappersByLanguage.size()]));
 
-    viewer.addDoubleClickListener(event -> {
-      IStructuredSelection thisSelection = (IStructuredSelection) event.getSelection();
-      Object selectedNode = thisSelection.getFirstElement();
-      if (selectedNode instanceof RuleDetailsWrapper) {
-        RuleDetailsWrapper wrapper = (RuleDetailsWrapper) selectedNode;
-        wrapper.toggleActiveState();
-        viewer.refresh(selectedNode);
-      }
-    });
-
-    ISelectionChangedListener listener = event -> {
+    ISelectionChangedListener selectionChangedListener = event -> {
       IStructuredSelection thisSelection = (IStructuredSelection) event.getSelection();
       Object selectedNode = thisSelection.getFirstElement();
       if (selectedNode instanceof RuleDetailsWrapper) {
@@ -140,7 +127,41 @@ public class RulesConfigurationPart {
         }
       }
     };
-    viewer.addSelectionChangedListener(listener);
+    viewer.addSelectionChangedListener(selectionChangedListener);
+
+    ICheckStateListener checkStateListener = event -> {
+      Object element = event.getElement();
+      if (element instanceof RuleDetailsWrapper) {
+        RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
+        wrapper.isActive = event.getChecked();
+        viewer.refresh(element);
+      } else if (element instanceof String) {
+        viewer.setSubtreeChecked(element, event.getChecked());
+        String language = (String) element;
+        ruleDetailsWrappersByLanguage.get(language).forEach(w -> w.isActive = event.getChecked());
+      }
+    };
+    viewer.addCheckStateListener(checkStateListener);
+
+    ICheckStateProvider checkStateProvider = new ICheckStateProvider() {
+      @Override
+      public boolean isGrayed(Object element) {
+        return false;
+      }
+
+      @Override
+      public boolean isChecked(Object element) {
+        if (element instanceof RuleDetailsWrapper) {
+          RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
+          return wrapper.isActive;
+        } else if (element instanceof String) {
+          String language = (String) element;
+          return ruleDetailsWrappersByLanguage.get(language).stream().allMatch(w -> w.isActive);
+        }
+        return false;
+      }
+    };
+    viewer.setCheckStateProvider(checkStateProvider);
   }
 
   private void createRuleDescriptionPart(Composite parent) {
@@ -221,6 +242,9 @@ public class RulesConfigurationPart {
 
     @Override
     public Object[] getChildren(Object parentElement) {
+      if (!(parentElement instanceof String)) {
+        return new Object[0];
+      }
       String language = (String) parentElement;
       List<RuleDetailsWrapper> list = ruleDetailsWrappersByLanguage.get(language);
       return list.toArray(new RuleDetailsWrapper[list.size()]);
@@ -250,17 +274,6 @@ public class RulesConfigurationPart {
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
         return new StyledString(wrapper.ruleDetails.getLanguage());
-      }
-      return new StyledString();
-    }
-  }
-
-  private static class IsActiveLabelProvider extends LabelProvider implements IStyledLabelProvider {
-    @Override
-    public StyledString getStyledText(Object element) {
-      if (element instanceof RuleDetailsWrapper) {
-        RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
-        return new StyledString(Boolean.toString(wrapper.isActive));
       }
       return new StyledString();
     }
@@ -300,10 +313,6 @@ public class RulesConfigurationPart {
     private static boolean computeIsActive(String key, boolean activeByDefault, Collection<RuleKey> excluded, Collection<RuleKey> included) {
       RuleKey ruleKey = RuleKey.parse(key);
       return !excluded.contains(ruleKey) && (activeByDefault || included.contains(ruleKey));
-    }
-
-    public void toggleActiveState() {
-      this.isActive = !this.isActive;
     }
   }
 
