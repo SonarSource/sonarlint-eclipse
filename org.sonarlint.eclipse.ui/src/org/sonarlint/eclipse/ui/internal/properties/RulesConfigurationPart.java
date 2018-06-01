@@ -114,12 +114,14 @@ public class RulesConfigurationPart {
     ruleNameColumn.getColumn().setWidth(300);
     ruleNameColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new RuleNameLabelProvider()));
     ruleNameColumn.getColumn().addSelectionListener(newSelectionAdapter(1));
+    ruleNameColumn.getColumn().setMoveable(true);
 
     TreeViewerColumn ruleKeyColumn = new TreeViewerColumn(viewer, SWT.NONE);
     ruleKeyColumn.getColumn().setText("Rule key");
     ruleKeyColumn.getColumn().setWidth(100);
     ruleKeyColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new RuleKeyLabelProvider()));
     ruleKeyColumn.getColumn().addSelectionListener(newSelectionAdapter(2));
+    ruleKeyColumn.getColumn().setMoveable(true);
 
     viewer.setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new String[ruleDetailsWrappersByLanguage.size()]));
 
