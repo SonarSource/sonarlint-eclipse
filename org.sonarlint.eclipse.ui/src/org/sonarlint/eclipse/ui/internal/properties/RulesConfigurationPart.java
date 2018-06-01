@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
@@ -38,9 +37,9 @@ import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.TreeNodeContentProvider;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
@@ -80,7 +79,6 @@ public class RulesConfigurationPart {
       .collect(Collectors.groupingBy(w -> w.ruleDetails.getLanguage(), Collectors.toList()));
   }
 
-  @PostConstruct
   protected void createControls(Composite parent) {
     Composite pageComponent = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout(1, false);
@@ -298,17 +296,7 @@ public class RulesConfigurationPart {
     }
   }
 
-  private class ViewContentProvider implements ITreeContentProvider {
-    @Override
-    public void inputChanged(Viewer v, Object oldInput, Object newInput) {
-      // ignore, we never switch elements
-    }
-
-    @Override
-    public void dispose() {
-      // nothing to dispose
-    }
-
+  private class ViewContentProvider extends TreeNodeContentProvider {
     @Override
     public Object[] getElements(Object inputElement) {
       return (String[]) inputElement;
