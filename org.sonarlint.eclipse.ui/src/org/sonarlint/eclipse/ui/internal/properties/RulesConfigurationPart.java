@@ -43,9 +43,12 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -53,6 +56,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionPart;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
@@ -62,6 +66,8 @@ import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 public class RulesConfigurationPart {
 
   private final Map<String, List<RuleDetailsWrapper>> ruleDetailsWrappersByLanguage;
+
+  private final RuleDetailsWrapperComparator comparator = new RuleDetailsWrapperComparator();
 
   private CheckboxTreeViewer viewer;
 
@@ -87,7 +93,6 @@ public class RulesConfigurationPart {
     treeComposite.setLayout(new FillLayout());
     treeComposite.setLayoutData(gridData);
     createTreeViewer(treeComposite);
-    createContextMenu();
 
     Composite descriptionComposite = new Composite(pageComponent, SWT.NONE);
     descriptionComposite.setLayoutData(gridData);
@@ -99,6 +104,7 @@ public class RulesConfigurationPart {
     viewer = new CheckboxTreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
     viewer.setContentProvider(new ViewContentProvider());
     viewer.getTree().setHeaderVisible(true);
+    viewer.setComparator(comparator);
 
     TreeViewerColumn languageColumn = new TreeViewerColumn(viewer, SWT.NONE);
     languageColumn.getColumn().setText("Language");
@@ -109,11 +115,13 @@ public class RulesConfigurationPart {
     ruleNameColumn.getColumn().setText("Rule name");
     ruleNameColumn.getColumn().setWidth(300);
     ruleNameColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new RuleNameLabelProvider()));
+    ruleNameColumn.getColumn().addSelectionListener(newSelectionAdapter(1));
 
     TreeViewerColumn ruleKeyColumn = new TreeViewerColumn(viewer, SWT.NONE);
     ruleKeyColumn.getColumn().setText("Rule key");
     ruleKeyColumn.getColumn().setWidth(100);
     ruleKeyColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new RuleKeyLabelProvider()));
+    ruleKeyColumn.getColumn().addSelectionListener(newSelectionAdapter(2));
 
     viewer.setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new String[ruleDetailsWrappersByLanguage.size()]));
 
@@ -162,6 +170,8 @@ public class RulesConfigurationPart {
       }
     };
     viewer.setCheckStateProvider(checkStateProvider);
+
+    createContextMenu();
   }
 
   private void createRuleDescriptionPart(Composite parent) {
@@ -221,6 +231,70 @@ public class RulesConfigurationPart {
       String language = (String) element;
       ruleDetailsWrappersByLanguage.get(language).stream().forEach(w -> w.isActive = isActive);
       viewer.refresh();
+    }
+  }
+
+  private SelectionAdapter newSelectionAdapter(int index) {
+    return new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent event) {
+        comparator.setColumn(index);
+        int direction = comparator.getDirection();
+        viewer.getTree().setSortColumn((TreeColumn) event.getSource());
+        viewer.getTree().setSortDirection(direction);
+        viewer.refresh();
+      }
+    };
+  }
+
+  private static class RuleDetailsWrapperComparator extends ViewerComparator {
+    private int index;
+    private static final int DESCENDING = 1;
+    private int direction = DESCENDING;
+
+    public RuleDetailsWrapperComparator() {
+      this.index = 0;
+      direction = DESCENDING;
+    }
+
+    public int getDirection() {
+      return direction == 1 ? SWT.DOWN : SWT.UP;
+    }
+
+    public void setColumn(int column) {
+      if (column == this.index) {
+        // Same column as last sort; toggle the direction
+        direction = 1 - direction;
+      } else {
+        // New column; do an ascending sort
+        this.index = column;
+        direction = DESCENDING;
+      }
+    }
+
+    @Override
+    public int compare(Viewer viewer, Object e1, Object e2) {
+      if (!(e1 instanceof RuleDetailsWrapper && e2 instanceof RuleDetailsWrapper)) {
+        return 0;
+      }
+      RuleDetailsWrapper w1 = (RuleDetailsWrapper) e1;
+      RuleDetailsWrapper w2 = (RuleDetailsWrapper) e2;
+      int rc = 0;
+      switch (index) {
+        case 1:
+          rc = w1.ruleDetails.getName().compareTo(w2.ruleDetails.getName());
+          break;
+        case 2:
+          rc = w1.ruleDetails.getKey().compareTo(w2.ruleDetails.getKey());
+          break;
+        default:
+          rc = 0;
+      }
+      // If descending order, flip the direction
+      if (direction == DESCENDING) {
+        rc = -rc;
+      }
+      return rc;
     }
   }
 
