@@ -80,7 +80,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     ExclusionsAndInclusions config = rulesConfigurationPart.computeExclusionsAndInclusions();
     PreferencesUtils.setExcludedRules(config.excluded());
     PreferencesUtils.setIncludedRules(config.included());
-    JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.EXCLUSION_CHANGE);
+    JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
     return true;
   }
 

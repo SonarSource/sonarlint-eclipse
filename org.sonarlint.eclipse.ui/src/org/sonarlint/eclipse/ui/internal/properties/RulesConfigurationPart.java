@@ -93,8 +93,8 @@ public class RulesConfigurationPart {
       IStructuredSelection thisSelection = (IStructuredSelection) event.getSelection();
       Object selectedNode = thisSelection.getFirstElement();
       if (selectedNode instanceof RuleDetailsWrapper) {
-        RuleDetailsWrapper ruleDetails = (RuleDetailsWrapper) selectedNode;
-        ruleDetails.toggleActiveState();
+        RuleDetailsWrapper wrapper = (RuleDetailsWrapper) selectedNode;
+        wrapper.toggleActiveState();
         viewer.refresh(selectedNode);
       }
     });
