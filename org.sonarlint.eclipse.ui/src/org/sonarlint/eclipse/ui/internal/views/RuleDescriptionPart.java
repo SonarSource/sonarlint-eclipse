@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
 import java.util.Base64;
 import java.util.Locale;
+import javax.annotation.Nullable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.Color;
@@ -95,7 +96,10 @@ public class RuleDescriptionPart {
     return StringUtils.capitalize(txt.toLowerCase(Locale.ENGLISH).replace("_", " "));
   }
 
-  private static String getAsBase64(Image image) {
+  private static String getAsBase64(@Nullable Image image) {
+    if (image == null) {
+      return "";
+    }
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ImageLoader loader = new ImageLoader();
     loader.data = new ImageData[] {image.getImageData()};

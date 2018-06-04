@@ -288,9 +288,9 @@ public class RulesConfigurationPart {
       INACTIVE("Inactive rules"),
       CHANGED("Changed rules");
 
-      private final String label;
+      final String label;
 
-      private Type(String label) {
+      Type(String label) {
         this.label = label;
       }
     }
@@ -401,7 +401,7 @@ public class RulesConfigurationPart {
     }
   }
 
-  private class LanguageLabelProvider extends LabelProvider implements IStyledLabelProvider {
+  private static class LanguageLabelProvider extends LabelProvider implements IStyledLabelProvider {
     @Override
     public StyledString getStyledText(Object element) {
       if (element instanceof String) {
