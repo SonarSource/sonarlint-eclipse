@@ -112,19 +112,19 @@ public class RulesConfigurationPart {
     combo.setLabelProvider(new LabelProvider() {
       @Override
       public String getText(Object element) {
-        if (element instanceof RuleDetailsWrapperFilter.Type) {
-          RuleDetailsWrapperFilter.Type type = (RuleDetailsWrapperFilter.Type) element;
+        if (element instanceof Type) {
+          Type type = (Type) element;
           return type.label;
         }
         return super.getText(element);
       }
     });
-    combo.setInput(RuleDetailsWrapperFilter.Type.values());
-    combo.setSelection(new StructuredSelection(RuleDetailsWrapperFilter.Type.ALL));
+    combo.setInput(Type.values());
+    combo.setSelection(new StructuredSelection(Type.ALL));
     ISelectionChangedListener selectionChangedListener = event -> {
       IStructuredSelection selection = (IStructuredSelection) event.getSelection();
       if (selection.size() > 0) {
-        filter.setType((RuleDetailsWrapperFilter.Type) selection.getFirstElement());
+        filter.setType((Type) selection.getFirstElement());
         viewer.refresh();
       }
     };
@@ -281,20 +281,20 @@ public class RulesConfigurationPart {
     };
   }
 
-  private static class RuleDetailsWrapperFilter extends ViewerFilter {
-    enum Type {
-      ALL("All rules"),
-      ACTIVE("Active rules"),
-      INACTIVE("Inactive rules"),
-      CHANGED("Changed rules");
+  enum Type {
+    ALL("All rules"),
+    ACTIVE("Active rules"),
+    INACTIVE("Inactive rules"),
+    CHANGED("Changed rules");
 
-      final String label;
+    final String label;
 
-      Type(String label) {
-        this.label = label;
-      }
+    Type(String label) {
+      this.label = label;
     }
+  }
 
+  private class RuleDetailsWrapperFilter extends ViewerFilter {
     private Type type = Type.ALL;
 
     private void setType(Type type) {
@@ -303,10 +303,33 @@ public class RulesConfigurationPart {
 
     @Override
     public boolean select(Viewer viewer, Object parentElement, Object element) {
-      if (type == Type.ALL || !(element instanceof RuleDetailsWrapper)) {
-        return true;
+      if (element instanceof RuleDetailsWrapper) {
+        return select((RuleDetailsWrapper) element);
       }
-      RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
+
+      if (element instanceof String) {
+        return select((String) element);
+      }
+
+      return false;
+    }
+
+    private boolean select(String language) {
+      switch (type) {
+        case ALL:
+          return true;
+        case ACTIVE:
+          return ruleDetailsWrappersByLanguage.get(language).stream().anyMatch(w -> w.isActive);
+        case INACTIVE:
+          return ruleDetailsWrappersByLanguage.get(language).stream().anyMatch(w -> !w.isActive);
+        case CHANGED:
+          return ruleDetailsWrappersByLanguage.get(language).stream().anyMatch(w -> w.isActive != w.ruleDetails.isActiveByDefault());
+        default:
+          return false;
+      }
+    }
+
+    private boolean select(RuleDetailsWrapper wrapper) {
       switch (type) {
         case ALL:
           return true;
@@ -391,8 +414,11 @@ public class RulesConfigurationPart {
 
     @Override
     public Object getParent(Object element) {
-      RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
-      return wrapper.ruleDetails.getLanguage();
+      if (element instanceof RuleDetailsWrapper) {
+        RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
+        return wrapper.ruleDetails.getLanguage();
+      }
+      return null;
     }
 
     @Override
