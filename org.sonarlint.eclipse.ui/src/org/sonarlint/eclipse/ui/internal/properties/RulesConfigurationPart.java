@@ -139,7 +139,6 @@ public class RulesConfigurationPart {
     viewer.addFilter(filter);
 
     TreeViewerColumn languageColumn = new TreeViewerColumn(viewer, SWT.NONE);
-    languageColumn.getColumn().setText("Language");
     languageColumn.getColumn().setWidth(100);
     languageColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new LanguageLabelProvider()));
 
@@ -433,10 +432,6 @@ public class RulesConfigurationPart {
       if (element instanceof String) {
         String language = (String) element;
         return new StyledString(language);
-      }
-      if (element instanceof RuleDetailsWrapper) {
-        RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
-        return new StyledString(wrapper.ruleDetails.getLanguage());
       }
       return new StyledString();
     }
