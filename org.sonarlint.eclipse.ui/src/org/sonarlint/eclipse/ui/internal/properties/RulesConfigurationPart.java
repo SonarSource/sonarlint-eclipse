@@ -178,6 +178,7 @@ public class RulesConfigurationPart {
         viewer.refresh(element);
       } else if (element instanceof String) {
         viewer.setSubtreeChecked(element, event.getChecked());
+        viewer.setExpandedState(element, true);
         String language = (String) element;
         ruleDetailsWrappersByLanguage.get(language).forEach(w -> w.isActive = event.getChecked());
       }
