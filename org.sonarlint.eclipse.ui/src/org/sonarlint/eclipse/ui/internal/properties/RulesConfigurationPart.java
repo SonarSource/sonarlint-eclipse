@@ -30,8 +30,11 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ColumnPixelData;
+import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
@@ -96,7 +99,6 @@ public class RulesConfigurationPart {
 
     Composite treeComposite = new Composite(pageComponent, SWT.NONE);
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    treeComposite.setLayout(new FillLayout());
     treeComposite.setLayoutData(gridData);
     createTreeViewer(treeComposite);
 
@@ -155,6 +157,12 @@ public class RulesConfigurationPart {
     ruleKeyColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new RuleKeyLabelProvider()));
     ruleKeyColumn.getColumn().addSelectionListener(newSelectionAdapter(2));
     ruleKeyColumn.getColumn().setMoveable(true);
+
+    TreeColumnLayout treeLayout = new TreeColumnLayout();
+    treeLayout.setColumnData(languageColumn.getColumn(), new ColumnPixelData(70));
+    treeLayout.setColumnData(ruleNameColumn.getColumn(), new ColumnWeightData(100));
+    treeLayout.setColumnData(ruleKeyColumn.getColumn(), new ColumnWeightData(50));
+    parent.setLayout(treeLayout);
 
     viewer.setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new String[ruleDetailsWrappersByLanguage.size()]));
 
