@@ -47,7 +47,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
 
   @Override
   public void init(IWorkbench workbench) {
-    setDescription("Configure active rules in standalone mode.");
+    setDescription("Configure rules used for SonarLint analysis. When a project is connected to a SonarQube/SonarCloud server, configuration from the server applies.");
     setPreferenceStore(SonarLintUiPlugin.getDefault().getPreferenceStore());
   }
 
