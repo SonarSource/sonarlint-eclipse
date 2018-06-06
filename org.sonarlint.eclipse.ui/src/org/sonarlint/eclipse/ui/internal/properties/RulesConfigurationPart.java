@@ -201,7 +201,7 @@ public class RulesConfigurationPart {
   private void createRuleDescriptionPart(Composite parent) {
     try {
       Browser browser = new Browser(parent, SWT.FILL);
-      browser.setText("(No rule selected.)");
+      browser.setText("<small><em>(No rule selected)</em></small>");
       ruleDescriptionPart = new RuleDescriptionPart(browser);
       ruleDescriptionPart.setExtraCss("body { background-color: white; }\n");
     } catch (SWTError e) {
