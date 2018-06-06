@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
@@ -32,6 +33,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ColumnPixelData;
 import org.eclipse.jface.viewers.ColumnWeightData;
@@ -178,20 +180,7 @@ public class RulesConfigurationPart {
     };
     viewer.addSelectionChangedListener(selectionChangedListener);
 
-    ICheckStateListener checkStateListener = event -> {
-      Object element = event.getElement();
-      if (element instanceof RuleDetailsWrapper) {
-        RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
-        wrapper.isActive = event.getChecked();
-        viewer.refresh(element);
-      } else if (element instanceof String) {
-        viewer.setExpandedState(element, true);
-        String language = (String) element;
-        ruleDetailsWrappersByLanguage.get(language).forEach(w -> w.isActive = event.getChecked());
-        viewer.refresh();
-      }
-    };
-    viewer.addCheckStateListener(checkStateListener);
+    viewer.addCheckStateListener(new RuleCheckStateListener());
 
     viewer.setCheckStateProvider(new RuleCheckStateProvider());
 
@@ -272,15 +261,17 @@ public class RulesConfigurationPart {
   }
 
   enum Type {
-    ALL("All rules"),
-    ACTIVE("Active rules"),
-    INACTIVE("Inactive rules"),
-    CHANGED("Changed rules");
+    ALL("All rules", w -> true),
+    ACTIVE("Active rules", w -> w.isActive),
+    INACTIVE("Inactive rules", w -> !w.isActive),
+    CHANGED("Changed rules", w -> w.isActive != w.ruleDetails.isActiveByDefault());
 
     final String label;
+    final Predicate<RuleDetailsWrapper> predicate;
 
-    Type(String label) {
+    Type(String label, Predicate<RuleDetailsWrapper> predicate) {
       this.label = label;
+      this.predicate = predicate;
     }
   }
 
@@ -305,33 +296,11 @@ public class RulesConfigurationPart {
     }
 
     private boolean select(String language) {
-      switch (type) {
-        case ALL:
-          return true;
-        case ACTIVE:
-          return ruleDetailsWrappersByLanguage.get(language).stream().anyMatch(w -> w.isActive);
-        case INACTIVE:
-          return ruleDetailsWrappersByLanguage.get(language).stream().anyMatch(w -> !w.isActive);
-        case CHANGED:
-          return ruleDetailsWrappersByLanguage.get(language).stream().anyMatch(w -> w.isActive != w.ruleDetails.isActiveByDefault());
-        default:
-          return false;
-      }
+      return ruleDetailsWrappersByLanguage.get(language).stream().anyMatch(type.predicate);
     }
 
     private boolean select(RuleDetailsWrapper wrapper) {
-      switch (type) {
-        case ALL:
-          return true;
-        case ACTIVE:
-          return wrapper.isActive;
-        case INACTIVE:
-          return !wrapper.isActive;
-        case CHANGED:
-          return wrapper.isActive != wrapper.ruleDetails.isActiveByDefault();
-        default:
-          return false;
-      }
+      return type.predicate.test(wrapper);
     }
   }
 
@@ -386,6 +355,25 @@ public class RulesConfigurationPart {
     }
   }
 
+  private class RuleCheckStateListener implements ICheckStateListener {
+    @Override
+    public void checkStateChanged(CheckStateChangedEvent event) {
+      Object element = event.getElement();
+      if (element instanceof RuleDetailsWrapper) {
+        RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
+        wrapper.isActive = event.getChecked();
+        viewer.refresh(element);
+      } else if (element instanceof String) {
+        String language = (String) element;
+        viewer.setExpandedState(element, true);
+        ruleDetailsWrappersByLanguage.get(language).stream()
+          .filter(filter.type.predicate)
+          .forEach(w -> w.isActive = event.getChecked());
+        viewer.refresh();
+      }
+    }
+  }
+
   private class RuleCheckStateProvider implements ICheckStateProvider {
     @Override
     public boolean isGrayed(Object element) {
@@ -397,6 +385,9 @@ public class RulesConfigurationPart {
         boolean foundActive = false;
         boolean foundInActive = false;
         for (RuleDetailsWrapper wrapper : ruleDetailsWrappersByLanguage.get(language)) {
+          if (!filter.type.predicate.test(wrapper)) {
+            continue;
+          }
           if (wrapper.isActive) {
             foundActive = true;
           } else {
@@ -421,7 +412,9 @@ public class RulesConfigurationPart {
       }
       if (element instanceof String) {
         String language = (String) element;
-        return ruleDetailsWrappersByLanguage.get(language).stream().anyMatch(w -> w.isActive);
+        return ruleDetailsWrappersByLanguage.get(language).stream()
+          .filter(filter.type.predicate)
+          .anyMatch(w -> w.isActive);
       }
       return false;
     }
