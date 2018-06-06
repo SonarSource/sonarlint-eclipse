@@ -193,25 +193,7 @@ public class RulesConfigurationPart {
     };
     viewer.addCheckStateListener(checkStateListener);
 
-    ICheckStateProvider checkStateProvider = new ICheckStateProvider() {
-      @Override
-      public boolean isGrayed(Object element) {
-        return false;
-      }
-
-      @Override
-      public boolean isChecked(Object element) {
-        if (element instanceof RuleDetailsWrapper) {
-          RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
-          return wrapper.isActive;
-        } else if (element instanceof String) {
-          String language = (String) element;
-          return ruleDetailsWrappersByLanguage.get(language).stream().allMatch(w -> w.isActive);
-        }
-        return false;
-      }
-    };
-    viewer.setCheckStateProvider(checkStateProvider);
+    viewer.setCheckStateProvider(new RuleCheckStateProvider());
 
     createContextMenu();
   }
@@ -401,6 +383,47 @@ public class RulesConfigurationPart {
         rc = -rc;
       }
       return rc;
+    }
+  }
+
+  private class RuleCheckStateProvider implements ICheckStateProvider {
+    @Override
+    public boolean isGrayed(Object element) {
+      if (element instanceof RuleDetailsWrapper) {
+        return false;
+      }
+      if (element instanceof String) {
+        String language = (String) element;
+        boolean foundActive = false;
+        boolean foundInActive = false;
+        for (RuleDetailsWrapper wrapper : ruleDetailsWrappersByLanguage.get(language)) {
+          if (wrapper.isActive) {
+            foundActive = true;
+          } else {
+            foundInActive = true;
+          }
+
+          // stop scanning after found both kinds
+          if (foundActive && foundInActive) {
+            break;
+          }
+        }
+        return foundActive == foundInActive;
+      }
+      return false;
+    }
+
+    @Override
+    public boolean isChecked(Object element) {
+      if (element instanceof RuleDetailsWrapper) {
+        RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
+        return wrapper.isActive;
+      }
+      if (element instanceof String) {
+        String language = (String) element;
+        return ruleDetailsWrappersByLanguage.get(language).stream().anyMatch(w -> w.isActive);
+      }
+      return false;
     }
   }
 
