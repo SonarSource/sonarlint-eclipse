@@ -6,8 +6,7 @@ TARGET_PLATFORM:
   - e45
   - e46
   - e47
-# RSE is missing from Photon update site
-#  - e48
+  - e48
 
 SQ_VERSION:
   - LTS

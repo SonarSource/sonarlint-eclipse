@@ -10,22 +10,14 @@
 <location path="${M2_REPO}/com/google/code/findbugs/jsr305/3.0.2" type="Directory"/>
 <location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.15.0.1106" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/technology/m2e/milestones/1.8"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.platform.ide" version="0.0.0"/>
 <unit id="org.eclipse.rse.feature.group" version="0.0.0"/>
-<unit id="org.eclipse.team.svn.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.wst.jsdt.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/photon/"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.polarion.eclipse.team.svn.connector.svnkit18.feature.group" version="0.0.0"/>
-<repository location="http://community.polarion.com/projects/subversive/download/eclipse/6.0/neon-site/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.swtbot.eclipse.feature.group" version="0.0.0"/>
