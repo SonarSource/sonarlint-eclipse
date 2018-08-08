@@ -85,10 +85,10 @@ public class AnalyzeCommand extends AbstractHandler {
     if (filesPerProject.size() == 1) {
       Entry<ISonarLintProject, Collection<FileWithDocument>> entry = filesPerProject.entrySet().iterator().next();
       AnalyzeProjectRequest req = new AnalyzeProjectRequest(entry.getKey(), entry.getValue(), TriggerType.MANUAL, true);
-      int fileCount = req.getFilesToAnalyze().size();
+      int fileCount = req.getFiles().size();
       String reportTitle;
       if (fileCount == 1) {
-        reportTitle = "File " + req.getFilesToAnalyze().iterator().next().getFile().getName();
+        reportTitle = "File " + req.getFiles().iterator().next().getFile().getName();
       } else {
         reportTitle = fileCount + " files of project " + entry.getKey().getName();
       }

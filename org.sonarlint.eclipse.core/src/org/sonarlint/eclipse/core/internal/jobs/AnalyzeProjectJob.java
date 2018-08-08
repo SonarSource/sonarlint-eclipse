@@ -54,6 +54,7 @@ import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
@@ -65,6 +66,7 @@ import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
+import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
@@ -86,20 +88,16 @@ import static org.sonarlint.eclipse.core.internal.utils.StringUtils.trimToNull;
 
 public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   private final List<SonarLintProperty> extraProps;
-  private final Map<ISonarLintFile, IDocument> filesToAnalyze;
-  private final Collection<ISonarLintFile> excludedFiles;
   private final Collection<RuleKey> excludedRules;
   private final Collection<RuleKey> includedRules;
   private final TriggerType triggerType;
   private final boolean shouldClearReport;
+  private final Collection<FileWithDocument> files;
 
   public AnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
     this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(request.getProject());
-    this.filesToAnalyze = request.getFilesToAnalyze()
-      .stream()
-      .collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()), HashMap::putAll);
-    this.excludedFiles = request.getExcludedFiles();
+    this.files = request.getFiles();
     this.excludedRules = PreferencesUtils.getExcludedRules();
     this.includedRules = PreferencesUtils.getIncludedRules();
     this.triggerType = request.getTriggerType();
@@ -107,11 +105,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   private static String jobTitle(AnalyzeProjectRequest request) {
-    if (request.getFilesToAnalyze().size() == 1) {
-      return "SonarLint analysis of file " + request.getFilesToAnalyze().iterator().next().getFile().getName();
+    if (request.getFiles().size() == 1) {
+      return "SonarLint processing file " + request.getFiles().iterator().next().getFile().getName();
     }
-    return format("SonarLint analysis of project {0} ({1} files to analyze, {2} excluded)", request.getProject().getName(), request.getFilesToAnalyze().size(),
-      request.getExcludedFiles().size());
+    return format("SonarLint analysis of project {0} ({1} files processed)", request.getProject().getName(), request.getFiles().size());
   }
 
   @Override
@@ -121,6 +118,23 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
     long startTime = System.currentTimeMillis();
     SonarLintLogger.get().debug("Trigger: " + triggerType.name());
+
+    Collection<ISonarLintFile> excludedFiles = new ArrayList<>();
+    Collection<FileWithDocument> filesToAnalyze = new ArrayList<>();
+
+    FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(getProject());
+    files.forEach(fWithDoc -> {
+      if (exclusionsChecker.isExcluded(fWithDoc.getFile(), true)) {
+        excludedFiles.add(fWithDoc.getFile());
+      } else {
+        filesToAnalyze.add(fWithDoc);
+      }
+    });
+
+    Map<ISonarLintFile, IDocument> filesToAnalyzeMap = filesToAnalyze
+      .stream()
+      .collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()), HashMap::putAll);
+
     SonarLintLogger.get().debug("Clear markers on " + excludedFiles.size() + " excluded files");
     excludedFiles.forEach(SonarLintMarkerUpdater::clearMarkers);
 
@@ -138,10 +152,10 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     try {
       // Configure
       Map<String, String> mergedExtraProps = new LinkedHashMap<>();
-      Collection<ProjectConfigurator> usedDeprecatedConfigurators = configureDeprecated(getProject(), filesToAnalyze.keySet(), mergedExtraProps, monitor);
+      Collection<ProjectConfigurator> usedDeprecatedConfigurators = configureDeprecated(getProject(), filesToAnalyzeMap.keySet(), mergedExtraProps, monitor);
 
       analysisWorkDir = Files.createTempDirectory(getProject().getWorkingDir(), "sonarlint");
-      List<ClientInputFile> inputFiles = buildInputFiles(analysisWorkDir, filesToAnalyze);
+      List<ClientInputFile> inputFiles = buildInputFiles(analysisWorkDir, filesToAnalyzeMap);
       Collection<IAnalysisConfigurator> usedConfigurators = configure(getProject(), inputFiles, mergedExtraProps, analysisWorkDir, monitor);
 
       extraProps.forEach(sonarProperty -> mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue()));
@@ -157,7 +171,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
           }
         }
 
-        runAnalysisAndUpdateMarkers(server, filesToAnalyze, monitor, mergedExtraProps, inputFiles, analysisWorkDir, excludedRules, includedRules);
+        runAnalysisAndUpdateMarkers(server, filesToAnalyzeMap, monitor, mergedExtraProps, inputFiles, analysisWorkDir, excludedRules, includedRules);
       }
 
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
@@ -198,7 +212,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     }
 
     Map<ISonarLintIssuable, List<Issue>> issuesPerResource = new LinkedHashMap<>();
-    filesToAnalyze.keySet().forEach(slFile -> issuesPerResource.put(slFile, new ArrayList<>()));
+    docPerFiles.keySet().forEach(slFile -> issuesPerResource.put(slFile, new ArrayList<>()));
 
     long start = System.currentTimeMillis();
     AnalysisResults result = run(server, config, issuesPerResource, monitor);
