@@ -50,7 +50,7 @@ public class NotificationsTrackerTest {
     ZonedDateTime pivot = ZonedDateTime.now().minus(1, ChronoUnit.HOURS);
     tracker.setLastEventPolling(pivot);
 
-    assertThat(new NotificationsTracker(basedir).getLastEventPolling()).isEqualTo(pivot);
+    assertThat(new NotificationsTracker(basedir).getLastEventPolling()).isEqualTo(pivot.truncatedTo(ChronoUnit.MILLIS));
   }
 
   @Test
