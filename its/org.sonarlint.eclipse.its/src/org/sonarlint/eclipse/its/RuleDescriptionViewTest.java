@@ -70,6 +70,10 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     descView.show();
 
     if (platformVersion().compareTo(new Version("4.4")) >= 0) {
+      if (platformVersion().compareTo(new Version("4.8")) >= 0) {
+        // The assertion fails in Photon, seems that browser view content is empty if we don't wait a little
+        Thread.sleep(1000);
+      }
       Browser b = (Browser) bot.getFinder().findControls(descView.getWidget(), CoreMatchers.instanceOf(Browser.class), true).get(0);
 
       String text = UIThreadRunnable.syncExec(bot.getDisplay(), (Result<String>) b::getText);
