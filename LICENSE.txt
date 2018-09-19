@@ -1,5 +1,5 @@
 SonarLint for Eclipse
-Copyright (C) 2015-2016 SonarSource
+Copyright (C) 2015-2018 SonarSource
 sonarlint@sonarsource.com
 
 SonarLint for Eclipse is free software; you can redistribute it and/or
