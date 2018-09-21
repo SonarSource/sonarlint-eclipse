@@ -21,11 +21,10 @@ package org.sonarlint.eclipse.core.internal.utils;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
@@ -33,17 +32,18 @@ import org.sonarlint.eclipse.core.internal.jobs.TestFileClassifier;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
-import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.FileExclusions;
+
+import static java.util.stream.Collectors.toCollection;
 
 public class FileExclusionsChecker {
   private FileExclusions projectExclusions;
   private FileExclusions globalExclusions;
 
   public FileExclusionsChecker(ISonarLintProject project) {
-    SonarLintProjectConfiguration projectConfiguration = SonarLintProjectConfiguration.read(project.getScopeContext());
+    SonarLintProjectConfiguration projectConfiguration = SonarLintCorePlugin.loadConfig(project);
     List<ExclusionItem> globalExclusionItems = PreferencesUtils.getGlobalExclusions();
     List<ExclusionItem> projectExclusionItems = projectConfiguration.getFileExclusions();
 
@@ -61,71 +61,62 @@ public class FileExclusionsChecker {
   }
 
   public Collection<ISonarLintFile> filterExcludedFiles(ISonarLintProject project, Collection<ISonarLintFile> files, boolean log) {
-    Server server = null;
-    SonarLintProjectConfiguration projectConfiguration = SonarLintProjectConfiguration.read(project.getScopeContext());
-    Stream<ISonarLintFile> fileStream = files.stream().filter(file -> shouldAnalyze(file, log));
+    SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(project);
+    Set<ISonarLintFile> notExcluded = files
+      .stream()
+      .filter(file -> !isExcludedByLocalConfiguration(file, log))
+      .collect(toCollection(HashSet::new));
 
-    if (project.isBound()) {
-      server = (Server) SonarLintCorePlugin.getServersManager().getServer(projectConfiguration.getServerId());
-      if (server == null) {
-        SonarLintLogger.get().error("Project '" + project.getName() + "' is bound to an unknown SonarQube server: '" + projectConfiguration.getServerId()
-          + "'. Please fix project binding or unbind project.");
-        return Collections.emptyList();
-      }
-      Map<String, ISonarLintFile> filePerRelativePath = fileStream
-        .collect(Collectors.toMap(ISonarLintFile::getProjectRelativePath, f -> f));
+    SonarLintCorePlugin.getServersManager().forProject(project).ifPresent(server -> {
       TestFileClassifier testFileClassifier = TestFileClassifier.get();
-      Set<String> serverFileExclusions = server.getServerFileExclusions(projectConfiguration.getModuleKey(), filePerRelativePath.keySet(),
-        path -> testFileClassifier.isTest(filePerRelativePath.get(path)));
-      serverFileExclusions.forEach(fileRelativePath -> {
-        filePerRelativePath.remove(fileRelativePath);
+      List<ISonarLintFile> excludedByServerSideExclusions = server.getServerFileExclusions(config.getProjectBinding().get(), notExcluded,
+        testFileClassifier::isTest);
+      notExcluded.removeAll(excludedByServerSideExclusions);
+      excludedByServerSideExclusions.forEach(f -> {
+        notExcluded.remove(f);
         if (log) {
-          SonarLintLogger.get().debug("File excluded from analysis due to exclusions configured in SonarQube: " + fileRelativePath);
+          SonarLintLogger.get().debug("File excluded from analysis due to exclusions configured in SonarQube: " + f.getName());
         }
       });
-      return filePerRelativePath.values();
-    } else {
-      return fileStream.collect(Collectors.toList());
-    }
+    });
+    return notExcluded;
   }
 
   public boolean isExcluded(ISonarLintFile file, boolean log) {
     return filterExcludedFiles(file.getProject(), Collections.singletonList(file), log).isEmpty();
   }
 
-  private boolean shouldAnalyze(ISonarLintFile file, boolean log) {
+  private boolean isExcludedByLocalConfiguration(ISonarLintFile file, boolean log) {
     String relativePath = file.getProjectRelativePath();
 
     if (globalExclusions.test(relativePath)) {
       if (log) {
         SonarLintLogger.get().debug("File '" + file.getName() + "' excluded from analysis due to configured global exclusions");
       }
-      return false;
+      return true;
     }
 
     if (projectExclusions.test(relativePath)) {
       if (log) {
         SonarLintLogger.get().debug("File '" + file.getName() + "' excluded from analysis due to configured project exclusions");
       }
-      return false;
+      return true;
     }
 
-    return true;
+    return false;
   }
 
   public static void addProjectFileExclusion(ISonarLintProject project, ISonarLintFile file, ExclusionItem exclusion) {
-    SonarLintProjectConfiguration projectConfiguration = SonarLintProjectConfiguration.read(project.getScopeContext());
-    List<ExclusionItem> fileExclusions = projectConfiguration.getFileExclusions();
-    fileExclusions.add(exclusion);
-    projectConfiguration.setFileExclusions(fileExclusions);
-    projectConfiguration.save();
+    SonarLintProjectConfiguration projectConfiguration = SonarLintCorePlugin.loadConfig(project);
+    projectConfiguration.getFileExclusions().add(exclusion);
+    SonarLintCorePlugin.saveConfig(project, projectConfiguration);
     SonarLintMarkerUpdater.clearMarkers(file);
   }
 
   public static boolean isPathAlreadyExcludedInProject(ISonarLintFile file) {
     ISonarLintProject project = file.getProject();
     String path = file.getProjectRelativePath();
-    SonarLintProjectConfiguration projectConfiguration = SonarLintProjectConfiguration.read(project.getScopeContext());
+    SonarLintProjectConfiguration projectConfiguration = SonarLintCorePlugin.loadConfig(project);
     List<ExclusionItem> fileExclusions = projectConfiguration.getFileExclusions();
     return fileExclusions.stream().anyMatch(e -> e.type() == Type.FILE && path.equals(e.item()));
   }

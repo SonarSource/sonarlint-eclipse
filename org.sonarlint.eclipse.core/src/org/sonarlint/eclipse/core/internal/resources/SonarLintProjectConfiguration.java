@@ -21,81 +21,29 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.CheckForNull;
+import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nullable;
-
-import org.eclipse.core.runtime.preferences.IScopeContext;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 
 public class SonarLintProjectConfiguration {
 
-  private final IScopeContext projectScope;
   private List<SonarLintProperty> extraProperties = new ArrayList<>();
   private List<ExclusionItem> fileExclusions = new ArrayList<>();
-  private String projectKey;
-  private String moduleKey;
-  private String serverId;
+  @Nullable
+  private EclipseProjectBinding projectBinding;
   private boolean autoEnabled = true;
-
-  SonarLintProjectConfiguration(IScopeContext projectScope) {
-    this.projectScope = projectScope;
-  }
-
-  public static SonarLintProjectConfiguration read(IScopeContext projectScope) {
-    return SonarLintCorePlugin.getInstance().getProjectManager().readSonarLintConfiguration(projectScope);
-  }
-
-  public void save() {
-    SonarLintCorePlugin.getInstance().getProjectManager().saveSonarLintConfiguration(projectScope, this);
-  }
 
   public List<ExclusionItem> getFileExclusions() {
     return fileExclusions;
-  }
-
-  public void setFileExclusions(List<ExclusionItem> fileExclusions) {
-    this.fileExclusions = new ArrayList<>(fileExclusions);
   }
 
   public List<SonarLintProperty> getExtraProperties() {
     return extraProperties;
   }
 
-  public void setExtraProperties(List<SonarLintProperty> extraProperties) {
-    this.extraProperties = extraProperties;
-  }
-
-  @CheckForNull
-  public String getProjectKey() {
-    return StringUtils.trimToNull(projectKey);
-  }
-
-  @CheckForNull
-  public String getModuleKey() {
-    return StringUtils.trimToNull(moduleKey);
-  }
-
-  @CheckForNull
-  public String getServerId() {
-    return StringUtils.trimToNull(serverId);
-  }
-
-  public void setProjectKey(@Nullable String projectKey) {
-    this.projectKey = projectKey;
-  }
-
-  public void setModuleKey(@Nullable String moduleKey) {
-    this.moduleKey = moduleKey;
-  }
-
-  public void setServerId(@Nullable String serverId) {
-    this.serverId = serverId;
-  }
-
   public boolean isBound() {
-    return getServerId() != null && getModuleKey() != null;
+    return projectBinding != null;
   }
 
   public boolean isAutoEnabled() {
@@ -106,11 +54,50 @@ public class SonarLintProjectConfiguration {
     this.autoEnabled = autoEnabled;
   }
 
-  public void unbind() {
-    setServerId(null);
-    setProjectKey(null);
-    setModuleKey(null);
-    save();
+  public void setProjectBinding(@Nullable EclipseProjectBinding projectBinding) {
+    this.projectBinding = projectBinding;
+  }
+
+  public Optional<EclipseProjectBinding> getProjectBinding() {
+    return Optional.ofNullable(projectBinding);
+  }
+
+  public static class EclipseProjectBinding extends ProjectBinding {
+
+    private final String serverId;
+
+    public EclipseProjectBinding(String serverId, String projectKey, String sqPathPrefix, String idePathPrefix) {
+      super(projectKey, sqPathPrefix, idePathPrefix);
+      this.serverId = serverId;
+    }
+
+    public String serverId() {
+      return serverId;
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((serverId == null) ? 0 : serverId.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!super.equals(obj)) {
+        return false;
+      }
+      if (getClass() != obj.getClass()) {
+        return false;
+      }
+      EclipseProjectBinding other = (EclipseProjectBinding) obj;
+      return Objects.equals(serverId, other.serverId);
+    }
+
   }
 
 }

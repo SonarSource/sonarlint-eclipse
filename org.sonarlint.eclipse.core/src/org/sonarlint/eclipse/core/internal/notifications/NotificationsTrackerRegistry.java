@@ -36,13 +36,13 @@ public class NotificationsTrackerRegistry {
     String projectName = project.getName();
     NotificationsTracker tracker = registry.get(projectName);
     if (tracker == null) {
-      tracker = newTracker(projectName);
+      tracker = newTracker(project);
       registry.put(projectName, tracker);
     }
     return tracker;
   }
 
-  private static NotificationsTracker newTracker(String projectName) {
-    return new NotificationsTracker(StoragePathManager.getNotificationsDir(projectName));
+  private static NotificationsTracker newTracker(ISonarLintProject project) {
+    return new NotificationsTracker(StoragePathManager.getNotificationsDir(project));
   }
 }

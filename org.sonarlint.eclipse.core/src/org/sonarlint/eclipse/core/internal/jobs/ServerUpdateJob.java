@@ -32,7 +32,6 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
 import org.sonarsource.sonarlint.core.client.api.exceptions.CanceledException;
 
 public class ServerUpdateJob extends Job {
@@ -57,18 +56,20 @@ public class ServerUpdateJob extends Job {
     }
     monitor.worked(1);
 
-    Set<String> seenModuleKeys = new HashSet<>();
+    Set<String> seenProjectKeys = new HashSet<>();
     List<IStatus> failures = new ArrayList<>();
     for (ISonarLintProject projectToUpdate : projectsToUpdate) {
       if (monitor.isCanceled()) {
         return Status.CANCEL_STATUS;
       }
       try {
-        SonarLintProjectConfiguration config = SonarLintProjectConfiguration.read(projectToUpdate.getScopeContext());
-        fixProjectKeyIfMissing(config);
-        if (seenModuleKeys.add(config.getModuleKey())) {
-          server.updateProjectStorage(config.getModuleKey(), monitor);
-        }
+        SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(projectToUpdate);
+        config.getProjectBinding().ifPresent(b -> {
+          if (seenProjectKeys.add(b.projectKey())) {
+            server.updateProjectStorage(b.projectKey(), monitor);
+          }
+        });
+
       } catch (Exception e) {
         if (e instanceof CanceledException && monitor.isCanceled()) {
           return Status.CANCEL_STATUS;
@@ -85,14 +86,4 @@ public class ServerUpdateJob extends Job {
     return Status.OK_STATUS;
   }
 
-  // note: this is only necessary for projects bound before SQ 6.6
-  private void fixProjectKeyIfMissing(SonarLintProjectConfiguration config) {
-    if (config.getProjectKey() == null) {
-      RemoteModule remoteModule = server.getRemoteModules().get(config.getModuleKey());
-      if (remoteModule != null) {
-        config.setProjectKey(remoteModule.getProjectKey());
-        config.save();
-      }
-    }
-  }
 }

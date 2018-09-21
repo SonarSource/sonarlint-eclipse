@@ -20,29 +20,37 @@
 package org.sonarlint.eclipse.core.internal.resources;
 
 import java.util.List;
-
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
-import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
-public class SonarLintProjectManager {
+import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isBlank;
+import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isNotBlank;
+
+public class SonarLintProjectConfigurationManager {
 
   private static final String P_EXTRA_PROPS = "extraProperties";
   private static final String P_FILE_EXCLUSIONS = "fileExclusions";
   private static final String P_SERVER_ID = "serverId";
   private static final String P_PROJECT_KEY = "projectKey";
+  private static final String P_SQ_PREFIX_KEY = "sqPrefixKey";
+  private static final String P_IDE_PREFIX_KEY = "idePrefixKey";
+  /**
+   * @deprecated since 3.7
+   */
+  @Deprecated
   private static final String P_MODULE_KEY = "moduleKey";
   private static final String P_AUTO_ENABLED_KEY = "autoEnabled";
 
-  public SonarLintProjectConfiguration readSonarLintConfiguration(IScopeContext projectScope) {
+  public SonarLintProjectConfiguration load(IScopeContext projectScope) {
     IEclipsePreferences projectNode = projectScope.getNode(SonarLintCorePlugin.PLUGIN_ID);
-    SonarLintProjectConfiguration sonarProject = new SonarLintProjectConfiguration(projectScope);
+    SonarLintProjectConfiguration projectConfig = new SonarLintProjectConfiguration();
     if (projectNode == null) {
-      return sonarProject;
+      return projectConfig;
     }
 
     String extraArgsAsString = projectNode.get(P_EXTRA_PROPS, null);
@@ -50,19 +58,26 @@ public class SonarLintProjectManager {
     String fileExclusionsAsString = projectNode.get(P_FILE_EXCLUSIONS, null);
     List<ExclusionItem> fileExclusions = PreferencesUtils.deserializeFileExclusions(fileExclusionsAsString);
 
-    sonarProject.setExtraProperties(sonarProperties);
-    sonarProject.setFileExclusions(fileExclusions);
-    sonarProject.setProjectKey(projectNode.get(P_PROJECT_KEY, ""));
-    sonarProject.setModuleKey(projectNode.get(P_MODULE_KEY, ""));
-    sonarProject.setServerId(projectNode.get(P_SERVER_ID, ""));
-    sonarProject.setAutoEnabled(projectNode.getBoolean(P_AUTO_ENABLED_KEY, true));
-    return sonarProject;
+    projectConfig.getExtraProperties().addAll(sonarProperties);
+    projectConfig.getFileExclusions().addAll(fileExclusions);
+    String projectKey = projectNode.get(P_PROJECT_KEY, "");
+    String moduleKey = projectNode.get(P_MODULE_KEY, "");
+    if (isBlank(projectKey) && isNotBlank(moduleKey)) {
+      SonarLintLogger.get().info("Project preference " + projectScope.toString() + " is outdated. Please rebind this project.");
+    }
+    projectNode.remove(P_MODULE_KEY);
+    String serverId = projectNode.get(P_SERVER_ID, "");
+    if (isNotBlank(serverId) && isNotBlank(projectKey)) {
+      projectConfig.setProjectBinding(new EclipseProjectBinding(serverId, projectKey, projectNode.get(P_SQ_PREFIX_KEY, ""), projectNode.get(P_IDE_PREFIX_KEY, "")));
+    }
+    projectConfig.setAutoEnabled(projectNode.getBoolean(P_AUTO_ENABLED_KEY, true));
+    return projectConfig;
   }
 
   /**
    * @return false, if unable to save configuration
    */
-  public boolean saveSonarLintConfiguration(IScopeContext projectScope, SonarLintProjectConfiguration configuration) {
+  public boolean save(IScopeContext projectScope, SonarLintProjectConfiguration configuration) {
     IEclipsePreferences projectNode = projectScope.getNode(SonarLintCorePlugin.PLUGIN_ID);
     if (projectNode == null) {
       return false;
@@ -82,22 +97,17 @@ public class SonarLintProjectManager {
       projectNode.remove(P_FILE_EXCLUSIONS);
     }
 
-    if (StringUtils.isNotBlank(configuration.getProjectKey())) {
-      projectNode.put(P_PROJECT_KEY, configuration.getProjectKey());
+    if (configuration.getProjectBinding().isPresent()) {
+      EclipseProjectBinding binding = configuration.getProjectBinding().get();
+      projectNode.put(P_PROJECT_KEY, binding.projectKey());
+      projectNode.put(P_SERVER_ID, binding.serverId());
+      projectNode.put(P_SQ_PREFIX_KEY, binding.sqPathPrefix());
+      projectNode.put(P_IDE_PREFIX_KEY, binding.idePathPrefix());
     } else {
       projectNode.remove(P_PROJECT_KEY);
-    }
-
-    if (StringUtils.isNotBlank(configuration.getModuleKey())) {
-      projectNode.put(P_MODULE_KEY, configuration.getModuleKey());
-    } else {
-      projectNode.remove(P_MODULE_KEY);
-    }
-
-    if (StringUtils.isNotBlank(configuration.getServerId())) {
-      projectNode.put(P_SERVER_ID, configuration.getServerId());
-    } else {
       projectNode.remove(P_SERVER_ID);
+      projectNode.remove(P_SQ_PREFIX_KEY);
+      projectNode.remove(P_IDE_PREFIX_KEY);
     }
 
     projectNode.putBoolean(P_AUTO_ENABLED_KEY, configuration.isAutoEnabled());

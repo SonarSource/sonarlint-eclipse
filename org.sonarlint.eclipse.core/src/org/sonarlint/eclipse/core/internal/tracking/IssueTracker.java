@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class IssueTracker {
 
@@ -36,13 +37,13 @@ public class IssueTracker {
    * Match a new set of trackables to current state.
    * If this is the first analysis, leave creation date as null.
    */
-  public synchronized Collection<Trackable> matchAndTrackAsNew(String file, Collection<Trackable> rawIssues) {
+  public synchronized Collection<Trackable> matchAndTrackAsNew(ISonarLintFile file, Collection<Trackable> rawIssues) {
     Collection<Trackable> tracked;
-    if (cache.isFirstAnalysis(file)) {
+    if (cache.isFirstAnalysis(file.getProjectRelativePath())) {
       tracked = rawIssues;
     } else {
       Collection<Trackable> trackedIssues = new ArrayList<>();
-      Tracking<Trackable, Trackable> tracking = new Tracker<>().track(() -> rawIssues, () -> cache.getCurrentTrackables(file));
+      Tracking<Trackable, Trackable> tracking = new Tracker<>().track(() -> rawIssues, () -> cache.getCurrentTrackables(file.getProjectRelativePath()));
       // Previous issues
       for (Map.Entry<Trackable, Trackable> entry : tracking.getMatchedRaws().entrySet()) {
         Trackable next = new PreviousTrackable(entry.getValue(), entry.getKey());
@@ -57,18 +58,18 @@ public class IssueTracker {
     return tracked;
   }
 
-  public synchronized void updateCache(String file, Collection<Trackable> tracked) {
-    cache.put(file, tracked);
+  public synchronized void updateCache(ISonarLintFile file, Collection<Trackable> tracked) {
+    cache.put(file.getProjectRelativePath(), tracked);
   }
 
   /**
    * "Rebase" current issues against given server issues.
    *
    */
-  public synchronized Collection<Trackable> matchAndTrackServerIssues(String file, Collection<Trackable> serverIssues) {
+  public synchronized Collection<Trackable> matchAndTrackServerIssues(ISonarLintFile file, Collection<Trackable> serverIssues) {
     // store issues (ProtobufIssueTrackable) are of no use since they can't be used in markers. There should have been
     // an analysis before that set the live issues for the file (even if it is empty)
-    Collection<Trackable> current = cache.getLiveOrFail(file);
+    Collection<Trackable> current = cache.getLiveOrFail(file.getProjectRelativePath());
     if (current.isEmpty()) {
       // whatever is the base, if current is empty, then nothing to do
       return Collections.emptyList();

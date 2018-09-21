@@ -23,6 +23,7 @@ import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -34,7 +35,7 @@ public abstract class AbstractSonarProjectJob extends WorkspaceJob {
   public AbstractSonarProjectJob(String title, ISonarLintProject project) {
     super(title);
     this.project = project;
-    this.config = SonarLintProjectConfiguration.read(project.getScopeContext());
+    this.config = SonarLintCorePlugin.loadConfig(project);
     setPriority(Job.DECORATE);
   }
 

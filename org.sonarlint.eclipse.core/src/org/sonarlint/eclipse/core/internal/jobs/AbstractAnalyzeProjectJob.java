@@ -30,10 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -57,51 +57,54 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
-import org.sonarlint.eclipse.core.internal.tracking.ServerIssueTrackable;
-import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
-import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
-import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 import org.sonarsource.sonarlint.core.client.api.exceptions.CanceledException;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
 
 import static java.text.MessageFormat.format;
-import static org.sonarlint.eclipse.core.internal.utils.StringUtils.trimToNull;
 
-public class AnalyzeProjectJob extends AbstractSonarProjectJob {
+public abstract class AbstractAnalyzeProjectJob<CONFIG extends StandaloneAnalysisConfiguration> extends AbstractSonarProjectJob {
   private final List<SonarLintProperty> extraProps;
-  private final Collection<RuleKey> excludedRules;
-  private final Collection<RuleKey> includedRules;
   private final TriggerType triggerType;
   private final boolean shouldClearReport;
   private final Collection<FileWithDocument> files;
 
-  public AnalyzeProjectJob(AnalyzeProjectRequest request) {
+  public AbstractAnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
     this.extraProps = PreferencesUtils.getExtraPropertiesForLocalAnalysis(request.getProject());
     this.files = request.getFiles();
-    this.excludedRules = PreferencesUtils.getExcludedRules();
-    this.includedRules = PreferencesUtils.getIncludedRules();
     this.triggerType = request.getTriggerType();
     this.shouldClearReport = request.shouldClearReport();
+  }
+
+  public static AbstractAnalyzeProjectJob<?> create(AnalyzeProjectRequest request) {
+    return create(request, SonarLintCorePlugin.loadConfig(request.getProject()));
+  }
+
+  public static AbstractAnalyzeProjectJob<?> create(AnalyzeProjectRequest request, SonarLintProjectConfiguration projectConfiguration) {
+
+    Optional<IServer> server = SonarLintCorePlugin.getServersManager().forProject(request.getProject(), projectConfiguration);
+    if (server.isPresent()) {
+      return new AnalyzeConnectedProjectJob(request, projectConfiguration.getProjectBinding().get(), (Server) server.get());
+    } else {
+      return new AnalyzeStandaloneProjectJob(request);
+    }
   }
 
   private static String jobTitle(AnalyzeProjectRequest request) {
@@ -161,23 +164,15 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       extraProps.forEach(sonarProperty -> mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue()));
 
       if (!inputFiles.isEmpty()) {
-        Server server = null;
-        if (getProject().isBound()) {
-          server = (Server) SonarLintCorePlugin.getServersManager().getServer(getProjectConfig().getServerId());
-          if (server == null) {
-            return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID,
-              "Project '" + getProject().getName() + "' is bound to an unknown SonarQube server: '" + getProjectConfig().getServerId()
-                + "'. Please fix project binding or unbind project.");
-          }
-        }
-
-        runAnalysisAndUpdateMarkers(server, filesToAnalyzeMap, monitor, mergedExtraProps, inputFiles, analysisWorkDir, excludedRules, includedRules);
+        runAnalysisAndUpdateMarkers(filesToAnalyzeMap, monitor, mergedExtraProps, inputFiles, analysisWorkDir);
       }
 
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
       SonarLintCorePlugin.getAnalysisListenerManager().notifyListeners();
       SonarLintLogger.get().debug(String.format("Done in %d ms", System.currentTimeMillis() - startTime));
-    } catch (CanceledException e) {
+    } catch (
+
+    CanceledException e) {
       return Status.CANCEL_STATUS;
     } catch (Exception e) {
       SonarLintLogger.get().error("Error during execution of SonarLint analysis", e);
@@ -195,32 +190,26 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
   }
 
-  private void runAnalysisAndUpdateMarkers(@Nullable Server server, Map<ISonarLintFile, IDocument> docPerFiles, final IProgressMonitor monitor,
-    Map<String, String> mergedExtraProps, List<ClientInputFile> inputFiles, Path analysisWorkDir,
-    Collection<RuleKey> excludedRules, Collection<RuleKey> includedRules) throws CoreException {
-    StandaloneAnalysisConfiguration config;
+  private void runAnalysisAndUpdateMarkers(Map<ISonarLintFile, IDocument> docPerFiles, final IProgressMonitor monitor,
+    Map<String, String> mergedExtraProps, List<ClientInputFile> inputFiles, Path analysisWorkDir) throws CoreException {
     IPath projectLocation = getProject().getResource().getLocation();
     // In some unfrequent cases the project may be virtual and don't have physical location
     // so fallback to use analysis work dir
     Path projectBaseDir = projectLocation != null ? projectLocation.toFile().toPath() : analysisWorkDir;
-    if (server != null) {
-      SonarLintLogger.get().debug("Connected mode (using configuration of '" + getProjectConfig().getModuleKey() + "' in server '" + getProjectConfig().getServerId() + "')");
-      config = new ConnectedAnalysisConfiguration(trimToNull(getProjectConfig().getModuleKey()), projectBaseDir, getProject().getWorkingDir(), inputFiles, mergedExtraProps);
-    } else {
-      SonarLintLogger.get().debug("Standalone mode (project not bound)");
-      config = new StandaloneAnalysisConfiguration(projectBaseDir, getProject().getWorkingDir(), inputFiles, mergedExtraProps, excludedRules, includedRules);
-    }
+    CONFIG config = prepareAnalysisConfig(projectBaseDir, inputFiles, mergedExtraProps);
 
     Map<ISonarLintIssuable, List<Issue>> issuesPerResource = new LinkedHashMap<>();
     docPerFiles.keySet().forEach(slFile -> issuesPerResource.put(slFile, new ArrayList<>()));
 
     long start = System.currentTimeMillis();
-    AnalysisResults result = run(server, config, issuesPerResource, monitor);
-    if (!monitor.isCanceled() && result != null) {
-      updateMarkers(server, docPerFiles, issuesPerResource, result, triggerType, monitor);
+    AnalysisResults result = run(config, issuesPerResource, monitor);
+    if (!monitor.isCanceled()) {
+      updateMarkers(docPerFiles, issuesPerResource, result, triggerType, monitor);
       updateTelemetry(inputFiles, start);
     }
   }
+
+  protected abstract CONFIG prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps);
 
   private static void updateTelemetry(List<ClientInputFile> inputFiles, long start) {
     SonarLintTelemetry telemetry = SonarLintCorePlugin.getTelemetry();
@@ -304,7 +293,7 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return usedConfigurators;
   }
 
-  private void updateMarkers(@Nullable Server server, Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> issuesPerResource, AnalysisResults result,
+  private void updateMarkers(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> issuesPerResource, AnalysisResults result,
     TriggerType triggerType, final IProgressMonitor monitor)
     throws CoreException {
     Set<ISonarLintFile> failedFiles = result.failedAnalysisFiles().stream().map(ClientInputFile::<ISonarLintFile>getClientObject).collect(Collectors.toSet());
@@ -314,65 +303,37 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
       .filter(e -> e.getKey() instanceof ISonarLintFile)
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
-    trackIssues(server, docPerFile, successfulFiles, triggerType, monitor);
+    trackIssues(docPerFile, successfulFiles, triggerType, monitor);
   }
 
-  private void trackIssues(@Nullable Server server, Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,
+  protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,
     final IProgressMonitor monitor) {
-
-    String localModuleKey = getProject().getName();
-
-    if (server != null && triggerType.shouldUpdateProjectIssuesSync(rawIssuesPerResource.size())) {
-      ServerConfiguration serverConfiguration = server.getConfig();
-      ConnectedSonarLintEngine engine = server.getEngine();
-      SonarLintLogger.get().debug("Download server issues for project " + getProject().getName());
-      engine.downloadServerIssues(serverConfiguration, getProjectConfig().getModuleKey());
-    }
 
     for (Map.Entry<ISonarLintIssuable, List<Issue>> entry : rawIssuesPerResource.entrySet()) {
       if (monitor.isCanceled()) {
         return;
       }
-      ISonarLintFile resource = (ISonarLintFile) entry.getKey();
-      IDocument documentOrNull = docPerFile.get((ISonarLintFile) resource);
-      final IDocument documentNotNull;
-      if (documentOrNull == null) {
-        documentNotNull = resource.getDocument();
-      } else {
-        documentNotNull = documentOrNull;
-      }
+      ISonarLintFile file = (ISonarLintFile) entry.getKey();
+      Optional<IDocument> openedDocument = Optional.ofNullable(docPerFile.get((ISonarLintFile) file));
+      IDocument document = openedDocument.orElse(file.getDocument());
       List<Issue> rawIssues = entry.getValue();
-      List<Trackable> trackables = rawIssues.stream().map(issue -> transform(issue, resource, documentNotNull)).collect(Collectors.toList());
-      IssueTracker issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(getProject(), localModuleKey);
-      String relativePath = resource.getProjectRelativePath();
-      Collection<Trackable> tracked = issueTracker.matchAndTrackAsNew(relativePath, trackables);
-      if (server != null && !tracked.isEmpty()) {
-        tracked = trackServerIssuesSync(server, resource, tracked, triggerType.shouldUpdateFileIssuesSync(rawIssuesPerResource.size()));
-      }
-      ISchedulingRule markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(resource.getResource());
+      List<Trackable> trackables = rawIssues.stream().map(issue -> transform(issue, file, document)).collect(Collectors.toList());
+      IssueTracker issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(getProject());
+      Collection<Trackable> tracked = trackFileIssues(file, trackables, issueTracker, triggerType, rawIssuesPerResource.size());
+      ISchedulingRule markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(file.getResource());
       try {
         getJobManager().beginRule(markerRule, monitor);
-        SonarLintMarkerUpdater.createOrUpdateMarkers(resource, documentNotNull, tracked, triggerType, documentOrNull != null);
+        SonarLintMarkerUpdater.createOrUpdateMarkers(file, document, tracked, triggerType, openedDocument.isPresent());
       } finally {
         getJobManager().endRule(markerRule);
       }
       // Now that markerId are set, store issues in cache
-      issueTracker.updateCache(relativePath, tracked);
-    }
-
-    if (server != null && triggerType.shouldUpdateFileIssuesAsync()) {
-      List<ISonarLintIssuable> filesWithAtLeastOneIssue = filesWithAtLeastOneIssue(rawIssuesPerResource);
-      if (!filesWithAtLeastOneIssue.isEmpty()) {
-        trackServerIssuesAsync(server, filesWithAtLeastOneIssue, docPerFile, triggerType);
-      }
+      issueTracker.updateCache(file, tracked);
     }
   }
 
-  private static List<ISonarLintIssuable> filesWithAtLeastOneIssue(Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource) {
-    return rawIssuesPerResource.entrySet().stream()
-      .filter(e -> !e.getValue().isEmpty())
-      .map(Map.Entry::getKey)
-      .collect(Collectors.toList());
+  protected Collection<Trackable> trackFileIssues(ISonarLintFile file, List<Trackable> trackables, IssueTracker issueTracker, TriggerType triggerType, int totalTrackedFiles) {
+    return issueTracker.matchAndTrackAsNew(file, trackables);
   }
 
   private static RawIssueTrackable transform(Issue issue, ISonarLintFile resource, IDocument document) {
@@ -412,27 +373,6 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
     return null;
   }
 
-  private Collection<Trackable> trackServerIssuesSync(Server server, ISonarLintFile resource, Collection<Trackable> tracked, boolean updateServerIssues) {
-    ServerConfiguration serverConfiguration = server.getConfig();
-    ConnectedSonarLintEngine engine = server.getEngine();
-    List<ServerIssue> serverIssues;
-    if (updateServerIssues) {
-      serverIssues = ServerIssueUpdater.fetchServerIssues(serverConfiguration, engine, getProjectConfig().getModuleKey(), resource);
-    } else {
-      serverIssues = engine.getServerIssues(getProjectConfig().getModuleKey(), resource.getProjectRelativePath());
-    }
-    Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
-    return IssueTracker.matchAndTrackServerIssues(serverIssuesTrackable, tracked);
-  }
-
-  private void trackServerIssuesAsync(Server server, Collection<ISonarLintIssuable> resources, Map<ISonarLintFile, IDocument> docPerFile, TriggerType triggerType) {
-    ServerConfiguration serverConfiguration = server.getConfig();
-    ConnectedSonarLintEngine engine = server.getEngine();
-    String localModuleKey = getProject().getName();
-    SonarLintCorePlugin.getInstance().getServerIssueUpdater().updateAsync(serverConfiguration, engine, getProject(), localModuleKey, getProjectConfig().getModuleKey(), resources,
-      docPerFile, triggerType);
-  }
-
   private static void analysisCompleted(Collection<ProjectConfigurator> usedDeprecatedConfigurators, Collection<IAnalysisConfigurator> usedConfigurators,
     Map<String, String> properties, final IProgressMonitor monitor) {
     Map<String, String> unmodifiableMap = Collections.unmodifiableMap(properties);
@@ -458,18 +398,14 @@ public class AnalyzeProjectJob extends AbstractSonarProjectJob {
   }
 
   @CheckForNull
-  public AnalysisResults run(@Nullable IServer server, final StandaloneAnalysisConfiguration analysisConfig,
+  public AnalysisResults run(final CONFIG analysisConfig,
     final Map<ISonarLintIssuable, List<Issue>> issuesPerResource, IProgressMonitor monitor) {
     SonarLintLogger.get().debug("Starting analysis with configuration:\n" + analysisConfig.toString());
     SonarLintIssueListener issueListener = new SonarLintIssueListener(getProject(), issuesPerResource);
-    AnalysisResults result;
-    if (server != null) {
-      result = server.runAnalysis((ConnectedAnalysisConfiguration) analysisConfig, issueListener, monitor);
-    } else {
-      StandaloneSonarLintClientFacade facadeToUse = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade();
-      result = facadeToUse.runAnalysis(analysisConfig, issueListener, monitor);
-    }
+    AnalysisResults result = runAnalysis(analysisConfig, issueListener, monitor);
     SonarLintLogger.get().info("Found " + issueListener.getIssueCount() + " issue(s)");
     return result;
   }
+
+  protected abstract AnalysisResults runAnalysis(CONFIG analysisConfig, SonarLintIssueListener issueListener, IProgressMonitor monitor);
 }

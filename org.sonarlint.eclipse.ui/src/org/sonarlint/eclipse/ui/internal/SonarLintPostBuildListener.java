@@ -36,9 +36,9 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
@@ -108,7 +108,7 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
           .collect(Collectors.toList());
         if (!filesToAnalyze.isEmpty()) {
           AnalyzeProjectRequest request = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.EDITOR_CHANGE);
-          new AnalyzeProjectJob(request).schedule();
+          JobUtils.scheduleAutoAnalysisIfEnabled(request);
         }
       }
       return Status.OK_STATUS;
@@ -127,11 +127,11 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
 
     ISonarLintProject sonarLintProject = Adapters.adapt(delta.getResource(), ISonarLintProject.class);
     if (sonarLintProject != null) {
-      return sonarLintProject.isAutoEnabled();
+      return SonarLintCorePlugin.loadConfig(sonarLintProject).isAutoEnabled();
     }
 
     ISonarLintFile sonarLintFile = Adapters.adapt(delta.getResource(), ISonarLintFile.class);
-    if (sonarLintFile != null && sonarLintFile.getProject().isAutoEnabled() && isChanged(delta)) {
+    if (sonarLintFile != null && isChanged(delta)) {
       changedFiles.add(sonarLintFile);
       return true;
     }

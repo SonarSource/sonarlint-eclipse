@@ -19,37 +19,33 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.util.Optional;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-public class ProjectUpdateJob extends Job {
-  private final ISonarLintProject project;
+public class ProjectStorageUpdateJob extends Job {
 
-  public ProjectUpdateJob(ISonarLintProject project) {
-    super("Update configuration of project " + project.getName());
-    this.project = project;
+  private final String serverId;
+  private final String projectKey;
+
+  public ProjectStorageUpdateJob(String serverId, String projectKey) {
+    super("Update SonarLint storage of project " + projectKey + " on server " + serverId);
+    this.serverId = serverId;
+    this.projectKey = projectKey;
   }
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
-      SonarLintProjectConfiguration config = SonarLintProjectConfiguration.read(project.getScopeContext());
-      String serverId = config.getServerId();
-      IServer server = SonarLintCorePlugin.getServersManager().getServer(serverId);
-      if (server == null) {
-        return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID,
-          "Unable to update project '" + project.getName() + "' since it is bound to an unknow server: '" + serverId + "'");
-      }
-      server.updateProjectStorage(config.getModuleKey(), monitor);
+      Optional<IServer> server = SonarLintCorePlugin.getServersManager().findById(serverId);
+      server.ifPresent(s -> s.updateProjectStorage(projectKey, monitor));
       return Status.OK_STATUS;
     } catch (Exception e) {
-      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update project " + project.getName(), e);
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update SonarLint storage for project " + serverId, e);
     }
   }
 }

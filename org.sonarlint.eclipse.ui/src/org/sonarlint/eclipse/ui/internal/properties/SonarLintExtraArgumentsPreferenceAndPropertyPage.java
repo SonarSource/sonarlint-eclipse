@@ -50,6 +50,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
@@ -404,10 +405,11 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
       String props = PreferencesUtils.serializeExtraProperties(sonarProperties);
       getPreferenceStore().setValue(PreferencesUtils.PREF_EXTRA_ARGS, props);
     } else {
-      SonarLintProjectConfiguration sonarProject = getProjectConfig();
-      if (sonarProject != null) {
-        sonarProject.setExtraProperties(sonarProperties);
-        sonarProject.save();
+      SonarLintProjectConfiguration projectConfig = getProjectConfig();
+      if (projectConfig != null) {
+        projectConfig.getExtraProperties().clear();
+        projectConfig.getExtraProperties().addAll(sonarProperties);
+        SonarLintCorePlugin.saveConfig(getProject(), projectConfig);
       }
     }
     return true;
@@ -428,7 +430,7 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
   private SonarLintProjectConfiguration getProjectConfig() {
     ISonarLintProject project = getProject();
     if (project != null) {
-      return SonarLintProjectConfiguration.read(project.getScopeContext());
+      return SonarLintCorePlugin.loadConfig(project);
     }
     return null;
   }

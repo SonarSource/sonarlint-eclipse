@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
 
@@ -113,7 +112,7 @@ public class SonarLintTelemetryTest {
     when(engine.isEnabled()).thenReturn(true);
     telemetry.upload();
     verify(engine).isEnabled();
-    verify(engine).usedConnectedMode(anyBoolean());
+    verify(engine).usedConnectedMode(anyBoolean(), anyBoolean());
     verify(engine).uploadLazily();
   }
 

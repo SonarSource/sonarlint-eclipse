@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.resources;
 import javax.annotation.Nullable;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IMarker;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
@@ -41,6 +42,6 @@ public class MarkerPropertyTester extends PropertyTester {
     if (sonarLintFile == null) {
       return false;
     }
-    return !sonarLintFile.getProject().isBound();
+    return !SonarLintCorePlugin.loadConfig(sonarLintFile.getProject()).isBound();
   }
 }

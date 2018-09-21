@@ -65,7 +65,7 @@ public class DeactivateRuleUtils {
     removeAnnotations(marker);
 
     PreferencesUtils.excludeRule(ruleKey);
-    Predicate<ISonarLintFile> filter = f -> !f.getProject().isBound();
+    Predicate<ISonarLintFile> filter = f -> !SonarLintCorePlugin.loadConfig(f.getProject()).isBound();
     JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE, filter);
   }
 
@@ -100,7 +100,7 @@ public class DeactivateRuleUtils {
 
   private static void removeReportIssuesMarkers(RuleKey ruleKey) {
     ProjectsProviderUtils.allProjects().stream()
-      .filter(p -> p.isOpen() && !p.isBound())
+      .filter(p -> p.isOpen() && !SonarLintCorePlugin.loadConfig(p).isBound())
       .forEach(p -> findReportMarkers(p)
         .filter(m -> ruleKey.equals(MarkerUtils.getRuleKey(m)))
         .forEach(m -> {

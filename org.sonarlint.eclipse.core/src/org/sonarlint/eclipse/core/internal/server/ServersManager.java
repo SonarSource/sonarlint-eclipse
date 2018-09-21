@@ -26,7 +26,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.CheckForNull;
+import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -39,8 +40,11 @@ import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
 
 public class ServersManager {
@@ -306,21 +310,31 @@ public class ServersManager {
    * Returns the server with the given id.
    * 
    * @param id a server id
-   * @return a server or null if id is null
+   * @return a server or empty
    */
-  @CheckForNull
-  public IServer getServer(@Nullable String id) {
-    if (id == null) {
-      return null;
-    }
-    return serversById.get(id);
+  public Optional<IServer> findById(String id) {
+    return Optional.ofNullable(serversById.get(Objects.requireNonNull(id)));
+  }
+
+  public Optional<IServer> forProject(ISonarLintProject project) {
+    return forProject(project, SonarLintCorePlugin.loadConfig(project));
+  }
+
+  public Optional<IServer> forProject(ISonarLintProject project, SonarLintProjectConfiguration config) {
+    return config
+      .getProjectBinding()
+      .flatMap(b -> {
+        Optional<IServer> server = findById(b.serverId());
+        if (!server.isPresent()) {
+          SonarLintLogger.get().error("Project '" + project.getName() + "' is bound to an unknown SonarQube server: '" + b.serverId()
+            + "'. Please fix project binding or unbind project.");
+          return Optional.empty();
+        }
+        return server;
+      });
   }
 
   public void updateServer(IServer server, String username, String password) {
-    if (server == null) {
-      return;
-    }
-
     if (!serversById.containsKey(server.getId())) {
       throw new IllegalStateException("There is no server with id '" + server.getId() + "'");
     }

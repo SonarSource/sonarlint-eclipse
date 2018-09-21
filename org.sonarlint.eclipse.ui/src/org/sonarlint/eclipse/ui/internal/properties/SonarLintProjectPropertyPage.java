@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.Arrays;
+import java.util.Optional;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
@@ -36,6 +37,7 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
@@ -59,13 +61,19 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     setTitle(Messages.SonarProjectPropertyPage_title);
   }
 
+  public ISonarLintProject getProject() {
+    return Adapters.adapt(getElement(), ISonarLintProject.class);
+  }
+
+  public SonarLintProjectConfiguration getProjectConfig() {
+    return SonarLintCorePlugin.loadConfig(getProject());
+  }
+
   @Override
   protected Control createContents(Composite parent) {
     if (parent == null) {
       return new Composite(parent, SWT.NULL);
     }
-
-    final SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(getProject().getScopeContext());
 
     container = new Composite(parent, SWT.NULL);
     GridLayout layout = new GridLayout();
@@ -76,7 +84,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
 
     enabledBtn = new Button(container, SWT.CHECK);
     enabledBtn.setText("Run SonarLint automatically");
-    enabledBtn.setSelection(projectConfig.isAutoEnabled());
+    enabledBtn.setSelection(getProjectConfig().isAutoEnabled());
     GridData layoutData = new GridData();
     layoutData.horizontalSpan = 2;
     enabledBtn.setLayoutData(layoutData);
@@ -91,7 +99,8 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     addServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        String serverId = SonarLintProjectConfiguration.read(getProject().getScopeContext()).getServerId();
+        String serverId = getProjectConfig().getProjectBinding().map(EclipseProjectBinding::serverId)
+          .orElseThrow(() -> new IllegalStateException("This link should only be visible when there is a serverId"));
         WizardDialog wd = ServerConnectionWizard.createDialog(container.getShell(), serverId);
         if (wd.open() == Window.OK) {
           updateState();
@@ -120,18 +129,17 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
   }
 
   private void updateState() {
-    final SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(getProject().getScopeContext());
-    String moduleKey = projectConfig.getModuleKey();
-    final String serverId = projectConfig.getServerId();
-    if (moduleKey == null && serverId == null) {
+    Optional<EclipseProjectBinding> projectBinding = getProjectConfig().getProjectBinding();
+    if (projectBinding.isPresent()) {
+      boundDetails
+        .setText("Bound to the project '" + projectBinding.get().projectKey() + "' on server '" + serverName(projectBinding.get().serverId()) + "'");
+      bindLink.setText("<a>Update project binding</a>");
+    } else {
       bindLink.setText("<a>Bind this Eclipse project to a SonarQube project</a>");
       boundDetails.setText("");
-    } else {
-      boundDetails.setText("Bound to the project '" + moduleKey + "' on server '" + serverName(serverId) + "'");
-      bindLink.setText("<a>Update project binding</a>");
     }
-    if (serverId != null && SonarLintCorePlugin.getServersManager().getServer(serverId) == null) {
-      addServerLink.setText("<a>Connect to SonarQube server '" + serverId + "'</a>");
+    if (projectBinding.isPresent() && !SonarLintCorePlugin.getServersManager().forProject(getProject()).isPresent()) {
+      addServerLink.setText("<a>Connect to SonarQube server '" + projectBinding.get().serverId() + "'</a>");
       addServerLink.setVisible(true);
     } else {
       addServerLink.setVisible(false);
@@ -143,8 +151,8 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     if (serverId == null) {
       return "";
     }
-    IServer server = SonarLintCorePlugin.getServersManager().getServer(serverId);
-    return server != null ? server.getId() : ("Unknown server: '" + serverId + "'");
+    Optional<IServer> server = SonarLintCorePlugin.getServersManager().findById(serverId);
+    return server.map(IServer::getId).orElseGet(() -> "Unknown server: '" + serverId + "'");
   }
 
   @Override
@@ -155,13 +163,10 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
 
   @Override
   public boolean performOk() {
-    final SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(getProject().getScopeContext());
+    SonarLintProjectConfiguration projectConfig = getProjectConfig();
     projectConfig.setAutoEnabled(enabledBtn.getSelection());
-    projectConfig.save();
+    SonarLintCorePlugin.saveConfig(getProject(), projectConfig);
     return super.performOk();
   }
 
-  private ISonarLintProject getProject() {
-    return Adapters.adapt(getElement(), ISonarLintProject.class);
-  }
 }
