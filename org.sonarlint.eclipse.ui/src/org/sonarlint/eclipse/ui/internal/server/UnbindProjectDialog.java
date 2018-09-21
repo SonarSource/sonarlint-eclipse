@@ -28,8 +28,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
@@ -80,7 +80,7 @@ public class UnbindProjectDialog extends MessageDialog {
           if (monitor.isCanceled()) {
             return Status.CANCEL_STATUS;
           }
-          String oldServerId = SonarLintProjectConfiguration.read(project.getScopeContext()).getServerId();
+          String oldServerId = SonarLintCorePlugin.loadConfig(project).getProjectBinding().get().serverId();
           Server.unbind(project);
           JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
           JobUtils.notifyServerViewAfterBindingChange(project, oldServerId);

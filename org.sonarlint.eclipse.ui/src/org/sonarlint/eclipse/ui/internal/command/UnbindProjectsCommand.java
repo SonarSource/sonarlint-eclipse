@@ -32,6 +32,7 @@ import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
@@ -63,11 +64,13 @@ public class UnbindProjectsCommand extends AbstractHandler {
       protected IStatus run(IProgressMonitor monitor) {
         monitor.beginTask("Unbind projects", selectedProjects.size());
         for (ISonarLintProject p : selectedProjects) {
-          SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(p.getScopeContext());
-          String oldServerId = projectConfig.getServerId();
-          Server.unbind(p);
-          JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE);
-          JobUtils.notifyServerViewAfterBindingChange(p, oldServerId);
+          SonarLintProjectConfiguration projectConfig = SonarLintCorePlugin.loadConfig(p);
+          projectConfig.getProjectBinding().ifPresent(b -> {
+            String oldServerId = b.serverId();
+            Server.unbind(p);
+            JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE);
+            JobUtils.notifyServerViewAfterBindingChange(p, oldServerId);
+          });
           monitor.worked(1);
         }
         IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);

@@ -31,8 +31,8 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
@@ -85,7 +85,7 @@ public class PersistentIssueTrackerCacheTest extends SonarTestCase {
   public static void importProject() throws Exception {
     project = importEclipseProject("SimpleProject");
     // Configure the project
-    SonarLintProjectConfiguration.read(new ProjectScope(project));
+    SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project));
   }
 
   @Before

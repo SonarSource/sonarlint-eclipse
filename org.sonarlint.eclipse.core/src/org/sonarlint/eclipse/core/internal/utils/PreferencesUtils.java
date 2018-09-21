@@ -73,7 +73,7 @@ public class PreferencesUtils {
     props.addAll(deserializeExtraProperties(globalExtraArgs));
 
     // Then add project properties
-    SonarLintProjectConfiguration sonarProject = SonarLintProjectConfiguration.read(project.getScopeContext());
+    SonarLintProjectConfiguration sonarProject = SonarLintCorePlugin.loadConfig(project);
     if (sonarProject.getExtraProperties() != null) {
       props.addAll(sonarProject.getExtraProperties());
     }

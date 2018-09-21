@@ -25,7 +25,6 @@ package org.sonarlint.eclipse.ui.internal.bind;
  * we will have to "serialize" this object using {@link #asString()} in
  * {@link SearchEngineProvider#getProposals(String, int)}
  * then deserialize in the {@link RemoteProjectTextContentAdapter}
- * @author julien
  *
  */
 public class RemoteSonarProject {
@@ -35,12 +34,10 @@ public class RemoteSonarProject {
   private String serverId;
   private String name;
   private String projectKey;
-  private String moduleKey;
 
-  public RemoteSonarProject(String serverId, String projectKey, String moduleKey, String name) {
+  public RemoteSonarProject(String serverId, String projectKey, String name) {
     this.serverId = serverId;
     this.projectKey = projectKey;
-    this.moduleKey = moduleKey;
     this.name = name;
   }
 
@@ -60,14 +57,6 @@ public class RemoteSonarProject {
     this.projectKey = projectKey;
   }
 
-  public String getModuleKey() {
-    return moduleKey;
-  }
-
-  public void setModuleKey(String moduleKey) {
-    this.moduleKey = moduleKey;
-  }
-
   public String getName() {
     return name;
   }
@@ -77,7 +66,7 @@ public class RemoteSonarProject {
   }
 
   public String asString() {
-    return serverId + SEPARATOR + projectKey + SEPARATOR + moduleKey + SEPARATOR + name;
+    return serverId + SEPARATOR + projectKey + SEPARATOR + name;
   }
 
   /**
@@ -85,15 +74,15 @@ public class RemoteSonarProject {
    */
   public String getDescription() {
     StringBuilder sb = new StringBuilder();
-    sb.append("Project/Module name: ").append(name).append("\n");
+    sb.append("Project name: ").append(name).append("\n");
     sb.append("Server: ").append(serverId).append("\n");
-    sb.append("Project/Module key: ").append(moduleKey);
+    sb.append("Project key: ").append(projectKey);
     return sb.toString();
   }
 
   public static RemoteSonarProject fromString(String asString) {
     String[] parts = asString.split("\\" + SEPARATOR);
-    return new RemoteSonarProject(parts[0], parts[1], parts[2], parts[3]);
+    return new RemoteSonarProject(parts[0], parts[1], parts[2]);
   }
 
 }

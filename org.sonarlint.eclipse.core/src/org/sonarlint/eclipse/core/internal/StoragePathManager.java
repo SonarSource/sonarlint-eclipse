@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal;
 
 import java.nio.file.Path;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
  * Utility class to centralize access to relevant global paths.
@@ -43,15 +44,11 @@ public class StoragePathManager {
     return getSonarLintUserHome().resolve("storage");
   }
 
-  private static Path getModuleStorageDir(String localModuleKey) {
-    return getSonarLintUserHome().resolve("modules").resolve(localModuleKey);
+  public static Path getIssuesDir(ISonarLintProject project) {
+    return project.getWorkingDir().resolve("issues");
   }
 
-  public static Path getIssuesDir(String localModuleKey) {
-    return getModuleStorageDir(localModuleKey).resolve("issues");
-  }
-
-  public static Path getNotificationsDir(String localModuleKey) {
-    return getModuleStorageDir(localModuleKey).resolve("notifications");
+  public static Path getNotificationsDir(ISonarLintProject project) {
+    return project.getWorkingDir().resolve("notifications");
   }
 }

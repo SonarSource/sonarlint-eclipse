@@ -20,9 +20,9 @@
 package org.sonarlint.eclipse.core.internal.resources;
 
 import javax.annotation.Nullable;
-
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.runtime.IAdaptable;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.utils.FileExclusionsChecker;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -38,14 +38,16 @@ public class SonarLintPropertyTester extends PropertyTester {
     }
 
     if ("bound".equals(property)) {
+      boolean isBound = SonarLintCorePlugin.loadConfig(project).isBound();
       return expectedValue == null
-        ? project.isBound()
-        : (project.isBound() == ((Boolean) expectedValue).booleanValue());
+        ? isBound
+        : (isBound == ((Boolean) expectedValue).booleanValue());
     }
     if ("autoAnalysisEnabled".equals(property)) {
+      boolean isAuto = SonarLintCorePlugin.loadConfig(project).isAutoEnabled();
       return expectedValue == null
-        ? project.isAutoEnabled()
-        : (project.isAutoEnabled() == ((Boolean) expectedValue).booleanValue());
+        ? isAuto
+        : (isAuto == ((Boolean) expectedValue).booleanValue());
     }
     if ("open".equals(property)) {
       return expectedValue == null

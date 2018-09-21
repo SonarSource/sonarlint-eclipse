@@ -19,14 +19,16 @@
  */
 package org.sonarlint.eclipse.ui.internal.bind;
 
+import javax.annotation.CheckForNull;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 /**
- * This class represents the association between an Eclipse and a SonarQube project/module.
+ * This class represents the association between an Eclipse and a SonarQube project.
  *
  */
 public class ProjectBindModel extends AbstractModelObject {
@@ -35,18 +37,16 @@ public class ProjectBindModel extends AbstractModelObject {
 
   private final ISonarLintProject project;
   private String projectKey;
-  private String moduleKey;
   private String serverId;
   private IServer server;
   private boolean autoBindFailed;
 
   public ProjectBindModel(ISonarLintProject project) {
     this.project = project;
-    SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(project.getScopeContext());
-    this.projectKey = projectConfig.getProjectKey();
-    this.moduleKey = projectConfig.getModuleKey();
-    this.serverId = projectConfig.getServerId();
-    this.server = SonarLintCorePlugin.getServersManager().getServer(this.serverId);
+    SonarLintProjectConfiguration projectConfig = SonarLintCorePlugin.loadConfig(project);
+    this.projectKey = projectConfig.getProjectBinding().map(EclipseProjectBinding::projectKey).orElse(null);
+    this.serverId = projectConfig.getProjectBinding().map(EclipseProjectBinding::serverId).orElse(null);
+    this.server = this.serverId != null ? SonarLintCorePlugin.getServersManager().findById(this.serverId).orElse(null) : null;
   }
 
   public ISonarLintProject getProject() {
@@ -58,7 +58,7 @@ public class ProjectBindModel extends AbstractModelObject {
   }
 
   public String getDisplayName() {
-    if (StringUtils.isBlank(moduleKey)) {
+    if (StringUtils.isBlank(projectKey)) {
       if (autoBindFailed) {
         return "<Auto-bind failed. Type here to start searching for a remote SonarQube project...>";
       }
@@ -66,25 +66,21 @@ public class ProjectBindModel extends AbstractModelObject {
     } else if (server == null) {
       return "<Bound to an unknown server: '" + this.serverId + "'>";
     } else {
-      return String.format("'%s' on server '%s'", moduleKey, server.getId());
+      return String.format("'%s' on server '%s'", projectKey, server.getId());
     }
   }
 
+  @CheckForNull
   public String getProjectKey() {
     return projectKey;
   }
 
-  public String getModuleKey() {
-    return moduleKey;
-  }
-
-  public void associate(String serverId, String projectKey, String moduleKey) {
+  public void associate(String serverId, String projectKey) {
     String oldValue = getDisplayName();
     this.autoBindFailed = false;
     this.projectKey = projectKey;
-    this.moduleKey = moduleKey;
     this.serverId = serverId;
-    this.server = SonarLintCorePlugin.getServersManager().getServer(this.serverId);
+    this.server = this.serverId != null ? SonarLintCorePlugin.getServersManager().findById(this.serverId).orElse(null) : null;
     firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getDisplayName());
   }
 
@@ -95,6 +91,7 @@ public class ProjectBindModel extends AbstractModelObject {
     firePropertyChange(PROPERTY_PROJECT_SONAR_FULLNAME, oldValue, getDisplayName());
   }
 
+  @CheckForNull
   public String getServerId() {
     return serverId;
   }
@@ -108,7 +105,6 @@ public class ProjectBindModel extends AbstractModelObject {
 
   private void resetBinding() {
     this.projectKey = null;
-    this.moduleKey = null;
     this.serverId = null;
     this.server = null;
   }

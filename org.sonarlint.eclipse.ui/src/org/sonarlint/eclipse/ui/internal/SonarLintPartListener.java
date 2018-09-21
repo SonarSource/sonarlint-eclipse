@@ -29,12 +29,13 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
 /**
  * Responsible to trigger analysis when files are opened
@@ -67,11 +68,11 @@ public class SonarLintPartListener implements IPartListener2 {
 
   private static void scheduleUpdate(FileWithDocument fileWithDoc) {
     ISonarLintFile file = fileWithDoc.getFile();
-    if (!file.getProject().isAutoEnabled()) {
+    if (!SonarLintCorePlugin.loadConfig(file.getProject()).isAutoEnabled()) {
       return;
     }
     AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Arrays.asList(fileWithDoc), TriggerType.EDITOR_OPEN);
-    new AnalyzeProjectJob(request).schedule();
+    JobUtils.scheduleAutoAnalysisIfEnabled(request);
   }
 
   @Override

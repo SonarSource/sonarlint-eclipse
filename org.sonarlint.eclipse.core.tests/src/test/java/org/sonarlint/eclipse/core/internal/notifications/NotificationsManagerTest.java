@@ -24,6 +24,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,8 +51,6 @@ public class NotificationsManagerTest {
 
   private final String projectKey1 = "pkey1";
   private final String projectKey2 = "pkey2";
-  private final String moduleKey1 = "mkey1";
-  private final String moduleKey2 = "mkey2";
 
   private ISonarLintProject project1mod1 = mock(ISonarLintProject.class);
   private ISonarLintProject project1mod2 = mock(ISonarLintProject.class);
@@ -60,18 +59,17 @@ public class NotificationsManagerTest {
 
   Map<ISonarLintProject, SonarLintProjectConfiguration> configs = new HashMap<>();
   {
-    configs.put(project1mod1, mockConfig(projectKey1, moduleKey1));
-    configs.put(project1mod2, mockConfig(projectKey1, moduleKey2));
-    configs.put(project2mod1, mockConfig(projectKey2, moduleKey1));
-    configs.put(project2mod2, mockConfig(projectKey2, moduleKey2));
+    configs.put(project1mod1, mockConfig(projectKey1));
+    configs.put(project1mod2, mockConfig(projectKey1));
+    configs.put(project2mod1, mockConfig(projectKey2));
+    configs.put(project2mod2, mockConfig(projectKey2));
   }
 
   SonarLintProjectConfigurationReader configReader = p -> configs.get(p);
 
-  private SonarLintProjectConfiguration mockConfig(String projectKey, String moduleKey) {
+  private SonarLintProjectConfiguration mockConfig(String projectKey) {
     SonarLintProjectConfiguration config = mock(SonarLintProjectConfiguration.class);
-    when(config.getProjectKey()).thenReturn(projectKey);
-    when(config.getModuleKey()).thenReturn(moduleKey);
+    when(config.getProjectBinding()).thenReturn(Optional.of(new SonarLintProjectConfiguration.EclipseProjectBinding("serverId", projectKey, "", "")));
     return config;
   }
 
@@ -92,6 +90,10 @@ public class NotificationsManagerTest {
   @Before
   public void setUp() {
     notificationsManager = new NotificationsManager(subscriber, configReader);
+    when(project1mod1.getName()).thenReturn("project1-module1");
+    when(project1mod2.getName()).thenReturn("project1-module2");
+    when(project2mod1.getName()).thenReturn("project2-module1");
+    when(project2mod2.getName()).thenReturn("project2-module2");
   }
 
   @Test
@@ -174,7 +176,7 @@ public class NotificationsManagerTest {
   @Test
   public void should_not_subscribe_when_project_key_null() {
     ISonarLintProject moduleWithoutProjectKey = mock(ISonarLintProject.class);
-    configs.put(moduleWithoutProjectKey, mockConfig(null, "dummy moduleKey"));
+    configs.put(moduleWithoutProjectKey, mock(SonarLintProjectConfiguration.class));
     notificationsManager.subscribe(moduleWithoutProjectKey, listener);
     assertThat(subscriber.count).isEqualTo(0);
   }

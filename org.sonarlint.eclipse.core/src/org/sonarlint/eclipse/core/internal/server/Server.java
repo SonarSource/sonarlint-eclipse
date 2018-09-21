@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -50,8 +50,10 @@ import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
 import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.WsHelperImpl;
@@ -63,8 +65,9 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfig
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.GlobalStorageStatus;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
+import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
+import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration.Builder;
 import org.sonarsource.sonarlint.core.client.api.connected.SonarAnalyzer;
@@ -76,6 +79,8 @@ import org.sonarsource.sonarlint.core.client.api.connected.WsHelper;
 import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 import org.sonarsource.sonarlint.core.notifications.SonarQubeNotifications;
+
+import static java.util.stream.Collectors.toList;
 
 public class Server implements IServer, StateListener {
 
@@ -172,19 +177,28 @@ public class Server implements IServer, StateListener {
         checkForUpdateResult.changelog().forEach(line -> SonarLintLogger.get().info("  - " + line));
       }
 
-      for (ISonarLintProject boundProject : getBoundProjects()) {
+      Set<String> projectKeys = getBoundProjects()
+        .stream()
+        .map(SonarLintCorePlugin::loadConfig)
+        .map(SonarLintProjectConfiguration::getProjectBinding)
+        // Useless in practice because we only have bound projects
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .map(ProjectBinding::projectKey)
+        .collect(Collectors.toSet());
+
+      for (String projectKey : projectKeys) {
         SubMonitor projectMonitor = subMonitor.newChild(1);
         if (progress.isCanceled()) {
           return;
         }
-        SonarLintLogger.get().info("Check for updates from server '" + getId() + "' for project '" + boundProject.getName() + "'");
-        SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(boundProject.getScopeContext());
-        StorageUpdateCheckResult moduleUpdateCheckResult = client.checkIfModuleStorageNeedUpdate(getConfig(), projectConfig.getModuleKey(),
-          new WrappedProgressMonitor(projectMonitor, "Checking for configuration update for project '" + boundProject.getName() + "'"));
-        if (moduleUpdateCheckResult.needUpdate()) {
+        SonarLintLogger.get().info("Check for updates from server '" + getId() + "' for SonarQube project '" + projectKey + "'");
+        StorageUpdateCheckResult projectUpdateCheckResult = client.checkIfProjectStorageNeedUpdate(getConfig(), projectKey,
+          new WrappedProgressMonitor(projectMonitor, "Checking for configuration update for SonarQube project '" + projectKey + "'"));
+        if (projectUpdateCheckResult.needUpdate()) {
           this.hasUpdates = true;
-          SonarLintLogger.get().info("On project '" + boundProject.getName() + "':");
-          moduleUpdateCheckResult.changelog().forEach(line -> SonarLintLogger.get().info("  - " + line));
+          SonarLintLogger.get().info("On SonarQube project '" + projectKey + "':");
+          projectUpdateCheckResult.changelog().forEach(line -> SonarLintLogger.get().info("  - " + line));
         }
       }
     } catch (DownloadException e) {
@@ -257,7 +271,9 @@ public class Server implements IServer, StateListener {
 
   public static void unbind(ISonarLintProject project) {
     SonarLintCorePlugin.getInstance().notificationsManager().unsubscribe(project);
-    SonarLintProjectConfiguration.read(project.getScopeContext()).unbind();
+    SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(project);
+    config.setProjectBinding(null);
+    SonarLintCorePlugin.saveConfig(project, config);
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
     SonarLintCorePlugin.clearIssueTracker(project);
@@ -317,27 +333,41 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public void updateModuleList(IProgressMonitor monitor) {
-    client.downloadAllModules(getConfig(), new WrappedProgressMonitor(monitor, "Download modules list from server '" + getId() + "'"));
+  public void updateProjectList(IProgressMonitor monitor) {
+    client.downloadAllProjects(getConfig(), new WrappedProgressMonitor(monitor, "Download project list from server '" + getId() + "'"));
   }
 
   @Override
   public List<ISonarLintProject> getBoundProjects() {
-    List<ISonarLintProject> result = new ArrayList<>();
-    for (ISonarLintProject project : ProjectsProviderUtils.allProjects()) {
-      if (project.isOpen()) {
-        SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(project.getScopeContext());
-        if (Objects.equals(projectConfig.getServerId(), id)) {
-          result.add(project);
-        }
-      }
-    }
-    return result;
+    return ProjectsProviderUtils.allProjects().stream()
+      .filter(ISonarLintProject::isOpen)
+      .filter(p -> {
+        SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(p);
+        return config.getProjectBinding().filter(b -> id.equals(b.serverId())).isPresent();
+      }).collect(toList());
+  }
+
+  public List<ISonarLintProject> getBoundProjects(String projectKey) {
+    return ProjectsProviderUtils.allProjects().stream()
+      .filter(ISonarLintProject::isOpen)
+      .filter(p -> {
+        SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(p);
+        return config.getProjectBinding().filter(b -> id.equals(b.serverId()) && projectKey.equals(b.projectKey())).isPresent();
+      }).collect(toList());
   }
 
   @Override
-  public synchronized void updateProjectStorage(String moduleKey, IProgressMonitor monitor) {
-    client.updateModule(getConfig(), moduleKey, new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "' for module '" + moduleKey + "'"));
+  public synchronized void updateProjectStorage(String projectKey, IProgressMonitor monitor) {
+    client.updateProject(getConfig(), projectKey, new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "' for project '" + projectKey + "'"));
+    getBoundProjects(projectKey).forEach(p -> {
+      ProjectBinding projectBinding = client.calculatePathPrefixes(projectKey, p.files().stream().map(ISonarLintFile::getProjectRelativePath).collect(toList()));
+      String idePathPrefix = projectBinding.idePathPrefix();
+      String sqPathPrefix = projectBinding.sqPathPrefix();
+      SonarLintLogger.get().debug("Detected prefixes for " + p.getName() + ":\n  IDE prefix: " + idePathPrefix + "\n  Server side prefix: " + sqPathPrefix);
+      SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(p);
+      config.setProjectBinding(new EclipseProjectBinding(getId(), projectKey, sqPathPrefix, idePathPrefix));
+      SonarLintCorePlugin.saveConfig(p, config);
+    });
   }
 
   public static IStatus testConnection(String url, @Nullable String organization, @Nullable String username, @Nullable String password) {
@@ -424,23 +454,23 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public TextSearchIndex<RemoteModule> getModuleIndex() {
-    Map<String, RemoteModule> allModulesByKey = client.allModulesByKey();
-    TextSearchIndex<RemoteModule> index = new TextSearchIndex<>();
-    for (RemoteModule module : allModulesByKey.values()) {
-      index.index(module, module.getKey() + " " + module.getName());
+  public TextSearchIndex<RemoteProject> getProjectIndex() {
+    Map<String, RemoteProject> allProjectsByKey = client.allProjectsByKey();
+    TextSearchIndex<RemoteProject> index = new TextSearchIndex<>();
+    for (RemoteProject project : allProjectsByKey.values()) {
+      index.index(project, project.getKey() + " " + project.getName());
     }
     return index;
   }
 
   @Override
-  public Map<String, RemoteModule> getRemoteModules() {
-    return client.allModulesByKey();
+  public Map<String, RemoteProject> getRemoteProjects() {
+    return client.allProjectsByKey();
   }
 
   @Override
-  public Set<String> getServerFileExclusions(String moduleKey, Collection<String> filePaths, Predicate<String> testFilePredicate) {
-    return client.getExcludedFiles(moduleKey, filePaths, testFilePredicate);
+  public List<ISonarLintFile> getServerFileExclusions(ProjectBinding binding, Collection<ISonarLintFile> files, Predicate<ISonarLintFile> testFilePredicate) {
+    return client.getExcludedFiles(binding, files, ISonarLintFile::getProjectRelativePath, testFilePredicate);
   }
 
   @Override

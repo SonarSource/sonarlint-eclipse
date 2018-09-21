@@ -23,10 +23,13 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
+import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.NotificationConfiguration;
@@ -36,7 +39,7 @@ import org.sonarsource.sonarlint.core.notifications.SonarQubeNotifications;
 
 public class NotificationsManager {
 
-  // project key -> module keys
+  // project key -> ISonarLintProject names
   private final Map<String, Set<String>> subscribers = new HashMap<>();
 
   // project key -> listener
@@ -46,7 +49,7 @@ public class NotificationsManager {
   private final SonarLintProjectConfigurationReader configReader;
 
   public NotificationsManager() {
-    this(new Subscriber(), p -> SonarLintProjectConfiguration.read(p.getScopeContext()));
+    this(new Subscriber(), p -> SonarLintCorePlugin.loadConfig(p));
   }
 
   // only for testing
@@ -58,23 +61,23 @@ public class NotificationsManager {
   public synchronized void subscribe(ISonarLintProject project, SonarQubeNotificationListener listener) {
     SonarLintProjectConfiguration config = configReader.apply(project);
 
-    String projectKey = config.getProjectKey();
-    if (projectKey == null) {
+    Optional<EclipseProjectBinding> binding = config.getProjectBinding();
+    if (!binding.isPresent()) {
       return;
     }
-
-    Set<String> moduleKeys = subscribers.get(projectKey);
-    if (moduleKeys == null) {
-      if (!subscriber.subscribe(project, config, listener)) {
-        return;
+    binding.ifPresent(b -> {
+      Set<String> names = subscribers.get(b.projectKey());
+      if (names == null) {
+        if (!subscriber.subscribe(project, config, listener)) {
+          return;
+        }
+        names = new HashSet<>();
+        subscribers.put(b.projectKey(), names);
+        listeners.put(b.projectKey(), listener);
       }
-      moduleKeys = new HashSet<>();
-      subscribers.put(projectKey, moduleKeys);
-      listeners.put(projectKey, listener);
-    }
+      names.add(project.getName());
+    });
 
-    String moduleKey = config.getModuleKey();
-    moduleKeys.add(moduleKey);
   }
 
   /**
@@ -109,39 +112,39 @@ public class NotificationsManager {
   public synchronized void unsubscribe(ISonarLintProject project) {
     SonarLintProjectConfiguration config = configReader.apply(project);
 
-    String projectKey = config.getProjectKey();
-    Set<String> moduleKeys = subscribers.get(projectKey);
-    if (moduleKeys == null) {
-      return;
-    }
+    Optional<EclipseProjectBinding> binding = config.getProjectBinding();
+    binding.ifPresent(b -> {
+      String projectKey = b.projectKey();
+      Set<String> names = subscribers.get(projectKey);
+      if (names == null) {
+        return;
+      }
 
-    String moduleKey = config.getModuleKey();
-    moduleKeys.remove(moduleKey);
+      names.remove(project.getName());
 
-    if (moduleKeys.isEmpty()) {
-      subscribers.remove(projectKey);
-      subscriber.unsubscribe(listeners.remove(projectKey));
-    }
+      if (names.isEmpty()) {
+        subscribers.remove(projectKey);
+        subscriber.unsubscribe(listeners.remove(projectKey));
+      }
+    });
   }
 
-  // visible for testing
   public static class Subscriber {
-    // visible for testing
     public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
-      Server server = (Server) SonarLintCorePlugin.getServersManager().getServer(config.getServerId());
-      if (server == null || !server.areNotificationsEnabled()) {
+      Optional<IServer> server = SonarLintCorePlugin.getServersManager().forProject(project, config);
+      if (!server.isPresent() || !server.get().areNotificationsEnabled()) {
         return false;
       }
 
       LastNotificationTime notificationTime = new ProjectNotificationTime(project);
 
-      NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, config.getProjectKey(), server.getConfig());
+      NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, config.getProjectBinding().get().serverId(),
+        ((Server) server.get()).getConfig());
       SonarQubeNotifications.get().register(configuration);
 
       return true;
     }
 
-    // visible for testing
     public void unsubscribe(SonarQubeNotificationListener listener) {
       SonarQubeNotifications.get().remove(listener);
     }

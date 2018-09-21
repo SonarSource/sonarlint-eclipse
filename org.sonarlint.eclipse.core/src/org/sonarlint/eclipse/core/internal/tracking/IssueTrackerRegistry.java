@@ -37,10 +37,10 @@ public class IssueTrackerRegistry {
     this.cacheFactory = cacheFactory;
   }
 
-  public synchronized IssueTracker getOrCreate(ISonarLintProject project, String localModulePath) {
+  public synchronized IssueTracker getOrCreate(ISonarLintProject project) {
     IssueTracker tracker = registry.get(project.getName());
     if (tracker == null) {
-      tracker = newTracker(project, localModulePath);
+      tracker = newTracker(project);
       registry.put(project.getName(), tracker);
     }
     return tracker;
@@ -50,8 +50,8 @@ public class IssueTrackerRegistry {
     return Optional.ofNullable(registry.get(project.getName()));
   }
 
-  private IssueTracker newTracker(ISonarLintProject project, String localModulePath) {
-    return new IssueTracker(cacheFactory.apply(project, localModulePath));
+  private IssueTracker newTracker(ISonarLintProject project) {
+    return new IssueTracker(cacheFactory.apply(project));
   }
 
   public void shutdown() {

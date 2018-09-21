@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.views;
 
+import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
@@ -29,7 +30,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -60,17 +60,12 @@ public class RuleDescriptionWebView extends AbstractLinkedSonarWebView<IMarker> 
 
     ISonarLintIssuable issuable = Adapters.adapt(element.getResource(), ISonarLintIssuable.class);
     ISonarLintProject p = issuable.getProject();
-    SonarLintProjectConfiguration configuration = SonarLintProjectConfiguration.read(p.getScopeContext());
     RuleDetails ruleDetails;
-    if (!configuration.isBound()) {
-      ruleDetails = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getRuleDescription(ruleKey);
+    Optional<IServer> server = SonarLintCorePlugin.getServersManager().forProject(p);
+    if (server.isPresent()) {
+      ruleDetails = server.get().getRuleDescription(ruleKey);
     } else {
-      IServer server = SonarLintCorePlugin.getServersManager().getServer(configuration.getServerId());
-      if (server == null) {
-        super.showMessage("Project " + p.getName() + " is linked to an unknown server: " + configuration.getServerId() + ". Please update configuration.");
-        return;
-      }
-      ruleDetails = server.getRuleDescription(ruleKey);
+      ruleDetails = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getRuleDescription(ruleKey);
     }
 
     if (ruleDetails == null) {
