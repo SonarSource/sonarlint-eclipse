@@ -21,13 +21,13 @@ package org.sonarlint.eclipse.core.resource;
 
 import java.nio.file.Path;
 import java.util.Collection;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Represents a project for SonarLint. A project will contain the 
@@ -45,24 +45,12 @@ public interface ISonarLintProject extends ISonarLintIssuable {
   }
 
   /**
-   * Is this project already bound to a remote SonarQube project/module?
-   */
-  default boolean isBound() {
-    return SonarLintProjectConfiguration.read(getScopeContext()).isBound();
-  }
-
-  /**
-   * Is auto-analysis enabled on this project (ie on save / on open)
-   */
-  default boolean isAutoEnabled() {
-    return SonarLintProjectConfiguration.read(getScopeContext()).isAutoEnabled();
-  }
-
-  /**
    * The scope context used to store SonarLint configuration
    */
   default IScopeContext getScopeContext() {
-    return new ProjectScope((IProject) getResource());
+    return new ProjectScope(
+      requireNonNull(getResource().getProject(),
+        () -> "Unable to decide where SonarLint preferences should be stored for " + getName()));
   }
 
   /**
@@ -72,7 +60,7 @@ public interface ISonarLintProject extends ISonarLintIssuable {
   String getName();
 
   /**
-   * Working directory for analyzers (they may store temporary files for example).
+   * Working directory for SonarLint, specific to this project.
    */
   Path getWorkingDir();
 

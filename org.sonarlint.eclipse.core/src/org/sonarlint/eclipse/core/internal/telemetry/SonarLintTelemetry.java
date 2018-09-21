@@ -35,6 +35,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.client.api.common.TelemetryClientConfig;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
@@ -144,9 +145,13 @@ public class SonarLintTelemetry {
   // visible for testing
   public void upload() {
     if (enabled()) {
-      telemetry.usedConnectedMode(isAnyProjectConnected());
+      telemetry.usedConnectedMode(isAnyProjectConnected(), isAnyServerSonarCloud());
       telemetry.uploadLazily();
     }
+  }
+
+  private static boolean isAnyServerSonarCloud() {
+    return SonarLintCorePlugin.getServersManager().getServers().stream().anyMatch(IServer::isSonarCloud);
   }
 
   public void analysisDoneOnMultipleFiles() {
@@ -172,7 +177,7 @@ public class SonarLintTelemetry {
   }
 
   private static boolean isAnyProjectConnected() {
-    return ProjectsProviderUtils.allProjects().stream().anyMatch(p -> p.isOpen() && p.isBound());
+    return ProjectsProviderUtils.allProjects().stream().anyMatch(p -> p.isOpen() && SonarLintCorePlugin.loadConfig(p).isBound());
   }
 
   // visible for testing

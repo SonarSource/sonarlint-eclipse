@@ -24,9 +24,9 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.jface.text.Position;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,7 +39,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   public static void importProject() throws Exception {
     project = importEclipseProject("SimpleProject");
     // Configure the project
-    SonarLintProjectConfiguration.read(new ProjectScope(project));
+    SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project));
   }
 
   @Test

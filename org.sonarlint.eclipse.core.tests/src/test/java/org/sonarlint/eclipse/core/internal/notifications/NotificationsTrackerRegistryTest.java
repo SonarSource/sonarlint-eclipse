@@ -20,7 +20,9 @@
 package org.sonarlint.eclipse.core.internal.notifications;
 
 import java.io.IOException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
@@ -29,6 +31,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class NotificationsTrackerRegistryTest extends SonarTestCase {
+
+  @Rule
+  public TemporaryFolder temp = new TemporaryFolder();
 
   @Test
   public void should_create_one_tracker_per_project() throws IOException {
@@ -39,9 +44,10 @@ public class NotificationsTrackerRegistryTest extends SonarTestCase {
     assertThat(registry.getOrCreate(createProjectWithName(name + "-foo"))).isNotEqualTo(tracker);
   }
 
-  private ISonarLintProject createProjectWithName(String name) {
+  private ISonarLintProject createProjectWithName(String name) throws IOException {
     ISonarLintProject project = mock(ISonarLintProject.class);
     when(project.getName()).thenReturn(name);
+    when(project.getWorkingDir()).thenReturn(temp.newFolder().toPath());
     return project;
   }
 }

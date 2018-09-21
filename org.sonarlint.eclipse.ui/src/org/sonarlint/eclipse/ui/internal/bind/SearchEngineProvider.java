@@ -30,7 +30,7 @@ import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
+import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 /**
@@ -43,18 +43,18 @@ public class SearchEngineProvider implements IContentProposalProvider {
 
   private final WizardPage parentPage;
   private final IServer server;
-  private TextSearchIndex<RemoteModule> moduleIndex;
+  private TextSearchIndex<RemoteProject> projectIndex;
 
   public SearchEngineProvider(IServer server, WizardPage parentPage) {
     this.server = server;
     this.parentPage = parentPage;
   }
 
-  public TextSearchIndex<RemoteModule> getModuleIndex() {
-    if (moduleIndex == null && server.isStorageUpdated()) {
-      moduleIndex = server.getModuleIndex();
+  public TextSearchIndex<RemoteProject> getProjectIndex() {
+    if (projectIndex == null && server.isStorageUpdated()) {
+      projectIndex = server.getProjectIndex();
     }
-    return moduleIndex;
+    return projectIndex;
   }
 
   @Override
@@ -65,18 +65,18 @@ public class SearchEngineProvider implements IContentProposalProvider {
     }
     List<IContentProposal> list = new ArrayList<>();
     try {
-      Map<RemoteModule, Double> modules = getModuleIndex().search(contents);
-      List<Map.Entry<RemoteModule, Double>> entries = new ArrayList<>(modules.entrySet());
+      Map<RemoteProject, Double> modules = getProjectIndex().search(contents);
+      List<Map.Entry<RemoteProject, Double>> entries = new ArrayList<>(modules.entrySet());
       entries.sort(
-        Comparator.comparing(Map.Entry<RemoteModule, Double>::getValue).reversed()
+        Comparator.comparing(Map.Entry<RemoteProject, Double>::getValue).reversed()
           .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)));
-      for (Map.Entry<RemoteModule, Double> e : entries) {
-        RemoteModule module = e.getKey();
-        RemoteSonarProject prj = new RemoteSonarProject(server.getId(), module.getProjectKey(), module.getKey(), module.getName());
+      for (Map.Entry<RemoteProject, Double> e : entries) {
+        RemoteProject project = e.getKey();
+        RemoteSonarProject prj = new RemoteSonarProject(server.getId(), project.getKey(), project.getName());
         list.add(new ContentProposal(prj.asString(), e.getKey().getName(), prj.getDescription()));
       }
     } catch (Exception e) {
-      SonarLintLogger.get().debug("Unable to search modules from server " + server.getId(), e);
+      SonarLintLogger.get().debug("Unable to search projects from server " + server.getId(), e);
     }
     if (!list.isEmpty()) {
       parentPage.setMessage("", IMessageProvider.NONE);

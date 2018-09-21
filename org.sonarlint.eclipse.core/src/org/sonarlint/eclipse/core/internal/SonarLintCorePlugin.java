@@ -27,11 +27,12 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
-import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintClientFacade;
+import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintEngineFacade;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsTracker;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsTrackerRegistry;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectManager;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfigurationManager;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.IssueStore;
@@ -50,13 +51,13 @@ public class SonarLintCorePlugin extends Plugin {
   public static final String MARKER_REPORT_ID = PLUGIN_ID + ".sonarlintReportProblem";
 
   private static SonarLintCorePlugin plugin;
-  private static SonarLintProjectManager projectManager;
+  private static SonarLintProjectConfigurationManager configManager;
   private static NotificationsManager notificationsManager;
 
   private IssueTrackerRegistry issueTrackerRegistry;
   private ServerIssueUpdater serverIssueUpdater;
 
-  private StandaloneSonarLintClientFacade sonarlint;
+  private StandaloneSonarLintEngineFacade sonarlint;
   private final ServiceTracker<IProxyService, IProxyService> proxyTracker;
   private final SonarLintExtensionTracker extensionTracker = new SonarLintExtensionTracker();
 
@@ -76,11 +77,11 @@ public class SonarLintCorePlugin extends Plugin {
     return plugin;
   }
 
-  public synchronized SonarLintProjectManager getProjectManager() {
-    if (projectManager == null) {
-      projectManager = new SonarLintProjectManager();
+  public synchronized SonarLintProjectConfigurationManager getProjectConfigManager() {
+    if (configManager == null) {
+      configManager = new SonarLintProjectConfigurationManager();
     }
-    return projectManager;
+    return configManager;
   }
 
   public synchronized NotificationsManager notificationsManager() {
@@ -96,8 +97,8 @@ public class SonarLintCorePlugin extends Plugin {
     extensionTracker.start();
     serversManager.init();
 
-    IssueTrackerCacheFactory factory = (project, localModuleKey) -> {
-      Path storeBasePath = StoragePathManager.getIssuesDir(localModuleKey);
+    IssueTrackerCacheFactory factory = (project) -> {
+      Path storeBasePath = StoragePathManager.getIssuesDir(project);
       IssueStore issueStore = new IssueStore(storeBasePath, project);
       return new PersistentIssueTrackerCache(issueStore);
     };
@@ -126,9 +127,9 @@ public class SonarLintCorePlugin extends Plugin {
     super.stop(context);
   }
 
-  public StandaloneSonarLintClientFacade getDefaultSonarLintClientFacade() {
+  public StandaloneSonarLintEngineFacade getDefaultSonarLintClientFacade() {
     if (sonarlint == null) {
-      sonarlint = new StandaloneSonarLintClientFacade();
+      sonarlint = new StandaloneSonarLintEngineFacade();
     }
     return sonarlint;
   }
@@ -141,8 +142,8 @@ public class SonarLintCorePlugin extends Plugin {
     return serverIssueUpdater;
   }
 
-  public static IssueTracker getOrCreateIssueTracker(ISonarLintProject project, String localModulePath) {
-    return getInstance().issueTrackerRegistry.getOrCreate(project, localModulePath);
+  public static IssueTracker getOrCreateIssueTracker(ISonarLintProject project) {
+    return getInstance().issueTrackerRegistry.getOrCreate(project);
   }
 
   public static void clearIssueTracker(ISonarLintProject project) {
@@ -167,5 +168,13 @@ public class SonarLintCorePlugin extends Plugin {
 
   public static NotificationsTracker getOrCreateNotificationsTracker(ISonarLintProject project) {
     return getInstance().notificationsTrackerRegistry.getOrCreate(project);
+  }
+
+  public static SonarLintProjectConfiguration loadConfig(ISonarLintProject project) {
+    return getInstance().getProjectConfigManager().load(project.getScopeContext());
+  }
+
+  public static void saveConfig(ISonarLintProject project, SonarLintProjectConfiguration config) {
+    getInstance().getProjectConfigManager().save(project.getScopeContext(), config);
   }
 }

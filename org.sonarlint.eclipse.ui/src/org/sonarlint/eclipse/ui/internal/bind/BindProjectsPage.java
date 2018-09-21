@@ -21,12 +21,15 @@ package org.sonarlint.eclipse.ui.internal.bind;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.core.databinding.property.value.IValueProperty;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
@@ -68,8 +71,9 @@ import org.eclipse.ui.part.PageBook;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.jobs.ProjectUpdateJob;
+import org.sonarlint.eclipse.core.internal.jobs.ProjectStorageUpdateJob;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.IServerLifecycleListener;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -79,7 +83,7 @@ import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
+import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 import static java.util.Arrays.asList;
@@ -107,7 +111,7 @@ public class BindProjectsPage extends WizardPage {
         + "Bind your Eclipse projects to some SonarQube projects in order to get the same issues in Eclipse and in SonarQube.");
     this.projects = projects;
     if (!projects.isEmpty()) {
-      selectedServer = SonarLintCorePlugin.getServersManager().getServer(SonarLintProjectConfiguration.read(projects.get(0).getScopeContext()).getServerId());
+      selectedServer = SonarLintCorePlugin.getServersManager().forProject(projects.get(0)).orElse(null);
     }
   }
 
@@ -197,14 +201,14 @@ public class BindProjectsPage extends WizardPage {
     autoBindBtn = new Button(btnContainer, SWT.PUSH);
     autoBindBtn.setText("Auto bind selected projects");
     autoBindBtn.addListener(SWT.Selection, event -> {
-      TextSearchIndex<RemoteModule> moduleIndex = selectedServer.getModuleIndex();
+      TextSearchIndex<RemoteProject> projectIndex = selectedServer.getProjectIndex();
       for (Object object : viewer.getCheckedElements()) {
         ProjectBindModel bind = (ProjectBindModel) object;
-        Map<RemoteModule, Double> results = moduleIndex.search(bind.getEclipseName());
+        Map<RemoteProject, Double> results = projectIndex.search(bind.getEclipseName());
         if (!results.isEmpty()) {
           // Take first highest scoring
-          RemoteModule remoteModule = results.keySet().iterator().next();
-          bind.associate(selectedServer.getId(), remoteModule.getProjectKey(), remoteModule.getKey());
+          RemoteProject remoteProject = results.keySet().iterator().next();
+          bind.associate(selectedServer.getId(), remoteProject.getKey());
         } else {
           bind.setAutoBindFailed(true);
         }
@@ -289,7 +293,7 @@ public class BindProjectsPage extends WizardPage {
     try {
       final IServer server = (IServer) ((IStructuredSelection) serverCombo.getSelection()).getFirstElement();
       getContainer().run(true, false, monitor -> {
-        server.updateModuleList(monitor);
+        server.updateProjectList(monitor);
         Display.getDefault().asyncExec(this::updateState);
       });
     } catch (InvocationTargetException ex) {
@@ -426,7 +430,7 @@ public class BindProjectsPage extends WizardPage {
 
     @Override
     protected Object getValue(Object element) {
-      return StringUtils.trimToEmpty(((ProjectBindModel) element).getModuleKey());
+      return StringUtils.trimToEmpty(((ProjectBindModel) element).getProjectKey());
     }
 
     @Override
@@ -435,7 +439,7 @@ public class BindProjectsPage extends WizardPage {
 
       if (!open && element instanceof ProjectBindModel) {
         ProjectBindModel model = (ProjectBindModel) element;
-        model.associate(selectedServer.getId(), null, (String) value);
+        model.associate(selectedServer.getId(), (String) value);
       }
     }
 
@@ -446,49 +450,55 @@ public class BindProjectsPage extends WizardPage {
    */
   public boolean finish() {
     final ProjectBindModel[] projectBindings = getProjects();
+    Map<String, Map<String, Job>> projectStorageUpdateJobs = new HashMap<>();
     for (ProjectBindModel projectBinding : projectBindings) {
-      updateProjectBinding(projectBinding);
+      updateProjectBinding(projectBinding, projectStorageUpdateJobs);
     }
+    projectStorageUpdateJobs.values().forEach(m -> m.values().forEach(Job::schedule));
     return true;
   }
 
-  private static void updateProjectBinding(ProjectBindModel projectBinding) {
+  private static void updateProjectBinding(ProjectBindModel projectBinding, Map<String, Map<String, Job>> projectStorageUpdateJobs) {
     boolean changed = false;
     ISonarLintProject project = projectBinding.getProject();
-    SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(project.getScopeContext());
-    String oldServerId = projectConfig.getServerId();
-    if (!Objects.equals(projectBinding.getServerId(), oldServerId)) {
-      projectConfig.setServerId(projectBinding.getServerId());
-      changed = true;
-    }
-    if (!Objects.equals(projectBinding.getProjectKey(), projectConfig.getProjectKey())) {
-      projectConfig.setProjectKey(projectBinding.getProjectKey());
-      changed = true;
-    }
-    if (!Objects.equals(projectBinding.getModuleKey(), projectConfig.getModuleKey())) {
-      projectConfig.setModuleKey(projectBinding.getModuleKey());
+    SonarLintProjectConfiguration projectConfig = SonarLintCorePlugin.loadConfig(project);
+    String oldServerId = projectConfig.getProjectBinding().map(EclipseProjectBinding::serverId).orElse(null);
+    String oldProjectKey = projectConfig.getProjectBinding().map(EclipseProjectBinding::projectKey).orElse(null);
+    String serverId = projectBinding.getServerId();
+    String projectKey = projectBinding.getProjectKey();
+    if (!Objects.equals(serverId, oldServerId) || !Objects.equals(projectKey, oldProjectKey)) {
+      if (serverId != null && projectKey != null) {
+        projectConfig.setProjectBinding(new EclipseProjectBinding(serverId, projectKey, "", ""));
+      } else {
+        projectConfig.setProjectBinding(null);
+      }
       changed = true;
     }
     if (changed) {
       SonarLintUiPlugin.unsubscribeToNotifications(project);
-      projectConfig.save();
-      updateProjectBinding(project, oldServerId);
+      SonarLintCorePlugin.saveConfig(project, projectConfig);
+      updateProjectBinding(project, projectConfig, projectStorageUpdateJobs);
+      JobUtils.notifyServerViewAfterBindingChange(project, oldServerId);
     }
   }
 
-  private static void updateProjectBinding(ISonarLintProject project, String oldServerId) {
+  private static void updateProjectBinding(ISonarLintProject project, SonarLintProjectConfiguration projectConfig, Map<String, Map<String, Job>> projectStorageUpdateJobs) {
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
     SonarLintCorePlugin.clearIssueTracker(project);
-    if (project.isBound()) {
-      ProjectUpdateJob job = new ProjectUpdateJob(project);
-      JobUtils.scheduleAnalysisOfOpenFiles(job, asList(project), TriggerType.BINDING_CHANGE);
-      job.schedule();
+    Optional<EclipseProjectBinding> projectBinding = projectConfig.getProjectBinding();
+    if (projectBinding.isPresent()) {
+      String serverId = projectBinding.get().serverId();
+      String projectKey = projectBinding.get().projectKey();
+      if (!projectStorageUpdateJobs.containsKey(serverId) || !projectStorageUpdateJobs.get(serverId).containsKey(projectKey)) {
+        ProjectStorageUpdateJob job = new ProjectStorageUpdateJob(serverId, projectKey);
+        projectStorageUpdateJobs.computeIfAbsent(serverId, id -> new HashMap<>()).put(projectKey, job);
+      }
+      JobUtils.scheduleAnalysisOfOpenFiles(projectStorageUpdateJobs.get(serverId).get(projectKey), asList(project), TriggerType.BINDING_CHANGE);
       SonarLintUiPlugin.subscribeToNotifications(project);
     } else {
       JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
     }
-    JobUtils.notifyServerViewAfterBindingChange(project, oldServerId);
   }
 
   private ProjectBindModel[] getProjects() {

@@ -22,18 +22,18 @@ package org.sonarlint.eclipse.core.internal.server;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Predicate;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteModule;
+import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
+import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public interface IServer {
@@ -94,9 +94,9 @@ public interface IServer {
    */
   void removeServerListener(IServerListener listener);
 
-  TextSearchIndex<RemoteModule> getModuleIndex();
+  TextSearchIndex<RemoteProject> getProjectIndex();
 
-  Map<String, RemoteModule> getRemoteModules();
+  Map<String, RemoteProject> getRemoteProjects();
 
   AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor);
 
@@ -118,11 +118,11 @@ public interface IServer {
 
   boolean hasUpdates();
 
-  void updateModuleList(IProgressMonitor monitor);
+  void updateProjectList(IProgressMonitor monitor);
 
   boolean isSonarCloud();
 
   boolean areNotificationsEnabled();
 
-  Set<String> getServerFileExclusions(String moduleKey, Collection<String> filePaths, Predicate<String> testFilePredicate);
+  List<ISonarLintFile> getServerFileExclusions(ProjectBinding binding, Collection<ISonarLintFile> files, Predicate<ISonarLintFile> testFilePredicate);
 }

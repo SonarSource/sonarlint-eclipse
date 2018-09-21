@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.server;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -43,8 +42,7 @@ public class ServerContentProvider extends BaseContentProvider implements ITreeC
   @Override
   public Object getParent(Object element) {
     if (element instanceof ISonarLintProject) {
-      String serverId = SonarLintProjectConfiguration.read(((ISonarLintProject) element).getScopeContext()).getServerId();
-      return SonarLintCorePlugin.getServersManager().getServer(serverId);
+      return SonarLintCorePlugin.getServersManager().forProject((ISonarLintProject) element);
     }
     return null;
   }

@@ -72,7 +72,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
       return false;
     }
 
-    return !sonarLintFile.getProject().isBound();
+    return !SonarLintCorePlugin.loadConfig(sonarLintFile.getProject()).isBound();
   }
 
 }

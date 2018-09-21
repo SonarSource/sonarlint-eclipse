@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -40,6 +39,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
+import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
@@ -54,23 +54,22 @@ public class ServerIssueUpdater {
     this.issueTrackerRegistry = issueTrackerRegistry;
   }
 
-  public void updateAsync(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project, String localModuleKey,
-    String serverModuleKey, Collection<ISonarLintIssuable> issuables, Map<ISonarLintFile, IDocument> docPerFile, TriggerType triggerType) {
-    new IssueUpdateJob(serverConfiguration, engine, project, localModuleKey, serverModuleKey, issuables, docPerFile, triggerType).schedule();
+  public void updateAsync(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project,
+    ProjectBinding projectBinding, Collection<ISonarLintIssuable> issuables, Map<ISonarLintFile, IDocument> docPerFile, TriggerType triggerType) {
+    new IssueUpdateJob(serverConfiguration, engine, project, projectBinding, issuables, docPerFile, triggerType).schedule();
   }
 
   private class IssueUpdateJob extends Job {
     private final ServerConfiguration serverConfiguration;
     private final ConnectedSonarLintEngine engine;
-    private final String localModuleKey;
-    private final String serverModuleKey;
+    private final ProjectBinding projectBinding;
     private final Collection<ISonarLintIssuable> issuables;
     private final ISonarLintProject project;
     private final Map<ISonarLintFile, IDocument> docPerFile;
     private final TriggerType triggerType;
 
-    private IssueUpdateJob(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project, String localModuleKey,
-      String serverModuleKey, Collection<ISonarLintIssuable> issuables, Map<ISonarLintFile, IDocument> docPerFile,
+    private IssueUpdateJob(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project,
+      ProjectBinding projectBinding, Collection<ISonarLintIssuable> issuables, Map<ISonarLintFile, IDocument> docPerFile,
       TriggerType triggerType) {
       super("Fetch server issues for " + project.getName());
       this.docPerFile = docPerFile;
@@ -79,8 +78,7 @@ public class ServerIssueUpdater {
       this.serverConfiguration = serverConfiguration;
       this.engine = engine;
       this.project = project;
-      this.localModuleKey = localModuleKey;
-      this.serverModuleKey = serverModuleKey;
+      this.projectBinding = projectBinding;
       this.issuables = issuables;
     }
 
@@ -93,12 +91,12 @@ public class ServerIssueUpdater {
             return Status.CANCEL_STATUS;
           }
           if (issuable instanceof ISonarLintFile) {
-            String relativePath = ((ISonarLintFile) issuable).getProjectRelativePath();
-            IssueTracker issueTracker = issueTrackerRegistry.getOrCreate(project, localModuleKey);
-            List<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, serverModuleKey, (ISonarLintFile) issuable);
+            ISonarLintFile file = ((ISonarLintFile) issuable);
+            IssueTracker issueTracker = issueTrackerRegistry.getOrCreate(project);
+            List<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, projectBinding, (ISonarLintFile) issuable);
             Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
-            Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(relativePath, serverIssuesTrackable);
-            issueTracker.updateCache(relativePath, tracked);
+            Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(file, serverIssuesTrackable);
+            issueTracker.updateCache(file, tracked);
             trackedIssues.put(issuable, tracked);
           }
         }
@@ -115,29 +113,17 @@ public class ServerIssueUpdater {
 
   }
 
-  public static List<ServerIssue> fetchServerIssues(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, String moduleKey, ISonarLintFile resource) {
-    String fileKey = resource.getProjectRelativePath();
+  public static List<ServerIssue> fetchServerIssues(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ProjectBinding projectBinding,
+    ISonarLintFile file) {
+    String filePath = file.getProjectRelativePath();
 
     try {
-      SonarLintLogger.get().debug("Download server issues for " + resource.getName());
-      return engine.downloadServerIssues(serverConfiguration, moduleKey, fileKey);
+      SonarLintLogger.get().debug("Download server issues for " + file.getName());
+      return engine.downloadServerIssues(serverConfiguration, projectBinding, filePath);
     } catch (DownloadException e) {
       SonarLintLogger.get().info(e.getMessage());
-      return engine.getServerIssues(moduleKey, fileKey);
+      return engine.getServerIssues(projectBinding, filePath);
     }
   }
 
-  /**
-   * Convert relative path to SonarQube file key
-   *
-   * @param relativePath relative path string in the local OS
-   * @return SonarQube file key
-   */
-  public static String toFileKey(IResource resource) {
-    String relativePath = resource.getProjectRelativePath().toString();
-    if (File.separatorChar != '/') {
-      return relativePath.replaceAll(PATH_SEPARATOR_PATTERN, "/");
-    }
-    return relativePath;
-  }
 }

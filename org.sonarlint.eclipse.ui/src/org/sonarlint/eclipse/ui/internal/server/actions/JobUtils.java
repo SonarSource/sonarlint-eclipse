@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
@@ -44,11 +45,14 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectJob;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeConnectedProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeStandaloneProjectJob;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
@@ -70,10 +74,28 @@ public class JobUtils {
 
     for (Map.Entry<ISonarLintProject, List<FileWithDocument>> entry : filesByProject.entrySet()) {
       ISonarLintProject aProject = entry.getKey();
-      if (aProject.isOpen() && SonarLintProjectConfiguration.read(aProject.getScopeContext()).isAutoEnabled()) {
-        AnalyzeProjectRequest request = new AnalyzeProjectRequest(aProject, entry.getValue(), triggerType);
-        new AnalyzeProjectJob(request).schedule();
-      }
+      AnalyzeProjectRequest request = new AnalyzeProjectRequest(aProject, entry.getValue(), triggerType);
+      scheduleAutoAnalysisIfEnabled(request);
+    }
+  }
+
+  public static void scheduleAutoAnalysisIfEnabled(AnalyzeProjectRequest request) {
+    ISonarLintProject project = request.getProject();
+    if (!project.isOpen()) {
+      return;
+    }
+    SonarLintProjectConfiguration projectConfiguration = SonarLintCorePlugin.loadConfig(project);
+    if (projectConfiguration.isAutoEnabled()) {
+      extracted(request, project, projectConfiguration);
+    }
+  }
+
+  private static void extracted(AnalyzeProjectRequest request, ISonarLintProject project, SonarLintProjectConfiguration projectConfiguration) {
+    Optional<IServer> server = SonarLintCorePlugin.getServersManager().forProject(project);
+    if (server.isPresent()) {
+      new AnalyzeConnectedProjectJob(request, projectConfiguration.getProjectBinding().get(), (Server) server.get()).schedule();
+    } else {
+      new AnalyzeStandaloneProjectJob(request).schedule();
     }
   }
 
@@ -186,24 +208,20 @@ public class JobUtils {
     }
   }
 
-  public static void notifyServerViewAfterBindingChange(ISonarLintProject sonarProject, @Nullable String oldServerId) {
-    SonarLintProjectConfiguration projectConfig = SonarLintProjectConfiguration.read(sonarProject.getScopeContext());
-    String serverId = projectConfig.getServerId();
+  public static void notifyServerViewAfterBindingChange(ISonarLintProject project, @Nullable String oldServerId) {
+    SonarLintProjectConfiguration projectConfig = SonarLintCorePlugin.loadConfig(project);
+    String serverId = projectConfig.getProjectBinding().map(EclipseProjectBinding::serverId).orElse(null);
     if (oldServerId != null && !Objects.equals(serverId, oldServerId)) {
-      IServer oldServer = SonarLintCorePlugin.getServersManager().getServer(oldServerId);
-      if (oldServer != null) {
-        oldServer.notifyAllListeners();
-      }
+      Optional<IServer> oldServer = SonarLintCorePlugin.getServersManager().findById(oldServerId);
+      oldServer.ifPresent(IServer::notifyAllListeners);
     }
     if (serverId != null) {
-      IServer server = SonarLintCorePlugin.getServersManager().getServer(serverId);
-      if (server != null) {
-        server.notifyAllListeners();
-      }
+      Optional<IServer> server = SonarLintCorePlugin.getServersManager().findById(serverId);
+      server.ifPresent(IServer::notifyAllListeners);
     }
     IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
     if (labelProvider != null) {
-      ((SonarLintProjectDecorator) labelProvider).fireChange(Arrays.asList(sonarProject));
+      ((SonarLintProjectDecorator) labelProvider).fireChange(Arrays.asList(project));
     }
   }
 

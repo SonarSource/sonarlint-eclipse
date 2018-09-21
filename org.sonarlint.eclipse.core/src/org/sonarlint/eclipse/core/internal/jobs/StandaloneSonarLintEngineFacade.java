@@ -38,7 +38,7 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisCo
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneSonarLintEngine;
 
-public class StandaloneSonarLintClientFacade {
+public class StandaloneSonarLintEngineFacade {
 
   private StandaloneSonarLintEngine client;
 
