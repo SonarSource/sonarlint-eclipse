@@ -18,6 +18,32 @@
       %license
    </license>
 
+   <requires>
+      <import plugin="org.eclipse.equinox.security"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.core.expressions"/>
+      <import plugin="org.eclipse.core.filebuffers"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.core.net"/>
+      <import plugin="org.eclipse.core.filesystem"/>
+      <import plugin="org.eclipse.team.core"/>
+      <import plugin="org.eclipse.core.databinding"/>
+      <import plugin="org.eclipse.core.databinding.beans"/>
+      <import plugin="org.eclipse.core.databinding.property"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.ui.console"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+      <import plugin="org.eclipse.jface.databinding"/>
+      <import plugin="org.eclipse.ui.navigator"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.ui.forms"/>
+      <import plugin="org.sonarsource.sonarlint.core.sonarlint-client-api"/>
+      <import plugin="org.sonarsource.sonarlint.core.sonarlint-core"/>
+      <import plugin="org.eclipse.mylyn.commons.ui"/>
+   </requires>
+
    <plugin
          id="org.sonarlint.eclipse.core"
          download-size="0"
