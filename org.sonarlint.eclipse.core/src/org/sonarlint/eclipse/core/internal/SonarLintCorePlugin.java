@@ -97,7 +97,7 @@ public class SonarLintCorePlugin extends Plugin {
     extensionTracker.start();
     serversManager.init();
 
-    IssueTrackerCacheFactory factory = (project) -> {
+    IssueTrackerCacheFactory factory = project -> {
       Path storeBasePath = StoragePathManager.getIssuesDir(project);
       IssueStore issueStore = new IssueStore(storeBasePath, project);
       return new PersistentIssueTrackerCache(issueStore);

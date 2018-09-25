@@ -80,6 +80,9 @@
                   name="org.sonarlint.eclipse.core.internal.server.IServer">
             </objectClass>
             <objectClass
+                  name="org.sonarlint.eclipse.core.internal.server.RemoteSonarProject">
+            </objectClass>
+            <objectClass
                   name="org.sonarlint.eclipse.core.resource.ISonarLintProject">
             </objectClass>
           </or>
@@ -128,9 +131,9 @@
 	        allowMultiple="false"
 	        category="org.sonarlint.eclipse"
 	        class="org.sonarlint.eclipse.ui.internal.server.ServersView"
-	        icon="icons/logo/sonarqube-16px.png"
+	        icon="icons/sonarlint-sync-16x16.png"
 	        id="org.sonarlint.eclipse.ui.ServersView"
-	        name="SonarQube Servers">
+	        name="SonarLint Bindings">
 	  </view>
   </extension>
   
