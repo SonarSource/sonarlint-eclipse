@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.popup;
 
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;

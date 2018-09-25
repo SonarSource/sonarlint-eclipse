@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e48-dev" sequenceNumber="22">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><?pde version="3.8"?><target includeMode="feature" name="sonar-eclipse-e48-dev" sequenceNumber="22">
 <locations>
 <location path="${M2_REPO}/commons-io/commons-io/2.5" type="Directory"/>
 <location path="${M2_REPO}/org/mockito/mockito-core/2.2.9" type="Directory"/>
@@ -17,6 +16,7 @@
 <unit id="org.eclipse.rse.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.wst.jsdt.feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/photon/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">

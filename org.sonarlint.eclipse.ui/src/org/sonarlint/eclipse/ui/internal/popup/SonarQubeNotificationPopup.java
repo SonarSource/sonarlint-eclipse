@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
