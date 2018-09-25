@@ -129,11 +129,11 @@ public class ConnectedModeTest extends AbstractSonarLintTest {
         return UIThreadRunnable.syncExec(new BoolResult() {
           @Override
           public Boolean run() {
-            return serverCell.getText().matches("test \\[Version: " + orchestrator.getServer().version() + "(.*), Last update: (.*)\\]");
+            return serverCell.getText().matches("test \\[Version: " + orchestrator.getServer().version() + "(.*), Last storage update: (.*)\\]");
           }
         });
       };
-      
+
       @Override
       public String getFailureMessage() {
         return "Server status is: " + serverCell.getText();

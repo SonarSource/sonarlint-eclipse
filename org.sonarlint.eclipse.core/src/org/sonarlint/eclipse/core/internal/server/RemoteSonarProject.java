@@ -17,7 +17,9 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.bind;
+package org.sonarlint.eclipse.core.internal.server;
+
+import java.util.Objects;
 
 /**
  * This is one possible result that will be displayed as a suggestion.
@@ -83,6 +85,26 @@ public class RemoteSonarProject {
   public static RemoteSonarProject fromString(String asString) {
     String[] parts = asString.split("\\" + SEPARATOR);
     return new RemoteSonarProject(parts[0], parts[1], parts[2]);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(projectKey, serverId);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    RemoteSonarProject other = (RemoteSonarProject) obj;
+    return Objects.equals(projectKey, other.projectKey) && Objects.equals(serverId, other.serverId);
   }
 
 }

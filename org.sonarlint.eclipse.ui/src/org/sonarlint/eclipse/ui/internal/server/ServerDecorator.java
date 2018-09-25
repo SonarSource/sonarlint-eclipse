@@ -25,6 +25,8 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.RemoteSonarProject;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class ServerDecorator extends LabelProvider implements ILightweightLabelDecorator {
@@ -36,14 +38,18 @@ public class ServerDecorator extends LabelProvider implements ILightweightLabelD
     if (element instanceof IServer) {
       IServer server = (IServer) element;
       addSuffix(decoration, server.getSonarLintEngineState());
+    } else if (element instanceof RemoteSonarProject) {
+      addSuffix(decoration, ((RemoteSonarProject) element).getProjectKey());
     } else if (element instanceof ISonarLintProject) {
       SonarLintProjectConfiguration projectConfig = SonarLintCorePlugin.loadConfig(((ISonarLintProject) element));
-      addSuffix(decoration, projectConfig.getProjectBinding().get().projectKey());
+      projectConfig.getProjectBinding().ifPresent(b -> decoration.addSuffix(" /" + b.sqPathPrefix()));
     }
   }
 
   private static void addSuffix(IDecoration decoration, String suffix) {
-    decoration.addSuffix(" [" + suffix + "]");
+    if (StringUtils.isNotBlank(suffix)) {
+      decoration.addSuffix(" [" + suffix + "]");
+    }
   }
 
 }

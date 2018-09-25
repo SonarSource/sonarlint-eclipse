@@ -6,15 +6,15 @@ Bundle-Version: 3.7.0.qualifier
 Bundle-Vendor: %bundle_vendor
 Bundle-ClassPath: .
 Bundle-Activator: org.sonarlint.eclipse.cdt.internal.SonarCdtPlugin
-Require-Bundle: org.eclipse.core.runtime,
+Require-Bundle: org.jsr-305;resolution:=optional,
+ org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.jface.text,
  org.eclipse.core.filebuffers,
  org.eclipse.cdt.core;resolution:=optional,
  org.sonarlint.eclipse.core,
- org.sonarsource.sonarlint.core.sonarlint-client-api;bundle-version="2.4.0",
- org.eclipse.core.filesystem,
- org.jsr-305;resolution:=optional
+ org.sonarsource.sonarlint.core.sonarlint-client-api,
+ org.eclipse.core.filesystem
 Export-Package: org.sonarlint.eclipse.cdt.internal;x-friends:="org.sonarlint.eclipse.core.tests"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy

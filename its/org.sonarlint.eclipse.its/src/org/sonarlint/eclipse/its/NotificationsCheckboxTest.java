@@ -107,7 +107,7 @@ public class NotificationsCheckboxTest extends AbstractSonarLintTest {
         return UIThreadRunnable.syncExec(new BoolResult() {
           @Override
           public Boolean run() {
-            return serverCell.getText().matches(connectionName + " \\[Version: " + orchestrator.getServer().version() + "(.*), Last update: (.*)\\]");
+            return serverCell.getText().matches(connectionName + " \\[Version: " + orchestrator.getServer().version() + "(.*), Last storage update: (.*)\\]");
           }
         });
       };
