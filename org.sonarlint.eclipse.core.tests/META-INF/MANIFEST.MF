@@ -4,7 +4,8 @@ Bundle-Name: SonarLint for Eclipse Tests
 Bundle-SymbolicName: org.sonarlint.eclipse.core.tests;singleton:=true
 Bundle-Version: 3.7.0.qualifier
 Bundle-Vendor: SonarSource
-Require-Bundle: org.eclipse.core.resources,
+Require-Bundle: org.jsr-305;resolution:=optional,
+ org.eclipse.core.resources,
  org.eclipse.core.runtime,
  org.eclipse.jdt.core,
  org.eclipse.cdt.core,
@@ -17,10 +18,8 @@ Require-Bundle: org.eclipse.core.resources,
  org.junit;bundle-version="4.8.2",
  org.eclipse.core.filebuffers,
  org.eclipse.jface.text,
- org.sonarsource.sonarlint.core.sonarlint-client-api,
- org.sonarsource.sonarlint.core.sonarlint-core,
  org.eclipse.core.filesystem,
- org.jsr-305;resolution:=optional,
  org.eclipse.equinox.security,
+ org.sonarsource.sonarlint.core.sonarlint-client-api,
  org.sonarsource.sonarlint.core.sonarlint-core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

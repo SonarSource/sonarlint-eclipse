@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.bind;
 
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.widgets.Control;
+import org.sonarlint.eclipse.core.internal.server.RemoteSonarProject;
 
 /**
  * This adapter will update the model ({@link ProjectBindModel}) of a row

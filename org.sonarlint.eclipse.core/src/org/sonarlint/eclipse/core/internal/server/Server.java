@@ -32,8 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
@@ -80,6 +82,7 @@ import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 import org.sonarsource.sonarlint.core.notifications.SonarQubeNotifications;
 
+import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toList;
 
 public class Server implements IServer, StateListener {
@@ -97,6 +100,8 @@ public class Server implements IServer, StateListener {
   private GlobalStorageStatus updateStatus;
   private boolean hasUpdates;
   private boolean notificationsEnabled;
+  // Cache the project list to avoid dead lock
+  private Map<String, RemoteProject> allProjectsByKey = new ConcurrentHashMap<>();
 
   Server(String id) {
     this.id = id;
@@ -109,10 +114,21 @@ public class Server implements IServer, StateListener {
     this.client = new ConnectedSonarLintEngineImpl(globalConfig);
     this.client.addStateListener(this);
     this.updateStatus = client.getGlobalStorageStatus();
+    if (client.getState().equals(State.UPDATED)) {
+      reloadProjects();
+    }
+  }
+
+  private void reloadProjects() {
+    this.allProjectsByKey.clear();
+    this.allProjectsByKey.putAll(client.allProjectsByKey());
   }
 
   @Override
   public void stateChanged(State state) {
+    if (state.equals(State.UPDATED)) {
+      reloadProjects();
+    }
     notifyAllListeners();
   }
 
@@ -245,9 +261,12 @@ public class Server implements IServer, StateListener {
         return NEED_UPDATE;
       case UPDATED:
         StringBuilder sb = new StringBuilder();
-        sb.append("Version: ");
-        sb.append(getServerVersion());
-        sb.append(", Last update: ");
+        if (!isSonarCloud()) {
+          sb.append("Version: ");
+          sb.append(getServerVersion());
+          sb.append(", ");
+        }
+        sb.append("Last storage update: ");
         sb.append(getUpdateDate());
         if (hasUpdates) {
           sb.append(", New updates available");
@@ -347,6 +366,27 @@ public class Server implements IServer, StateListener {
       }).collect(toList());
   }
 
+  public List<RemoteSonarProject> getBoundRemoteProjects() {
+    return ProjectsProviderUtils.allProjects().stream()
+      .filter(ISonarLintProject::isOpen)
+      .map(SonarLintCorePlugin::loadConfig)
+      .map(SonarLintProjectConfiguration::getProjectBinding)
+      .flatMap(o -> o.isPresent() ? Stream.of(o.get()) : Stream.empty())
+      .filter(c -> c.serverId().equals(id))
+      .map(ProjectBinding::projectKey)
+      .distinct()
+      .sorted()
+      .map(projectKey -> {
+        RemoteProject remoteProject = getRemoteProjects().get(projectKey);
+        if (remoteProject != null) {
+          return new RemoteSonarProject(id, remoteProject.getKey(), remoteProject.getName());
+        } else {
+          return new RemoteSonarProject(id, projectKey, "<unknown>");
+        }
+      })
+      .collect(toList());
+  }
+
   public List<ISonarLintProject> getBoundProjects(String projectKey) {
     return ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
@@ -444,7 +484,7 @@ public class Server implements IServer, StateListener {
     return builder;
   }
 
-  public static boolean checkNotificationsSupported(String url, String organization, String username, String password) {
+  public static boolean checkNotificationsSupported(String url, @Nullable String organization, String username, String password) {
     Builder builder = Server.getConfigBuilderNoCredentials(url, organization);
     if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
       builder.credentials(username, password);
@@ -455,7 +495,6 @@ public class Server implements IServer, StateListener {
 
   @Override
   public TextSearchIndex<RemoteProject> getProjectIndex() {
-    Map<String, RemoteProject> allProjectsByKey = client.allProjectsByKey();
     TextSearchIndex<RemoteProject> index = new TextSearchIndex<>();
     for (RemoteProject project : allProjectsByKey.values()) {
       index.index(project, project.getKey() + " " + project.getName());
@@ -465,7 +504,7 @@ public class Server implements IServer, StateListener {
 
   @Override
   public Map<String, RemoteProject> getRemoteProjects() {
-    return client.allProjectsByKey();
+    return unmodifiableMap(allProjectsByKey);
   }
 
   @Override
