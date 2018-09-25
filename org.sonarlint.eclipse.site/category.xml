@@ -19,4 +19,5 @@
          Source files when developing SonarLint integration
       </description>
    </category-def>
+   <repository-reference location="http://https://download.eclipse.org/mylyn/releases/latest" enabled="true" />
 </site>
