@@ -24,9 +24,7 @@ import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
@@ -38,10 +36,8 @@ import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.junit.Assume.assumeTrue;
 
 public class RulesConfigurationTest extends AbstractSonarLintTest {
-  private static final String PREF_RULE_EXCLUSIONS = "ruleExclusions";
 
   @Test
   public void deactivate_rule() throws Exception {
@@ -69,12 +65,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."));
 
-    if (isMarsOrGreater()) {
-      reactivateRuleUsingUI();
-    } else {
-      // The preference menu seems very flaky in Luna
-      clearRulesProgrammatically();
-    }
+    reactivateRuleUsingUI();
 
     JobHelpers.waitForJobsToComplete(bot);
     markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
@@ -85,8 +76,6 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
   @Test
   public void open_rules_configuration() {
-    assumeTrue(isMarsOrGreater());
-
     openRulesConfiguration();
 
     SWTBotTree tree = bot.tree(1);
@@ -106,29 +95,16 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     bot.shell("Preferences").activate();
     bot.tree().getTreeItem("SonarLint").select().expand().click()
       .getNode("Rules Configuration").select().click();
+    bot.sleep(3000);
   }
 
   void reactivateRuleUsingUI() {
     openRulesConfiguration();
-
     bot.button("Restore Defaults").click();
     if (isOxygenOrGreater()) {
       bot.button("Apply and Close").click();
     } else {
       bot.button("OK").click();
     }
-
-    // attempt to solve occasional flaky behavior (reset not getting triggered soon enough)
-    bot.sleep(3000);
-  }
-
-  private void clearRulesProgrammatically() {
-    ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).put(PREF_RULE_EXCLUSIONS, "");
-
-    // Make a change and save file to trigger analysis
-    SWTBotEclipseEditor editor = bot.editorByTitle("Hello3.java").toTextEditor();
-    editor.navigateTo(8, 29);
-    editor.insertText("2");
-    editor.save();
   }
 }
