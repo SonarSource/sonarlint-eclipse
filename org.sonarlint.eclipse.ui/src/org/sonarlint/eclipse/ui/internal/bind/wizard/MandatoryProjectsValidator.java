@@ -17,4 +17,25 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.bind;
+package org.sonarlint.eclipse.ui.internal.bind.wizard;
+
+import java.util.List;
+import org.eclipse.core.databinding.validation.IValidator;
+import org.eclipse.core.databinding.validation.ValidationStatus;
+import org.eclipse.core.runtime.IStatus;
+
+public class MandatoryProjectsValidator implements IValidator {
+
+  private final String msg;
+
+  public MandatoryProjectsValidator(String msg) {
+    this.msg = msg;
+  }
+
+  public IStatus validate(Object value) {
+    if (!(value instanceof List) || ((List) value).isEmpty()) {
+      return ValidationStatus.error(msg);
+    }
+    return ValidationStatus.ok();
+  }
+}

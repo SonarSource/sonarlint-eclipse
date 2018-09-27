@@ -17,5 +17,17 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-@javax.annotation.ParametersAreNonnullByDefault
-package org.sonarlint.eclipse.ui.internal.util;
+package org.sonarlint.eclipse.ui.internal.util.wizard;
+
+import org.eclipse.jface.wizard.IWizard;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Shell;
+
+public class WizardDialogWithoutHelp extends WizardDialog {
+
+  public WizardDialogWithoutHelp(Shell parentShell, IWizard newWizard) {
+    super(parentShell, newWizard);
+    setHelpAvailable(false);
+  }
+
+}

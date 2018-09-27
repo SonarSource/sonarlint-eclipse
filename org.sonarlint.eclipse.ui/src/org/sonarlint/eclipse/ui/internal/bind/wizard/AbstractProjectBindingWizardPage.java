@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.server.wizard;
+package org.sonarlint.eclipse.ui.internal.bind.wizard;
 
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
@@ -27,12 +27,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
-public abstract class AbstractGridLayoutWizardPage extends WizardPage {
+public abstract class AbstractProjectBindingWizardPage extends WizardPage {
 
-  protected final ServerConnectionModel model;
+  protected final ProjectBindingModel model;
   private final int numCols;
 
-  public AbstractGridLayoutWizardPage(String pageName, String title, ServerConnectionModel model, int numCols) {
+  public AbstractProjectBindingWizardPage(String pageName, String title, ProjectBindingModel model, int numCols) {
     super(pageName, title, SonarLintImages.IMG_WIZBAN_NEW_SERVER);
     this.model = model;
     this.numCols = numCols;
@@ -53,7 +53,7 @@ public abstract class AbstractGridLayoutWizardPage extends WizardPage {
 
     setControl(container);
 
-    ((WizardDialog) getContainer()).addPageChangingListener((ServerConnectionWizard) getWizard());
+    ((WizardDialog) getContainer()).addPageChangingListener((ProjectBindingWizard) getWizard());
   }
 
   protected abstract void doCreateControl(Composite container);
