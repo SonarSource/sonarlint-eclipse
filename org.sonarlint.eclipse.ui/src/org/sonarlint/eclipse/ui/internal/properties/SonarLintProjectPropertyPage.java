@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.properties;
 
-import java.util.Arrays;
 import java.util.Optional;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -41,8 +40,10 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfigurati
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
-import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
+import org.sonarlint.eclipse.ui.internal.bind.wizard.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
+
+import static java.util.Arrays.asList;
 
 /**
  * Property page for projects. It store in
@@ -115,9 +116,8 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     bindLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        BindProjectsWizard wizard = new BindProjectsWizard(Arrays.asList(getProject()));
-        WizardDialog wd = new WizardDialog(container.getShell(), wizard);
-        if (wd.open() == Window.OK) {
+        final WizardDialog dialog = ProjectBindingWizard.createDialog(container.getShell(), asList(getProject()));
+        if (dialog.open() == Window.OK) {
           updateState();
         }
       }

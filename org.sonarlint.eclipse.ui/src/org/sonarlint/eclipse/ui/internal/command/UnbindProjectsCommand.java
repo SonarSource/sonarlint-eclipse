@@ -19,8 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -29,58 +28,47 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
 public class UnbindProjectsCommand extends AbstractHandler {
 
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
+    Collection<ISonarLintProject> selectedProjects = SelectionUtils.allSelectedProjects(event);
 
-    final List<ISonarLintProject> selectedProjects = new ArrayList<>();
+    if (!selectedProjects.isEmpty()) {
+      Job job = new Job("Unbind projects") {
 
-    @SuppressWarnings("rawtypes")
-    List elems = selection.toList();
-    for (Object elem : elems) {
-      ISonarLintProject proj = Adapters.adapt(elem, ISonarLintProject.class);
-      if (proj != null) {
-        selectedProjects.add(proj);
-      }
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+          monitor.beginTask("Unbind projects", selectedProjects.size());
+          for (ISonarLintProject p : selectedProjects) {
+            SonarLintProjectConfiguration projectConfig = SonarLintCorePlugin.loadConfig(p);
+            projectConfig.getProjectBinding().ifPresent(b -> {
+              String oldServerId = b.serverId();
+              Server.unbind(p);
+              JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE);
+              JobUtils.notifyServerViewAfterBindingChange(p, oldServerId);
+            });
+            monitor.worked(1);
+          }
+          IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
+          if (labelProvider != null) {
+            ((SonarLintProjectDecorator) labelProvider).fireChange(selectedProjects);
+          }
+          return Status.OK_STATUS;
+        }
+      };
+      job.schedule();
     }
-
-    Job job = new Job("Unbind projects") {
-
-      @Override
-      protected IStatus run(IProgressMonitor monitor) {
-        monitor.beginTask("Unbind projects", selectedProjects.size());
-        for (ISonarLintProject p : selectedProjects) {
-          SonarLintProjectConfiguration projectConfig = SonarLintCorePlugin.loadConfig(p);
-          projectConfig.getProjectBinding().ifPresent(b -> {
-            String oldServerId = b.serverId();
-            Server.unbind(p);
-            JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE);
-            JobUtils.notifyServerViewAfterBindingChange(p, oldServerId);
-          });
-          monitor.worked(1);
-        }
-        IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
-        if (labelProvider != null) {
-          ((SonarLintProjectDecorator) labelProvider).fireChange(selectedProjects);
-        }
-        return Status.OK_STATUS;
-      }
-    };
-    job.schedule();
 
     return null;
   }

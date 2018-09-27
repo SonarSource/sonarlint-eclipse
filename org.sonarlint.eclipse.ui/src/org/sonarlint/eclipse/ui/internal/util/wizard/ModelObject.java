@@ -17,31 +17,24 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.bind;
+package org.sonarlint.eclipse.ui.internal.util.wizard;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-public abstract class AbstractModelObject {
-  private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+public class ModelObject {
+  private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
   public void addPropertyChangeListener(PropertyChangeListener listener) {
-    propertyChangeSupport.addPropertyChangeListener(listener);
-  }
-
-  public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-    propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
+    changeSupport.addPropertyChangeListener(listener);
   }
 
   public void removePropertyChangeListener(PropertyChangeListener listener) {
-    propertyChangeSupport.removePropertyChangeListener(listener);
+    changeSupport.removePropertyChangeListener(listener);
   }
 
-  public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-    propertyChangeSupport.removePropertyChangeListener(propertyName, listener);
-  }
-
-  protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-    propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+  protected void firePropertyChange(String propertyName, Object oldValue,
+    Object newValue) {
+    changeSupport.firePropertyChange(propertyName, oldValue, newValue);
   }
 }

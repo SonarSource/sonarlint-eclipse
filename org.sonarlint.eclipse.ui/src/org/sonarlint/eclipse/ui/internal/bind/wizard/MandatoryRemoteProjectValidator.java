@@ -17,22 +17,24 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.server.wizard;
+package org.sonarlint.eclipse.ui.internal.bind.wizard;
 
 import org.eclipse.core.databinding.validation.IValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.IStatus;
 
-public class MandatoryValidator implements IValidator {
+public class MandatoryRemoteProjectValidator implements IValidator {
 
   private final String msg;
+  private final ProjectBindingModel model;
 
-  public MandatoryValidator(String msg) {
+  public MandatoryRemoteProjectValidator(String msg, ProjectBindingModel model) {
     this.msg = msg;
+    this.model = model;
   }
 
   public IStatus validate(Object value) {
-    if (!((value instanceof String) && ((String) value).length() > 0)) {
+    if (!(value instanceof String) || !model.getServer().getRemoteProjects().containsKey(((String) value))) {
       return ValidationStatus.error(msg);
     }
     return ValidationStatus.ok();

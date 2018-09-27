@@ -17,36 +17,5 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.bind;
-
-import java.util.List;
-import org.eclipse.jface.wizard.Wizard;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-
-/**
- * Inspired by org.eclipse.pde.internal.ui.wizards.tools.ConvertedProjectWizard
- */
-public class BindProjectsWizard extends Wizard {
-
-  private final List<ISonarLintProject> projects;
-  private BindProjectsPage mainPage;
-
-  public BindProjectsWizard(List<ISonarLintProject> projects) {
-    this.projects = projects;
-    setNeedsProgressMonitor(true);
-    setWindowTitle("Bind Eclipse projects to SonarQube projects");
-    setHelpAvailable(false);
-  }
-
-  @Override
-  public void addPages() {
-    mainPage = new BindProjectsPage(projects);
-    addPage(mainPage);
-  }
-
-  @Override
-  public boolean performFinish() {
-    return mainPage.finish();
-  }
-
-}
+@javax.annotation.ParametersAreNonnullByDefault
+package org.sonarlint.eclipse.ui.internal.util.wizard;

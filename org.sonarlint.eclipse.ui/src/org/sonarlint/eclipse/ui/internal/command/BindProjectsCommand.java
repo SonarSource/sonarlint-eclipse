@@ -19,19 +19,16 @@
  */
 package org.sonarlint.eclipse.ui.internal.command;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
+import org.sonarlint.eclipse.ui.internal.bind.wizard.ProjectBindingWizard;
+import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
 public class BindProjectsCommand extends AbstractHandler {
 
@@ -45,25 +42,13 @@ public class BindProjectsCommand extends AbstractHandler {
 
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
+    Collection<ISonarLintProject> selectedProjects = SelectionUtils.allSelectedProjects(event);
 
-    List<ISonarLintProject> selectedProjects = new ArrayList<>();
-
-    @SuppressWarnings("rawtypes")
-    List elems = selection.toList();
-    for (Object elem : elems) {
-      ISonarLintProject proj = Adapters.adapt(elem, ISonarLintProject.class);
-      if (proj != null) {
-        selectedProjects.add(proj);
-      }
+    if (!selectedProjects.isEmpty()) {
+      final Display display = getDisplay();
+      final WizardDialog dialog = ProjectBindingWizard.createDialog(display.getActiveShell(), selectedProjects);
+      BusyIndicator.showWhile(display, dialog::open);
     }
-
-    BindProjectsWizard wizard = new BindProjectsWizard(selectedProjects);
-
-    final Display display = getDisplay();
-    final WizardDialog dialog = new WizardDialog(display.getActiveShell(), wizard);
-    dialog.setHelpAvailable(true);
-    BusyIndicator.showWhile(display, dialog::open);
 
     return null;
   }

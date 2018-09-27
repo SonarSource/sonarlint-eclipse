@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.server;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import org.eclipse.jface.action.Action;
@@ -43,12 +42,14 @@ import org.eclipse.ui.navigator.ICommonViewerWorkbenchSite;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
-import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
+import org.sonarlint.eclipse.ui.internal.bind.wizard.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.server.actions.NewServerWizardAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ProjectChangeBindingAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ServerEditAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ServerOrProjectDeleteAction;
 import org.sonarlint.eclipse.ui.internal.server.actions.ServerUpdateAction;
+
+import static java.util.Arrays.asList;
 
 public class ServerActionProvider extends CommonActionProvider {
   public static final String NEW_MENU_ID = "org.sonarlint.eclipse.ui.server.newMenuId";
@@ -87,9 +88,7 @@ public class ServerActionProvider extends CommonActionProvider {
         IServer server = (IServer) data;
         ServerEditAction.openEditWizard(tableViewer.getTree().getShell(), server);
       } else if (data instanceof ISonarLintProject) {
-        BindProjectsWizard wizard = new BindProjectsWizard(Arrays.asList((ISonarLintProject) data));
-        final WizardDialog dialog = new WizardDialog(tableViewer.getTree().getShell(), wizard);
-        dialog.setHelpAvailable(true);
+        final WizardDialog dialog = ProjectBindingWizard.createDialog(tableViewer.getTree().getShell(), asList((ISonarLintProject) data));
         dialog.open();
       }
     });

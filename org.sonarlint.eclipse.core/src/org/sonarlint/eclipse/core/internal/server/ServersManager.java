@@ -299,10 +299,6 @@ public class ServersManager {
    * @return an array containing all servers
    */
   public List<IServer> getServers() {
-    return getServersNoInit();
-  }
-
-  public List<IServer> getServersNoInit() {
     return Collections.unmodifiableList(new ArrayList<>(serversById.values()));
   }
 

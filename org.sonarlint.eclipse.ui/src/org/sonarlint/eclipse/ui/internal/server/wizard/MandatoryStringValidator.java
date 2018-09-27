@@ -19,22 +19,22 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import org.eclipse.core.databinding.validation.IValidator;
+import org.eclipse.core.databinding.validation.ValidationStatus;
+import org.eclipse.core.runtime.IStatus;
 
-public class ModelObject {
-  private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+public class MandatoryStringValidator implements IValidator {
 
-  public void addPropertyChangeListener(PropertyChangeListener listener) {
-    changeSupport.addPropertyChangeListener(listener);
+  private final String msg;
+
+  public MandatoryStringValidator(String msg) {
+    this.msg = msg;
   }
 
-  public void removePropertyChangeListener(PropertyChangeListener listener) {
-    changeSupport.removePropertyChangeListener(listener);
-  }
-
-  protected void firePropertyChange(String propertyName, Object oldValue,
-    Object newValue) {
-    changeSupport.firePropertyChange(propertyName, oldValue, newValue);
+  public IStatus validate(Object value) {
+    if (!((value instanceof String) && ((String) value).length() > 0)) {
+      return ValidationStatus.error(msg);
+    }
+    return ValidationStatus.ok();
   }
 }
