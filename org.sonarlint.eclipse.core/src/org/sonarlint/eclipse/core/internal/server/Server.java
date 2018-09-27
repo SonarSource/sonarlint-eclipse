@@ -408,6 +408,8 @@ public class Server implements IServer, StateListener {
       config.setProjectBinding(new EclipseProjectBinding(getId(), projectKey, sqPathPrefix, idePathPrefix));
       SonarLintCorePlugin.saveConfig(p, config);
     });
+    // Some prefix/suffix might have been changed
+    notifyAllListeners();
   }
 
   public static IStatus testConnection(String url, @Nullable String organization, @Nullable String username, @Nullable String password) {

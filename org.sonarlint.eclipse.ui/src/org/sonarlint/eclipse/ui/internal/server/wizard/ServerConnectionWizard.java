@@ -56,6 +56,7 @@ import org.sonarlint.eclipse.ui.internal.server.ServersView;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionModel.ConnectionType;
+import org.sonarlint.eclipse.ui.internal.util.wizard.WizardDialogWithoutHelp;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.exceptions.UnsupportedServerException;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
@@ -107,15 +108,15 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   }
 
   public static WizardDialog createDialog(Shell parent) {
-    return new WizardDialog(parent, new ServerConnectionWizard());
+    return new WizardDialogWithoutHelp(parent, new ServerConnectionWizard());
   }
 
   public static WizardDialog createDialog(Shell parent, String serverId) {
-    return new WizardDialog(parent, new ServerConnectionWizard(serverId));
+    return new WizardDialogWithoutHelp(parent, new ServerConnectionWizard(serverId));
   }
 
   public static WizardDialog createDialog(Shell parent, IServer sonarServer) {
-    return new WizardDialog(parent, new ServerConnectionWizard(sonarServer));
+    return new WizardDialogWithoutHelp(parent, new ServerConnectionWizard(sonarServer));
   }
 
   @Override

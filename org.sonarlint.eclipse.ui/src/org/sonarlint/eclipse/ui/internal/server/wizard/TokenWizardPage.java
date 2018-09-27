@@ -41,7 +41,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 
-public class TokenWizardPage extends AbstractGridLayoutWizardPage {
+public class TokenWizardPage extends AbstractServerConnectionWizardPage {
 
   private Text serverTokenText;
 
@@ -64,7 +64,7 @@ public class TokenWizardPage extends AbstractGridLayoutWizardPage {
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_USERNAME)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(
-        new MandatoryValidator("You must provide an authentication token")),
+        new MandatoryStringValidator("You must provide an authentication token")),
       null);
     ControlDecorationSupport.create(tokenTextBinding, SWT.LEFT | SWT.TOP);
 

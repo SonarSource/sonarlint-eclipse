@@ -17,5 +17,25 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-@javax.annotation.ParametersAreNonnullByDefault
-package org.sonarlint.eclipse.ui.internal.util;
+package org.sonarlint.eclipse.ui.internal.bind.wizard;
+
+import org.eclipse.core.databinding.validation.IValidator;
+import org.eclipse.core.databinding.validation.ValidationStatus;
+import org.eclipse.core.runtime.IStatus;
+import org.sonarlint.eclipse.core.internal.server.Server;
+
+public class MandatoryServerValidator implements IValidator {
+
+  private final String msg;
+
+  public MandatoryServerValidator(String msg) {
+    this.msg = msg;
+  }
+
+  public IStatus validate(Object value) {
+    if (!(value instanceof Server)) {
+      return ValidationStatus.error(msg);
+    }
+    return ValidationStatus.ok();
+  }
+}

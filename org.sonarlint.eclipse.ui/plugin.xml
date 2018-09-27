@@ -59,8 +59,8 @@
 	      name="New Server Connection"
 	      class="org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard"
 	      category="org.sonarlint.eclipse"
-	      icon="icons/logo/sonarqube-16px.png">
-	    <description>Connect to a new SonarQube server</description>
+	      icon="icons/sonarlint-sync-16x16.png">
+	    <description>Configure a connection with a SonarQube or SonarCloud server</description>
 	  </wizard>
 	</extension>
 	
@@ -68,7 +68,7 @@
       point="org.eclipse.ui.decorators">
    <decorator
          class="org.sonarlint.eclipse.ui.internal.server.ServerDecorator"
-         icon="icons/logo/sonarqube-16px.png"
+         icon="icons/sonarlint-sync-16x16.png"
          id="org.sonarlint.eclipse.ui.navigatorDecorator"
          label="SonarLint Server State Decorator"
          lightweight="true"
@@ -598,11 +598,14 @@
              style="push">
           <visibleWhen>
               <with variable="activeMenuSelection">
-                 <iterate ifEmpty="false">
-                   <adapt	type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
-  									  <test property="org.sonarlint.eclipse.core.open"/>
-											<test	property="org.sonarlint.eclipse.core.bound"/>
-									 </adapt>
+                 <iterate ifEmpty="false" operator="or">
+                   <or>
+	                   <adapt	type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+	  									  <test property="org.sonarlint.eclipse.core.open"/>
+												<test	property="org.sonarlint.eclipse.core.bound"/>
+										 </adapt>
+										 <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
+									 </or>
                  </iterate>
              </with>
           </visibleWhen>
@@ -612,7 +615,7 @@
              style="push">
           <visibleWhen>
               <with variable="activeMenuSelection">
-                 <iterate ifEmpty="false">
+                 <iterate ifEmpty="false" operator="or">
                  	  <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
 											<test property="org.sonarlint.eclipse.core.open"/>
 											<test	property="org.sonarlint.eclipse.core.bound"/>
@@ -669,7 +672,7 @@
     <command
           description="Bind to a SonarQube project"
           id="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
-          name="Bind to a SonarQube project..."
+          name="Bind to a SonarQube or SonarCloud project..."
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command

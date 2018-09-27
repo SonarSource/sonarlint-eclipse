@@ -18,4 +18,4 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 @javax.annotation.ParametersAreNonnullByDefault
-package org.sonarlint.eclipse.ui.internal.util;
+package org.sonarlint.eclipse.ui.internal.bind.wizard;

@@ -30,7 +30,7 @@ import org.eclipse.ui.actions.SelectionProviderAction;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.bind.BindProjectsWizard;
+import org.sonarlint.eclipse.ui.internal.bind.wizard.ProjectBindingWizard;
 
 public class ProjectChangeBindingAction extends SelectionProviderAction {
   private final Shell shell;
@@ -84,10 +84,7 @@ public class ProjectChangeBindingAction extends SelectionProviderAction {
     }
 
     if (selectedProjects != null) {
-      BindProjectsWizard wizard = new BindProjectsWizard(selectedProjects);
-
-      final WizardDialog dialog = new WizardDialog(shell, wizard);
-      dialog.setHelpAvailable(true);
+      final WizardDialog dialog = ProjectBindingWizard.createDialog(shell, selectedProjects);
       dialog.open();
     }
   }

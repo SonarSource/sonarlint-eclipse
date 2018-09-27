@@ -33,7 +33,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.ui.internal.Messages;
 
-public class UrlWizardPage extends AbstractGridLayoutWizardPage {
+public class UrlWizardPage extends AbstractServerConnectionWizardPage {
 
   private Binding serverUrlTextBinding;
 

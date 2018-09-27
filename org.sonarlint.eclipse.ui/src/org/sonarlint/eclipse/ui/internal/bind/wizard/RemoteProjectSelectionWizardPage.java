@@ -17,58 +17,55 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.server.wizard;
+package org.sonarlint.eclipse.ui.internal.bind.wizard;
 
 import org.eclipse.core.databinding.Binding;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.fieldassist.ContentAssistCommandAdapter;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 
-public class OrganizationWizardPage extends AbstractServerConnectionWizardPage {
+public class RemoteProjectSelectionWizardPage extends AbstractProjectBindingWizardPage {
 
-  private Binding orgaTextBinding;
+  private Binding projectTextBinding;
 
-  public OrganizationWizardPage(ServerConnectionModel model) {
-    super("server_organization_page", "SonarQube Server Organization", model, 2);
+  public RemoteProjectSelectionWizardPage(ProjectBindingModel model) {
+    super("remote_project_page", "Choose the SonarQube/SonarCloud project", model, 1);
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   protected void doCreateControl(Composite container) {
-    Label labelOrganization = new Label(container, SWT.NULL);
-    labelOrganization.setText("Organization:");
     Text organizationText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    organizationText.setMessage("Start typing to search for your organization");
+    organizationText.setMessage("Start typing to search for your project");
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
     organizationText.setLayoutData(gd);
 
     DataBindingContext dbc = new DataBindingContext();
-    orgaTextBinding = dbc.bindValue(
+    projectTextBinding = dbc.bindValue(
       WidgetProperties.text(SWT.Modify).observe(organizationText),
-      BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_ORGANIZATION)
+      BeanProperties.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_REMOTE_PROJECT_KEY)
         .observe(model),
-      new UpdateValueStrategy().setBeforeSetValidator(new MandatoryStringValidator("You must select an organization")),
+      new UpdateValueStrategy().setBeforeSetValidator(new MandatoryRemoteProjectValidator("You must select a project", model)),
       null);
+    ControlDecorationSupport.create(projectTextBinding, SWT.LEFT | SWT.TOP);
 
     WizardPageSupport.create(this, dbc);
 
     ContentProposalAdapter contentProposalAdapter = new ContentAssistCommandAdapter(
       organizationText,
       new TextContentAdapter(),
-      new OrganizationProvider(model, this),
+      new RemoteProjectProvider(model, this),
       ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
       null,
       true);
@@ -82,15 +79,7 @@ public class OrganizationWizardPage extends AbstractServerConnectionWizardPage {
   public void setVisible(boolean visible) {
     super.setVisible(visible);
     if (visible) {
-      orgaTextBinding.validateTargetToModel();
-      if (!model.hasOrganizations()) {
-        // Skip organization selection
-        IWizardPage nextPage = getNextPage();
-        IWizardPage previousPage = getPreviousPage();
-        getContainer().showPage(nextPage);
-        // Ensure that when pressing back on next page we don't return on organization page
-        nextPage.setPreviousPage(previousPage);
-      }
+      projectTextBinding.validateTargetToModel();
     }
   }
 

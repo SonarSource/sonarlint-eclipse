@@ -33,7 +33,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.ui.internal.Messages;
 
-public class UsernamePasswordWizardPage extends AbstractGridLayoutWizardPage {
+public class UsernamePasswordWizardPage extends AbstractServerConnectionWizardPage {
 
   private Text serverUsernameText;
   private Text serverPasswordText;
@@ -58,7 +58,7 @@ public class UsernamePasswordWizardPage extends AbstractGridLayoutWizardPage {
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_USERNAME)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(
-        new MandatoryValidator("You must provide a login")),
+        new MandatoryStringValidator("You must provide a login")),
       null);
     ControlDecorationSupport.create(usernameTextBinding, SWT.LEFT | SWT.TOP);
     passwordTextBinding = dbc.bindValue(
@@ -66,7 +66,7 @@ public class UsernamePasswordWizardPage extends AbstractGridLayoutWizardPage {
       BeanProperties.value(ServerConnectionModel.class, ServerConnectionModel.PROPERTY_PASSWORD)
         .observe(model),
       new UpdateValueStrategy().setBeforeSetValidator(
-        new MandatoryValidator("You must provide a password")),
+        new MandatoryStringValidator("You must provide a password")),
       null);
     ControlDecorationSupport.create(passwordTextBinding, SWT.LEFT | SWT.TOP);
 
