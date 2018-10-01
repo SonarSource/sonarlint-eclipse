@@ -23,7 +23,7 @@
     <license.year>2018</license.year>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <target.platform>e46</target.platform>
+    <target.platform>e48</target.platform>
     <tycho.localArtifacts>ignore</tycho.localArtifacts>
   </properties>
 
