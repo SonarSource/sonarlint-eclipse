@@ -27,7 +27,11 @@ public class WizardDialogWithoutHelp extends WizardDialog {
 
   public WizardDialogWithoutHelp(Shell parentShell, IWizard newWizard) {
     super(parentShell, newWizard);
+    if (newWizard instanceof ParentAwareWizard) {
+      ((ParentAwareWizard) newWizard).setParent(this);
+    }
     setHelpAvailable(false);
+    setBlockOnOpen(false);
   }
 
 }
