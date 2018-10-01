@@ -17,28 +17,19 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.bind.wizard;
+package org.sonarlint.eclipse.ui.internal.util.wizard;
 
-import org.eclipse.core.databinding.validation.IValidator;
-import org.eclipse.core.databinding.validation.ValidationStatus;
-import org.eclipse.core.runtime.IStatus;
-import org.sonarlint.eclipse.core.internal.server.Server;
+import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.jface.wizard.WizardDialog;
 
-public class MandatoryRemoteProjectValidator implements IValidator {
+public abstract class ParentAwareWizard extends Wizard {
+  private WizardDialog parent;
 
-  private final String msg;
-  private final ProjectBindingModel model;
-
-  public MandatoryRemoteProjectValidator(String msg, ProjectBindingModel model) {
-    this.msg = msg;
-    this.model = model;
+  public void setParent(WizardDialog parent) {
+    this.parent = parent;
   }
 
-  public IStatus validate(Object value) {
-    Server server = model.getServer();
-    if (!(value instanceof String) || server == null || !server.getRemoteProjects().containsKey(((String) value))) {
-      return ValidationStatus.error(msg);
-    }
-    return ValidationStatus.ok();
+  public WizardDialog getParent() {
+    return parent;
   }
 }

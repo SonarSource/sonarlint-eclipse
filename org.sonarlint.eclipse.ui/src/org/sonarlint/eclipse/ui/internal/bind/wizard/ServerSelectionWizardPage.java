@@ -28,20 +28,29 @@ import org.eclipse.jface.databinding.viewers.ViewersObservables;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
+import org.sonarlint.eclipse.ui.internal.util.wizard.ParentAwareWizard;
 
 public class ServerSelectionWizardPage extends AbstractProjectBindingWizardPage {
 
   private Binding serverBinding;
 
   public ServerSelectionWizardPage(ProjectBindingModel model) {
-    super("server_id_page", "Choose the SonarQube or SonarCloud server connection", model, 1);
+    super("server_id_page", "Choose the SonarQube or SonarCloud server connection", model, 2);
   }
 
   @Override
@@ -65,6 +74,11 @@ public class ServerSelectionWizardPage extends AbstractProjectBindingWizardPage 
       }
     });
     serverCombo.setInput(SonarLintCorePlugin.getServersManager().getServers());
+    Server server = model.getServer();
+    if (server != null) {
+      final ISelection selection = new StructuredSelection(server);
+      serverCombo.setSelection(selection);
+    }
 
     DataBindingContext dbc = new DataBindingContext();
     serverBinding = dbc.bindValue(
@@ -75,6 +89,18 @@ public class ServerSelectionWizardPage extends AbstractProjectBindingWizardPage 
     ControlDecorationSupport.create(serverBinding, SWT.LEFT | SWT.TOP);
 
     WizardPageSupport.create(this, dbc);
+
+    Button addBtn = new Button(container, SWT.PUSH);
+    addBtn.setText("New...");
+    addBtn.addSelectionListener(new SelectionAdapter() {
+
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        ServerConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), model.getEclipseProjects()).open();
+        ((ParentAwareWizard) getWizard()).getParent().close();
+      }
+
+    });
   }
 
   @Override

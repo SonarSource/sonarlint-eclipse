@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.server.wizard;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.equinox.security.storage.StorageException;
@@ -31,6 +32,7 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ModelObject;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
@@ -67,6 +69,8 @@ public class ServerConnectionModel extends ModelObject {
   private TextSearchIndex<RemoteOrganization> organizationsIndex;
   private boolean notificationsSupported;
   private boolean notificationsEnabled;
+
+  private List<ISonarLintProject> selectedProjects;
 
   public ServerConnectionModel() {
     this.edit = false;
@@ -225,5 +229,14 @@ public class ServerConnectionModel extends ModelObject {
     boolean old = this.notificationsEnabled;
     this.notificationsEnabled = value;
     firePropertyChange(PROPERTY_NOTIFICATIONS_ENABLED, old, this.notificationsEnabled);
+  }
+
+  public void setSelectedProjects(List<ISonarLintProject> selectedProjects) {
+    this.selectedProjects = selectedProjects;
+  }
+
+  @CheckForNull
+  public List<ISonarLintProject> getSelectedProjects() {
+    return selectedProjects;
   }
 }
