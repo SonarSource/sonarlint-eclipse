@@ -99,11 +99,7 @@ public class ConnectedModeTest extends AbstractSonarLintTest {
     assertThat(wizardBot.isNextEnabled()).isTrue();
 
     wizardBot.clickNext();
-    if (orchestrator.getServer().version().isGreaterThanOrEquals("6.0")) {
-      wizardBot.assertErrorMessage("Authentication failed");
-    } else {
-      wizardBot.assertErrorMessage("Not authorized. Please check server credentials.");
-    }
+    wizardBot.assertErrorMessage("Authentication failed");
 
     wizardBot.setPassword(Server.ADMIN_PASSWORD);
     wizardBot.clickNext();
