@@ -219,6 +219,10 @@ public abstract class AbstractSonarLintTest {
     return platformVersion().compareTo(new Version("4.4")) >= 0;
   }
 
+  public static boolean isPhotonOrGreater() {
+    return platformVersion().compareTo(new Version("4.8")) >= 0;
+  }
+
   public static boolean isOxygenOrGreater() {
     return platformVersion().compareTo(new Version("4.7")) >= 0;
   }

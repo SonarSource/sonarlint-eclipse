@@ -37,11 +37,13 @@ import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.junit.Assume.assumeTrue;
 
 public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
   @Test
   public void openRuleDescription() throws Exception {
+    assumeTrue(isPhotonOrGreater());
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
 
     SWTBotView view = new OnTheFlyViewBot(bot).show();
