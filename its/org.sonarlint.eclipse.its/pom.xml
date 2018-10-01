@@ -35,6 +35,8 @@
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemProperties>
             <sonar.runtimeVersion>${sonar.runtimeVersion}</sonar.runtimeVersion>
+            <org.eclipse.swt.browser.UseWebKitGTK>true</org.eclipse.swt.browser.UseWebKitGTK>
+            <org.eclipse.swt.browser.DefaultType>webkit</org.eclipse.swt.browser.DefaultType>
           </systemProperties>
           <dependencies>
             <dependency>

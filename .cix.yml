@@ -2,8 +2,6 @@
 # Based on https://wiki.jenkins-ci.org/display/JENKINS/Yaml+Axis+Plugin
 
 TARGET_PLATFORM:
-  - e44
-  - e45
   - e46
   - e47
   - e48
