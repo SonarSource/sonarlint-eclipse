@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.bind.wizard;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.CheckForNull;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ModelObject;
@@ -42,6 +43,7 @@ public class ProjectBindingModel extends ModelObject {
     this.eclipseProjects = eclipseProjects;
   }
 
+  @CheckForNull
   public Server getServer() {
     return server;
   }

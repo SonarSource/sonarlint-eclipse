@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.IPageChangingListener;
@@ -33,7 +34,6 @@ import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Shell;
@@ -51,12 +51,13 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
+import org.sonarlint.eclipse.ui.internal.util.wizard.ParentAwareWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.WizardDialogWithoutHelp;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 
-public class ProjectBindingWizard extends Wizard implements INewWizard, IPageChangingListener {
+public class ProjectBindingWizard extends ParentAwareWizard implements INewWizard, IPageChangingListener {
 
   private final ProjectBindingModel model;
   private final ServerSelectionWizardPage serverSelectionWizardPage;
@@ -74,16 +75,14 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
     remoteProjectSelectionWizardPage = new RemoteProjectSelectionWizardPage(model);
   }
 
-  /**
-   * Should remain public for File -> New -> SonarQube Server
-   * @param selectedProjects 
-   */
-  private ProjectBindingWizard(Collection<ISonarLintProject> selectedProjects) {
+  private ProjectBindingWizard(Collection<ISonarLintProject> selectedProjects, @Nullable Server selectedServer) {
     this("Bind to a SonarQube or SonarCloud project", new ProjectBindingModel());
     this.model.setProjects(selectedProjects.stream()
       .sorted(comparing(ISonarLintProject::getName))
       .collect(toCollection(ArrayList::new)));
-    if (SonarLintCorePlugin.getServersManager().getServers().size() == 1) {
+    if (selectedServer != null) {
+      this.model.setServer(selectedServer);
+    } else if (SonarLintCorePlugin.getServersManager().getServers().size() == 1) {
       // Only one server configured, pre-select it
       this.model.setServer((Server) SonarLintCorePlugin.getServersManager().getServers().get(0));
     } else {
@@ -110,11 +109,15 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
     }
   }
 
+  public static WizardDialog createDialog(Shell activeShell, Collection<ISonarLintProject> selectedProjects, Server selectedServer) {
+    return new WizardDialogWithoutHelp(activeShell, new ProjectBindingWizard(selectedProjects, selectedServer));
+  }
+
   public static WizardDialog createDialog(Shell activeShell, Collection<ISonarLintProject> selectedProjects) {
     if (SonarLintCorePlugin.getServersManager().getServers().isEmpty()) {
       return ServerConnectionWizard.createDialog(activeShell);
     }
-    return new WizardDialogWithoutHelp(activeShell, new ProjectBindingWizard(selectedProjects));
+    return new WizardDialogWithoutHelp(activeShell, new ProjectBindingWizard(selectedProjects, null));
   }
 
   @Override
@@ -124,6 +127,9 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
 
   @Override
   public IWizardPage getStartingPage() {
+    if (model.getEclipseProjects().isEmpty()) {
+      return projectsSelectionWizardPage;
+    }
     return serverSelectionWizardPage;
   }
 
@@ -212,6 +218,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
 
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+          monitor.beginTask("Update SonarLint storage for the server", IProgressMonitor.UNKNOWN);
           try {
             model.getServer().updateStorage(monitor);
           } finally {
