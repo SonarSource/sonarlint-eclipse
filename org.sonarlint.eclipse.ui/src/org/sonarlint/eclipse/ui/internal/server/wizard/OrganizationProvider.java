@@ -45,19 +45,25 @@ public class OrganizationProvider implements IContentProposalProvider {
   @Override
   public IContentProposal[] getProposals(String contents, int position) {
     List<IContentProposal> list = new ArrayList<>();
-    TextSearchIndex<RemoteOrganization> organizationsIndex = model.getOrganizationsIndex();
-    Map<RemoteOrganization, Double> filtered = organizationsIndex != null ? organizationsIndex.search(contents) : Collections.emptyMap();
-    if (filtered.isEmpty()) {
-      parentPage.setMessage("No results", IMessageProvider.INFORMATION);
+    if (contents.isEmpty()) {
+      List<RemoteOrganization> allUserOrgs = model.getUserOrgs();
+      if (allUserOrgs != null) {
+        allUserOrgs.stream().limit(10).forEach(o -> list.add(new ContentProposal(o.getKey(), o.getName(), toDescription(o))));
+      }
     } else {
-      parentPage.setMessage("", IMessageProvider.NONE);
-    }
-    List<Map.Entry<RemoteOrganization, Double>> entries = new ArrayList<>(filtered.entrySet());
-    entries.sort(
-      Comparator.comparing(Map.Entry<RemoteOrganization, Double>::getValue).reversed()
-        .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)));
-    for (Map.Entry<RemoteOrganization, Double> e : entries) {
-      list.add(new ContentProposal(e.getKey().getKey(), e.getKey().getName(), toDescription(e.getKey())));
+      TextSearchIndex<RemoteOrganization> organizationsIndex = model.getUserOrgsIndex();
+      Map<RemoteOrganization, Double> filtered = organizationsIndex != null ? organizationsIndex.search(contents) : Collections.emptyMap();
+      if (filtered.isEmpty()) {
+        parentPage.setMessage("No results", IMessageProvider.INFORMATION);
+      } else {
+        parentPage.setMessage("", IMessageProvider.NONE);
+      }
+      filtered.entrySet()
+        .stream()
+        .sorted(Comparator.comparing(Map.Entry<RemoteOrganization, Double>::getValue).reversed()
+          .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)))
+        .map(Map.Entry::getKey)
+        .forEach(o -> list.add(new ContentProposal(o.getKey(), o.getName(), toDescription(o))));
     }
     return list.toArray(new IContentProposal[list.size()]);
   }

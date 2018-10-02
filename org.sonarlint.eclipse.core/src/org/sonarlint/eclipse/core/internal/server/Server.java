@@ -434,17 +434,13 @@ public class Server implements IServer, StateListener {
     }
   }
 
-  public static TextSearchIndex<RemoteOrganization> getOrganizationsIndex(String url, String username, String password, IProgressMonitor monitor) {
+  public static List<RemoteOrganization> listUserOrganizations(String url, String username, String password, IProgressMonitor monitor) {
     Builder builder = getConfigBuilderNoCredentials(url, null);
     if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
       builder.credentials(username, password);
     }
     WsHelper helper = new WsHelperImpl();
-    TextSearchIndex<RemoteOrganization> index = new TextSearchIndex<>();
-    for (RemoteOrganization org : helper.listOrganizations(builder.build(), new WrappedProgressMonitor(monitor, "Fetch organizations"))) {
-      index.index(org, org.getKey() + " " + org.getName());
-    }
-    return index;
+    return helper.listUserOrganizations(builder.build(), new WrappedProgressMonitor(monitor, "Fetch organizations"));
   }
 
   public ServerConfiguration getConfig() {

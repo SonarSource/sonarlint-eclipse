@@ -66,7 +66,8 @@ public class ServerConnectionModel extends ModelObject {
   private String organization;
   private String username;
   private String password;
-  private TextSearchIndex<RemoteOrganization> organizationsIndex;
+  private List<RemoteOrganization> userOrgs;
+  private TextSearchIndex<RemoteOrganization> userOrgsIndex;
   private boolean notificationsSupported;
   private boolean notificationsEnabled;
 
@@ -181,16 +182,26 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   @CheckForNull
-  public TextSearchIndex<RemoteOrganization> getOrganizationsIndex() {
-    return organizationsIndex;
+  public List<RemoteOrganization> getUserOrgs() {
+    return userOrgs;
   }
 
   public boolean hasOrganizations() {
-    return organizationsIndex != null && organizationsIndex.size() > 1;
+    return userOrgs != null && userOrgs.size() > 1;
   }
 
-  public void setOrganizationsIndex(@Nullable TextSearchIndex<RemoteOrganization> organizationsIndex) {
-    this.organizationsIndex = organizationsIndex;
+  public void setUserOrgs(@Nullable List<RemoteOrganization> userOrgs) {
+    this.userOrgs = userOrgs;
+    TextSearchIndex<RemoteOrganization> index = new TextSearchIndex<>();
+    for (RemoteOrganization org : userOrgs) {
+      index.index(org, org.getKey() + " " + org.getName());
+    }
+    this.userOrgsIndex = index;
+  }
+
+  @CheckForNull
+  public TextSearchIndex<RemoteOrganization> getUserOrgsIndex() {
+    return userOrgsIndex;
   }
 
   private void suggestServerId() {
