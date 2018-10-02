@@ -150,6 +150,7 @@ public class ConnectedModeWithOrgaTest extends AbstractSonarLintTest {
 
   private static void createOrganization() {
     adminWsClient.organizations().create(new CreateWsRequest.Builder().setKey(ORGANIZATION_KEY).setName(ORGANIZATION_NAME).build());
+    adminWsClient.organizations().addMember(ORGANIZATION_KEY, SONARLINT_USER);
   }
 
 }
