@@ -59,7 +59,6 @@ import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionModel.Con
 import org.sonarlint.eclipse.ui.internal.util.wizard.WizardDialogWithoutHelp;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.exceptions.UnsupportedServerException;
-import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class ServerConnectionWizard extends Wizard implements INewWizard, IPageChangingListener {
 
@@ -276,10 +275,10 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
           try {
-            TextSearchIndex<RemoteOrganization> organizationsIndex = Server.getOrganizationsIndex(model.getServerUrl(), model.getUsername(), model.getPassword(), monitor);
-            model.setOrganizationsIndex(organizationsIndex);
+            List<RemoteOrganization> userOrgs = Server.listUserOrganizations(model.getServerUrl(), model.getUsername(), model.getPassword(), monitor);
+            model.setUserOrgs(userOrgs);
           } catch (UnsupportedServerException e) {
-            model.setOrganizationsIndex(null);
+            model.setUserOrgs(null);
           } finally {
             monitor.done();
           }
@@ -288,10 +287,10 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     } catch (InvocationTargetException e) {
       SonarLintLogger.get().debug("Unable to download organizations", e.getCause());
       currentPage.setMessage(e.getCause().getMessage(), IMessageProvider.ERROR);
-      model.setOrganizationsIndex(null);
+      model.setUserOrgs(null);
       return false;
     } catch (InterruptedException e) {
-      model.setOrganizationsIndex(null);
+      model.setUserOrgs(null);
       return false;
     }
     return true;
