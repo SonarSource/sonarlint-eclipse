@@ -289,6 +289,7 @@
           <keystore>${sonarsource.keystore.path}</keystore>
           <storepass>${sonarsource.keystore.password}</storepass>
           <skip>${jarsigner.skip}</skip>
+          <tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
         </configuration>
       </plugin>
 
