@@ -143,19 +143,19 @@ public class SonarLintTelemetryTest {
   @Test
   public void analysisDoneOnSingleFile_should_trigger_analysisDoneOnSingleFile_when_enabled() {
     when(engine.isEnabled()).thenReturn(true);
-    String fileExtension = "java";
+    String language = "java";
     int time = 123;
-    telemetry.analysisDoneOnSingleFile(fileExtension, time);
+    telemetry.analysisDoneOnSingleFile(language, time);
     verify(engine).isEnabled();
-    verify(engine).analysisDoneOnSingleFile(fileExtension, time);
+    verify(engine).analysisDoneOnSingleLanguage(language, time);
   }
 
   @Test
   public void analysisDoneOnSingleFile_should_not_trigger_analysisDoneOnSingleFile_when_disabled() {
     when(engine.isEnabled()).thenReturn(false);
-    String fileExtension = "java";
+    String language = "java";
     int time = 123;
-    telemetry.analysisDoneOnSingleFile(fileExtension, time);
+    telemetry.analysisDoneOnSingleFile(language, time);
     verify(engine).isEnabled();
     verifyNoMoreInteractions(engine);
   }

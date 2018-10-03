@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -160,9 +161,9 @@ public class SonarLintTelemetry {
     }
   }
 
-  public void analysisDoneOnSingleFile(String fileExtension, int time) {
+  public void analysisDoneOnSingleFile(@Nullable String language, int time) {
     if (enabled()) {
-      telemetry.analysisDoneOnSingleFile(fileExtension, time);
+      telemetry.analysisDoneOnSingleLanguage(language, time);
     }
   }
 
