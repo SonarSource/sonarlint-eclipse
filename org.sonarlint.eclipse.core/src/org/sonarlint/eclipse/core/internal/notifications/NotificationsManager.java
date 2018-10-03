@@ -49,7 +49,7 @@ public class NotificationsManager {
   private final SonarLintProjectConfigurationReader configReader;
 
   public NotificationsManager() {
-    this(new Subscriber(), p -> SonarLintCorePlugin.loadConfig(p));
+    this(new Subscriber(), SonarLintCorePlugin::loadConfig);
   }
 
   // only for testing

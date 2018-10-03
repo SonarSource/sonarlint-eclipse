@@ -397,9 +397,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends StandaloneAnalysi
 
   }
 
-  @CheckForNull
-  public AnalysisResults run(final CONFIG analysisConfig,
-    final Map<ISonarLintIssuable, List<Issue>> issuesPerResource, IProgressMonitor monitor) {
+  public AnalysisResults run(final CONFIG analysisConfig, final Map<ISonarLintIssuable, List<Issue>> issuesPerResource, IProgressMonitor monitor) {
     SonarLintLogger.get().debug("Starting analysis with configuration:\n" + analysisConfig.toString());
     SonarLintIssueListener issueListener = new SonarLintIssueListener(getProject(), issuesPerResource);
     AnalysisResults result = runAnalysis(analysisConfig, issueListener, monitor);
