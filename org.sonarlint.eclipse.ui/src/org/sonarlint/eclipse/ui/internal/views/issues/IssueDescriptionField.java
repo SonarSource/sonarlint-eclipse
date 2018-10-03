@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.views.issues;
 
 import java.util.Locale;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.GC;
@@ -75,7 +76,7 @@ public class IssueDescriptionField extends MarkerField {
     return convertSeverity(item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, ""));
   }
 
-  public static int convertSeverity(String severity) {
+  public static int convertSeverity(@Nullable String severity) {
     String severityLower = severity != null ? severity.toLowerCase(Locale.ENGLISH) : "";
     final int result;
     if (severityLower.startsWith("blocker")) {
