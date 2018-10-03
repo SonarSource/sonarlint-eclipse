@@ -42,8 +42,6 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
   @Test
   public void deactivate_rule() throws Exception {
-    // Test doesn't work on older versions for unknown reasons
-    assumeTrue(isOxygenOrGreater());
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
     IProject project = importEclipseProject("java/java-exclude-rules", "java-exclude-rules");
     JobHelpers.waitForJobsToComplete(bot);
