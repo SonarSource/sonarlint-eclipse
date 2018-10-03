@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
+import javax.annotation.Nullable;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.markers.MarkerField;
@@ -29,7 +30,7 @@ import org.sonarsource.sonarlint.core.client.api.util.DateUtils;
 public class CreationDateField extends MarkerField {
 
   @Override
-  public String getValue(MarkerItem item) {
+  public String getValue(@Nullable MarkerItem item) {
     if (item == null) {
       return null;
     }

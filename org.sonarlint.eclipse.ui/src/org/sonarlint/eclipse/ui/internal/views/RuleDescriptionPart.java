@@ -76,7 +76,7 @@ public class RuleDescriptionPart {
       htmlDescription += "<div>" + extendedDescription + "</div>";
     }
     String type = ruleDetails.getType();
-    String typeImg64 = getAsBase64(SonarLintImages.getTypeImage(type));
+    String typeImg64 = type != null ? getAsBase64(SonarLintImages.getTypeImage(type)) : "";
     String severity = ruleDetails.getSeverity();
     String severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
     browser.setText("<!doctype html><html><head>" + css() + "</head><body><h1><big>"
@@ -92,7 +92,10 @@ public class RuleDescriptionPart {
       + "</div></body></html>");
   }
 
-  private static String clean(String txt) {
+  private static String clean(@Nullable String txt) {
+    if (txt == null) {
+      return "";
+    }
     return StringUtils.capitalize(txt.toLowerCase(Locale.ENGLISH).replace("_", " "));
   }
 
