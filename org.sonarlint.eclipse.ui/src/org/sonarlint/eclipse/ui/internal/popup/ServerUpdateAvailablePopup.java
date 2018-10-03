@@ -53,7 +53,7 @@ public class ServerUpdateAvailablePopup extends AbstractNotificationPopup {
     GridData layoutData = new GridData(GridData.FILL_HORIZONTAL);
     messageLabel.setLayoutData(layoutData);
 
-    messageLabel.setText("Updates are available on SonarQube server '" + server.getId() + "'.\nDo you want to download and update them now?");
+    messageLabel.setText("We detected some changes on the server '" + server.getId() + "'.\nDo you want to update the SonarLint storage now?");
     messageLabel.setBackground(composite.getBackground());
     Composite links = new Composite(composite, SWT.NONE);
     links.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
@@ -83,7 +83,7 @@ public class ServerUpdateAvailablePopup extends AbstractNotificationPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "Updates for SonarLint";
+    return "Updates for the SonarLint local storage";
   }
 
   @Override
