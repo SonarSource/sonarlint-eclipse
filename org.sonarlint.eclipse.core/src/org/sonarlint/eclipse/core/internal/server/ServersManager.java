@@ -153,7 +153,7 @@ public class ServersManager {
         serversById.putAll(loadServersList(DefaultScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID).node(PREF_SERVERS)));
       }
     } catch (BackingStoreException e) {
-      throw new IllegalStateException("Unable to load server list", e);
+      throw unableToLoadServerList(e);
     }
   }
 
@@ -170,7 +170,7 @@ public class ServersManager {
         }
       }
     } catch (BackingStoreException e) {
-      throw new IllegalStateException("Unable to load server list", e);
+      throw unableToLoadServerList(e);
     }
     serverListeners.clear();
   }
@@ -221,9 +221,13 @@ public class ServersManager {
         result.put(s.getId(), s);
       }
     } catch (BackingStoreException e) {
-      throw new IllegalStateException("Unable to load server list", e);
+      throw unableToLoadServerList(e);
     }
     return result;
+  }
+
+  private static IllegalStateException unableToLoadServerList(BackingStoreException e) {
+    return new IllegalStateException("Unable to load server list", e);
   }
 
   private static void loadServer(Preferences serverNode, Server server) {
@@ -249,7 +253,7 @@ public class ServersManager {
     if (serversById.containsKey(server.getId())) {
       throw new IllegalStateException("There is already a server with id '" + server.getId() + "'");
     }
-    if (server.hasAuth()) {
+    if (hasAuth(username, password)) {
       storeCredentials(server, username, password);
     }
     addOrUpdateProperties(server);
@@ -342,7 +346,7 @@ public class ServersManager {
         Collection<IServer> defaultServers = new ArrayList<>(serversById.values());
         serversById.clear();
         for (IServer iServer : defaultServers) {
-          addServer(iServer, null, null);
+          addServer(iServer, "", "");
         }
       }
     } catch (BackingStoreException e) {
@@ -425,7 +429,11 @@ public class ServersManager {
   }
 
   public IServer create(String id, String url, @Nullable String organization, String username, String password, boolean notificationsEnabled) {
-    return update(new Server(id), url, organization, StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password), notificationsEnabled);
+    return update(new Server(id), url, organization, hasAuth(username, password), notificationsEnabled);
+  }
+
+  private static boolean hasAuth(@Nullable String username, @Nullable String password) {
+    return StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
   }
 
   private static Server update(Server server, String url, @Nullable String organization, boolean hasAuth, boolean notificationsEnabled) {
