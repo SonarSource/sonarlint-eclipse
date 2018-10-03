@@ -73,9 +73,9 @@
     <tycho.version>1.2.0</tycho.version>
     <tycho-extras.version>${tycho.version}</tycho-extras.version>
     <target.platform>e48</target.platform>
-    <sonarlint.version>4.0.0.1976</sonarlint.version>
-    <protobuf.version>3.1.0</protobuf.version>
-    
+    <sonarlint.version>4.0.0.1999</sonarlint.version>
+    <protobuf.version>3.6.1</protobuf.version>
+
     <!-- ================== -->
     <!-- For SonarQube analysis -->
     <!-- ================== -->
@@ -100,6 +100,17 @@
       <groupId>org.sonarsource.sonarlint.core</groupId>
       <artifactId>sonarlint-client-api</artifactId>
       <version>${sonarlint.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>${protobuf.version}</version>
+    </dependency>
+    <!-- Needed by protobuf, waiting for https://github.com/protocolbuffers/protobuf/commit/4fda0f783bb60f7c3249d937cc0256e1aee9aad8 to be released -->
+    <dependency>
+      <groupId>net.sdruskat</groupId>
+      <artifactId>net.sdruskat.fragment.sun.misc</artifactId>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
@@ -320,14 +331,16 @@
             </goals>
             <configuration>
               <excludes>
-                <plugin id="org.sonarsource.sonarlint.core.sonarlint-client-api"/>
-                <plugin id="org.sonarsource.sonarlint.core.sonarlint-core"/>
+                <plugin id="org.sonarsource.sonarlint.core.sonarlint-client-api" />
+                <plugin id="org.sonarsource.sonarlint.core.sonarlint-core" />
+                <plugin id="com.google.protobuf" />
+                <plugin id="net.sdruskat.fragment.sun.misc" />
               </excludes>
             </configuration>
           </execution>
         </executions>
       </plugin>
-      
+
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-p2-plugin</artifactId>
