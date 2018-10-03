@@ -19,7 +19,14 @@
  */
 package org.sonarlint.eclipse.its.utils;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.TextConsole;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -33,16 +40,26 @@ public class CaptureScreenshotOnFailure implements TestRule {
         try {
           base.evaluate();
         } catch (Throwable onHold) {
-          String fileName = constructFilename(description);
+          String fileName = constructFilename(description, ".png");
           new SWTWorkbenchBot().captureScreenshot(fileName);
+
+          IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+
+          IConsole[] consoles = manager.getConsoles();
+          for (IConsole iConsole : consoles) {
+            if ("SonarLint".equals(iConsole.getName())) {
+              FileUtils.write(new File(constructFilename(description, "-console.txt")), ((TextConsole) iConsole).getDocument().get(), StandardCharsets.UTF_8);
+            }
+          }
+
           throw onHold;
         }
       }
 
-      private String constructFilename(final Description description) {
+      private String constructFilename(final Description description, String suffix) {
         return "./target/"
           + description.getClassName() + "."
-          + description.getMethodName() + ".png";
+          + description.getMethodName() + suffix;
       }
     };
   }
