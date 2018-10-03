@@ -205,25 +205,19 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends StandaloneAnalysi
     AnalysisResults result = run(config, issuesPerResource, monitor);
     if (!monitor.isCanceled()) {
       updateMarkers(docPerFiles, issuesPerResource, result, triggerType, monitor);
-      updateTelemetry(inputFiles, start);
+      updateTelemetry(result, start);
     }
   }
 
   protected abstract CONFIG prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps);
 
-  private static void updateTelemetry(List<ClientInputFile> inputFiles, long start) {
+  private static void updateTelemetry(AnalysisResults result, long start) {
     SonarLintTelemetry telemetry = SonarLintCorePlugin.getTelemetry();
-    if (inputFiles.size() == 1) {
-      telemetry.analysisDoneOnSingleFile(getExtension(inputFiles.iterator().next()), (int) (System.currentTimeMillis() - start));
+    if (result.languagePerFile().size() == 1) {
+      telemetry.analysisDoneOnSingleFile(result.languagePerFile().entrySet().iterator().next().getValue(), (int) (System.currentTimeMillis() - start));
     } else {
       telemetry.analysisDoneOnMultipleFiles();
     }
-  }
-
-  private static String getExtension(ClientInputFile next) {
-    String path = next.getPath();
-    int lastDot = path.lastIndexOf('.');
-    return lastDot >= 0 ? path.substring(lastDot + 1) : "";
   }
 
   private static List<ClientInputFile> buildInputFiles(Path tempDirectory, final Map<ISonarLintFile, IDocument> filesToAnalyze) {
