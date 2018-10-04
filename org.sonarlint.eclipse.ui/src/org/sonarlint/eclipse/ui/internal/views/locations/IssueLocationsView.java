@@ -282,7 +282,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     @Override
     public Image getImage(Object element) {
       if (element instanceof RootNode) {
-        return SonarLintImages.IMG_ISSUE;
+        return SonarLintImages.ISSUE_ANNOTATION;
       }
       return super.getImage(element);
     }

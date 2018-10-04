@@ -58,6 +58,6 @@ public class ShowRuleDescriptionMarkerResolver implements IMarkerResolution2 {
 
   @Override
   public Image getImage() {
-    return SonarLintImages.IMG_ISSUE;
+    return SonarLintImages.RESOLUTION_SHOW_RULE;
   }
 }

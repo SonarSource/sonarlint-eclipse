@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
 import javax.annotation.CheckForNull;
@@ -29,11 +28,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.PlatformUI;
 
 public final class SonarLintImages {
-
-  private static final URL BASE_URL = SonarLintUiPlugin.getDefault().getBundle().getEntry("/icons/"); //$NON-NLS-1$
 
   public static final ImageDescriptor SONARWIZBAN_IMG = createImageDescriptor("sonarqube-48x200.png"); //$NON-NLS-1$
   public static final ImageDescriptor IMG_WIZBAN_NEW_SERVER = createImageDescriptor("new_server_wiz.png"); //$NON-NLS-1$
@@ -44,8 +40,11 @@ public final class SonarLintImages {
   public static final ImageDescriptor WIZ_NEW_SERVER = createImageDescriptor("wiz_new_server.gif"); //$NON-NLS-1$
   public static final ImageDescriptor SQ_LABEL_DECORATOR = createImageDescriptor("onde-label-decorator.gif"); //$NON-NLS-1$
 
+  public static final Image ISSUE_ANNOTATION = createImage("full/annotation16/issue.png"); //$NON-NLS-1$
+  public static final Image RESOLUTION_SHOW_RULE = createImage("full/marker_resolution16/showrule.png"); //$NON-NLS-1$
+  public static final Image RESOLUTION_SHOW_LOCATIONS = createImage("full/marker_resolution16/showlocations.png"); //$NON-NLS-1$
+  public static final Image RESOLUTION_DISABLE_RULE = createImage("full/marker_resolution16/disablerule.png"); //$NON-NLS-1$
   public static final Image BALLOON_IMG = createImage("sonarlint-16x16.png"); //$NON-NLS-1$
-  public static final Image IMG_ISSUE = createImage("issue_annotation.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_BLOCKER = createImage("severity/blocker.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_CRITICAL = createImage("severity/critical.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_MAJOR = createImage("severity/major.png"); //$NON-NLS-1$
@@ -76,20 +75,17 @@ public final class SonarLintImages {
   @CheckForNull
   public static Image getIssueImage(String severity, @Nullable String type) {
     String key = severity + "/" + type;
-    ImageRegistry imageRegistry = getImageRegistry();
-    if (imageRegistry != null) {
-      Image image = imageRegistry.get(key);
-      if (image == null) {
-        ImageDescriptor severityImage = createImageDescriptor("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
-        ImageDescriptor typeImage = null;
-        if (type != null) {
-          typeImage = createImageDescriptor("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
-        }
-        imageRegistry.put(key, new CompositeSeverityTypeImage(severityImage, typeImage));
+    ImageRegistry imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
+    Image image = imageRegistry.get(key);
+    if (image == null) {
+      ImageDescriptor severityImage = createImageDescriptor("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
+      ImageDescriptor typeImage = null;
+      if (type != null) {
+        typeImage = createImageDescriptor("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
       }
-      return imageRegistry.get(key);
+      imageRegistry.put(key, new CompositeSeverityTypeImage(severityImage, typeImage));
     }
-    return null;
+    return imageRegistry.get(key);
   }
 
   @CheckForNull
@@ -130,41 +126,31 @@ public final class SonarLintImages {
 
   }
 
-  private static URL getUrl(String key) throws MalformedURLException {
-    return new URL(BASE_URL, key);
+  @CheckForNull
+  private static URL getIconUrl(String key) {
+    return SonarLintUiPlugin.getDefault().getBundle().getEntry("icons/" + key);
   }
 
   private static Image createImage(String key) {
     createImageDescriptor(key);
-    ImageRegistry imageRegistry = getImageRegistry();
-    return imageRegistry != null ? imageRegistry.get(key) : null;
+    ImageRegistry imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
+    return imageRegistry.get(key);
   }
 
   @CheckForNull
   private static ImageDescriptor createImageDescriptor(String key) {
-    ImageRegistry imageRegistry = getImageRegistry();
-    if (imageRegistry != null) {
-      ImageDescriptor imageDescriptor = imageRegistry.getDescriptor(key);
-      if (imageDescriptor == null) {
-        try {
-          imageDescriptor = ImageDescriptor.createFromURL(getUrl(key));
-        } catch (MalformedURLException e) {
-          imageDescriptor = ImageDescriptor.getMissingImageDescriptor();
-        }
-        imageRegistry.put(key, imageDescriptor);
+    ImageRegistry imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
+    ImageDescriptor imageDescriptor = imageRegistry.getDescriptor(key);
+    if (imageDescriptor == null) {
+      URL url = getIconUrl(key);
+      if (url != null) {
+        imageDescriptor = ImageDescriptor.createFromURL(url);
+      } else {
+        imageDescriptor = ImageDescriptor.getMissingImageDescriptor();
       }
-      return imageDescriptor;
+      imageRegistry.put(key, imageDescriptor);
     }
-    return null;
-  }
-
-  @CheckForNull
-  private static ImageRegistry getImageRegistry() {
-    // "org.eclipse.swt.SWTError: Invalid thread access" might be thrown during unit tests
-    if (PlatformUI.isWorkbenchRunning()) {
-      return SonarLintUiPlugin.getDefault().getImageRegistry();
-    }
-    return null;
+    return imageDescriptor;
   }
 
 }
