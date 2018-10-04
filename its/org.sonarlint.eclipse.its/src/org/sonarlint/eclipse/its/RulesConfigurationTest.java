@@ -82,13 +82,12 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     openRulesConfiguration();
 
     SWTBotTree tree = bot.tree(1);
-    assertThat(tree.columnCount()).isEqualTo(3);
     SWTBotTreeItem javaNode = tree.getAllItems()[0];
 
     assertThat(javaNode.getText()).isEqualTo("java");
 
     javaNode.expand();
-    assertThat(javaNode.cell(1, 2)).isEqualTo("squid:CallToDeprecatedMethod");
+    assertThat(javaNode.cell(1, 0)).isEqualTo("\"=+\" should not be used instead of \"+=\"");
 
     bot.button("Cancel").click();
   }
