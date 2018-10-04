@@ -68,7 +68,6 @@ public class CheckForUpdatesJob extends Job {
       if (server.hasUpdates()) {
         Display.getDefault().asyncExec(() -> {
           ServerUpdateAvailablePopup popup = new ServerUpdateAvailablePopup(Display.getCurrent(), server);
-          popup.create();
           popup.open();
         });
       }
