@@ -70,7 +70,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
-import org.sonarlint.eclipse.ui.internal.views.AbstractSonarWebView;
+import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
 
 /**
  * Display details of a rule in a web browser
@@ -331,7 +331,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   @Override
   public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-    IMarker selectedMarker = AbstractSonarWebView.findSelectedSonarIssue(selection);
+    IMarker selectedMarker = RuleDescriptionWebView.findSelectedSonarIssue(selection);
     if (selectedMarker != null && !Objects.equals(selectedMarker, locationsViewer.getInput())) {
       setInput(selectedMarker);
     }
