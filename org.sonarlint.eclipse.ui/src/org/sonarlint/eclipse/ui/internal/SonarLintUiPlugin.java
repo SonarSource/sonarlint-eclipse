@@ -140,7 +140,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       if (!server.isStorageUpdated()) {
         Display.getDefault().asyncExec(() -> {
           ServerStorageNeedUpdatePopup popup = new ServerStorageNeedUpdatePopup(Display.getCurrent(), server);
-          popup.create();
           popup.open();
         });
       }
@@ -199,7 +198,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         public void handle(SonarQubeNotification notification) {
           Display.getDefault().asyncExec(() -> {
             SonarQubeNotificationPopup popup = new SonarQubeNotificationPopup(Display.getCurrent(), notification);
-            popup.create();
             popup.open();
           });
         }

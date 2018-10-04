@@ -19,13 +19,11 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
-import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -37,7 +35,7 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
-public class ServerUpdateAvailablePopup extends AbstractNotificationPopup {
+public class ServerUpdateAvailablePopup extends AbstractSonarLintPopup {
 
   private final IServer server;
 
@@ -48,15 +46,17 @@ public class ServerUpdateAvailablePopup extends AbstractNotificationPopup {
 
   @Override
   protected void createContentArea(Composite composite) {
-    composite.setLayout(new GridLayout(1, true));
     Label messageLabel = new Label(composite, SWT.WRAP);
-    GridData layoutData = new GridData(GridData.FILL_HORIZONTAL);
+    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
     messageLabel.setLayoutData(layoutData);
 
     messageLabel.setText("We detected some changes on the server '" + server.getId() + "'.\nDo you want to update the SonarLint storage now?");
     messageLabel.setBackground(composite.getBackground());
+
     Composite links = new Composite(composite, SWT.NONE);
-    links.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+    layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
+    layoutData.horizontalAlignment = GridData.HORIZONTAL_ALIGN_END;
+    links.setLayoutData(layoutData);
     RowLayout rowLayout = new RowLayout();
     rowLayout.spacing = 20;
     links.setLayout(rowLayout);
