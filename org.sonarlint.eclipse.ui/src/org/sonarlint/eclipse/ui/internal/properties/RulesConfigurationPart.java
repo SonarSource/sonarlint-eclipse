@@ -35,7 +35,6 @@ import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
-import org.eclipse.jface.viewers.ColumnPixelData;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
@@ -53,13 +52,10 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
@@ -69,8 +65,6 @@ import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 public class RulesConfigurationPart {
 
   private final Map<String, List<RuleDetailsWrapper>> ruleDetailsWrappersByLanguage;
-
-  private final RuleDetailsWrapperComparator comparator = new RuleDetailsWrapperComparator();
 
   private final RuleDetailsWrapperFilter filter = new RuleDetailsWrapperFilter();
 
@@ -131,32 +125,29 @@ public class RulesConfigurationPart {
   private void createTreeViewer(Composite parent) {
     viewer = new CheckboxTreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
     viewer.setContentProvider(new ViewContentProvider());
-    viewer.getTree().setHeaderVisible(true);
-    viewer.setComparator(comparator);
+    viewer.getTree().setHeaderVisible(false);
+    viewer.setComparator(new ViewerComparator() {
+      @Override
+      public int compare(Viewer viewer, Object e1, Object e2) {
+        if (!(e1 instanceof RuleDetailsWrapper && e2 instanceof RuleDetailsWrapper)) {
+          return 0;
+        }
+        RuleDetailsWrapper w1 = (RuleDetailsWrapper) e1;
+        RuleDetailsWrapper w2 = (RuleDetailsWrapper) e2;
+        return w1.ruleDetails.getName().compareTo(w2.ruleDetails.getName());
+      }
+    });
+    viewer.getTree().setSortDirection(SWT.DOWN);
     viewer.addFilter(filter);
 
-    TreeViewerColumn languageColumn = new TreeViewerColumn(viewer, SWT.NONE);
-    languageColumn.getColumn().setWidth(100);
-    languageColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new LanguageLabelProvider()));
+    TreeViewerColumn languageAndRuleNameColumn = new TreeViewerColumn(viewer, SWT.NONE);
+    languageAndRuleNameColumn.getColumn().setWidth(100);
+    languageAndRuleNameColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new LanguageLabelProvider()));
 
-    TreeViewerColumn ruleNameColumn = new TreeViewerColumn(viewer, SWT.NONE);
-    ruleNameColumn.getColumn().setText("Rule name");
-    ruleNameColumn.getColumn().setWidth(300);
-    ruleNameColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new RuleNameLabelProvider()));
-    ruleNameColumn.getColumn().addSelectionListener(newSelectionAdapter(1));
-    ruleNameColumn.getColumn().setMoveable(true);
-
-    TreeViewerColumn ruleKeyColumn = new TreeViewerColumn(viewer, SWT.NONE);
-    ruleKeyColumn.getColumn().setText("Rule key");
-    ruleKeyColumn.getColumn().setWidth(100);
-    ruleKeyColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new RuleKeyLabelProvider()));
-    ruleKeyColumn.getColumn().addSelectionListener(newSelectionAdapter(2));
-    ruleKeyColumn.getColumn().setMoveable(true);
+    viewer.getTree().setSortColumn(languageAndRuleNameColumn.getColumn());
 
     TreeColumnLayout treeLayout = new TreeColumnLayout();
-    treeLayout.setColumnData(languageColumn.getColumn(), new ColumnPixelData(70));
-    treeLayout.setColumnData(ruleNameColumn.getColumn(), new ColumnWeightData(100));
-    treeLayout.setColumnData(ruleKeyColumn.getColumn(), new ColumnWeightData(50));
+    treeLayout.setColumnData(languageAndRuleNameColumn.getColumn(), new ColumnWeightData(1));
     parent.setLayout(treeLayout);
 
     viewer.setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new String[ruleDetailsWrappersByLanguage.size()]));
@@ -223,19 +214,6 @@ public class RulesConfigurationPart {
     }
   }
 
-  private SelectionAdapter newSelectionAdapter(int index) {
-    return new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent event) {
-        comparator.setColumn(index);
-        int direction = comparator.getDirection();
-        viewer.getTree().setSortColumn((TreeColumn) event.getSource());
-        viewer.getTree().setSortDirection(direction);
-        viewer.refresh();
-      }
-    };
-  }
-
   enum Type {
     ALL("All rules", w -> true),
     ACTIVE("Active rules", w -> w.isActive),
@@ -277,57 +255,6 @@ public class RulesConfigurationPart {
 
     private boolean select(RuleDetailsWrapper wrapper) {
       return type.predicate.test(wrapper);
-    }
-  }
-
-  private static class RuleDetailsWrapperComparator extends ViewerComparator {
-    private int index;
-    private static final int DESCENDING = 1;
-    private int direction = DESCENDING;
-
-    public RuleDetailsWrapperComparator() {
-      this.index = 0;
-      direction = DESCENDING;
-    }
-
-    public int getDirection() {
-      return direction == 1 ? SWT.DOWN : SWT.UP;
-    }
-
-    public void setColumn(int column) {
-      if (column == this.index) {
-        // Same column as last sort; toggle the direction
-        direction = 1 - direction;
-      } else {
-        // New column; do an ascending sort
-        this.index = column;
-        direction = DESCENDING;
-      }
-    }
-
-    @Override
-    public int compare(Viewer viewer, Object e1, Object e2) {
-      if (!(e1 instanceof RuleDetailsWrapper && e2 instanceof RuleDetailsWrapper)) {
-        return 0;
-      }
-      RuleDetailsWrapper w1 = (RuleDetailsWrapper) e1;
-      RuleDetailsWrapper w2 = (RuleDetailsWrapper) e2;
-      int rc = 0;
-      switch (index) {
-        case 1:
-          rc = w1.ruleDetails.getName().compareTo(w2.ruleDetails.getName());
-          break;
-        case 2:
-          rc = w1.ruleDetails.getKey().compareTo(w2.ruleDetails.getKey());
-          break;
-        default:
-          rc = 0;
-      }
-      // If descending order, flip the direction
-      if (direction == DESCENDING) {
-        rc = -rc;
-      }
-      return rc;
     }
   }
 
@@ -434,24 +361,6 @@ public class RulesConfigurationPart {
         String language = (String) element;
         return new StyledString(language);
       }
-      return new StyledString();
-    }
-  }
-
-  private static class RuleKeyLabelProvider extends LabelProvider implements IStyledLabelProvider {
-    @Override
-    public StyledString getStyledText(Object element) {
-      if (element instanceof RuleDetailsWrapper) {
-        RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
-        return new StyledString(wrapper.ruleDetails.getKey());
-      }
-      return new StyledString();
-    }
-  }
-
-  private static class RuleNameLabelProvider extends LabelProvider implements IStyledLabelProvider {
-    @Override
-    public StyledString getStyledText(Object element) {
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
         return new StyledString(wrapper.ruleDetails.getName());
@@ -472,6 +381,10 @@ public class RulesConfigurationPart {
     private static boolean computeIsActive(String key, boolean activeByDefault, Collection<RuleKey> excluded, Collection<RuleKey> included) {
       RuleKey ruleKey = RuleKey.parse(key);
       return !excluded.contains(ruleKey) && (activeByDefault || included.contains(ruleKey));
+    }
+
+    String getName() {
+      return ruleDetails.getName();
     }
   }
 
