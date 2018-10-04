@@ -34,10 +34,22 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.TextConsole;
 
 public final class WorkspaceHelpers {
 
   public static void cleanWorkspace(SWTWorkbenchBot bot) throws InterruptedException, CoreException {
+    IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+    IConsole[] consoles = manager.getConsoles();
+    for (IConsole iConsole : consoles) {
+      if ("SonarLint Console".equals(iConsole.getName())) {
+        System.out.println(((TextConsole) iConsole).getDocument().get());
+        ((TextConsole) iConsole).clearConsole();
+      }
+    }
     Exception cause = null;
     int i;
     for (i = 0; i < 10; i++) {

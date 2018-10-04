@@ -50,6 +50,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.osgi.framework.Version;
+import org.sonarlint.eclipse.its.bots.ConsoleViewBot;
 import org.sonarlint.eclipse.its.utils.CaptureScreenshotOnFailure;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 import org.sonarlint.eclipse.its.utils.WorkspaceHelpers;
@@ -98,6 +99,10 @@ public abstract class AbstractSonarLintTest {
     SwtBotUtils.closeViewQuietly(bot, "org.eclipse.mylyn.tasks.ui.views.tasks");
 
     SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+
+    new ConsoleViewBot(bot)
+      .openSonarLintConsole()
+      .enableVerboseLogs();
   }
 
   @AfterClass
