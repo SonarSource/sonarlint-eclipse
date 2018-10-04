@@ -39,7 +39,7 @@ public class SonarLintMarkerImageProvider implements IAnnotationImageProvider {
 
   @Override
   public Image getManagedImage(Annotation annotation) {
-    return SonarLintImages.IMG_ISSUE;
+    return SonarLintImages.ISSUE_ANNOTATION;
   }
 
 }

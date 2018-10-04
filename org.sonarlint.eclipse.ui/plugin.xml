@@ -59,7 +59,7 @@
 	      name="New Server Connection"
 	      class="org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard"
 	      category="org.sonarlint.eclipse"
-	      icon="icons/sonarlint-sync-16x16.png">
+	      icon="icons/full/eview16/bindings.png">
 	    <description>Configure a connection with a SonarQube or SonarCloud server</description>
 	  </wizard>
 	</extension>
@@ -68,7 +68,7 @@
       point="org.eclipse.ui.decorators">
    <decorator
          class="org.sonarlint.eclipse.ui.internal.server.ServerDecorator"
-         icon="icons/sonarlint-sync-16x16.png"
+         icon="icons/full/eview16/bindings.png"
          id="org.sonarlint.eclipse.ui.navigatorDecorator"
          label="SonarLint Server State Decorator"
          lightweight="true"
@@ -99,7 +99,7 @@
         allowMultiple="false"
         category="org.sonarlint.eclipse"
         class="org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView"
-        icon="icons/sonarlint-16x16.png"
+        icon="icons/full/eview16/onthefly.png"
         id="org.sonarlint.eclipse.ui.views.issues.IssuesView"
         name="%sonar.issues.view.name">
     </view>
@@ -107,7 +107,7 @@
         allowMultiple="false"
         category="org.sonarlint.eclipse"
         class="org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView"
-        icon="icons/sonarlint-16x16.png"
+        icon="icons/full/eview16/report.png"
         id="org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView"
         name="%sonar.changesetissues.view.name">
     </view>
@@ -115,7 +115,7 @@
 	        allowMultiple="false"
           category="org.sonarlint.eclipse"
           class="org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView"
-          icon="icons/sonarlint-16x16.png"
+          icon="icons/full/eview16/rule.png"
           id="org.sonarlint.eclipse.ui.views.RuleDescriptionWebView"
           name="SonarLint Rule Description">
     </view>
@@ -123,7 +123,7 @@
 	        allowMultiple="false"
           category="org.sonarlint.eclipse"
           class="org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView"
-          icon="icons/sonarlint-16x16.png"
+          icon="icons/full/eview16/locations.png"
           id="org.sonarlint.eclipse.ui.views.IssueLocationsView"
           name="SonarLint Issue Locations">
     </view>
@@ -131,7 +131,7 @@
 	        allowMultiple="false"
 	        category="org.sonarlint.eclipse"
 	        class="org.sonarlint.eclipse.ui.internal.server.ServersView"
-	        icon="icons/sonarlint-sync-16x16.png"
+	        icon="icons/full/eview16/bindings.png"
 	        id="org.sonarlint.eclipse.ui.ServersView"
 	        name="SonarLint Bindings">
 	  </view>
@@ -151,7 +151,7 @@
 	   <navigatorContent
 	         activeByDefault="true"
 	         contentProvider="org.sonarlint.eclipse.ui.internal.server.ServerContentProvider"
-	         icon="icons/logo/sonarqube-16px.png"
+	         icon="icons/full/eview16/bindings.png"
 	         id="org.sonarlint.eclipse.ui.ServersView.content.root"
 	         labelProvider="org.sonarlint.eclipse.ui.internal.server.ServerLabelProvider"
 	         name="Server Provider"
@@ -458,6 +458,7 @@
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
+                 icon="icons/full/marker_resolution16/showrule.png"
                  style="push"
                  mnemonic="R">
          </command>
@@ -466,6 +467,7 @@
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.ShowIssueLocationsCommand"
+                 icon="icons/full/marker_resolution16/showlocations.png"
                  style="push"
                  mnemonic="I">
          </command>
@@ -474,6 +476,7 @@
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
+                 icon="icons/full/marker_resolution16/disablerule.png"
                  style="push"
                  mnemonic="u">
           <visibleWhen>
@@ -519,6 +522,7 @@
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
+                 icon="icons/full/marker_resolution16/showrule.png"
                  style="push"
                  mnemonic="R">
          </command>
@@ -527,6 +531,7 @@
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
+                 icon="icons/full/marker_resolution16/disablerule.png"
                  style="push"
                  mnemonic="u">
          </command>
