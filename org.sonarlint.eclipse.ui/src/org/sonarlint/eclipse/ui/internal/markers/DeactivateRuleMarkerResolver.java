@@ -29,7 +29,7 @@ import org.sonarlint.eclipse.ui.internal.util.DeactivateRuleUtils;
 public class DeactivateRuleMarkerResolver implements IMarkerResolution2 {
 
   private static final String ZERO_WIDTH_SPACE = "\u200b";
-  
+
   private final IMarker marker;
 
   public DeactivateRuleMarkerResolver(IMarker marker) {
@@ -43,7 +43,7 @@ public class DeactivateRuleMarkerResolver implements IMarkerResolution2 {
 
   @Override
   public String getLabel() {
-    // Note: quick fixes are ordered by label. 
+    // Note: quick fixes are ordered by label.
     // This zero-width space hack makes the quick fix displayed after other, more important quick fixes
     return ZERO_WIDTH_SPACE + "Deactivate rule " + marker.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "unknown");
   }
@@ -55,6 +55,6 @@ public class DeactivateRuleMarkerResolver implements IMarkerResolution2 {
 
   @Override
   public Image getImage() {
-    return SonarLintImages.IMG_ISSUE;
+    return SonarLintImages.RESOLUTION_DISABLE_RULE;
   }
 }
