@@ -21,13 +21,11 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -38,7 +36,7 @@ import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotification;
 
-public class SonarQubeNotificationPopup extends AbstractNotificationPopup {
+public class SonarQubeNotificationPopup extends AbstractSonarLintPopup {
 
   private final SonarQubeNotification notification;
 
@@ -49,16 +47,17 @@ public class SonarQubeNotificationPopup extends AbstractNotificationPopup {
 
   @Override
   protected void createContentArea(Composite composite) {
-    composite.setLayout(new GridLayout(1, true));
     Label messageLabel = new Label(composite, SWT.WRAP);
-    GridData layoutData = new GridData(GridData.FILL_HORIZONTAL);
+    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
     messageLabel.setLayoutData(layoutData);
 
     messageLabel.setText(notification.message());
     messageLabel.setBackground(composite.getBackground());
 
     Composite links = new Composite(composite, SWT.NONE);
-    links.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+    layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
+    layoutData.horizontalAlignment = GridData.HORIZONTAL_ALIGN_END;
+    links.setLayoutData(layoutData);
     RowLayout rowLayout = new RowLayout();
     rowLayout.spacing = 20;
     links.setLayout(rowLayout);

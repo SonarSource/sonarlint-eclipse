@@ -20,13 +20,11 @@
 package org.sonarlint.eclipse.ui.internal.popup;
 
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -37,7 +35,7 @@ import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 
-public class ServerStorageNeedUpdatePopup extends AbstractNotificationPopup {
+public class ServerStorageNeedUpdatePopup extends AbstractSonarLintPopup {
 
   private final IServer server;
 
@@ -50,11 +48,11 @@ public class ServerStorageNeedUpdatePopup extends AbstractNotificationPopup {
 
   @Override
   protected void createContentArea(Composite composite) {
-    composite.setLayout(new GridLayout(1, true));
     Label messageLabel = new Label(composite, SWT.WRAP);
-    messageLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-    messageLabel.setText("Configuration stored from SonarQube server '" + server.getId() + "' is missing or outdated.");
+    messageLabel.setText("Configuration stored from the server '" + server.getId()
+      + "' is missing or outdated.");
+    messageLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     messageLabel.setBackground(composite.getBackground());
     Link updateServerLink = new Link(composite, SWT.NONE);
     updateServerLink.setText("<a>Update all project bindings from '" + server.getId() + "'</a>");
@@ -71,7 +69,7 @@ public class ServerStorageNeedUpdatePopup extends AbstractNotificationPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint stored configuration outdated";
+    return "SonarLint local storage is outdated";
   }
 
   @Override
