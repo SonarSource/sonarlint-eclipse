@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.Collection;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -40,7 +41,7 @@ import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
 
   private RulesConfigurationPart rulesConfigurationPart;
-  
+
   public RulesConfigurationPage() {
     setTitle("Rules Configuration");
   }
@@ -59,22 +60,22 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
 
     rulesConfigurationPart = new RulesConfigurationPart(loadRuleDetails(), getExcludedRules(), getIncludedRules());
     rulesConfigurationPart.createControls(pageComponent);
-
+    Dialog.applyDialogFont(pageComponent);
     return pageComponent;
   }
-  
+
   private static Collection<RuleDetails> loadRuleDetails() {
     return SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getAllRuleDetails();
   }
-  
+
   private static Collection<RuleKey> getExcludedRules() {
     return PreferencesUtils.getExcludedRules();
   }
-  
+
   private static Collection<RuleKey> getIncludedRules() {
     return PreferencesUtils.getIncludedRules();
   }
-  
+
   @Override
   public boolean performOk() {
     ExclusionsAndInclusions config = rulesConfigurationPart.computeExclusionsAndInclusions();
