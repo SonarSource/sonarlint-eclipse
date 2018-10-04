@@ -53,20 +53,15 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTError;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionPart;
+import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
@@ -81,7 +76,7 @@ public class RulesConfigurationPart {
 
   private CheckboxTreeViewer viewer;
 
-  private RuleDescriptionPart ruleDescriptionPart;
+  private SonarLintRuleBrowser ruleBrowser;
 
   public RulesConfigurationPart(Collection<RuleDetails> allRuleDetails, Collection<RuleKey> excluded, Collection<RuleKey> included) {
     this.ruleDetailsWrappersByLanguage = allRuleDetails.stream()
@@ -104,10 +99,8 @@ public class RulesConfigurationPart {
     treeComposite.setLayoutData(gridData);
     createTreeViewer(treeComposite);
 
-    Composite descriptionComposite = new Composite(pageComponent, SWT.NONE);
-    descriptionComposite.setLayoutData(gridData);
-    descriptionComposite.setLayout(new FillLayout());
-    createRuleDescriptionPart(descriptionComposite);
+    ruleBrowser = new SonarLintRuleBrowser(pageComponent);
+    ruleBrowser.setLayoutData(gridData);
   }
 
   private void createFilterPart(Composite parent) {
@@ -173,9 +166,7 @@ public class RulesConfigurationPart {
       Object selectedNode = thisSelection.getFirstElement();
       if (selectedNode instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) selectedNode;
-        if (ruleDescriptionPart != null) {
-          ruleDescriptionPart.updateView(wrapper.ruleDetails);
-        }
+        ruleBrowser.updateRule(wrapper.ruleDetails);
       }
     };
     viewer.addSelectionChangedListener(selectionChangedListener);
@@ -185,21 +176,6 @@ public class RulesConfigurationPart {
     viewer.setCheckStateProvider(new RuleCheckStateProvider());
 
     createContextMenu();
-  }
-
-  private void createRuleDescriptionPart(Composite parent) {
-    try {
-      Browser browser = new Browser(parent, SWT.FILL);
-      browser.setText("<small><em>(No rule selected)</em></small>");
-      ruleDescriptionPart = new RuleDescriptionPart(browser);
-      ruleDescriptionPart.setExtraCss("body { background-color: white; }\n");
-    } catch (SWTError e) {
-      // Browser is probably not available but it will be partially initialized in parent
-      for (Control c : parent.getChildren()) {
-        c.dispose();
-      }
-      new Label(parent, SWT.WRAP).setText("Unable to create SWT Browser:\n " + e.getMessage());
-    }
   }
 
   private void createContextMenu() {
