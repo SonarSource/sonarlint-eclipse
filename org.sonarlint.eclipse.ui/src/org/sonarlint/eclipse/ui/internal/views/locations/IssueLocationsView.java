@@ -118,7 +118,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     return result;
   }
 
-  private static String positionLabel(String message) {
+  private static String positionLabel(@Nullable String message) {
     return message != null ? message : "";
   }
 
