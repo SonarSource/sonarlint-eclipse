@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.jface.text.IDocument;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 
@@ -66,6 +67,7 @@ class EclipseInputFile implements ClientInputFile {
   }
 
   private synchronized void initFromFS(ISonarLintFile file, Path temporaryDirectory) {
+    SonarLintLogger.get().debug("Forced to init a physical file", new Exception());
     IFileStore fileStore;
     try {
       fileStore = EFS.getStore(file.getResource().getLocationURI());
@@ -103,8 +105,8 @@ class EclipseInputFile implements ClientInputFile {
   }
 
   @Override
-  public <G> G getClientObject() {
-    return (G) file;
+  public ISonarLintFile getClientObject() {
+    return file;
   }
 
   @Override
