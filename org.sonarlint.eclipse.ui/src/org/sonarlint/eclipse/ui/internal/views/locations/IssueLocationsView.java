@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -48,14 +47,10 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -70,6 +65,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
+import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
 
 /**
@@ -194,7 +190,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         // Ignore
       }
       if (sonarlintMarker.getAttribute(MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, false)) {
-        ITextEditor openEditor = findOpenEditorFor(sonarlintMarker);
+        ITextEditor openEditor = LocationsUtils.findOpenEditorFor(sonarlintMarker);
         if (openEditor == null) {
           return new Object[] {"Please open the file containing this issue in an editor to see the flows"};
         }
@@ -292,41 +288,11 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   public void setInput(@Nullable IMarker sonarlintMarker) {
     locationsViewer.setInput(sonarlintMarker);
     if (sonarlintMarker != null && showAnnotationsAction.isChecked()) {
-      ITextEditor editorFound = findOpenEditorFor(sonarlintMarker);
+      ITextEditor editorFound = LocationsUtils.findOpenEditorFor(sonarlintMarker);
       if (editorFound != null) {
         ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound);
       }
     }
-  }
-
-  @CheckForNull
-  private static ITextEditor findOpenEditorFor(IMarker sonarlintMarker) {
-    // Find IFile and open Editor
-    // Super defensing programming because we don't really understand what is initialized at startup (SLE-122)
-    IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-    if (window == null) {
-      return null;
-    }
-    IWorkbenchPage page = window.getActivePage();
-    if (page == null) {
-      return null;
-    }
-    for (IEditorReference editor : page.getEditorReferences()) {
-      IEditorInput editorInput;
-      try {
-        editorInput = editor.getEditorInput();
-      } catch (PartInitException e) {
-        SonarLintLogger.get().error("Unable to restore editor", e);
-        continue;
-      }
-      if (editorInput instanceof IFileEditorInput && ((IFileEditorInput) editorInput).getFile().equals(sonarlintMarker.getResource())) {
-        IEditorPart editorPart = editor.getEditor(false);
-        if (editorPart instanceof ITextEditor) {
-          return (ITextEditor) editorPart;
-        }
-      }
-    }
-    return null;
   }
 
   @Override
@@ -388,7 +354,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     if (node instanceof FlowNode) {
       IMarker sonarlintMarker = (IMarker) locationsViewer.getInput();
       ExtraPosition pos = ((FlowNode) node).getPosition();
-      ITextEditor openEditor = findOpenEditorFor(sonarlintMarker);
+      ITextEditor openEditor = LocationsUtils.findOpenEditorFor(sonarlintMarker);
       if (openEditor != null) {
         openEditor.setHighlightRange(pos.offset, pos.length, true);
       }
@@ -478,7 +444,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   public void showAnnotations() {
     IMarker sonarlintMarker = (IMarker) locationsViewer.getInput();
     if (sonarlintMarker != null) {
-      ITextEditor editorFound = findOpenEditorFor(sonarlintMarker);
+      ITextEditor editorFound = LocationsUtils.findOpenEditorFor(sonarlintMarker);
       if (editorFound != null) {
         ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound);
       }
