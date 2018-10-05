@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
@@ -38,17 +39,17 @@ public class DefaultPreAnalysisContext implements IPreAnalysisContext {
 
   private final ISonarLintProject project;
   private final Map<String, String> analysisProperties;
-  private final Map<ISonarLintFile, String> filesToAnalyze;
   private final Path tempDir;
+  private final Map<ISonarLintFile, ClientInputFile> filesToAnalyze;
 
   public DefaultPreAnalysisContext(ISonarLintProject project, Map<String, String> analysisProperties, List<ClientInputFile> filesToAnalyze, Path tempDir) {
     this.project = project;
     this.analysisProperties = analysisProperties;
-    this.tempDir = tempDir;
     this.filesToAnalyze = Collections
       .unmodifiableMap(filesToAnalyze.stream()
         .map(EclipseInputFile.class::cast)
-        .collect(Collectors.toMap(EclipseInputFile::getClientObject, EclipseInputFile::getPath)));
+        .collect(Collectors.toMap(EclipseInputFile::getClientObject, Function.identity())));
+    this.tempDir = tempDir;
   }
 
   @Override
@@ -78,7 +79,7 @@ public class DefaultPreAnalysisContext implements IPreAnalysisContext {
    * Used by CDT that need physical path to analyze files
    */
   public String getLocalPath(ISonarLintFile file) {
-    return filesToAnalyze.get(file);
+    return filesToAnalyze.get(file).getPath();
   }
 
   @Override
