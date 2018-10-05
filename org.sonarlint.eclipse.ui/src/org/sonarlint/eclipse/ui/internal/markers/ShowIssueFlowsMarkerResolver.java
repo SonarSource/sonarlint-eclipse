@@ -162,7 +162,7 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     for (IEditorReference editorRef : page.getEditorReferences()) {
       IEditorPart editorPart = editorRef.getEditor(false);
-      if (editorPart != null && editorPart instanceof ITextEditor) {
+      if (editorPart instanceof ITextEditor) {
         ITextEditor textEditor = (ITextEditor) editorPart;
         IDocumentProvider documentProvider = textEditor.getDocumentProvider();
         if (documentProvider != null) {
