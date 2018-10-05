@@ -42,7 +42,6 @@
       <import plugin="org.sonarsource.sonarlint.core.sonarlint-client-api"/>
       <import plugin="org.sonarsource.sonarlint.core.sonarlint-core"/>
       <import plugin="org.eclipse.mylyn.commons.ui"/>
-      <import plugin="com.google.protobuf"/>
    </requires>
 
    <plugin
@@ -92,21 +91,6 @@
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.google.protobuf"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="net.sdruskat.fragment.sun.misc"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
          unpack="false"/>
 
 </feature>
