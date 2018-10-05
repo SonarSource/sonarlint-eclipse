@@ -19,18 +19,15 @@
  */
 package org.sonarlint.eclipse.ui.internal.util;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.source.IAnnotationModel;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -40,11 +37,10 @@ import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
-
-import static org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver.ISSUE_FLOW_ANNOTATION_TYPE;
 
 public class DeactivateRuleUtils {
 
@@ -61,47 +57,46 @@ public class DeactivateRuleUtils {
       return;
     }
 
-    removeReportIssuesMarkers(ruleKey);
-    removeAnnotations(marker);
-
     PreferencesUtils.excludeRule(ruleKey);
+
+    WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
+      @Override
+      protected void execute(IProgressMonitor monitor) throws CoreException {
+        removeReportIssuesMarkers(ruleKey);
+        removeAnnotations(marker);
+      }
+    };
+
+    try {
+      op.run(null);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return;
+    } catch (InvocationTargetException e) {
+      SonarLintLogger.get().error("Could not get remove markers for deactivated rule", e);
+    }
+
     Predicate<ISonarLintFile> filter = f -> !SonarLintCorePlugin.loadConfig(f.getProject()).isBound();
     JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE, filter);
   }
 
   private static void removeAnnotations(IMarker marker) {
-    IEditorPart editorPart;
-    try {
-      IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-      editorPart = IDE.openEditor(page, marker);
-    } catch (PartInitException e) {
-      SonarLintLogger.get().error("Could not get IEditorPart to remove annotations for deactivated rule");
+    ITextEditor textEditor = LocationsUtils.findOpenEditorFor(marker);
+    if (textEditor == null) {
       return;
     }
 
-    if (!(editorPart instanceof ITextEditor)) {
-      return;
-    }
-
-    ITextEditor textEditor = (ITextEditor) editorPart;
     IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IssueLocationsView.ID);
     if (view != null) {
       view.setShowAnnotations(false);
     }
-    IEditorInput editorInput = textEditor.getEditorInput();
-    IAnnotationModel annotationModel = textEditor.getDocumentProvider().getAnnotationModel(editorInput);
-
-    annotationModel.getAnnotationIterator().forEachRemaining(a -> {
-      if (ISSUE_FLOW_ANNOTATION_TYPE.equals(a.getType())) {
-        annotationModel.removeAnnotation(a);
-      }
-    });
+    ShowIssueFlowsMarkerResolver.removeAnnotations(textEditor);
   }
 
   private static void removeReportIssuesMarkers(RuleKey ruleKey) {
     ProjectsProviderUtils.allProjects().stream()
       .filter(p -> p.isOpen() && !SonarLintCorePlugin.loadConfig(p).isBound())
-      .forEach(p -> findReportMarkers(p)
+      .forEach(p -> Stream.concat(findSonarLintMarkers(p, SonarLintCorePlugin.MARKER_REPORT_ID), findSonarLintMarkers(p, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID))
         .filter(m -> ruleKey.equals(MarkerUtils.getRuleKey(m)))
         .forEach(m -> {
           try {
@@ -112,9 +107,9 @@ public class DeactivateRuleUtils {
         }));
   }
 
-  private static Stream<IMarker> findReportMarkers(ISonarLintProject project) {
+  private static Stream<IMarker> findSonarLintMarkers(ISonarLintProject project, String id) {
     try {
-      IMarker[] markers = project.getResource().findMarkers(SonarLintCorePlugin.MARKER_REPORT_ID, false, IResource.DEPTH_INFINITE);
+      IMarker[] markers = project.getResource().findMarkers(id, false, IResource.DEPTH_INFINITE);
       return Stream.of(markers);
     } catch (CoreException e) {
       SonarLintLogger.get().error("Could not get report markers for project: " + project.getName());
