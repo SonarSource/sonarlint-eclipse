@@ -773,6 +773,9 @@
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.ChangeProjectsBindingCommand"
       icon="icons/synced.gif" />
+    <image
+      commandId="org.sonarlint.eclipse.ui.internal.command.UnbindProjectsCommand"
+      icon="icons/full/menu16/disconnect_co.png" />
   </extension>
 
    <extension
