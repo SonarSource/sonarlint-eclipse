@@ -22,6 +22,9 @@ package org.sonarlint.eclipse.ui.internal.bind.wizard;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -53,9 +56,12 @@ import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ParentAwareWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.WizardDialogWithoutHelp;
+import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
+import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
+import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isEmpty;
 
 public class ProjectBindingWizard extends ParentAwareWizard implements INewWizard, IPageChangingListener {
 
@@ -210,9 +216,37 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
       }
       if (event.doit) {
         event.doit = tryLoadProjectList(currentPage);
+        if (event.doit && isEmpty(model.getRemoteProjectKey())) {
+          tryAutoBind();
+        }
       }
       return;
     }
+  }
+
+  private void tryAutoBind() {
+    TextSearchIndex<RemoteProject> index = model.getProjectIndex();
+    RemoteProject bestCandidate = null;
+    for (ISonarLintProject project : model.getEclipseProjects()) {
+      Map<RemoteProject, Double> results = index.search(project.getName());
+      if (results.isEmpty()) {
+        continue;
+      }
+      List<Map.Entry<RemoteProject, Double>> entries = new ArrayList<>(results.entrySet());
+      entries.sort(
+        Comparator.comparing(Map.Entry<RemoteProject, Double>::getValue).reversed()
+          .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)));
+      if (bestCandidate == null) {
+        bestCandidate = entries.get(0).getKey();
+      } else if (!entries.get(0).getKey().equals(bestCandidate)) {
+        // Multiple best candidates, give up
+        return;
+      }
+    }
+    if (bestCandidate != null) {
+      model.setRemoteProjectKey(bestCandidate.getKey());
+    }
+
   }
 
   private boolean tryUpdateServerStorage(WizardPage currentPage) {
@@ -249,6 +283,7 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
           try {
             model.getServer().updateProjectList(monitor);
+            model.setProjectIndex(model.getServer().computeProjectIndex());
           } finally {
             monitor.done();
           }

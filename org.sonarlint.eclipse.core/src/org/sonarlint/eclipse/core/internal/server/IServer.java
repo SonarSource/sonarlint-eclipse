@@ -94,7 +94,7 @@ public interface IServer {
    */
   void removeServerListener(IServerListener listener);
 
-  TextSearchIndex<RemoteProject> getProjectIndex();
+  TextSearchIndex<RemoteProject> computeProjectIndex();
 
   Map<String, RemoteProject> getRemoteProjects();
 

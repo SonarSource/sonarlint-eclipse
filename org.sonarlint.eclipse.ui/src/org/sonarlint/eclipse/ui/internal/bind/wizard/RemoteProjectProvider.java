@@ -44,7 +44,7 @@ public class RemoteProjectProvider implements IContentProposalProvider {
   @Override
   public IContentProposal[] getProposals(String contents, int position) {
     List<IContentProposal> list = new ArrayList<>();
-    TextSearchIndex<RemoteProject> projectIndex = model.getServer().getProjectIndex();
+    TextSearchIndex<RemoteProject> projectIndex = model.getProjectIndex();
     Map<RemoteProject, Double> filtered = projectIndex != null ? projectIndex.search(contents) : Collections.emptyMap();
     if (filtered.isEmpty()) {
       parentPage.setMessage("No results", IMessageProvider.INFORMATION);
