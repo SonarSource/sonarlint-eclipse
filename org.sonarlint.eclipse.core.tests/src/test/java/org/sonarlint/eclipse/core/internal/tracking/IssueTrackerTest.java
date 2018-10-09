@@ -30,6 +30,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.mock;
@@ -395,16 +396,62 @@ public class IssueTrackerTest {
   }
 
   @Test
-  public void should_match_by_server_issue_key() {
-    MockTrackableBuilder base = builder().ruleKey("dummy ruleKey").serverIssueKey("dummy server issue key");
-    // note: (ab)using the assignee field to uniquely identify the trackable
-    String id = "dummy id";
-    int newLine = 7;
+  public void should_match_first_by_server_issue_key() {
+    String ruleKey = "dummy ruleKey";
+    String message = "dummy message";
+    String lineContent = "dummy content";
+    String serverIssueKey1 = "dummy serverIssueKey 1";
+    String serverIssueKey2 = "dummy serverIssueKey 2";
 
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.copy().line(newLine + 3).assignee(id).build())));
-    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, Collections.singletonList(base.line(newLine).build())));
+    Issue issue1 = mock(Issue.class);
+    when(issue1.getRuleKey()).thenReturn(ruleKey);
+    when(issue1.getMessage()).thenReturn(message);
+    when(issue1.getStartLine()).thenReturn(1);
+    Trackable trackable1 = new RawIssueTrackable(issue1, mock(TextRange.class), null, lineContent);
 
-    assertThat(cache.getCurrentTrackables(DUMMY_FILE1_PATH)).extracting("line", "assignee").containsExactly(tuple(newLine, id));
+    Issue issue2 = mock(Issue.class);
+    when(issue2.getRuleKey()).thenReturn(ruleKey);
+    when(issue2.getMessage()).thenReturn(message);
+    when(issue2.getStartLine()).thenReturn(2);
+    Trackable trackable2 = new RawIssueTrackable(issue2, mock(TextRange.class), null, lineContent);
+
+    ServerIssue serverIssue1 = mock(ServerIssue.class);
+    when(serverIssue1.ruleKey()).thenReturn(ruleKey);
+    when(serverIssue1.message()).thenReturn(message);
+    when(serverIssue1.checksum()).thenReturn(DigestUtils.digest(lineContent));
+    when(serverIssue1.line()).thenReturn(1);
+    when(serverIssue1.creationDate()).thenReturn(Instant.now());
+    when(serverIssue1.key()).thenReturn(serverIssueKey1);
+    when(serverIssue1.resolution()).thenReturn("");
+    Trackable serverTrackable1 = new ServerIssueTrackable(serverIssue1);
+
+    ServerIssue serverIssue2 = mock(ServerIssue.class);
+    when(serverIssue2.ruleKey()).thenReturn(ruleKey);
+    when(serverIssue2.message()).thenReturn(message);
+    when(serverIssue2.checksum()).thenReturn(DigestUtils.digest(lineContent));
+    when(serverIssue2.line()).thenReturn(2);
+    when(serverIssue2.creationDate()).thenReturn(Instant.now());
+    when(serverIssue2.key()).thenReturn(serverIssueKey2);
+    when(serverIssue2.resolution()).thenReturn("");
+    Trackable serverTrackable2 = new ServerIssueTrackable(serverIssue2);
+
+    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, asList(trackable1, trackable2)));
+    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackServerIssues(file1, asList(serverTrackable1, serverTrackable2)));
+
+    assertThat(cache.getCurrentTrackables(DUMMY_FILE1_PATH)).extracting("line", "lineHash", "serverIssueKey").containsOnly(
+      tuple(1, serverTrackable1.getLineHash(), serverTrackable1.getServerIssueKey()),
+      tuple(2, serverTrackable2.getLineHash(), serverTrackable2.getServerIssueKey()));
+
+    // Emulate code shifted by one line
+    when(issue1.getStartLine()).thenReturn(2);
+    when(issue2.getStartLine()).thenReturn(3);
+
+    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackAsNew(file1, asList(trackable1, trackable2)));
+    cache.put(DUMMY_FILE1_PATH, tracker.matchAndTrackServerIssues(file1, asList(serverTrackable1, serverTrackable2)));
+
+    assertThat(cache.getCurrentTrackables(DUMMY_FILE1_PATH)).extracting("line", "lineHash", "serverIssueKey").containsOnly(
+      tuple(2, serverTrackable1.getLineHash(), serverTrackable1.getServerIssueKey()),
+      tuple(3, serverTrackable2.getLineHash(), serverTrackable2.getServerIssueKey()));
   }
 
   @Test
