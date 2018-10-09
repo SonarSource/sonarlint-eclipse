@@ -234,9 +234,9 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     job.schedule();
     List<ISonarLintProject> selectedProjects = model.getSelectedProjects();
     if (selectedProjects != null && !selectedProjects.isEmpty()) {
-      ProjectBindingWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, (Server) server).open();
+      ProjectBindingWizard.createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, (Server) server).open();
     } else if (boundProjects.isEmpty()) {
-      ProjectBindingWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), (Server) server).open();
+      ProjectBindingWizard.createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), (Server) server).open();
     }
     return true;
   }

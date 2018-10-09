@@ -30,22 +30,18 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.SelectionProviderAction;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.server.DeleteServerDialog;
-import org.sonarlint.eclipse.ui.internal.server.UnbindProjectDialog;
 
-public class ServerOrProjectDeleteAction extends SelectionProviderAction {
+public class ServerDeleteAction extends SelectionProviderAction {
   private List<IServer> selectedServers;
-  private List<ISonarLintProject> selectedProjects;
   private Shell shell;
 
-  public ServerOrProjectDeleteAction(Shell shell, ISelectionProvider selectionProvider) {
+  public ServerDeleteAction(Shell shell, ISelectionProvider selectionProvider) {
     super(selectionProvider, Messages.actionDelete);
     this.shell = shell;
     ISharedImages sharedImages = PlatformUI.getWorkbench().getSharedImages();
     setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_DELETE));
-    setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_DELETE_DISABLED));
     setActionDefinitionId(IWorkbenchCommandConstants.EDIT_DELETE);
   }
 
@@ -56,23 +52,18 @@ public class ServerOrProjectDeleteAction extends SelectionProviderAction {
       return;
     }
     selectedServers = new ArrayList<>();
-    selectedProjects = new ArrayList<>();
     Iterator iterator = sel.iterator();
     while (iterator.hasNext()) {
       Object obj = iterator.next();
       if (obj instanceof IServer) {
         IServer server = (IServer) obj;
         selectedServers.add(server);
-      } else if (obj instanceof ISonarLintProject) {
-        ISonarLintProject project = (ISonarLintProject) obj;
-        selectedProjects.add(project);
       } else {
         setEnabled(false);
         return;
       }
     }
-    setEnabled(selectedServers.isEmpty() != selectedProjects.isEmpty());
-    setText(!selectedServers.isEmpty() ? Messages.actionDelete : Messages.actionUnbind);
+    setEnabled(!selectedServers.isEmpty());
   }
 
   @Override
@@ -85,7 +76,7 @@ public class ServerOrProjectDeleteAction extends SelectionProviderAction {
     //
     // To handle the case where servers is null, the selectionChanged method is called
     // to ensure servers will be populated.
-    if (selectedServers == null || selectedProjects == null) {
+    if (selectedServers == null) {
 
       IStructuredSelection sel = getStructuredSelection();
       if (sel != null) {
@@ -97,9 +88,6 @@ public class ServerOrProjectDeleteAction extends SelectionProviderAction {
       // No check is made for valid parameters at this point, since if there is a failure, it
       // should be output to the error log instead of failing silently.
       DeleteServerDialog dsd = new DeleteServerDialog(shell, selectedServers);
-      dsd.open();
-    } else if (selectedProjects != null && !selectedProjects.isEmpty()) {
-      UnbindProjectDialog dsd = new UnbindProjectDialog(shell, selectedProjects);
       dsd.open();
     }
   }

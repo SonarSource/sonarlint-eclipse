@@ -35,9 +35,7 @@ public class ProjectBindingModel extends ModelObject {
   private List<ISonarLintProject> eclipseProjects;
   private Server server;
   private String remoteProjectKey;
-
-  public ProjectBindingModel() {
-  }
+  private boolean skipServerSelection;
 
   public void setProjects(List<ISonarLintProject> eclipseProjects) {
     this.eclipseProjects = eclipseProjects;
@@ -70,6 +68,14 @@ public class ProjectBindingModel extends ModelObject {
     List<ISonarLintProject> old = this.eclipseProjects;
     this.eclipseProjects = new ArrayList<>(eclipseProjects);
     firePropertyChange(PROPERTY_SERVER, old, this.eclipseProjects);
+  }
+
+  public boolean isSkipServerSelection() {
+    return skipServerSelection;
+  }
+
+  public void setSkipServer(boolean skipServerSelection) {
+    this.skipServerSelection = skipServerSelection;
   }
 
 }

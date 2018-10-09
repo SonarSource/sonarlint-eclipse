@@ -82,6 +82,7 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
       .collect(toCollection(ArrayList::new)));
     if (selectedServer != null) {
       this.model.setServer(selectedServer);
+      this.model.setSkipServer(true);
     } else if (SonarLintCorePlugin.getServersManager().getServers().size() == 1) {
       // Only one server configured, pre-select it
       this.model.setServer((Server) SonarLintCorePlugin.getServersManager().getServers().get(0));
@@ -109,7 +110,7 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
     }
   }
 
-  public static WizardDialog createDialog(Shell activeShell, Collection<ISonarLintProject> selectedProjects, Server selectedServer) {
+  public static WizardDialog createDialogSkipServerSelection(Shell activeShell, Collection<ISonarLintProject> selectedProjects, Server selectedServer) {
     return new WizardDialogWithoutHelp(activeShell, new ProjectBindingWizard(selectedProjects, selectedServer));
   }
 
@@ -130,7 +131,10 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
     if (model.getEclipseProjects().isEmpty()) {
       return projectsSelectionWizardPage;
     }
-    return serverSelectionWizardPage;
+    if (!model.isSkipServerSelection()) {
+      return serverSelectionWizardPage;
+    }
+    return remoteProjectSelectionWizardPage;
   }
 
   @Override
@@ -143,7 +147,7 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
   @Override
   public IWizardPage getNextPage(IWizardPage page) {
     if (page == projectsSelectionWizardPage) {
-      return serverSelectionWizardPage;
+      return model.isSkipServerSelection() ? remoteProjectSelectionWizardPage : serverSelectionWizardPage;
     }
     if (page == serverSelectionWizardPage) {
       return remoteProjectSelectionWizardPage;
