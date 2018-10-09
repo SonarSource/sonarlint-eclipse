@@ -326,7 +326,7 @@ public class ServersManager {
       .flatMap(b -> {
         Optional<IServer> server = findById(b.serverId());
         if (!server.isPresent()) {
-          SonarLintLogger.get().error("Project '" + project.getName() + "' is bound to an unknown SonarQube server: '" + b.serverId()
+          SonarLintLogger.get().error("Project '" + project.getName() + "' is bound to an unknown server: '" + b.serverId()
             + "'. Please fix project binding or unbind project.");
           return Optional.empty();
         }

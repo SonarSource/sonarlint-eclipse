@@ -50,7 +50,7 @@ public class ServerUpdateAvailablePopup extends AbstractSonarLintPopup {
     GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
     messageLabel.setLayoutData(layoutData);
 
-    messageLabel.setText("We detected some changes on the server '" + server.getId() + "'.\nDo you want to update the SonarLint storage now?");
+    messageLabel.setText("We detected some changes on the server '" + server.getId() + "'.\nDo you want to update the SonarLint bindings now?");
     messageLabel.setBackground(composite.getBackground());
 
     Composite links = new Composite(composite, SWT.NONE);
@@ -83,7 +83,7 @@ public class ServerUpdateAvailablePopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "Updates for the SonarLint local storage";
+    return "SonarLint binding data updates available";
   }
 
   @Override

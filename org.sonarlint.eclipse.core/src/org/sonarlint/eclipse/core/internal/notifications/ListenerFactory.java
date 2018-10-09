@@ -19,10 +19,11 @@
  */
 package org.sonarlint.eclipse.core.internal.notifications;
 
+import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotificationListener;
 
 public interface ListenerFactory {
 
-  SonarQubeNotificationListener create();
+  SonarQubeNotificationListener create(IServer s);
 
 }

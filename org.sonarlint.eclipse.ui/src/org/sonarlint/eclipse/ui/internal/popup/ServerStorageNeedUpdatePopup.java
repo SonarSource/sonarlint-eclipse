@@ -50,8 +50,7 @@ public class ServerStorageNeedUpdatePopup extends AbstractSonarLintPopup {
   protected void createContentArea(Composite composite) {
     Label messageLabel = new Label(composite, SWT.WRAP);
 
-    messageLabel.setText("Configuration stored from the server '" + server.getId()
-      + "' is missing or outdated.");
+    messageLabel.setText("Binding data from the server '" + server.getId() + "' is missing or outdated.");
     messageLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     messageLabel.setBackground(composite.getBackground());
     Link updateServerLink = new Link(composite, SWT.NONE);
@@ -69,7 +68,7 @@ public class ServerStorageNeedUpdatePopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint local storage is outdated";
+    return "SonarLint binding data missing/outdated";
   }
 
   @Override

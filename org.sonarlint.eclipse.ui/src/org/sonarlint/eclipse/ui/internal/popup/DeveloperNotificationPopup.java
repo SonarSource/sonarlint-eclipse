@@ -36,13 +36,15 @@ import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotification;
 
-public class SonarQubeNotificationPopup extends AbstractSonarLintPopup {
+public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
 
   private final SonarQubeNotification notification;
+  private boolean isSonarCloud;
 
-  public SonarQubeNotificationPopup(Display display, SonarQubeNotification notification) {
+  public DeveloperNotificationPopup(Display display, SonarQubeNotification notification, boolean isSonarCloud) {
     super(display);
     this.notification = notification;
+    this.isSonarCloud = isSonarCloud;
   }
 
   @Override
@@ -66,7 +68,7 @@ public class SonarQubeNotificationPopup extends AbstractSonarLintPopup {
     detailsLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        SonarQubeNotificationPopup.this.close();
+        DeveloperNotificationPopup.this.close();
         try {
           PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(notification.link()));
         } catch (PartInitException | MalformedURLException e1) {
@@ -78,7 +80,7 @@ public class SonarQubeNotificationPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarQube event";
+    return isSonarCloud ? "SonarCloud event" : "SonarQube event";
   }
 
   @Override

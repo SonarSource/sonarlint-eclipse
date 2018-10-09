@@ -32,7 +32,7 @@ import org.sonarlint.eclipse.ui.internal.popup.ServerUpdateAvailablePopup;
 public class CheckForUpdatesJob extends Job {
 
   public CheckForUpdatesJob() {
-    super("Check for configuration updates on SonarQube servers");
+    super("Check for updates of binding data on SonarQube/SonarCloud");
     setPriority(DECORATE);
     setSystem(true);
   }
@@ -41,9 +41,9 @@ public class CheckForUpdatesJob extends Job {
   protected IStatus run(IProgressMonitor monitor) {
     try {
       SubMonitor subMonitor = SubMonitor.convert(monitor, SonarLintCorePlugin.getServersManager().getServers().size());
-      subMonitor.setTaskName("Checking for configuration updates on SonarQube servers");
+      subMonitor.setTaskName("Check for updates of binding data on SonarQube/SonarCloud");
       for (final IServer server : SonarLintCorePlugin.getServersManager().getServers()) {
-        subMonitor.subTask("Checking for updates from server '" + server.getId() + "'");
+        subMonitor.subTask("Checking for updates of binding data from server '" + server.getId() + "'");
         SubMonitor serverMonitor = subMonitor.newChild(1);
 
         IStatus status = checkForUpdates(server, serverMonitor);

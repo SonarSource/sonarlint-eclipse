@@ -208,18 +208,18 @@ public class Server implements IServer, StateListener {
         if (progress.isCanceled()) {
           return;
         }
-        SonarLintLogger.get().info("Check for updates from server '" + getId() + "' for SonarQube project '" + projectKey + "'");
+        SonarLintLogger.get().info("Check for binding data updates on '" + getId() + "' for project '" + projectKey + "'");
         StorageUpdateCheckResult projectUpdateCheckResult = client.checkIfProjectStorageNeedUpdate(getConfig(), projectKey,
-          new WrappedProgressMonitor(projectMonitor, "Checking for configuration update for SonarQube project '" + projectKey + "'"));
+          new WrappedProgressMonitor(projectMonitor, "Checking for binding data update for project '" + projectKey + "'"));
         if (projectUpdateCheckResult.needUpdate()) {
           this.hasUpdates = true;
-          SonarLintLogger.get().info("On SonarQube project '" + projectKey + "':");
+          SonarLintLogger.get().info("For project '" + projectKey + "':");
           projectUpdateCheckResult.changelog().forEach(line -> SonarLintLogger.get().info("  - " + line));
         }
       }
     } catch (DownloadException e) {
       // If server is not reachable, just ignore
-      SonarLintLogger.get().debug("Unable to check for update on server '" + getId() + "'", e);
+      SonarLintLogger.get().debug("Unable to check for binding data updates on '" + getId() + "'", e);
     } finally {
       notifyAllListeners();
     }

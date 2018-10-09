@@ -72,11 +72,9 @@ public class FileExclusionsChecker {
       List<ISonarLintFile> excludedByServerSideExclusions = server.getServerFileExclusions(config.getProjectBinding().get(), notExcluded,
         testFileClassifier::isTest);
       notExcluded.removeAll(excludedByServerSideExclusions);
-      excludedByServerSideExclusions.forEach(f -> {
-        notExcluded.remove(f);
-        if (log) {
-          SonarLintLogger.get().debug("File excluded from analysis due to exclusions configured in SonarQube: " + f.getName());
-        }
+      excludedByServerSideExclusions.forEach(file -> {
+        notExcluded.remove(file);
+        logIfNeeded(file, log, "server side");
       });
     });
     return notExcluded;
@@ -90,20 +88,22 @@ public class FileExclusionsChecker {
     String relativePath = file.getProjectRelativePath();
 
     if (globalExclusions.test(relativePath)) {
-      if (log) {
-        SonarLintLogger.get().debug("File '" + file.getName() + "' excluded from analysis due to configured global exclusions");
-      }
+      logIfNeeded(file, log, "global");
       return true;
     }
 
     if (projectExclusions.test(relativePath)) {
-      if (log) {
-        SonarLintLogger.get().debug("File '" + file.getName() + "' excluded from analysis due to configured project exclusions");
-      }
+      logIfNeeded(file, log, "project");
       return true;
     }
 
     return false;
+  }
+
+  private void logIfNeeded(ISonarLintFile file, boolean log, String exclusionSource) {
+    if (log) {
+      SonarLintLogger.get().debug("File '" + file.getName() + "' excluded from analysis due to configured " + exclusionSource + " exclusions");
+    }
   }
 
   public static void addProjectFileExclusion(ISonarLintProject project, ISonarLintFile file, ExclusionItem exclusion) {
