@@ -20,28 +20,27 @@
 package org.sonarlint.eclipse.ui.internal.server.actions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.actions.SelectionProviderAction;
 import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.ui.internal.Messages;
+import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
+import org.sonarlint.eclipse.ui.internal.bind.wizard.ProjectBindingWizard;
 
-public class ServerEditAction extends SelectionProviderAction {
+public class ServerBindProjectsAction extends SelectionProviderAction {
   private List<IServer> servers;
   private Shell shell;
 
-  public ServerEditAction(Shell shell, ISelectionProvider selectionProvider) {
-    super(selectionProvider, Messages.actionEdit);
+  public ServerBindProjectsAction(Shell shell, ISelectionProvider selectionProvider) {
+    super(selectionProvider, "Bind projects...");
     this.shell = shell;
-    setImageDescriptor(SonarLintImages.EDIT_SERVER);
-    setActionDefinitionId(IWorkbenchCommandConstants.FILE_RENAME);
+    setImageDescriptor(SonarLintImages.SYNCED_IMG);
   }
 
   @Override
@@ -84,13 +83,9 @@ public class ServerEditAction extends SelectionProviderAction {
     }
 
     if (servers != null && !servers.isEmpty()) {
-      openEditWizard(shell, servers.get(0));
+      final WizardDialog dialog = ProjectBindingWizard.createDialogSkipServerSelection(shell, Collections.emptyList(), (Server) servers.get(0));
+      dialog.open();
     }
-  }
-
-  public static void openEditWizard(Shell shell, IServer server) {
-    WizardDialog dialog = ServerConnectionWizard.createDialog(shell, server);
-    dialog.open();
   }
 
 }

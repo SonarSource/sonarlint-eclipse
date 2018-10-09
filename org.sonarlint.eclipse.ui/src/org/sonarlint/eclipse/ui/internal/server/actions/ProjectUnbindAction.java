@@ -24,24 +24,23 @@ import java.util.Iterator;
 import java.util.List;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.actions.SelectionProviderAction;
-import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
+import org.sonarlint.eclipse.ui.internal.server.UnbindProjectDialog;
 
-public class ServerEditAction extends SelectionProviderAction {
-  private List<IServer> servers;
+public class ProjectUnbindAction extends SelectionProviderAction {
+  private List<ISonarLintProject> selectedProjects;
   private Shell shell;
 
-  public ServerEditAction(Shell shell, ISelectionProvider selectionProvider) {
-    super(selectionProvider, Messages.actionEdit);
+  public ProjectUnbindAction(Shell shell, ISelectionProvider selectionProvider) {
+    super(selectionProvider, Messages.actionUnbind);
     this.shell = shell;
-    setImageDescriptor(SonarLintImages.EDIT_SERVER);
-    setActionDefinitionId(IWorkbenchCommandConstants.FILE_RENAME);
+    setImageDescriptor(SonarLintImages.UNBIND);
+    setActionDefinitionId(IWorkbenchCommandConstants.EDIT_DELETE);
   }
 
   @Override
@@ -50,19 +49,19 @@ public class ServerEditAction extends SelectionProviderAction {
       setEnabled(false);
       return;
     }
-    servers = new ArrayList<>();
+    selectedProjects = new ArrayList<>();
     Iterator iterator = sel.iterator();
     while (iterator.hasNext()) {
       Object obj = iterator.next();
-      if (obj instanceof IServer) {
-        IServer server = (IServer) obj;
-        servers.add(server);
+      if (obj instanceof ISonarLintProject) {
+        ISonarLintProject project = (ISonarLintProject) obj;
+        selectedProjects.add(project);
       } else {
         setEnabled(false);
         return;
       }
     }
-    setEnabled(servers.size() == 1);
+    setEnabled(!selectedProjects.isEmpty());
   }
 
   @Override
@@ -75,7 +74,7 @@ public class ServerEditAction extends SelectionProviderAction {
     //
     // To handle the case where servers is null, the selectionChanged method is called
     // to ensure servers will be populated.
-    if (servers == null) {
+    if (selectedProjects == null) {
 
       IStructuredSelection sel = getStructuredSelection();
       if (sel != null) {
@@ -83,14 +82,10 @@ public class ServerEditAction extends SelectionProviderAction {
       }
     }
 
-    if (servers != null && !servers.isEmpty()) {
-      openEditWizard(shell, servers.get(0));
+    if (selectedProjects != null && !selectedProjects.isEmpty()) {
+      UnbindProjectDialog dsd = new UnbindProjectDialog(shell, selectedProjects);
+      dsd.open();
     }
-  }
-
-  public static void openEditWizard(Shell shell, IServer server) {
-    WizardDialog dialog = ServerConnectionWizard.createDialog(shell, server);
-    dialog.open();
   }
 
 }
