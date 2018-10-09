@@ -31,8 +31,10 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public class Tracker<RAW extends Trackable, BASE extends Trackable> {
 
-  public Tracking<RAW, BASE> track(Input<RAW> rawInput, Input<BASE> baseInput) {
-    Tracking<RAW, BASE> tracking = new Tracking<>(rawInput, baseInput);
+  public Tracking<RAW, BASE> trackRaw(Input<RAW> rawIssues, Input<BASE> localStorage) {
+    Tracking<RAW, BASE> tracking = new Tracking<>(rawIssues, localStorage);
+
+    // Raw issues don't have server issue key
 
     // 1. match issues with same rule, same line and same text range hash, but not necessarily with same message
     match(tracking, LineAndTextRangeHashKeyFactory.INSTANCE);
@@ -53,8 +55,24 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
     // 6. match issues with same rule and same same line hash
     match(tracking, LineHashKeyFactory.INSTANCE);
 
-    // 7. match issues with same server issue key
+    return tracking;
+  }
+
+  public Tracking<RAW, BASE> trackServer(Input<RAW> trackedLocally, Input<BASE> serverIssue) {
+    Tracking<RAW, BASE> tracking = new Tracking<>(trackedLocally, serverIssue);
+
+    // Server issues don't have text range hash
+    // 1. match issues with same server issue key
     match(tracking, ServerIssueSearchKeyFactory.INSTANCE);
+
+    // 2. match issues with same rule, same line and same message
+    match(tracking, LineAndMessageKeyFactory.INSTANCE);
+
+    // 3. match issues with same rule, same line and same line hash
+    match(tracking, LineAndLineHashKeyFactory.INSTANCE);
+
+    // 4. match issues with same rule and same same line hash
+    match(tracking, LineHashKeyFactory.INSTANCE);
 
     return tracking;
   }

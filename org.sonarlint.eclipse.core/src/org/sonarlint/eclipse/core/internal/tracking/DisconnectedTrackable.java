@@ -22,7 +22,7 @@ package org.sonarlint.eclipse.core.internal.tracking;
 /**
  * A trackable that used to match a server issue but it no longer does.
  */
-public class DisconnectedTrackable extends LeakedTrackable {
+public class DisconnectedTrackable extends WrappedTrackable {
 
   private final String severity;
   private final String type;
