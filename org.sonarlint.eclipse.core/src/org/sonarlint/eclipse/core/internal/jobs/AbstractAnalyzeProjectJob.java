@@ -122,37 +122,37 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends StandaloneAnalysi
     long startTime = System.currentTimeMillis();
     SonarLintLogger.get().debug("Trigger: " + triggerType.name());
 
-    Collection<ISonarLintFile> excludedFiles = new ArrayList<>();
-    Collection<FileWithDocument> filesToAnalyze = new ArrayList<>();
-
-    FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(getProject());
-    files.forEach(fWithDoc -> {
-      if (exclusionsChecker.isExcluded(fWithDoc.getFile(), true)) {
-        excludedFiles.add(fWithDoc.getFile());
-      } else {
-        filesToAnalyze.add(fWithDoc);
-      }
-    });
-
-    Map<ISonarLintFile, IDocument> filesToAnalyzeMap = filesToAnalyze
-      .stream()
-      .collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()), HashMap::putAll);
-
-    SonarLintLogger.get().debug("Clear markers on " + excludedFiles.size() + " excluded files");
-    excludedFiles.forEach(SonarLintMarkerUpdater::clearMarkers);
-
-    if (shouldClearReport) {
-      SonarLintMarkerUpdater.deleteAllMarkersFromReport();
-    }
-
-    if (filesToAnalyze.isEmpty()) {
-      return Status.OK_STATUS;
-    }
-
-    // Analyze
-    SonarLintLogger.get().info(this.getName() + "...");
     Path analysisWorkDir = null;
     try {
+      Collection<ISonarLintFile> excludedFiles = new ArrayList<>();
+      Collection<FileWithDocument> filesToAnalyze = new ArrayList<>();
+
+      FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(getProject());
+      files.forEach(fWithDoc -> {
+        if (exclusionsChecker.isExcluded(fWithDoc.getFile(), true)) {
+          excludedFiles.add(fWithDoc.getFile());
+        } else {
+          filesToAnalyze.add(fWithDoc);
+        }
+      });
+
+      Map<ISonarLintFile, IDocument> filesToAnalyzeMap = filesToAnalyze
+        .stream()
+        .collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()), HashMap::putAll);
+
+      SonarLintLogger.get().debug("Clear markers on " + excludedFiles.size() + " excluded files");
+      excludedFiles.forEach(SonarLintMarkerUpdater::clearMarkers);
+
+      if (shouldClearReport) {
+        SonarLintMarkerUpdater.deleteAllMarkersFromReport();
+      }
+
+      if (filesToAnalyze.isEmpty()) {
+        return Status.OK_STATUS;
+      }
+
+      // Analyze
+      SonarLintLogger.get().info(this.getName() + "...");
       // Configure
       Map<String, String> mergedExtraProps = new LinkedHashMap<>();
       Collection<ProjectConfigurator> usedDeprecatedConfigurators = configureDeprecated(getProject(), filesToAnalyzeMap.keySet(), mergedExtraProps, monitor);

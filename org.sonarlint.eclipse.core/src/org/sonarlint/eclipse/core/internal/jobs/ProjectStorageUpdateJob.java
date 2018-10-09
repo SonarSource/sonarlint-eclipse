@@ -33,7 +33,7 @@ public class ProjectStorageUpdateJob extends Job {
   private final String projectKey;
 
   public ProjectStorageUpdateJob(String serverId, String projectKey) {
-    super("Update SonarLint storage of project " + projectKey + " on server " + serverId);
+    super("Update SonarLint binding data for project '" + projectKey + "' on '" + serverId + "'");
     this.serverId = serverId;
     this.projectKey = projectKey;
   }
@@ -45,7 +45,7 @@ public class ProjectStorageUpdateJob extends Job {
       server.ifPresent(s -> s.updateProjectStorage(projectKey, monitor));
       return Status.OK_STATUS;
     } catch (Exception e) {
-      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update SonarLint storage for project " + serverId, e);
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update SonarLint binding data for project '" + projectKey + "' on '" + serverId + "'", e);
     }
   }
 }

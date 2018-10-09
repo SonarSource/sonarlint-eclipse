@@ -38,21 +38,21 @@ public class ServerUpdateJob extends Job {
   private final IServer server;
 
   public ServerUpdateJob(IServer server) {
-    super("Update data from SonarQube server '" + server.getId() + "'");
+    super("Update SonarLint binding data from '" + server.getId() + "'");
     this.server = server;
   }
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     List<ISonarLintProject> projectsToUpdate = server.getBoundProjects();
-    monitor.beginTask("Update server and all associated projects", projectsToUpdate.size() + 1);
+    monitor.beginTask("Update SonarLint binding data for all associated projects", projectsToUpdate.size() + 1);
     try {
       server.updateStorage(monitor);
     } catch (Exception e) {
       if (e instanceof CanceledException && monitor.isCanceled()) {
         return Status.CANCEL_STATUS;
       }
-      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update data from server '" + server.getId() + "'", e);
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding data from '" + server.getId() + "'", e);
     }
     monitor.worked(1);
 
@@ -74,13 +74,13 @@ public class ServerUpdateJob extends Job {
         if (e instanceof CanceledException && monitor.isCanceled()) {
           return Status.CANCEL_STATUS;
         }
-        failures.add(new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding for project '" + projectToUpdate.getName() + "'", e));
+        failures.add(new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update binding data for project '" + projectToUpdate.getName() + "'", e));
       }
       monitor.worked(1);
     }
     monitor.done();
     if (!failures.isEmpty()) {
-      return new MultiStatus(SonarLintCorePlugin.PLUGIN_ID, IStatus.ERROR, failures.toArray(new IStatus[0]), "Failed to update binding for " + failures.size() + " project(s)",
+      return new MultiStatus(SonarLintCorePlugin.PLUGIN_ID, IStatus.ERROR, failures.toArray(new IStatus[0]), "Failed to update binding data for " + failures.size() + " project(s)",
         null);
     }
     return Status.OK_STATUS;

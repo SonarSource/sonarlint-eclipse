@@ -675,13 +675,13 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
-          description="Bind to a SonarQube project"
+          description="Bind to a project analyzed on SonarQube or SonarCloud"
           id="org.sonarlint.eclipse.ui.internal.command.BindProjectsCommand"
-          name="Bind to a SonarQube or SonarCloud project..."
+          name="Bind to SonarQube or SonarCloud..."
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
-          description="Change binding configuration"
+          description="Bind to a project analyzed on SonarQube or SonarCloud"
           id="org.sonarlint.eclipse.ui.internal.command.ChangeProjectsBindingCommand"
           name="Change binding..."
           categoryId="org.sonarlint.eclipse.ui.command.category">

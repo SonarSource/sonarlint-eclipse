@@ -50,8 +50,8 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
+import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
-import org.sonarlint.eclipse.ui.internal.popup.SonarQubeNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotification;
 import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotificationListener;
@@ -193,11 +193,11 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public synchronized ListenerFactory listenerFactory() {
     if (listenerFactory == null) {
       // don't replace the anon class with lambda, because then the factory's "create" will always return the same listener instance
-      listenerFactory = () -> new SonarQubeNotificationListener() {
+      listenerFactory = (IServer s) -> new SonarQubeNotificationListener() {
         @Override
         public void handle(SonarQubeNotification notification) {
           Display.getDefault().asyncExec(() -> {
-            SonarQubeNotificationPopup popup = new SonarQubeNotificationPopup(Display.getCurrent(), notification);
+            DeveloperNotificationPopup popup = new DeveloperNotificationPopup(Display.getCurrent(), notification, s.isSonarCloud());
             popup.open();
           });
         }
@@ -279,7 +279,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   }
 
   public static void subscribeToNotifications(ISonarLintProject project) {
-    SonarLintCorePlugin.getInstance().notificationsManager().subscribe(project, getDefault().listenerFactory().create());
+    SonarLintCorePlugin.getServersManager().forProject(project).ifPresent(s -> {
+      SonarLintCorePlugin.getInstance().notificationsManager().subscribe(project, getDefault().listenerFactory().create(s));
+    });
   }
 
   public static void unsubscribeToNotifications(ISonarLintProject project) {
