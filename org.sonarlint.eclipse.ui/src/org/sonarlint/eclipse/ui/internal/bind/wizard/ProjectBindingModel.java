@@ -25,6 +25,8 @@ import javax.annotation.CheckForNull;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ModelObject;
+import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
+import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
 public class ProjectBindingModel extends ModelObject {
 
@@ -36,6 +38,7 @@ public class ProjectBindingModel extends ModelObject {
   private Server server;
   private String remoteProjectKey;
   private boolean skipServerSelection;
+  private TextSearchIndex<RemoteProject> projectIndex;
 
   public void setProjects(List<ISonarLintProject> eclipseProjects) {
     this.eclipseProjects = eclipseProjects;
@@ -57,7 +60,9 @@ public class ProjectBindingModel extends ModelObject {
   }
 
   public void setRemoteProjectKey(String remoteProjectKey) {
+    String old = this.remoteProjectKey;
     this.remoteProjectKey = remoteProjectKey;
+    firePropertyChange(PROPERTY_REMOTE_PROJECT_KEY, old, this.remoteProjectKey);
   }
 
   public List<ISonarLintProject> getEclipseProjects() {
@@ -76,6 +81,15 @@ public class ProjectBindingModel extends ModelObject {
 
   public void setSkipServer(boolean skipServerSelection) {
     this.skipServerSelection = skipServerSelection;
+  }
+
+  public TextSearchIndex<RemoteProject> getProjectIndex() {
+    return projectIndex;
+  }
+
+  public void setProjectIndex(TextSearchIndex<RemoteProject> projectIndex) {
+    this.projectIndex = projectIndex;
+
   }
 
 }

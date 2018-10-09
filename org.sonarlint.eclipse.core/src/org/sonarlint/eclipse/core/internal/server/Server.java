@@ -492,7 +492,7 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public TextSearchIndex<RemoteProject> getProjectIndex() {
+  public TextSearchIndex<RemoteProject> computeProjectIndex() {
     TextSearchIndex<RemoteProject> index = new TextSearchIndex<>();
     for (RemoteProject project : allProjectsByKey.values()) {
       index.index(project, project.getKey() + " " + project.getName());
