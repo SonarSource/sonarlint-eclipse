@@ -43,7 +43,7 @@ public class IssueTracker {
       tracked = rawIssues;
     } else {
       Collection<Trackable> trackedIssues = new ArrayList<>();
-      Tracking<Trackable, Trackable> tracking = new Tracker<>().track(() -> rawIssues, () -> cache.getCurrentTrackables(file.getProjectRelativePath()));
+      Tracking<Trackable, Trackable> tracking = new Tracker<>().trackRaw(() -> rawIssues, () -> cache.getCurrentTrackables(file.getProjectRelativePath()));
       // Previous issues
       for (Map.Entry<Trackable, Trackable> entry : tracking.getMatchedRaws().entrySet()) {
         Trackable next = new PreviousTrackable(entry.getValue(), entry.getKey());
@@ -79,7 +79,7 @@ public class IssueTracker {
 
   public static Collection<Trackable> matchAndTrackServerIssues(Collection<Trackable> serverIssues, Collection<Trackable> currentIssues) {
     Collection<Trackable> trackedIssues = new ArrayList<>();
-    Tracking<Trackable, Trackable> tracking = new Tracker<>().track(() -> currentIssues, () -> serverIssues);
+    Tracking<Trackable, Trackable> tracking = new Tracker<>().trackServer(() -> currentIssues, () -> serverIssues);
     for (Map.Entry<Trackable, Trackable> entry : tracking.getMatchedRaws().entrySet()) {
       Trackable next = new CombinedTrackable(entry.getValue(), entry.getKey());
       trackedIssues.add(next);
