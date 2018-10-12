@@ -354,6 +354,7 @@ public class Server implements IServer, StateListener {
   @Override
   public void updateProjectList(IProgressMonitor monitor) {
     client.downloadAllProjects(getConfig(), new WrappedProgressMonitor(monitor, "Download project list from server '" + getId() + "'"));
+    reloadProjects();
   }
 
   @Override
@@ -366,7 +367,7 @@ public class Server implements IServer, StateListener {
       }).collect(toList());
   }
 
-  public List<RemoteSonarProject> getBoundRemoteProjects() {
+  public List<RemoteSonarProject> getBoundRemoteProjects(IProgressMonitor monitor) {
     return ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
       .map(SonarLintCorePlugin::loadConfig)
@@ -377,9 +378,9 @@ public class Server implements IServer, StateListener {
       .distinct()
       .sorted()
       .map(projectKey -> {
-        RemoteProject remoteProject = getRemoteProjects().get(projectKey);
-        if (remoteProject != null) {
-          return new RemoteSonarProject(id, remoteProject.getKey(), remoteProject.getName());
+        Optional<RemoteProject> remoteProject = getRemoteProject(projectKey, monitor);
+        if (remoteProject.isPresent()) {
+          return new RemoteSonarProject(id, remoteProject.get().getKey(), remoteProject.get().getName());
         } else {
           return new RemoteSonarProject(id, projectKey, "<unknown>");
         }
@@ -501,8 +502,23 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public Map<String, RemoteProject> getRemoteProjects() {
+  public Map<String, RemoteProject> getCachedRemoteProjects() {
     return unmodifiableMap(allProjectsByKey);
+  }
+
+  @Override
+  public Optional<RemoteProject> getRemoteProject(String projectKey, IProgressMonitor monitor) {
+    RemoteProject remoteProjectFromStorage = allProjectsByKey.get(projectKey);
+    if (remoteProjectFromStorage != null) {
+      return Optional.of(remoteProjectFromStorage);
+    } else {
+      WsHelper helper = new WsHelperImpl();
+      Optional<RemoteProject> project = helper.getProject(getConfig(), projectKey, new WrappedProgressMonitor(monitor, "Fetch project name"));
+      if (project.isPresent()) {
+        allProjectsByKey.put(projectKey, project.get());
+      }
+      return project;
+    }
   }
 
   @Override

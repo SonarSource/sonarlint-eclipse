@@ -38,7 +38,7 @@ public class ServerBindProjectsAction extends SelectionProviderAction {
   private Shell shell;
 
   public ServerBindProjectsAction(Shell shell, ISelectionProvider selectionProvider) {
-    super(selectionProvider, "Bind projects...");
+    super(selectionProvider, "Bind Projects...");
     this.shell = shell;
     setImageDescriptor(SonarLintImages.SYNCED_IMG);
   }

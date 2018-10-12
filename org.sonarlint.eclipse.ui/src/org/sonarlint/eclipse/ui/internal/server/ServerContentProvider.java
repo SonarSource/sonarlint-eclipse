@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.server;
 
 import java.util.Optional;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
@@ -39,7 +40,7 @@ public class ServerContentProvider extends BaseContentProvider implements ITreeC
   public Object[] getChildren(Object element) {
     if (element instanceof IServer) {
       Server server = (Server) element;
-      return server.getBoundRemoteProjects().toArray();
+      return server.getBoundRemoteProjects(new NullProgressMonitor()).toArray();
     }
     if (element instanceof RemoteSonarProject) {
       RemoteSonarProject project = (RemoteSonarProject) element;
@@ -55,7 +56,9 @@ public class ServerContentProvider extends BaseContentProvider implements ITreeC
       SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(project);
       Optional<IServer> server = SonarLintCorePlugin.getServersManager().forProject(project, config);
       if (server.isPresent()) {
-        return server.get().getRemoteProjects().get(config.getProjectBinding().get().projectKey());
+        return server.get()
+          .getRemoteProject(config.getProjectBinding().get().projectKey(), new NullProgressMonitor())
+          .orElse(null);
       }
       return null;
     }

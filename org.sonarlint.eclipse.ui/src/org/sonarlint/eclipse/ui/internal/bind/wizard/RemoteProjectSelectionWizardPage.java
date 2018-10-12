@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.fieldassist.ContentAssistCommandAdapter;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.sonarlint.eclipse.ui.internal.server.wizard.MandatoryStringValidator;
 
 public class RemoteProjectSelectionWizardPage extends AbstractProjectBindingWizardPage {
 
@@ -45,25 +46,25 @@ public class RemoteProjectSelectionWizardPage extends AbstractProjectBindingWiza
 
   @Override
   protected void doCreateControl(Composite container) {
-    Text organizationText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    organizationText.setMessage("Start typing to search for your project");
+    Text projectKeyText = new Text(container, SWT.BORDER | SWT.SINGLE);
+    projectKeyText.setMessage("Start typing to search for your project");
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
-    organizationText.setLayoutData(gd);
+    projectKeyText.setLayoutData(gd);
 
     DataBindingContext dbc = new DataBindingContext();
     projectTextBinding = dbc.bindValue(
-      WidgetProperties.text(SWT.Modify).observe(organizationText),
+      WidgetProperties.text(SWT.Modify).observe(projectKeyText),
       BeanProperties.value(ProjectBindingModel.class, ProjectBindingModel.PROPERTY_REMOTE_PROJECT_KEY)
         .observe(model),
-      new UpdateValueStrategy().setBeforeSetValidator(new MandatoryRemoteProjectValidator("You must select a project", model)),
+      new UpdateValueStrategy().setBeforeSetValidator(new MandatoryStringValidator("You must select a project key")),
       null);
     ControlDecorationSupport.create(projectTextBinding, SWT.LEFT | SWT.TOP);
 
     WizardPageSupport.create(this, dbc);
 
     ContentProposalAdapter contentProposalAdapter = new ContentAssistCommandAdapter(
-      organizationText,
+      projectKeyText,
       new TextContentAdapter(),
       new RemoteProjectProvider(model, this),
       ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
