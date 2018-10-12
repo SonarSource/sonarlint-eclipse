@@ -61,10 +61,36 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
 elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
   echo '======= Build and analyze pull request'
   echo '======= with deploy'
-    mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy sonar:sonar \
-      -Pdeploy-sonarsource \
+  
+  # Fetch all commit history so that SonarQube has exact blame information
+  # for issue auto-assignment
+  # This command can fail with "fatal: --unshallow on a complete repository does not make sense" 
+  # if there are not enough commits in the Git repository (even if Travis executed git clone --depth 50).
+  # For this reason errors are ignored with "|| true"
+  git fetch --unshallow || true
+  
+  mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy \
+      -Pdeploy-sonarsource,coverage \
       -Dtycho.disableP2Mirrors=true \
       -Dmaven.test.redirectTestOutputToFile=false \
+      -B -e -V $*
+
+  REPO_URL="file://`pwd`/org.sonarlint.eclipse.site/target/repository/"   
+      
+
+  # Run ITs to collect IT coverage
+  cd its
+  mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+      -Pcoverage \
+      -Dtycho.localArtifacts=ignore \
+      -Dtycho.disableP2Mirrors=true \
+      -Dsonarlint-eclipse.p2.url=$REPO_URL \
+      -B -e
+      
+  cd ..
+  mvn sonar:sonar \
+      -Pcoverage \
+      -Dtycho.disableP2Mirrors=true \
       -Dsonar.host.url=$SONAR_HOST_URL \
       -Dsonar.login=$SONAR_TOKEN \
       -Dsonar.pullrequest.branch=$GITHUB_BASE_BRANCH \
@@ -78,7 +104,7 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
       -Dsonar.analysis.repository=$GITHUB_REPO \
       -Dsonar.analysis.prNumber=$PULL_REQUEST \
       -B -e -V $*
-
+      
 elif [[ "${TRAVIS_BRANCH}" == "branch-"* ]] && [ "$IS_PULLREQUEST" == "false" ]; then
     echo '======= Build, no analysis'
     echo '======= with deploy'
