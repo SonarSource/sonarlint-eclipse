@@ -100,7 +100,7 @@ public class SonarLintTelemetry {
 
   // visible for testing
   public TelemetryManager newTelemetryManager(Path path, TelemetryClient client) {
-    return new TelemetryManager(path, client);
+    return new TelemetryManager(path, client, SonarLintTelemetry::isAnyProjectConnected, SonarLintTelemetry::isAnyServerSonarCloud);
   }
 
   private class TelemetryJob extends Job {
@@ -146,7 +146,6 @@ public class SonarLintTelemetry {
   // visible for testing
   public void upload() {
     if (enabled()) {
-      telemetry.usedConnectedMode(isAnyProjectConnected(), isAnyServerSonarCloud());
       telemetry.uploadLazily();
     }
   }
