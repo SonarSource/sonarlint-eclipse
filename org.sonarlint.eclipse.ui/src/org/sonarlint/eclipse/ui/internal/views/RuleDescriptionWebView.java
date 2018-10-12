@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
@@ -226,7 +227,7 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
       return;
     }
     if (!linking) {
-      IMarker element = findSelectedElement(part, selection);
+      IMarker element = findSelectedSonarIssue(selection);
       if (element != null) {
         lastSelection = element;
       }
@@ -245,7 +246,7 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     if ((selection == null) || selection.isEmpty()) {
       return;
     }
-    final IMarker element = findSelectedElement(part, selection);
+    final IMarker element = findSelectedSonarIssue(selection);
     if (isIgnoringNewInput(element)) {
       return;
     }
@@ -260,7 +261,7 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     open(element);
   }
 
-  protected boolean isIgnoringNewInput(IMarker element) {
+  protected boolean isIgnoringNewInput(@Nullable IMarker element) {
     return (currentElement != null) && currentElement.equals(element) && (element != null);
   }
 
@@ -293,10 +294,6 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     }
 
     browser.updateRule(ruleDetails);
-  }
-
-  protected IMarker findSelectedElement(IWorkbenchPart part, ISelection selection) {
-    return findSelectedSonarIssue(selection);
   }
 
 }
