@@ -100,7 +100,7 @@ public class FileExclusionsChecker {
     return false;
   }
 
-  private void logIfNeeded(ISonarLintFile file, boolean log, String exclusionSource) {
+  private static void logIfNeeded(ISonarLintFile file, boolean log, String exclusionSource) {
     if (log) {
       SonarLintLogger.get().debug("File '" + file.getName() + "' excluded from analysis due to configured " + exclusionSource + " exclusions");
     }
