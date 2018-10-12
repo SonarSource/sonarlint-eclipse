@@ -25,7 +25,6 @@ import java.util.List;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -134,21 +133,22 @@ public class ServerActionProvider extends CommonActionProvider {
 
     if (!servers.isEmpty() && projects.isEmpty()) {
       menu.add(updateAction);
+      if (servers.size() == 1) {
+        menu.add(bindProjectsAction);
+      }
       menu.add(new Separator());
       if (servers.size() == 1) {
         menu.add(editAction);
-        menu.add(bindProjectsAction);
       }
       menu.add(deleteServerAction);
       menu.add(new Separator());
     }
 
     if (projects.isEmpty()) {
-      addTopSection(menu);
-      menu.add(new Separator());
-    }
-
-    if (servers.isEmpty() && !projects.isEmpty()) {
+      IAction newServerAction = new NewServerWizardAction();
+      newServerAction.setText(Messages.actionNewServer);
+      menu.add(newServerAction);
+    } else if (servers.isEmpty()) {
       menu.add(updateBindingAction);
       menu.add(unbindProjectsAction);
     }
@@ -167,14 +167,6 @@ public class ServerActionProvider extends CommonActionProvider {
         }
       }
     }
-  }
-
-  protected void addTopSection(IMenuManager menu) {
-    MenuManager newMenu = new MenuManager(Messages.actionNew, NEW_MENU_ID);
-    IAction newServerAction = new NewServerWizardAction();
-    newServerAction.setText(Messages.actionNewServer);
-    newMenu.add(newServerAction);
-    menu.add(newMenu);
   }
 
 }
