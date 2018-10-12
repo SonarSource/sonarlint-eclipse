@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.server;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
@@ -96,7 +97,9 @@ public interface IServer {
 
   TextSearchIndex<RemoteProject> computeProjectIndex();
 
-  Map<String, RemoteProject> getRemoteProjects();
+  Map<String, RemoteProject> getCachedRemoteProjects();
+
+  Optional<RemoteProject> getRemoteProject(String projectKey, IProgressMonitor monitor);
 
   AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor);
 
@@ -125,4 +128,5 @@ public interface IServer {
   boolean areNotificationsEnabled();
 
   List<ISonarLintFile> getServerFileExclusions(ProjectBinding binding, Collection<ISonarLintFile> files, Predicate<ISonarLintFile> testFilePredicate);
+
 }
