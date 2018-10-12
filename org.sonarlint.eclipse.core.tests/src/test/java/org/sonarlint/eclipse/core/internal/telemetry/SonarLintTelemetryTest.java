@@ -27,7 +27,6 @@ import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -112,7 +111,6 @@ public class SonarLintTelemetryTest {
     when(engine.isEnabled()).thenReturn(true);
     telemetry.upload();
     verify(engine).isEnabled();
-    verify(engine).usedConnectedMode(anyBoolean(), anyBoolean());
     verify(engine).uploadLazily();
   }
 
