@@ -47,7 +47,7 @@ public class RemoteProjectSelectionWizardPage extends AbstractProjectBindingWiza
   @Override
   protected void doCreateControl(Composite container) {
     Text projectKeyText = new Text(container, SWT.BORDER | SWT.SINGLE);
-    projectKeyText.setMessage("Start typing to search for your project");
+    projectKeyText.setMessage("Start typing to search for your project by name or enter the project key");
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     gd.horizontalIndent = 10;
     projectKeyText.setLayoutData(gd);
