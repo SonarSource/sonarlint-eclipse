@@ -545,8 +545,9 @@
 	            <iterate ifEmpty="false">
 	              <or>
 							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
-									<test property="org.sonarlint.eclipse.core.open"/>
-								</adapt>
+				  					<test property="org.sonarlint.eclipse.core.open"/>
+					  				<test property="org.sonarlint.eclipse.core.supportsFullAnalysis"/>
+						  		</adapt>
 							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
 				  			</or>
 	            </iterate>
@@ -562,6 +563,7 @@
 	            	<or>
 	            		<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
 							      <test property="org.sonarlint.eclipse.core.open"/>
+  									<test property="org.sonarlint.eclipse.core.supportsFullAnalysis"/>
 						      </adapt>
 					        <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
 					        <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>

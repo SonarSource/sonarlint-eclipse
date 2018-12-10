@@ -57,7 +57,7 @@ public final class SelectionUtils {
     return selection.getFirstElement();
   }
 
-  public static Set<ISonarLintProject> allSelectedProjects(ExecutionEvent event) throws ExecutionException {
+  public static Set<ISonarLintProject> allSelectedProjects(ExecutionEvent event, boolean onlyIfProjectSupportsFullAnalysis) throws ExecutionException {
     ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
 
     final Set<ISonarLintProject> selectedProjects = new HashSet<>();
@@ -65,7 +65,7 @@ public final class SelectionUtils {
     if (selection instanceof IStructuredSelection) {
       List elems = ((IStructuredSelection) selection).toList();
       for (Object elem : elems) {
-        collectProjects(selectedProjects, elem);
+        collectProjects(selectedProjects, elem, onlyIfProjectSupportsFullAnalysis);
       }
     }
 
@@ -73,29 +73,31 @@ public final class SelectionUtils {
 
   }
 
-  private static void collectProjects(Set<ISonarLintProject> selectedProjects, Object elem) {
+  private static void collectProjects(Set<ISonarLintProject> selectedProjects, Object elem, boolean onlyIfProjectSupportsFullAnalysis) {
     ISonarLintProjectContainer container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
     if (container != null) {
-      selectedProjects.addAll(container.projects().stream().filter(ISonarLintProject::isOpen).collect(toList()));
+      selectedProjects.addAll(container.projects().stream()
+        .filter(ISonarLintProject::isOpen)
+        .filter(p -> !onlyIfProjectSupportsFullAnalysis || p.supportsFullAnalysis())
+        .collect(toList()));
       return;
     }
     ISonarLintProject project = Adapters.adapt(elem, ISonarLintProject.class);
-    if (project != null && project.isOpen()) {
+    if (project != null && project.isOpen() && (!onlyIfProjectSupportsFullAnalysis || project.supportsFullAnalysis())) {
       selectedProjects.add(project);
-      return;
     }
   }
 
   /** 
    * Return all {@link ISonarLintFile} based on current selection.
    */
-  public static Set<ISonarLintFile> allSelectedFiles(ISelection selection) {
+  public static Set<ISonarLintFile> allSelectedFiles(ISelection selection, boolean onlyIfProjectSupportsFullAnalysis) {
     final Set<ISonarLintFile> selectedFiles = new HashSet<>();
 
     if (selection instanceof IStructuredSelection) {
       List elems = ((IStructuredSelection) selection).toList();
       for (Object elem : elems) {
-        collectFiles(selectedFiles, elem);
+        collectFiles(selectedFiles, elem, onlyIfProjectSupportsFullAnalysis);
       }
     }
 
@@ -103,21 +105,23 @@ public final class SelectionUtils {
 
   }
 
-  private static void collectFiles(Set<ISonarLintFile> selectedFiles, Object elem) {
+  private static void collectFiles(Set<ISonarLintFile> selectedFiles, Object elem, boolean onlyIfProjectSupportsFullAnalysis) {
     ISonarLintProjectContainer container = Adapters.adapt(elem, ISonarLintProjectContainer.class);
     if (container != null) {
-      container.projects().stream().filter(ISonarLintProject::isOpen).forEach(p -> selectedFiles.addAll(p.files()));
+      container.projects().stream()
+        .filter(ISonarLintProject::isOpen)
+        .filter(p -> !onlyIfProjectSupportsFullAnalysis || p.supportsFullAnalysis())
+        .forEach(p -> selectedFiles.addAll(p.files()));
       return;
     }
     ISonarLintProject project = Adapters.adapt(elem, ISonarLintProject.class);
-    if (project != null) {
+    if (project != null && project.isOpen() && (!onlyIfProjectSupportsFullAnalysis || project.supportsFullAnalysis())) {
       selectedFiles.addAll(project.files());
       return;
     }
     ISonarLintFile file = Adapters.adapt(elem, ISonarLintFile.class);
     if (file != null) {
       selectedFiles.add(file);
-      return;
     }
   }
 

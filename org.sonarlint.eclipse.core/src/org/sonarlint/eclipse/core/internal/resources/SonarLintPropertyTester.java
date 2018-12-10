@@ -54,6 +54,11 @@ public class SonarLintPropertyTester extends PropertyTester {
         ? project.isOpen()
         : (project.isOpen() == ((Boolean) expectedValue).booleanValue());
     }
+    if ("supportsFullAnalysis".equals(property)) {
+      return expectedValue == null
+        ? project.supportsFullAnalysis()
+        : (project.supportsFullAnalysis() == ((Boolean) expectedValue).booleanValue());
+    }
     if ("excluded".equals(property)) {
       ISonarLintFile file = getFile(receiver);
       if (file == null) {

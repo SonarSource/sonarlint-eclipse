@@ -44,7 +44,7 @@ public class AnalyzeChangeSetCommand extends AbstractHandler {
 
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    Collection<ISonarLintProject> selectedProjects = SelectionUtils.allSelectedProjects(event);
+    Collection<ISonarLintProject> selectedProjects = SelectionUtils.allSelectedProjects(event, true);
 
     if (selectedProjects.isEmpty()) {
       FileWithDocument editedFile = AnalyzeCommand.findEditedFile(event);

@@ -42,7 +42,7 @@ public class UnbindProjectsCommand extends AbstractHandler {
 
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
-    Collection<ISonarLintProject> selectedProjects = SelectionUtils.allSelectedProjects(event);
+    Collection<ISonarLintProject> selectedProjects = SelectionUtils.allSelectedProjects(event, false);
 
     if (!selectedProjects.isEmpty()) {
       Job job = new Job("Unbind projects") {
