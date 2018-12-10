@@ -62,6 +62,7 @@ public class DefaultSonarLintAdapterFactoryTest extends SonarTestCase {
 
     assertThat(sonarLintFile).isNotNull();
     assertThat(sonarLintFile.getProject().getName()).isEqualTo("module");
+    assertThat(sonarLintFile.getProject().supportsFullAnalysis()).isFalse();
 
   }
 
@@ -142,6 +143,11 @@ public class DefaultSonarLintAdapterFactoryTest extends SonarTestCase {
     @Override
     public ISonarLintProject getProject() {
       return this;
+    }
+
+    @Override
+    public boolean supportsFullAnalysis() {
+      return false;
     }
 
     @Override

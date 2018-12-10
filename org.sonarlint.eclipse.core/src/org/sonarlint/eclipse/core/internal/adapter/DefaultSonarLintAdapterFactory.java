@@ -73,13 +73,14 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
   }
 
   private static <T> T adaptProject(Class<T> adapterType, IProject project) {
+    DefaultSonarLintProjectAdapter defaultSonarLintProjectAdapter = new DefaultSonarLintProjectAdapter(project);
     for (ISonarLintProjectAdapterParticipant p : SonarLintCorePlugin.getExtensionTracker().getProjectAdapterParticipants()) {
-      ISonarLintProject adapted = p.adapt(project);
+      ISonarLintProject adapted = p.adapt(project, defaultSonarLintProjectAdapter);
       if (adapted != null) {
         return adapterType.cast(adapted);
       }
     }
-    return adapterType.cast(new DefaultSonarLintProjectAdapter(project));
+    return adapterType.cast(defaultSonarLintProjectAdapter);
   }
 
   /**

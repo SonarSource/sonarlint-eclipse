@@ -38,10 +38,25 @@ public interface ISonarLintProjectAdapterParticipant {
   }
 
   /**
-   * @return <code>null</code> to use SonarLint default adapter
+   * Adapt an {@link IProject} to an {@link ISonarLintProject}.
+   * @return <code>null</code> if this is not a project you manage
+   * @deprecated since 4.1 implements {@link #adapt(IProject, ISonarLintProject)} instead
    */
+  @Deprecated
   @CheckForNull
   default ISonarLintProject adapt(IProject project) {
     return null;
+  }
+
+  /**
+   * Adapt an {@link IProject} to an {@link ISonarLintProject}.
+   * @param defaultAdapter this is the default adapter of SonarLint. You can use it as a delegate if
+   * you want to only override some parts of the behavior.
+   * @return <code>null</code> if this is not a project you manage
+   * @since 4.1
+   */
+  @CheckForNull
+  default ISonarLintProject adapt(IProject project, ISonarLintProject defaultAdapter) {
+    return adapt(project);
   }
 }

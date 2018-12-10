@@ -45,6 +45,15 @@ public interface ISonarLintProject extends ISonarLintIssuable {
   }
 
   /**
+   * Does full analysis make sense for such project. Full analysis might be very expensive
+   * for some Cobol projects, since files are not locally present in the FS.
+   * @since 4.1
+   */
+  default boolean supportsFullAnalysis() {
+    return true;
+  }
+
+  /**
    * The scope context used to store SonarLint configuration
    */
   default IScopeContext getScopeContext() {

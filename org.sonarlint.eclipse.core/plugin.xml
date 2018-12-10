@@ -58,7 +58,7 @@
            class="org.sonarlint.eclipse.core.internal.resources.SonarLintPropertyTester"
            id="org.sonarlint.eclipse.core.internal.resources.SonarLintProjectTester"
            namespace="org.sonarlint.eclipse.core"
-           properties="bound,autoAnalysisEnabled,open,excluded"
+           properties="bound,autoAnalysisEnabled,open,excluded,supportsFullAnalysis"
            type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
      </propertyTester>
      <propertyTester
