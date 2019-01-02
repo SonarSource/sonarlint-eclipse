@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
 import javax.annotation.Nullable;
+
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 
 public class SonarLintProjectConfiguration {
@@ -33,6 +35,8 @@ public class SonarLintProjectConfiguration {
   @Nullable
   private EclipseProjectBinding projectBinding;
   private boolean autoEnabled = true;
+  private boolean triggerEditorChangeEnabled = true;
+  private boolean triggerEditorOpenEnabled = true;
 
   public List<ExclusionItem> getFileExclusions() {
     return fileExclusions;
@@ -60,6 +64,38 @@ public class SonarLintProjectConfiguration {
 
   public Optional<EclipseProjectBinding> getProjectBinding() {
     return Optional.ofNullable(projectBinding);
+  }
+
+  /**
+   * 
+   * @return
+   */
+  public boolean isTriggerEditorChangeEnabled() {
+    return triggerEditorChangeEnabled;
+  }
+
+  /**
+   * 
+   * @param triggerEditorChangeEnabled
+   */
+  public void setIsTriggerEditorChangeEnabled(boolean triggerEditorChangeEnabled) {
+    this.triggerEditorChangeEnabled = triggerEditorChangeEnabled;
+  }
+
+  /**
+   * 
+   * @return
+   */
+  public boolean isTriggerEditorOpenEnabled() {
+    return triggerEditorOpenEnabled;
+  }
+
+  /**
+   * 
+   * @param analysisEditorTriggerEnabled
+   */
+  public void setTriggerEditorOpenEnabled(boolean triggerEditorOpenEnabled) {
+    this.triggerEditorOpenEnabled = triggerEditorOpenEnabled;
   }
 
   public static class EclipseProjectBinding extends ProjectBinding {

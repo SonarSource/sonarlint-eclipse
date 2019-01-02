@@ -19,7 +19,11 @@
  */
 package org.sonarlint.eclipse.core.internal.resources;
 
+import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isBlank;
+import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isNotBlank;
+
 import java.util.List;
+
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
@@ -27,9 +31,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
-
-import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isBlank;
-import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isNotBlank;
 
 public class SonarLintProjectConfigurationManager {
 
@@ -39,6 +40,10 @@ public class SonarLintProjectConfigurationManager {
   private static final String P_PROJECT_KEY = "projectKey";
   private static final String P_SQ_PREFIX_KEY = "sqPrefixKey";
   private static final String P_IDE_PREFIX_KEY = "idePrefixKey";
+
+  public static final String P_TRIGGER_EDITOR_CHANGE = "triggerEditorChange";
+  public static final String P_TRIGGER_EDITOR_OPEN = "triggerEditorOpen";
+
   /**
    * @deprecated since 3.7
    */
@@ -63,14 +68,18 @@ public class SonarLintProjectConfigurationManager {
     String projectKey = projectNode.get(P_PROJECT_KEY, "");
     String moduleKey = projectNode.get(P_MODULE_KEY, "");
     if (isBlank(projectKey) && isNotBlank(moduleKey)) {
-      SonarLintLogger.get().info("Project preference " + projectScope.toString() + " is outdated. Please rebind this project.");
+      SonarLintLogger.get()
+          .info("Project preference " + projectScope.toString() + " is outdated. Please rebind this project.");
     }
     projectNode.remove(P_MODULE_KEY);
     String serverId = projectNode.get(P_SERVER_ID, "");
     if (isNotBlank(serverId) && isNotBlank(projectKey)) {
-      projectConfig.setProjectBinding(new EclipseProjectBinding(serverId, projectKey, projectNode.get(P_SQ_PREFIX_KEY, ""), projectNode.get(P_IDE_PREFIX_KEY, "")));
+      projectConfig.setProjectBinding(new EclipseProjectBinding(serverId, projectKey,
+          projectNode.get(P_SQ_PREFIX_KEY, ""), projectNode.get(P_IDE_PREFIX_KEY, "")));
     }
     projectConfig.setAutoEnabled(projectNode.getBoolean(P_AUTO_ENABLED_KEY, true));
+    projectConfig.setIsTriggerEditorChangeEnabled(projectNode.getBoolean(P_TRIGGER_EDITOR_CHANGE, true));
+    projectConfig.setTriggerEditorOpenEnabled(projectNode.getBoolean(P_TRIGGER_EDITOR_OPEN, true));
     return projectConfig;
   }
 
@@ -111,6 +120,8 @@ public class SonarLintProjectConfigurationManager {
     }
 
     projectNode.putBoolean(P_AUTO_ENABLED_KEY, configuration.isAutoEnabled());
+    projectNode.putBoolean(P_TRIGGER_EDITOR_CHANGE, configuration.isTriggerEditorChangeEnabled());
+    projectNode.putBoolean(P_TRIGGER_EDITOR_OPEN, configuration.isTriggerEditorOpenEnabled());
     try {
       projectNode.flush();
       return true;

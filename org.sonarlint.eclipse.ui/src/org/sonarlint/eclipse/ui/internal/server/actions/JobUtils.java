@@ -27,7 +27,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+
 import javax.annotation.Nullable;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -42,6 +44,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
@@ -64,10 +67,11 @@ public class JobUtils {
   }
 
   /**
-   * Schedule analysis of open files of a project.
-   * Use null for project parameter to analyze open files in all projects.
+   * Schedule analysis of open files of a project. Use null for project parameter
+   * to analyze open files in all projects.
    */
-  public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType, Predicate<ISonarLintFile> filter) {
+  public static void scheduleAnalysisOfOpenFiles(@Nullable ISonarLintProject project, TriggerType triggerType,
+      Predicate<ISonarLintFile> filter) {
     Map<ISonarLintProject, List<FileWithDocument>> filesByProject = new HashMap<>();
 
     collectOpenedFiles(project, filesByProject, filter);
@@ -84,16 +88,74 @@ public class JobUtils {
     if (!project.isOpen()) {
       return;
     }
+
     SonarLintProjectConfiguration projectConfiguration = SonarLintCorePlugin.loadConfig(project);
-    if (projectConfiguration.isAutoEnabled()) {
+    // Confirm that AutoEnabled is true and that the trigger type is allowed
+    // analysis per configuration
+    if (projectConfiguration.isAutoEnabled() && confirmTriggerEnabled(projectConfiguration, request.getTriggerType())) {
       extracted(request, project, projectConfiguration);
     }
   }
 
-  private static void extracted(AnalyzeProjectRequest request, ISonarLintProject project, SonarLintProjectConfiguration projectConfiguration) {
+  /**
+   * Call the appropriate function per trigger type to ensure the trigger type is
+   * enabled for auto analysis.
+   * 
+   * @return <i>true<i> if analysis may occur, otherwise <i>false</i>
+   */
+  private static boolean confirmTriggerEnabled(SonarLintProjectConfiguration projectConfiguration,
+      TriggerType triggerType) {
+
+    // Call the correct confirm implementation function per enum TriggerType
+    switch (triggerType) {
+    case EDITOR_CHANGE:
+      return confirmEditorChange(projectConfiguration);
+    case EDITOR_OPEN:
+      return confirmEditorOpen(projectConfiguration);
+    default:
+      /* Do Nothing */
+      break;
+    }
+
+    return true;
+  }
+
+  /**
+   * Confirm if the EDITOR_OPEN trigger is enabled.
+   * 
+   * @param projectConfiguration
+   * @return <i>true</i> if editor open analysis may occur, either <i>false</i>
+   */
+  private static boolean confirmEditorOpen(SonarLintProjectConfiguration projectConfiguration) {
+    if (!projectConfiguration.isTriggerEditorOpenEnabled()) {
+      SonarLintLogger.get().debug("Skipping initial analysis on editor window open...");
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Confirm if the EDITOR_CHANGE trigger is enabled.
+   * 
+   * @param projectConfiguration
+   * @return <i>true</i> if editor change analysis may occur, either <i>false</i>
+   */
+  private static boolean confirmEditorChange(SonarLintProjectConfiguration projectConfiguration) {
+    if (!projectConfiguration.isTriggerEditorChangeEnabled()) {
+      SonarLintLogger.get().debug("Skipping changed files...");
+      return false;
+    }
+
+    return true;
+  }
+
+  private static void extracted(AnalyzeProjectRequest request, ISonarLintProject project,
+      SonarLintProjectConfiguration projectConfiguration) {
     Optional<IServer> server = SonarLintCorePlugin.getServersManager().forProject(project);
     if (server.isPresent()) {
-      new AnalyzeConnectedProjectJob(request, projectConfiguration.getProjectBinding().get(), (Server) server.get()).schedule();
+      new AnalyzeConnectedProjectJob(request, projectConfiguration.getProjectBinding().get(), (Server) server.get())
+          .schedule();
     } else {
       new AnalyzeStandaloneProjectJob(request).schedule();
     }
@@ -103,8 +165,8 @@ public class JobUtils {
     scheduleAnalysisOfOpenFiles(project, triggerType, f -> true);
   }
 
-  private static void collectOpenedFiles(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject,
-    Predicate<ISonarLintFile> filter) {
+  private static void collectOpenedFiles(@Nullable ISonarLintProject project,
+      Map<ISonarLintProject, List<FileWithDocument>> filesByProject, Predicate<ISonarLintFile> filter) {
     for (IWorkbenchWindow win : PlatformUI.getWorkbench().getWorkbenchWindows()) {
       for (IWorkbenchPage page : win.getPages()) {
         for (IEditorReference ref : page.getEditorReferences()) {
@@ -114,8 +176,9 @@ public class JobUtils {
     }
   }
 
-  private static void collectOpenedFile(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject,
-    IEditorReference ref, Predicate<ISonarLintFile> filter) {
+  private static void collectOpenedFile(@Nullable ISonarLintProject project,
+      Map<ISonarLintProject, List<FileWithDocument>> filesByProject, IEditorReference ref,
+      Predicate<ISonarLintFile> filter) {
     // Be careful to not trigger editor activation
     IEditorPart editor = ref.getEditor(false);
     if (editor == null) {
@@ -150,8 +213,8 @@ public class JobUtils {
   }
 
   /**
-   * Run something after the job is done, regardless of result.
-   * Important: call job.schedule() after calling this method, NOT before.
+   * Run something after the job is done, regardless of result. Important: call
+   * job.schedule() after calling this method, NOT before.
    */
   public static void scheduleAfter(Job job, Runnable runnable) {
     job.addJobChangeListener(new JobCompletionListener() {
@@ -219,7 +282,8 @@ public class JobUtils {
       Optional<IServer> server = SonarLintCorePlugin.getServersManager().findById(serverId);
       server.ifPresent(IServer::notifyAllListeners);
     }
-    IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
+    IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager()
+        .getBaseLabelProvider(SonarLintProjectDecorator.ID);
     if (labelProvider != null) {
       ((SonarLintProjectDecorator) labelProvider).fireChange(Arrays.asList(project));
     }

@@ -571,6 +571,38 @@
 	      </visibleWhen>
 	   </command>
 	   <command
+	         commandId="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorChangeCommand"
+	         style="push">
+	      <visibleWhen>
+	         <with variable="activeMenuSelection">
+	            <iterate ifEmpty="false">
+	              <or>
+							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+									<test property="org.sonarlint.eclipse.core.open"/>
+								</adapt>
+							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
+				  			</or>
+	            </iterate>
+	         </with>
+	      </visibleWhen>
+	   </command>
+	   <command
+	         commandId="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorOpenCommand"
+	         style="push">
+	      <visibleWhen>
+	         <with variable="activeMenuSelection">
+	            <iterate ifEmpty="false">
+	              <or>
+							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+									<test property="org.sonarlint.eclipse.core.open"/>
+								</adapt>
+							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
+				  			</or>
+	            </iterate>
+	         </with>
+	      </visibleWhen>
+	   </command>		   	   
+	   <command
 	         commandId="org.sonarlint.eclipse.ui.internal.command.ExcludeCommand"
 	         style="push">
 	     <visibleWhen>
@@ -663,6 +695,18 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
+          description="Toggle Trigger for SonarLint Analysis on Editor Change"
+          id="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorChangeCommand"
+          name="Toggle Editor Change Analysis"
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
+    <command
+          description="Toggle Trigger for SonarLint Analysis on Editor Open"
+          id="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorOpenCommand"
+          name="Toggle Editor Open Analysis"
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>           
+    <command
           description="Exclude from analysis"
           id="org.sonarlint.eclipse.ui.internal.command.ExcludeCommand"
           name="Exclude"
@@ -728,6 +772,46 @@
          </enabledWhen>
     </handler>
     <handler
+          class="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorChangeCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorChangeCommand">
+          <enabledWhen>
+		        <with variable="activeMenuSelection">
+		          <iterate ifEmpty="false" operator="or">
+		            <or>
+	                 <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
+		                 <not>
+		                   <test property="org.sonarlint.eclipse.core.excluded"/>
+		                 </not>
+	                 </adapt>
+	                 <not>
+	                 		<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
+	                 </not>
+                 </or>
+	         </iterate>
+		       </with>
+         </enabledWhen>
+    </handler>
+    <handler
+          class="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorOpenCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorOpenCommand">
+                    <enabledWhen>
+		        <with variable="activeMenuSelection">
+		          <iterate ifEmpty="false" operator="or">
+		            <or>
+	                 <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
+		                 <not>
+		                   <test property="org.sonarlint.eclipse.core.excluded"/>
+		                 </not>
+	                 </adapt>
+	                 <not>
+	                 		<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
+	                 </not>
+                 </or>
+	         </iterate>
+		       </with>
+         </enabledWhen>
+    </handler>        
+    <handler
           class="org.sonarlint.eclipse.ui.internal.command.ExcludeCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.ExcludeCommand">
           <enabledWhen>
@@ -764,6 +848,12 @@
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
       icon="icons/sonarlint-run-16x16.png" />
+    <image
+      commandId="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorChangeCommand" 
+      icon=""/>
+    <image
+      commandId="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorOpenCommand" 
+      icon=""/>               
     <image
       commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeChangeSetCommand"
       icon="icons/sonarlint-run-changed-16x16.png" />
