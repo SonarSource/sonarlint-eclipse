@@ -21,9 +21,7 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isBlank;
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isNotBlank;
-
 import java.util.List;
-
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;

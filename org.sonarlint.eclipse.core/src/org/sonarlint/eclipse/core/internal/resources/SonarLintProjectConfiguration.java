@@ -23,9 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
 import javax.annotation.Nullable;
-
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 
 public class SonarLintProjectConfiguration {
@@ -92,7 +90,7 @@ public class SonarLintProjectConfiguration {
 
   /**
    * 
-   * @param analysisEditorTriggerEnabled
+   * @param triggerEditorOpenEnabled
    */
   public void setTriggerEditorOpenEnabled(boolean triggerEditorOpenEnabled) {
     this.triggerEditorOpenEnabled = triggerEditorOpenEnabled;

@@ -576,12 +576,12 @@
 	      <visibleWhen>
 	         <with variable="activeMenuSelection">
 	            <iterate ifEmpty="false">
-	              <or>
-							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
-									<test property="org.sonarlint.eclipse.core.open"/>
-								</adapt>
-							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
-				  			</or>
+					<or>
+						<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+							<test property="org.sonarlint.eclipse.core.open"/>
+						</adapt>
+						<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
+				 	</or>
 	            </iterate>
 	         </with>
 	      </visibleWhen>
@@ -592,12 +592,12 @@
 	      <visibleWhen>
 	         <with variable="activeMenuSelection">
 	            <iterate ifEmpty="false">
-	              <or>
-							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
-									<test property="org.sonarlint.eclipse.core.open"/>
-								</adapt>
-							    <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
-				  			</or>
+					<or>
+						<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProject">
+							<test property="org.sonarlint.eclipse.core.open"/>
+						</adapt>
+						<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer"/>
+					</or>
 	            </iterate>
 	         </with>
 	      </visibleWhen>
@@ -776,40 +776,40 @@
           commandId="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorChangeCommand">
           <enabledWhen>
 		        <with variable="activeMenuSelection">
-		          <iterate ifEmpty="false" operator="or">
-		            <or>
-	                 <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
-		                 <not>
-		                   <test property="org.sonarlint.eclipse.core.excluded"/>
-		                 </not>
-	                 </adapt>
-	                 <not>
-	                 		<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
-	                 </not>
-                 </or>
-	         </iterate>
+		          	<iterate ifEmpty="false" operator="or">
+		            	<or>
+	                 		<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
+		                 		<not>
+		                   			<test property="org.sonarlint.eclipse.core.excluded"/>
+		                 		</not>
+	                 		</adapt>
+	                 		<not>
+	                 			<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
+	                 		</not>
+                 		</or>
+	         		</iterate>
 		       </with>
          </enabledWhen>
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorOpenCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.ToggleTriggerEditorOpenCommand">
-                    <enabledWhen>
-		        <with variable="activeMenuSelection">
-		          <iterate ifEmpty="false" operator="or">
-		            <or>
-	                 <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
-		                 <not>
-		                   <test property="org.sonarlint.eclipse.core.excluded"/>
-		                 </not>
-	                 </adapt>
-	                 <not>
-	                 		<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
-	                 </not>
-                 </or>
-	         </iterate>
-		       </with>
-         </enabledWhen>
+			<enabledWhen>
+				<with variable="activeMenuSelection">
+					<iterate ifEmpty="false" operator="or">
+						<or>
+							<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
+								<not>
+									<test property="org.sonarlint.eclipse.core.excluded"/>
+								</not>
+	                 		</adapt>
+	                 		<not>
+	                 			<adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile"/>
+	                 		</not>
+                 		</or>
+	         		</iterate>
+		       	</with>
+         	</enabledWhen>
     </handler>        
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.ExcludeCommand"
