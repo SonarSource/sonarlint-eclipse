@@ -1,6 +1,6 @@
 /*
  * SonarLint for Eclipse ITs
- * Copyright (C) 2009-2018 SonarSource SA
+ * Copyright (C) 2009-2019 SonarSource SA
  * sonarlint@sonarsource.com
  *
  * This program is free software; you can redistribute it and/or
@@ -189,7 +189,7 @@ public abstract class AbstractSonarLintTest {
 
   public static class MarkerAttributesExtractor implements Extractor<IMarker, Tuple> {
 
-    private String[] attributes;
+    private final String[] attributes;
 
     public MarkerAttributesExtractor(String... attributes) {
       this.attributes = attributes;
@@ -197,16 +197,16 @@ public abstract class AbstractSonarLintTest {
 
     @Override
     public Tuple extract(IMarker marker) {
-      Tuple result = new Tuple();
-      result.addData(marker.getResource().getFullPath().toPortableString());
-      for (String attribute : attributes) {
+      Object[] tupleAttributes = new Object[attributes.length + 1];
+      tupleAttributes[0] = marker.getResource().getFullPath().toPortableString();
+      for (int i = 0; i < attributes.length; i++) {
         try {
-          result.addData(marker.getAttribute(attribute));
+          tupleAttributes[i + 1] = marker.getAttribute(attributes[i]);
         } catch (CoreException e) {
-          throw new IllegalStateException("Unable to get attribute '" + attribute + "'");
+          throw new IllegalStateException("Unable to get attribute '" + attributes[i] + "'");
         }
       }
-      return result;
+      return new Tuple(tupleAttributes);
     }
   }
 

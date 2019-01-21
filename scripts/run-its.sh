@@ -29,7 +29,7 @@ expect_param() {
     fi
 }
 
-target_platform=e47
+target_platform=e48
 sq_version=LATEST_RELEASE
 
 args=()
