@@ -1,6 +1,6 @@
 /*
  * SonarLint for Eclipse ITs
- * Copyright (C) 2009-2018 SonarSource SA
+ * Copyright (C) 2009-2019 SonarSource SA
  * sonarlint@sonarsource.com
  *
  * This program is free software; you can redistribute it and/or
@@ -38,7 +38,6 @@ import org.sonarqube.ws.client.organization.CreateWsRequest;
 import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
 
 public class ConnectedModeWithOrgaTest extends AbstractSonarLintTest {
 
@@ -52,10 +51,8 @@ public class ConnectedModeWithOrgaTest extends AbstractSonarLintTest {
 
   @ClassRule
   public static Orchestrator orchestrator = Orchestrator.builderEnv()
-    // Need at least one plugin to avoid bug SONAR-8918
-    .setOrchestratorProperty("javaVersion", "LATEST_RELEASE")
     .setServerProperty("sonar.sonarcloud.enabled", "true")
-    .addPlugin("java")
+    .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[6.7]"))
     .build();
 
   private static WsClient adminWsClient;
@@ -63,7 +60,6 @@ public class ConnectedModeWithOrgaTest extends AbstractSonarLintTest {
 
   @BeforeClass
   public static void prepare() {
-    assumeTrue(orchestrator.getServer().version().isGreaterThanOrEquals("6.3"));
     adminWsClient = newAdminWsClient(orchestrator);
 
     orchestrator.getServer().adminWsClient().userClient()

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <description url="http://www.sonarlint.org/eclipse">
+   <description url="https://www.sonarlint.org/eclipse">
       SonarLint for Eclipse
    </description>
    <feature id="org.sonarlint.eclipse.feature" version="0.0.0">
@@ -19,5 +19,5 @@
          Source files when developing SonarLint integration
       </description>
    </category-def>
-   <repository-reference location="http://https://download.eclipse.org/mylyn/releases/latest" enabled="true" />
+   <repository-reference location="https://download.eclipse.org/mylyn/releases/latest" enabled="true" />
 </site>
