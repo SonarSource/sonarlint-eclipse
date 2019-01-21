@@ -30,6 +30,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
@@ -102,10 +103,54 @@ public class JdtUtilsTest extends SonarTestCase {
 
     jdtUtils.configureJavaProject(project, context);
 
-    ArgumentCaptor<Collection<String>> captor = ArgumentCaptor.forClass(Collection.class);
-    verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.binaries"), captor.capture());
+    ArgumentCaptor<Collection<String>> captorBinaries = ArgumentCaptor.forClass(Collection.class);
+    verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.binaries"), captorBinaries.capture());
+    ArgumentCaptor<Collection<String>> captorTestBinaries = ArgumentCaptor.forClass(Collection.class);
+    verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.test.binaries"), captorTestBinaries.capture());
 
-    assertThat(captor.getValue()).containsExactlyInAnyOrder(outputFolder.getAbsolutePath().replaceAll(Pattern.quote("\\"), "/"));
+    assertThat(captorBinaries.getValue()).containsExactlyInAnyOrder(outputFolder.getAbsolutePath().replaceAll(Pattern.quote("\\"), "/"));
+    assertThat(captorTestBinaries.getValue()).isEmpty();
+  }
+
+  @Test
+  public void shouldConfigureSimpleProjectWithTests() throws JavaModelException, IOException {
+    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+    File workspaceRoot = root.getLocation().toFile();
+    File projectRoot = new File(workspaceRoot, "myProject");
+    projectRoot.mkdir();
+    File sourceFolder = new File(projectRoot, "src");
+    sourceFolder.mkdir();
+    File testFolder = new File(projectRoot, "test");
+    testFolder.mkdir();
+    File mainOutputFolder = new File(projectRoot, "bin/main");
+    mainOutputFolder.mkdirs();
+    File testOutputFolder = new File(projectRoot, "bin/test");
+    testOutputFolder.mkdirs();
+
+    IJavaProject project = mock(IJavaProject.class);
+    IPreAnalysisContext context = mock(IPreAnalysisContext.class);
+
+    when(project.getOption(JavaCore.COMPILER_SOURCE, true)).thenReturn("1.6");
+    when(project.getOption(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, true)).thenReturn("1.6");
+    when(project.getPath()).thenReturn(new Path(projectRoot.getAbsolutePath()));
+
+    IClasspathEntry[] cpes = new IClasspathEntry[] {
+      createCPE(IClasspathEntry.CPE_SOURCE, sourceFolder, mainOutputFolder),
+      createTestCPE(IClasspathEntry.CPE_SOURCE, testFolder, testOutputFolder)
+    };
+
+    when(project.getResolvedClasspath(true)).thenReturn(cpes);
+    when(project.getOutputLocation()).thenReturn(new Path(mainOutputFolder.getAbsolutePath()));
+
+    jdtUtils.configureJavaProject(project, context);
+
+    ArgumentCaptor<Collection<String>> captorBinaries = ArgumentCaptor.forClass(Collection.class);
+    verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.binaries"), captorBinaries.capture());
+    ArgumentCaptor<Collection<String>> captorTestBinaries = ArgumentCaptor.forClass(Collection.class);
+    verify(context).setAnalysisProperty(ArgumentMatchers.eq("sonar.java.test.binaries"), captorTestBinaries.capture());
+
+    assertThat(captorBinaries.getValue()).containsExactlyInAnyOrder(mainOutputFolder.getAbsolutePath().replaceAll(Pattern.quote("\\"), "/"));
+    assertThat(captorTestBinaries.getValue()).containsExactlyInAnyOrder(testOutputFolder.getAbsolutePath().replaceAll(Pattern.quote("\\"), "/"));
   }
 
   // SLE-159
@@ -166,10 +211,13 @@ public class JdtUtilsTest extends SonarTestCase {
     IClasspathEntry entryProject3 = mock(IClasspathEntry.class, Mockito.RETURNS_DEEP_STUBS);
     when(entryProject1.getEntryKind()).thenReturn(IClasspathEntry.CPE_PROJECT);
     when(entryProject1.getPath().segment(0)).thenReturn(project1Name);
+    when(entryProject1.getExtraAttributes()).thenReturn(new IClasspathAttribute[0]);
     when(entryProject2.getEntryKind()).thenReturn(IClasspathEntry.CPE_PROJECT);
     when(entryProject2.getPath().segment(0)).thenReturn(project2Name);
+    when(entryProject2.getExtraAttributes()).thenReturn(new IClasspathAttribute[0]);
     when(entryProject3.getEntryKind()).thenReturn(IClasspathEntry.CPE_PROJECT);
     when(entryProject3.getPath().segment(0)).thenReturn(project3Name);
+    when(entryProject3.getExtraAttributes()).thenReturn(new IClasspathAttribute[0]);
     // project1 depends on project2, which depends on project3, which depends on project2
     IClasspathEntry[] classpath1 = new IClasspathEntry[] {entryProject2};
     IClasspathEntry[] classpath2 = new IClasspathEntry[] {entryProject3};
@@ -198,6 +246,26 @@ public class JdtUtilsTest extends SonarTestCase {
     when(cpe.getEntryKind()).thenReturn(kind);
     when(cpe.getPath()).thenReturn(new Path(path.getAbsolutePath()));
     when(cpe.getOutputLocation()).thenReturn(new Path(outputLocation.getAbsolutePath()));
+    when(cpe.getExtraAttributes()).thenReturn(new IClasspathAttribute[0]);
+    return cpe;
+  }
+
+  private IClasspathEntry createTestCPE(int kind, File path, @Nullable File outputLocation) {
+    IClasspathEntry cpe = createCPE(kind, path, outputLocation);
+    IClasspathAttribute[] iClasspathAttributes = new IClasspathAttribute[1];
+    iClasspathAttributes[0] = new IClasspathAttribute() {
+
+      @Override
+      public String getValue() {
+        return "true";
+      }
+
+      @Override
+      public String getName() {
+        return "test";
+      }
+    };
+    when(cpe.getExtraAttributes()).thenReturn(iClasspathAttributes);
     return cpe;
   }
 

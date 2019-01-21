@@ -19,26 +19,40 @@
  */
 package org.sonarlint.eclipse.jdt.internal;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class JavaProjectConfiguration {
 
-  private final Set<Object> dependentProjects = new HashSet<>();
+  private final Set<Object> dependentProjects = new LinkedHashSet<>();
+  private final Set<Object> testDependentProjects = new LinkedHashSet<>();
   private final Set<String> libraries = new LinkedHashSet<>();
+  private final Set<String> testLibraries = new LinkedHashSet<>();
   private final Set<String> binaries = new LinkedHashSet<>();
+  private final Set<String> testBinaries = new LinkedHashSet<>();
 
   public Set<Object> dependentProjects() {
     return dependentProjects;
+  }
+
+  public Set<Object> testDependentProjects() {
+    return testDependentProjects;
   }
 
   public Set<String> libraries() {
     return libraries;
   }
 
+  public Set<String> testLibraries() {
+    return testLibraries;
+  }
+
   public Set<String> binaries() {
     return binaries;
+  }
+
+  public Set<String> testBinaries() {
+    return testBinaries;
   }
 
 }

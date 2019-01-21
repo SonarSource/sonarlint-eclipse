@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.jdt.internal;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Set;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -32,6 +33,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.content.IContentType;
+import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaModel;
@@ -98,7 +100,7 @@ public class JdtUtils {
     try {
       JavaProjectConfiguration configuration = new JavaProjectConfiguration();
       configuration.dependentProjects().add(javaProject);
-      addClassPathToSonarProject(javaProject, configuration, true);
+      addClassPathToSonarProject(javaProject, configuration, true, false, false);
       configurationToProperties(context, configuration);
     } catch (JavaModelException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
@@ -115,18 +117,19 @@ public class JdtUtils {
    * @param topProject indicate we are working on the project to be analyzed and not on a dependent project
    * @throws JavaModelException see {@link IJavaProject#getResolvedClasspath(boolean)}
    */
-  private static void addClassPathToSonarProject(IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
+  private static void addClassPathToSonarProject(IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject, boolean isTestEntry, boolean isWithoutTestCode)
+    throws JavaModelException {
     IClasspathEntry[] classPath = javaProject.getResolvedClasspath(true);
     for (IClasspathEntry entry : classPath) {
       switch (entry.getEntryKind()) {
         case IClasspathEntry.CPE_SOURCE:
-          processSourceEntry(entry, context, topProject);
+          processSourceEntry(entry, context, topProject, isTestEntry, isWithoutTestCode);
           break;
         case IClasspathEntry.CPE_LIBRARY:
-          processLibraryEntry(entry, javaProject, context, topProject);
+          processLibraryEntry(entry, javaProject, context, topProject, isTestEntry, isWithoutTestCode);
           break;
         case IClasspathEntry.CPE_PROJECT:
-          processProjectEntry(entry, javaProject, context);
+          processProjectEntry(entry, javaProject, context, isTestEntry, isWithoutTestCode);
           break;
         default:
           SonarLintLogger.get().info("Unhandled ClassPathEntry : " + entry);
@@ -134,7 +137,7 @@ public class JdtUtils {
       }
     }
 
-    processOutputDir(javaProject.getOutputLocation(), context, topProject);
+    processOutputDir(javaProject.getOutputLocation(), context, topProject, isTestEntry);
   }
 
   @CheckForNull
@@ -168,44 +171,79 @@ public class JdtUtils {
     return null;
   }
 
-  private static void processOutputDir(IPath outputDir, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
+  private static void processOutputDir(IPath outputDir, JavaProjectConfiguration context, boolean topProject, boolean testEntry) throws JavaModelException {
     String outDir = getAbsolutePathAsString(outputDir);
     if (outDir != null) {
       if (topProject) {
-        context.binaries().add(outDir);
+        if (testEntry) {
+          context.testBinaries().add(outDir);
+        } else {
+          context.binaries().add(outDir);
+          // Main source .class should be on tests classpath
+          context.testLibraries().add(outDir);
+        }
       } else {
         // Output dir of dependents projects should be considered as libraries
-        context.libraries().add(outDir);
+        if (testEntry) {
+          context.testLibraries().add(outDir);
+        } else {
+          addMainClasspathEntry(context, outDir);
+        }
       }
     } else {
       SonarLintLogger.get().debug("Binary directory '" + outputDir + "' was not added because it was not found. Maybe you should enable auto build of your project.");
     }
   }
 
-  private static void processSourceEntry(IClasspathEntry entry, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
+  private static void processSourceEntry(IClasspathEntry entry, JavaProjectConfiguration context, boolean topProject, boolean testEntry, boolean isWithoutTestCode)
+    throws JavaModelException {
     if (isSourceExcluded(entry)) {
       return;
     }
+    if (isTest(entry) && isWithoutTestCode) {
+      return;
+    }
     if (entry.getOutputLocation() != null) {
-      processOutputDir(entry.getOutputLocation(), context, topProject);
+      processOutputDir(entry.getOutputLocation(), context, topProject, testEntry || isTest(entry));
     }
   }
 
-  private static void processLibraryEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject) throws JavaModelException {
-    if (topProject || entry.isExported()) {
-      final String libPath = resolveLibrary(javaProject, entry);
-      if (libPath != null) {
-        context.libraries().add(libPath);
+  private static void processLibraryEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean topProject, boolean testEntry,
+    boolean isWithoutTestCode)
+    throws JavaModelException {
+    if (isTest(entry) && isWithoutTestCode) {
+      return;
+    }
+    if (!topProject && !entry.isExported()) {
+      return;
+    }
+    final String libPath = resolveLibrary(javaProject, entry);
+    if (libPath != null) {
+      if (testEntry || isTest(entry)) {
+        context.testLibraries().add(libPath);
+      } else {
+        addMainClasspathEntry(context, libPath);
       }
     }
   }
 
-  private static void processProjectEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context) throws JavaModelException {
+  private static void addMainClasspathEntry(JavaProjectConfiguration context, final String libPath) {
+    context.libraries().add(libPath);
+    // Main classpath entries should be also added to the tests classpath
+    context.testLibraries().add(libPath);
+  }
+
+  private static void processProjectEntry(IClasspathEntry entry, IJavaProject javaProject, JavaProjectConfiguration context, boolean testEntry, boolean isWithoutTestCode)
+    throws JavaModelException {
+    if (isTest(entry) && isWithoutTestCode) {
+      return;
+    }
     IJavaModel javaModel = javaProject.getJavaModel();
     IJavaProject referredProject = javaModel.getJavaProject(entry.getPath().segment(0));
-    if (!context.dependentProjects().contains(referredProject)) {
-      context.dependentProjects().add(referredProject);
-      addClassPathToSonarProject(referredProject, context, false);
+    Set<Object> dependentProjects = (testEntry || isTest(entry)) ? context.testDependentProjects() : context.dependentProjects();
+    if (!dependentProjects.contains(referredProject)) {
+      dependentProjects.add(referredProject);
+      addClassPathToSonarProject(referredProject, context, false, testEntry || isTest(entry), isWithoutTestCode || isWithoutTestCode(entry));
     }
   }
 
@@ -248,14 +286,28 @@ public class JdtUtils {
     return false;
   }
 
+  private static boolean isTest(IClasspathEntry entry) {
+    for (IClasspathAttribute attribute : entry.getExtraAttributes()) {
+      if (IClasspathAttribute.TEST.equals(attribute.getName()) && "true".equals(attribute.getValue())) { //$NON-NLS-1$
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean isWithoutTestCode(IClasspathEntry entry) {
+    for (IClasspathAttribute attribute : entry.getExtraAttributes()) {
+      if (IClasspathAttribute.WITHOUT_TEST_CODE.equals(attribute.getName()) && "true".equals(attribute.getValue())) { //$NON-NLS-1$
+        return true;
+      }
+    }
+    return false;
+  }
+
   private static void configurationToProperties(IPreAnalysisContext analysisContext, JavaProjectConfiguration context) {
-    analysisContext.setAnalysisProperty("sonar.libraries", context.libraries());
-    // Eclipse doesn't separate main and test classpath
     analysisContext.setAnalysisProperty("sonar.java.libraries", context.libraries());
-    analysisContext.setAnalysisProperty("sonar.java.test.libraries", context.libraries());
-    analysisContext.setAnalysisProperty("sonar.binaries", context.binaries());
-    // Eclipse doesn't separate main and test classpath
+    analysisContext.setAnalysisProperty("sonar.java.test.libraries", context.testLibraries());
     analysisContext.setAnalysisProperty("sonar.java.binaries", context.binaries());
-    analysisContext.setAnalysisProperty("sonar.java.test.binaries", context.binaries());
+    analysisContext.setAnalysisProperty("sonar.java.test.binaries", context.testBinaries());
   }
 }
