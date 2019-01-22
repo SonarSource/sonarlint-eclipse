@@ -38,10 +38,14 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.analysis.IFileTypeProvider.ISonarLintFileType;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class JdtUtils {
 
@@ -309,5 +313,36 @@ public class JdtUtils {
     analysisContext.setAnalysisProperty("sonar.java.test.libraries", context.testLibraries());
     analysisContext.setAnalysisProperty("sonar.java.binaries", context.binaries());
     analysisContext.setAnalysisProperty("sonar.java.test.binaries", context.testBinaries());
+  }
+
+  public static ISonarLintFileType qualify(ISonarLintFile slFile) {
+    IFile file = slFile.getResource().getAdapter(IFile.class);
+    if (file == null) {
+      return ISonarLintFileType.UNKNOWN;
+    }
+    IJavaElement javaElement = JavaCore.create(file);
+    if (javaElement == null || !javaElement.exists()) {
+      // Not a Java element, don't qualify the file
+      return ISonarLintFileType.UNKNOWN;
+    }
+    IPackageFragmentRoot packageFragmentRoot = (IPackageFragmentRoot) javaElement.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
+    if (packageFragmentRoot == null) {
+      return ISonarLintFileType.UNKNOWN;
+    }
+
+    IClasspathEntry classpathEntry;
+    try {
+      classpathEntry = packageFragmentRoot.getResolvedClasspathEntry();
+    } catch (JavaModelException e) {
+      return ISonarLintFileType.UNKNOWN;
+    }
+    if (isTest(classpathEntry)) {
+      return ISonarLintFileType.TEST;
+    }
+    // Support of test classpath was added in JDT 3.14, before that we can't guess
+    if (Platform.getBundle(JavaCore.PLUGIN_ID).getVersion().compareTo(new Version("3.14")) >= 0) {
+      return ISonarLintFileType.MAIN;
+    }
+    return ISonarLintFileType.UNKNOWN;
   }
 }

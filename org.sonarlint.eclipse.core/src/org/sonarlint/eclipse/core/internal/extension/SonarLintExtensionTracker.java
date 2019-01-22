@@ -35,6 +35,7 @@ import org.eclipse.core.runtime.dynamichelpers.IFilter;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
+import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant;
@@ -51,6 +52,7 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
   private final SonarLintEP<ISonarLintProjectAdapterParticipant> projectAdapterParticipantEp = new SonarLintEP<>(
     "org.sonarlint.eclipse.core.projectAdapterParticipant"); //$NON-NLS-1$
   private final SonarLintEP<IFileLanguageProvider> languageEp = new SonarLintEP<>("org.sonarlint.eclipse.core.languageProvider"); //$NON-NLS-1$
+  private final SonarLintEP<IFileTypeProvider> typeEp = new SonarLintEP<>("org.sonarlint.eclipse.core.typeProvider"); //$NON-NLS-1$
 
   private static class SonarLintEP<G> {
 
@@ -63,7 +65,7 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
   }
 
   private final Collection<SonarLintEP<?>> allEps = Arrays.asList(configuratorEp, analysisEp, projectsProviderEp, fileAdapterParticipantEp, projectAdapterParticipantEp,
-    languageEp);
+    languageEp, typeEp);
 
   private ExtensionTracker tracker;
 
@@ -144,6 +146,10 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
 
   public Collection<IFileLanguageProvider> getLanguageProviders() {
     return languageEp.instances;
+  }
+
+  public Collection<IFileTypeProvider> getTypeProviders() {
+    return typeEp.instances;
   }
 
 }

@@ -19,12 +19,12 @@
  */
 package org.sonarlint.eclipse.core.internal.adapter;
 
-import java.util.function.Predicate;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
@@ -62,14 +62,17 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
     return null;
   }
 
-  private <T> T getProjectAdapter(Class<T> adapterType, IProject project) {
-    Predicate<IProject> shouldExclude = SonarLintCorePlugin.getExtensionTracker().getProjectAdapterParticipants().stream()
-      .<Predicate<IProject>>map(participant -> participant::exclude)
-      .reduce(Predicate::or)
-      .orElse(x -> false);
-    if (shouldExclude.test(project)) {
-      return null;
+  private static <T> T getProjectAdapter(Class<T> adapterType, IProject project) {
+    for (ISonarLintProjectAdapterParticipant projectAdapterParticipant : SonarLintCorePlugin.getExtensionTracker().getProjectAdapterParticipants()) {
+      if (projectAdapterParticipant.exclude(project)) {
+        SonarLintLogger.get().debug("Project '" + project.getName() + "' excluded by '" + projectAdapterParticipant.getClass().getSimpleName() + "'");
+        return null;
+      }
     }
+    return adaptProject(adapterType, project);
+  }
+
+  private static <T> T adaptProject(Class<T> adapterType, IProject project) {
     for (ISonarLintProjectAdapterParticipant p : SonarLintCorePlugin.getExtensionTracker().getProjectAdapterParticipants()) {
       ISonarLintProject adapted = p.adapt(project);
       if (adapted != null) {
@@ -82,19 +85,22 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
   /**
    * Change this method with caution since it is critical for some Cobol IDEs integration
    */
-  private <T> T getFileAdapter(Class<T> adapterType, IFile file) {
+  private static <T> T getFileAdapter(Class<T> adapterType, IFile file) {
     // First do some very cheap checks to see if we can exclude the physical file
     if (!SonarLintUtils.isSonarLintFileCandidate(file)) {
       return null;
     }
     // Not let's call the ISonarLintFileAdapterParticipant#exclude
-    Predicate<IFile> shouldExclude = SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants().stream()
-      .<Predicate<IFile>>map(participant -> participant::exclude)
-      .reduce(Predicate::or)
-      .orElse(x -> false);
-    if (shouldExclude.test(file)) {
-      return null;
+    for (ISonarLintFileAdapterParticipant fileAdapterParticipant : SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants()) {
+      if (fileAdapterParticipant.exclude(file)) {
+        SonarLintLogger.get().debug("File '" + file.getProjectRelativePath() + "' excluded by '" + fileAdapterParticipant.getClass().getSimpleName() + "'");
+        return null;
+      }
     }
+    return adaptFile(adapterType, file);
+  }
+
+  private static <T> T adaptFile(Class<T> adapterType, IFile file) {
     // Try to find one ISonarLintFileAdapterParticipant that will adapt the IFile
     for (ISonarLintFileAdapterParticipant p : SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants()) {
       ISonarLintFile adapted = p.adapt(file);
