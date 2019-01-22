@@ -140,12 +140,12 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       tuple("/java-junit/src/hello/Hello.java", 15, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set
 
     new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("java-junit", "src", "hello", "HelloTest.java");
+      .expandAndDoubleClick("java-junit", "tests", "hello", "HelloTest.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> testMarkers = Arrays.asList(project.findMember("src/hello/HelloTest.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> testMarkers = Arrays.asList(project.findMember("tests/hello/HelloTest.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(testMarkers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-junit/src/hello/HelloTest.java", 10, "Fix or remove this skipped unit test"));
+      tuple("/java-junit/tests/hello/HelloTest.java", 10, "Fix or remove this skipped unit test"));
   }
 
   @Test

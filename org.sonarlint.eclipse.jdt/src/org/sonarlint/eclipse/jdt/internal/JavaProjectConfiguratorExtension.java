@@ -23,11 +23,13 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
+import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, ISonarLintFileAdapterParticipant {
+public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, ISonarLintFileAdapterParticipant, IFileTypeProvider {
 
   private final JdtUtils javaProjectConfigurator;
   private final boolean jdtPresent;
@@ -63,6 +65,14 @@ public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, 
       return JdtUtils.shouldExclude(file);
     }
     return false;
+  }
+
+  @Override
+  public ISonarLintFileType qualify(ISonarLintFile file) {
+    if (jdtPresent) {
+      return JdtUtils.qualify(file);
+    }
+    return ISonarLintFileType.UNKNOWN;
   }
 
 }

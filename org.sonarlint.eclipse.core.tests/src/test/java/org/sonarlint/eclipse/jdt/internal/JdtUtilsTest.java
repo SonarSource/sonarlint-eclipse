@@ -36,13 +36,17 @@ import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.sonarlint.eclipse.core.analysis.IFileTypeProvider.ISonarLintFileType;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
+import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
+import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,6 +60,15 @@ public class JdtUtilsTest extends SonarTestCase {
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
+
+  private static IProject jdtProject;
+  private static IProject nonJdtProject;
+
+  @BeforeClass
+  public static void prepare() throws Exception {
+    jdtProject = importEclipseProject("SimpleJdtProject");
+    nonJdtProject = importEclipseProject("SimpleNonJdtProject");
+  }
 
   @Test
   public void shouldConfigureJavaSourceAndTarget() throws JavaModelException, IOException {
@@ -271,7 +284,6 @@ public class JdtUtilsTest extends SonarTestCase {
 
   @Test
   public void keepOnlyJavaFilesOnClasspathForJdtProject() throws Exception {
-    IProject jdtProject = importEclipseProject("SimpleJdtProject");
     IFile onClassPath = (IFile) jdtProject.findMember("src/main/java/ClassOnDefaultPackage.java");
     IFile compileError = (IFile) jdtProject.findMember("src/main/java/ClassWithCompileError.java");
     IFile outsideClassPath = (IFile) jdtProject.findMember("ClassOutsideSourceFolder.java");
@@ -284,8 +296,24 @@ public class JdtUtilsTest extends SonarTestCase {
   }
 
   @Test
+  public void qualifyTestFiles() throws Exception {
+    IFile onClassPath = (IFile) jdtProject.findMember("src/main/java/ClassOnDefaultPackage.java");
+    IFile compileError = (IFile) jdtProject.findMember("src/main/java/ClassWithCompileError.java");
+    IFile outsideClassPath = (IFile) jdtProject.findMember("ClassOutsideSourceFolder.java");
+    IFile nonJava = (IFile) jdtProject.findMember("src/main/sample.js");
+    IFile testFile = (IFile) jdtProject.findMember("src/test/java/MyTest.java");
+
+    DefaultSonarLintProjectAdapter slPrj = new DefaultSonarLintProjectAdapter(jdtProject);
+
+    assertThat(JdtUtils.qualify(new DefaultSonarLintFileAdapter(slPrj, onClassPath))).isEqualTo(ISonarLintFileType.MAIN);
+    assertThat(JdtUtils.qualify(new DefaultSonarLintFileAdapter(slPrj, compileError))).isEqualTo(ISonarLintFileType.MAIN);
+    assertThat(JdtUtils.qualify(new DefaultSonarLintFileAdapter(slPrj, outsideClassPath))).isEqualTo(ISonarLintFileType.UNKNOWN);
+    assertThat(JdtUtils.qualify(new DefaultSonarLintFileAdapter(slPrj, nonJava))).isEqualTo(ISonarLintFileType.UNKNOWN);
+    assertThat(JdtUtils.qualify(new DefaultSonarLintFileAdapter(slPrj, testFile))).isEqualTo(ISonarLintFileType.TEST);
+  }
+
+  @Test
   public void ignoreJavaFilesOnNonJdtProject() throws Exception {
-    IProject nonJdtProject = importEclipseProject("SimpleNonJdtProject");
     IFile java = (IFile) nonJdtProject.findMember("src/main/ClassOnDefaultPackage.java");
     IFile nonJava = (IFile) nonJdtProject.findMember("src/main/sample.js");
     IFile contentTypeExtendingJava = (IFile) nonJdtProject.findMember("src/main/Program.cbl");

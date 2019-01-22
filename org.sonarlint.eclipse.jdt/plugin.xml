@@ -12,4 +12,10 @@
             class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfiguratorExtension">
       </configurator>
    </extension>
+   <extension
+         point="org.sonarlint.eclipse.core.typeProvider">
+      <provider
+            class="org.sonarlint.eclipse.jdt.internal.JavaProjectConfiguratorExtension">
+      </provider>
+   </extension>
 </plugin>

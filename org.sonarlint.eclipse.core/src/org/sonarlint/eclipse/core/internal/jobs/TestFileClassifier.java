@@ -26,7 +26,9 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
@@ -55,7 +57,7 @@ public class TestFileClassifier {
     pathMatchersForTests = createMatchersForTests(testPatterns);
   }
 
-  private List<PathMatcher> createMatchersForTests(String[] testPatterns) {
+  private static List<PathMatcher> createMatchersForTests(String[] testPatterns) {
     final List<PathMatcher> pathMatchers = new ArrayList<>();
     FileSystem fs = FileSystems.getDefault();
     for (String testPattern : testPatterns) {
@@ -65,9 +67,21 @@ public class TestFileClassifier {
   }
 
   public boolean isTest(ISonarLintFile file) {
-    Path absolutePath = Paths.get(file.getProject().getName()).resolve(file.getProjectRelativePath());
+    for (IFileTypeProvider typeProvider : SonarLintCorePlugin.getExtensionTracker().getTypeProviders()) {
+      switch (typeProvider.qualify(file)) {
+        case UNKNOWN:
+          break;
+        case MAIN:
+          SonarLintLogger.get().debug("File '" + file.getProjectRelativePath() + "' qualified as main by '" + typeProvider.getClass().getSimpleName() + "'");
+          return false;
+        case TEST:
+          SonarLintLogger.get().debug("File '" + file.getProjectRelativePath() + "' qualified as test by '" + typeProvider.getClass().getSimpleName() + "'");
+          return true;
+      }
+    }
+    Path fileRelativePath = Paths.get(file.getProjectRelativePath());
     for (PathMatcher matcher : pathMatchersForTests) {
-      if (matcher.matches(absolutePath)) {
+      if (matcher.matches(fileRelativePath)) {
         return true;
       }
     }

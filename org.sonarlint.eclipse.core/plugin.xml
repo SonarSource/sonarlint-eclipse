@@ -7,6 +7,7 @@
    <extension-point id="projectAdapterParticipant" name="SonarLint Project Adapter Participant" schema="schema/projectAdapterParticipant.exsd"/>
    <extension-point id="analysisConfigurator" name="SonarLint Analysis Configurator" schema="schema/analysisConfigurator.exsd"/>
    <extension-point id="languageProvider" name="SonarLint File Language Provider" schema="schema/languageProvider.exsd"/>
+   <extension-point id="typeProvider" name="SonarLint File Type Provider" schema="schema/typeProvider.exsd"/>
 
 
    <extension
