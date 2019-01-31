@@ -57,7 +57,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.java</groupId>
                   <artifactId>sonar-java-plugin</artifactId>
-                  <version>5.10.1.16922</version>
+                  <version>5.10.2.17019</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
