@@ -35,4 +35,15 @@ public class StringUtilsTest {
     assertThat(StringUtils.joinSkipNull(Arrays.<String>asList(null, null, null), ",")).isEqualTo("");
   }
 
+  @Test
+  public void testIsBlank() {
+    assertThat(StringUtils.isBlank(null)).isEqualTo(true);
+    assertThat(StringUtils.isBlank("")).isEqualTo(true);
+    assertThat(StringUtils.isBlank("   ")).isEqualTo(true);
+    assertThat(StringUtils.isBlank("\t \n")).isEqualTo(true);
+    assertThat(StringUtils.isBlank("abc")).isEqualTo(false);
+    assertThat(StringUtils.isBlank("ab c")).isEqualTo(false);
+    assertThat(StringUtils.isBlank(" abc")).isEqualTo(false);
+  }
+
 }
