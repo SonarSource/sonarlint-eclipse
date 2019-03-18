@@ -98,6 +98,7 @@ public class SonarLintRuleBrowser extends Composite {
   }
 
   private String css() {
+    // TODO
     return "<style type=\"text/css\">"
       + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: 13px; line-height: 1.23076923; "
       + "color: " + hexColor(foreground) + ";background-color: " + hexColor(background)
