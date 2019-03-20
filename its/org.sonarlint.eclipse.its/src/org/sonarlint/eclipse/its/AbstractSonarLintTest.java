@@ -46,6 +46,11 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
+import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
+import org.eclipse.swtbot.swt.finder.results.BoolResult;
+import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -250,6 +255,36 @@ public abstract class AbstractSonarLintTest {
       .url(server.getUrl())
       .credentials(Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD)
       .build());
+  }
+
+  public void waitForServerUpdate(String serverName, Orchestrator orch) {
+    SWTBotView serversView = bot.viewById("org.sonarlint.eclipse.ui.ServersView");
+    final SWTBotTreeItem serverCell = serversView.bot().tree().getAllItems()[0];
+    bot.waitUntil(new DefaultCondition() {
+      @Override
+      public boolean test() throws Exception {
+        return UIThreadRunnable.syncExec(new BoolResult() {
+          @Override
+          public Boolean run() {
+            return serverCell.getText().matches(serverName + " \\[Version: " + substringBefore(orch.getServer().version(), "-") + "(.*), Last storage update: (.*)\\]");
+          }
+
+        });
+      };
+
+      @Override
+      public String getFailureMessage() {
+        return "Server status is: " + serverCell.getText();
+      }
+    }, 20_000);
+  }
+
+  private String substringBefore(com.sonar.orchestrator.version.Version version, String string) {
+    int indexOfDash = string.indexOf("-");
+    if (indexOfDash == -1) {
+      return string;
+    }
+    return string.substring(0, indexOfDash);
   }
 
 }
