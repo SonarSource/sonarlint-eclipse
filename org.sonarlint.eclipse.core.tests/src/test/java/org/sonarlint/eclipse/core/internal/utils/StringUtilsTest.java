@@ -46,4 +46,9 @@ public class StringUtilsTest {
     assertThat(StringUtils.isBlank(" abc")).isEqualTo(false);
   }
 
+  @Test
+  public void testIsNotEmpty() {
+    // TODO
+  }
+
 }

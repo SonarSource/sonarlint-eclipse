@@ -59,6 +59,11 @@ public class StringUtils {
     return str == null || str.isEmpty();
   }
 
+  public static boolean isNotEmpty(@Nullable String str) {
+    // FIXME
+    return !isEmpty(str);
+  }
+
   public static String substringAfterLast(@Nullable String str, @Nullable String separator) {
     if (isEmpty(str)) {
       return str;
