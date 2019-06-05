@@ -85,7 +85,7 @@ public class AnalyzeChangedFilesJob extends WorkspaceJob {
         AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, filesToAnalyze, TriggerType.MANUAL_CHANGESET);
         AbstractAnalyzeProjectJob<?> job = AbstractAnalyzeProjectJob.create(req);
         SubMonitor subMonitor = analysisMonitor.newChild(1);
-        job.runInWorkspace(subMonitor);
+        job.run(subMonitor);
         subMonitor.done();
       }
 
