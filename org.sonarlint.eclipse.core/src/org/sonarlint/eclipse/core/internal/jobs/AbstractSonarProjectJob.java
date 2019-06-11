@@ -57,5 +57,10 @@ public abstract class AbstractSonarProjectJob extends Job {
   }
 
   protected abstract IStatus doRun(final IProgressMonitor monitor) throws CoreException;
+  
+  @Override
+  public final boolean belongsTo(Object family) {
+    return "org.sonarlint.eclipse.projectJob".equals(family);
+  }
 
 }
