@@ -63,7 +63,7 @@ public class AnalyzeProjectsJob extends WorkspaceJob {
         AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, entry.getValue(), TriggerType.MANUAL);
         AbstractAnalyzeProjectJob<?> job = AbstractAnalyzeProjectJob.create(req);
         SubMonitor subMonitor = analysisMonitor.newChild(1);
-        job.runInWorkspace(subMonitor);
+        job.run(subMonitor);
         subMonitor.done();
       }
 

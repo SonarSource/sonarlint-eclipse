@@ -141,11 +141,13 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends StandaloneAnalysi
         .collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()), HashMap::putAll);
 
       SonarLintLogger.get().debug("Clear markers on " + excludedFiles.size() + " excluded files");
-      excludedFiles.forEach(SonarLintMarkerUpdater::clearMarkers);
+      ResourcesPlugin.getWorkspace().run(m -> {
+        excludedFiles.forEach(SonarLintMarkerUpdater::clearMarkers);
 
-      if (shouldClearReport) {
-        SonarLintMarkerUpdater.deleteAllMarkersFromReport();
-      }
+        if (shouldClearReport) {
+          SonarLintMarkerUpdater.deleteAllMarkersFromReport();
+        }
+      }, monitor);
 
       if (filesToAnalyze.isEmpty()) {
         return Status.OK_STATUS;
@@ -297,7 +299,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends StandaloneAnalysi
       .filter(e -> e.getKey() instanceof ISonarLintFile)
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
-    trackIssues(docPerFile, successfulFiles, triggerType, monitor);
+    ResourcesPlugin.getWorkspace().run(m -> trackIssues(docPerFile, successfulFiles, triggerType, m), monitor);
   }
 
   protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,

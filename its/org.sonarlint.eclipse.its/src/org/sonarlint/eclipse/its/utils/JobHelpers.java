@@ -75,6 +75,7 @@ public final class JobHelpers {
           jobs[i].join();
         }
       }
+      jobManager.join("org.sonarlint.eclipse.projectJob", null);
       workspace.run(new IWorkspaceRunnable() {
         @Override
         public void run(IProgressMonitor monitor) {
@@ -88,8 +89,9 @@ public final class JobHelpers {
     waitForBuildJobs();
   }
 
-  private static void waitForBuildJobs() {
+  private static void waitForBuildJobs() throws InterruptedException {
     waitForJobs(BuildJobMatcher.INSTANCE, 60 * 1000);
+    Job.getJobManager().join("org.sonarlint.eclipse.projectJob", null);
   }
 
   private static void waitForJobs(IJobMatcher matcher, int maxWaitMillis) {

@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
@@ -27,7 +27,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
-public abstract class AbstractSonarProjectJob extends WorkspaceJob {
+public abstract class AbstractSonarProjectJob extends Job {
 
   private final ISonarLintProject project;
   private final SonarLintProjectConfiguration config;
@@ -40,8 +40,12 @@ public abstract class AbstractSonarProjectJob extends WorkspaceJob {
   }
 
   @Override
-  public final IStatus runInWorkspace(final IProgressMonitor monitor) {
-    return doRun(monitor);
+  public final IStatus run(final IProgressMonitor monitor) {
+    try {
+      return doRun(monitor);
+    } catch (CoreException e) {
+      return e.getStatus();
+    }
   }
 
   protected ISonarLintProject getProject() {
@@ -52,6 +56,11 @@ public abstract class AbstractSonarProjectJob extends WorkspaceJob {
     return config;
   }
 
-  protected abstract IStatus doRun(final IProgressMonitor monitor);
+  protected abstract IStatus doRun(final IProgressMonitor monitor) throws CoreException;
+  
+  @Override
+  public final boolean belongsTo(Object family) {
+    return "org.sonarlint.eclipse.projectJob".equals(family);
+  }
 
 }

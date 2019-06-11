@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.util.Collection;
 import java.util.Map;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -47,7 +48,12 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
   }
 
   @Override
-  protected IStatus doRun(IProgressMonitor monitor) {
+  protected IStatus doRun(IProgressMonitor monitor) throws CoreException {
+    ResourcesPlugin.getWorkspace().run(this::updateMarkers, monitor);
+    return Status.OK_STATUS;
+  }
+
+  private void updateMarkers(IProgressMonitor monitor) {
     for (Map.Entry<ISonarLintIssuable, Collection<Trackable>> entry : issuesPerResource.entrySet()) {
       ISonarLintIssuable issuable = entry.getKey();
       if (issuable instanceof ISonarLintFile) {
@@ -67,6 +73,5 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
         }
       }
     }
-    return Status.OK_STATUS;
   }
 }
