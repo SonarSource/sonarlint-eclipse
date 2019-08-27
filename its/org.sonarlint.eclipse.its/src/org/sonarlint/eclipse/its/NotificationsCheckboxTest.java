@@ -24,10 +24,10 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.sonar.wsclient.user.UserParameters;
 import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
 import org.sonarqube.ws.WsUserTokens.GenerateWsResponse;
 import org.sonarqube.ws.client.WsClient;
+import org.sonarqube.ws.client.user.CreateRequest;
 import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,12 +52,11 @@ public class NotificationsCheckboxTest extends AbstractSonarLintTest {
   public static void prepare() {
     adminWsClient = newAdminWsClient(orchestrator);
 
-    orchestrator.getServer().adminWsClient().userClient()
-      .create(UserParameters.create()
-        .login(SONARLINT_USER)
-        .password(SONARLINT_PWD)
-        .passwordConfirmation(SONARLINT_PWD)
-        .name("SonarLint"));
+    adminWsClient.users().create(CreateRequest.builder()
+      .setLogin(SONARLINT_USER)
+      .setPassword(SONARLINT_PWD)
+      .setName("SonarLint")
+      .build());
 
     GenerateWsResponse wsResponse = adminWsClient.userTokens().generate(new GenerateWsRequest()
       .setLogin(SONARLINT_USER)

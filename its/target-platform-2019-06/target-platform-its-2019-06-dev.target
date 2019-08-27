@@ -8,7 +8,7 @@
 <location path="${M2_REPO}/org/objenesis/objenesis/2.6" type="Directory"/>
 <location path="${M2_REPO}/org/assertj/assertj-core/3.12.2" type="Directory"/>
 <location path="${M2_REPO}/com/google/code/findbugs/jsr305/3.0.2" type="Directory"/>
-<location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.22.0.1791" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.27.0.2172" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
