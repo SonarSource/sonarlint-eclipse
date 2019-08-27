@@ -22,18 +22,19 @@
     <license.title>SonarLint for Eclipse ITs</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <target.platform>e48</target.platform>
+    <target.platform>2019-06</target.platform>
     <tycho.localArtifacts>ignore</tycho.localArtifacts>
   </properties>
 
   <modules>
     <module>org.sonarlint.eclipse.its</module>
-    <module>target-platform-e43</module>
-    <module>target-platform-e44</module>
-    <module>target-platform-e45</module>
-    <module>target-platform-e46</module>
-    <module>target-platform-e47</module>
-    <module>target-platform-e48</module>
+    <module>target-platform-kepler</module>
+    <module>target-platform-luna</module>
+    <module>target-platform-mars</module>
+    <module>target-platform-neon</module>
+    <module>target-platform-oxygen</module>
+    <module>target-platform-photon</module>
+    <module>target-platform-2019-06</module>
   </modules>
 
   <!-- These dependencies will be added to the target platform -->

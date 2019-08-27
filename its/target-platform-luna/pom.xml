@@ -9,9 +9,9 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>target-platform-its-e43</artifactId>
+  <artifactId>target-platform-its-luna</artifactId>
   <packaging>eclipse-target-definition</packaging>
 
-  <name>SonarLint for Eclipse (target-platform for Kepler)</name>
+  <name>target-platform for Eclipse 4.4 (Luna)</name>
 
 </project>
