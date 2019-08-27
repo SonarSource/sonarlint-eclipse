@@ -15,6 +15,8 @@ mvn org.eclipse.tycho:tycho-versions-plugin:0.26.0:set-version -Dtycho.mode=mave
 
 export PROJECT_VERSION=$NEW_VERSION
 
+JACOCO_REPORT_PATHS=`pwd`/site/jacoco/jacoco.xml,`pwd`/its/target/site/jacoco/jacoco.xml
+
 if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
   echo '======= Build, deploy and analyze master'
 
@@ -25,7 +27,7 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
   # For this reason errors are ignored with "|| true"
   git fetch --unshallow || true
   
-  mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy \
+  mvn deploy \
       -Pdeploy-sonarsource,coverage,sign \
       -Dsonarsource.keystore.path=$SONARSOURCE_KEYSTORE_PATH \
       -Dsonarsource.keystore.password=$SONARSOURCE_KEYSTORE_PASS \
@@ -38,7 +40,7 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
 
   # Run ITs to collect IT coverage
   cd its
-  mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+  mvn verify \
       -Pcoverage \
       -Dtycho.localArtifacts=ignore \
       -Dtycho.disableP2Mirrors=true \
@@ -48,6 +50,7 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
   cd ..
   mvn sonar:sonar \
       -Pcoverage \
+      -Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_REPORT_PATHS \
       -Dtycho.disableP2Mirrors=true \
       -Dsonar.host.url=$SONAR_HOST_URL \
       -Dsonar.login=$SONAR_TOKEN \
@@ -69,7 +72,7 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
   # For this reason errors are ignored with "|| true"
   git fetch --unshallow || true
   
-  mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy \
+  mvn deploy \
       -Pdeploy-sonarsource,coverage \
       -Dtycho.disableP2Mirrors=true \
       -Dmaven.test.redirectTestOutputToFile=false \
@@ -80,7 +83,7 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
 
   # Run ITs to collect IT coverage
   cd its
-  mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+  mvn verify \
       -Pcoverage \
       -Dtycho.localArtifacts=ignore \
       -Dtycho.disableP2Mirrors=true \
@@ -90,6 +93,7 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
   cd ..
   mvn sonar:sonar \
       -Pcoverage \
+      -Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_REPORT_PATHS \
       -Dtycho.disableP2Mirrors=true \
       -Dsonar.host.url=$SONAR_HOST_URL \
       -Dsonar.login=$SONAR_TOKEN \
