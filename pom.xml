@@ -82,7 +82,6 @@
     <sonar.java.source>1.8</sonar.java.source>
     <sonar.java.target>1.8</sonar.java.target>
     <sonar.scm.ignoreLocalModifications>true</sonar.scm.ignoreLocalModifications>
-    <sonar.jacoco.reportPaths>../target/jacoco.exec,../its/target/jacoco-it.exec</sonar.jacoco.reportPaths>
     <jarsigner.skip>true</jarsigner.skip>
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
@@ -333,29 +332,6 @@
   </build>
 
   <profiles>
-    <profile>
-      <id>coverage</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.2</version>
-            <configuration>
-              <append>true</append>
-              <destFile>../target/jacoco.exec</destFile>
-            </configuration>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <!-- This profile is used to sign artifacts -->
     <profile>
       <id>sign</id>
