@@ -50,7 +50,7 @@
 
     <module>org.sonarlint.eclipse.site</module>
 
-    <module>target-platform-e48</module>
+    <module>target-platform-2019-06</module>
 
     <module>org.sonarlint.eclipse.core.tests</module>
   </modules>
@@ -72,7 +72,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho.version>1.4.0</tycho.version>
     <tycho-extras.version>${tycho.version}</tycho-extras.version>
-    <target.platform>e48</target.platform>
+    <target.platform>2019-06</target.platform>
     <sonarlint-core.version>4.1.0.2218</sonarlint-core.version>
     <protobuf.version>3.6.1</protobuf.version>
 

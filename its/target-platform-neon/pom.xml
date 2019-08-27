@@ -9,9 +9,9 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>target-platform-its-e45</artifactId>
+  <artifactId>target-platform-its-neon</artifactId>
   <packaging>eclipse-target-definition</packaging>
 
-  <name>SonarLint for Eclipse (target-platform for Mars)</name>
+  <name>target-platform for Eclipse 4.6 (Neon)</name>
 
 </project>

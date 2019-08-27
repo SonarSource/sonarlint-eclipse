@@ -27,6 +27,7 @@
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-surefire-plugin</artifactId>
         <configuration>
+          <trimStackTrace>false</trimStackTrace>
           <useUIHarness>true</useUIHarness>
           <useUIThread>false</useUIThread>
           <appArgLine>-eclipse.keyring target/keyring -eclipse.password secure-storage-password.txt -pluginCustomization

@@ -9,9 +9,9 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>target-platform-its-e47</artifactId>
+  <artifactId>target-platform-its-photon</artifactId>
   <packaging>eclipse-target-definition</packaging>
 
-  <name>SonarLint for Eclipse (target-platform for Oxygen)</name>
+  <name>target-platform for Eclipse 4.8 (Photon)</name>
 
 </project>
