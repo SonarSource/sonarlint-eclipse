@@ -48,7 +48,6 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.ProjectStorageUpdateJob;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
-import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -65,6 +64,8 @@ import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isEmpty;
 
 public class ProjectBindingWizard extends ParentAwareWizard implements INewWizard, IPageChangingListener {
 
+  private static final String STORE_LAST_SELECTED_SERVER_ID = "ProjectBindingWizard.last_selected_server";
+
   private final ProjectBindingModel model;
   private final ServerSelectionWizardPage serverSelectionWizardPage;
   private final RemoteProjectSelectionWizardPage remoteProjectSelectionWizardPage;
@@ -77,6 +78,7 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
     setWindowTitle(title);
     setHelpAvailable(false);
     projectsSelectionWizardPage = new ProjectsSelectionWizardPage(model);
+    setDialogSettings(SonarLintUiPlugin.getDefault().getDialogSettings());
     serverSelectionWizardPage = new ServerSelectionWizardPage(model);
     remoteProjectSelectionWizardPage = new RemoteProjectSelectionWizardPage(model);
   }
@@ -93,14 +95,10 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
       // Only one server configured, pre-select it
       this.model.setServer((Server) SonarLintCorePlugin.getServersManager().getServers().get(0));
     } else {
-      Set<IServer> servers = selectedProjects.stream()
-        .map(p -> SonarLintCorePlugin.getServersManager().forProject(p))
-        .filter(Optional<IServer>::isPresent)
-        .map(Optional<IServer>::get)
-        .collect(Collectors.toSet());
-      if (servers.size() == 1) {
-        // All projects are already bound to the same server, pre-select it
-        this.model.setServer((Server) servers.iterator().next());
+      String lastSelectedServer = this.getDialogSettings().get(STORE_LAST_SELECTED_SERVER_ID);
+      if (lastSelectedServer != null) {
+        SonarLintCorePlugin.getServersManager().findById(lastSelectedServer)
+          .ifPresent(s -> this.model.setServer((Server) s));
       }
     }
     Set<String> projectKeys = selectedProjects.stream()
@@ -180,6 +178,7 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
   @Override
   public boolean performFinish() {
     String serverId = model.getServer().getId();
+    getDialogSettings().put(STORE_LAST_SELECTED_SERVER_ID, serverId);
     String projectKey = model.getRemoteProjectKey();
     ProjectStorageUpdateJob job = new ProjectStorageUpdateJob(serverId, projectKey);
     model.getEclipseProjects().forEach(p -> {
