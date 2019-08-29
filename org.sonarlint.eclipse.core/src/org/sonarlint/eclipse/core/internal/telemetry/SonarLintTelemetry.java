@@ -29,10 +29,13 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
+import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.osgi.framework.Bundle;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
@@ -87,7 +90,7 @@ public class SonarLintTelemetry {
     }
     try {
       TelemetryClientConfig clientConfig = getTelemetryClientConfig();
-      TelemetryClient client = new TelemetryClient(clientConfig, PRODUCT, SonarLintUtils.getPluginVersion());
+      TelemetryClient client = new TelemetryClient(clientConfig, PRODUCT, SonarLintUtils.getPluginVersion(), ideVersionForTelemetry());
       this.telemetry = newTelemetryManager(getStorageFilePath(), client);
       this.scheduledJob = new TelemetryJob();
       scheduledJob.schedule(TimeUnit.MINUTES.toMillis(1));
@@ -96,6 +99,22 @@ public class SonarLintTelemetry {
         SonarLintLogger.get().error("Failed during periodic telemetry job", e);
       }
     }
+  }
+
+  private static String ideVersionForTelemetry() {
+    StringBuilder sb = new StringBuilder();
+    IProduct iProduct = Platform.getProduct();
+    if (iProduct != null) {
+      sb.append(iProduct.getName());
+    } else {
+      sb.append("Unknown");
+    }
+    Bundle platformBundle = Platform.getBundle("org.eclipse.platform");
+    if (platformBundle != null) {
+      sb.append(" ");
+      sb.append(platformBundle.getVersion());
+    }
+    return sb.toString();
   }
 
   // visible for testing

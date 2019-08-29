@@ -59,7 +59,12 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
   @Override
   protected ConnectedAnalysisConfiguration prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps) {
     SonarLintLogger.get().debug("Connected mode (using configuration of '" + binding.projectKey() + "' in server '" + binding.serverId() + "')");
-    return new ConnectedAnalysisConfiguration(binding.projectKey(), projectBaseDir, getProject().getWorkingDir(), inputFiles, mergedExtraProps);
+    return ConnectedAnalysisConfiguration.builder()
+      .setProjectKey(binding.projectKey())
+      .setBaseDir(projectBaseDir)
+      .addInputFiles(inputFiles)
+      .putAllExtraProperties(mergedExtraProps)
+      .build();
   }
 
   @Override

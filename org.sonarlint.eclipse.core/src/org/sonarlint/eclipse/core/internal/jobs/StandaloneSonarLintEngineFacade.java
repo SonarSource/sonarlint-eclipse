@@ -82,7 +82,7 @@ public class StandaloneSonarLintEngineFacade {
   public RuleDetails getRuleDescription(String ruleKey) {
     StandaloneSonarLintEngine engine = getClient();
     if (engine != null) {
-      return engine.getRuleDetails(ruleKey);
+      return engine.getRuleDetails(ruleKey).orElse(null);
     }
     return null;
   }
