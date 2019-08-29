@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.jdt.internal;
 
+import java.util.Collections;
+import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -46,6 +48,14 @@ public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, 
     } catch (ClassNotFoundException e) {
       return false;
     }
+  }
+
+  @Override
+  public Set<String> whitelistedPlugins() {
+    if (isJdtPresent()) {
+      return Collections.singleton("java");
+    }
+    return Collections.emptySet();
   }
 
   @Override

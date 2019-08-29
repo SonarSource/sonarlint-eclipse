@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.cdt.internal;
 
+import java.util.Collections;
+import java.util.Set;
 import org.eclipse.cdt.core.CCProjectNature;
 import org.eclipse.cdt.core.CProjectNature;
 import org.eclipse.core.resources.IFile;
@@ -50,6 +52,14 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
     } catch (ClassNotFoundException e) {
       return false;
     }
+  }
+
+  @Override
+  public Set<String> whitelistedPlugins() {
+    if (isCdtPresent()) {
+      return Collections.singleton("cpp");
+    }
+    return Collections.emptySet();
   }
 
   @Override
