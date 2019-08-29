@@ -46,7 +46,13 @@ public class AnalyzeStandaloneProjectJob extends AbstractAnalyzeProjectJob<Stand
   @Override
   protected StandaloneAnalysisConfiguration prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps) {
     SonarLintLogger.get().debug("Standalone mode (project not bound)");
-    return new StandaloneAnalysisConfiguration(projectBaseDir, getProject().getWorkingDir(), inputFiles, mergedExtraProps, excludedRules, includedRules);
+    return StandaloneAnalysisConfiguration.builder()
+      .setBaseDir(projectBaseDir)
+      .addInputFiles(inputFiles)
+      .putAllExtraProperties(mergedExtraProps)
+      .addExcludedRules(excludedRules)
+      .addIncludedRules(includedRules)
+      .build();
   }
 
   @Override

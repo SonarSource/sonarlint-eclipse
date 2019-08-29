@@ -70,16 +70,16 @@ import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.client.api.common.AbstractAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.exceptions.CanceledException;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
 
 import static java.text.MessageFormat.format;
 
-public abstract class AbstractAnalyzeProjectJob<CONFIG extends StandaloneAnalysisConfiguration> extends AbstractSonarProjectJob {
+public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisConfiguration> extends AbstractSonarProjectJob {
   private final List<SonarLintProperty> extraProps;
   private final TriggerType triggerType;
   private final boolean shouldClearReport;
