@@ -78,6 +78,12 @@
                   <version>1.10.0.2131</version>
                   <type>jar</type>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>org.sonarsource.html</groupId>
+                  <artifactId>sonar-html-plugin</artifactId>
+                  <version>3.2.0.2082</version>
+                  <type>jar</type>
+                </artifactItem>
               </artifactItems>
               <outputDirectory>${project.basedir}/plugins</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
