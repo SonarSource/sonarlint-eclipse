@@ -27,7 +27,9 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,6 +48,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
@@ -105,11 +108,19 @@ public class Server implements IServer, StateListener {
 
   Server(String id) {
     this.id = id;
+
+    Set<String> excludedPlugins = new HashSet<>(Arrays.asList("typescript", "java", "cpp"));
+    Collection<IAnalysisConfigurator> configurators = SonarLintCorePlugin.getExtensionTracker().getAnalysisConfigurators();
+    for (IAnalysisConfigurator configurator : configurators) {
+      excludedPlugins.removeAll(configurator.whitelistedPlugins());
+    }
+
     ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
       .setServerId(getId())
       .setWorkDir(StoragePathManager.getServerWorkDir(getId()))
       .setStorageRoot(StoragePathManager.getServerStorageRoot())
       .setLogOutput(new SonarLintAnalyzerLogOutput())
+      .addExcludedCodeAnalyzers(excludedPlugins.toArray(new String[0]))
       .build();
     this.client = new ConnectedSonarLintEngineImpl(globalConfig);
     this.client.addStateListener(this);

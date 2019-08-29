@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.core.analysis;
 
+import java.util.Collections;
+import java.util.Set;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -46,6 +48,16 @@ public interface IAnalysisConfigurator {
    */
   default void analysisComplete(IPostAnalysisContext context, IProgressMonitor monitor) {
     // Do nothing by default
+  }
+
+  /**
+   * By default SonarLint Eclipse will exclude some analyzers that are not working out of the box without some requirements.
+   * If this IAnalysisConfigurator is fullfilling some requirements, then you can whitelist the associated plugin.
+   * @return List of plugin keys that should be whitelisted (e.g. java, cpp, cobol, ...)
+   * @since 4.2
+   */
+  default Set<String> whitelistedPlugins() {
+    return Collections.emptySet();
   }
 
 }
