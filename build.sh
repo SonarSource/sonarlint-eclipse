@@ -15,7 +15,7 @@ mvn org.eclipse.tycho:tycho-versions-plugin:0.26.0:set-version -Dtycho.mode=mave
 
 export PROJECT_VERSION=$NEW_VERSION
 
-JACOCO_REPORT_PATHS=`pwd`/site/jacoco/jacoco.xml,`pwd`/its/target/site/jacoco/jacoco.xml
+JACOCO_REPORT_PATHS=`pwd`/org.sonarlint.eclipse.core.tests/target/site/jacoco/jacoco.xml,`pwd`/its/org.sonarlint.eclipse.its/target/site/jacoco/jacoco.xml
 
 if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
   echo '======= Build, deploy and analyze master'
