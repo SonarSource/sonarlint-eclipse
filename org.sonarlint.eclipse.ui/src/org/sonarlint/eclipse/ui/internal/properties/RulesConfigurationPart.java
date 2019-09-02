@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -31,32 +32,29 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
-import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
-import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeNodeContentProvider;
-import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.dialogs.FilteredTree;
+import org.eclipse.ui.dialogs.PatternFilter;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
@@ -66,34 +64,38 @@ public class RulesConfigurationPart {
 
   private final Map<String, List<RuleDetailsWrapper>> ruleDetailsWrappersByLanguage;
 
-  private final RuleDetailsWrapperFilter filter = new RuleDetailsWrapperFilter();
-
-  private CheckboxTreeViewer viewer;
+  private final RuleDetailsWrapperFilter filter;
 
   private SonarLintRuleBrowser ruleBrowser;
+
+  private CheckBoxFilteredTree tree;
 
   public RulesConfigurationPart(Collection<RuleDetails> allRuleDetails, Collection<RuleKey> excluded, Collection<RuleKey> included) {
     this.ruleDetailsWrappersByLanguage = allRuleDetails.stream()
       .sorted(Comparator.comparing(RuleDetails::getKey))
       .map(rd -> new RuleDetailsWrapper(rd, excluded, included))
       .collect(Collectors.groupingBy(w -> w.ruleDetails.getLanguage(), Collectors.toList()));
+    filter = new RuleDetailsWrapperFilter();
+    filter.setIncludeLeadingWildcard(true);
   }
 
   protected void createControls(Composite parent) {
-    Composite pageComponent = new Composite(parent, SWT.NULL);
-    GridLayout layout = new GridLayout(1, false);
+    final SashForm advancedComposite = new SashForm(parent, SWT.VERTICAL);
+    GridData sashData = new GridData(SWT.FILL, SWT.FILL, true, true);
+    advancedComposite.setLayoutData(sashData);
+
+    Composite filterAndTree = new Composite(advancedComposite, SWT.NONE);
+    GridLayout layout = new GridLayout();
     layout.marginWidth = 0;
     layout.marginHeight = 0;
-    pageComponent.setLayout(layout);
+    filterAndTree.setLayout(layout);
 
-    createFilterPart(pageComponent);
+    createFilterPart(filterAndTree);
 
-    Composite treeComposite = new Composite(pageComponent, SWT.NONE);
+    createTreeViewer(filterAndTree);
+
+    ruleBrowser = new SonarLintRuleBrowser(advancedComposite);
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    treeComposite.setLayoutData(gridData);
-    createTreeViewer(treeComposite);
-
-    ruleBrowser = new SonarLintRuleBrowser(pageComponent);
     ruleBrowser.setLayoutData(gridData);
   }
 
@@ -116,41 +118,31 @@ public class RulesConfigurationPart {
       IStructuredSelection selection = (IStructuredSelection) event.getSelection();
       if (selection.size() > 0) {
         filter.setType((Type) selection.getFirstElement());
-        viewer.refresh();
       }
     };
     combo.addSelectionChangedListener(selectionChangedListener);
   }
 
   private void createTreeViewer(Composite parent) {
-    viewer = new CheckboxTreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-    viewer.setContentProvider(new ViewContentProvider());
-    viewer.getTree().setHeaderVisible(false);
-    viewer.setComparator(new ViewerComparator() {
+    tree = new CheckBoxFilteredTree(parent);
+    GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+    tree.setLayoutData(data);
+
+    tree.getViewer().setContentProvider(new ViewContentProvider());
+    tree.getViewer().setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new String[ruleDetailsWrappersByLanguage.size()]));
+    tree.getViewer().setLabelProvider(new LanguageAndRuleLabelProvider());
+    tree.getViewer().setComparator(new ViewerComparator() {
       @Override
       public int compare(Viewer viewer, Object e1, Object e2) {
         if (!(e1 instanceof RuleDetailsWrapper && e2 instanceof RuleDetailsWrapper)) {
-          return 0;
+          return super.compare(viewer, e1, e2);
         }
         RuleDetailsWrapper w1 = (RuleDetailsWrapper) e1;
         RuleDetailsWrapper w2 = (RuleDetailsWrapper) e2;
         return w1.ruleDetails.getName().compareTo(w2.ruleDetails.getName());
       }
     });
-    viewer.getTree().setSortDirection(SWT.DOWN);
-    viewer.addFilter(filter);
-
-    TreeViewerColumn languageAndRuleNameColumn = new TreeViewerColumn(viewer, SWT.NONE);
-    languageAndRuleNameColumn.getColumn().setWidth(100);
-    languageAndRuleNameColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new LanguageLabelProvider()));
-
-    viewer.getTree().setSortColumn(languageAndRuleNameColumn.getColumn());
-
-    TreeColumnLayout treeLayout = new TreeColumnLayout();
-    treeLayout.setColumnData(languageAndRuleNameColumn.getColumn(), new ColumnWeightData(1));
-    parent.setLayout(treeLayout);
-
-    viewer.setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new String[ruleDetailsWrappersByLanguage.size()]));
+    tree.getViewer().getTree().setSortDirection(SWT.DOWN);
 
     ISelectionChangedListener selectionChangedListener = event -> {
       IStructuredSelection thisSelection = (IStructuredSelection) event.getSelection();
@@ -160,58 +152,7 @@ public class RulesConfigurationPart {
         ruleBrowser.updateRule(wrapper.ruleDetails);
       }
     };
-    viewer.addSelectionChangedListener(selectionChangedListener);
-
-    viewer.addCheckStateListener(new RuleCheckStateListener());
-
-    viewer.setCheckStateProvider(new RuleCheckStateProvider());
-
-    createContextMenu();
-  }
-
-  private void createContextMenu() {
-    MenuManager contextMenu = new MenuManager("#ViewerMenu"); //$NON-NLS-1$
-    contextMenu.setRemoveAllWhenShown(true);
-    contextMenu.addMenuListener(this::fillContextMenu);
-    Menu menu = contextMenu.createContextMenu(viewer.getControl());
-    viewer.getControl().setMenu(menu);
-  }
-
-  private void fillContextMenu(IMenuManager contextMenu) {
-    contextMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-
-    contextMenu.add(new Action("Activate") {
-      @Override
-      public void run() {
-        setActiveForSelection(true);
-      }
-    });
-
-    contextMenu.add(new Action("Deactivate") {
-      @Override
-      public void run() {
-        setActiveForSelection(false);
-      }
-    });
-  }
-
-  private void setActiveForSelection(boolean isActive) {
-    Iterator<?> iterator = ((IStructuredSelection) viewer.getSelection()).iterator();
-    while (iterator.hasNext()) {
-      setActiveForElement(iterator.next(), isActive);
-    }
-  }
-
-  private void setActiveForElement(Object element, boolean isActive) {
-    if (element instanceof RuleDetailsWrapper) {
-      RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
-      wrapper.isActive = isActive;
-      viewer.refresh(element);
-    } else if (element instanceof String) {
-      String language = (String) element;
-      ruleDetailsWrappersByLanguage.get(language).stream().forEach(w -> w.isActive = isActive);
-      viewer.refresh();
-    }
+    tree.getViewer().addSelectionChangedListener(selectionChangedListener);
   }
 
   enum Type {
@@ -229,33 +170,35 @@ public class RulesConfigurationPart {
     }
   }
 
-  private class RuleDetailsWrapperFilter extends ViewerFilter {
+  private class RuleDetailsWrapperFilter extends PatternFilter {
     private Type type = Type.ALL;
+    private String pattern;
 
     private void setType(Type type) {
       this.type = type;
+      tree.refresh();
     }
 
     @Override
-    public boolean select(Viewer viewer, Object parentElement, Object element) {
+    public void setPattern(String patternString) {
+      super.setPattern(patternString);
+      this.pattern = patternString;
+    }
+
+    @Override
+    protected boolean isLeafMatch(Viewer viewer, Object element) {
       if (element instanceof RuleDetailsWrapper) {
-        return select((RuleDetailsWrapper) element);
+        RuleDetailsWrapper ruleDetailsWrapper = (RuleDetailsWrapper) element;
+        return type.predicate.test(ruleDetailsWrapper)
+          && (super.isLeafMatch(viewer, element) || ruleKeyMatch(ruleDetailsWrapper));
       }
-
-      if (element instanceof String) {
-        return select((String) element);
-      }
-
       return false;
     }
 
-    private boolean select(String language) {
-      return ruleDetailsWrappersByLanguage.get(language).stream().anyMatch(type.predicate);
+    private boolean ruleKeyMatch(RuleDetailsWrapper ruleDetailsWrapper) {
+      return pattern != null && ruleDetailsWrapper.ruleDetails.getKey().toLowerCase(Locale.ENGLISH).contains(pattern.toLowerCase(Locale.ENGLISH));
     }
 
-    private boolean select(RuleDetailsWrapper wrapper) {
-      return type.predicate.test(wrapper);
-    }
   }
 
   private class RuleCheckStateListener implements ICheckStateListener {
@@ -265,14 +208,14 @@ public class RulesConfigurationPart {
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
         wrapper.isActive = event.getChecked();
-        viewer.refresh(element);
+        tree.getViewer().refresh(element);
       } else if (element instanceof String) {
         String language = (String) element;
-        viewer.setExpandedState(element, true);
+        tree.getViewer().setExpandedState(element, true);
         ruleDetailsWrappersByLanguage.get(language).stream()
           .filter(filter.type.predicate)
           .forEach(w -> w.isActive = event.getChecked());
-        viewer.refresh();
+        tree.getViewer().refresh();
       }
     }
   }
@@ -354,18 +297,17 @@ public class RulesConfigurationPart {
     }
   }
 
-  private static class LanguageLabelProvider extends LabelProvider implements IStyledLabelProvider {
+  private static class LanguageAndRuleLabelProvider extends LabelProvider {
     @Override
-    public StyledString getStyledText(Object element) {
+    public String getText(Object element) {
       if (element instanceof String) {
-        String language = (String) element;
-        return new StyledString(language);
+        return (String) element;
       }
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
-        return new StyledString(wrapper.ruleDetails.getName());
+        return wrapper.ruleDetails.getName();
       }
-      return new StyledString();
+      return null;
     }
   }
 
@@ -431,9 +373,81 @@ public class RulesConfigurationPart {
     ruleDetailsWrappersByLanguage.entrySet().stream()
       .flatMap(e -> e.getValue().stream())
       .forEach(w -> w.isActive = w.ruleDetails.isActiveByDefault());
+    if (tree != null) {
+      tree.getViewer().refresh();
+    }
   }
 
-  void refresh() {
-    viewer.refresh();
+  private class CheckBoxFilteredTree extends FilteredTree {
+
+    public CheckBoxFilteredTree(Composite parent) {
+      super(parent, SWT.CHECK | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER, filter, true);
+      setInitialText("type filter text or rule key");
+    }
+
+    @Override
+    protected TreeViewer doCreateTreeViewer(Composite parent, int style) {
+      CheckboxTreeViewer cbTreeViewer = new CheckboxTreeViewer(parent, style);
+      cbTreeViewer.addCheckStateListener(new RuleCheckStateListener());
+      cbTreeViewer.setCheckStateProvider(new RuleCheckStateProvider());
+      createContextMenu(cbTreeViewer);
+      return cbTreeViewer;
+    }
+
+    private void createContextMenu(TreeViewer viewer) {
+      MenuManager contextMenu = new MenuManager("#ViewerMenu"); //$NON-NLS-1$
+      contextMenu.setRemoveAllWhenShown(true);
+      contextMenu.addMenuListener(this::fillContextMenu);
+      Menu menu = contextMenu.createContextMenu(viewer.getControl());
+      viewer.getControl().setMenu(menu);
+    }
+
+    private void fillContextMenu(IMenuManager contextMenu) {
+      contextMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
+      contextMenu.add(new Action("Activate") {
+        @Override
+        public void run() {
+          setActiveForSelection(true);
+        }
+      });
+
+      contextMenu.add(new Action("Deactivate") {
+        @Override
+        public void run() {
+          setActiveForSelection(false);
+        }
+      });
+    }
+
+    private void setActiveForSelection(boolean isActive) {
+      Iterator<?> iterator = ((IStructuredSelection) tree.getViewer().getSelection()).iterator();
+      while (iterator.hasNext()) {
+        setActiveForElement(iterator.next(), isActive);
+      }
+    }
+
+    private void setActiveForElement(Object element, boolean isActive) {
+      if (element instanceof RuleDetailsWrapper) {
+        RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
+        wrapper.isActive = isActive;
+        tree.getViewer().refresh(element);
+      } else if (element instanceof String) {
+        String language = (String) element;
+        ruleDetailsWrappersByLanguage.get(language).stream().forEach(w -> w.isActive = isActive);
+        tree.getViewer().refresh();
+      }
+    }
+
+    public void refresh() {
+      super.textChanged();
+    }
+
+    @Override
+    protected String getFilterString() {
+      String filterString = super.getFilterString();
+      // Hack to trigger the filtering even if the search string is empty, to filter also on the combobox
+      return filterString != null && filterString.length() == 0 ? "*" : filterString;
+    }
   }
 }
