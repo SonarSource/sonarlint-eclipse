@@ -22,7 +22,7 @@ package org.sonarlint.eclipse.ui.internal.properties;
 import java.util.Collection;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
@@ -54,8 +54,9 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
 
   @Override
   protected Control createContents(Composite parent) {
-    Composite pageComponent = new Composite(parent, SWT.NULL);
-    FillLayout layout = new FillLayout();
+    Composite pageComponent = new Composite(parent, SWT.NONE);
+    GridLayout layout = new GridLayout();
+    layout.marginWidth = 0;
     pageComponent.setLayout(layout);
 
     rulesConfigurationPart = new RulesConfigurationPart(loadRuleDetails(), getExcludedRules(), getIncludedRules());
@@ -88,6 +89,5 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
   @Override
   protected void performDefaults() {
     rulesConfigurationPart.resetToDefaults();
-    rulesConfigurationPart.refresh();
   }
 }
