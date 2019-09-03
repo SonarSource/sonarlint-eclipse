@@ -24,7 +24,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.junit.Before;
 import org.junit.Test;
+import org.osgi.service.prefs.BackingStoreException;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
@@ -33,6 +37,11 @@ import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PreferencesUtilsTest {
+
+  @Before
+  public void clean() throws BackingStoreException {
+    ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID).removeNode();
+  }
 
   @Test
   public void should_serialize_file_exclusions() {
