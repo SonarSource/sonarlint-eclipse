@@ -90,7 +90,7 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
   git fetch --unshallow || true
   
   mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy \
-      -Pdeploy-sonarsource,sign \
+      -Pdeploy-sonarsource \
       -Djacoco.append=true \
       -Djacoco.destFile=$JACOCO_BINARY_FILE \
       -Dtycho.disableP2Mirrors=true \
