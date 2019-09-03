@@ -15,7 +15,12 @@ mvn org.eclipse.tycho:tycho-versions-plugin:0.26.0:set-version -Dtycho.mode=mave
 
 export PROJECT_VERSION=$NEW_VERSION
 
-JACOCO_REPORT_PATHS=`pwd`/org.sonarlint.eclipse.core.tests/target/site/jacoco/jacoco.xml,`pwd`/its/org.sonarlint.eclipse.its/target/site/jacoco/jacoco.xml
+JACOCO_BINARY_FILE=`pwd`/target/jacoco-merged.exec
+JACOCO_REPORT_PATH=`pwd`/target/jacoco-merged.xml
+declare -a CLASS_FOLDERS=("`pwd`/org.sonarlint.eclipse.cdt/target/classes" \
+    "`pwd`/org.sonarlint.eclipse.core/target/classes" \
+    "`pwd`/org.sonarlint.eclipse.ui/target/classes" \
+    "`pwd`/org.sonarlint.eclipse.jdt/target/classes")
 
 if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
   echo '======= Build, deploy and analyze master'
@@ -27,8 +32,10 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
   # For this reason errors are ignored with "|| true"
   git fetch --unshallow || true
   
-  mvn deploy \
-      -Pdeploy-sonarsource,coverage,sign \
+  mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy \
+      -Pdeploy-sonarsource,sign \
+      -Djacoco.append=true \
+      -Djacoco.destFile=$JACOCO_BINARY_FILE \
       -Dsonarsource.keystore.path=$SONARSOURCE_KEYSTORE_PATH \
       -Dsonarsource.keystore.password=$SONARSOURCE_KEYSTORE_PASS \
       -Dtycho.disableP2Mirrors=true \
@@ -40,17 +47,27 @@ if [ "${GITHUB_BRANCH}" == "master" ] && [ "$IS_PULLREQUEST" == "false" ]; then
 
   # Run ITs to collect IT coverage
   cd its
-  mvn verify \
-      -Pcoverage \
+  mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+      -Djacoco.append=true \
+      -Djacoco.destFile=$JACOCO_BINARY_FILE \
       -Dtycho.localArtifacts=ignore \
       -Dtycho.disableP2Mirrors=true \
       -Dsonarlint-eclipse.p2.url=$REPO_URL \
       -B -e
       
   cd ..
-  mvn sonar:sonar \
-      -Pcoverage \
-      -Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_REPORT_PATHS \
+  
+  # Convert JaCoCo report
+  wget -O jacococli.jar http://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.4/org.jacoco.cli-0.8.4-nodeps.jar
+  CLASSES_ARG=()
+  for CL in "${CLASS_FOLDERS[@]}"; do
+    CLASSES_ARG+=("--classfiles")
+    CLASSES_ARG+=("$CL")
+  done
+  java -jar jacococli.jar report $JACOCO_BINARY_FILE "${CLASSES_ARG[@]}" --xml $JACOCO_REPORT_PATH
+  
+  mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+      -Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_REPORT_PATH \
       -Dtycho.disableP2Mirrors=true \
       -Dsonar.host.url=$SONAR_HOST_URL \
       -Dsonar.login=$SONAR_TOKEN \
@@ -72,8 +89,10 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
   # For this reason errors are ignored with "|| true"
   git fetch --unshallow || true
   
-  mvn deploy \
-      -Pdeploy-sonarsource,coverage \
+  mvn org.jacoco:jacoco-maven-plugin:prepare-agent deploy \
+      -Pdeploy-sonarsource,sign \
+      -Djacoco.append=true \
+      -Djacoco.destFile=$JACOCO_BINARY_FILE \
       -Dtycho.disableP2Mirrors=true \
       -Dmaven.test.redirectTestOutputToFile=false \
       -B -e -V $*
@@ -83,17 +102,27 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
 
   # Run ITs to collect IT coverage
   cd its
-  mvn verify \
-      -Pcoverage \
+  mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify \
+      -Djacoco.append=true \
+      -Djacoco.destFile=$JACOCO_BINARY_FILE \
       -Dtycho.localArtifacts=ignore \
       -Dtycho.disableP2Mirrors=true \
       -Dsonarlint-eclipse.p2.url=$REPO_URL \
       -B -e
       
   cd ..
-  mvn sonar:sonar \
-      -Pcoverage \
-      -Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_REPORT_PATHS \
+  
+  # Convert JaCoCo report
+  wget -O jacococli.jar http://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.4/org.jacoco.cli-0.8.4-nodeps.jar
+  CLASSES_ARG=()
+  for CL in "${CLASS_FOLDERS[@]}"; do
+    CLASSES_ARG+=("--classfiles")
+    CLASSES_ARG+=("$CL")
+  done
+  java -jar jacococli.jar report $JACOCO_BINARY_FILE "${CLASSES_ARG[@]}" --xml $JACOCO_REPORT_PATH
+      
+  mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+      -Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_REPORT_PATH \
       -Dtycho.disableP2Mirrors=true \
       -Dsonar.host.url=$SONAR_HOST_URL \
       -Dsonar.login=$SONAR_TOKEN \
