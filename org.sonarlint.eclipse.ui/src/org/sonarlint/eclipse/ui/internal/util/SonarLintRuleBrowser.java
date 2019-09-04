@@ -21,6 +21,8 @@ package org.sonarlint.eclipse.ui.internal.util;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Base64;
 import java.util.Locale;
 import java.util.Objects;
@@ -28,6 +30,8 @@ import javax.annotation.Nullable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.LocationAdapter;
+import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
@@ -38,6 +42,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
@@ -64,6 +71,7 @@ public class SonarLintRuleBrowser extends Composite {
     hiddenLabel.setLayoutData(data);
     try {
       browser = new Browser(this, SWT.FILL);
+      addLinkListener(browser);
       browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
       browser.setJavascriptEnabled(false);
       // Cancel opening of new windows
@@ -98,6 +106,32 @@ public class SonarLintRuleBrowser extends Composite {
     }
 
     updateRule(null);
+  }
+
+  private static void addLinkListener(Browser browser) {
+    browser.addLocationListener(new LocationAdapter() {
+      @Override
+      public void changing(LocationEvent event) {
+        String loc = event.location;
+
+        if ("about:blank".equals(loc)) { //$NON-NLS-1$
+          /*
+           * Using the Browser.setText API triggers a location change to "about:blank".
+           * XXX: remove this code once https://bugs.eclipse.org/bugs/show_bug.cgi?id=130314 is fixed
+           */
+          // input set with setText
+          return;
+        }
+
+        event.doit = false;
+
+        try {
+          PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(loc));
+        } catch (PartInitException | MalformedURLException e) {
+          SonarLintLogger.get().error("Unable to open URL: " + loc, e);
+        }
+      }
+    });
   }
 
   private String css() {
