@@ -53,7 +53,10 @@ public class SonarLintRuleBrowser extends Composite {
 
   public SonarLintRuleBrowser(Composite parent) {
     super(parent, SWT.NONE);
-    this.setLayout(new GridLayout(1, false));
+    GridLayout layout = new GridLayout(1, false);
+    layout.marginWidth = 0;
+    layout.marginHeight = 0;
+    this.setLayout(layout);
     hiddenLabel = new Label(this, SWT.NONE);
     hiddenLabel.setVisible(false);
     GridData data = new GridData();
