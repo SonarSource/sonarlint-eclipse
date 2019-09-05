@@ -27,6 +27,11 @@ import java.util.Base64;
 import java.util.Locale;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.jface.resource.JFaceColors;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
@@ -49,14 +54,17 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 
+import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_BACKGROUND_COLOR;
+import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROUND_COLOR;
+
 public class SonarLintRuleBrowser extends Composite {
 
   private Browser browser;
-  // Used to grab the correct color, because of https://bugs.eclipse.org/bugs/show_bug.cgi?id=539790
-  private Label hiddenLabel;
   private RuleDetails ruleDetails;
   private Color foreground;
   private Color background;
+  private Color linkColor;
+  private IPropertyChangeListener fPropertyChangeListener;
 
   public SonarLintRuleBrowser(Composite parent) {
     super(parent, SWT.NONE);
@@ -64,11 +72,6 @@ public class SonarLintRuleBrowser extends Composite {
     layout.marginWidth = 0;
     layout.marginHeight = 0;
     this.setLayout(layout);
-    hiddenLabel = new Label(this, SWT.NONE);
-    hiddenLabel.setVisible(false);
-    GridData data = new GridData();
-    data.exclude = true;
-    hiddenLabel.setLayoutData(data);
     try {
       browser = new Browser(this, SWT.FILL);
       addLinkListener(browser);
@@ -78,23 +81,37 @@ public class SonarLintRuleBrowser extends Composite {
       browser.addOpenWindowListener(event -> event.required = true);
       // Replace browser's built-in context menu with none
       browser.setMenu(new Menu(parent.getShell(), SWT.NONE));
-      this.foreground = hiddenLabel.getForeground();
-      this.background = hiddenLabel.getBackground();
-      parent.addPaintListener(e -> {
-        boolean colorChanged = false;
-        if (!Objects.equals(hiddenLabel.getForeground(), foreground)) {
-          this.foreground = hiddenLabel.getForeground();
-          colorChanged = true;
+      this.foreground = getFgColor();
+      this.background = getBgColor();
+      this.linkColor = getLinkColor();
+      fPropertyChangeListener = new IPropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+          if (INFORMATION_BACKGROUND_COLOR.equals(event.getProperty()) || INFORMATION_FOREGROUND_COLOR.equals(event.getProperty())) {
+            boolean colorChanged = false;
+            Color newFg = getFgColor();
+            if (!Objects.equals(newFg, foreground)) {
+              SonarLintRuleBrowser.this.foreground = newFg;
+              colorChanged = true;
+            }
+            Color newBg = getBgColor();
+            if (!Objects.equals(newBg, background)) {
+              SonarLintRuleBrowser.this.background = newBg;
+              colorChanged = true;
+            }
+            Color newLink = getLinkColor();
+            if (!Objects.equals(newLink, linkColor)) {
+              SonarLintRuleBrowser.this.linkColor = newLink;
+              colorChanged = true;
+            }
+            if (colorChanged) {
+              // Reload HTML to possibly apply theme change
+              updateRule(ruleDetails);
+            }
+          }
         }
-        if (!Objects.equals(hiddenLabel.getBackground(), background)) {
-          this.background = hiddenLabel.getBackground();
-          colorChanged = true;
-        }
-        if (colorChanged) {
-          // Reload HTML to possibly apply theme change
-          updateRule(ruleDetails);
-        }
-      });
+      };
+      JFaceResources.getColorRegistry().addListener(fPropertyChangeListener);
     } catch (SWTError e) {
       // Browser is probably not available but it will be partially initialized in parent
       for (Control c : this.getChildren()) {
@@ -137,21 +154,44 @@ public class SonarLintRuleBrowser extends Composite {
   private String css() {
     return "<style type=\"text/css\">"
       + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: 13px; line-height: 1.23076923; "
-      + "color: " + hexColor(foreground) + ";background-color: " + hexColor(background)
+      + "color: " + hexColor(this.foreground) + ";background-color: " + hexColor(this.background)
       + "}"
-      + "h1 { color: " + hexColor(foreground) + ";font-size: 14px;font-weight: 500; }"
-      + "h2 { line-height: 24px; color: " + hexColor(foreground) + ";}"
-      + "a { border-bottom: 1px solid #cae3f2; color: #236a97; cursor: pointer; outline: none; text-decoration: none; transition: all .2s ease;}"
+      + "h1 { color: " + hexColor(this.foreground) + ";font-size: 14px;font-weight: 500; }"
+      + "h2 { line-height: 24px; color: " + hexColor(this.foreground) + ";}"
+      + "a { border-bottom: 1px solid " + hexColor(this.linkColor) + "; color: " + hexColor(this.linkColor)
+      + "; cursor: pointer; outline: none; text-decoration: none; transition: all .2s ease;}"
       + ".rule-desc { line-height: 1.5;}"
       + ".rule-desc { line-height: 1.5;}"
       + ".rule-desc h2 { font-size: 16px; font-weight: 400;}"
-      + ".rule-desc code { padding: .2em .45em; margin: 0; background-color: " + hexColor(foreground, 20) + "; border-radius: 3px; white-space: nowrap;}"
-      + ".rule-desc pre { padding: 10px; border-top: 1px solid " + hexColor(foreground, 100) + "; border-bottom: 1px solid "
-      + hexColor(foreground, 100)
+      + ".rule-desc code { padding: .2em .45em; margin: 0; background-color: " + hexColor(this.foreground, 20) + "; border-radius: 3px; white-space: nowrap;}"
+      + ".rule-desc pre { padding: 10px; border-top: 1px solid " + hexColor(this.foreground, 100) + "; border-bottom: 1px solid "
+      + hexColor(this.foreground, 100)
       + "; line-height: 18px; overflow: auto;}"
       + ".rule-desc code, .rule-desc pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace; font-size: 12px;}"
       + ".rule-desc ul { padding-left: 40px; list-style: disc;}"
       + "</style>";
+  }
+
+  private Color getBgColor() {
+    ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+    Color bg = colorRegistry.get(INFORMATION_BACKGROUND_COLOR);
+    if (bg == null) {
+      bg = JFaceColors.getInformationViewerBackgroundColor(this.getDisplay());
+    }
+    return bg;
+  }
+
+  private Color getFgColor() {
+    ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+    Color fg = colorRegistry.get(INFORMATION_FOREGROUND_COLOR);
+    if (fg == null) {
+      fg = JFaceColors.getInformationViewerForegroundColor(this.getDisplay());
+    }
+    return fg;
+  }
+
+  private Color getLinkColor() {
+    return JFaceColors.getHyperlinkText(this.getDisplay());
   }
 
   public void updateRule(@Nullable RuleDetails ruleDetails) {
@@ -219,6 +259,15 @@ public class SonarLintRuleBrowser extends Composite {
       return (int) m.invoke(c);
     } catch (Exception e) {
       return 255;
+    }
+  }
+
+  @Override
+  public void dispose() {
+    super.dispose();
+    if (fPropertyChangeListener != null) {
+      JFaceResources.getColorRegistry().removeListener(fPropertyChangeListener);
+      fPropertyChangeListener = null;
     }
   }
 
