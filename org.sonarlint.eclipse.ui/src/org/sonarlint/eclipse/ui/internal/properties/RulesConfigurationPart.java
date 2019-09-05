@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -172,7 +171,6 @@ public class RulesConfigurationPart {
 
   private class RuleDetailsWrapperFilter extends PatternFilter {
     private Type type = Type.ALL;
-    private String pattern;
 
     private void setType(Type type) {
       this.type = type;
@@ -180,23 +178,15 @@ public class RulesConfigurationPart {
     }
 
     @Override
-    public void setPattern(String patternString) {
-      super.setPattern(patternString);
-      this.pattern = patternString;
-    }
-
-    @Override
     protected boolean isLeafMatch(Viewer viewer, Object element) {
       if (element instanceof RuleDetailsWrapper) {
-        RuleDetailsWrapper ruleDetailsWrapper = (RuleDetailsWrapper) element;
-        return type.predicate.test(ruleDetailsWrapper)
-          && (super.isLeafMatch(viewer, element) || ruleKeyMatch(ruleDetailsWrapper));
+        return isRuleMatch((RuleDetailsWrapper) element);
       }
       return false;
     }
 
-    private boolean ruleKeyMatch(RuleDetailsWrapper ruleDetailsWrapper) {
-      return pattern != null && ruleDetailsWrapper.ruleDetails.getKey().toLowerCase(Locale.ENGLISH).contains(pattern.toLowerCase(Locale.ENGLISH));
+    public boolean isRuleMatch(RuleDetailsWrapper element) {
+      return type.predicate.test(element) && (wordMatches(element.getName()) || wordMatches(element.ruleDetails.getKey()));
     }
 
   }
@@ -208,12 +198,14 @@ public class RulesConfigurationPart {
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
         wrapper.isActive = event.getChecked();
-        tree.getViewer().refresh(element);
+        tree.getViewer().refresh(wrapper);
+        // Refresh the parent to update the check state
+        tree.getViewer().refresh(wrapper.ruleDetails.getLanguage());
       } else if (element instanceof String) {
         String language = (String) element;
         tree.getViewer().setExpandedState(element, true);
         ruleDetailsWrappersByLanguage.get(language).stream()
-          .filter(filter.type.predicate)
+          .filter(filter::isRuleMatch)
           .forEach(w -> w.isActive = event.getChecked());
         tree.getViewer().refresh();
       }
@@ -231,7 +223,7 @@ public class RulesConfigurationPart {
         boolean foundActive = false;
         boolean foundInActive = false;
         for (RuleDetailsWrapper wrapper : ruleDetailsWrappersByLanguage.get(language)) {
-          if (!filter.type.predicate.test(wrapper)) {
+          if (!filter.isRuleMatch(wrapper)) {
             continue;
           }
           if (wrapper.isActive) {
@@ -259,7 +251,7 @@ public class RulesConfigurationPart {
       if (element instanceof String) {
         String language = (String) element;
         return ruleDetailsWrappersByLanguage.get(language).stream()
-          .filter(filter.type.predicate)
+          .filter(filter::isRuleMatch)
           .anyMatch(w -> w.isActive);
       }
       return false;
