@@ -214,7 +214,7 @@ public class SonarLintRuleBrowser extends Composite {
       String severity = ruleDetails.getSeverity();
       String severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
       browser.setText("<!doctype html><html><head>" + css() + "</head><body><h1><big>"
-        + ruleName + "</big> (" + ruleKey + ")</h1>"
+        + escapeHTML(ruleName) + "</big> (" + ruleKey + ")</h1>"
         + "<div>"
         + "<img style=\"padding-bottom: 1px;vertical-align: middle\" width=\"16\" height=\"16\" alt=\"" + type + "\" src=\"data:image/gif;base64," + typeImg64 + "\">&nbsp;"
         + clean(type)
@@ -225,6 +225,21 @@ public class SonarLintRuleBrowser extends Composite {
         + "<div class=\"rule-desc\">" + htmlDescription
         + "</div></body></html>");
     }
+  }
+
+  public static String escapeHTML(String s) {
+    StringBuilder out = new StringBuilder(Math.max(16, s.length()));
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (c > 127 || c == '"' || c == '<' || c == '>' || c == '&') {
+        out.append("&#");
+        out.append((int) c);
+        out.append(';');
+      } else {
+        out.append(c);
+      }
+    }
+    return out.toString();
   }
 
   private static String clean(@Nullable String txt) {
