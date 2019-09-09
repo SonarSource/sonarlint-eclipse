@@ -145,7 +145,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> testMarkers = Arrays.asList(project.findMember("tests/hello/HelloTest.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(testMarkers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-junit/tests/hello/HelloTest.java", 10, "Fix or remove this skipped unit test"));
+      tuple("/java-junit/tests/hello/HelloTest.java", 10, "Fix or remove this skipped unit test"),
+      tuple("/java-junit/tests/hello/HelloTest.java", 10, "Add at least one assertion to this test case."));
   }
 
   @Test
