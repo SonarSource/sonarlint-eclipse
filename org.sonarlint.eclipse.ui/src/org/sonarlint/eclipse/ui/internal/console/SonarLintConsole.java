@@ -19,9 +19,14 @@
  */
 package org.sonarlint.eclipse.ui.internal.console;
 
+import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceColors;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -32,7 +37,7 @@ import org.eclipse.ui.console.MessageConsoleStream;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
-public class SonarLintConsole extends MessageConsole {
+public class SonarLintConsole extends MessageConsole implements IPropertyChangeListener {
 
   public static final String P_VERBOSE_OUTPUT = "debugOutput"; //$NON-NLS-1$
   public static final String P_ANALYZER_OUTPUT = "showAnalyzerOutput"; //$NON-NLS-1$
@@ -47,22 +52,35 @@ public class SonarLintConsole extends MessageConsole {
   private MessageConsoleStream warnStream;
   private MessageConsoleStream debugStream;
 
-  // Colors must be disposed
-  private Color warnColor;
-  private Color debugColor;
-
   public SonarLintConsole(ImageDescriptor imageDescriptor) {
     super(TITLE, imageDescriptor);
-    Display display = Display.getDefault();
     this.infoStream = newMessageStream();
     this.warnStream = newMessageStream();
     this.debugStream = newMessageStream();
+  }
 
-    warnColor = new Color(display, new RGB(255, 0, 0));
-    debugColor = new Color(display, new RGB(0, 0, 255));
+  @Override
+  protected void init() {
+    super.init();
 
-    getWarnStream().setColor(warnColor);
-    getDebugStream().setColor(debugColor);
+    JFaceResources.getFontRegistry().addListener(SonarLintConsole.this);
+
+    Display display = Display.getDefault();
+
+    ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+
+    Color linkColor = colorRegistry.get(JFacePreferences.HYPERLINK_COLOR);
+    if (linkColor == null) {
+      linkColor = JFaceColors.getActiveHyperlinkText(display);
+    }
+
+    Color errorColorColor = colorRegistry.get(JFacePreferences.ERROR_COLOR);
+    if (errorColorColor == null) {
+      errorColorColor = JFaceColors.getErrorText(display);
+    }
+
+    getWarnStream().setColor(errorColorColor);
+    getDebugStream().setColor(linkColor);
   }
 
   public void bringConsoleToFront() {
@@ -151,4 +169,17 @@ public class SonarLintConsole extends MessageConsole {
   public static boolean showAnalysisLogs() {
     return SonarLintUiPlugin.getDefault().getPreferenceStore().getBoolean(SonarLintConsole.P_ANALYZER_OUTPUT);
   }
+
+  @Override
+  protected void dispose() {
+    super.dispose();
+    JFaceResources.getFontRegistry().removeListener(SonarLintConsole.this);
+  }
+
+  @Override
+  public void propertyChange(PropertyChangeEvent event) {
+    // refresh font to react to font size change
+    setFont(null);
+  }
+
 }
