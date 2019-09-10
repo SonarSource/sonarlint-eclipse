@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.Collection;
+import java.util.Map;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
@@ -59,10 +60,14 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     layout.marginWidth = 0;
     pageComponent.setLayout(layout);
 
-    rulesConfigurationPart = new RulesConfigurationPart(loadRuleDetails(), getExcludedRules(), getIncludedRules());
+    rulesConfigurationPart = new RulesConfigurationPart(loadLanguages(), loadRuleDetails(), getExcludedRules(), getIncludedRules());
     rulesConfigurationPart.createControls(pageComponent);
     Dialog.applyDialogFont(pageComponent);
     return pageComponent;
+  }
+
+  private Map<String, String> loadLanguages() {
+    return SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getAllLanguagesNameByKey();
   }
 
   private static Collection<RuleDetails> loadRuleDetails() {

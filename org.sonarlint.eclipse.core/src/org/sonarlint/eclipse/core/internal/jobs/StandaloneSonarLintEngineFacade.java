@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -93,6 +94,14 @@ public class StandaloneSonarLintEngineFacade {
       return engine.getAllRuleDetails();
     }
     return Collections.emptyList();
+  }
+
+  public Map<String, String> getAllLanguagesNameByKey() {
+    StandaloneSonarLintEngine engine = getClient();
+    if (engine != null) {
+      return engine.getAllLanguagesNameByKey();
+    }
+    return Collections.emptyMap();
   }
 
   public synchronized void stop() {

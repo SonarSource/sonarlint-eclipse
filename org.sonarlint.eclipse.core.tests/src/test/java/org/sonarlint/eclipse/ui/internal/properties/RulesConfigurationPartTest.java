@@ -21,6 +21,8 @@ package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Test;
 import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPart.ExclusionsAndInclusions;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
@@ -46,7 +48,10 @@ public class RulesConfigurationPartTest {
 
     Collection<RuleKey> excluded = Arrays.asList(ACTIVE_EXCLUDED, INACTIVE);
     Collection<RuleKey> included = Arrays.asList(INACTIVE_INCLUDED, ACTIVE);
-    return new RulesConfigurationPart(allRuleDetails, excluded, included);
+
+    Map<String, String> languages = new HashMap<>();
+    languages.put("java", "Java");
+    return new RulesConfigurationPart(languages, allRuleDetails, excluded, included);
   }
 
   private static RuleKey mockRuleKey(String key) {
@@ -57,7 +62,7 @@ public class RulesConfigurationPartTest {
     RuleDetails ruleDetails = mock(RuleDetails.class);
     when(ruleDetails.getKey()).thenReturn(ruleKey.toString());
     when(ruleDetails.isActiveByDefault()).thenReturn(activeByDefault);
-    when(ruleDetails.getLanguage()).thenReturn("java");
+    when(ruleDetails.getLanguageKey()).thenReturn("java");
     return ruleDetails;
   }
 
