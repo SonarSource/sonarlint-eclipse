@@ -39,6 +39,7 @@ import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
@@ -59,17 +60,19 @@ import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_BACKGROUND_COLOR;
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROUND_COLOR;
 
-public class SonarLintRuleBrowser extends Composite {
+public class SonarLintRuleBrowser extends Composite implements IPropertyChangeListener {
 
   private Browser browser;
   private RuleDetails ruleDetails;
   private Color foreground;
   private Color background;
   private Color linkColor;
-  private IPropertyChangeListener fPropertyChangeListener;
+  private Font defaultFont;
+  private final boolean useEditorFontSize;
 
-  public SonarLintRuleBrowser(Composite parent) {
+  public SonarLintRuleBrowser(Composite parent, boolean useEditorFontSize) {
     super(parent, SWT.NONE);
+    this.useEditorFontSize = useEditorFontSize;
     GridLayout layout = new GridLayout(1, false);
     layout.marginWidth = 0;
     layout.marginHeight = 0;
@@ -86,34 +89,9 @@ public class SonarLintRuleBrowser extends Composite {
       this.foreground = getFgColor();
       this.background = getBgColor();
       this.linkColor = getLinkColor();
-      fPropertyChangeListener = new IPropertyChangeListener() {
-        @Override
-        public void propertyChange(PropertyChangeEvent event) {
-          if (INFORMATION_BACKGROUND_COLOR.equals(event.getProperty()) || INFORMATION_FOREGROUND_COLOR.equals(event.getProperty())) {
-            boolean colorChanged = false;
-            Color newFg = getFgColor();
-            if (!Objects.equals(newFg, foreground)) {
-              SonarLintRuleBrowser.this.foreground = newFg;
-              colorChanged = true;
-            }
-            Color newBg = getBgColor();
-            if (!Objects.equals(newBg, background)) {
-              SonarLintRuleBrowser.this.background = newBg;
-              colorChanged = true;
-            }
-            Color newLink = getLinkColor();
-            if (!Objects.equals(newLink, linkColor)) {
-              SonarLintRuleBrowser.this.linkColor = newLink;
-              colorChanged = true;
-            }
-            if (colorChanged) {
-              // Reload HTML to possibly apply theme change
-              updateRule(ruleDetails);
-            }
-          }
-        }
-      };
-      JFaceResources.getColorRegistry().addListener(fPropertyChangeListener);
+      JFaceResources.getColorRegistry().addListener(SonarLintRuleBrowser.this);
+      this.defaultFont = getDefaultFont();
+      JFaceResources.getFontRegistry().addListener(SonarLintRuleBrowser.this);
     } catch (SWTError e) {
       // Browser is probably not available but it will be partially initialized in parent
       for (Control c : this.getChildren()) {
@@ -125,6 +103,44 @@ public class SonarLintRuleBrowser extends Composite {
     }
 
     updateRule(null);
+  }
+
+  private Font getDefaultFont() {
+    if (useEditorFontSize) {
+      return JFaceResources.getTextFont();
+    } else {
+      return getFont();
+    }
+  }
+
+  @Override
+  public void propertyChange(PropertyChangeEvent event) {
+    boolean shouldRefresh = false;
+    if (!getDefaultFont().equals(defaultFont)) {
+      this.defaultFont = getDefaultFont();
+      shouldRefresh = true;
+    }
+    if (INFORMATION_BACKGROUND_COLOR.equals(event.getProperty()) || INFORMATION_FOREGROUND_COLOR.equals(event.getProperty())) {
+      Color newFg = getFgColor();
+      if (!Objects.equals(newFg, foreground)) {
+        SonarLintRuleBrowser.this.foreground = newFg;
+        shouldRefresh = true;
+      }
+      Color newBg = getBgColor();
+      if (!Objects.equals(newBg, background)) {
+        SonarLintRuleBrowser.this.background = newBg;
+        shouldRefresh = true;
+      }
+      Color newLink = getLinkColor();
+      if (!Objects.equals(newLink, linkColor)) {
+        SonarLintRuleBrowser.this.linkColor = newLink;
+        shouldRefresh = true;
+      }
+    }
+    if (shouldRefresh) {
+      // Reload HTML to possibly apply theme change
+      updateRule(ruleDetails);
+    }
   }
 
   private static void addLinkListener(Browser browser) {
@@ -154,23 +170,25 @@ public class SonarLintRuleBrowser extends Composite {
   }
 
   private String css() {
+    int fontSizePt = defaultFont.getFontData()[0].getHeight();
     return "<style type=\"text/css\">"
-      + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: 13px; line-height: 1.23076923; "
+      + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: " + fontSizePt + "pt; "
       + "color: " + hexColor(this.foreground) + ";background-color: " + hexColor(this.background)
-      + "}"
-      + "h1 { color: " + hexColor(this.foreground) + ";font-size: 14px;font-weight: 500; }"
-      + "h2 { line-height: 24px; color: " + hexColor(this.foreground) + ";}"
+      + ";}"
+      + "h1 { margin-bottom: 0 }"
+      + "h1 .rulename { font-weight: bold; }"
+      + "h1 .rulekey { font-weight: normal; font-size: smaller;}"
+      + "img { height: " + (fontSizePt + 1) + "pt; width: " + (fontSizePt + 1) + "pt; vertical-align: middle; }"
+      + ".typeseverity span { font-size: 1em; margin-left: 0.5em; margin-right: 1em;}"
+      + "div.typeseverity { padding: 0; margin: 0}"
       + "a { border-bottom: 1px solid " + hexColor(this.linkColor) + "; color: " + hexColor(this.linkColor)
-      + "; cursor: pointer; outline: none; text-decoration: none; transition: all .2s ease;}"
-      + ".rule-desc { line-height: 1.5;}"
-      + ".rule-desc { line-height: 1.5;}"
-      + ".rule-desc h2 { font-size: 16px; font-weight: 400;}"
-      + ".rule-desc code { padding: .2em .45em; margin: 0; background-color: " + hexColor(this.foreground, 20) + "; border-radius: 3px; white-space: nowrap;}"
-      + ".rule-desc pre { padding: 10px; border-top: 1px solid " + hexColor(this.foreground, 100) + "; border-bottom: 1px solid "
+      + "; cursor: pointer; outline: none; text-decoration: none;}"
+      + "code { padding: .2em .45em; margin: 0; background-color: " + hexColor(this.foreground, 50) + "; border-radius: 3px; white-space: nowrap;}"
+      + "pre { padding: .7em; border-top: 1px solid " + hexColor(this.foreground, 200) + "; border-bottom: 1px solid "
       + hexColor(this.foreground, 100)
-      + "; line-height: 18px; overflow: auto;}"
-      + ".rule-desc code, .rule-desc pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace; font-size: 12px;}"
-      + ".rule-desc ul { padding-left: 40px; list-style: disc;}"
+      + "; overflow: auto;}"
+      + "code, pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;}"
+      + "ul { padding-left: 2.5em; list-style: disc;}"
       + "</style>";
   }
 
@@ -249,14 +267,13 @@ public class SonarLintRuleBrowser extends Composite {
       String typeImg64 = type != null ? getAsBase64(SonarLintImages.getTypeImage(type)) : "";
       String severity = ruleDetails.getSeverity();
       String severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
-      browser.setText("<!doctype html><html><head>" + css() + "</head><body><h1><big>"
-        + escapeHTML(ruleName) + "</big> (" + ruleKey + ")</h1>"
-        + "<div>"
-        + "<img style=\"padding-bottom: 1px;vertical-align: middle\" width=\"16\" height=\"16\" alt=\"" + type + "\" src=\"data:image/gif;base64," + typeImg64 + "\">&nbsp;"
-        + clean(type)
-        + "&nbsp;"
-        + "<img style=\"padding-bottom: 1px;vertical-align: middle\" width=\"16\" height=\"16\" alt=\"" + severity + "\" src=\"data:image/gif;base64," + severityImg64 + "\">&nbsp;"
-        + clean(severity)
+      browser.setText("<!doctype html><html><head>" + css() + "</head><body><h1><span class=\"rulename\">"
+        + escapeHTML(ruleName) + "</span><span class=\"rulekey\"> (" + ruleKey + ")</span></h1>"
+        + "<div class=\"typeseverity\">"
+        + "<img class=\"typeicon\" alt=\"" + type + "\" src=\"data:image/gif;base64," + typeImg64 + "\">"
+        + "<span>" + clean(type) + "</span>"
+        + "<img class=\"severityicon\" alt=\"" + severity + "\" src=\"data:image/gif;base64," + severityImg64 + "\">"
+        + "<span>" + clean(severity) + "</span>"
         + "</div>"
         + "<div class=\"rule-desc\">" + htmlDescription
         + "</div></body></html>");
@@ -316,10 +333,8 @@ public class SonarLintRuleBrowser extends Composite {
   @Override
   public void dispose() {
     super.dispose();
-    if (fPropertyChangeListener != null) {
-      JFaceResources.getColorRegistry().removeListener(fPropertyChangeListener);
-      fPropertyChangeListener = null;
-    }
+    JFaceResources.getColorRegistry().removeListener(this);
+    JFaceResources.getFontRegistry().removeListener(this);
   }
 
 }

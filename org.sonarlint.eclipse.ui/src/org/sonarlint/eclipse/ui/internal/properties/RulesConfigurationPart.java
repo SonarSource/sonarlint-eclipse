@@ -93,7 +93,7 @@ public class RulesConfigurationPart {
 
     createTreeViewer(filterAndTree);
 
-    ruleBrowser = new SonarLintRuleBrowser(advancedComposite);
+    ruleBrowser = new SonarLintRuleBrowser(advancedComposite, false);
     GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
     ruleBrowser.setLayoutData(gridData);
   }
