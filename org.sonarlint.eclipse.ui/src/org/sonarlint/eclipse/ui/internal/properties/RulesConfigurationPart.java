@@ -64,16 +64,16 @@ public class RulesConfigurationPart {
   private final Map<String, List<RuleDetailsWrapper>> ruleDetailsWrappersByLanguage;
 
   private final RuleDetailsWrapperFilter filter;
-
   private SonarLintRuleBrowser ruleBrowser;
-
   private CheckBoxFilteredTree tree;
+  private Map<String, String> languagesNames;
 
-  public RulesConfigurationPart(Collection<RuleDetails> allRuleDetails, Collection<RuleKey> excluded, Collection<RuleKey> included) {
+  public RulesConfigurationPart(Map<String, String> languagesNames, Collection<RuleDetails> allRuleDetails, Collection<RuleKey> excluded, Collection<RuleKey> included) {
+    this.languagesNames = languagesNames;
     this.ruleDetailsWrappersByLanguage = allRuleDetails.stream()
       .sorted(Comparator.comparing(RuleDetails::getKey))
       .map(rd -> new RuleDetailsWrapper(rd, excluded, included))
-      .collect(Collectors.groupingBy(w -> w.ruleDetails.getLanguage(), Collectors.toList()));
+      .collect(Collectors.groupingBy(w -> w.ruleDetails.getLanguageKey(), Collectors.toList()));
     filter = new RuleDetailsWrapperFilter();
     filter.setIncludeLeadingWildcard(true);
   }
@@ -200,7 +200,7 @@ public class RulesConfigurationPart {
         wrapper.isActive = event.getChecked();
         tree.getViewer().refresh(wrapper);
         // Refresh the parent to update the check state
-        tree.getViewer().refresh(wrapper.ruleDetails.getLanguage());
+        tree.getViewer().refresh(wrapper.ruleDetails.getLanguageKey());
       } else if (element instanceof String) {
         String language = (String) element;
         tree.getViewer().setExpandedState(element, true);
@@ -278,7 +278,7 @@ public class RulesConfigurationPart {
     public Object getParent(Object element) {
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
-        return wrapper.ruleDetails.getLanguage();
+        return wrapper.ruleDetails.getLanguageKey();
       }
       return null;
     }
@@ -289,11 +289,11 @@ public class RulesConfigurationPart {
     }
   }
 
-  private static class LanguageAndRuleLabelProvider extends LabelProvider {
+  private class LanguageAndRuleLabelProvider extends LabelProvider {
     @Override
     public String getText(Object element) {
       if (element instanceof String) {
-        return (String) element;
+        return languagesNames.get((String) element);
       }
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;

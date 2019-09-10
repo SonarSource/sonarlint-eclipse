@@ -82,12 +82,12 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     openRulesConfiguration();
 
     SWTBotTree tree = bot.tree(1);
-    SWTBotTreeItem javaNode = tree.getAllItems()[0];
+    SWTBotTreeItem htmlNode = tree.getAllItems()[0];
 
-    assertThat(javaNode.getText()).isEqualTo("java");
+    assertThat(htmlNode.getText()).isEqualTo("HTML");
 
-    javaNode.expand();
-    assertThat(javaNode.cell(1, 0)).isEqualTo("\"=+\" should not be used instead of \"+=\"");
+    htmlNode.expand();
+    assertThat(htmlNode.cell(0, 0)).isEqualTo("\"<!DOCTYPE>\" declarations should appear before \"<html>\" tags");
 
     bot.button("Cancel").click();
   }
