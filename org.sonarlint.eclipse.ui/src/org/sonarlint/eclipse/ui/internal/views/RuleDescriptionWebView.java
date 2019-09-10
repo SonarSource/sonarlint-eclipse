@@ -73,7 +73,7 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
   @Override
   public void createPartControl(Composite parent) {
     createToolbar();
-    browser = new SonarLintRuleBrowser(parent);
+    browser = new SonarLintRuleBrowser(parent, true);
 
     getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
     startListeningForSelectionChanges();
