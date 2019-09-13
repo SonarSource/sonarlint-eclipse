@@ -40,6 +40,8 @@ import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontMetrics;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
@@ -62,6 +64,12 @@ import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROU
 
 public class SonarLintRuleBrowser extends Composite implements IPropertyChangeListener {
 
+  // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=155993
+  private static final String UNIT;
+  static {
+    UNIT = Util.isMac() ? "px" : "pt";
+  }
+
   private Browser browser;
   private RuleDetails ruleDetails;
   private Color foreground;
@@ -81,7 +89,7 @@ public class SonarLintRuleBrowser extends Composite implements IPropertyChangeLi
       browser = new Browser(this, SWT.FILL);
       addLinkListener(browser);
       browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-      browser.setJavascriptEnabled(false);
+      browser.setJavascriptEnabled(true);
       // Cancel opening of new windows
       browser.addOpenWindowListener(event -> event.required = true);
       // Replace browser's built-in context menu with none
@@ -170,15 +178,25 @@ public class SonarLintRuleBrowser extends Composite implements IPropertyChangeLi
   }
 
   private String css() {
-    int fontSizePt = defaultFont.getFontData()[0].getHeight();
+    GC gc = new GC(this);
+    gc.setFont(defaultFont);
+    FontMetrics fm = gc.getFontMetrics();
+    int fontSizePts = fm.getHeight();
     return "<style type=\"text/css\">"
-      + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: " + fontSizePt + "pt; "
+      + "#dpi {\n" +
+      " height: 1in;\n" +
+      " left: -100%;\n" +
+      " position: absolute;\n" +
+      " top: -100%;\n" +
+      " width: 1in;\n" +
+      "}\n"
+      + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: " + fontSizePts + "pt; "
       + "color: " + hexColor(this.foreground) + ";background-color: " + hexColor(this.background)
       + ";}"
       + "h1 { margin-bottom: 0 }"
       + "h1 .rulename { font-weight: bold; }"
       + "h1 .rulekey { font-weight: normal; font-size: smaller;}"
-      + "img { height: " + (fontSizePt + 1) + "pt; width: " + (fontSizePt + 1) + "pt; vertical-align: middle; }"
+      + "img { height: " + (fontSizePts + 1) + "pt; width: " + (fontSizePts + 1) + "pt; vertical-align: middle; }"
       + ".typeseverity span { font-size: 1em; margin-left: 0.5em; margin-right: 1em;}"
       + "div.typeseverity { padding: 0; margin: 0}"
       + "a { border-bottom: 1px solid " + hexColor(this.linkColor) + "; color: " + hexColor(this.linkColor)
@@ -267,7 +285,20 @@ public class SonarLintRuleBrowser extends Composite implements IPropertyChangeLi
       String typeImg64 = type != null ? getAsBase64(SonarLintImages.getTypeImage(type)) : "";
       String severity = ruleDetails.getSeverity();
       String severityImg64 = getAsBase64(SonarLintImages.getSeverityImage(severity));
-      browser.setText("<!doctype html><html><head>" + css() + "</head><body><h1><span class=\"rulename\">"
+      GC gc = new GC(this);
+      gc.setFont(JFaceResources.getTextFont());
+      FontMetrics fm = gc.getFontMetrics();
+      browser.setText("<!doctype html><html><head>" + css() + "</head><body>"
+        + "<div id=\"dpi\"></div>"
+        + "<script>function getDPI() {\n" +
+        " return document.  getElementById(\"dpi\").  offsetHeight;\n" +
+        "}"
+        + "alert(\"SWT font size: " + JFaceResources.getTextFont().getFontData()[0].getHeight()
+        + "  Widget font size: " + getFont().getFontData()[0].getHeight()
+        + "  SWT font metrics size: " + fm.getHeight()
+        + "  SWT DPI: " + getDisplay().getDPI().y + "  SWT Zoom: " + getMonitor().getZoom()
+        + "  Browser DPI: \" + getDPI() + \"  Browser devicePixelRatio: \" + window.devicePixelRatio + \"                                      x\");</script>"
+        + "<h1><span class=\"rulename\">"
         + escapeHTML(ruleName) + "</span><span class=\"rulekey\"> (" + ruleKey + ")</span></h1>"
         + "<div class=\"typeseverity\">"
         + "<img class=\"typeicon\" alt=\"" + type + "\" src=\"data:image/gif;base64," + typeImg64 + "\">"
