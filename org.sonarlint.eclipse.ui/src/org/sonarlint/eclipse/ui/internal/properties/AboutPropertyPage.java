@@ -74,6 +74,7 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
       + "    \"days_of_use\": 5,\n"
       + "    \"sonarlint_version\": \"3.3.1\",\n"
       + "    \"sonarlint_product\": \"SonarLint Eclipse\",\n"
+      + "    \"ide_version\": \"Eclipse IDE 4.12.0.v20190605-1800\",\n"
       + "    \"connected_mode_used\": true\n"
       + "    \"connected_mode_sonarcloud\": true\n"
       + "    \"system_time\":\"2018-02-27T16:31:49.173+01:00\",\n"
