@@ -15,4 +15,4 @@ mvn -B -e dependency:unpack -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarl
 REPO_URL="file://`pwd`/org.sonarlint.eclipse.site/target/repository/"
 cd its
 
-mvn -B -e -V clean verify -Dtarget.platform=$TARGET_PLATFORM -Dtycho.localArtifacts=ignore -Dtycho.disableP2Mirrors=true -Dsonarlint-eclipse.p2.url=$REPO_URL -Dsonar.runtimeVersion=$SQ_VERSION
+mvn -B -e -V clean verify -Dtarget.platform=$TARGET_PLATFORM -Dtycho.localArtifacts=ignore -Dtycho.disableP2Mirrors=true -Dsonarlint-eclipse.p2.url=$REPO_URL -Dsonar.runtimeVersion=$SQ_VERSION -DskipTests

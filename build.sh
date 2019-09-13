@@ -108,7 +108,7 @@ elif [ "$IS_PULLREQUEST" != "false" ] && [ -n "${GITHUB_TOKEN-}" ]; then
       -Dtycho.localArtifacts=ignore \
       -Dtycho.disableP2Mirrors=true \
       -Dsonarlint-eclipse.p2.url=$REPO_URL \
-      -B -e
+      -B -e -DskipTests
       
   cd ..
   
