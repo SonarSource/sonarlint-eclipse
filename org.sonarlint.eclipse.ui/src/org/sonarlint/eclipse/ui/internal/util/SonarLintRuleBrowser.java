@@ -62,6 +62,12 @@ import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROU
 
 public class SonarLintRuleBrowser extends Composite implements IPropertyChangeListener {
 
+  // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=155993
+  private static final String UNIT;
+  static {
+    UNIT = Util.isMac() ? "px" : "pt"; //$NON-NLS-1$//$NON-NLS-2$
+  }
+
   private Browser browser;
   private RuleDetails ruleDetails;
   private Color foreground;
@@ -172,13 +178,14 @@ public class SonarLintRuleBrowser extends Composite implements IPropertyChangeLi
   private String css() {
     int fontSizePt = defaultFont.getFontData()[0].getHeight();
     return "<style type=\"text/css\">"
-      + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: " + fontSizePt + "pt; "
+      + "body { font-family: Helvetica Neue,Segoe UI,Helvetica,Arial,sans-serif; font-size: " + fontSizePt + UNIT + "; "
       + "color: " + hexColor(this.foreground) + ";background-color: " + hexColor(this.background)
       + ";}"
-      + "h1 { margin-bottom: 0 }"
+      + "h1 { margin-bottom: 0; font-size: 150% }"
       + "h1 .rulename { font-weight: bold; }"
       + "h1 .rulekey { font-weight: normal; font-size: smaller;}"
-      + "img { height: " + (fontSizePt + 1) + "pt; width: " + (fontSizePt + 1) + "pt; vertical-align: middle; }"
+      + "h2 { font-size: 120% }"
+      + "img { height: " + (fontSizePt + 1) + UNIT + "; width: " + (fontSizePt + 1) + UNIT + "; vertical-align: middle; }"
       + ".typeseverity span { font-size: 1em; margin-left: 0.5em; margin-right: 1em;}"
       + "div.typeseverity { padding: 0; margin: 0}"
       + "a { border-bottom: 1px solid " + hexColor(this.linkColor) + "; color: " + hexColor(this.linkColor)
