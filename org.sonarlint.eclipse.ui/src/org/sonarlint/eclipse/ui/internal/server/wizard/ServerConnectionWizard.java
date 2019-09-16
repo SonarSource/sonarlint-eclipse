@@ -98,11 +98,11 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   }
 
   private ServerConnectionWizard(ServerConnectionModel model) {
-    this("Connect to a SonarQube Server", model, null);
+    this("Connect to SonarQube or SonarCloud", model, null);
   }
 
   private ServerConnectionWizard(IServer sonarServer) {
-    this("Edit connection to a SonarQube Server", new ServerConnectionModel(sonarServer), sonarServer);
+    this(sonarServer.isSonarCloud() ? "Edit SonarCloud connection" : "Edit SonarQube connection", new ServerConnectionModel(sonarServer), sonarServer);
   }
 
   public static WizardDialog createDialog(Shell parent) {
@@ -164,15 +164,23 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       return model.getAuthMethod() == AuthMethod.PASSWORD ? credentialsPage : tokenPage;
     }
     if (page == credentialsPage || page == tokenPage) {
-      return orgPage;
+      if (model.getConnectionType() == ConnectionType.SONARCLOUD) {
+        return orgPage;
+      } else {
+        return afterOrgPage();
+      }
     }
     if (page == orgPage) {
-      return model.isEdit() ? endPage : serverIdPage;
+      return afterOrgPage();
     }
     if (page == serverIdPage) {
       return endPage;
     }
     return null;
+  }
+
+  private IWizardPage afterOrgPage() {
+    return model.isEdit() ? endPage : serverIdPage;
   }
 
   @Override

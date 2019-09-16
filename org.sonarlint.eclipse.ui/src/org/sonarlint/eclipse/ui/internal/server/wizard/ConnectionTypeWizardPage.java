@@ -75,7 +75,7 @@ public class ConnectionTypeWizardPage extends WizardPage {
     sonarCloudLabel.setLayoutData(gd);
     sonarCloudLabel.addListener(SWT.Selection, e -> {
       try {
-        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(Server.SONARCLOUD_URL));
+        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(Server.getSonarCloudUrl()));
       } catch (PartInitException | MalformedURLException ex) {
         SonarLintLogger.get().error("Unable to open the browser", ex);
       }

@@ -62,7 +62,7 @@ public class ServerConnectionModel extends ModelObject {
   private ConnectionType connectionType = ConnectionType.SONARCLOUD;
   private AuthMethod authMethod = AuthMethod.TOKEN;
   private String serverId;
-  private String serverUrl = Server.SONARCLOUD_URL;
+  private String serverUrl = Server.getSonarCloudUrl();
   private String organization;
   private String username;
   private String password;
@@ -81,7 +81,7 @@ public class ServerConnectionModel extends ModelObject {
     this.edit = true;
     this.serverId = server.getId();
     this.serverUrl = server.getHost();
-    this.connectionType = Server.SONARCLOUD_URL.equals(serverUrl) ? ConnectionType.SONARCLOUD : ConnectionType.ONPREMISE;
+    this.connectionType = Server.getSonarCloudUrl().equals(serverUrl) ? ConnectionType.SONARCLOUD : ConnectionType.ONPREMISE;
     this.organization = server.getOrganization();
     if (server.hasAuth()) {
       try {
@@ -111,7 +111,7 @@ public class ServerConnectionModel extends ModelObject {
     if (type == ConnectionType.ONPREMISE) {
       setServerUrl(null);
     } else {
-      setServerUrl(Server.SONARCLOUD_URL);
+      setServerUrl(Server.getSonarCloudUrl());
       setAuthMethod(AuthMethod.TOKEN);
     }
   }

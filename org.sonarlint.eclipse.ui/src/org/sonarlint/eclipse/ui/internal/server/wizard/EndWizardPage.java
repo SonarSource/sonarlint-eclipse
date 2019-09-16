@@ -56,9 +56,9 @@ public class EndWizardPage extends WizardPage {
     GridData gd = new GridData(GridData.FILL_HORIZONTAL);
     label.setLayoutData(gd);
     if (model.isEdit()) {
-      label.setText("SonarQube Server connection successfully edited. Click finish to save your changes and schedule an update of all project bindings.");
+      label.setText("Connection successfully edited. Click finish to save your changes and schedule an update of all project bindings.");
     } else {
-      label.setText("SonarQube Server connection successfully created. Click finish to save and schedule an update of all project bindings.");
+      label.setText("Connection successfully created. Click finish to save and schedule an update of all project bindings.");
     }
 
     notificationsEnabledCheckbox = new Button(container, SWT.CHECK);
