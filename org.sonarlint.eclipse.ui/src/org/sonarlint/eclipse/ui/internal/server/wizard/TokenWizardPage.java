@@ -40,6 +40,7 @@ import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionModel.ConnectionType;
 
 public class TokenWizardPage extends AbstractServerConnectionWizardPage {
 
@@ -48,7 +49,7 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
   private Binding tokenTextBinding;
 
   public TokenWizardPage(ServerConnectionModel model) {
-    super("server_token_page", "SonarQube Server Authentication Token", model, 3);
+    super("server_token_page", model.getConnectionType() == ConnectionType.SONARCLOUD ? "SonarCloud User Authentication Token" : "SonarQube User Authentication Token", model, 3);
   }
 
   @SuppressWarnings("unchecked")

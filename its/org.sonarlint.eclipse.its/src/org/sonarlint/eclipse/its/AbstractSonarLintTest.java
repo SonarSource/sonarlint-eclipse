@@ -257,7 +257,7 @@ public abstract class AbstractSonarLintTest {
       .build());
   }
 
-  public void waitForServerUpdate(String serverName, Orchestrator orch) {
+  public void waitForServerUpdate(String serverName, Orchestrator orch, boolean isSonarCloud) {
     SWTBotView serversView = bot.viewById("org.sonarlint.eclipse.ui.ServersView");
     final SWTBotTreeItem serverCell = serversView.bot().tree().getAllItems()[0];
     bot.waitUntil(new DefaultCondition() {
@@ -266,7 +266,9 @@ public abstract class AbstractSonarLintTest {
         return UIThreadRunnable.syncExec(new BoolResult() {
           @Override
           public Boolean run() {
-            return serverCell.getText().matches(serverName + " \\[Version: " + substringBefore(orch.getServer().version(), "-") + "(.*), Last storage update: (.*)\\]");
+            return serverCell.getText().matches(serverName + " \\[" +
+              (isSonarCloud ? "" : "Version: " + substringBefore(orch.getServer().version(), "-") + "(.*), ")
+              + "Last storage update: (.*)\\]");
           }
 
         });

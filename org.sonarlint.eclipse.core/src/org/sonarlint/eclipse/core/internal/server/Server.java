@@ -90,7 +90,6 @@ import static java.util.stream.Collectors.toList;
 
 public class Server implements IServer, StateListener {
 
-  public static final String SONARCLOUD_URL = "https://sonarcloud.io";
   public static final String OLD_SONARCLOUD_URL = "https://sonarqube.com";
 
   private static final String NEED_UPDATE = "Need data update";
@@ -105,6 +104,11 @@ public class Server implements IServer, StateListener {
   private boolean notificationsEnabled;
   // Cache the project list to avoid dead lock
   private Map<String, RemoteProject> allProjectsByKey = new ConcurrentHashMap<>();
+
+  public static String getSonarCloudUrl() {
+    // For testing we need to allow changing default URL
+    return System.getProperty("sonarlint.internal.sonarcloud.url", "https://sonarcloud.io");
+  }
 
   Server(String id) {
     this.id = id;
@@ -566,7 +570,7 @@ public class Server implements IServer, StateListener {
 
   @Override
   public boolean isSonarCloud() {
-    return SONARCLOUD_URL.equals(this.host);
+    return getSonarCloudUrl().equals(this.host);
   }
 
   @Override

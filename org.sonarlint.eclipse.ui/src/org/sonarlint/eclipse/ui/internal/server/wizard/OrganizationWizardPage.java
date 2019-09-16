@@ -27,7 +27,6 @@ import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.databinding.wizard.WizardPageSupport;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -41,7 +40,7 @@ public class OrganizationWizardPage extends AbstractServerConnectionWizardPage {
   private Binding orgaTextBinding;
 
   public OrganizationWizardPage(ServerConnectionModel model) {
-    super("server_organization_page", "SonarQube Server Organization", model, 2);
+    super("server_organization_page", "SonarCloud Organization", model, 2);
   }
 
   @SuppressWarnings("unchecked")
@@ -83,14 +82,6 @@ public class OrganizationWizardPage extends AbstractServerConnectionWizardPage {
     super.setVisible(visible);
     if (visible) {
       orgaTextBinding.validateTargetToModel();
-      if (!model.hasOrganizations()) {
-        // Skip organization selection
-        IWizardPage nextPage = getNextPage();
-        IWizardPage previousPage = getPreviousPage();
-        getContainer().showPage(nextPage);
-        // Ensure that when pressing back on next page we don't return on organization page
-        nextPage.setPreviousPage(previousPage);
-      }
     }
   }
 

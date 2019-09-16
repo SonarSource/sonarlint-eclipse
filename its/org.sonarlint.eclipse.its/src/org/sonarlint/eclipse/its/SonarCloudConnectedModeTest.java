@@ -34,7 +34,7 @@ import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ConnectedModeWithOrgaTest extends AbstractSonarLintTest {
+public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   private static final String SONARLINT_USER = "sonarlint";
   private static final String SONARLINT_PWD = "sonarlintpwd";
@@ -55,6 +55,8 @@ public class ConnectedModeWithOrgaTest extends AbstractSonarLintTest {
 
   @BeforeClass
   public static void prepare() {
+    // Fake SonarCloud
+    System.setProperty("sonarlint.internal.sonarcloud.url", orchestrator.getServer().getUrl());
     adminWsClient = newAdminWsClient(orchestrator);
 
     adminWsClient.users().create(CreateRequest.builder()
@@ -77,15 +79,9 @@ public class ConnectedModeWithOrgaTest extends AbstractSonarLintTest {
     ServerConnectionWizardBot wizardBot = new ServerConnectionWizardBot(bot);
     wizardBot.openFromFileNewWizard();
 
-    wizardBot.assertTitle("Connect to a SonarQube Server");
+    wizardBot.assertTitle("Connect to SonarQube or SonarCloud");
 
-    wizardBot.selectSonarQube();
-    wizardBot.clickNext();
-
-    wizardBot.setServerUrl(orchestrator.getServer().getUrl());
-    wizardBot.clickNext();
-
-    wizardBot.selectToken();
+    wizardBot.selectSonarCloud();
     wizardBot.clickNext();
 
     assertThat(wizardBot.isNextEnabled()).isFalse();
@@ -104,14 +100,14 @@ public class ConnectedModeWithOrgaTest extends AbstractSonarLintTest {
     assertThat(wizardBot.isNextEnabled()).isTrue();
     wizardBot.clickNext();
 
-    assertThat(wizardBot.getConnectionName()).isEqualTo("127.0.0.1/" + ORGANIZATION_KEY);
+    assertThat(wizardBot.getConnectionName()).isEqualTo("SonarCloud/" + ORGANIZATION_KEY);
     wizardBot.setConnectionName("testWithOrga");
     wizardBot.clickNext();
 
     assertThat(wizardBot.isNextEnabled()).isFalse();
     wizardBot.clickFinish();
 
-    waitForServerUpdate("testWithOrga", orchestrator);
+    waitForServerUpdate("testWithOrga", orchestrator, true);
   }
 
   public static void enableOrganizationsSupport() {

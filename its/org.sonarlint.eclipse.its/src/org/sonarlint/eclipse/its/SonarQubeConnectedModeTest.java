@@ -31,7 +31,7 @@ import org.sonarqube.ws.client.setting.SetRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ConnectedModeTest extends AbstractSonarLintTest {
+public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
   @ClassRule
   public static TemporaryFolder temp = new TemporaryFolder();
@@ -54,7 +54,7 @@ public class ConnectedModeTest extends AbstractSonarLintTest {
     ServerConnectionWizardBot wizardBot = new ServerConnectionWizardBot(bot);
     wizardBot.openFromFileNewWizard();
 
-    wizardBot.assertTitle("Connect to a SonarQube Server");
+    wizardBot.assertTitle("Connect to SonarQube or SonarCloud");
 
     wizardBot.selectSonarQube();
     wizardBot.clickNext();
@@ -105,7 +105,7 @@ public class ConnectedModeTest extends AbstractSonarLintTest {
     assertThat(wizardBot.isNextEnabled()).isFalse();
     wizardBot.clickFinish();
 
-    waitForServerUpdate("test", orchestrator);
+    waitForServerUpdate("test", orchestrator, false);
   }
 
 }

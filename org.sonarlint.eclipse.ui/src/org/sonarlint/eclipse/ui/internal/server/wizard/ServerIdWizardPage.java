@@ -32,13 +32,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.ui.internal.Messages;
+import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionModel.ConnectionType;
 
 public class ServerIdWizardPage extends AbstractServerConnectionWizardPage {
 
   private Binding serverIdTextBinding;
 
   public ServerIdWizardPage(ServerConnectionModel model) {
-    super("server_id_page", "SonarQube Server Connection Identifier", model, 2);
+    super("server_id_page", model.getConnectionType() == ConnectionType.SONARCLOUD ? "SonarCloud Connection Identifier" : "SonarQube Connection Identifier", model, 2);
   }
 
   @SuppressWarnings("unchecked")

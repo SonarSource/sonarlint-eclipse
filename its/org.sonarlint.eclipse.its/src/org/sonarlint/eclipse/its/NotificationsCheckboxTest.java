@@ -69,8 +69,6 @@ public class NotificationsCheckboxTest extends AbstractSonarLintTest {
     ServerConnectionWizardBot wizardBot = new ServerConnectionWizardBot(bot);
     wizardBot.openFromFileNewWizard();
 
-    wizardBot.assertTitle("Connect to a SonarQube Server");
-
     wizardBot.selectSonarQube();
     wizardBot.clickNext();
 
@@ -92,6 +90,6 @@ public class NotificationsCheckboxTest extends AbstractSonarLintTest {
     assertThat(wizardBot.isNextEnabled()).isFalse();
     wizardBot.clickFinish();
 
-    waitForServerUpdate(connectionName, orchestrator);
+    waitForServerUpdate(connectionName, orchestrator, false);
   }
 }

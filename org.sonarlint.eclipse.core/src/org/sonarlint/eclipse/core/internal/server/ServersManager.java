@@ -235,7 +235,7 @@ public class ServersManager {
     url = StringUtils.removeEnd(url, "/");
     if (Server.OLD_SONARCLOUD_URL.equals(url)) {
       // Migration
-      url = Server.SONARCLOUD_URL;
+      url = Server.getSonarCloudUrl();
       serverNode.put(URL_ATTRIBUTE, url);
     }
     update(server,

@@ -43,7 +43,7 @@ public class UsernamePasswordWizardPage extends AbstractServerConnectionWizardPa
   private Binding passwordTextBinding;
 
   public UsernamePasswordWizardPage(ServerConnectionModel model) {
-    super("server_credentials_page", "SonarQube Server Credentials", model, 2);
+    super("server_credentials_page", "SonarQube User Credentials", model, 2);
   }
 
   @SuppressWarnings("unchecked")
