@@ -130,7 +130,7 @@ stages:
           DISPLAY: ":10"
         inputs:
           goals: 'verify'
-          options: '-B -e --settings $(mavenSettings.secureFilePath) -Prelease'
+          options: '-B -e --settings $(mavenSettings.secureFilePath)'
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           testRunTitle: 'UTs'
