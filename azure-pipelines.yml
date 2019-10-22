@@ -24,7 +24,7 @@ stages:
       variables:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-        commonMavenArguments: -B -Pdeploy-sonarsource -Dmaven.test.skip=true
+        commonMavenArguments: -B -e -Pdeploy-sonarsource -Dmaven.test.skip=true
       steps:
       - checkout: self
         fetchDepth: 1
@@ -109,14 +109,28 @@ stages:
         name: mavenSettings
         inputs:
           secureFile: 'maven-settings.xml'
+      - bash: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y xvfb metacity
+          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+          sudo chmod +x /etc/init.d/xvfb
+          sudo update-rc.d xvfb defaults
+          sudo service xvfb start
+          sleep 10 # give xvfb some time to start
+          export DISPLAY=:10
+          metacity --sm-disable --replace &
+          sleep 10 # give metacity some time to start
+        displayName: Setup Xvfb and Metacity
       - task: Maven@3
         displayName: 'Run Maven verify'
         env:
           ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
           ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
+          DISPLAY: ":10"
         inputs:
           goals: 'verify'
-          options: '-B --settings $(mavenSettings.secureFilePath) -Prelease'
+          options: '-B -e --settings $(mavenSettings.secureFilePath) -Prelease'
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           testRunTitle: 'UTs'
@@ -146,7 +160,7 @@ stages:
           ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
         inputs:
           goals: 'org.jacoco:jacoco-maven-plugin:prepare-agent verify'
-          options: -B --settings $(mavenSettings.secureFilePath)
+          options: -B -e --settings $(mavenSettings.secureFilePath)
           publishJUnitResults: false
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: '1.11'
