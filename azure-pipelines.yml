@@ -154,10 +154,24 @@ stages:
         inputs:
           secureFile: 'maven-settings.xml'
       - template: prepare-sq-analysis-steps.yml
+      - bash: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y xvfb metacity
+          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+          sudo chmod +x /etc/init.d/xvfb
+          sudo update-rc.d xvfb defaults
+          sudo service xvfb start
+          sleep 10 # give xvfb some time to start
+          export DISPLAY=:10
+          metacity --sm-disable --replace &
+          sleep 10 # give metacity some time to start
+        displayName: Setup Xvfb and Metacity
       - task: Maven@3
         env:
           ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
           ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
+          DISPLAY: ":10"
         inputs:
           goals: 'org.jacoco:jacoco-maven-plugin:prepare-agent verify'
           options: -B -e --settings $(mavenSettings.secureFilePath)
@@ -208,7 +222,7 @@ stages:
       - task: CacheBeta@0
         displayName: Cache Maven local repo
         inputs:
-          key: maven | its/pom.xml,its/tests/pom.xml
+          key: maven | its/pom.xml
           path: $(MAVEN_CACHE_FOLDER)
       - task: DownloadSecureFile@1
         displayName: 'Download Maven settings'
@@ -236,16 +250,28 @@ stages:
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: $(JDKVersion)
           mavenOptions: $(MAVEN_OPTS)
+      - bash: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y xvfb metacity
+          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+          sudo chmod +x /etc/init.d/xvfb
+          sudo update-rc.d xvfb defaults
+          sudo service xvfb start
+          sleep 10 # give xvfb some time to start
+          export DISPLAY=:10
+          metacity --sm-disable --replace &
+          sleep 10 # give metacity some time to start
+        displayName: Setup Xvfb and Metacity
       - task: Maven@3
         displayName: 'Run Maven ITs for Eclipse $(TARGET_PLATFORM) and SQ $(SQ_VERSION)'
         env:
           ARTIFACTORY_QA_READER_USERNAME: $(ARTIFACTORY_QA_READER_USERNAME)
           ARTIFACTORY_QA_READER_PASSWORD: $(ARTIFACTORY_QA_READER_PASSWORD)
+          DISPLAY: ":10"
           # For Orchestrator
           ARTIFACTORY_API_KEY: $(ARTIFACTORY_API_KEY)
-          GITHUB_TOKEN: $(GITHUB_TOKEN)
-          # SonarLintInstaller
-          MAVEN_LOCAL_REPOSITORY: $(MAVEN_CACHE_FOLDER)
+          GITHUB_TOKEN: $(GITHUB_TOKEN)          
         inputs:
           goals: 'verify'
           mavenPomFile: 'its/pom.xml'
