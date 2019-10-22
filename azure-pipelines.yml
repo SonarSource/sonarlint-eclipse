@@ -262,8 +262,10 @@ stages:
           export DISPLAY=:10
           metacity --sm-disable --replace &
           sleep 10 # give metacity some time to start
-          # debug
-          ls -l $(Agent.BuildDirectory)/staged-repository
+          # workaround for https://github.com/microsoft/azure-pipelines-image-generation/pull/1337
+          curl -sL https://www-eu.apache.org/dist/maven/maven-3/3.6.2/binaries/apache-maven-3.6.2-bin.zip -o maven.zip
+          unzip -d $(Agent.BuildDirectory) maven.zip
+          rm maven.zip
         displayName: Setup Xvfb and Metacity
       - task: Maven@3
         displayName: 'Run Maven ITs for Eclipse $(TARGET_PLATFORM) and SQ $(SQ_VERSION)'
@@ -275,9 +277,12 @@ stages:
           ARTIFACTORY_API_KEY: $(ARTIFACTORY_API_KEY)
           GITHUB_TOKEN: $(GITHUB_TOKEN)          
         inputs:
+          # workaround for https://github.com/microsoft/azure-pipelines-image-generation/pull/1337
+          mavenVersionOption: 'Path'
+          mavenDirectory: '$(Agent.BuildDirectory)/apache-maven-3.6.2'
           goals: 'verify'
           mavenPomFile: 'its/pom.xml'
-          options: '-X -B --settings $(mavenSettings.secureFilePath) -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore -Dtycho.disableP2Mirrors=true -Dsonarlint-eclipse.p2.url=file://$(Agent.BuildDirectory)/staged-repository -Dsonar.runtimeVersion=$(SQ_VERSION)'
+          options: '-X -B --settings $(mavenSettings.secureFilePath) -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url=file://$(Agent.BuildDirectory)/staged-repository -Dsonar.runtimeVersion=$(SQ_VERSION)'
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           testRunTitle: 'ITs $(TARGET_PLATFORM)'
