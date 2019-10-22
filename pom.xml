@@ -35,10 +35,6 @@
     </developer>
   </developers>
 
-  <prerequisites>
-    <maven>3.0</maven>
-  </prerequisites>
-
   <modules>
     <module>org.sonarlint.eclipse.core</module>
     <module>org.sonarlint.eclipse.ui</module>
