@@ -21,17 +21,7 @@ package org.sonarlint.eclipse.core.internal.server;
 
 import java.util.Objects;
 
-/**
- * This is one possible result that will be displayed as a suggestion.
- * Because content assist can only work with String and not with complex objects
- * we will have to "serialize" this object using {@link #asString()} in
- * {@link SearchEngineProvider#getProposals(String, int)}
- * then deserialize in the {@link RemoteProjectTextContentAdapter}
- *
- */
 public class RemoteSonarProject {
-
-  private static final String SEPARATOR = "|";
 
   private String serverId;
   private String name;
@@ -65,26 +55,6 @@ public class RemoteSonarProject {
 
   public void setName(String name) {
     this.name = name;
-  }
-
-  public String asString() {
-    return serverId + SEPARATOR + projectKey + SEPARATOR + name;
-  }
-
-  /**
-   * The description that will be displayed in Content assist.
-   */
-  public String getDescription() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Project name: ").append(name).append("\n");
-    sb.append("Server: ").append(serverId).append("\n");
-    sb.append("Project key: ").append(projectKey);
-    return sb.toString();
-  }
-
-  public static RemoteSonarProject fromString(String asString) {
-    String[] parts = asString.split("\\" + SEPARATOR);
-    return new RemoteSonarProject(parts[0], parts[1], parts[2]);
   }
 
   @Override

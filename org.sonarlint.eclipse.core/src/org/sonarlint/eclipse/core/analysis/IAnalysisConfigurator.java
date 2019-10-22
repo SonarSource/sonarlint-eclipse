@@ -44,7 +44,6 @@ public interface IAnalysisConfigurator {
 
   /**
    * This method is called after analysis is finished. Can be used to perform some cleanup.
-   * @param analysisProperties Properties used during the analysis
    */
   default void analysisComplete(IPostAnalysisContext context, IProgressMonitor monitor) {
     // Do nothing by default
