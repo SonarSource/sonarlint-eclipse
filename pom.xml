@@ -24,17 +24,6 @@
     <url>https://www.sonarsource.com</url>
   </organization>
 
-  <developers>
-    <developer>
-      <id>henryju</id>
-      <name>Julien Henry</name>
-      <timezone>+1</timezone>
-      <roles>
-        <role>Developer</role>
-      </roles>
-    </developer>
-  </developers>
-
   <modules>
     <module>org.sonarlint.eclipse.core</module>
     <module>org.sonarlint.eclipse.ui</module>
