@@ -35,6 +35,7 @@
     <module>target-platform-oxygen</module>
     <module>target-platform-photon</module>
     <module>target-platform-2019-06</module>
+    <module>target-platform-2019-09</module>
   </modules>
 
   <!-- These dependencies will be added to the target platform -->
