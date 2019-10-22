@@ -331,13 +331,4 @@
     </plugins>
   </build>
 
-  <profiles>
-    <!-- This profile is used to sign artifacts -->
-    <profile>
-      <id>sign</id>
-      <properties>
-        <jarsigner.skip>false</jarsigner.skip>
-      </properties>
-    </profile>
-  </profiles>
 </project>
