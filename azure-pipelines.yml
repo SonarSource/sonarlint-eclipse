@@ -46,6 +46,13 @@ stages:
       - template: update-maven-version-steps.yml
         parameters:
           mavenSettingsFilePath: $(mavenSettings.secureFilePath)
+      - bash: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install haveged
+          sudo update-rc.d haveged defaults
+          sudo service haveged start
+        displayName: Fix entropy to speed up JAR signing
       - task: Maven@3
         displayName: 'Run Maven deploy and sign'
         condition: ne(variables['Build.Reason'], 'PullRequest')
@@ -232,10 +239,6 @@ stages:
       - template: update-maven-version-steps.yml
         parameters:
           mavenSettingsFilePath: $(mavenSettings.secureFilePath)
-      - bash: |
-          set -euo pipefail
-          # Download staged update site and put it at the location it would have been after a build
-          mvn -B -e dependency:unpack -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:$QA_VERSION:zip -DoutputDirectory=org.sonarlint.eclipse.site/target/repository/
       - task: Maven@3
         displayName: ' Download staged update site'
         env:
@@ -244,11 +247,9 @@ stages:
         inputs:
           goals: 'dependency:unpack'
           options: '-B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:$(PROJECT_VERSION):zip -DoutputDirectory=org.sonarlint.eclipse.site/target/repository/'
-          publishJUnitResults: true
-          testResultsFiles: '**/surefire-reports/TEST-*.xml'
-          testRunTitle: 'ITs $(SQ_VERSION)'
+          publishJUnitResults: false
           javaHomeOption: 'JDKVersion'
-          jdkVersionOption: $(JDKVersion)
+          jdkVersionOption: '1.11'
           mavenOptions: $(MAVEN_OPTS)
       - bash: |
           set -e
