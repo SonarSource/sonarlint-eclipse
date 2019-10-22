@@ -275,7 +275,7 @@ stages:
         inputs:
           goals: 'verify'
           mavenPomFile: 'its/pom.xml'
-          options: '-B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore "-Dsonarlint-eclipse.p2.url=file://`pwd`/org.sonarlint.eclipse.site/target/repository/"" -Dsonar.runtimeVersion=$(SQ_VERSION)'
+          options: '-B --settings $(mavenSettings.secureFilePath) -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore "-Dsonarlint-eclipse.p2.url=file://$(Build.Repository.LocalPath)/org.sonarlint.eclipse.site/target/repository/"" -Dsonar.runtimeVersion=$(SQ_VERSION)'
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           testRunTitle: 'ITs $(TARGET_PLATFORM)'
