@@ -56,9 +56,9 @@
   </modules>
 
   <scm>
-    <connection>scm:git:git@github.com:SonarSource/sonar-eclipse.git</connection>
-    <developerConnection>scm:git:git@github.com:SonarSource/sonar-eclipse.git</developerConnection>
-    <url>https://github.com/SonarSource/sonar-eclipse</url>
+    <connection>scm:git:git@github.com:SonarSource/sonarlint-eclipse.git</connection>
+    <developerConnection>scm:git:git@github.com:SonarSource/sonarlint-eclipse.git</developerConnection>
+    <url>https://github.com/SonarSource/sonarlint-eclipse</url>
   </scm>
 
   <issueManagement>
