@@ -262,6 +262,8 @@ stages:
           export DISPLAY=:10
           metacity --sm-disable --replace &
           sleep 10 # give metacity some time to start
+          # debug
+          ls -l $(Agent.BuildDirectory)/staged-repository
         displayName: Setup Xvfb and Metacity
       - task: Maven@3
         displayName: 'Run Maven ITs for Eclipse $(TARGET_PLATFORM) and SQ $(SQ_VERSION)'
