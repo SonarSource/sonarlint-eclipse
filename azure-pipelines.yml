@@ -49,9 +49,8 @@ stages:
       - bash: |
           set -e
           sudo apt-get update
-          sudo apt-get install haveged
-          sudo update-rc.d haveged defaults
-          sudo service haveged start
+          sudo apt-get install rng-tools
+          sudo service rng-tools start
         displayName: Fix entropy to speed up JAR signing
       - task: Maven@3
         displayName: 'Run Maven deploy and sign'
