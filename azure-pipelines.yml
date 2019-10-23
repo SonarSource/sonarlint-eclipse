@@ -247,15 +247,24 @@ stages:
           # workaround for https://github.com/microsoft/azure-pipelines-image-generation/pull/1337
           mavenVersionOption: 'Path'
           mavenDirectory: '$(Agent.BuildDirectory)/apache-maven-3.6.2'
-          goals: 'verify'
+          goals: 'org.jacoco:jacoco-maven-plugin:prepare-agent verify'
           mavenPomFile: 'its/pom.xml'
-          options: '-B --settings $(mavenSettings.secureFilePath) -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url=file://$(Agent.BuildDirectory)/staged-repository -Dsonar.runtimeVersion=$(SQ_VERSION)'
+          options: >-
+            -B -e
+            --settings $(mavenSettings.secureFilePath)
+            -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url=file://$(Agent.BuildDirectory)/staged-repository -Dsonar.runtimeVersion=$(SQ_VERSION)
+            -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/it-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/it-coverage.exec
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           testRunTitle: 'ITs $(TARGET_PLATFORM)'
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: $(JDKVersion)
           mavenOptions: $(MAVEN_OPTS)
+      - task: PublishBuildArtifacts@1
+        displayName: Store coverage report as build artifact
+        inputs:
+          pathtoPublish: '$(Agent.BuildDirectory)/it-coverage.exec'
+          artifactName: 'ITCoverage_$(TARGET_PLATFORM)'
       - bash: git checkout .
         name: revertPomChanges
         displayName: Revert changes made to pom.xml to not break cache feature
@@ -297,6 +306,11 @@ stages:
           metacity --sm-disable --replace &
           sleep 10 # give metacity some time to start
         displayName: Setup Xvfb and Metacity
+      - task: DownloadBuildArtifacts@0
+        displayName: 'Download IT Coverage report'
+        inputs:
+          artifactName: ITCoverage_2019-09
+          downloadPath: $(Agent.BuildDirectory)
       - task: Maven@3
         env:
           ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
@@ -304,7 +318,10 @@ stages:
           DISPLAY: ":10"
         inputs:
           goals: 'org.jacoco:jacoco-maven-plugin:prepare-agent verify'
-          options: '-B -e --settings $(mavenSettings.secureFilePath) -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/ut-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/ut-coverage.exec'
+          options: >-
+            -B -e
+            --settings $(mavenSettings.secureFilePath)
+            -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/ut-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/ut-coverage.exec,$(Agent.BuildDirectory)/it-coverage.exec
           publishJUnitResults: false
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: '1.11'
