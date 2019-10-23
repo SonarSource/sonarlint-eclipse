@@ -203,12 +203,12 @@ stages:
             TARGET_PLATFORM: 'neon'
             SQ_VERSION: 'LATEST_RELEASE[6.7]'
             JDKVersion: '1.8'
-            imageName: 'ubuntu-16.04'
+            imageName: 'windows-latest'
           Oxygen:
             TARGET_PLATFORM: 'oxygen'
             SQ_VERSION: 'LATEST_RELEASE[6.7]'
             JDKVersion: '1.8'
-            imageName: 'ubuntu-16.04'
+            imageName: 'windows-latest'
           Photon:
             TARGET_PLATFORM: 'photon'
             SQ_VERSION: 'LATEST_RELEASE[7.9]'
@@ -257,7 +257,7 @@ stages:
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: '1.11'
           mavenOptions: $(MAVEN_OPTS)
-      - bash: |
+       - bash: |
           set -e
           sudo apt-get update
           sudo apt-get install -y xvfb metacity
@@ -269,11 +269,15 @@ stages:
           export DISPLAY=:10
           metacity --sm-disable --replace &
           sleep 10 # give metacity some time to start
+        displayName: Setup Xvfb and Metacity
+        condition: ne(variables['imageName'], 'windows-latest')
+      - bash: |
+          set -e
           # workaround for https://github.com/microsoft/azure-pipelines-image-generation/pull/1337
           curl -sL https://www-eu.apache.org/dist/maven/maven-3/3.6.2/binaries/apache-maven-3.6.2-bin.zip -o maven.zip
           unzip -d $(Agent.BuildDirectory) maven.zip
           rm maven.zip
-        displayName: Setup Xvfb and Metacity
+        displayName: Get latest Maven
       - task: Maven@3
         displayName: 'Run Maven ITs for Eclipse $(TARGET_PLATFORM) and SQ $(SQ_VERSION)'
         env:
