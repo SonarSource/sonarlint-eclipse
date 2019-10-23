@@ -93,7 +93,7 @@ stages:
     burgrName: 'validate'
     burgrType: 'validate'
     stageName: 'validate'
-    stageDisplayName: Run UTs and trigger SonarQube analysis
+    stageDisplayName: Run UTs
     jobs:
     - job: tests
       displayName: 'Run unit tests on Linux'
@@ -142,51 +142,7 @@ stages:
           testRunTitle: 'UTs'
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: '1.11'
-          mavenOptions: $(MAVEN_OPTS)
-    - job: sonarqube
-      displayName: SonarQube analysis on Next
-      variables:
-        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
-        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-      steps:
-      - task: CacheBeta@0
-        displayName: Cache Maven local repo
-        inputs:
-          key: maven | pom.xml
-          path: $(MAVEN_CACHE_FOLDER)
-      - task: DownloadSecureFile@1
-        displayName: 'Download Maven settings'
-        name: mavenSettings
-        inputs:
-          secureFile: 'maven-settings.xml'
-      - template: prepare-sq-analysis-steps.yml
-      - bash: |
-          set -e
-          sudo apt-get update
-          sudo apt-get install -y xvfb metacity
-          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
-          sudo chmod +x /etc/init.d/xvfb
-          sudo update-rc.d xvfb defaults
-          sudo service xvfb start
-          sleep 10 # give xvfb some time to start
-          export DISPLAY=:10
-          metacity --sm-disable --replace &
-          sleep 10 # give metacity some time to start
-        displayName: Setup Xvfb and Metacity
-      - task: Maven@3
-        env:
-          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
-          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
-          DISPLAY: ":10"
-        inputs:
-          goals: 'org.jacoco:jacoco-maven-plugin:prepare-agent verify'
-          options: -B -e --settings $(mavenSettings.secureFilePath)
-          publishJUnitResults: false
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.11'
-          mavenOptions: $(MAVEN_OPTS)
-          sonarQubeRunAnalysis: true
-          sqMavenPluginVersionChoice: 'latest'
+          mavenOptions: $(MAVEN_OPTS)   
 - template: stage-with-burgr-notifications.yml@commonTemplates
   parameters:
     burgrName: 'qa'
@@ -303,8 +259,61 @@ stages:
       - bash: git checkout .
         name: revertPomChanges
         displayName: Revert changes made to pom.xml to not break cache feature
+- template: stage-with-burgr-notifications.yml@commonTemplates
+  parameters:
+    burgrName: 'sonarqube'
+    burgrType: 'sonarqube'
+    stageName: 'sonarqube'
+    stageDisplayName: Run SonarQube analysis
+    stageDependencies: qa
+    jobs:
+    - job: sonarqube
+      displayName: SonarQube analysis on Next
+      variables:
+        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+      steps:
+      - task: CacheBeta@0
+        displayName: Cache Maven local repo
+        inputs:
+          key: maven | pom.xml
+          path: $(MAVEN_CACHE_FOLDER)
+      - task: DownloadSecureFile@1
+        displayName: 'Download Maven settings'
+        name: mavenSettings
+        inputs:
+          secureFile: 'maven-settings.xml'
+      - template: prepare-sq-analysis-steps.yml
+      - bash: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y xvfb metacity
+          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+          sudo chmod +x /etc/init.d/xvfb
+          sudo update-rc.d xvfb defaults
+          sudo service xvfb start
+          sleep 10 # give xvfb some time to start
+          export DISPLAY=:10
+          metacity --sm-disable --replace &
+          sleep 10 # give metacity some time to start
+        displayName: Setup Xvfb and Metacity
+      - task: Maven@3
+        env:
+          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
+          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
+          DISPLAY: ":10"
+        inputs:
+          goals: 'org.jacoco:jacoco-maven-plugin:prepare-agent verify'
+          options: '-B -e --settings $(mavenSettings.secureFilePath) -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/ut-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/ut-coverage.exec'
+          publishJUnitResults: false
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.11'
+          mavenOptions: $(MAVEN_OPTS)
+          sonarQubeRunAnalysis: true
+          sqMavenPluginVersionChoice: 'latest'
 - template: promote-stage.yml@commonTemplates
   parameters:
     stageDependencies:
     - validate
     - qa
+    - sonarqube
