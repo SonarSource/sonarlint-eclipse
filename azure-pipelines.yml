@@ -257,7 +257,7 @@ stages:
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: '1.11'
           mavenOptions: $(MAVEN_OPTS)
-       - bash: |
+      - bash: |
           set -e
           sudo apt-get update
           sudo apt-get install -y xvfb metacity
