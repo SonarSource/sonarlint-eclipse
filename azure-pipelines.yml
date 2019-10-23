@@ -231,7 +231,7 @@ stages:
           set -e
           # workaround for https://github.com/microsoft/azure-pipelines-image-generation/pull/1337
           curl -sL https://www-eu.apache.org/dist/maven/maven-3/3.6.2/binaries/apache-maven-3.6.2-bin.zip -o maven.zip
-          unzip -d $(Agent.BuildDirectory) maven.zip
+          unzip -d '$(Agent.BuildDirectory)' maven.zip
           rm maven.zip
         displayName: Get latest Maven
       - task: Maven@3
