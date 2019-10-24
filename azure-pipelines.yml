@@ -259,12 +259,18 @@ stages:
             --settings $(mavenSettings.secureFilePath)
             -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url=$(stagedP2Url) -Dsonar.runtimeVersion=$(SQ_VERSION)
             -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/it-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/it-coverage.exec
+            -DtestFailureIgnore=true
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           testRunTitle: 'ITs $(TARGET_PLATFORM)'
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: $(JDKVersion)
           mavenOptions: $(MAVEN_OPTS)
+      - task: PublishBuildArtifacts@1
+        displayName: Store coverage report as build artifact
+        inputs:
+          pathtoPublish: 'its/org.sonarlint.eclipse.its/target/output'
+          artifactName: 'ITOutput_$(TARGET_PLATFORM)'
       - task: PublishBuildArtifacts@1
         displayName: Store coverage report as build artifact
         inputs:
