@@ -155,18 +155,6 @@ stages:
       displayName: Run ITs
       strategy:
         matrix:
-          Neon:
-            TARGET_PLATFORM: 'neon'
-            SQ_VERSION: 'LATEST_RELEASE[6.7]'
-            JDKVersion: '1.8'
-            imageName: 'windows-latest'
-            stagedP2Url: 'file:///$(Agent.BuildDirectory)/staged-repository'
-          Oxygen:
-            TARGET_PLATFORM: 'oxygen'
-            SQ_VERSION: 'LATEST_RELEASE[6.7]'
-            JDKVersion: '1.8'
-            imageName: 'windows-latest'
-            stagedP2Url: 'file:///$(Agent.BuildDirectory)/staged-repository'
           Photon:
             TARGET_PLATFORM: 'photon'
             SQ_VERSION: 'LATEST_RELEASE[7.9]'
@@ -259,7 +247,6 @@ stages:
             --settings $(mavenSettings.secureFilePath)
             -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url=$(stagedP2Url) -Dsonar.runtimeVersion=$(SQ_VERSION)
             -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/it-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/it-coverage.exec
-            -Dmaven.test.failure.ignore=true
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           testRunTitle: 'ITs $(TARGET_PLATFORM)'
@@ -333,7 +320,7 @@ stages:
           options: >-
             -B -e
             --settings $(mavenSettings.secureFilePath)
-            -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/ut-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/ut-coverage.exec,$(Agent.BuildDirectory)/it-coverage.exec
+            -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/ut-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/ut-coverage.exec,$(Agent.BuildDirectory)/ITCoverage_2019-09/it-coverage.exec
           publishJUnitResults: false
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: '1.11'
