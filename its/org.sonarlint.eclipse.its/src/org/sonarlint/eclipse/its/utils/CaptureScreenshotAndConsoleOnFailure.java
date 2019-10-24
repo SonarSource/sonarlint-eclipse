@@ -57,7 +57,7 @@ public class CaptureScreenshotAndConsoleOnFailure implements TestRule {
       }
 
       private String constructFilename(final Description description, String suffix) {
-        return "./target/output"
+        return "./target/output/"
           + description.getClassName() + "."
           + description.getMethodName() + suffix;
       }
