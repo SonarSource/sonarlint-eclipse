@@ -160,26 +160,31 @@ stages:
             SQ_VERSION: 'LATEST_RELEASE[6.7]'
             JDKVersion: '1.8'
             imageName: 'windows-latest'
+            stagedP2Url: 'file:///$(Agent.BuildDirectory)/staged-repository'
           Oxygen:
             TARGET_PLATFORM: 'oxygen'
             SQ_VERSION: 'LATEST_RELEASE[6.7]'
             JDKVersion: '1.8'
             imageName: 'windows-latest'
+            stagedP2Url: 'file:///$(Agent.BuildDirectory)/staged-repository'
           Photon:
             TARGET_PLATFORM: 'photon'
             SQ_VERSION: 'LATEST_RELEASE[7.9]'
             JDKVersion: '1.11'
             imageName: 'ubuntu-18.04'
+            stagedP2Url: 'file://$(Agent.BuildDirectory)/staged-repository'
           2019_06:
             TARGET_PLATFORM: '2019-06'
             SQ_VERSION: 'LATEST_RELEASE'
             JDKVersion: '1.11'
             imageName: 'ubuntu-18.04'
+            stagedP2Url: 'file://$(Agent.BuildDirectory)/staged-repository'
           2019_09:
             TARGET_PLATFORM: '2019-09'
             SQ_VERSION: 'DOGFOOD'
             JDKVersion: '1.11'
             imageName: 'ubuntu-18.04'
+            stagedP2Url: 'file://$(Agent.BuildDirectory)/staged-repository'
       variables:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
@@ -252,7 +257,7 @@ stages:
           options: >-
             -B -e
             --settings $(mavenSettings.secureFilePath)
-            -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url=file://$(Agent.BuildDirectory)/staged-repository -Dsonar.runtimeVersion=$(SQ_VERSION)
+            -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url=$(stagedP2Url) -Dsonar.runtimeVersion=$(SQ_VERSION)
             -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/it-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/it-coverage.exec
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
