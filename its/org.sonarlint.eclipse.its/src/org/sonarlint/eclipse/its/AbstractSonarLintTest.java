@@ -49,6 +49,7 @@ import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.results.BoolResult;
+import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.AfterClass;
@@ -56,7 +57,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.osgi.framework.Version;
 import org.sonarlint.eclipse.its.bots.ConsoleViewBot;
-import org.sonarlint.eclipse.its.utils.CaptureScreenshotOnFailure;
+import org.sonarlint.eclipse.its.utils.CaptureScreenshotAndConsoleOnFailure;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 import org.sonarlint.eclipse.its.utils.WorkspaceHelpers;
 import org.sonarqube.ws.client.HttpConnector;
@@ -75,7 +76,7 @@ public abstract class AbstractSonarLintTest {
   protected static SWTWorkbenchBot bot;
 
   @Rule
-  public CaptureScreenshotOnFailure screenshot = new CaptureScreenshotOnFailure();
+  public CaptureScreenshotAndConsoleOnFailure screenshot = new CaptureScreenshotAndConsoleOnFailure();
 
   protected static final IProgressMonitor monitor = new NullProgressMonitor();
   protected static IWorkspace workspace;
@@ -89,6 +90,7 @@ public abstract class AbstractSonarLintTest {
   public final static void beforeClass() throws Exception {
     System.out.println("Eclipse: " + platformVersion());
     System.out.println("GTK: " + System.getProperty("org.eclipse.swt.internal.gtk.version"));
+    SWTBotPreferences.KEYBOARD_LAYOUT = "EN_US";
 
     projectsWorkdir = new File("target/projects-target");
 

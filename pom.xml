@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.sonarsource.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>52</version>
+    <version>53.0.560</version>
     <relativePath />
   </parent>
 
@@ -15,7 +15,7 @@
   <version>4.3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>SonarLint for Eclipse (parent)</name>
+  <name>SonarLint for Eclipse</name>
   <description></description>
   <url>https://www.sonarlint.org/eclipse</url>
   <inceptionYear>2015</inceptionYear>
@@ -23,21 +23,6 @@
     <name>SonarSource</name>
     <url>https://www.sonarsource.com</url>
   </organization>
-
-  <developers>
-    <developer>
-      <id>henryju</id>
-      <name>Julien Henry</name>
-      <timezone>+1</timezone>
-      <roles>
-        <role>Developer</role>
-      </roles>
-    </developer>
-  </developers>
-
-  <prerequisites>
-    <maven>3.0</maven>
-  </prerequisites>
 
   <modules>
     <module>org.sonarlint.eclipse.core</module>
@@ -56,9 +41,9 @@
   </modules>
 
   <scm>
-    <connection>scm:git:git@github.com:SonarSource/sonar-eclipse.git</connection>
-    <developerConnection>scm:git:git@github.com:SonarSource/sonar-eclipse.git</developerConnection>
-    <url>https://github.com/SonarSource/sonar-eclipse</url>
+    <connection>scm:git:git@github.com:SonarSource/sonarlint-eclipse.git</connection>
+    <developerConnection>scm:git:git@github.com:SonarSource/sonarlint-eclipse.git</developerConnection>
+    <url>https://github.com/SonarSource/sonarlint-eclipse</url>
   </scm>
 
   <issueManagement>
@@ -185,6 +170,13 @@
           <configuration>
             <!-- Disable standard Maven source generation since we are already generating sources with Tycho -->
             <skipSource>true</skipSource>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <source>8</source>
           </configuration>
         </plugin>
       </plugins>
@@ -331,13 +323,4 @@
     </plugins>
   </build>
 
-  <profiles>
-    <!-- This profile is used to sign artifacts -->
-    <profile>
-      <id>sign</id>
-      <properties>
-        <jarsigner.skip>false</jarsigner.skip>
-      </properties>
-    </profile>
-  </profiles>
 </project>

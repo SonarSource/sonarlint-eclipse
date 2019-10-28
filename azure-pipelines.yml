@@ -1,0 +1,329 @@
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: sonarsource-build-variables
+
+resources:
+  repositories:
+    - repository: commonTemplates
+      type: git
+      name: pipelines-yaml-templates
+      ref:  refs/tags/v1.0.2
+
+stages:
+- template: stage-with-burgr-notifications.yml@commonTemplates
+  parameters:
+    burgrName: 'build'
+    burgrType: 'build'
+    stageName: 'build'
+    stageDisplayName: Build and stage to repox
+    jobs:
+    - job: build
+      displayName: Build and stage to repox
+      variables:
+        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+        commonMavenArguments: -B -e -Pdeploy-sonarsource -Dmaven.test.skip=true
+      steps:
+      - checkout: self
+        fetchDepth: 1
+      - task: CacheBeta@0
+        displayName: Cache Maven local repo
+        inputs:
+          key: maven | pom.xml
+          path: $(MAVEN_CACHE_FOLDER)
+      - task: DownloadSecureFile@1
+        displayName: 'Download Maven settings'
+        name: mavenSettings
+        inputs:
+          secureFile: 'maven-settings.xml'
+      - task: DownloadSecureFile@1
+        displayName: 'Download JKS keystore'
+        name: jks
+        inputs:
+          secureFile: 'SonarSource-2019-2021.jks'
+      - template: update-maven-version-steps.yml
+        parameters:
+          mavenSettingsFilePath: $(mavenSettings.secureFilePath)
+      - bash: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install rng-tools
+          sudo service rng-tools start
+        displayName: Fix entropy to speed up JAR signing
+      - task: Maven@3
+        displayName: 'Run Maven deploy and sign'
+        condition: ne(variables['Build.Reason'], 'PullRequest')
+        env:
+          ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
+          ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
+        inputs:
+          goals: 'deploy'
+          options: >-
+            $(commonMavenArguments)
+            --settings $(mavenSettings.secureFilePath)
+            -Djarsigner.skip=false
+            -Dsonarsource.keystore.path=$(jks.secureFilePath)
+            -Dsonarsource.keystore.password=$(jksPassword)
+          publishJUnitResults: false
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.11'
+          mavenOptions: $(MAVEN_OPTS)
+      - task: Maven@3
+        displayName: 'Run Maven deploy'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        env:
+          ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
+          ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
+        inputs:
+          goals: 'deploy'
+          options: >-
+            $(commonMavenArguments)
+            --settings $(mavenSettings.secureFilePath)
+          publishJUnitResults: false
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.11'
+          mavenOptions: $(MAVEN_OPTS)
+      - bash: git checkout .
+        name: revertPomChanges
+        displayName: Revert changes made to pom.xml to not break cache feature
+- template: stage-with-burgr-notifications.yml@commonTemplates
+  parameters:
+    burgrName: 'validate'
+    burgrType: 'validate'
+    stageName: 'validate'
+    stageDisplayName: Run UTs
+    jobs:
+    - job: tests
+      displayName: 'Run unit tests on Linux'
+      pool:
+        vmImage: 'ubuntu-latest'
+      variables:
+        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+      steps:
+      - checkout: self
+        fetchDepth: 1
+      - task: CacheBeta@0
+        displayName: Cache Maven local repo
+        inputs:
+          key: maven | pom.xml
+          path: $(MAVEN_CACHE_FOLDER)
+      - task: DownloadSecureFile@1
+        displayName: 'Download Maven settings'
+        name: mavenSettings
+        inputs:
+          secureFile: 'maven-settings.xml'
+      - bash: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y xvfb metacity
+          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+          sudo chmod +x /etc/init.d/xvfb
+          sudo update-rc.d xvfb defaults
+          sudo service xvfb start
+          sleep 10 # give xvfb some time to start
+          export DISPLAY=:10
+          metacity --sm-disable --replace &
+          sleep 10 # give metacity some time to start
+        displayName: Setup Xvfb and Metacity
+      - task: Maven@3
+        displayName: 'Run Maven verify'
+        env:
+          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
+          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
+          DISPLAY: ":10"
+        inputs:
+          goals: 'verify'
+          options: '-B -e --settings $(mavenSettings.secureFilePath)'
+          publishJUnitResults: true
+          testResultsFiles: '**/surefire-reports/TEST-*.xml'
+          testRunTitle: 'UTs'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.11'
+          mavenOptions: $(MAVEN_OPTS)   
+- template: stage-with-burgr-notifications.yml@commonTemplates
+  parameters:
+    burgrName: 'qa'
+    burgrType: 'qa'
+    stageName: 'qa'
+    stageDisplayName: Run ITs
+    stageDependencies: build
+    jobs:
+    - job: its
+      displayName: Run ITs
+      strategy:
+        matrix:
+          Photon:
+            TARGET_PLATFORM: 'photon'
+            SQ_VERSION: 'LATEST_RELEASE[7.9]'
+            JDKVersion: '1.11'
+            imageName: 'ubuntu-18.04'
+            stagedP2Url: 'file://$(Agent.BuildDirectory)/staged-repository'
+          2019_06:
+            TARGET_PLATFORM: '2019-06'
+            SQ_VERSION: 'LATEST_RELEASE'
+            JDKVersion: '1.11'
+            imageName: 'ubuntu-18.04'
+            stagedP2Url: 'file://$(Agent.BuildDirectory)/staged-repository'
+          2019_09:
+            TARGET_PLATFORM: '2019-09'
+            SQ_VERSION: 'DOGFOOD'
+            JDKVersion: '1.11'
+            imageName: 'ubuntu-18.04'
+            stagedP2Url: 'file://$(Agent.BuildDirectory)/staged-repository'
+      variables:
+        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+      pool:
+        vmImage: $(imageName)
+      steps:
+      - checkout: self
+        fetchDepth: 1
+      - task: CacheBeta@0
+        displayName: Cache Maven local repo
+        inputs:
+          key: maven | its/pom.xml
+          path: $(MAVEN_CACHE_FOLDER)
+      - task: DownloadSecureFile@1
+        displayName: 'Download Maven settings'
+        name: mavenSettings
+        inputs:
+          secureFile: 'maven-settings.xml'
+      - template: update-maven-version-steps.yml
+        parameters:
+          mavenSettingsFilePath: $(mavenSettings.secureFilePath)
+      - task: Maven@3
+        displayName: ' Download staged update site'
+        env:
+          ARTIFACTORY_QA_READER_USERNAME: $(ARTIFACTORY_QA_READER_USERNAME)
+          ARTIFACTORY_QA_READER_PASSWORD: $(ARTIFACTORY_QA_READER_PASSWORD)
+        inputs:
+          goals: 'dependency:unpack'
+          options: '-B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:$(PROJECT_VERSION):zip -DoutputDirectory=$(Agent.BuildDirectory)/staged-repository'
+          publishJUnitResults: false
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.11'
+          mavenOptions: $(MAVEN_OPTS)
+      - bash: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y xvfb metacity
+          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+          sudo chmod +x /etc/init.d/xvfb
+          sudo update-rc.d xvfb defaults
+          sudo service xvfb start
+          sleep 10 # give xvfb some time to start
+          export DISPLAY=:10
+          metacity --sm-disable --replace &
+          sleep 10 # give metacity some time to start
+        displayName: Setup Xvfb and Metacity
+        condition: ne(variables['imageName'], 'windows-latest')
+      - bash: |
+          set -e
+          # workaround for https://github.com/microsoft/azure-pipelines-image-generation/pull/1337
+          curl -sL https://www-eu.apache.org/dist/maven/maven-3/3.6.2/binaries/apache-maven-3.6.2-bin.zip -o maven.zip
+          unzip -d '$(Agent.BuildDirectory)' maven.zip
+          rm maven.zip
+        displayName: Get latest Maven
+      - task: Maven@3
+        displayName: 'Run Maven ITs for Eclipse $(TARGET_PLATFORM) and SQ $(SQ_VERSION)'
+        env:
+          ARTIFACTORY_QA_READER_USERNAME: $(ARTIFACTORY_QA_READER_USERNAME)
+          ARTIFACTORY_QA_READER_PASSWORD: $(ARTIFACTORY_QA_READER_PASSWORD)
+          DISPLAY: ":10"
+          # For Orchestrator
+          ARTIFACTORY_API_KEY: $(ARTIFACTORY_API_KEY)
+          GITHUB_TOKEN: $(GITHUB_TOKEN)          
+        inputs:
+          # workaround for https://github.com/microsoft/azure-pipelines-image-generation/pull/1337
+          mavenVersionOption: 'Path'
+          mavenDirectory: '$(Agent.BuildDirectory)/apache-maven-3.6.2'
+          goals: 'org.jacoco:jacoco-maven-plugin:prepare-agent verify'
+          mavenPomFile: 'its/pom.xml'
+          options: >-
+            -B -e
+            --settings $(mavenSettings.secureFilePath)
+            -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url=$(stagedP2Url) -Dsonar.runtimeVersion=$(SQ_VERSION)
+            -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/it-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/it-coverage.exec
+          publishJUnitResults: true
+          testResultsFiles: '**/surefire-reports/TEST-*.xml'
+          testRunTitle: 'ITs $(TARGET_PLATFORM)'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: $(JDKVersion)
+          mavenOptions: $(MAVEN_OPTS)
+      - task: PublishBuildArtifacts@1
+        displayName: Store coverage report as build artifact
+        inputs:
+          pathtoPublish: '$(Agent.BuildDirectory)/it-coverage.exec'
+          artifactName: 'ITCoverage_$(TARGET_PLATFORM)'
+      - bash: git checkout .
+        name: revertPomChanges
+        displayName: Revert changes made to pom.xml to not break cache feature
+- template: stage-with-burgr-notifications.yml@commonTemplates
+  parameters:
+    burgrName: 'sonarqube'
+    burgrType: 'sonarqube'
+    stageName: 'sonarqube'
+    stageDisplayName: Run SonarQube analysis
+    stageDependencies: qa
+    jobs:
+    - job: sonarqube
+      displayName: SonarQube analysis on Next
+      variables:
+        MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+        MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+      steps:
+      - task: CacheBeta@0
+        displayName: Cache Maven local repo
+        inputs:
+          key: maven | pom.xml
+          path: $(MAVEN_CACHE_FOLDER)
+      - task: DownloadSecureFile@1
+        displayName: 'Download Maven settings'
+        name: mavenSettings
+        inputs:
+          secureFile: 'maven-settings.xml'
+      - template: prepare-sq-analysis-steps.yml
+      - bash: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y xvfb metacity
+          sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
+          sudo chmod +x /etc/init.d/xvfb
+          sudo update-rc.d xvfb defaults
+          sudo service xvfb start
+          sleep 10 # give xvfb some time to start
+          export DISPLAY=:10
+          metacity --sm-disable --replace &
+          sleep 10 # give metacity some time to start
+        displayName: Setup Xvfb and Metacity
+      - task: DownloadBuildArtifacts@0
+        displayName: 'Download IT Coverage report'
+        inputs:
+          artifactName: ITCoverage_2019-09
+          downloadPath: $(Agent.BuildDirectory)
+      - task: Maven@3
+        env:
+          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
+          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
+          DISPLAY: ":10"
+        inputs:
+          goals: 'org.jacoco:jacoco-maven-plugin:prepare-agent verify'
+          options: >-
+            -B -e
+            --settings $(mavenSettings.secureFilePath)
+            -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/ut-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/ut-coverage.exec,$(Agent.BuildDirectory)/ITCoverage_2019-09/it-coverage.exec
+          publishJUnitResults: false
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.11'
+          mavenOptions: $(MAVEN_OPTS)
+          sonarQubeRunAnalysis: true
+          sqMavenPluginVersionChoice: 'latest'
+- template: promote-stage.yml@commonTemplates
+  parameters:
+    stageDependencies:
+    - validate
+    - qa
+    - sonarqube

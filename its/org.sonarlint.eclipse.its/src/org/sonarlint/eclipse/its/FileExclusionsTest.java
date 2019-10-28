@@ -19,16 +19,15 @@
  */
 package org.sonarlint.eclipse.its;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
 import org.junit.Test;
-import org.osgi.framework.Version;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
@@ -50,25 +49,26 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
       .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+    assertThat(getMarkers(project, "src/hello/Hello.java")).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple("/java-simple/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."));
 
     bot.editorByTitle("Hello.java").close();
 
     // Exclude file
     javaBot.excludeFile("java-simple", "src", "hello", "Hello.java");
+    // Give time for markers to be deleted
+    TimeUnit.SECONDS.sleep(5);
+    assertThat(getMarkers(project, "src/hello/Hello.java")).isEmpty();
 
     // Seems that isEnabled of swtbot doesn't work on older Eclipse
-    if (platformVersion().compareTo(new Version("4.6")) >= 0) {
+    if (isNeonOrGreater()) {
       assertThat(javaBot.isExcludeEnabled("java-simple", "src", "hello", "Hello.java")).isFalse();
       assertThat(javaBot.isManualAnalysisEnabled("java-simple", "src", "hello", "Hello.java")).isFalse();
     }
 
     javaBot.expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
-    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).isEmpty();
+    assertThat(getMarkers(project, "src/hello/Hello.java")).isEmpty();
 
     SWTBotEclipseEditor editor = bot.editorByTitle("Hello.java").toTextEditor();
     editor.navigateTo(8, 29);
@@ -76,8 +76,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     editor.save();
     JobHelpers.waitForJobsToComplete(bot);
 
-    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).isEmpty();
+    assertThat(getMarkers(project, "src/hello/Hello.java")).isEmpty();
 
     // Trigger manual analysis of the project
     javaBot.triggerManualAnalysis("java-simple");
@@ -85,8 +84,11 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     bot.button("OK").click();
     JobHelpers.waitForJobsToComplete(bot);
 
-    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_REPORT_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).isEmpty();
+    assertThat(getMarkers(project, "src/hello/Hello.java")).isEmpty();
+  }
+
+  private IMarker[] getMarkers(IProject project, String path) throws CoreException {
+    return project.findMember(path).findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE);
   }
 
   @Test

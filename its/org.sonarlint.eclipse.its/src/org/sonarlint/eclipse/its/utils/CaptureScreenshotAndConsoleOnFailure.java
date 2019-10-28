@@ -31,7 +31,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-public class CaptureScreenshotOnFailure implements TestRule {
+public class CaptureScreenshotAndConsoleOnFailure implements TestRule {
   @Override
   public final Statement apply(final Statement base, final Description description) {
     return new Statement() {
@@ -57,7 +57,7 @@ public class CaptureScreenshotOnFailure implements TestRule {
       }
 
       private String constructFilename(final Description description, String suffix) {
-        return "./target/"
+        return "./target/output/"
           + description.getClassName() + "."
           + description.getMethodName() + suffix;
       }

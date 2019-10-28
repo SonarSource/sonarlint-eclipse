@@ -21,11 +21,6 @@ package org.sonarlint.eclipse.core.internal.server;
 
 import java.util.function.Consumer;
 
-/**
- * A server has been changed as specified in the event.
- *
- * @param event a server event that contains information on the change
- */
 @FunctionalInterface
 public interface IServerListener extends Consumer<IServer> {
 }
