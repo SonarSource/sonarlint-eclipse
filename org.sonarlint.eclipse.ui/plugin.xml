@@ -827,7 +827,7 @@
               label="SonarLint issue location"
               annotationImageProvider="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerImageProvider"
               colorPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.color"
-              colorPreferenceValue="141,169,201"
+              colorPreferenceValue="242,222,222"
               highlightPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.highlight"
               highlightPreferenceValue="true"
               icon="icons/sonarlint-16x16.png"
@@ -929,5 +929,14 @@
            class="org.sonarlint.eclipse.ui.internal.preferences.SonarLintPreferencesInitializer">
      </initializer>
   </extension>
-	
+
+  <extension
+        point="org.eclipse.e4.ui.css.swt.theme">
+    <stylesheet
+          uri="css/sonarlint_dark.css">
+      <themeid
+            refid="org.eclipse.e4.ui.css.theme.e4_dark"></themeid>
+    </stylesheet>
+  </extension>
+
 </plugin>
