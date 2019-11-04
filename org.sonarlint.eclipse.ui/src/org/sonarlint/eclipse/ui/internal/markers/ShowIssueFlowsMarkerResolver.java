@@ -20,11 +20,12 @@
 package org.sonarlint.eclipse.ui.internal.markers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.IDocument;
@@ -96,7 +97,7 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
     IEditorInput editorInput = textEditor.getEditorInput();
     IAnnotationModel annotationModel = textEditor.getDocumentProvider().getAnnotationModel(editorInput);
     IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
-    Map<Annotation, Position> newAnnotations = createAnnotations(marker, doc);
+    Map<Annotation, Position> newAnnotations = createAnnotations(marker, doc, 1);
     List<Annotation> existingFlowAnnotations = existingFlowAnnotations(annotationModel);
     boolean annotationAlreadyDisplayedForThisMarker = !existingFlowAnnotations.isEmpty()
       && newAnnotations.containsValue(annotationModel.getPosition(existingFlowAnnotations.iterator().next()));
@@ -111,11 +112,11 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
     }
   }
 
-  public static void showAnnotations(IMarker marker, ITextEditor textEditor) {
+  public static void showAnnotations(IMarker marker, ITextEditor textEditor, int selectedFlow) {
     IEditorInput editorInput = textEditor.getEditorInput();
     IAnnotationModel annotationModel = textEditor.getDocumentProvider().getAnnotationModel(editorInput);
     IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
-    Map<Annotation, Position> newAnnotations = createAnnotations(marker, doc);
+    Map<Annotation, Position> newAnnotations = createAnnotations(marker, doc, selectedFlow);
     List<Annotation> existingFlowAnnotations = existingFlowAnnotations(annotationModel);
     if (annotationModel instanceof IAnnotationModelExtension) {
       ((IAnnotationModelExtension) annotationModel).replaceAnnotations(existingFlowAnnotations.toArray(new Annotation[0]), newAnnotations);
@@ -125,7 +126,7 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
     }
   }
 
-  private static Map<Annotation, Position> createAnnotations(IMarker marker, IDocument doc) {
+  private static Map<Annotation, Position> createAnnotations(IMarker marker, IDocument doc, int selectedFlow) {
     Position[] positions;
     try {
       positions = doc.getPositions(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY);
@@ -133,10 +134,17 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
       SonarLintLogger.get().debug("No extra positions found, should maybe trigger a new analysis");
       return Collections.emptyMap();
     }
-    return Arrays.asList(positions)
-      .stream()
+    List<ExtraPosition> positionsForMarker = Stream.of(positions)
       .map(p -> (ExtraPosition) p)
       .filter(p -> p.getMarkerId() == marker.getId() && !p.isDeleted)
+      .collect(Collectors.toList());
+    ExtraPosition selectedFlowRoot = positionsForMarker.stream()
+      .filter(p -> (p.getParent() == null))
+      .skip((long) selectedFlow - 1)
+      .findFirst()
+      .orElse(null);
+    return positionsForMarker.stream()
+      .filter(p -> selectedFlowRoot == null || p.isDescendantOf(selectedFlowRoot))
       .collect(Collectors.toMap(p -> new Annotation(ISSUE_FLOW_ANNOTATION_TYPE, false, p.getMessage()),
         p -> new Position(p.getOffset(), p.getLength())));
   }

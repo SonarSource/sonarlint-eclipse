@@ -79,16 +79,24 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   private ToggleAnnotationsAction showAnnotationsAction;
 
+  private Object selectedNode;
+
+  private Integer selectedFlow;
+
   private static class FlowNode {
 
+    private final int parentId;
     private final String label;
     private final ExtraPosition position;
 
+    private static final int DEFAULT_PARENT_ID = 1;
+
     public FlowNode(ExtraPosition position) {
-      this(positionLabel(position.getMessage()), position);
+      this(DEFAULT_PARENT_ID, positionLabel(position.getMessage()), position);
     }
 
-    public FlowNode(String label, ExtraPosition position) {
+    public FlowNode(int parentId, String label, ExtraPosition position) {
+      this.parentId = parentId;
       this.label = label;
       this.position = position;
     }
@@ -103,12 +111,12 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   }
 
-  static List<FlowNode> toFlowNodes(List<ExtraPosition> positions) {
+  static List<FlowNode> toFlowNodes(int parentId, List<ExtraPosition> positions) {
     List<FlowNode> result = new ArrayList<>();
     int id = 1;
     for (ExtraPosition extraPosition : positions) {
       String childLabel = positions.size() > 1 ? (id + ": " + positionLabel(extraPosition.getMessage())) : positionLabel(extraPosition.getMessage());
-      result.add(new FlowNode(childLabel, extraPosition));
+      result.add(new FlowNode(parentId, childLabel, extraPosition));
       id++;
     }
     return result;
@@ -120,16 +128,16 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   private static class FlowRootNode {
 
-    private final String label;
+    private int id;
     private final List<FlowNode> children;
 
-    public FlowRootNode(String label, List<ExtraPosition> positions) {
-      this.label = label;
-      children = toFlowNodes(positions);
+    public FlowRootNode(int id, List<ExtraPosition> positions) {
+      this.id = id;
+      children = toFlowNodes(id, positions);
     }
 
     public String getLabel() {
-      return label;
+      return "Flow " + id;
     }
 
     public FlowNode[] getChildren() {
@@ -209,10 +217,10 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
           AtomicInteger counter = new AtomicInteger(0);
           return flows.stream().map(
 
-            f -> f.size() > 1 ? new FlowRootNode("Flow " + counter.incrementAndGet(), f) : new FlowNode(f.get(0))).toArray();
+            f -> f.size() > 1 ? new FlowRootNode(counter.incrementAndGet(), f) : new FlowNode(f.get(0))).toArray();
 
         } else if (flows.size() == 1) {
-          return toFlowNodes(flows.get(0)).toArray();
+          return toFlowNodes(FlowNode.DEFAULT_PARENT_ID, flows.get(0)).toArray();
         } else {
           return new Object[0];
         }
@@ -290,7 +298,9 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     if (sonarlintMarker != null && showAnnotationsAction.isChecked()) {
       ITextEditor editorFound = LocationsUtils.findOpenEditorFor(sonarlintMarker);
       if (editorFound != null) {
-        ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound);
+        selectedNode = null;
+        selectedFlow = null;
+        ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound, getSelectedFlow());
       }
     }
   }
@@ -351,6 +361,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   }
 
   private void onTreeNodeSelected(Object node) {
+    selectedNode = node;
     if (node instanceof FlowNode) {
       IMarker sonarlintMarker = (IMarker) locationsViewer.getInput();
       ExtraPosition pos = ((FlowNode) node).getPosition();
@@ -359,6 +370,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         openEditor.setHighlightRange(pos.offset, pos.length, true);
       }
     }
+    showAnnotationsAction.run();
   }
 
   private void onTreeNodeDoubleClick(Object node) {
@@ -446,8 +458,25 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     if (sonarlintMarker != null) {
       ITextEditor editorFound = LocationsUtils.findOpenEditorFor(sonarlintMarker);
       if (editorFound != null) {
-        ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound);
+        Integer newSelectedFlow = getSelectedFlow();
+        // Clean annotations only when a different flow is selected to avoid flickering
+        if (!newSelectedFlow.equals(selectedFlow)) {
+          ShowIssueFlowsMarkerResolver.removeAllAnnotations();
+          selectedFlow = newSelectedFlow;
+        }
+        ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound, getSelectedFlow());
       }
+    }
+  }
+
+  private int getSelectedFlow() {
+    if(selectedNode instanceof FlowRootNode) {
+      return ((FlowRootNode) selectedNode).id;
+    } else if (selectedNode instanceof FlowNode) {
+      return ((FlowNode) selectedNode).parentId;
+    } else {
+      // When root is selected, return first flow
+      return 1;
     }
   }
 

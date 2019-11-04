@@ -170,6 +170,14 @@ public final class MarkerUtils {
       return previous;
     }
 
+    public boolean isDescendantOf(@Nullable ExtraPosition possibleAncestor) {
+      if (previous == null) {
+        return this.equals(possibleAncestor);
+      } else {
+        return previous.isDescendantOf(possibleAncestor);
+      }
+    }
+
     @Override
     public boolean equals(Object other) {
       if (other instanceof ExtraPosition) {
