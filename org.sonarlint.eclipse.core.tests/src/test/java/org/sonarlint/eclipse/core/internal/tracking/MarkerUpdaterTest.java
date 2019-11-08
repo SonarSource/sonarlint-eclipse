@@ -109,7 +109,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
   private Trackable newMockTrackable() {
     Trackable trackable = mock(Trackable.class);
     // mandatory non-nulls
-    when(trackable.getTextRange()).thenReturn(new TextRange(1));
+    when(trackable.getTextRange()).thenReturn(TextRange.get(1));
     when(trackable.getSeverity()).thenReturn("");
 
     // explicit nulls, because Mockito uses 0 values otherwise
@@ -150,7 +150,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
 
     int line = 5;
     when(trackable.getLine()).thenReturn(line);
-    when(trackable.getTextRange()).thenReturn(new TextRange(line, 4, 5, 14));
+    when(trackable.getTextRange()).thenReturn(TextRange.get(line, 4, 5, 14));
 
     IMarker marker = processTrackable(trackable);
 
@@ -165,7 +165,7 @@ public class MarkerUpdaterTest extends SonarTestCase {
 
     int line = 5;
     when(trackable.getLine()).thenReturn(line);
-    when(trackable.getTextRange()).thenReturn(new TextRange(line, 4, 5, 14));
+    when(trackable.getTextRange()).thenReturn(TextRange.get(line, 4, 5, 14));
 
     IMarker marker = processTrackable(trackable);
 

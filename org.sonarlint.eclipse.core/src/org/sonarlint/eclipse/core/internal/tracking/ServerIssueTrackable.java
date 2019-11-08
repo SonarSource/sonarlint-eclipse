@@ -116,7 +116,7 @@ public class ServerIssueTrackable implements Trackable {
 
   @Override
   public TextRange getTextRange() {
-    return new TextRange(serverIssue.line());
+    return TextRange.get(serverIssue.line());
   }
 
   @Override

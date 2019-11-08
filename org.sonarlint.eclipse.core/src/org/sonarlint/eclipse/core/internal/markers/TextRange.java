@@ -19,43 +19,112 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
-public class TextRange {
+public interface TextRange {
 
-  private final Integer startLine;
-  private final Integer startLineOffset;
-  private final Integer endLine;
-  private final Integer endLineOffset;
-
-  public TextRange(Integer line) {
-    this(line, null, null, null);
+  default boolean isValid() {
+    return false;
   }
 
-  public TextRange(Integer startLine, Integer startLineOffset, Integer endLine, Integer endLineOffset) {
-    this.startLine = startLine;
-    this.startLineOffset = startLineOffset;
-    this.endLine = endLine;
-    this.endLineOffset = endLineOffset;
+  default boolean isLineOnly() {
+    return false;
   }
 
-  @CheckForNull
-  public Integer getStartLine() {
-    return startLine;
+  default int getStartLine() {
+    throw new UnsupportedOperationException();
   }
 
-  @CheckForNull
-  public Integer getStartLineOffset() {
-    return startLineOffset;
+  default int getStartLineOffset() {
+    throw new UnsupportedOperationException();
   }
 
-  @CheckForNull
-  public Integer getEndLine() {
-    return endLine;
+  default int getEndLine() {
+    throw new UnsupportedOperationException();
   }
 
-  @CheckForNull
-  public Integer getEndLineOffset() {
-    return endLineOffset;
+  default int getEndLineOffset() {
+    throw new UnsupportedOperationException();
+  }
+
+  static TextRange get(@Nullable Integer line) {
+    if (line == null) {
+      return new InvalidTextRange();
+    } else {
+      return new LineTextRange(line);
+    }
+  }
+
+  static TextRange get(@Nullable Integer startLine, @Nullable Integer startLineOffset, @Nullable Integer endLine, @Nullable Integer endLineOffset) {
+    if (startLine == null || startLineOffset == null || endLine == null || endLineOffset == null) {
+      return get(startLine);
+    } else {
+      return new FullTextRange(startLine, startLineOffset, endLine, endLineOffset);
+    }
+  }
+
+  public static class InvalidTextRange implements TextRange {}
+
+  public static class LineTextRange implements TextRange {
+
+    private int startLine;
+
+    private LineTextRange (int startLine) {
+      this.startLine = startLine;
+    }
+
+    @Override
+    public boolean isValid() {
+      return true;
+    }
+
+    @Override
+    public boolean isLineOnly() {
+      return true;
+    }
+
+    @Override
+    public int getStartLine() {
+      return startLine;
+    }
+  }
+
+  public static class FullTextRange implements TextRange {
+    private final int startLine;
+    private final int startLineOffset;
+    private final int endLine;
+    private final int endLineOffset;
+
+    private FullTextRange(int startLine, int startLineOffset, int endLine, int endLineOffset) {
+      this.startLine = startLine;
+      this.startLineOffset = startLineOffset;
+      this.endLine = endLine;
+      this.endLineOffset = endLineOffset;
+    }
+
+    @Override
+    public boolean isValid() {
+      return true;
+    }
+
+    @Override
+    public int getStartLine() {
+      return startLine;
+    }
+
+    @Override
+    public int getStartLineOffset() {
+      return startLineOffset;
+    }
+
+    @Override
+    public int getEndLine() {
+      return endLine;
+    }
+
+    @Override
+    public int getEndLineOffset() {
+      return endLineOffset;
+    }
   }
 }

@@ -45,6 +45,7 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
+import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
@@ -210,7 +211,7 @@ public class SonarLintMarkerUpdater {
       Collections.reverse(locations);
       for (IssueLocation l : locations) {
         ExtraPosition extraPosition = MarkerUtils.getExtraPosition(document,
-          l.getStartLine(), l.getStartLineOffset(), l.getEndLine(), l.getEndLineOffset(),
+          TextRange.get(l.getStartLine(), l.getStartLineOffset(), l.getEndLine(), l.getEndLineOffset()),
           l.getMessage(),
           marker.getId(), parent);
         if (extraPosition != null) {

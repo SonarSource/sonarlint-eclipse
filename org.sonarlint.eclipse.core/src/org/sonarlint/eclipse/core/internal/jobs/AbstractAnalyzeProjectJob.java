@@ -337,7 +337,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     if (startLine == null) {
       return new RawIssueTrackable(issue);
     }
-    TextRange textRange = new TextRange(startLine, issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
+    TextRange textRange = TextRange.get(startLine, issue.getStartLineOffset(), issue.getEndLine(), issue.getEndLineOffset());
     String textRangeContent = readTextRangeContent(resource, document, textRange);
     String lineContent = readLineContent(resource, document, startLine);
     return new RawIssueTrackable(issue, textRange, textRangeContent, lineContent);

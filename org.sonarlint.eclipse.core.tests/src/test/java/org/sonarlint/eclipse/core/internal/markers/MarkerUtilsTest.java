@@ -45,7 +45,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   @Test
   public void testLineStartEnd() throws Exception {
     DefaultSonarLintFileAdapter file = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), project.getFile("src/main/java/ViolationOnFile.java"));
-    TextRange textRange = new TextRange(2);
+    TextRange textRange = TextRange.get(2);
     Position position = MarkerUtils.getPosition(file.getDocument(), textRange);
     assertThat(position.getOffset()).isEqualTo(31);
     assertThat(position.getLength()).isEqualTo(32);
@@ -55,7 +55,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   @Test
   public void testLineStartEndCrLf() throws Exception {
     DefaultSonarLintFileAdapter file = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), project.getFile("src/main/java/ViolationOnFileCrLf.java"));
-    TextRange textRange = new TextRange(2);
+    TextRange textRange = TextRange.get(2);
     Position position = MarkerUtils.getPosition(file.getDocument(), textRange);
     assertThat(position.getOffset()).isEqualTo(32);
     assertThat(position.getLength()).isEqualTo(32);
@@ -65,7 +65,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   @Test
   public void testPreciseIssueLocationSingleLine() throws Exception {
     DefaultSonarLintFileAdapter file = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), project.getFile("src/main/java/ViolationOnFile.java"));
-    TextRange textRange = new TextRange(2, 23, 2, 31);
+    TextRange textRange = TextRange.get(2, 23, 2, 31);
     Position position = MarkerUtils.getPosition(file.getDocument(), textRange);
     assertThat(position.getOffset()).isEqualTo(54);
     assertThat(position.getLength()).isEqualTo(8);
@@ -75,7 +75,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   @Test
   public void testPreciseIssueLocationMultiLine() throws Exception {
     DefaultSonarLintFileAdapter file = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), project.getFile("src/main/java/ViolationOnFile.java"));
-    TextRange textRange = new TextRange(4, 34, 5, 12);
+    TextRange textRange = TextRange.get(4, 34, 5, 12);
     Position position = MarkerUtils.getPosition(file.getDocument(), textRange);
     assertThat(position.getOffset()).isEqualTo(101);
     assertThat(position.getLength()).isEqualTo(18);
@@ -94,7 +94,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   public void testNonexistentTextRange() throws Exception {
     DefaultSonarLintFileAdapter file = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), project.getFile("src/main/java/ViolationOnFile.java"));
     int nonexistentLine = file.getDocument().getNumberOfLines() + 1;
-    TextRange textRange = new TextRange(nonexistentLine, 5, nonexistentLine, 12);
+    TextRange textRange = TextRange.get(nonexistentLine, 5, nonexistentLine, 12);
     Position position = MarkerUtils.getPosition(file.getDocument(), textRange);
     assertThat(position).isNull();
   }
@@ -102,7 +102,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   @Test
   public void testTextRangeWithoutLine() throws Exception {
     DefaultSonarLintFileAdapter file = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), project.getFile("src/main/java/ViolationOnFile.java"));
-    Position position = MarkerUtils.getPosition(file.getDocument(), new TextRange(null));
+    Position position = MarkerUtils.getPosition(file.getDocument(), TextRange.get(null));
     assertThat(position).isNull();
   }
 }
