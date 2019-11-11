@@ -50,6 +50,7 @@ public final class MarkerUtils {
 
   public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";
   public static final String SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR = "hasextralocation";
+  public static final String SONAR_MARKER_EXTRA_LOCATIONS_ATTR = "extralocation";
 
   public static final String SONARLINT_EXTRA_POSITIONS_CATEGORY = "sonarlintextralocations";
 

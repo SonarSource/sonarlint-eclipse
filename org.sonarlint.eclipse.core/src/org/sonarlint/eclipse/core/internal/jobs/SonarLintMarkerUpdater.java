@@ -19,12 +19,10 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -32,10 +30,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.DefaultPositionUpdater;
 import org.eclipse.jface.text.IDocument;
@@ -43,17 +41,14 @@ import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.markers.FlowCodec;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueLocation;
 
 public class SonarLintMarkerUpdater {
 
@@ -196,40 +191,13 @@ public class SonarLintMarkerUpdater {
 
     boolean hasExtraLocation = false;
     if (createExtraLocations) {
-      hasExtraLocation = createExtraLocations(document, trackable, marker);
+      String encodedFlows = FlowCodec.encode(trackable.getFlows());
+      setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, encodedFlows);
+      hasExtraLocation = !encodedFlows.isEmpty();
     }
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, hasExtraLocation);
 
     updateServerMarkerAttributes(trackable, marker);
-  }
-
-  private static boolean createExtraLocations(IDocument document, Trackable trackable, IMarker marker) {
-    boolean hasExtraLocation = false;
-    for (Flow f : trackable.getFlows()) {
-      ExtraPosition parent = null;
-      List<IssueLocation> locations = new ArrayList<>(f.locations());
-      Collections.reverse(locations);
-      for (IssueLocation l : locations) {
-        ExtraPosition extraPosition = MarkerUtils.getExtraPosition(document,
-          TextRange.get(l.getStartLine(), l.getStartLineOffset(), l.getEndLine(), l.getEndLineOffset()),
-          l.getMessage(),
-          marker.getId(), parent);
-        if (extraPosition != null) {
-          savePosition(document, extraPosition);
-          parent = extraPosition;
-          hasExtraLocation = true;
-        }
-      }
-    }
-    return hasExtraLocation;
-  }
-
-  private static void savePosition(IDocument document, ExtraPosition extraPosition) {
-    try {
-      document.addPosition(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY, extraPosition);
-    } catch (BadLocationException | BadPositionCategoryException e) {
-      throw new IllegalStateException("Unable to register extra position", e);
-    }
   }
 
   /**
