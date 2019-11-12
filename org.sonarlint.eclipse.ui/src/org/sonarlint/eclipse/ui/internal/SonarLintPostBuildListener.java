@@ -45,7 +45,6 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
-import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 /**
@@ -67,9 +66,9 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
         Map<ISonarLintProject, Collection<ISonarLintFile>> filesPerProject = changedFiles.stream()
           .collect(Collectors.groupingBy(ISonarLintFile::getProject, Collectors.toCollection(ArrayList::new)));
 
-        SonarLintUiPlugin.removeChangeListener();
+        SonarLintUiPlugin.removePostBuildListener();
         Job job = new AnalyzeOpenedFiles(filesPerProject);
-        JobUtils.scheduleAfter(job, SonarLintUiPlugin::addChangeListener);
+        JobUtils.scheduleAfter(job, SonarLintUiPlugin::addPostBuildListener);
         job.schedule();
       }
     }
@@ -94,7 +93,6 @@ public class SonarLintPostBuildListener implements IResourceChangeListener {
             IEditorPart editorPart = PlatformUtils.findEditor(f);
             if (editorPart instanceof ITextEditor) {
               ITextEditor textEditor = (ITextEditor) editorPart;
-              ShowIssueFlowsMarkerResolver.removeAnnotations(textEditor);
               IDocument doc = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
               return new FileWithDocument(f, doc);
             }

@@ -332,7 +332,9 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     config.setProjectBinding(null);
     SonarLintCorePlugin.saveConfig(project, config);
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
+    project.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID);
     project.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
+    project.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_FLOW_ID);
     SonarLintCorePlugin.clearIssueTracker(project);
   }
 

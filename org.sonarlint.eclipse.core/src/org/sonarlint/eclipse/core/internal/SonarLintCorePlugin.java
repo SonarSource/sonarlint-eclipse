@@ -54,7 +54,9 @@ public class SonarLintCorePlugin extends Plugin {
   public static final String PLUGIN_ID = "org.sonarlint.eclipse.core";
   public static final String UI_PLUGIN_ID = "org.sonarlint.eclipse.ui";
   public static final String MARKER_ON_THE_FLY_ID = PLUGIN_ID + ".sonarlintOnTheFlyProblem";
+  public static final String MARKER_ON_THE_FLY_FLOW_ID = PLUGIN_ID + ".sonarlintOnTheFlyFlowLocation";
   public static final String MARKER_REPORT_ID = PLUGIN_ID + ".sonarlintReportProblem";
+  public static final String MARKER_REPORT_FLOW_ID = PLUGIN_ID + ".sonarlintReportFlowLocation";
 
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectConfigurationManager configManager;
@@ -66,8 +68,8 @@ public class SonarLintCorePlugin extends Plugin {
   private StandaloneEngineFacade sonarlint;
   private final ServiceTracker<IProxyService, IProxyService> proxyTracker;
 
-  private AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
-  private SonarLintTelemetry telemetry = new SonarLintTelemetry();
+  private final AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
+  private final SonarLintTelemetry telemetry = new SonarLintTelemetry();
   private ConnectedEngineFacadeManager serversManager = null;
 
   private NotificationsTrackerRegistry notificationsTrackerRegistry;

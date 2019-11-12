@@ -28,8 +28,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWindowListener;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -53,6 +51,7 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
+import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
 import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
@@ -78,9 +77,10 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   private ListenerFactory listenerFactory;
 
-  private static final SonarLintPartListener SONARLINT_PART_LISTENER = new SonarLintPartListener();
+  private static final WindowOpenCloseListener WINDOW_OPEN_CLOSE_LISTENER = new WindowOpenCloseListener();
   private static final SonarLintPostBuildListener SONARLINT_POST_BUILD_LISTENER = new SonarLintPostBuildListener();
   private static final SonarLintProjectEventListener SONARLINT_PROJECT_EVENT_LISTENER = new SonarLintProjectEventListener();
+  private static final SonarLintFlowLocationsService SONARLINT_FLOW_LOCATION_SERVICE = new SonarLintFlowLocationsService();
 
   public SonarLintUiPlugin() {
     plugin = this;
@@ -141,8 +141,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public void start(final BundleContext context) throws Exception {
     super.start(context);
 
-    addChangeListener();
+    addPostBuildListener();
     ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
+    SonarLintCorePlugin.getAnalysisListenerManager().addListener(SONARLINT_FLOW_LOCATION_SERVICE);
 
     logListener = new SonarLintConsoleLogger();
     SonarLintLogger.get().addLogListener(logListener);
@@ -169,10 +170,14 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   @Override
   public void stop(final BundleContext context) throws Exception {
-    removeChangeListener();
+    removePostBuildListener();
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
+    SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_FLOW_LOCATION_SERVICE);
     SonarLintLogger.get().removeLogListener(logListener);
     SonarLintNotifications.get().removeNotificationListener(notifListener);
+    for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+      WindowOpenCloseListener.removeListenerFromAllPages(window);
+    }
     try {
       getPreferenceStore().removePropertyChangeListener(prefListener);
     } finally {
@@ -180,11 +185,11 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
   }
 
-  public static void addChangeListener() {
+  public static void addPostBuildListener() {
     ResourcesPlugin.getWorkspace().addResourceChangeListener(SONARLINT_POST_BUILD_LISTENER, IResourceChangeEvent.POST_BUILD);
   }
 
-  public static void removeChangeListener() {
+  public static void removePostBuildListener() {
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_POST_BUILD_LISTENER);
   }
 
@@ -242,13 +247,12 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
       JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
 
-      // Now we can monitor newly opened editor
-      for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-        addListenerToAllPages(window);
-      }
-
       // Handle future opened/closed windows
-      PlatformUI.getWorkbench().addWindowListener(new WindowOpenCloseListener());
+      PlatformUI.getWorkbench().addWindowListener(WINDOW_OPEN_CLOSE_LISTENER);
+      // Now we can attach listeners to existing windows
+      for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+        WindowOpenCloseListener.addListenerToAllPages(window);
+      }
 
       subscribeToNotifications();
 
@@ -276,39 +280,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       }
     }
 
-    static class WindowOpenCloseListener implements IWindowListener {
-      @Override
-      public void windowOpened(IWorkbenchWindow window) {
-        addListenerToAllPages(window);
-      }
-
-      @Override
-      public void windowDeactivated(IWorkbenchWindow window) {
-        // Nothing to do
-      }
-
-      @Override
-      public void windowClosed(IWorkbenchWindow window) {
-        removeListenerToAllPages(window);
-      }
-
-      @Override
-      public void windowActivated(IWorkbenchWindow window) {
-        // Nothing to do
-      }
-
-      private static void removeListenerToAllPages(IWorkbenchWindow window) {
-        for (IWorkbenchPage page : window.getPages()) {
-          page.removePartListener(SONARLINT_PART_LISTENER);
-        }
-      }
-    }
-
-    private static void addListenerToAllPages(IWorkbenchWindow window) {
-      for (IWorkbenchPage page : window.getPages()) {
-        page.addPartListener(SONARLINT_PART_LISTENER);
-      }
-    }
   }
 
   public static void startupAsync() {
@@ -326,5 +297,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   public static void unsubscribeToNotifications(ISonarLintProject project) {
     SonarLintCorePlugin.getInstance().notificationsManager().unsubscribe(project);
+  }
+
+  public static SonarLintFlowLocationsService getSonarlintMarkerSelectionService() {
+    return SONARLINT_FLOW_LOCATION_SERVICE;
   }
 }

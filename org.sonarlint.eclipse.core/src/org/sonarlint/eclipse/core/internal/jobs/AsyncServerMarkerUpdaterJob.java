@@ -57,7 +57,7 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
     for (Map.Entry<ISonarLintIssuable, Collection<Trackable>> entry : issuesPerResource.entrySet()) {
       ISonarLintIssuable issuable = entry.getKey();
       if (issuable instanceof ISonarLintFile) {
-        IDocument documentOrNull = docPerFile.get((ISonarLintFile) issuable);
+        IDocument documentOrNull = docPerFile.get(issuable);
         final IDocument documentNotNull;
         if (documentOrNull == null) {
           documentNotNull = ((ISonarLintFile) issuable).getDocument();
@@ -67,7 +67,7 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
         ISchedulingRule markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(issuable.getResource());
         try {
           getJobManager().beginRule(markerRule, monitor);
-          SonarLintMarkerUpdater.updateMarkersWithServerSideData(issuable, documentNotNull, entry.getValue(), triggerType, documentOrNull != null);
+          SonarLintMarkerUpdater.updateMarkersWithServerSideData(issuable, documentNotNull, entry.getValue(), triggerType);
         } finally {
           getJobManager().endRule(markerRule);
         }

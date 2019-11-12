@@ -17,5 +17,40 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-@org.eclipse.jdt.annotation.NonNullByDefault
-package org.sonarlint.eclipse.ui.internal.markers;
+package org.sonarlint.eclipse.core.internal.markers;
+
+import org.eclipse.core.resources.IMarker;
+
+public class MarkerFlowLocation {
+  private final MarkerFlow parent;
+  private final int number;
+  private final String message;
+  private IMarker marker;
+
+  public MarkerFlowLocation(MarkerFlow parent, String message) {
+    this.parent = parent;
+    this.parent.locations.add(this);
+    this.number = this.parent.locations.size();
+    this.message = message;
+  }
+
+  public MarkerFlow getParent() {
+    return parent;
+  }
+
+  public int getNumber() {
+    return number;
+  }
+
+  public String getMessage() {
+    return message;
+  }
+
+  public void setMarker(IMarker marker) {
+    this.marker = marker;
+  }
+
+  public IMarker getMarker() {
+    return marker;
+  }
+}

@@ -19,10 +19,12 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -33,25 +35,24 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jface.text.BadPositionCategoryException;
-import org.eclipse.jface.text.DefaultPositionUpdater;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.markers.FlowCodec;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueLocation;
 
 public class SonarLintMarkerUpdater {
-
-  private static final DefaultPositionUpdater EXTRA_POSITIONS_UPDATER = new DefaultPositionUpdater(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY);
 
   private SonarLintMarkerUpdater() {
   }
@@ -60,13 +61,10 @@ public class SonarLintMarkerUpdater {
     try {
       Set<IMarker> previousMarkersToDelete;
       if (triggerType.isOnTheFly()) {
+        file.getResource().deleteMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID, false, IResource.DEPTH_ZERO);
         previousMarkersToDelete = new HashSet<>(Arrays.asList(file.getResource().findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, false, IResource.DEPTH_ZERO)));
       } else {
         previousMarkersToDelete = Collections.emptySet();
-      }
-
-      if (openedDocument.isPresent()) {
-        resetExtraPositions(openedDocument.get());
       }
 
       createOrUpdateMarkers(file, openedDocument, issues, triggerType, previousMarkersToDelete);
@@ -85,37 +83,27 @@ public class SonarLintMarkerUpdater {
       .collect(Collectors.toSet());
   }
 
-  private static void resetExtraPositions(IDocument document) {
-    try {
-      document.removePositionCategory(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY);
-    } catch (BadPositionCategoryException e1) {
-      // Ignore
-    }
-    document.addPositionCategory(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY);
-    document.addPositionUpdater(EXTRA_POSITIONS_UPDATER);
-  }
-
   public static void clearMarkers(ISonarLintFile file) {
-    resetExtraPositions(file.getDocument());
     try {
       file.getResource().deleteMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, false, IResource.DEPTH_ZERO);
+      file.getResource().deleteMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID, false, IResource.DEPTH_ZERO);
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
   }
 
-  public static void updateMarkersWithServerSideData(ISonarLintIssuable issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType,
-    boolean createExtraLocations) {
+  public static void updateMarkersWithServerSideData(ISonarLintIssuable issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType) {
     try {
       for (Trackable issue : issues) {
-        updateMarkerWithServerSideData(issuable, document, issue, triggerType, createExtraLocations);
+        updateMarkerWithServerSideData(issuable, document, issue, triggerType);
       }
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
   }
 
-  private static void updateMarkerWithServerSideData(ISonarLintIssuable issuable, IDocument document, Trackable issue, TriggerType triggerType, boolean createExtraLocations)
+  private static void updateMarkerWithServerSideData(ISonarLintIssuable issuable, IDocument document, Trackable issue,
+    TriggerType triggerType)
     throws CoreException {
     Long markerId = issue.getMarkerId();
     IMarker marker = null;
@@ -133,7 +121,7 @@ public class SonarLintMarkerUpdater {
         updateServerMarkerAttributes(issue, marker);
       } else {
         // Issue was previously resolved, and is now reopen, so we need to recreate a marker
-        createMarker(document, issuable, issue, triggerType, createExtraLocations);
+        createMarker(document, issuable, issue, triggerType);
       }
     }
   }
@@ -145,10 +133,10 @@ public class SonarLintMarkerUpdater {
       if (!issue.isResolved()) {
         lazyInitDocument = lazyInitDocument != null ? lazyInitDocument : file.getDocument();
         if (!triggerType.isOnTheFly() || issue.getMarkerId() == null || file.getResource().findMarker(issue.getMarkerId()) == null) {
-          createMarker(lazyInitDocument, file, issue, triggerType, openedDocument.isPresent());
+          createMarker(lazyInitDocument, file, issue, triggerType);
         } else {
           IMarker marker = file.getResource().findMarker(issue.getMarkerId());
-          updateMarkerAttributes(lazyInitDocument, issue, marker, openedDocument.isPresent());
+          updateMarkerAttributes(lazyInitDocument, file, issue, marker, triggerType);
           previousMarkersToDelete.remove(marker);
         }
       } else {
@@ -157,8 +145,7 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  private static void createMarker(IDocument document, ISonarLintIssuable issuable, Trackable trackable, TriggerType triggerType, boolean createExtraLocations)
-    throws CoreException {
+  private static void createMarker(IDocument document, ISonarLintIssuable issuable, Trackable trackable, TriggerType triggerType) throws CoreException {
     IMarker marker = issuable.getResource()
       .createMarker(triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_ID : SonarLintCorePlugin.MARKER_REPORT_ID);
     if (triggerType.isOnTheFly()) {
@@ -169,10 +156,10 @@ public class SonarLintMarkerUpdater {
     marker.setAttribute("org.eclipse.ui.views.markers.name", issuable.getResourceNameForMarker());
     marker.setAttribute("org.eclipse.ui.views.markers.path", issuable.getResourceContainerForMarker());
 
-    updateMarkerAttributes(document, trackable, marker, createExtraLocations);
+    updateMarkerAttributes(document, issuable, trackable, marker, triggerType);
   }
 
-  private static void updateMarkerAttributes(IDocument document, Trackable trackable, IMarker marker, boolean createExtraLocations) throws CoreException {
+  private static void updateMarkerAttributes(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, TriggerType triggerType) throws CoreException {
     Map<String, Object> existingAttributes = marker.getAttributes();
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());
@@ -190,15 +177,38 @@ public class SonarLintMarkerUpdater {
       setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_END, position.getOffset() + position.getLength());
     }
 
-    boolean hasExtraLocation = false;
-    if (createExtraLocations) {
-      String encodedFlows = FlowCodec.encode(trackable.getFlows());
-      setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, encodedFlows);
-      hasExtraLocation = !encodedFlows.isEmpty();
-    }
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, hasExtraLocation);
+    createFlowMarkers(document, issuable, trackable, marker, triggerType);
 
     updateServerMarkerAttributes(trackable, marker);
+  }
+
+  private static void createFlowMarkers(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, TriggerType triggerType) throws CoreException {
+    List<MarkerFlow> flowsMarkers = new ArrayList<>();
+    int i = 1;
+    for (org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow engineFlow : trackable.getFlows()) {
+      MarkerFlow flow = new MarkerFlow(i);
+      flowsMarkers.add(flow);
+      List<IssueLocation> locations = new ArrayList<>(engineFlow.locations());
+      Collections.reverse(locations);
+      for (IssueLocation l : locations) {
+        MarkerFlowLocation flowLocation = new MarkerFlowLocation(flow, l.getMessage());
+        try {
+          IMarker m = issuable.getResource().createMarker(triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID : SonarLintCorePlugin.MARKER_REPORT_FLOW_ID);
+          m.setAttribute(IMarker.MESSAGE, l.getMessage());
+          m.setAttribute(IMarker.LINE_NUMBER, l.getStartLine() != null ? l.getStartLine() : 1);
+          Position flowPosition = MarkerUtils.getPosition(document, TextRange.get(l.getStartLine(), l.getStartLineOffset(), l.getEndLine(), l.getEndLineOffset()));
+          if (flowPosition != null) {
+            m.setAttribute(IMarker.CHAR_START, flowPosition.getOffset());
+            m.setAttribute(IMarker.CHAR_END, flowPosition.getOffset() + flowPosition.getLength());
+          }
+          flowLocation.setMarker(m);
+        } catch (Exception e) {
+          SonarLintLogger.get().debug("Unable to create flow marker", e);
+        }
+      }
+      i++;
+    }
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, flowsMarkers);
   }
 
   /**
@@ -216,7 +226,7 @@ public class SonarLintMarkerUpdater {
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR, trackable.getServerIssueKey());
 
     Long creationDate = trackable.getCreationDate();
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, creationDate != null ? String.valueOf(creationDate.longValue()) : null);
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR, creationDate != null ? String.valueOf(creationDate) : null);
   }
 
   private static void setMarkerAttributeIfDifferent(IMarker marker, @Nullable Map<String, Object> existingAttributes, String attributeName, @Nullable Object value)
@@ -250,6 +260,9 @@ public class SonarLintMarkerUpdater {
   public static void deleteAllMarkersFromReport() {
     ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
-      .forEach(p -> p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID));
+      .forEach(p -> {
+        p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
+        p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_FLOW_ID);
+      });
   }
 }

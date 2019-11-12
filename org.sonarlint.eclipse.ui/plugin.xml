@@ -466,15 +466,6 @@
       <menuContribution
             locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
            <command
-                 commandId="org.sonarlint.eclipse.ui.internal.command.ShowIssueLocationsCommand"
-                 icon="icons/full/marker_resolution16/showlocations.png"
-                 style="push"
-                 mnemonic="I">
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
-           <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
                  icon="icons/full/marker_resolution16/disablerule.png"
                  style="push"
@@ -647,12 +638,6 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
-          description="Show issue locations"
-          id="org.sonarlint.eclipse.ui.internal.command.ShowIssueLocationsCommand"
-          name="Issue locations"
-          categoryId="org.sonarlint.eclipse.ui.command.category">
-    </command>
-    <command
           description="Deactivate the rule of this issue"
           id="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
           name="Deactivate rule"
@@ -700,10 +685,6 @@
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand">
-    </handler>
-    <handler
-          class="org.sonarlint.eclipse.ui.internal.command.ShowIssueLocationsCommand"
-          commandId="org.sonarlint.eclipse.ui.internal.command.ShowIssueLocationsCommand">
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
@@ -937,6 +918,23 @@
       <themeid
             refid="org.eclipse.e4.ui.css.theme.e4_dark"></themeid>
     </stylesheet>
+  </extension>
+  <extension
+        point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
+     <codeMiningProvider
+           class="org.sonarlint.eclipse.ui.internal.codemining.SonarLintCodeMiningProvider"
+           id="org.sonarlint.eclipse.ui.sonarlintFlowCodeMiningProvider"
+           label="SonarLint Flows">
+           <enabledWhen>
+            <with variable="editorInput">
+              <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
+                 <not>
+                   <test property="org.sonarlint.eclipse.core.excluded"/>
+                 </not>
+               </adapt>
+            </with>
+         </enabledWhen>
+     </codeMiningProvider>
   </extension>
 
 </plugin>

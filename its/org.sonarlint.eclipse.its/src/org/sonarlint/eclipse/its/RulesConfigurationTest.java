@@ -81,6 +81,8 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     reactivateRuleUsingUI();
 
     JobHelpers.waitForJobsToComplete(bot);
+    // Ugly hack: give a bit more time for the UI to refresh
+    bot.sleep(1000);
     checkIssueIsDefault(project);
     changeRuleParamValue(project);
     checkIssueChanged(project);

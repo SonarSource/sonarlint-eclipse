@@ -26,9 +26,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
-import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
@@ -37,9 +35,8 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
-import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
-import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 public class DeactivateRuleUtils {
@@ -81,16 +78,9 @@ public class DeactivateRuleUtils {
   }
 
   private static void removeAnnotations(IMarker marker) {
-    ITextEditor textEditor = LocationsUtils.findOpenEditorFor(marker);
-    if (textEditor == null) {
-      return;
+    if (marker.equals(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedMarker().orElse(null))) {
+      SonarLintUiPlugin.getSonarlintMarkerSelectionService().markerSelected(null, false);
     }
-
-    IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IssueLocationsView.ID);
-    if (view != null) {
-      view.setShowAnnotations(false);
-    }
-    ShowIssueFlowsMarkerResolver.removeAnnotations(textEditor);
   }
 
   private static void removeReportIssuesMarkers(RuleKey ruleKey) {

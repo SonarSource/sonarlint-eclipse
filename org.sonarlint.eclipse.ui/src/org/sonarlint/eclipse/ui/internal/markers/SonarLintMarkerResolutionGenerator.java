@@ -43,7 +43,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
     resolutions.add(new ShowRuleDescriptionMarkerResolver(marker));
 
     if (hasExtraLocations(marker)) {
-      resolutions.add(new ShowIssueFlowsMarkerResolver(marker));
+      resolutions.add(new ShowHideIssueFlowsMarkerResolver(marker));
     }
 
     if (isStandaloneIssue(marker)) {
@@ -63,7 +63,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
   }
 
   private static boolean hasExtraLocations(IMarker marker) {
-    return marker.getAttribute(MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, false);
+    return !MarkerUtils.getIssueFlow(marker).isEmpty();
   }
 
   private static boolean isStandaloneIssue(IMarker marker) {
