@@ -148,12 +148,14 @@ public final class MarkerUtils {
     private final String message;
     private final long markerId;
     private final ExtraPosition previous;
+    private final int number;
 
     public ExtraPosition(int offset, int length, @Nullable String message, long markerId, @Nullable ExtraPosition previous) {
       super(offset, length);
       this.message = message;
       this.markerId = markerId;
       this.previous = previous;
+      this.number = previous != null ? (previous.number + 1) : 1;
     }
 
     @Nullable
@@ -168,6 +170,10 @@ public final class MarkerUtils {
     @Nullable
     public ExtraPosition getParent() {
       return previous;
+    }
+
+    public int getNumber() {
+      return number;
     }
 
     public boolean isDescendantOf(@Nullable ExtraPosition possibleAncestor) {
