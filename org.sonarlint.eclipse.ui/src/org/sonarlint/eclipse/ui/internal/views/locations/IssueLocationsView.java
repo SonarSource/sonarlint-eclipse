@@ -32,7 +32,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
@@ -197,13 +196,6 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     @Override
     public Object[] getElements(Object inputElement) {
       IMarker sonarlintMarker = (IMarker) inputElement;
-      try {
-        if (SonarLintCorePlugin.MARKER_REPORT_ID.equals(sonarlintMarker.getType())) {
-          return new Object[] {"Information not available from the Report view"};
-        }
-      } catch (CoreException e) {
-        // Ignore
-      }
       if (sonarlintMarker.getAttribute(MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, false)) {
         ITextEditor openEditor = LocationsUtils.findOpenEditorFor(sonarlintMarker);
         if (openEditor == null) {

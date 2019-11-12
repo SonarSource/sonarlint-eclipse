@@ -57,7 +57,7 @@ public class SonarLintMarkerUpdater {
   private SonarLintMarkerUpdater() {
   }
 
-  public static void createOrUpdateMarkers(ISonarLintFile issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType, boolean createExtraLocations) {
+  public static void createOrUpdateMarkers(ISonarLintFile issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType) {
     try {
       Set<IMarker> previousMarkersToDelete;
       if (triggerType.isOnTheFly()) {
@@ -66,11 +66,8 @@ public class SonarLintMarkerUpdater {
         previousMarkersToDelete = Collections.emptySet();
       }
 
-      if (createExtraLocations) {
-        resetExtraPositions(document);
-      }
-
-      createOrUpdateMarkers(document, issuable, issues, triggerType, previousMarkersToDelete, createExtraLocations);
+      resetExtraPositions(document);
+      createOrUpdateMarkers(document, issuable, issues, triggerType, previousMarkersToDelete);
 
       for (IMarker marker : previousMarkersToDelete) {
         marker.delete();
@@ -105,18 +102,17 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  public static void updateMarkersWithServerSideData(ISonarLintIssuable issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType,
-    boolean createExtraLocations) {
+  public static void updateMarkersWithServerSideData(ISonarLintIssuable issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType) {
     try {
       for (Trackable issue : issues) {
-        updateMarkerWithServerSideData(issuable, document, issue, triggerType, createExtraLocations);
+        updateMarkerWithServerSideData(issuable, document, issue, triggerType);
       }
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
   }
 
-  private static void updateMarkerWithServerSideData(ISonarLintIssuable issuable, IDocument document, Trackable issue, TriggerType triggerType, boolean createExtraLocations)
+  private static void updateMarkerWithServerSideData(ISonarLintIssuable issuable, IDocument document, Trackable issue, TriggerType triggerType)
     throws CoreException {
     Long markerId = issue.getMarkerId();
     IMarker marker = null;
@@ -134,20 +130,20 @@ public class SonarLintMarkerUpdater {
         updateServerMarkerAttributes(issue, marker);
       } else {
         // Issue was previously resolved, and is now reopen, so we need to recreate a marker
-        createMarker(document, issuable, issue, triggerType, createExtraLocations);
+        createMarker(document, issuable, issue, triggerType);
       }
     }
   }
 
   private static void createOrUpdateMarkers(IDocument document, ISonarLintIssuable issuable, Collection<Trackable> issues,
-    TriggerType triggerType, Set<IMarker> previousMarkersToDelete, boolean createExtraLocations) throws CoreException {
+    TriggerType triggerType, Set<IMarker> previousMarkersToDelete) throws CoreException {
     for (Trackable issue : issues) {
       if (!issue.isResolved()) {
         if (!triggerType.isOnTheFly() || issue.getMarkerId() == null || issuable.getResource().findMarker(issue.getMarkerId()) == null) {
-          createMarker(document, issuable, issue, triggerType, createExtraLocations);
+          createMarker(document, issuable, issue, triggerType);
         } else {
           IMarker marker = issuable.getResource().findMarker(issue.getMarkerId());
-          updateMarkerAttributes(document, issue, marker, createExtraLocations);
+          updateMarkerAttributes(document, issue, marker);
           previousMarkersToDelete.remove(marker);
         }
       } else {
@@ -156,7 +152,7 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  private static void createMarker(IDocument document, ISonarLintIssuable issuable, Trackable trackable, TriggerType triggerType, boolean createExtraLocations)
+  private static void createMarker(IDocument document, ISonarLintIssuable issuable, Trackable trackable, TriggerType triggerType)
     throws CoreException {
     IMarker marker = issuable.getResource()
       .createMarker(triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_ID : SonarLintCorePlugin.MARKER_REPORT_ID);
@@ -168,10 +164,10 @@ public class SonarLintMarkerUpdater {
     marker.setAttribute("org.eclipse.ui.views.markers.name", issuable.getResourceNameForMarker());
     marker.setAttribute("org.eclipse.ui.views.markers.path", issuable.getResourceContainerForMarker());
 
-    updateMarkerAttributes(document, trackable, marker, createExtraLocations);
+    updateMarkerAttributes(document, trackable, marker);
   }
 
-  private static void updateMarkerAttributes(IDocument document, Trackable trackable, IMarker marker, boolean createExtraLocations) throws CoreException {
+  private static void updateMarkerAttributes(IDocument document, Trackable trackable, IMarker marker) throws CoreException {
     Map<String, Object> existingAttributes = marker.getAttributes();
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());
@@ -189,13 +185,9 @@ public class SonarLintMarkerUpdater {
       setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_END, position.getOffset() + position.getLength());
     }
 
-    boolean hasExtraLocation = false;
-    if (createExtraLocations) {
-      String encodedFlows = FlowCodec.encode(trackable.getFlows());
-      setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, encodedFlows);
-      hasExtraLocation = !encodedFlows.isEmpty();
-    }
-    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, hasExtraLocation);
+    String encodedFlows = FlowCodec.encode(trackable.getFlows());
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, encodedFlows);
+    setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, !encodedFlows.isEmpty());
 
     updateServerMarkerAttributes(trackable, marker);
   }

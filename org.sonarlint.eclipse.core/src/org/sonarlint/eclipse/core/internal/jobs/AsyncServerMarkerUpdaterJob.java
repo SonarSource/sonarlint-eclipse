@@ -67,7 +67,7 @@ public class AsyncServerMarkerUpdaterJob extends AbstractSonarProjectJob {
         ISchedulingRule markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(issuable.getResource());
         try {
           getJobManager().beginRule(markerRule, monitor);
-          SonarLintMarkerUpdater.updateMarkersWithServerSideData(issuable, documentNotNull, entry.getValue(), triggerType, documentOrNull != null);
+          SonarLintMarkerUpdater.updateMarkersWithServerSideData(issuable, documentNotNull, entry.getValue(), triggerType);
         } finally {
           getJobManager().endRule(markerRule);
         }

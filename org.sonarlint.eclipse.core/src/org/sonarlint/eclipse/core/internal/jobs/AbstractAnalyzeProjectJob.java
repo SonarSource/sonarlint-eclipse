@@ -319,7 +319,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       ISchedulingRule markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(file.getResource());
       try {
         getJobManager().beginRule(markerRule, monitor);
-        SonarLintMarkerUpdater.createOrUpdateMarkers(file, document, tracked, triggerType, openedDocument.isPresent());
+        SonarLintMarkerUpdater.createOrUpdateMarkers(file, document, tracked, triggerType);
       } finally {
         getJobManager().endRule(markerRule);
       }
