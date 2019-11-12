@@ -17,5 +17,21 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-@org.eclipse.jdt.annotation.NonNullByDefault
-package org.sonarlint.eclipse.ui.internal.markers;
+package org.sonarlint.eclipse.ui.internal.codemining;
+
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.codemining.LineHeaderCodeMining;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
+
+public class SonarLintFlowMessageCodeMining extends LineHeaderCodeMining {
+
+
+  public SonarLintFlowMessageCodeMining(MarkerFlowLocation location, IDocument doc, Position position, SonarLintCodeMiningProvider provider) throws BadLocationException {
+    super(doc.getLineOfOffset(position.getOffset()), doc, provider);
+    setLabel(location.getMessage());
+  }
+
+
+}

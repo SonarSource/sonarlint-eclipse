@@ -17,5 +17,25 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-@org.eclipse.jdt.annotation.NonNullByDefault
-package org.sonarlint.eclipse.ui.internal.markers;
+package org.sonarlint.eclipse.core.internal.markers;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MarkerFlow {
+  private final int number;
+  final List<MarkerFlowLocation> locations = new ArrayList<>();
+
+  public MarkerFlow(int number) {
+    this.number = number;
+  }
+
+  public int getNumber() {
+    return number;
+  }
+
+  public List<MarkerFlowLocation> getLocations() {
+    return locations;
+  }
+
+}

@@ -17,24 +17,11 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.command;
+package org.sonarlint.eclipse.ui.internal.flowlocations;
 
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
+import java.util.Optional;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
 
-public class ShowIssueLocationsCommand extends AbstractIssueCommand {
-
-  @Override
-  protected void execute(IMarker selectedMarker) {
-    try {
-      IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
-      view.setShowAnnotations(true);
-      view.setInput(selectedMarker);
-    } catch (Exception e) {
-      SonarLintLogger.get().error("Unable to open Issue Location View", e);
-    }
-  }
-
+public interface SonarLintFlowLocationSelectionListener {
+  void flowLocationSelected(Optional<MarkerFlowLocation> flowLocation);
 }

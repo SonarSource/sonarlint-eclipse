@@ -73,6 +73,10 @@ public class SonarLintNotifications {
     public String getLongMsg() {
       return longMsg;
     }
-  }
 
+    @Override
+    public String toString() {
+      return String.format("Notification{title=%s,shortMsg=%s,longMsg=%s}", title, shortMsg, longMsg);
+    }
+  }
 }

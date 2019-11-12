@@ -77,7 +77,7 @@ public class SkippedPluginsNotifierTest {
         new Notification("Rules not available",
           "Some rules are not available until some requirements are satisfied",
       "Some analyzers can not be loaded.\n\n"
-        + " - 'Plugin 1' is not compatible with this version of SonarLint. Ensure you are using the latest version of SonarLint and check SonarLint output for details.\n"));
+        + " - 'Plugin 1' is not compatible with this version of SonarLint. Ensure you are using the latest version of SonarLint and check SonarLint output for details." + System.lineSeparator()));
   }
 
   @Test
@@ -89,7 +89,7 @@ public class SkippedPluginsNotifierTest {
         new Notification("Rules not available",
           "Some rules are not available until some requirements are satisfied",
       "Some analyzers from connection 'mySq' can not be loaded.\n\n"
-        + " - 'Plugin 1' is missing dependency 'java'\n"));
+        + " - 'Plugin 1' is missing dependency 'java'" + System.lineSeparator()));
   }
 
   @Test
@@ -101,7 +101,7 @@ public class SkippedPluginsNotifierTest {
         new Notification("Rules not available",
           "Some rules are not available until some requirements are satisfied",
       "Some analyzers from connection 'mySq' can not be loaded.\n\n"
-        + " - 'Plugin 1' is too old for SonarLint. Current version is 1.0. Minimal supported version is 2.0. Please update your binding.\n"));
+        + " - 'Plugin 1' is too old for SonarLint. Current version is 1.0. Minimal supported version is 2.0. Please update your binding." + System.lineSeparator()));
   }
 
   private static class FakePluginDetails implements PluginDetails {

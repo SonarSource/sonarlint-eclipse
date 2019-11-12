@@ -17,5 +17,13 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-@org.eclipse.jdt.annotation.NonNullByDefault
-package org.sonarlint.eclipse.ui.internal.markers;
+package org.sonarlint.eclipse.ui.internal.flowlocations;
+
+import java.util.Optional;
+import org.eclipse.core.resources.IMarker;
+
+public interface SonarLintMarkerSelectionListener {
+
+  void markerSelected(Optional<IMarker> marker);
+
+}

@@ -19,15 +19,19 @@
  */
 package org.sonarlint.eclipse.ui.internal.util;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -43,7 +47,7 @@ public final class SelectionUtils {
   /**
    * Returns the selected element if the selection consists of a single
    * element only.
-   * 
+   *
    * @param s the selection
    * @return the selected first element or null
    */
@@ -90,7 +94,7 @@ public final class SelectionUtils {
     }
   }
 
-  /** 
+  /**
    * Return all {@link ISonarLintFile} based on current selection.
    */
   public static Set<ISonarLintFile> allSelectedFiles(ISelection selection, boolean onlyIfProjectSupportsFullAnalysis) {
@@ -125,6 +129,38 @@ public final class SelectionUtils {
     if (file != null) {
       selectedFiles.add(file);
     }
+  }
+
+  public static @Nullable IMarker findSelectedSonarLintMarker(ISelection selection) {
+    try {
+      if (selection instanceof IStructuredSelection) {
+        List<IMarker> selectedSonarMarkers = new ArrayList<>();
+
+        @SuppressWarnings("rawtypes")
+        List elems = ((IStructuredSelection) selection).toList();
+        for (Object elem : elems) {
+          processElement(selectedSonarMarkers, elem);
+        }
+
+        if (!selectedSonarMarkers.isEmpty()) {
+          return selectedSonarMarkers.get(0);
+        }
+      }
+    } catch (Exception e) {
+      return null;
+    }
+    return null;
+  }
+
+  private static void processElement(List<IMarker> selectedSonarMarkers, Object elem) throws CoreException {
+    IMarker marker = Adapters.adapt(elem, IMarker.class);
+    if (marker != null && isSonarLintMarker(marker)) {
+      selectedSonarMarkers.add(marker);
+    }
+  }
+
+  private static boolean isSonarLintMarker(IMarker marker) throws CoreException {
+    return SonarLintCorePlugin.MARKER_ON_THE_FLY_ID.equals(marker.getType()) || SonarLintCorePlugin.MARKER_REPORT_ID.equals(marker.getType());
   }
 
 }

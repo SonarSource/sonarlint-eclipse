@@ -51,6 +51,30 @@
             name="creationdate">
       </attribute>
    </extension>
+   
+   <extension
+        id="sonarlintOnTheFlyFlowLocation"
+        name="SonarLint On-The-Fly Issue Flow Location"
+        point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.textmarker">
+      </super>
+      <persistent
+            value="false">
+      </persistent>
+   </extension>
+   
+    <extension
+        id="sonarlintReportFlowLocation"
+        name="SonarLint Report Issue Flow Location"
+        point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.textmarker">
+      </super>
+      <persistent
+            value="false">
+      </persistent>
+   </extension>
 
   <extension
         point="org.eclipse.core.expressions.propertyTesters">
