@@ -938,5 +938,22 @@
             refid="org.eclipse.e4.ui.css.theme.e4_dark"></themeid>
     </stylesheet>
   </extension>
+  <extension
+        point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
+     <codeMiningProvider
+           class="org.sonarlint.eclipse.ui.internal.codemining.SonarLintCodeMiningProvider"
+           id="org.sonarlint.eclipse.ui.sonarlintFlowCodeMiningProvider"
+           label="SonarLint Flows">
+           <enabledWhen>
+            <with variable="editorInput">
+              <adapt type="org.sonarlint.eclipse.core.resource.ISonarLintFile">
+                 <not>
+                   <test property="org.sonarlint.eclipse.core.excluded"/>
+                 </not>
+               </adapt>
+            </with>
+         </enabledWhen>
+     </codeMiningProvider>
+  </extension>
 
 </plugin>

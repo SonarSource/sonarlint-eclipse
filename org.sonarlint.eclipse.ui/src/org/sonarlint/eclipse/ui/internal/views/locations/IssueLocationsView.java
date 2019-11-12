@@ -42,6 +42,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -68,6 +69,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.codemining.SonarLintCodeMiningProvider;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
@@ -339,6 +341,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   }
 
   public void setInput(@Nullable IMarker sonarlintMarker) {
+    ShowIssueFlowsMarkerResolver.removeAllAnnotations();
     locationsViewer.setInput(sonarlintMarker);
     if (sonarlintMarker != null && showAnnotationsAction.isChecked()) {
       ITextEditor editorFound = LocationsUtils.findOpenEditorFor(sonarlintMarker);
@@ -346,6 +349,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         selectedNode = null;
         selectedFlow = null;
         ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound, getSelectedFlow());
+        SonarLintCodeMiningProvider.setCurrentMarker(sonarlintMarker, getSelectedFlow());
       }
     }
   }
@@ -510,6 +514,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
           selectedFlow = newSelectedFlow;
         }
         ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound, getSelectedFlow());
+        SonarLintCodeMiningProvider.setCurrentMarker(sonarlintMarker, getSelectedFlow());
       }
     }
   }
@@ -527,6 +532,14 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   public void setShowAnnotations(boolean b) {
     showAnnotationsAction.setChecked(b);
+  }
+
+  public void selectPosition(int number) {
+    if (selectedNode instanceof FlowRootNode) {
+      locationsViewer.setSelection(new StructuredSelection(((FlowRootNode) selectedNode).getChildren()[number - 1]), true);
+    } else if (selectedNode instanceof FlowNode) {
+      // TODO
+    }
   }
 
 }

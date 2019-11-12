@@ -28,10 +28,12 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.BadPositionCategoryException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
+import org.eclipse.jface.text.source.ISourceViewerExtension5;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
@@ -48,6 +50,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.codemining.SonarLintCodeMiningProvider;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
 public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
@@ -129,12 +132,18 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
   }
 
   private static Map<Annotation, Position> createAnnotations(IMarker marker, IDocument doc, int selectedFlow) {
+    return getExtraPositions(marker, doc, selectedFlow)
+      .collect(Collectors.toMap(p -> new Annotation(ISSUE_FLOW_ANNOTATION_TYPE, false, p.getMessage()),
+        p -> new Position(p.getOffset(), p.getLength())));
+  }
+
+  public static Stream<ExtraPosition> getExtraPositions(IMarker marker, IDocument doc, int selectedFlow) {
     Position[] positions;
     try {
       positions = doc.getPositions(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY);
     } catch (BadPositionCategoryException e) {
       SonarLintLogger.get().debug("No extra positions found, should maybe trigger a new analysis");
-      return Collections.emptyMap();
+      return Stream.empty();
     }
     List<ExtraPosition> positionsForMarker = Stream.of(positions)
       .map(p -> (ExtraPosition) p)
@@ -145,10 +154,7 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
       .skip((long) selectedFlow - 1)
       .findFirst()
       .orElse(null);
-    return positionsForMarker.stream()
-      .filter(p -> selectedFlowRoot == null || p.isDescendantOf(selectedFlowRoot))
-      .collect(Collectors.toMap(p -> new Annotation(ISSUE_FLOW_ANNOTATION_TYPE, false, p.getMessage()),
-        p -> new Position(p.getOffset(), p.getLength())));
+    return positionsForMarker.stream().filter(p -> selectedFlowRoot == null || p.isDescendantOf(selectedFlowRoot));
   }
 
   private static void removePreviousAnnotations(IAnnotationModel annotationModel) {
@@ -169,11 +175,16 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
   }
 
   public static void removeAllAnnotations() {
+    SonarLintCodeMiningProvider.setCurrentMarker(null, -1);
     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     for (IEditorReference editorRef : page.getEditorReferences()) {
       IEditorPart editorPart = editorRef.getEditor(false);
       if (editorPart instanceof ITextEditor) {
         ITextEditor textEditor = (ITextEditor) editorPart;
+        ITextViewer textViewer = textEditor.getAdapter(ITextViewer.class);
+        if (textViewer instanceof ISourceViewerExtension5) {
+          ((ISourceViewerExtension5) textViewer).updateCodeMinings();
+        }
         IDocumentProvider documentProvider = textEditor.getDocumentProvider();
         if (documentProvider != null) {
           IAnnotationModel annotationModel = documentProvider.getAnnotationModel(textEditor.getEditorInput());
