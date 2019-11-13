@@ -24,11 +24,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
@@ -91,19 +89,16 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   private static class FlowNode {
 
-    private final int parentId;
     private final String label;
-    private final ExtraPosition position;
+    private final IssueLocation position;
 
-    private static final int DEFAULT_PARENT_ID = 1;
-
-    public FlowNode(ExtraPosition position) {
-      this(DEFAULT_PARENT_ID, positionLabel(position.getMessage()), position);
+    public FlowNode(IssueLocation location) {
+      this.label = positionLabel(location.getMessage());
+      this.position = location;
     }
 
-    public FlowNode(int parentId, String label, ExtraPosition position) {
-      this.parentId = parentId;
-      this.label = label;
+    public FlowNode(int id, IssueLocation position) {
+      this.label = id + ": " + positionLabel(position.getMessage());
       this.position = position;
     }
 
@@ -112,34 +107,30 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     }
 
     public ExtraPosition getPosition() {
-      return position;
+      throw new UnsupportedOperationException();
+      // TODO Convert to positions in document
+      // return position;
     }
 
-  }
-
-  static List<FlowNode> toFlowNodes(int parentId, List<ExtraPosition> positions) {
-    List<FlowNode> result = new ArrayList<>();
-    int id = 1;
-    for (ExtraPosition extraPosition : positions) {
-      String childLabel = positions.size() > 1 ? (id + ": " + positionLabel(extraPosition.getMessage())) : positionLabel(extraPosition.getMessage());
-      result.add(new FlowNode(parentId, childLabel, extraPosition));
-      id++;
+    private static String positionLabel(@Nullable String message) {
+      return message == null ? "" : message;
     }
-    return result;
-  }
-
-  private static String positionLabel(@Nullable String message) {
-    return message != null ? message : "";
   }
 
   private static class FlowRootNode {
 
     private int id;
-    private final List<FlowNode> children;
+    private List<FlowNode> children;
 
-    public FlowRootNode(int id, List<ExtraPosition> positions) {
+    public FlowRootNode(int id, Flow flow) {
       this.id = id;
-      children = toFlowNodes(id, positions);
+      if (flow.locations().size() == 1) {
+        this.children = Collections.singletonList(new FlowNode(flow.locations().get(0)));
+      } else {
+        this.children = IntStream.range(0, flow.locations().size())
+          .mapToObj(i -> new FlowNode(i, flow.locations().get(i)))
+          .collect(Collectors.toList());
+      }
     }
 
     public String getLabel() {
@@ -155,40 +146,28 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   private static class RootNode {
 
     private final IMarker rootMarker;
-    private final List<List<ExtraPosition>> flows;
+    private final List<FlowRootNode> flows;
 
-    public RootNode(IMarker rootMarker, List<ExtraPosition> positions) {
+    public RootNode(IMarker rootMarker) {
       this.rootMarker = rootMarker;
-      this.flows = rebuildFlows(positions);
+      this.flows = buildFlowRoots();
     }
 
-    private static List<List<ExtraPosition>> rebuildFlows(List<ExtraPosition> positions) {
-      List<List<ExtraPosition>> result = new ArrayList<>();
-      List<ExtraPosition> roots = positions.stream().filter(p -> p.getParent() == null).collect(Collectors.toList());
-      for (ExtraPosition root : roots) {
-        List<ExtraPosition> flow = new ArrayList<>();
-        Optional<ExtraPosition> current = Optional.of(root);
-        while (current.isPresent()) {
-          ExtraPosition currentValue = current.get();
-          flow.add(currentValue);
-          current = positions.stream().filter(
-
-            p -> p.getParent() == currentValue).findFirst();
-        }
-        result.add(flow);
-
-      }
-      return result;
+    private List<FlowRootNode> buildFlowRoots() {
+      String encodedFlows = rootMarker.getAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, "");
+      List<Flow> decodedFlows = FlowCodec.decode(encodedFlows);
+      return IntStream.range(0, decodedFlows.size())
+        .mapToObj(i -> new FlowRootNode(i, decodedFlows.get(i)))
+        .collect(Collectors.toList());
     }
 
     public IMarker getMarker() {
       return rootMarker;
     }
 
-    public List<List<ExtraPosition>> getFlows() {
+    public List<FlowRootNode> getFlows() {
       return flows;
     }
-
   }
 
   private static class LocationsProvider implements ITreeContentProvider {
@@ -197,6 +176,31 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     public Object[] getElements(Object inputElement) {
       IMarker sonarlintMarker = (IMarker) inputElement;
       if (sonarlintMarker.getAttribute(MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, false)) {
+        return new Object[] {new RootNode(sonarlintMarker)};
+      } else {
+        return new Object[] {"No additional locations associated with this issue"};
+      }
+    }
+
+    @Override
+    public Object[] getChildren(Object parentElement) {
+      if (parentElement instanceof RootNode) {
+        List<FlowRootNode> flows = ((RootNode) parentElement).getFlows();
+        if (flows.size() > 1) {
+          return flows.toArray();
+        } else if (flows.size() == 1) {
+          return flows.get(0).getChildren();
+        } else {
+          return new Object[0];
+        }
+      } else if (parentElement instanceof FlowRootNode) {
+        return ((FlowRootNode) parentElement).getChildren();
+      } else {
+        return new Object[0];
+      }
+    }
+
+    /*
         ITextEditor openEditor = LocationsUtils.findOpenEditorFor(sonarlintMarker);
         if (openEditor == null) {
           return new Object[] {"Please open the file containing this issue in an editor to see the flows"};
@@ -211,37 +215,11 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         } catch (BadPositionCategoryException e) {
           // NOP
         }
-        return new Object[] {new RootNode(sonarlintMarker, positions(document, p -> p.getMarkerId() == sonarlintMarker.getId()))};
-      } else {
-        return new Object[] {"No additional locations associated with this issue"};
-      }
-    }
 
-    @Override
-    public Object[] getChildren(Object parentElement) {
-      if (parentElement instanceof RootNode) {
-        List<List<ExtraPosition>> flows = ((RootNode) parentElement).getFlows();
-        if (flows.size() > 1) {
-          AtomicInteger counter = new AtomicInteger(0);
-          return flows.stream().map(
+     */
 
-            f -> f.size() > 1 ? new FlowRootNode(counter.incrementAndGet(), f) : new FlowNode(f.get(0))).toArray();
-
-        } else if (flows.size() == 1) {
-          return toFlowNodes(FlowNode.DEFAULT_PARENT_ID, flows.get(0)).toArray();
-        } else {
-          return new Object[0];
-        }
-      } else if (parentElement instanceof FlowRootNode) {
-        return ((FlowRootNode) parentElement).getChildren();
-      } else {
-        return new Object[0];
-      }
-    }
-
-    private static boolean createExtraLocations(IDocument document, IMarker marker) {
+    private static void createExtraLocations(IDocument document, IMarker marker) {
       String encodedFlows = marker.getAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, "");
-      boolean hasExtraLocation = false;
       for (Flow f : FlowCodec.decode(encodedFlows)) {
         ExtraPosition parent = null;
         List<IssueLocation> locations = new ArrayList<>(f.locations());
@@ -254,11 +232,9 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
           if (extraPosition != null) {
             savePosition(document, extraPosition);
             parent = extraPosition;
-            hasExtraLocation = true;
           }
         }
       }
-      return hasExtraLocation;
     }
 
     private static void savePosition(IDocument document, ExtraPosition extraPosition) {
@@ -511,7 +487,8 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     if(selectedNode instanceof FlowRootNode) {
       return ((FlowRootNode) selectedNode).id;
     } else if (selectedNode instanceof FlowNode) {
-      return ((FlowNode) selectedNode).parentId;
+      return 1;
+      // return ((FlowNode) selectedNode).parentId;
     } else {
       // When root is selected, return first flow
       return 1;
