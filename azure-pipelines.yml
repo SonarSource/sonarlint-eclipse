@@ -235,7 +235,7 @@ stages:
           DISPLAY: ":10"
           # For Orchestrator
           ARTIFACTORY_API_KEY: $(ARTIFACTORY_API_KEY)
-          GITHUB_TOKEN: $(GITHUB_TOKEN)          
+          GITHUB_TOKEN: $(GITHUB_TOKEN)
         inputs:
           # workaround for https://github.com/microsoft/azure-pipelines-image-generation/pull/1337
           mavenVersionOption: 'Path'
@@ -245,19 +245,15 @@ stages:
           options: >-
             -B -e
             --settings $(mavenSettings.secureFilePath)
+            -Pcoverage
             -Dtarget.platform=$(TARGET_PLATFORM) -Dtycho.localArtifacts=ignore -Dsonarlint-eclipse.p2.url=$(stagedP2Url) -Dsonar.runtimeVersion=$(SQ_VERSION)
-            -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/it-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/it-coverage.exec
+            -Djacoco.append=true
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           testRunTitle: 'ITs $(TARGET_PLATFORM)'
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: $(JDKVersion)
           mavenOptions: $(MAVEN_OPTS)
-      - task: PublishBuildArtifacts@1
-        displayName: Store coverage report as build artifact
-        inputs:
-          pathtoPublish: '$(Agent.BuildDirectory)/it-coverage.exec'
-          artifactName: 'ITCoverage_$(TARGET_PLATFORM)'
       - bash: git checkout .
         name: revertPomChanges
         displayName: Revert changes made to pom.xml to not break cache feature
@@ -299,11 +295,6 @@ stages:
           metacity --sm-disable --replace &
           sleep 10 # give metacity some time to start
         displayName: Setup Xvfb and Metacity
-      - task: DownloadBuildArtifacts@0
-        displayName: 'Download IT Coverage report'
-        inputs:
-          artifactName: ITCoverage_2019-09
-          downloadPath: $(Agent.BuildDirectory)
       - task: Maven@3
         env:
           ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
@@ -314,7 +305,8 @@ stages:
           options: >-
             -B -e
             --settings $(mavenSettings.secureFilePath)
-            -Djacoco.append=true -Djacoco.destFile=$(Agent.BuildDirectory)/ut-coverage.exec -Dsonar.jacoco.reportPaths=$(Agent.BuildDirectory)/ut-coverage.exec,$(Agent.BuildDirectory)/ITCoverage_2019-09/it-coverage.exec
+            -Pcoverage
+            -Djacoco.append=true -Dsonar.jacoco.xmlReportPaths=$(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/site/jacoco/jacoco.xml
           publishJUnitResults: false
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: '1.11'
