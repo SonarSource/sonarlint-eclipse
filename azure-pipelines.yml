@@ -301,12 +301,12 @@ stages:
           ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
           DISPLAY: ":10"
         inputs:
-          goals: 'org.jacoco:jacoco-maven-plugin:prepare-agent verify'
+          goals: 'verify'
           options: >-
             -B -e
             --settings $(mavenSettings.secureFilePath)
             -Pcoverage
-            -Djacoco.append=true -Dsonar.jacoco.xmlReportPaths=$(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/site/jacoco/jacoco.xml
+            -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=$(Build.Repository.LocalPath)/org.sonarlint.eclipse.site/target/site/jacoco-aggregate/jacoco.xml
           publishJUnitResults: false
           javaHomeOption: 'JDKVersion'
           jdkVersionOption: '1.11'

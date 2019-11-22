@@ -60,6 +60,7 @@
     <target.platform>2019-06</target.platform>
     <sonarlint-core.version>4.7.0.12286</sonarlint-core.version>
     <protobuf.version>3.6.1</protobuf.version>
+    <jacoco.version>0.8.4</jacoco.version>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->
@@ -178,6 +179,11 @@
           <configuration>
             <source>8</source>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${jacoco.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -330,7 +336,12 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.4</version>
+            <configuration>
+              <sessionId>${project.artifactId}</sessionId>
+              <includes>
+                <include>org/sonarlint/eclipse/**</include>
+              </includes>
+            </configuration>
             <executions>
               <execution>
                 <id>prepare-agent</id>
