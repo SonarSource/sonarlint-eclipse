@@ -305,6 +305,11 @@ stages:
         inputs:
           artifactName: ITCoverage_2019-09
           downloadPath: $(Agent.BuildDirectory)
+      - bash: |
+          set -e
+          mkdir $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/
+          mv $(Agent.BuildDirectory)/ITCoverage_2019-09/it-coverage.exec $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/
+        displayName: 'Move IT Coverage report to test target dir'
       - task: Maven@3
         env:
           ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
