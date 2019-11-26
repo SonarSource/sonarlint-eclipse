@@ -27,37 +27,4 @@
     </plugins>
   </build>
 
-  <profiles>
-    <profile>
-      <id>coverage</id>
-      <dependencies>
-        <dependency>
-          <groupId>${project.groupId}</groupId>
-          <artifactId>org.sonarlint.eclipse.core.tests</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>report-aggregate</id>
-                <phase>prepare-package</phase>
-                <goals>
-                  <goal>report-aggregate</goal>
-                </goals>
-                <configuration>
-                  <title>SonarLint Eclipse</title>
-                  <footer>Code Coverage Report for SonarLint Eclipse ${project.version}</footer>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

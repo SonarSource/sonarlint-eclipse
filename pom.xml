@@ -337,7 +337,6 @@
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <configuration>
-              <sessionId>${project.artifactId}</sessionId>
               <includes>
                 <include>org/sonarlint/eclipse/**</include>
               </includes>
