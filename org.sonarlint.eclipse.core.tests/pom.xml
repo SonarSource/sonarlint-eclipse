@@ -51,10 +51,6 @@
                 <goals>
                   <goal>report-aggregate</goal>
                 </goals>
-                <configuration>
-                  <title>SonarLint Eclipse</title>
-                  <footer>Code Coverage Report for SonarLint Eclipse ${project.version}</footer>
-                </configuration>
               </execution>
             </executions>
           </plugin>
