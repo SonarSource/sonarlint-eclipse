@@ -28,10 +28,13 @@ stages:
       steps:
       - checkout: self
         fetchDepth: 1
-      - task: CacheBeta@0
+      - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
-          key: maven | pom.xml
+          key: 'maven | "$(Agent.OS)" | **/pom.xml'
+          restoreKeys: |
+            maven | "$(Agent.OS)"
+            maven
           path: $(MAVEN_CACHE_FOLDER)
       - task: DownloadSecureFile@1
         displayName: 'Download Maven settings'
@@ -105,10 +108,13 @@ stages:
       steps:
       - checkout: self
         fetchDepth: 1
-      - task: CacheBeta@0
+      - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
-          key: maven | pom.xml
+          key: 'maven | "$(Agent.OS)" | **/pom.xml'
+          restoreKeys: |
+            maven | "$(Agent.OS)"
+            maven
           path: $(MAVEN_CACHE_FOLDER)
       - task: DownloadSecureFile@1
         displayName: 'Download Maven settings'
@@ -181,10 +187,13 @@ stages:
       steps:
       - checkout: self
         fetchDepth: 1
-      - task: CacheBeta@0
+      - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
-          key: maven | its/pom.xml
+          key: 'maven | "$(Agent.OS)" | **/pom.xml'
+          restoreKeys: |
+            maven | "$(Agent.OS)"
+            maven
           path: $(MAVEN_CACHE_FOLDER)
       - task: DownloadSecureFile@1
         displayName: 'Download Maven settings'
@@ -276,10 +285,13 @@ stages:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
       steps:
-      - task: CacheBeta@0
+      - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
-          key: maven | pom.xml
+          key: 'maven | "$(Agent.OS)" | **/pom.xml'
+          restoreKeys: |
+            maven | "$(Agent.OS)"
+            maven
           path: $(MAVEN_CACHE_FOLDER)
       - task: DownloadSecureFile@1
         displayName: 'Download Maven settings'
