@@ -19,11 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.server;
 
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.Proxy;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,8 +34,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import org.eclipse.core.net.proxy.IProxyData;
-import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -478,23 +471,7 @@ public class Server implements IServer, StateListener {
       .organizationKey(organization)
       .userAgent("SonarLint Eclipse " + SonarLintUtils.getPluginVersion());
 
-    IProxyService proxyService = SonarLintCorePlugin.getInstance().getProxyService();
-    IProxyData[] proxyDataForHost;
-    try {
-      proxyDataForHost = proxyService.select(new URL(url).toURI());
-    } catch (MalformedURLException | URISyntaxException e) {
-      throw new IllegalStateException("Invalid URL for server: " + url, e);
-    }
-
-    for (IProxyData data : proxyDataForHost) {
-      if (data.getHost() != null) {
-        builder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(data.getHost(), data.getPort())));
-        if (data.isRequiresAuthentication()) {
-          builder.proxyCredentials(data.getUserId(), data.getPassword());
-        }
-        break;
-      }
-    }
+    SonarLintUtils.configureProxy(url, builder::proxy, builder::proxyCredentials);
     return builder;
   }
 

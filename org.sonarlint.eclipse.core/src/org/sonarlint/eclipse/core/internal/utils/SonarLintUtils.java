@@ -19,6 +19,15 @@
  */
 package org.sonarlint.eclipse.core.internal.utils;
 
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.Proxy;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import org.eclipse.core.net.proxy.IProxyData;
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IResource;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 
@@ -42,5 +51,25 @@ public class SonarLintUtils {
 
   public static String getPluginVersion() {
     return SonarLintCorePlugin.getInstance().getBundle().getVersion().toString();
+  }
+
+  public static void configureProxy(String url, Consumer<Proxy> proxyConsumer, BiConsumer<String, String> credentialsConsumer) {
+    IProxyService proxyService = SonarLintCorePlugin.getInstance().getProxyService();
+    IProxyData[] proxyDataForHost;
+    try {
+      proxyDataForHost = proxyService.select(new URL(url).toURI());
+    } catch (MalformedURLException | URISyntaxException e) {
+      throw new IllegalStateException("Invalid URL for server: " + url, e);
+    }
+
+    for (IProxyData data : proxyDataForHost) {
+      if (data.getHost() != null) {
+        proxyConsumer.accept(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(data.getHost(), data.getPort())));
+        if (data.isRequiresAuthentication()) {
+          credentialsConsumer.accept(data.getUserId(), data.getPassword());
+        }
+        break;
+      }
+    }
   }
 }
