@@ -19,16 +19,9 @@
  */
 package org.sonarlint.eclipse.core.internal.telemetry;
 
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.Proxy;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
-import org.eclipse.core.net.proxy.IProxyData;
-import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -140,25 +133,12 @@ public class SonarLintTelemetry {
   public static TelemetryClientConfig getTelemetryClientConfig() {
     TelemetryClientConfig.Builder clientConfigBuilder = new TelemetryClientConfig.Builder()
       .userAgent("SonarLint");
-    IProxyService proxyService = SonarLintCorePlugin.getInstance().getProxyService();
-    IProxyData[] proxyDataForHost;
-    try {
-      proxyDataForHost = proxyService.select(new URL(TelemetryManager.TELEMETRY_ENDPOINT).toURI());
-    } catch (MalformedURLException | URISyntaxException e) {
-      // URL is a constant, should never occur
-      throw new IllegalStateException(e);
-    }
 
-    for (IProxyData data : proxyDataForHost) {
-      if (data.getHost() != null) {
-        clientConfigBuilder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(data.getHost(), data.getPort())));
-        if (data.isRequiresAuthentication()) {
-          clientConfigBuilder.proxyLogin(data.getUserId());
-          clientConfigBuilder.proxyPassword(data.getPassword());
-        }
-        break;
-      }
-    }
+    SonarLintUtils.configureProxy(TelemetryManager.TELEMETRY_ENDPOINT, clientConfigBuilder::proxy, (user, pwd) -> {
+      clientConfigBuilder.proxyLogin(user);
+      clientConfigBuilder.proxyPassword(pwd);
+    });
+
     return clientConfigBuilder.build();
   }
 
