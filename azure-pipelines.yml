@@ -336,3 +336,48 @@ stages:
     - validate
     - qa
     - sonarqube
+- template: stage-with-burgr-notifications.yml@commonTemplates
+  parameters:
+    burgrName: 'dogfood'
+    burgrType: 'dogfood'
+    stageName: 'update_dogfood_repo'
+    stageDisplayName: Update internal dogfooding p2
+    stageCondition: eq(variables['Build.SourceBranchName'], 'master')
+    stageDependencies: promote
+    jobs:
+    - job: copyUpdateSite
+      displayName: Copy update site to dogfood repo on repox
+      steps:
+      - checkout: none
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.x'
+      - bash: pip3 install requests
+      - task: PythonScript@0
+        name: updateInternalSiteOnRepox
+        inputs:
+          scriptSource: 'inline'
+          script: |
+            import requests
+            import os
+            import sys
+            import json
+
+            githubSlug = '$(Build.Repository.ID)'
+            githubProject = githubSlug.split("/", 1)[1]
+            buildNumber = '$(Build.BuildId)'
+
+            buildInfoUrl = f'$(ARTIFACTORY_URL)/api/build/{githubProject}/{buildNumber}'
+            buildInfoResp = requests.get(url=buildInfoUrl, auth=('$(ARTIFACTORY_API_USER)', '$(ARTIFACTORY_API_KEY)'))
+            buildInfoJson = buildInfoResp.json()
+
+            buildInfo = buildInfoJson.get('buildInfo', {})
+            buildInfoProperties = buildInfo.get('properties', {})
+
+            # PROJECT_VERSION is set by the compute-build-version-step.yml
+            version = buildInfoProperties.get('buildInfo.env.PROJECT_VERSION', 'NOT_FOUND')
+
+            copyApiUrl = f"$(ARTIFACTORY_URL)/api/copy/sonarsource-public-builds/org/sonarsource/sonarlint/eclipse/org.sonarlint.eclipse.site/{version}/org.sonarlint.eclipse.site-{version}.zip?to=/sonarlint-eclipse-dogfood/org.sonarlint.eclipse.site-dogfood.zip\&suppressLayouts=1"
+            response = requests.post(url=copyApiUrl, auth=('$(ARTIFACTORY_API_USER)', '$(ARTIFACTORY_API_KEY)'))
+            if not response.status_code == 200:
+              sys.exit('[!] [{0}] Server Error: {1}'.format(response.status_code, response.text))
