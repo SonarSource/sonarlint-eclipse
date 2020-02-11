@@ -311,15 +311,20 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       }
       ISonarLintFile file = (ISonarLintFile) entry.getKey();
       Optional<IDocument> openedDocument = Optional.ofNullable(docPerFile.get((ISonarLintFile) file));
-      IDocument document = openedDocument.orElse(file.getDocument());
-      List<Issue> rawIssues = entry.getValue();
-      List<Trackable> trackables = rawIssues.stream().map(issue -> transform(issue, file, document)).collect(Collectors.toList());
       IssueTracker issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(getProject());
+      List<Issue> rawIssues = entry.getValue();
+      List<Trackable> trackables;
+      if (!rawIssues.isEmpty()) {
+        IDocument document = openedDocument.orElse(file.getDocument());
+        trackables = rawIssues.stream().map(issue -> transform(issue, file, document)).collect(Collectors.toList());
+      } else {
+        trackables = Collections.emptyList();
+      }
       Collection<Trackable> tracked = trackFileIssues(file, trackables, issueTracker, triggerType, rawIssuesPerResource.size());
       ISchedulingRule markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(file.getResource());
       try {
         getJobManager().beginRule(markerRule, monitor);
-        SonarLintMarkerUpdater.createOrUpdateMarkers(file, document, tracked, triggerType, openedDocument.isPresent());
+        SonarLintMarkerUpdater.createOrUpdateMarkers(file, openedDocument, tracked, triggerType);
       } finally {
         getJobManager().endRule(markerRule);
       }
