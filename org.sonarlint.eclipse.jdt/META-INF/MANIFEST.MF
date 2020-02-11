@@ -11,7 +11,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.filebuffers,
  org.eclipse.jdt.core;resolution:=optional,
  org.sonarlint.eclipse.core,
- org.jsr-305;resolution:=optional
+ org.jsr-305;resolution:=optional,
+ org.sonarsource.sonarlint.core.sonarlint-client-api
 Export-Package: org.sonarlint.eclipse.jdt.internal;x-friends:="org.sonarlint.eclipse.core.tests"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy

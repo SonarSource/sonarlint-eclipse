@@ -22,9 +22,8 @@ package org.sonarlint.eclipse.core.internal.server;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,6 +63,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfig
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.GlobalStorageStatus;
+import org.sonarsource.sonarlint.core.client.api.connected.Language;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
@@ -107,10 +107,11 @@ public class Server implements IServer, StateListener {
   Server(String id) {
     this.id = id;
 
-    Set<String> excludedPlugins = new HashSet<>(Arrays.asList("typescript", "java", "cpp"));
+    EnumSet<Language> languagesDisabledByDefault = EnumSet.of(Language.TS, Language.JAVA, Language.CPP);
+    EnumSet<Language> enabledLanguages = EnumSet.complementOf(languagesDisabledByDefault);
     Collection<IAnalysisConfigurator> configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
     for (IAnalysisConfigurator configurator : configurators) {
-      excludedPlugins.removeAll(configurator.whitelistedPlugins());
+      enabledLanguages.addAll(configurator.whitelistedLanguages());
     }
 
     ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
@@ -118,7 +119,7 @@ public class Server implements IServer, StateListener {
       .setWorkDir(StoragePathManager.getServerWorkDir(getId()))
       .setStorageRoot(StoragePathManager.getServerStorageRoot())
       .setLogOutput(new SonarLintAnalyzerLogOutput())
-      .addExcludedCodeAnalyzers(excludedPlugins.toArray(new String[0]))
+      .addEnabledLanguages(enabledLanguages.toArray(new Language[0]))
       .build();
     this.client = new ConnectedSonarLintEngineImpl(globalConfig);
     this.client.addStateListener(this);
