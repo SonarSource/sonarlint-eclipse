@@ -26,11 +26,10 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -57,20 +56,20 @@ public class SonarLintMarkerUpdater {
   private SonarLintMarkerUpdater() {
   }
 
-  public static void createOrUpdateMarkers(ISonarLintFile issuable, IDocument document, Collection<Trackable> issues, TriggerType triggerType, boolean createExtraLocations) {
+  public static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument, Collection<Trackable> issues, TriggerType triggerType) {
     try {
       Set<IMarker> previousMarkersToDelete;
       if (triggerType.isOnTheFly()) {
-        previousMarkersToDelete = new HashSet<>(Arrays.asList(issuable.getResource().findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, false, IResource.DEPTH_ZERO)));
+        previousMarkersToDelete = new HashSet<>(Arrays.asList(file.getResource().findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, false, IResource.DEPTH_ZERO)));
       } else {
         previousMarkersToDelete = Collections.emptySet();
       }
 
-      if (createExtraLocations) {
-        resetExtraPositions(document);
+      if (openedDocument.isPresent()) {
+        resetExtraPositions(openedDocument.get());
       }
 
-      createOrUpdateMarkers(document, issuable, issues, triggerType, previousMarkersToDelete, createExtraLocations);
+      createOrUpdateMarkers(file, openedDocument, issues, triggerType, previousMarkersToDelete);
 
       for (IMarker marker : previousMarkersToDelete) {
         marker.delete();
@@ -139,15 +138,17 @@ public class SonarLintMarkerUpdater {
     }
   }
 
-  private static void createOrUpdateMarkers(IDocument document, ISonarLintIssuable issuable, Collection<Trackable> issues,
-    TriggerType triggerType, Set<IMarker> previousMarkersToDelete, boolean createExtraLocations) throws CoreException {
+  private static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument, Collection<Trackable> issues,
+    TriggerType triggerType, Set<IMarker> previousMarkersToDelete) throws CoreException {
+    IDocument lazyInitDocument = openedDocument.orElse(null);
     for (Trackable issue : issues) {
       if (!issue.isResolved()) {
-        if (!triggerType.isOnTheFly() || issue.getMarkerId() == null || issuable.getResource().findMarker(issue.getMarkerId()) == null) {
-          createMarker(document, issuable, issue, triggerType, createExtraLocations);
+        lazyInitDocument = lazyInitDocument != null ? lazyInitDocument : file.getDocument();
+        if (!triggerType.isOnTheFly() || issue.getMarkerId() == null || file.getResource().findMarker(issue.getMarkerId()) == null) {
+          createMarker(lazyInitDocument, file, issue, triggerType, openedDocument.isPresent());
         } else {
-          IMarker marker = issuable.getResource().findMarker(issue.getMarkerId());
-          updateMarkerAttributes(document, issue, marker, createExtraLocations);
+          IMarker marker = file.getResource().findMarker(issue.getMarkerId());
+          updateMarkerAttributes(lazyInitDocument, issue, marker, openedDocument.isPresent());
           previousMarkersToDelete.remove(marker);
         }
       } else {

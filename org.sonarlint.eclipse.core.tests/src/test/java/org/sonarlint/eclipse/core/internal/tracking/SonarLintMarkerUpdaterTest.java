@@ -20,8 +20,8 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -45,15 +45,21 @@ import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdap
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class MarkerUpdaterTest extends SonarTestCase {
+public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
   private static IProject project;
   private static final List<String> errors = new ArrayList<>();
+  private DefaultSonarLintFileAdapter sonarLintFile;
 
   @BeforeClass
   public static void prepare() throws Exception {
@@ -87,18 +93,16 @@ public class MarkerUpdaterTest extends SonarTestCase {
     }
   }
 
-  private IMarker processTrackable(Trackable trackable) throws CoreException {
+  private IMarker[] processTrackable(Trackable... trackables) throws CoreException {
     String relativePath = "src/Findbugs.java";
     String absolutePath = project.getLocation().toString() + "/" + relativePath;
     IPath location = Path.fromOSString(absolutePath);
     IFile file = workspace.getRoot().getFileForLocation(location);
-    DefaultSonarLintFileAdapter sonarLintFile = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), file);
-    SonarLintMarkerUpdater.createOrUpdateMarkers(sonarLintFile, sonarLintFile.getDocument(), Collections.singletonList(trackable), TriggerType.EDITOR_CHANGE, false);
+    sonarLintFile = new DefaultSonarLintFileAdapter(new DefaultSonarLintProjectAdapter(project), file);
+    sonarLintFile = spy(sonarLintFile);
+    SonarLintMarkerUpdater.createOrUpdateMarkers(sonarLintFile, Optional.empty(), asList(trackables), TriggerType.EDITOR_CHANGE);
 
-    IMarker[] markers = project.getFile(relativePath).findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE);
-    assertThat(markers).hasSize(1);
-
-    return markers[0];
+    return project.getFile(relativePath).findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE);
   }
 
   /**
@@ -136,12 +140,13 @@ public class MarkerUpdaterTest extends SonarTestCase {
     String assignee = "admin";
     when(trackable.getAssignee()).thenReturn(assignee);
 
-    IMarker marker = processTrackable(trackable);
-    assertThat(marker.getAttribute(IMarker.PRIORITY)).isEqualTo(priority);
-    assertThat(marker.getAttribute(IMarker.SEVERITY)).isEqualTo(eclipseSeverity);
-    assertThat(marker.getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR)).isEqualTo(severity);
-    assertThat(marker.getAttribute(IMarker.MESSAGE)).isEqualTo(message);
-    assertThat(marker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR)).isEqualTo(serverIssueKey);
+    IMarker[] markers = processTrackable(trackable);
+    assertThat(markers).hasSize(1);
+    assertThat(markers[0].getAttribute(IMarker.PRIORITY)).isEqualTo(priority);
+    assertThat(markers[0].getAttribute(IMarker.SEVERITY)).isEqualTo(eclipseSeverity);
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR)).isEqualTo(severity);
+    assertThat(markers[0].getAttribute(IMarker.MESSAGE)).isEqualTo(message);
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR)).isEqualTo(serverIssueKey);
   }
 
   @Test
@@ -152,11 +157,46 @@ public class MarkerUpdaterTest extends SonarTestCase {
     when(trackable.getLine()).thenReturn(line);
     when(trackable.getTextRange()).thenReturn(TextRange.get(line, 4, 5, 14));
 
-    IMarker marker = processTrackable(trackable);
+    IMarker[] markers = processTrackable(trackable);
+    assertThat(markers).hasSize(1);
 
-    assertThat(marker.getAttribute(IMarker.LINE_NUMBER)).isEqualTo(5);
-    assertThat(marker.getAttribute(IMarker.CHAR_START)).isEqualTo(78);
-    assertThat(marker.getAttribute(IMarker.CHAR_END)).isEqualTo(88);
+    assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(5);
+    assertThat(markers[0].getAttribute(IMarker.CHAR_START)).isEqualTo(78);
+    assertThat(markers[0].getAttribute(IMarker.CHAR_END)).isEqualTo(88);
+  }
+
+  @Test
+  public void dont_init_document_if_no_issues() throws Exception {
+    Trackable trackable = newMockTrackable();
+
+    int line = 5;
+    when(trackable.getLine()).thenReturn(line);
+    when(trackable.getTextRange()).thenReturn(TextRange.get(line, 4, 5, 14));
+
+    IMarker[] markers = processTrackable();
+    assertThat(markers).isEmpty();
+
+    verify(sonarLintFile, never()).getDocument();
+  }
+
+  @Test
+  public void init_document_only_once_if_multiple_issues() throws Exception {
+    Trackable trackable1 = newMockTrackable();
+
+    int line1 = 5;
+    when(trackable1.getLine()).thenReturn(line1);
+    when(trackable1.getTextRange()).thenReturn(TextRange.get(line1, 4, 5, 14));
+
+    Trackable trackable2 = newMockTrackable();
+
+    int line2 = 4;
+    when(trackable2.getLine()).thenReturn(line2);
+    when(trackable2.getTextRange()).thenReturn(TextRange.get(line2, 4, 5, 14));
+
+    IMarker[] markers = processTrackable(trackable1, trackable2);
+    assertThat(markers).hasSize(2);
+
+    verify(sonarLintFile, times(1)).getDocument();
   }
 
   @Test
@@ -167,18 +207,20 @@ public class MarkerUpdaterTest extends SonarTestCase {
     when(trackable.getLine()).thenReturn(line);
     when(trackable.getTextRange()).thenReturn(TextRange.get(line, 4, 5, 14));
 
-    IMarker marker = processTrackable(trackable);
+    IMarker[] markers = processTrackable(trackable);
+    assertThat(markers).hasSize(1);
 
-    assertThat(marker.getAttribute(IMarker.LINE_NUMBER)).isEqualTo(5);
-    assertThat(marker.getAttribute(IMarker.CHAR_START)).isEqualTo(78);
-    assertThat(marker.getAttribute(IMarker.CHAR_END)).isEqualTo(88);
+    assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(5);
+    assertThat(markers[0].getAttribute(IMarker.CHAR_START)).isEqualTo(78);
+    assertThat(markers[0].getAttribute(IMarker.CHAR_END)).isEqualTo(88);
   }
 
   @Test
   public void test_marker_of_trackable_without_line() throws Exception {
     Trackable trackable = newMockTrackable();
-    IMarker marker = processTrackable(trackable);
-    assertThat(marker.getAttribute(IMarker.LINE_NUMBER)).isEqualTo(1);
+    IMarker[] markers = processTrackable(trackable);
+    assertThat(markers).hasSize(1);
+    assertThat(markers[0].getAttribute(IMarker.LINE_NUMBER)).isEqualTo(1);
   }
 
   @Test
@@ -188,14 +230,16 @@ public class MarkerUpdaterTest extends SonarTestCase {
     long creationDate = System.currentTimeMillis();
     when(trackable.getCreationDate()).thenReturn(creationDate);
 
-    IMarker marker = processTrackable(trackable);
-    assertThat(marker.getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isEqualTo(Long.toString(creationDate));
+    IMarker[] markers = processTrackable(trackable);
+    assertThat(markers).hasSize(1);
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isEqualTo(Long.toString(creationDate));
   }
 
   @Test
   public void test_marker_of_trackable_without_creation_date() throws Exception {
     Trackable trackable = newMockTrackable();
-    IMarker marker = processTrackable(trackable);
-    assertThat(marker.getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isNull();
+    IMarker[] markers = processTrackable(trackable);
+    assertThat(markers).hasSize(1);
+    assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_CREATION_DATE_ATTR)).isNull();
   }
 }
