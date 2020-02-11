@@ -114,6 +114,10 @@
                   <type>p2-installable-unit</type>
                   <artifactId>org.eclipse.rse.feature.group</artifactId>
                 </dependency>
+                <dependency>
+                  <type>p2-installable-unit</type>
+                  <artifactId>org.python.pydev.feature.feature.group</artifactId>
+                </dependency>
               </dependencies>
             </configuration>
           </plugin>
