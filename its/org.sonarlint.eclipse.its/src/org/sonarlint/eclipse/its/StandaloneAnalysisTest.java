@@ -40,6 +40,7 @@ import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.PydevPackageExplorerBot;
@@ -194,6 +195,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
                                                                                                          // set on dependent project
   }
 
+  // Need PyDev
+  @Category(RequiresExtraDependency.class)
   @Test
   public void shouldAnalysePython() throws Exception {
     System.out.println("shouldAnalysePython");
@@ -245,6 +248,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       tuple("/java-linked/src/hello/HelloLinked.java", 13, "Replace this use of System.out or System.err by a logger."));
   }
 
+  // Need RSE
+  @Category(RequiresExtraDependency.class)
   @Test
   public void shouldAnalyseVirtualProject() throws Exception {
     System.out.println("shouldAnalyseVirtualProject");
