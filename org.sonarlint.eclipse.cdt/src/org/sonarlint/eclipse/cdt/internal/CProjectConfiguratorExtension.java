@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.cdt.internal;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 import org.eclipse.cdt.core.CCProjectNature;
 import org.eclipse.cdt.core.CProjectNature;
@@ -33,6 +34,7 @@ import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.client.api.connected.Language;
 
 /**
  * Responsible for checking at runtime if CDT plugin is installed.
@@ -58,6 +60,15 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
   public Set<String> whitelistedPlugins() {
     if (isCdtPresent()) {
       return Collections.singleton("cpp");
+    }
+    return Collections.emptySet();
+  }
+
+  @Override
+  public Set<Language> whitelistedLanguages() {
+    if (isCdtPresent()) {
+      // Objective-C is not supported by CDT
+      return EnumSet.of(Language.CPP, Language.C);
     }
     return Collections.emptySet();
   }

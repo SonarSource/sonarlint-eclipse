@@ -30,6 +30,7 @@ import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.client.api.connected.Language;
 
 public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, ISonarLintFileAdapterParticipant, IFileTypeProvider {
 
@@ -54,6 +55,14 @@ public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, 
   public Set<String> whitelistedPlugins() {
     if (isJdtPresent()) {
       return Collections.singleton("java");
+    }
+    return Collections.emptySet();
+  }
+
+  @Override
+  public Set<Language> whitelistedLanguages() {
+    if (isJdtPresent()) {
+      return Collections.singleton(Language.JAVA);
     }
     return Collections.emptySet();
   }
