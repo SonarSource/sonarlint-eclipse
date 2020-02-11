@@ -124,24 +124,11 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     getPreferenceStore().addPropertyChangeListener(prefListener);
 
-    SonarLintLogger.get().info("Starting SonarLint for Eclipse " + SonarLintUtils.getPluginVersion());
-
     new CheckForUpdatesJob().schedule((long) 10 * 1000);
 
-    analyzeOpenedFiles();
+    startupAsync();
 
     subscribeToNotifications();
-  }
-
-  private static void checkServersStatus() {
-    for (final IServer server : SonarLintCorePlugin.getServersManager().getServers()) {
-      if (!server.isStorageUpdated()) {
-        Display.getDefault().asyncExec(() -> {
-          ServerStorageNeedUpdatePopup popup = new ServerStorageNeedUpdatePopup(Display.getCurrent(), server);
-          popup.open();
-        });
-      }
-    }
   }
 
   @Override
@@ -204,14 +191,16 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     return listenerFactory;
   }
 
-  private static class AnalyzeOpenedFilesJob extends Job {
+  private static class StartupJob extends Job {
 
-    AnalyzeOpenedFilesJob() {
-      super("Analyze opened files");
+    StartupJob() {
+      super("SonarLint startup");
     }
 
     @Override
     public IStatus run(IProgressMonitor monitor) {
+      SonarLintLogger.get().info("Starting SonarLint for Eclipse " + SonarLintUtils.getPluginVersion());
+
       checkServersStatus();
 
       JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
@@ -225,6 +214,17 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       PlatformUI.getWorkbench().addWindowListener(new WindowOpenCloseListener());
 
       return Status.OK_STATUS;
+    }
+
+    private static void checkServersStatus() {
+      for (final IServer server : SonarLintCorePlugin.getServersManager().getServers()) {
+        if (!server.isStorageUpdated()) {
+          Display.getDefault().asyncExec(() -> {
+            ServerStorageNeedUpdatePopup popup = new ServerStorageNeedUpdatePopup(Display.getCurrent(), server);
+            popup.open();
+          });
+        }
+      }
     }
 
     static class WindowOpenCloseListener implements IWindowListener {
@@ -262,9 +262,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
   }
 
-  public static void analyzeOpenedFiles() {
+  public static void startupAsync() {
     // SLE-122 Delay a little bit to let the time to the workspace to initialize (and avoid NPE)
-    new AnalyzeOpenedFilesJob().schedule(2000);
+    new StartupJob().schedule(2000);
   }
 
   private static void subscribeToNotifications() {
