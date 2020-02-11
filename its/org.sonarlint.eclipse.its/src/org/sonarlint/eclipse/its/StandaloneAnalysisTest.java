@@ -41,7 +41,6 @@ import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.python.pydev.ui.perspective.PythonPerspectiveFactory;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.PydevPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.SonarLintProjectPropertiesBot;
@@ -199,7 +198,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public void shouldAnalysePython() throws Exception {
     System.out.println("shouldAnalysePython");
 
-    SwtBotUtils.openPerspective(bot, PythonPerspectiveFactory.PERSPECTIVE_ID);
+    // PythonPerspectiveFactory.PERSPECTIVE_ID
+    SwtBotUtils.openPerspective(bot, "org.python.pydev.ui.PythonPerspective");
     IProject project = importEclipseProject("python", "python");
 
     bot.shell("Python not configured").activate();

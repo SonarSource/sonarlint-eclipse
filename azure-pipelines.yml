@@ -166,22 +166,20 @@ stages:
             SQ_VERSION: 'LATEST_RELEASE[7.9]'
             JDKVersion: '1.11'
             imageName: 'ubuntu-18.04'
-            stagedP2Url: 'file://$(Agent.BuildDirectory)/staged-repository'
-          2019_06:
-            TARGET_PLATFORM: '2019-06'
-            SQ_VERSION: 'LATEST_RELEASE'
-            JDKVersion: '1.11'
-            imageName: 'ubuntu-18.04'
-            stagedP2Url: 'file://$(Agent.BuildDirectory)/staged-repository'
           2019_09:
             TARGET_PLATFORM: '2019-09'
             SQ_VERSION: 'DOGFOOD'
             JDKVersion: '1.11'
             imageName: 'ubuntu-18.04'
-            stagedP2Url: 'file://$(Agent.BuildDirectory)/staged-repository'
+          Milestone:
+            TARGET_PLATFORM: 'milestones'
+            SQ_VERSION: 'DOGFOOD'
+            JDKVersion: '1.11'
+            imageName: 'ubuntu-18.04'
       variables:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+        stagedP2Url: 'file://$(Agent.BuildDirectory)/staged-repository'
       pool:
         vmImage: $(imageName)
       steps:

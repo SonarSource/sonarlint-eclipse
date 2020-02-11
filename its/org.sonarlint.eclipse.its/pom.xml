@@ -39,35 +39,86 @@
             <org.eclipse.swt.browser.UseWebKitGTK>true</org.eclipse.swt.browser.UseWebKitGTK>
             <org.eclipse.swt.browser.DefaultType>webkit</org.eclipse.swt.browser.DefaultType>
           </systemProperties>
-          <dependencies>
-            <dependency>
-              <type>p2-installable-unit</type>
-              <artifactId>org.eclipse.platform.ide</artifactId>
-            </dependency>
-            <dependency>
-              <type>p2-installable-unit</type>
-              <artifactId>org.sonarlint.eclipse.feature.feature.group</artifactId>
-            </dependency>
-            <dependency>
-              <type>p2-installable-unit</type>
-              <artifactId>org.eclipse.m2e.feature.feature.group</artifactId>
-            </dependency>
-            <dependency>
-              <type>p2-installable-unit</type>
-              <artifactId>org.eclipse.cdt.feature.group</artifactId>
-            </dependency>
-            <dependency>
-              <type>p2-installable-unit</type>
-              <artifactId>org.eclipse.wst.jsdt.feature.feature.group</artifactId>
-            </dependency>
-            <dependency>
-              <type>p2-installable-unit</type>
-              <artifactId>org.eclipse.rse.feature.group</artifactId>
-            </dependency>
-          </dependencies>
         </configuration>
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>milestones</id>
+      <activation>
+        <property>
+          <name>target.platform</name>
+          <value>milestones</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.tycho</groupId>
+            <artifactId>tycho-surefire-plugin</artifactId>
+            <configuration>
+              <dependencies>
+                <dependency>
+                  <type>p2-installable-unit</type>
+                  <artifactId>org.eclipse.platform.ide</artifactId>
+                </dependency>
+                <dependency>
+                  <type>p2-installable-unit</type>
+                  <artifactId>org.sonarlint.eclipse.feature.feature.group</artifactId>
+                </dependency>
+              </dependencies>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>full</id>
+      <activation>
+        <property>
+          <name>target.platform</name>
+          <value>!milestones</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.tycho</groupId>
+            <artifactId>tycho-surefire-plugin</artifactId>
+            <configuration>
+              <dependencies>
+                <dependency>
+                  <type>p2-installable-unit</type>
+                  <artifactId>org.eclipse.platform.ide</artifactId>
+                </dependency>
+                <dependency>
+                  <type>p2-installable-unit</type>
+                  <artifactId>org.sonarlint.eclipse.feature.feature.group</artifactId>
+                </dependency>
+                <dependency>
+                  <type>p2-installable-unit</type>
+                  <artifactId>org.eclipse.m2e.feature.feature.group</artifactId>
+                </dependency>
+                <dependency>
+                  <type>p2-installable-unit</type>
+                  <artifactId>org.eclipse.cdt.feature.group</artifactId>
+                </dependency>
+                <dependency>
+                  <type>p2-installable-unit</type>
+                  <artifactId>org.eclipse.wst.jsdt.feature.feature.group</artifactId>
+                </dependency>
+                <dependency>
+                  <type>p2-installable-unit</type>
+                  <artifactId>org.eclipse.rse.feature.group</artifactId>
+                </dependency>
+              </dependencies>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project> 
