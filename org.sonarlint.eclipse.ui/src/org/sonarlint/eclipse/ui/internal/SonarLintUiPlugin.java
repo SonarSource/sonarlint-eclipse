@@ -126,8 +126,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     SonarLintLogger.get().info("Starting SonarLint for Eclipse " + SonarLintUtils.getPluginVersion());
 
-    checkServersStatus();
-
     new CheckForUpdatesJob().schedule((long) 10 * 1000);
 
     analyzeOpenedFiles();
@@ -214,6 +212,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     @Override
     public IStatus run(IProgressMonitor monitor) {
+      checkServersStatus();
 
       JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
 

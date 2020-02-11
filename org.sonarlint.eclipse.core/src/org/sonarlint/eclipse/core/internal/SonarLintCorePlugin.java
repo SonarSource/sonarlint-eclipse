@@ -63,7 +63,7 @@ public class SonarLintCorePlugin extends Plugin {
 
   private AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
   private SonarLintTelemetry telemetry = new SonarLintTelemetry();
-  private ServersManager serversManager = new ServersManager();
+  private ServersManager serversManager = null;
 
   private NotificationsTrackerRegistry notificationsTrackerRegistry;
 
@@ -95,7 +95,6 @@ public class SonarLintCorePlugin extends Plugin {
   public void start(BundleContext context) throws Exception {
     super.start(context);
     extensionTracker.start();
-    serversManager.init();
 
     IssueTrackerCacheFactory factory = project -> {
       Path storeBasePath = StoragePathManager.getIssuesDir(project);
@@ -121,7 +120,9 @@ public class SonarLintCorePlugin extends Plugin {
     proxyTracker.close();
 
     issueTrackerRegistry.shutdown();
-    serversManager.stop();
+    if (serversManager != null) {
+      serversManager.stop();
+    }
     extensionTracker.close();
 
     super.stop(context);
@@ -162,7 +163,11 @@ public class SonarLintCorePlugin extends Plugin {
     return getInstance().telemetry;
   }
 
-  public static ServersManager getServersManager() {
+  public synchronized static ServersManager getServersManager() {
+    if (getInstance().serversManager == null) {
+      getInstance().serversManager = new ServersManager();
+      getInstance().serversManager.init();
+    }
     return getInstance().serversManager;
   }
 
