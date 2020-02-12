@@ -171,7 +171,7 @@ public class SonarLintCorePlugin extends Plugin {
   }
 
   public static SonarLintProjectConfiguration loadConfig(ISonarLintProject project) {
-    return getInstance().getProjectConfigManager().load(project.getScopeContext());
+    return getInstance().getProjectConfigManager().load(project.getScopeContext(), project.getName());
   }
 
   public static void saveConfig(ISonarLintProject project, SonarLintProjectConfiguration config) {
