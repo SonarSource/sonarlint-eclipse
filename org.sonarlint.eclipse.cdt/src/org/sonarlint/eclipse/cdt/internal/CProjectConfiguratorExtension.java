@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.cdt.internal;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 import org.eclipse.cdt.core.CCProjectNature;
 import org.eclipse.cdt.core.CProjectNature;
@@ -66,7 +67,8 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
   @Override
   public Set<Language> whitelistedLanguages() {
     if (isCdtPresent()) {
-      return Collections.singleton(Language.CPP);
+      // Objective-C is not supported by CDT
+      return EnumSet.of(Language.CPP, Language.C);
     }
     return Collections.emptySet();
   }

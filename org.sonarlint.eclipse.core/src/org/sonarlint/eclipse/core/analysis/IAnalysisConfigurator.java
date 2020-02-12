@@ -58,6 +58,7 @@ public interface IAnalysisConfigurator {
    * @deprecated starting with 4.4, IAnalysisConfigurator should provide explicitly enabled languages instead
    * @see #whitelistedLanguages()
    */
+  @Deprecated
   default Set<String> whitelistedPlugins() {
     return Collections.emptySet();
   }

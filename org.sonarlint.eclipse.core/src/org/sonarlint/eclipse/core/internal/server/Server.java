@@ -107,7 +107,7 @@ public class Server implements IServer, StateListener {
   Server(String id) {
     this.id = id;
 
-    EnumSet<Language> languagesDisabledByDefault = EnumSet.of(Language.TS, Language.JAVA, Language.CPP);
+    EnumSet<Language> languagesDisabledByDefault = EnumSet.of(Language.TS, Language.JAVA, Language.CPP, Language.C, Language.OBJC, Language.SWIFT);
     EnumSet<Language> enabledLanguages = EnumSet.complementOf(languagesDisabledByDefault);
     Collection<IAnalysisConfigurator> configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
     for (IAnalysisConfigurator configurator : configurators) {
