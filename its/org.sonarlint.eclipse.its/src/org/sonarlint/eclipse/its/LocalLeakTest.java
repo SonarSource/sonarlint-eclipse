@@ -101,12 +101,12 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
-      tuple("/js-simple/src/hello.js", 2, "Remove this usage of alert(...).", null));
+      tuple("/js-simple/src/hello.js", 2, "Multiline support is limited to browsers supporting ES5 only.", null));
     long markerId = markers.get(0).getId();
 
     // Change content
     SWTBotEclipseEditor editor = bot.editorByTitle("hello.js").toTextEditor();
-    editor.navigateTo(1, 23);
+    editor.navigateTo(2, 17);
     editor.insertText("\nvar i;");
     editor.save();
 
@@ -114,15 +114,15 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/js-simple/src/hello.js", 2, "Remove this usage of alert(...)."),
-      tuple("/js-simple/src/hello.js", 3, "Remove the declaration of the unused 'i' variable."));
+      tuple("/js-simple/src/hello.js", 2, "Multiline support is limited to browsers supporting ES5 only."),
+      tuple("/js-simple/src/hello.js", 4, "Remove the declaration of the unused 'i' variable."));
 
     IMarker newIssue = markers.stream().filter(m -> m.getId() != markerId).findFirst().get();
     String timestamp = (String) newIssue.getAttribute(CREATIONDATE_ATT);
     assertThat(timestamp).isNotEmpty();
 
     // Insert content that should crash analyzer
-    editor.navigateTo(2, 8);
+    editor.navigateTo(3, 8);
     editor.insertText("\nvar");
     editor.save();
     JobHelpers.waitForJobsToComplete(bot);
@@ -130,8 +130,8 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     // Issues are still there
     markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
-      tuple("/js-simple/src/hello.js", 2, "Remove this usage of alert(...).", null),
-      tuple("/js-simple/src/hello.js", 3, "Remove the declaration of the unused 'i' variable.", timestamp));
+      tuple("/js-simple/src/hello.js", 2, "Multiline support is limited to browsers supporting ES5 only.", null),
+      tuple("/js-simple/src/hello.js", 4, "Remove the declaration of the unused 'i' variable.", timestamp));
 
   }
 
