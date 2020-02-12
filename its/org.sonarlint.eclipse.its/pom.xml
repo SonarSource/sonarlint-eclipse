@@ -67,6 +67,10 @@
                 </dependency>
                 <dependency>
                   <type>p2-installable-unit</type>
+                  <artifactId>org.eclipse.jdt.junit</artifactId>
+                </dependency>
+                <dependency>
+                  <type>p2-installable-unit</type>
                   <artifactId>org.sonarlint.eclipse.feature.feature.group</artifactId>
                 </dependency>
               </dependencies>
