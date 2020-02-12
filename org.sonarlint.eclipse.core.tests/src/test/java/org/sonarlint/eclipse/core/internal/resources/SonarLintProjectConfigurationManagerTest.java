@@ -25,7 +25,7 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
@@ -36,11 +36,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
 
-  private static final List<String> infos = new ArrayList<>();
-  private static final List<String> errors = new ArrayList<>();
+  private static final String PROJECT_NAME = "DeprecatedModuleBinding";
+  private final List<String> infos = new ArrayList<>();
+  private final List<String> errors = new ArrayList<>();
+  private IProject project;
 
-  @BeforeClass
-  public static void prepare() throws Exception {
+  @Before
+  public void prepare() throws Exception {
     SonarLintLogger.get().addLogListener(new LogListener() {
       @Override
       public void info(String msg, boolean fromAnalyzer) {
@@ -57,15 +59,15 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
       }
 
     });
+    project = importEclipseProject(PROJECT_NAME);
   }
 
   @Test
-  public void load_deprecated_project_config() throws IOException, CoreException {
-    IProject project = importEclipseProject("DeprecatedModuleBinding");
+  public void load_deprecated_project_config() throws IOException, CoreException, InterruptedException {
     // Configure the project
-    SonarLintProjectConfiguration configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), "Deprecated Binding Project");
+    SonarLintProjectConfiguration configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), PROJECT_NAME);
     assertThat(configuration.getProjectBinding()).isEmpty();
     assertThat(errors).isEmpty();
-    assertThat(infos).containsExactly("Binding configuration of project 'Deprecated Binding Project' is outdated. Please rebind this project.");
+    assertThat(infos).containsExactly("Binding configuration of project '" + PROJECT_NAME + "' is outdated. Please rebind this project.");
   }
 }
