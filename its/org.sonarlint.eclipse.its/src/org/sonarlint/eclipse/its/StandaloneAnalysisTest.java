@@ -222,8 +222,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple("/python/src/root/nested/example.py", 9, "Merge this if statement with the enclosing one."),
       tuple("/python/src/root/nested/example.py", 10, "Replace print statement by built-in function."),
-      tuple("/python/src/root/nested/example.py", 9, "Replace \"<>\" by \"!=\"."),
-      tuple("/python/src/root/nested/example.py", 1, "Remove this commented out code."));
+      tuple("/python/src/root/nested/example.py", 9, "Replace \"<>\" by \"!=\"."));
   }
 
   @Test
