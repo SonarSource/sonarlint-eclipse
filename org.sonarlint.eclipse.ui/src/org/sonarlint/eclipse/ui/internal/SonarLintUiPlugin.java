@@ -127,8 +127,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     new CheckForUpdatesJob().schedule((long) 10 * 1000);
 
     startupAsync();
-
-    subscribeToNotifications();
   }
 
   @Override
@@ -194,7 +192,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private static class StartupJob extends Job {
 
     StartupJob() {
-      super("SonarLint startup");
+      super("SonarLint UI startup");
     }
 
     @Override
@@ -213,6 +211,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       // Handle future opened/closed windows
       PlatformUI.getWorkbench().addWindowListener(new WindowOpenCloseListener());
 
+      subscribeToNotifications();
+
       return Status.OK_STATUS;
     }
 
@@ -224,6 +224,16 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
             popup.open();
           });
         }
+      }
+    }
+
+    private static void subscribeToNotifications() {
+      try {
+        ProjectsProviderUtils.allProjects().stream()
+          .filter(p -> SonarLintCorePlugin.loadConfig(p).isBound())
+          .forEach(SonarLintUiPlugin::subscribeToNotifications);
+      } catch (IllegalStateException e) {
+        SonarLintLogger.get().error("Could not subscribe to notifications", e);
       }
     }
 
@@ -265,16 +275,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public static void startupAsync() {
     // SLE-122 Delay a little bit to let the time to the workspace to initialize (and avoid NPE)
     new StartupJob().schedule(2000);
-  }
-
-  private static void subscribeToNotifications() {
-    try {
-      ProjectsProviderUtils.allProjects().stream()
-        .filter(p -> SonarLintCorePlugin.loadConfig(p).isBound())
-        .forEach(SonarLintUiPlugin::subscribeToNotifications);
-    } catch (IllegalStateException e) {
-      SonarLintLogger.get().error("Could not subscribe to notifications", e);
-    }
   }
 
   public static void subscribeToNotifications(ISonarLintProject project) {

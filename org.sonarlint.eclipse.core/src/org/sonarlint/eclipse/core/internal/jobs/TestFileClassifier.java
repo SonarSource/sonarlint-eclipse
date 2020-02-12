@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
@@ -67,7 +67,7 @@ public class TestFileClassifier {
   }
 
   public boolean isTest(ISonarLintFile file) {
-    for (IFileTypeProvider typeProvider : SonarLintCorePlugin.getExtensionTracker().getTypeProviders()) {
+    for (IFileTypeProvider typeProvider : SonarLintExtensionTracker.getInstance().getTypeProviders()) {
       switch (typeProvider.qualify(file)) {
         case UNKNOWN:
           break;

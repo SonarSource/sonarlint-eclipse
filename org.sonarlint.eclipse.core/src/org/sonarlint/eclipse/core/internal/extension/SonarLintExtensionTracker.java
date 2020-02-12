@@ -43,6 +43,8 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
 
 public class SonarLintExtensionTracker implements IExtensionChangeHandler {
 
+  private static SonarLintExtensionTracker SINGLE_INSTANCE = null;
+
   private static final String ATTR_CLASS = "class"; //$NON-NLS-1$
 
   private final SonarLintEP<ProjectConfigurator> configuratorEp = new SonarLintEP<>("org.sonarlint.eclipse.core.projectConfigurators"); //$NON-NLS-1$
@@ -69,23 +71,35 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
 
   private ExtensionTracker tracker;
 
-  public void start() {
+  private SonarLintExtensionTracker() {
     IExtensionRegistry reg = Platform.getExtensionRegistry();
     tracker = new ExtensionTracker(reg);
     IExtensionPoint[] epArray = allEps.stream().map(ep -> reg.getExtensionPoint(ep.id)).toArray(IExtensionPoint[]::new);
-    IFilter filter = ExtensionTracker.createExtensionPointFilter(epArray);
-    tracker.registerHandler(this, filter);
+    // initial population
     for (IExtensionPoint ep : epArray) {
       for (IExtension ext : ep.getExtensions()) {
         addExtension(tracker, ext);
       }
     }
+    IFilter filter = ExtensionTracker.createExtensionPointFilter(epArray);
+    tracker.registerHandler(this, filter);
   }
 
-  public void close() {
-    if (tracker != null) {
-      tracker.close();
-      tracker = null;
+  public static SonarLintExtensionTracker getInstance() {
+    if (SINGLE_INSTANCE == null) {
+      synchronized (SonarLintExtensionTracker.class) {
+        if (SINGLE_INSTANCE == null) {
+          SINGLE_INSTANCE = new SonarLintExtensionTracker();
+        }
+      }
+    }
+    return SINGLE_INSTANCE;
+  }
+
+  public static void close() {
+    if (SINGLE_INSTANCE != null) {
+      SINGLE_INSTANCE.tracker.close();
+      SINGLE_INSTANCE.tracker = null;
     }
   }
 
