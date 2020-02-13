@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
+import org.sonarlint.eclipse.core.analysis.IFileTypeProvider.ISonarLintFileType;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -68,20 +69,15 @@ public class TestFileClassifier {
 
   public boolean isTest(ISonarLintFile file) {
     for (IFileTypeProvider typeProvider : SonarLintExtensionTracker.getInstance().getTypeProviders()) {
-      switch (typeProvider.qualify(file)) {
-        case UNKNOWN:
-          break;
-        case MAIN:
-          SonarLintLogger.get().debug("File '" + file.getProjectRelativePath() + "' qualified as main by '" + typeProvider.getClass().getSimpleName() + "'");
-          return false;
-        case TEST:
-          SonarLintLogger.get().debug("File '" + file.getProjectRelativePath() + "' qualified as test by '" + typeProvider.getClass().getSimpleName() + "'");
-          return true;
+      if (typeProvider.qualify(file) == ISonarLintFileType.TEST) {
+        SonarLintLogger.get().debug("File '" + file.getProjectRelativePath() + "' qualified as test by '" + typeProvider.getClass().getSimpleName() + "'");
+        return true;
       }
     }
     Path fileRelativePath = Paths.get(file.getProjectRelativePath());
     for (PathMatcher matcher : pathMatchersForTests) {
       if (matcher.matches(fileRelativePath)) {
+        SonarLintLogger.get().debug("File '" + file.getProjectRelativePath() + "' qualified as test by file pattern");
         return true;
       }
     }
