@@ -40,8 +40,8 @@ import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
-import org.python.pydev.ui.perspective.PythonPerspectiveFactory;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.PydevPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.SonarLintProjectPropertiesBot;
@@ -195,11 +195,14 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
                                                                                                          // set on dependent project
   }
 
+  // Need PyDev
+  @Category(RequiresExtraDependency.class)
   @Test
   public void shouldAnalysePython() throws Exception {
     System.out.println("shouldAnalysePython");
 
-    SwtBotUtils.openPerspective(bot, PythonPerspectiveFactory.PERSPECTIVE_ID);
+    // PythonPerspectiveFactory.PERSPECTIVE_ID
+    SwtBotUtils.openPerspective(bot, "org.python.pydev.ui.PythonPerspective");
     IProject project = importEclipseProject("python", "python");
 
     bot.shell("Python not configured").activate();
@@ -245,6 +248,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       tuple("/java-linked/src/hello/HelloLinked.java", 13, "Replace this use of System.out or System.err by a logger."));
   }
 
+  // Need RSE
+  @Category(RequiresExtraDependency.class)
   @Test
   public void shouldAnalyseVirtualProject() throws Exception {
     System.out.println("shouldAnalyseVirtualProject");
