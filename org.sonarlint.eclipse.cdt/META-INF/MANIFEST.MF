@@ -5,7 +5,6 @@ Bundle-SymbolicName: org.sonarlint.eclipse.cdt;singleton:=true
 Bundle-Version: 4.4.0.qualifier
 Bundle-Vendor: %bundle_vendor
 Bundle-ClassPath: .
-Bundle-Activator: org.sonarlint.eclipse.cdt.internal.SonarCdtPlugin
 Require-Bundle: org.jsr-305;resolution:=optional,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,

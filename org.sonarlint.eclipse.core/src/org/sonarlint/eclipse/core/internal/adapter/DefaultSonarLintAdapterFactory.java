@@ -25,7 +25,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
@@ -63,7 +63,7 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
   }
 
   private static <T> T getProjectAdapter(Class<T> adapterType, IProject project) {
-    for (ISonarLintProjectAdapterParticipant projectAdapterParticipant : SonarLintCorePlugin.getExtensionTracker().getProjectAdapterParticipants()) {
+    for (ISonarLintProjectAdapterParticipant projectAdapterParticipant : SonarLintExtensionTracker.getInstance().getProjectAdapterParticipants()) {
       if (projectAdapterParticipant.exclude(project)) {
         SonarLintLogger.get().debug("Project '" + project.getName() + "' excluded by '" + projectAdapterParticipant.getClass().getSimpleName() + "'");
         return null;
@@ -74,7 +74,7 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
 
   private static <T> T adaptProject(Class<T> adapterType, IProject project) {
     DefaultSonarLintProjectAdapter defaultSonarLintProjectAdapter = new DefaultSonarLintProjectAdapter(project);
-    for (ISonarLintProjectAdapterParticipant p : SonarLintCorePlugin.getExtensionTracker().getProjectAdapterParticipants()) {
+    for (ISonarLintProjectAdapterParticipant p : SonarLintExtensionTracker.getInstance().getProjectAdapterParticipants()) {
       ISonarLintProject adapted = p.adapt(project, defaultSonarLintProjectAdapter);
       if (adapted != null) {
         return adapterType.cast(adapted);
@@ -92,7 +92,7 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
       return null;
     }
     // Not let's call the ISonarLintFileAdapterParticipant#exclude
-    for (ISonarLintFileAdapterParticipant fileAdapterParticipant : SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants()) {
+    for (ISonarLintFileAdapterParticipant fileAdapterParticipant : SonarLintExtensionTracker.getInstance().getFileAdapterParticipants()) {
       if (fileAdapterParticipant.exclude(file)) {
         SonarLintLogger.get().debug("File '" + file.getProjectRelativePath() + "' excluded by '" + fileAdapterParticipant.getClass().getSimpleName() + "'");
         return null;
@@ -103,7 +103,7 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
 
   private static <T> T adaptFile(Class<T> adapterType, IFile file) {
     // Try to find one ISonarLintFileAdapterParticipant that will adapt the IFile
-    for (ISonarLintFileAdapterParticipant p : SonarLintCorePlugin.getExtensionTracker().getFileAdapterParticipants()) {
+    for (ISonarLintFileAdapterParticipant p : SonarLintExtensionTracker.getInstance().getFileAdapterParticipants()) {
       ISonarLintFile adapted = p.adapt(file);
       if (adapted != null) {
         return adapterType.cast(adapted);

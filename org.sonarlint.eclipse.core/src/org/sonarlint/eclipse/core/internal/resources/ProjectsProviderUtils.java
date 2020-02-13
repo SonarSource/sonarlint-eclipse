@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
 
@@ -32,7 +32,7 @@ public class ProjectsProviderUtils {
   }
 
   public static Collection<ISonarLintProject> allProjects() {
-    return SonarLintCorePlugin.getExtensionTracker().getProjectsProviders().stream()
+    return SonarLintExtensionTracker.getInstance().getProjectsProviders().stream()
       .map(ISonarLintProjectsProvider::get)
       .flatMap(Collection::stream)
       .collect(Collectors.toSet());

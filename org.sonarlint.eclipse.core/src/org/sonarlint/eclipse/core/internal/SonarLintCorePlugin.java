@@ -21,7 +21,11 @@ package org.sonarlint.eclipse.core.internal;
 
 import java.nio.file.Path;
 import org.eclipse.core.net.proxy.IProxyService;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
@@ -59,11 +63,10 @@ public class SonarLintCorePlugin extends Plugin {
 
   private StandaloneSonarLintEngineFacade sonarlint;
   private final ServiceTracker<IProxyService, IProxyService> proxyTracker;
-  private final SonarLintExtensionTracker extensionTracker = new SonarLintExtensionTracker();
 
   private AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
   private SonarLintTelemetry telemetry = new SonarLintTelemetry();
-  private ServersManager serversManager = new ServersManager();
+  private ServersManager serversManager = null;
 
   private NotificationsTrackerRegistry notificationsTrackerRegistry;
 
@@ -94,8 +97,6 @@ public class SonarLintCorePlugin extends Plugin {
   @Override
   public void start(BundleContext context) throws Exception {
     super.start(context);
-    extensionTracker.start();
-    serversManager.init();
 
     IssueTrackerCacheFactory factory = project -> {
       Path storeBasePath = StoragePathManager.getIssuesDir(project);
@@ -106,9 +107,27 @@ public class SonarLintCorePlugin extends Plugin {
 
     serverIssueUpdater = new ServerIssueUpdater(issueTrackerRegistry);
 
-    telemetry.init();
-
     notificationsTrackerRegistry = new NotificationsTrackerRegistry();
+
+    startupAsync();
+  }
+
+  public void startupAsync() {
+    // SLE-122 Delay a little bit to let the time to the workspace to initialize (and avoid NPE)
+    new StartupJob().schedule(2000);
+  }
+
+  private class StartupJob extends Job {
+
+    StartupJob() {
+      super("SonarLint Core startup");
+    }
+
+    @Override
+    public IStatus run(IProgressMonitor monitor) {
+      telemetry.init();
+      return Status.OK_STATUS;
+    }
   }
 
   @Override
@@ -121,8 +140,10 @@ public class SonarLintCorePlugin extends Plugin {
     proxyTracker.close();
 
     issueTrackerRegistry.shutdown();
-    serversManager.stop();
-    extensionTracker.close();
+    if (serversManager != null) {
+      serversManager.stop();
+    }
+    SonarLintExtensionTracker.close();
 
     super.stop(context);
   }
@@ -154,15 +175,15 @@ public class SonarLintCorePlugin extends Plugin {
     return getInstance().analysisListenerManager;
   }
 
-  public static SonarLintExtensionTracker getExtensionTracker() {
-    return getInstance().extensionTracker;
-  }
-
   public static SonarLintTelemetry getTelemetry() {
     return getInstance().telemetry;
   }
 
-  public static ServersManager getServersManager() {
+  public synchronized static ServersManager getServersManager() {
+    if (getInstance().serversManager == null) {
+      getInstance().serversManager = new ServersManager();
+      getInstance().serversManager.init();
+    }
     return getInstance().serversManager;
   }
 
