@@ -68,6 +68,6 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
     SonarLintProjectConfiguration configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), PROJECT_NAME);
     assertThat(configuration.getProjectBinding()).isEmpty();
     assertThat(errors).isEmpty();
-    assertThat(infos).containsExactly("Binding configuration of project '" + PROJECT_NAME + "' is outdated. Please rebind this project.");
+    assertThat(infos).contains("Binding configuration of project '" + PROJECT_NAME + "' is outdated. Please rebind this project.");
   }
 }
