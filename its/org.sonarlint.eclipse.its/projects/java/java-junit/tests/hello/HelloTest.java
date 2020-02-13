@@ -7,7 +7,7 @@ public class HelloTest {
 
   @Test
   @Ignore
-  public void testHello() {
+  public void testHello() throws InterruptedException {
     Hello.main();
   }
 

@@ -130,14 +130,30 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     IProject project = importEclipseProject("java/java-junit", "java-junit");
     JobHelpers.waitForJobsToComplete(bot);
 
+    bot.menu("Window").menu("Preferences").click();
+    bot.shell("Preferences").activate();
+    bot.tree().getTreeItem("SonarLint").select();
+    bot.textWithLabel("Test file regular expressions:").setText("**/*TestUtil*");
+    bot.button("Apply and Close").click();
+    JobHelpers.waitForJobsToComplete(bot);
+
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("java-junit", "src", "hello", "Hello.java");
     JobHelpers.waitForJobsToComplete(bot);
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-junit/src/hello/Hello.java", 11, "Replace this use of System.out or System.err by a logger."),
-      tuple("/java-junit/src/hello/Hello.java", 15, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set
+      tuple("/java-junit/src/hello/Hello.java", 12, "Replace this use of System.out or System.err by a logger."),
+      tuple("/java-junit/src/hello/Hello.java", 16, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndDoubleClick("java-junit", "src", "hello", "HelloTestUtil.java");
+    JobHelpers.waitForJobsToComplete(bot);
+  
+    List<IMarker> testUtilMarkers = Arrays.asList(project.findMember("src/hello/HelloTestUtil.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    // File is flagged as test by regexp, only test rules are applied
+    assertThat(testUtilMarkers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple("/java-junit/src/hello/HelloTestUtil.java", 11, "Remove this use of \"Thread.sleep()\"."));
 
     new JavaPackageExplorerBot(bot)
       .expandAndDoubleClick("java-junit", "tests", "hello", "HelloTest.java");

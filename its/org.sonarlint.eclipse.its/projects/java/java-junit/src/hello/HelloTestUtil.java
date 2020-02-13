@@ -2,9 +2,9 @@ package hello;
 
 import junit.framework.Test;
 
-public class Hello {
+public class HelloTestUtil {
 
-  private Hello() {
+  private HelloTestUtil() {
   }
 
   public static void main(String... args) throws InterruptedException {
