@@ -43,6 +43,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
+import org.sonarlint.eclipse.its.bots.ProjectExplorerBot;
 import org.sonarlint.eclipse.its.bots.PydevPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.SonarLintProjectPropertiesBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
@@ -223,6 +224,37 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       tuple("/python/src/root/nested/example.py", 9, "Merge this if statement with the enclosing one."),
       tuple("/python/src/root/nested/example.py", 10, "Replace print statement by built-in function."),
       tuple("/python/src/root/nested/example.py", 9, "Replace \"<>\" by \"!=\"."));
+  }
+
+  // Need PDT
+  @Category(RequiresExtraDependency.class)
+  @Test
+  public void shouldAnalysePHP() throws Exception {
+    System.out.println("shouldAnalysePHP");
+
+    SwtBotUtils.openPerspective(bot, "org.eclipse.php.perspective");
+    IProject project = importEclipseProject("php", "php");
+
+    JobHelpers.waitForJobsToComplete(bot);
+
+    new ProjectExplorerBot(bot)
+      .expandAndOpen("php", "foo.php");
+
+    JobHelpers.waitForJobsToComplete(bot);
+
+    List<IMarker> markers = Arrays.asList(project.findMember("foo.php").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple("/php/foo.php", 9, "This branch duplicates the one on line 5."));
+
+    // SLE-342
+    new ProjectExplorerBot(bot)
+      .expandAndOpen("php", "foo.inc");
+
+    JobHelpers.waitForJobsToComplete(bot);
+
+    markers = Arrays.asList(project.findMember("foo.inc").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple("/php/foo.inc", 9, "This branch duplicates the one on line 5."));
   }
 
   @Test

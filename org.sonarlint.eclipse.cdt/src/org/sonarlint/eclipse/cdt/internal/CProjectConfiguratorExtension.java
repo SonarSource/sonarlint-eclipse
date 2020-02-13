@@ -94,9 +94,11 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
 
   @Override
   public String language(ISonarLintFile file) {
-    IFile iFile = file.getResource() instanceof IFile ? (IFile) file.getResource() : null;
-    if (cdtUtils != null && iFile != null) {
-      return cdtUtils.language(iFile);
+    if (canConfigure(file.getProject())) {
+      IFile iFile = file.getResource() instanceof IFile ? (IFile) file.getResource() : null;
+      if (cdtUtils != null && iFile != null) {
+        return cdtUtils.language(iFile);
+      }
     }
     return null;
   }
