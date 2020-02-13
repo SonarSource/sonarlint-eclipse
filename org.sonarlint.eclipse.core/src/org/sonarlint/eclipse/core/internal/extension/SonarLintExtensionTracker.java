@@ -43,7 +43,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
 
 public class SonarLintExtensionTracker implements IExtensionChangeHandler {
 
-  private static SonarLintExtensionTracker SINGLE_INSTANCE = null;
+  private static SonarLintExtensionTracker singleInstance = null;
 
   private static final String ATTR_CLASS = "class"; //$NON-NLS-1$
 
@@ -85,21 +85,17 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
     tracker.registerHandler(this, filter);
   }
 
-  public static SonarLintExtensionTracker getInstance() {
-    if (SINGLE_INSTANCE == null) {
-      synchronized (SonarLintExtensionTracker.class) {
-        if (SINGLE_INSTANCE == null) {
-          SINGLE_INSTANCE = new SonarLintExtensionTracker();
-        }
-      }
+  public static synchronized SonarLintExtensionTracker getInstance() {
+    if (singleInstance == null) {
+      singleInstance = new SonarLintExtensionTracker();
     }
-    return SINGLE_INSTANCE;
+    return singleInstance;
   }
 
   public static void close() {
-    if (SINGLE_INSTANCE != null) {
-      SINGLE_INSTANCE.tracker.close();
-      SINGLE_INSTANCE.tracker = null;
+    if (singleInstance != null) {
+      singleInstance.tracker.close();
+      singleInstance.tracker = null;
     }
   }
 
