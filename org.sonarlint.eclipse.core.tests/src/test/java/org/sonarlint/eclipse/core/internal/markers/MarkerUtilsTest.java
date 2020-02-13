@@ -39,7 +39,7 @@ public class MarkerUtilsTest extends SonarTestCase {
   public static void importProject() throws Exception {
     project = importEclipseProject("SimpleProject");
     // Configure the project
-    SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project));
+    SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), "A Project");
   }
 
   @Test

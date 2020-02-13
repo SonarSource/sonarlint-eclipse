@@ -1,0 +1,8 @@
+autoEnabled=true
+eclipse.preferences.version=1
+extraProperties=
+fileExclusions=
+idePrefixKey=
+moduleKey=org.sonarsource.sonarlint.eclipse\:sonarlint-eclipse-parent
+serverId=dory
+sqPrefixKey=
