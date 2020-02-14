@@ -69,7 +69,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
       @Override
       public boolean test() throws Exception {
         String html = loadHtml();
-        return html.contains("squid:S106") && html.contains("Sensitive data must only be logged securely") && html.contains("CERT, ERR02-J");
+        return html.contains("java:S106") && html.contains("Sensitive data must only be logged securely") && html.contains("CERT, ERR02-J");
       }
 
       private String loadHtml() {
