@@ -32,13 +32,14 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.dialogs.IPageChangingListener;
-import org.eclipse.jface.dialogs.PageChangingEvent;
+import org.eclipse.jface.dialogs.IPageChangedListener;
+import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
@@ -55,6 +56,7 @@ import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ParentAwareWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.WizardDialogWithoutHelp;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 
@@ -62,7 +64,7 @@ import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isEmpty;
 
-public class ProjectBindingWizard extends ParentAwareWizard implements INewWizard, IPageChangingListener {
+public class ProjectBindingWizard extends ParentAwareWizard implements INewWizard, IPageChangedListener {
 
   private static final String STORE_LAST_SELECTED_SERVER_ID = "ProjectBindingWizard.last_selected_server";
 
@@ -206,19 +208,23 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
   }
 
   @Override
-  public void handlePageChanging(PageChangingEvent event) {
-    WizardPage currentPage = (WizardPage) event.getCurrentPage();
-    boolean advance = getNextPage(currentPage) == event.getTargetPage();
-    if (advance && event.getTargetPage() == remoteProjectSelectionWizardPage) {
-      if (!model.getServer().isStorageUpdated()) {
-        event.doit = tryUpdateServerStorage(currentPage);
-      }
-      if (event.doit) {
-        event.doit = tryLoadProjectList(currentPage);
-        if (event.doit && isEmpty(model.getRemoteProjectKey())) {
+  public void pageChanged(PageChangedEvent event) {
+    if (event.getSelectedPage() == remoteProjectSelectionWizardPage) {
+      Display.getDefault().asyncExec(() -> {
+        boolean success = true;
+        boolean fetchProjectList = false;
+        if (model.getServer().getStorageState() == State.UPDATING) {
+          success = waitForServerUpdate(remoteProjectSelectionWizardPage);
+        } else if (model.getServer().getStorageState() != State.UPDATED) {
+          success = tryUpdateServerStorage(remoteProjectSelectionWizardPage);
+        } else {
+          fetchProjectList = true;
+        }
+        success = tryLoadProjectList(remoteProjectSelectionWizardPage, fetchProjectList);
+        if (success && isEmpty(model.getRemoteProjectKey())) {
           tryAutoBind();
         }
-      }
+      });
     }
   }
 
@@ -247,6 +253,36 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
 
   }
 
+  private boolean waitForServerUpdate(WizardPage currentPage) {
+    currentPage.setMessage(null);
+    try {
+      getContainer().run(true, true, new IRunnableWithProgress() {
+
+        @Override
+        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+          monitor.beginTask("Waiting for background server storage update task to complete", IProgressMonitor.UNKNOWN);
+          try {
+            while (model.getServer().getStorageState() == State.UPDATING) {
+              if (monitor.isCanceled()) {
+                throw new InterruptedException("Cancelled");
+              }
+              Thread.sleep(500);
+            }
+          } finally {
+            monitor.done();
+          }
+        }
+      });
+    } catch (InvocationTargetException e) {
+      SonarLintLogger.get().debug("Error wating for server storage update to complete", e.getCause());
+      currentPage.setMessage(e.getCause().getMessage(), IMessageProvider.ERROR);
+      return false;
+    } catch (InterruptedException e) {
+      return false;
+    }
+    return true;
+  }
+
   private boolean tryUpdateServerStorage(WizardPage currentPage) {
     currentPage.setMessage(null);
     try {
@@ -273,7 +309,7 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
     return true;
   }
 
-  private boolean tryLoadProjectList(WizardPage currentPage) {
+  private boolean tryLoadProjectList(WizardPage currentPage, boolean fetchProjectList) {
     currentPage.setMessage(null);
     try {
       getContainer().run(true, true, new IRunnableWithProgress() {
@@ -281,7 +317,9 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
           try {
-            model.getServer().updateProjectList(monitor);
+            if (fetchProjectList) {
+              model.getServer().updateProjectList(monitor);
+            }
             model.setProjectIndex(model.getServer().computeProjectIndex());
           } finally {
             monitor.done();
@@ -298,5 +336,4 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
     }
     return true;
   }
-
 }

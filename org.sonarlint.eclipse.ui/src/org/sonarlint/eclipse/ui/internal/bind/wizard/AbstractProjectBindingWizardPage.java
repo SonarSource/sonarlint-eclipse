@@ -53,7 +53,7 @@ public abstract class AbstractProjectBindingWizardPage extends WizardPage {
 
     setControl(container);
 
-    ((WizardDialog) getContainer()).addPageChangingListener((ProjectBindingWizard) getWizard());
+    ((WizardDialog) getContainer()).addPageChangedListener((ProjectBindingWizard) getWizard());
   }
 
   protected abstract void doCreateControl(Composite container);
