@@ -33,6 +33,7 @@ import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
@@ -70,7 +71,7 @@ public interface IServer {
 
   String getServerVersion();
 
-  String getSonarLintEngineState();
+  String getSonarLintStorageStateLabel();
 
   void updateStorage(IProgressMonitor monitor);
 
@@ -107,13 +108,11 @@ public interface IServer {
 
   void updateProjectStorage(String moduleKey, IProgressMonitor monitor);
 
-  boolean isStorageUpdated();
+  State getStorageState();
 
   List<ISonarLintProject> getBoundProjects();
 
   void notifyAllListeners();
-
-  boolean isUpdating();
 
   void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsEnabled);
 

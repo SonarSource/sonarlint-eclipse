@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.popup.ServerUpdateAvailablePopup;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 
 public class CheckForUpdatesJob extends Job {
 
@@ -62,7 +63,7 @@ public class CheckForUpdatesJob extends Job {
 
   private static IStatus checkForUpdates(final IServer server, SubMonitor monitor) {
     // No need to check for remote updates if local storage is already outdated
-    if (server.isStorageUpdated()) {
+    if (server.getStorageState() == State.UPDATED) {
       server.checkForUpdates(monitor);
 
       if (server.hasUpdates()) {

@@ -185,8 +185,8 @@ public class Server implements IServer, StateListener {
   }
 
   @Override
-  public boolean isStorageUpdated() {
-    return client.getState() == State.UPDATED;
+  public State getStorageState() {
+    return client.getState();
   }
 
   @Override
@@ -242,7 +242,7 @@ public class Server implements IServer, StateListener {
 
   @Override
   public String getServerVersion() {
-    if (!isStorageUpdated()) {
+    if (getStorageState() != State.UPDATED) {
       return NEED_UPDATE;
     }
     return updateStatus.getServerVersion();
@@ -250,19 +250,14 @@ public class Server implements IServer, StateListener {
 
   @Override
   public String getUpdateDate() {
-    if (!isStorageUpdated()) {
+    if (getStorageState() != State.UPDATED) {
       return NEED_UPDATE;
     }
     return new SimpleDateFormat().format(updateStatus.getLastUpdateDate());
   }
 
   @Override
-  public boolean isUpdating() {
-    return State.UPDATING == client.getState();
-  }
-
-  @Override
-  public String getSonarLintEngineState() {
+  public String getSonarLintStorageStateLabel() {
     switch (client.getState()) {
       case UNKNOW:
         return "Unknown";

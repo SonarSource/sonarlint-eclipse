@@ -53,6 +53,7 @@ import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotification;
 import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotificationListener;
 
@@ -218,7 +219,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     private static void checkServersStatus() {
       for (final IServer server : SonarLintCorePlugin.getServersManager().getServers()) {
-        if (!server.isStorageUpdated()) {
+        if (server.getStorageState() != State.UPDATED) {
           Display.getDefault().asyncExec(() -> {
             ServerStorageNeedUpdatePopup popup = new ServerStorageNeedUpdatePopup(Display.getCurrent(), server);
             popup.open();
