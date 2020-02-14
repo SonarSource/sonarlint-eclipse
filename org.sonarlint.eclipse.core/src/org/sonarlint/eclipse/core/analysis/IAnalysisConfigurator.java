@@ -55,7 +55,7 @@ public interface IAnalysisConfigurator {
    * If this IAnalysisConfigurator is fulfilling some requirements, then you can whitelist the associated plugin.
    * @return List of plugin keys that should be whitelisted (e.g. java, cpp, cobol, ...)
    * @since 4.2
-   * @deprecated starting with 4.4, IAnalysisConfigurator should provide explicitly enabled languages instead
+   * @deprecated starting with 5.0, IAnalysisConfigurator should provide explicitly enabled languages instead
    * @see #whitelistedLanguages()
    */
   @Deprecated
@@ -68,7 +68,7 @@ public interface IAnalysisConfigurator {
    * If this IAnalysisConfigurator is fulfilling some requirements, then you can whitelist the associated language.
    * @return List of languages that should be whitelisted (e.g. {@link Language#JAVA}, {@link Language#CPP}, {@link Language#COBOL}, ...)
    * @see Language
-   * @since 4.4
+   * @since 5.0
    */
   default Set<Language> whitelistedLanguages() {
     return Collections.emptySet();
