@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.8"?>
+<target includeMode="feature" name="sonar-eclipse-2019-12-dev" sequenceNumber="22">
+<locations>
+<location path="${M2_REPO}/commons-io/commons-io/2.6" type="Directory"/>
+<location path="${M2_REPO}/org/mockito/mockito-core/2.28.2" type="Directory"/>
+<location path="${M2_REPO}/net/bytebuddy/byte-buddy/1.9.10" type="Directory"/>
+<location path="${M2_REPO}/net/bytebuddy/byte-buddy-agent/1.9.10" type="Directory"/>
+<location path="${M2_REPO}/org/objenesis/objenesis/2.6" type="Directory"/>
+<location path="${M2_REPO}/org/assertj/assertj-core/3.12.2" type="Directory"/>
+<location path="${M2_REPO}/com/google/code/findbugs/jsr305/3.0.2" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.27.0.2172" type="Directory"/>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.platform.ide" version="0.0.0"/>
+<unit id="org.eclipse.rse.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.wst.jsdt.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.pde.junit.runtime" version="0.0.0"/>
+<unit id="org.eclipse.php.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/releases/2019-12/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="javax.annotation" version="0.0.0"/>
+<repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20191126223242/repository"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.swtbot.eclipse.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/technology/swtbot/snapshots"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.python.pydev.feature.feature.group" version="0.0.0"/>
+<repository location="http://pydev.org/updates"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="com.google.eclipse.mechanic.feature.feature.group" version="0.5.2.201702100021"/>
+<repository location="https://alfsch.github.io/eclipse-updates/workspacemechanic"/>
+</location>
+<location includeSource="true" path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/4.8.0.14729" type="Directory"/>
+<location includeSource="true" path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/4.8.0.14729" type="Directory"/>
+</locations>
+</target>
