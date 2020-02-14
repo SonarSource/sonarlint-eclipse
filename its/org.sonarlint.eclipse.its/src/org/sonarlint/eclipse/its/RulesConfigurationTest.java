@@ -82,6 +82,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     openRulesConfiguration();
 
     SWTBotTree tree = bot.tree(1);
+    assertThat(tree.getAllItems()).hasSize(5 /* HTML, Java, JavaScript, PHP, Python - no TypeScript */);
     SWTBotTreeItem htmlNode = tree.getAllItems()[0];
 
     assertThat(htmlNode.getText()).isEqualTo("HTML");

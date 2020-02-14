@@ -66,7 +66,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     return pageComponent;
   }
 
-  private Map<String, String> loadLanguages() {
+  private static Map<String, String> loadLanguages() {
     return SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getAllLanguagesNameByKey();
   }
 

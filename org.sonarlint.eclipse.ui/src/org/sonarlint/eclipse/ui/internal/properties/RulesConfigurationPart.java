@@ -293,7 +293,7 @@ public class RulesConfigurationPart {
     @Override
     public String getText(Object element) {
       if (element instanceof String) {
-        return languagesNames.get((String) element);
+        return languagesNames.get(element);
       }
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;

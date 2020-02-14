@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -35,6 +36,7 @@ import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
+import org.sonarsource.sonarlint.core.client.api.connected.Language;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneSonarLintEngine;
@@ -91,7 +93,10 @@ public class StandaloneSonarLintEngineFacade {
   public Collection<RuleDetails> getAllRuleDetails() {
     StandaloneSonarLintEngine engine = getClient();
     if (engine != null) {
-      return engine.getAllRuleDetails();
+      return engine.getAllRuleDetails()
+        .stream()
+        .filter(r -> isNotTypeScript(r.getLanguageKey()))
+        .collect(Collectors.toSet());
     }
     return Collections.emptyList();
   }
@@ -99,9 +104,17 @@ public class StandaloneSonarLintEngineFacade {
   public Map<String, String> getAllLanguagesNameByKey() {
     StandaloneSonarLintEngine engine = getClient();
     if (engine != null) {
-      return engine.getAllLanguagesNameByKey();
+      return engine.getAllLanguagesNameByKey()
+        .entrySet()
+        .stream()
+        .filter(e -> isNotTypeScript(e.getKey()))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
     return Collections.emptyMap();
+  }
+
+  private static boolean isNotTypeScript(String key) {
+    return !Language.TS.getLanguageKey().equals(key);
   }
 
   public synchronized void stop() {
