@@ -19,16 +19,9 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
@@ -45,45 +38,29 @@ public class ServerUpdateAvailablePopup extends AbstractSonarLintPopup {
   }
 
   @Override
+  protected String getMessage() {
+    return "We detected some changes on the server '" + server.getId() + "'.\nDo you want to update the SonarLint bindings now?";
+  }
+
+  @Override
   protected void createContentArea(Composite composite) {
-    Label messageLabel = new Label(composite, SWT.WRAP);
-    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    messageLabel.setLayoutData(layoutData);
+    super.createContentArea(composite);
 
-    messageLabel.setText("We detected some changes on the server '" + server.getId() + "'.\nDo you want to update the SonarLint bindings now?");
-    messageLabel.setBackground(composite.getBackground());
-
-    Composite links = new Composite(composite, SWT.NONE);
-    layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    layoutData.horizontalAlignment = GridData.HORIZONTAL_ALIGN_END;
-    links.setLayoutData(layoutData);
-    RowLayout rowLayout = new RowLayout();
-    rowLayout.spacing = 20;
-    links.setLayout(rowLayout);
-    Link detailsLink = new Link(links, SWT.NONE);
-    detailsLink.setText("<a>Remind me later</a>");
-    detailsLink.addSelectionListener(new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        ServerUpdateAvailablePopup.this.close();
-      }
+    addLink("Remind me later", e -> {
+      ServerUpdateAvailablePopup.this.close();
     });
-    Link updateLink = new Link(links, SWT.NONE);
-    updateLink.setText("<a>Update now</a>");
-    updateLink.addSelectionListener(new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        ServerUpdateAvailablePopup.this.close();
-        ServerUpdateJob job = new ServerUpdateJob(server);
-        JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
-        job.schedule();
-      }
+
+    addLink("Update now", e -> {
+      ServerUpdateAvailablePopup.this.close();
+      ServerUpdateJob job = new ServerUpdateJob(server);
+      JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
+      job.schedule();
     });
   }
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint binding data updates available";
+    return "SonarLint - Binding updates available";
   }
 
   @Override

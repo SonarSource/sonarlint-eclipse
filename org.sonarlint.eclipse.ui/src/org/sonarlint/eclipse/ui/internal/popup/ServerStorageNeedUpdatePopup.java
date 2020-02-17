@@ -20,15 +20,9 @@
 package org.sonarlint.eclipse.ui.internal.popup;
 
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
 import org.sonarlint.eclipse.core.internal.server.IServer;
@@ -47,28 +41,25 @@ public class ServerStorageNeedUpdatePopup extends AbstractSonarLintPopup {
   }
 
   @Override
-  protected void createContentArea(Composite composite) {
-    Label messageLabel = new Label(composite, SWT.WRAP);
+  protected String getMessage() {
+    return "Local storage of the binding to the server '" + server.getId() + "' is missing or outdated.";
+  }
 
-    messageLabel.setText("Binding data from the server '" + server.getId() + "' is missing or outdated.");
-    messageLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-    messageLabel.setBackground(composite.getBackground());
-    Link updateServerLink = new Link(composite, SWT.NONE);
-    updateServerLink.setText("<a>Update all project bindings from '" + server.getId() + "'</a>");
-    updateServerLink.addSelectionListener(new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        Job job = new ServerUpdateJob(server);
-        JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
-        job.schedule();
-        ServerStorageNeedUpdatePopup.this.close();
-      }
+  @Override
+  protected void createContentArea(Composite composite) {
+    super.createContentArea(composite);
+
+    addLink("Update all project bindings from '" + server.getId() + "'", e -> {
+      Job job = new ServerUpdateJob(server);
+      JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
+      job.schedule();
+      ServerStorageNeedUpdatePopup.this.close();
     });
   }
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint binding data missing/outdated";
+    return "SonarLint - Invalid binding storage";
   }
 
   @Override

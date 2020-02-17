@@ -19,16 +19,9 @@
  */
 package org.sonarlint.eclipse.ui.internal.popup;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
@@ -39,35 +32,23 @@ public class MissingNodePopup extends AbstractSonarLintPopup {
   }
 
   @Override
+  protected String getMessage() {
+    return "Node.js >= 8.x is required to perform JavaScript analysis. Check the SonarLint console for details.";
+  }
+
+  @Override
   protected void createContentArea(Composite composite) {
-    Label messageLabel = new Label(composite, SWT.WRAP);
-    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    messageLabel.setLayoutData(layoutData);
+    super.createContentArea(composite);
 
-    messageLabel.setText("Node.js >= 8.x is required to perform JavaScript analysis. Check the SonarLint console for details.");
-    messageLabel.setBackground(composite.getBackground());
-
-    Composite links = new Composite(composite, SWT.NONE);
-    layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    layoutData.horizontalAlignment = GridData.HORIZONTAL_ALIGN_END;
-    links.setLayoutData(layoutData);
-    RowLayout rowLayout = new RowLayout();
-    rowLayout.spacing = 20;
-    links.setLayout(rowLayout);
-    Link detailsLink = new Link(links, SWT.NONE);
-    detailsLink.setText("<a>Open console</a>");
-    detailsLink.addSelectionListener(new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        MissingNodePopup.this.close();
-        SonarLintUiPlugin.getDefault().getSonarConsole().bringConsoleToFront();
-      }
+    addLink("Open console", e -> {
+      MissingNodePopup.this.close();
+      SonarLintUiPlugin.getDefault().getSonarConsole().bringConsoleToFront();
     });
   }
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint: Node.js required";
+    return "SonarLint - Node.js required";
   }
 
   @Override
