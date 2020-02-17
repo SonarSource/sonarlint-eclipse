@@ -44,7 +44,7 @@ public class MissingNodePopup extends AbstractSonarLintPopup {
     GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
     messageLabel.setLayoutData(layoutData);
 
-    messageLabel.setText("Node.js is required to perform JavaScript analysis. Check the SonarLint console for details.");
+    messageLabel.setText("Node.js >= 8.x is required to perform JavaScript analysis. Check the SonarLint console for details.");
     messageLabel.setBackground(composite.getBackground());
 
     Composite links = new Composite(composite, SWT.NONE);
@@ -67,7 +67,7 @@ public class MissingNodePopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint: Missing Node.js";
+    return "SonarLint: Node.js required";
   }
 
   @Override
