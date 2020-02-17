@@ -51,6 +51,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
+import org.sonarlint.eclipse.ui.internal.popup.MissingNodePopup;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
 import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
@@ -91,8 +92,22 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     @Override
     public void error(String msg, boolean fromAnalyzer) {
       if (PlatformUI.isWorkbenchRunning()) {
-        getSonarConsole().error(msg, fromAnalyzer);
+        if (isNodeCommandException(msg)) {
+          getSonarConsole().info(msg, false);
+          Display.getDefault().asyncExec(() -> {
+            MissingNodePopup popup = new MissingNodePopup(Display.getCurrent());
+            popup.setFadingEnabled(false);
+            popup.setDelayClose(0L);
+            popup.open();
+          });
+        } else {
+          getSonarConsole().error(msg, fromAnalyzer);
+        }
       }
+    }
+
+    private boolean isNodeCommandException(String msg) {
+      return msg.contains("NodeCommandException");
     }
 
     @Override
