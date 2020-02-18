@@ -21,16 +21,9 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -48,32 +41,20 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
   }
 
   @Override
+  protected String getMessage() {
+    return notification.message();
+  }
+
+  @Override
   protected void createContentArea(Composite composite) {
-    Label messageLabel = new Label(composite, SWT.WRAP);
-    GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    messageLabel.setLayoutData(layoutData);
+    super.createContentArea(composite);
 
-    messageLabel.setText(notification.message());
-    messageLabel.setBackground(composite.getBackground());
-
-    Composite links = new Composite(composite, SWT.NONE);
-    layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    layoutData.horizontalAlignment = GridData.HORIZONTAL_ALIGN_END;
-    links.setLayoutData(layoutData);
-    RowLayout rowLayout = new RowLayout();
-    rowLayout.spacing = 20;
-    links.setLayout(rowLayout);
-    Link detailsLink = new Link(links, SWT.NONE);
-    detailsLink.setText("<a>Check it here</a>");
-    detailsLink.addSelectionListener(new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        DeveloperNotificationPopup.this.close();
-        try {
-          PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(notification.link()));
-        } catch (PartInitException | MalformedURLException e1) {
-          // ignore
-        }
+    addLink("Check it here", e -> {
+      DeveloperNotificationPopup.this.close();
+      try {
+        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(notification.link()));
+      } catch (PartInitException | MalformedURLException e1) {
+        // ignore
       }
     });
   }

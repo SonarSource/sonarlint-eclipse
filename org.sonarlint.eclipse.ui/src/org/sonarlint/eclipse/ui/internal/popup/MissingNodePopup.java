@@ -22,45 +22,33 @@ package org.sonarlint.eclipse.ui.internal.popup;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
-import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
-public class ServerUpdateAvailablePopup extends AbstractSonarLintPopup {
+public class MissingNodePopup extends AbstractSonarLintPopup {
 
-  private final IServer server;
-
-  public ServerUpdateAvailablePopup(Display display, IServer server) {
+  public MissingNodePopup(Display display) {
     super(display);
-    this.server = server;
   }
 
   @Override
   protected String getMessage() {
-    return "We detected some changes on the server '" + server.getId() + "'.\nDo you want to update the SonarLint bindings now?";
+    return "Node.js >= 8.x is required to perform JavaScript analysis. Check the SonarLint console for details.";
   }
 
   @Override
   protected void createContentArea(Composite composite) {
     super.createContentArea(composite);
 
-    addLink("Remind me later", e -> {
-      ServerUpdateAvailablePopup.this.close();
-    });
-
-    addLink("Update now", e -> {
-      ServerUpdateAvailablePopup.this.close();
-      ServerUpdateJob job = new ServerUpdateJob(server);
-      JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
-      job.schedule();
+    addLink("Open console", e -> {
+      MissingNodePopup.this.close();
+      SonarLintUiPlugin.getDefault().getSonarConsole().bringConsoleToFront();
     });
   }
 
   @Override
   protected String getPopupShellTitle() {
-    return "SonarLint - Binding updates available";
+    return "SonarLint - Node.js required";
   }
 
   @Override
