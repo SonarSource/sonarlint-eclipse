@@ -55,12 +55,28 @@ stages:
           sudo apt-get install rng-tools
           sudo service rng-tools start
         displayName: Fix entropy to speed up JAR signing
+      - task: PythonScript@0
+        name: fixBranchName
+        displayName: 'Compute short branch name for buildInfo'
+        inputs:
+          scriptSource: 'inline'
+          script: |
+            branch = "$(Build.SourceBranch)"
+            refPrefix = "refs/heads/"
+            if branch.startswith(refPrefix):
+              fixedBranch = branch[len(refPrefix):]
+            else:
+              fixedBranch = branch
+            # Workaround for https://github.com/Microsoft/azure-pipelines-agent/issues/838
+            print("##vso[task.setvariable variable=fixedBranch;isOutput=true]" + fixedBranch)
       - task: Maven@3
         displayName: 'Run Maven deploy with signing'
         condition: ne(variables['Build.Reason'], 'PullRequest')
         env:
           ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
           ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
+          GIT_SHA1: $(Build.SourceVersion)
+          GITHUB_BRANCH: $(fixBranchName.fixedBranch)
         inputs:
           goals: 'deploy'
           options: >-
