@@ -39,7 +39,7 @@
 <unit id="com.google.eclipse.mechanic.feature.feature.group" version="0.5.2.201702100021"/>
 <repository location="https://alfsch.github.io/eclipse-updates/workspacemechanic"/>
 </location>
-<location includeSource="true" path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/4.8.0.14729" type="Directory"/>
-<location includeSource="true" path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/4.8.0.14729" type="Directory"/>
+<location includeSource="true" path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-client-api/4.9.0.16530" type="Directory"/>
+<location includeSource="true" path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/4.9.0.16530" type="Directory"/>
 </locations>
 </target>

@@ -23,7 +23,6 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,10 +39,8 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
-import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
 import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
@@ -63,7 +60,6 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfig
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.GlobalStorageStatus;
-import org.sonarsource.sonarlint.core.client.api.connected.Language;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
@@ -107,19 +103,12 @@ public class Server implements IServer, StateListener {
   Server(String id) {
     this.id = id;
 
-    EnumSet<Language> languagesDisabledByDefault = EnumSet.of(Language.TS, Language.JAVA, Language.CPP, Language.C, Language.OBJC, Language.SWIFT);
-    EnumSet<Language> enabledLanguages = EnumSet.complementOf(languagesDisabledByDefault);
-    Collection<IAnalysisConfigurator> configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
-    for (IAnalysisConfigurator configurator : configurators) {
-      enabledLanguages.addAll(configurator.whitelistedLanguages());
-    }
-
     ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
       .setServerId(getId())
       .setWorkDir(StoragePathManager.getServerWorkDir(getId()))
       .setStorageRoot(StoragePathManager.getServerStorageRoot())
       .setLogOutput(new SonarLintAnalyzerLogOutput())
-      .addEnabledLanguages(enabledLanguages.toArray(new Language[0]))
+      .addEnabledLanguages(SonarLintUtils.getEnabledLanguages())
       .build();
     this.client = new ConnectedSonarLintEngineImpl(globalConfig);
     this.client.addStateListener(this);

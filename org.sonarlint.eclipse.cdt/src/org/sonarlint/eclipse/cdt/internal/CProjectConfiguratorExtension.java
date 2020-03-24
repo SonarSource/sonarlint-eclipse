@@ -34,7 +34,7 @@ import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.connected.Language;
+import org.sonarsource.sonarlint.core.client.api.common.Language;
 
 /**
  * Responsible for checking at runtime if CDT plugin is installed.

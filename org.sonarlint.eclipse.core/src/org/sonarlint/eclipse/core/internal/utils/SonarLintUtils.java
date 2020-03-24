@@ -24,12 +24,17 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IResource;
+import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
+import org.sonarsource.sonarlint.core.client.api.common.Language;
 
 public class SonarLintUtils {
 
@@ -71,5 +76,15 @@ public class SonarLintUtils {
         break;
       }
     }
+  }
+
+  public static Language[] getEnabledLanguages() {
+    EnumSet<Language> languagesDisabledByDefault = EnumSet.of(Language.TS, Language.JAVA, Language.CPP, Language.C, Language.OBJC, Language.SWIFT);
+    EnumSet<Language> enabledLanguages = EnumSet.complementOf(languagesDisabledByDefault);
+    Collection<IAnalysisConfigurator> configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
+    for (IAnalysisConfigurator configurator : configurators) {
+      enabledLanguages.addAll(configurator.whitelistedLanguages());
+    }
+    return enabledLanguages.toArray(new Language[0]);
   }
 }
