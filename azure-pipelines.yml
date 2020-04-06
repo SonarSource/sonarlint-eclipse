@@ -188,7 +188,7 @@ stages:
       - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
-          key: 'maven | "$(Agent.OS)" | **/pom.xml'
+          key: 'maven | "$(Agent.OS)" | **/pom.xml,!**/target/**'
           restoreKeys: |
             maven | "$(Agent.OS)"
             maven
