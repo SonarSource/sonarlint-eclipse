@@ -52,14 +52,6 @@ public class JavaProjectConfiguratorExtension implements IAnalysisConfigurator, 
   }
 
   @Override
-  public Set<String> whitelistedPlugins() {
-    if (isJdtPresent()) {
-      return Collections.singleton("java");
-    }
-    return Collections.emptySet();
-  }
-
-  @Override
   public Set<Language> whitelistedLanguages() {
     if (isJdtPresent()) {
       return Collections.singleton(Language.JAVA);
