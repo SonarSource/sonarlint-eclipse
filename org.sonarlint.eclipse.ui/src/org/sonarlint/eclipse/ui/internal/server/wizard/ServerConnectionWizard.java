@@ -25,7 +25,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -309,13 +308,14 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     IStatus status;
     try {
       ServerConnectionTestJob testJob = new ServerConnectionTestJob(model.getServerUrl(), organization, model.getUsername(), model.getPassword());
-      getContainer().run(true, true, testJob);
+      getContainer().run(true, false, testJob);
       status = testJob.getStatus();
-    } catch (OperationCanceledException e1) {
+    } catch (InterruptedException canceled) {
+      // Should never be run as it is not cancellable
       return false;
-    } catch (Exception e1) {
-      status = new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error + " " +
-        e1.getMessage(), e1);
+    } catch (InvocationTargetException e) {
+      SonarLintLogger.get().error(message(e), e);
+      status = new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, Messages.ServerLocationWizardPage_msg_error + " " + message(e), e);
     }
 
     String message = status.getMessage();
@@ -325,5 +325,17 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     }
 
     return true;
+  }
+
+  private static String message(Exception e) {
+    String message = e.getMessage();
+    // Message is null for InvocationTargetException, look at the cause
+    if (message != null) {
+      return message;
+    }
+    if (e.getCause() != null && e.getCause().getMessage() != null) {
+      return e.getCause().getMessage();
+    }
+    return "";
   }
 }
