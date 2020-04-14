@@ -20,8 +20,8 @@
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
 import java.util.Locale;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.GC;
@@ -95,7 +95,7 @@ public class IssueDescriptionField extends MarkerField {
     return result;
   }
 
-  @CheckForNull
+  @Nullable
   private static Image getImage(MarkerItem item) {
     if (item.getMarker() != null) {
       if (CompatibilityUtils.supportRectangleImagesInTreeViewer()) {

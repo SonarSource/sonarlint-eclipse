@@ -24,8 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -76,7 +76,7 @@ public final class MarkerUtils {
     }
   }
 
-  @CheckForNull
+  @Nullable
   public static Position getPosition(final IDocument document, @Nullable TextRange textRange) {
     if (textRange == null || ! textRange.isValid()) {
       return null;
@@ -87,7 +87,7 @@ public final class MarkerUtils {
     return getPosition(document, (FullTextRange) textRange);
   }
 
-  @CheckForNull
+  @Nullable
   public static Position getPosition(final IDocument document, int startLine) {
     int startLineStartOffset;
     int length;
@@ -106,7 +106,7 @@ public final class MarkerUtils {
     return new Position(startLineStartOffset, length - lineDelimiterLength);
   }
 
-  @CheckForNull
+  @Nullable
   public static Position getPosition(final IDocument document, FullTextRange textRange) {
     try {
       return convertToGlobalOffset(document, textRange, Position::new);
@@ -116,7 +116,7 @@ public final class MarkerUtils {
     }
   }
 
-  @CheckForNull
+  @Nullable
   public static ExtraPosition getExtraPosition(final IDocument document, TextRange textRange, String message, long markerId,
     ExtraPosition parent) {
     try {
@@ -136,7 +136,7 @@ public final class MarkerUtils {
     return function.apply(start, end - start);
   }
 
-  @CheckForNull
+  @Nullable
   public static RuleKey getRuleKey(IMarker marker) {
     String repositoryAndKey = marker.getAttribute(SONAR_MARKER_RULE_KEY_ATTR, null);
     if (repositoryAndKey == null) {
@@ -157,7 +157,7 @@ public final class MarkerUtils {
       this.previous = previous;
     }
 
-    @CheckForNull
+    @Nullable
     public String getMessage() {
       return message;
     }
@@ -166,7 +166,7 @@ public final class MarkerUtils {
       return markerId;
     }
 
-    @CheckForNull
+    @Nullable
     public ExtraPosition getParent() {
       return previous;
     }

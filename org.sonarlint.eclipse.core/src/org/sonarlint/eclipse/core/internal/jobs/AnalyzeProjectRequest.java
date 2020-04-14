@@ -20,8 +20,8 @@
 package org.sonarlint.eclipse.core.internal.jobs;
 
 import java.util.Collection;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -47,7 +47,7 @@ public class AnalyzeProjectRequest {
       return file;
     }
 
-    @CheckForNull
+    @Nullable
     public IDocument getDocument() {
       return document;
     }

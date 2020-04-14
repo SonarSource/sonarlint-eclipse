@@ -22,8 +22,8 @@ package org.sonarlint.eclipse.ui.internal.server.wizard;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
@@ -149,7 +149,7 @@ public class ServerConnectionModel extends ModelObject {
     suggestServerId();
   }
 
-  @CheckForNull
+  @Nullable
   public String getOrganization() {
     return organization;
   }
@@ -181,7 +181,7 @@ public class ServerConnectionModel extends ModelObject {
     firePropertyChange(PROPERTY_PASSWORD, old, this.password);
   }
 
-  @CheckForNull
+  @Nullable
   public List<RemoteOrganization> getUserOrgs() {
     return userOrgs;
   }
@@ -199,7 +199,7 @@ public class ServerConnectionModel extends ModelObject {
     this.userOrgsIndex = index;
   }
 
-  @CheckForNull
+  @Nullable
   public TextSearchIndex<RemoteOrganization> getUserOrgsIndex() {
     return userOrgsIndex;
   }
@@ -246,7 +246,7 @@ public class ServerConnectionModel extends ModelObject {
     this.selectedProjects = selectedProjects;
   }
 
-  @CheckForNull
+  @Nullable
   public List<ISonarLintProject> getSelectedProjects() {
     return selectedProjects;
   }

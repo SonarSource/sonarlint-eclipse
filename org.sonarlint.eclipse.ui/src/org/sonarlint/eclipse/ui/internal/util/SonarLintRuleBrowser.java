@@ -26,7 +26,7 @@ import java.net.URL;
 import java.util.Base64;
 import java.util.Locale;
 import java.util.Objects;
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;

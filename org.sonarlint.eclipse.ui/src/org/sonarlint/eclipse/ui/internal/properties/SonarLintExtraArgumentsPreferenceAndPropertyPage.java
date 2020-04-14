@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.CheckForNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.resource.JFaceResources;
@@ -421,12 +421,12 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
     fTableViewer.refresh();
   }
 
-  @CheckForNull
+  @Nullable
   private ISonarLintProject getProject() {
     return Adapters.adapt(getElement(), ISonarLintProject.class);
   }
 
-  @CheckForNull
+  @Nullable
   private SonarLintProjectConfiguration getProjectConfig() {
     ISonarLintProject project = getProject();
     if (project != null) {

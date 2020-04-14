@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.cdt.core.CCorePlugin;
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.parser.IScannerInfo;
@@ -124,7 +124,7 @@ public class CdtUtils {
     return context.getAnalysisTemporaryFolder().toString();
   }
 
-  @CheckForNull
+  @Nullable
   private String getFileLanguage(IProject project, IFile file) {
     IPath location = file.getLocation();
     if (location == null) {

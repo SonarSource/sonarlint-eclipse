@@ -23,9 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
-
+import org.eclipse.jdt.annotation.NonNull;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueLocation;
@@ -37,15 +35,15 @@ public class FlowCodec {
    * - They should not appear in issue messages (non-printable, control characters)
    * - They neatly encode to a single byte in UTF-8
    */
-  private static final String SEPARATOR_FLOWS     = "\u0011";
+  private static final String SEPARATOR_FLOWS = "\u0011";
   private static final String SEPARATOR_LOCATIONS = "\u0012";
-  private static final String SEPARATOR_LOCATION  = "\u0013";
+  private static final String SEPARATOR_LOCATION = "\u0013";
 
   private FlowCodec() {
     // Utility class
   }
 
-  @Nonnull
+  @NonNull
   public static String encode(Collection<Flow> flows) {
     return flows.stream().map(FlowCodec::encode).collect(Collectors.joining(SEPARATOR_FLOWS));
   }

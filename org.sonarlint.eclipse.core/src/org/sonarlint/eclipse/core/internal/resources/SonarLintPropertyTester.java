@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.resources;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.runtime.IAdaptable;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;

@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.CheckForNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
@@ -277,7 +277,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     return true;
   }
 
-  @CheckForNull
+  @Nullable
   private SonarLintProjectConfiguration getProjectConfig() {
     ISonarLintProject project = getProject();
     if (project != null) {
@@ -286,7 +286,7 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
     return null;
   }
 
-  @CheckForNull
+  @Nullable
   private ISonarLintProject getProject() {
     return Adapters.adapt(getElement(), ISonarLintProject.class);
   }

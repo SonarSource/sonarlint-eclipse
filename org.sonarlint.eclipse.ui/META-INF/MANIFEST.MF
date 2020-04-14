@@ -18,14 +18,14 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface.databinding,
  org.eclipse.jface.text,
  org.sonarlint.eclipse.core,
- org.jsr-305;resolution:=optional,
  org.eclipse.core.resources,
  org.eclipse.ui.navigator,
  org.eclipse.ui.editors,
  org.eclipse.ui.forms,
  org.sonarsource.sonarlint.core.sonarlint-client-api,
  org.eclipse.team.core,
- org.eclipse.mylyn.commons.ui
+ org.eclipse.mylyn.commons.ui,
+ org.eclipse.jdt.annotation;resolution:=optional
 Export-Package: org.sonarlint.eclipse.ui.internal.properties;x-friends:="org.sonarlint.eclipse.core.tests"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy

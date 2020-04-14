@@ -23,7 +23,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.util.regex.PatternSyntaxException;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.resources.IFile;

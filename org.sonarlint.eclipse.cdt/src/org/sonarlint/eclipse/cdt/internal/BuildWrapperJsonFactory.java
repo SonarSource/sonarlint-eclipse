@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.cdt.internal;
 
 import java.util.Collection;
 import java.util.Map;
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class BuildWrapperJsonFactory {
   private static final String COMPILER = "clang";

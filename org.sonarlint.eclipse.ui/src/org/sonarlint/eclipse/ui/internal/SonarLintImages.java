@@ -21,8 +21,8 @@ package org.sonarlint.eclipse.ui.internal;
 
 import java.net.URL;
 import java.util.Locale;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
@@ -74,7 +74,7 @@ public final class SonarLintImages {
   private SonarLintImages() {
   }
 
-  @CheckForNull
+  @Nullable
   public static Image getIssueImage(String severity, @Nullable String type) {
     String key = severity + "/" + type;
     ImageRegistry imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
@@ -90,12 +90,12 @@ public final class SonarLintImages {
     return imageRegistry.get(key);
   }
 
-  @CheckForNull
+  @Nullable
   public static Image getSeverityImage(String severity) {
     return createImage("severity/" + severity.toLowerCase(Locale.ENGLISH) + ".png");
   }
 
-  @CheckForNull
+  @Nullable
   public static Image getTypeImage(String type) {
     return createImage("type/" + type.toLowerCase(Locale.ENGLISH) + ".png");
   }
@@ -128,7 +128,7 @@ public final class SonarLintImages {
 
   }
 
-  @CheckForNull
+  @Nullable
   private static URL getIconUrl(String key) {
     return SonarLintUiPlugin.getDefault().getBundle().getEntry("icons/" + key);
   }
@@ -139,7 +139,7 @@ public final class SonarLintImages {
     return imageRegistry.get(key);
   }
 
-  @CheckForNull
+  @Nullable
   private static ImageDescriptor createImageDescriptor(String key) {
     ImageRegistry imageRegistry = SonarLintUiPlugin.getDefault().getImageRegistry();
     ImageDescriptor imageDescriptor = imageRegistry.getDescriptor(key);

@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.core.resource;
 
-import javax.annotation.CheckForNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 
 /**
@@ -40,7 +40,7 @@ public interface ISonarLintFileAdapterParticipant {
   /**
    * @return <code>null</code> to use SonarLint default adapter
    */
-  @CheckForNull
+  @Nullable
   default ISonarLintFile adapt(IFile file) {
     return null;
   }

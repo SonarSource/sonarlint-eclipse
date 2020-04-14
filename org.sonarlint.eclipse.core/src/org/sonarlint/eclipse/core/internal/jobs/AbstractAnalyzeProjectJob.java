@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -236,7 +236,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     return inputFiles;
   }
 
-  @CheckForNull
+  @Nullable
   private static String tryDetectLanguage(ISonarLintFile file) {
     String language = null;
     for (IFileLanguageProvider languageProvider : SonarLintExtensionTracker.getInstance().getLanguageProviders()) {
@@ -349,7 +349,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     return new RawIssueTrackable(issue, textRange, textRangeContent, lineContent);
   }
 
-  @CheckForNull
+  @Nullable
   private static String readTextRangeContent(ISonarLintFile resource, IDocument document, TextRange textRange) {
     Position position = MarkerUtils.getPosition(document, textRange);
     if (position != null) {
@@ -362,7 +362,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     return null;
   }
 
-  @CheckForNull
+  @Nullable
   private static String readLineContent(ISonarLintFile resource, IDocument document, int startLine) {
     Position position = MarkerUtils.getPosition(document, startLine);
     if (position != null) {

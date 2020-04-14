@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.core.analysis;
 
-import javax.annotation.CheckForNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 /**
@@ -32,7 +32,7 @@ public interface IFileLanguageProvider {
   /**
    * @return the language of the file, or null to keep default bahavior
    */
-  @CheckForNull
+  @Nullable
   String language(ISonarLintFile file);
 
 }
