@@ -24,9 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
@@ -60,7 +59,7 @@ public interface IServer {
    */
   String getHost();
 
-  @CheckForNull
+  @Nullable
   String getOrganization();
 
   boolean hasAuth();

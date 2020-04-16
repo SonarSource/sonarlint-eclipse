@@ -19,8 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
-import org.sonarlint.eclipse.core.internal.proto.Sonarlint.Issues.Issue;
 import org.junit.Test;
+import org.sonarlint.eclipse.core.internal.proto.Sonarlint.Issues.Issue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

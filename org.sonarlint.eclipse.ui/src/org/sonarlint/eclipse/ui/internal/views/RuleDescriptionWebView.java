@@ -22,10 +22,9 @@ package org.sonarlint.eclipse.ui.internal.views;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
@@ -84,7 +83,7 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     browser.setFocus();
   }
 
-  @CheckForNull
+  @Nullable
   public static IMarker findSelectedSonarIssue(ISelection selection) {
     try {
       if (selection instanceof IStructuredSelection) {

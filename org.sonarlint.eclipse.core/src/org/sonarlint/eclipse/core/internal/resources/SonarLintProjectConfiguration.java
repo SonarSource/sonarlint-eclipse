@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 
 public class SonarLintProjectConfiguration {

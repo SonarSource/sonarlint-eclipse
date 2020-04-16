@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import static java.util.stream.Collectors.joining;
 

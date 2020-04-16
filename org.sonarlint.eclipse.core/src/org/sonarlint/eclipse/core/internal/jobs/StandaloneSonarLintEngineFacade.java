@@ -26,9 +26,9 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
@@ -45,7 +45,7 @@ public class StandaloneSonarLintEngineFacade {
 
   private StandaloneSonarLintEngine client;
 
-  @CheckForNull
+  @Nullable
   private synchronized StandaloneSonarLintEngine getClient() {
     if (client == null) {
       SonarLintLogger.get().info("Starting standalone SonarLint engine " + SonarLintUtils.getPluginVersion() + "...");
@@ -73,7 +73,7 @@ public class StandaloneSonarLintEngineFacade {
     return client;
   }
 
-  @CheckForNull
+  @Nullable
   public AnalysisResults runAnalysis(StandaloneAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor) {
     StandaloneSonarLintEngine engine = getClient();
     if (engine != null) {
@@ -82,7 +82,7 @@ public class StandaloneSonarLintEngineFacade {
     return null;
   }
 
-  @CheckForNull
+  @Nullable
   public RuleDetails getRuleDescription(String ruleKey) {
     StandaloneSonarLintEngine engine = getClient();
     if (engine != null) {

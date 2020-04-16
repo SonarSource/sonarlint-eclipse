@@ -21,13 +21,13 @@ package org.sonarlint.eclipse.core.internal.telemetry;
 
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.Bundle;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;

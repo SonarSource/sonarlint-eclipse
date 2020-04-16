@@ -29,10 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
@@ -65,15 +64,15 @@ import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
 import org.sonarlint.eclipse.core.internal.markers.FlowCodec;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
+import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueLocation;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueLocation;
 
 /**
  * Display details of a rule in a web browser

@@ -19,8 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal.util;
 
-import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -38,7 +38,7 @@ public class LocationsUtils {
     // Utility class
   }
 
-  @CheckForNull
+  @Nullable
   public static ITextEditor findOpenEditorFor(IMarker sonarlintMarker) {
     // Find IFile and open Editor
     // Super defensing programming because we don't really understand what is initialized at startup (SLE-122)

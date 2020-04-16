@@ -20,14 +20,13 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
 
 public interface Trackable {
 
-  @CheckForNull
+  @Nullable
   Long getMarkerId();
 
   void setMarkerId(@Nullable Long id);
@@ -36,25 +35,25 @@ public interface Trackable {
    * The line index, starting with 1. Null means that
    * issue does not relate to a line (file issue for example).
    */
-  @CheckForNull
+  @Nullable
   Integer getLine();
 
   String getMessage();
 
-  @CheckForNull
+  @Nullable
   Integer getTextRangeHash();
 
-  @CheckForNull
+  @Nullable
   Integer getLineHash();
 
   String getRuleKey();
 
   String getRuleName();
 
-  @CheckForNull
+  @Nullable
   Long getCreationDate();
 
-  @CheckForNull
+  @Nullable
   String getServerIssueKey();
 
   boolean isResolved();
@@ -82,7 +81,7 @@ public interface Trackable {
    */
   String getRawType();
 
-  @CheckForNull
+  @Nullable
   TextRange getTextRange();
 
   List<Flow> getFlows();

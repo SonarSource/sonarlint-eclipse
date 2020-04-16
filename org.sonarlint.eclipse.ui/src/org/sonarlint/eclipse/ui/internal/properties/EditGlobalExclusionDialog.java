@@ -21,9 +21,7 @@ package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
-
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.swt.SWT;

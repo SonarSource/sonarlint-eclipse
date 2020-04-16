@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.function.Supplier;
-
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;

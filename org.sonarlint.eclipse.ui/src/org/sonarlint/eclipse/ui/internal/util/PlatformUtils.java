@@ -21,10 +21,10 @@ package org.sonarlint.eclipse.ui.internal.util;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
@@ -77,7 +77,7 @@ public final class PlatformUtils {
     }
   }
 
-  @CheckForNull
+  @Nullable
   public static IEditorPart findEditor(ISonarLintFile file) {
     IWorkbench workbench = PlatformUI.getWorkbench();
     if (workbench == null) {
@@ -100,7 +100,7 @@ public final class PlatformUtils {
     return null;
   }
 
-  @CheckForNull
+  @Nullable
   private static IEditorPart findInFileEditorInput(ISonarLintFile file, IWorkbenchPage page) {
     if (file.getResource() instanceof IFile) {
       // Don't use page.findEditor(IEditorInput) because it will try to restore the editor before returning it
@@ -113,7 +113,7 @@ public final class PlatformUtils {
     return null;
   }
 
-  @CheckForNull
+  @Nullable
   private static IEditorPart findInOtherEditors(ISonarLintFile file, IWorkbenchPage page) {
     // check for editors that have their own kind of input that adapts to IFile,
     // being careful not to force loading of the editor

@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.connected.objectstore.HashingPathMapper;
@@ -70,7 +70,7 @@ public class IssueStore {
     store.write(key, transform(issues));
   }
 
-  @CheckForNull
+  @Nullable
   public Collection<Trackable> read(String key) throws IOException {
     Optional<Sonarlint.Issues> issues = store.read(key);
     if (issues.isPresent()) {
@@ -109,7 +109,6 @@ public class IssueStore {
     return new ProtobufIssueTrackable(issue);
   }
 
-  @CheckForNull
   private static Sonarlint.Issues.Issue transform(Trackable localIssue) {
     Sonarlint.Issues.Issue.Builder builder = Sonarlint.Issues.Issue.newBuilder()
       .setRuleKey(localIssue.getRuleKey())

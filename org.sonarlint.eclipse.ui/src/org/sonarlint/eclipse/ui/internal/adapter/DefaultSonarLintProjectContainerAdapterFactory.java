@@ -21,10 +21,10 @@ package org.sonarlint.eclipse.ui.internal.adapter;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.ui.IWorkingSet;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer;
 

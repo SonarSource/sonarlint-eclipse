@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.jdt.internal;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Set;
-import javax.annotation.CheckForNull;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -33,6 +32,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.content.IContentType;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
@@ -144,13 +144,13 @@ public class JdtUtils {
     processOutputDir(javaProject.getOutputLocation(), context, topProject, isTestEntry);
   }
 
-  @CheckForNull
+  @Nullable
   protected static String getAbsolutePathAsString(IPath path) {
     IPath absolutePath = getAbsolutePath(path);
     return absolutePath != null ? absolutePath.toString() : null;
   }
 
-  @CheckForNull
+  @Nullable
   private static IPath getAbsolutePath(IPath path) {
     // IPath should be resolved this way in order to handle linked resources (SONARIDE-271)
     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();

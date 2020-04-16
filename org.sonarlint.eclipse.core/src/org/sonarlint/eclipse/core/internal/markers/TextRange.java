@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import javax.annotation.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 public interface TextRange {
 
