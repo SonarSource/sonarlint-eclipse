@@ -19,8 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal.util;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;

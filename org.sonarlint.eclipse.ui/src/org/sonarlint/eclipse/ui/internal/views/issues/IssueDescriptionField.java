@@ -20,9 +20,8 @@
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
 import java.util.Locale;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;

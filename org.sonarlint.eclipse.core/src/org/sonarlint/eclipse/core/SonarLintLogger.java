@@ -23,7 +23,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 
 public class SonarLintLogger {

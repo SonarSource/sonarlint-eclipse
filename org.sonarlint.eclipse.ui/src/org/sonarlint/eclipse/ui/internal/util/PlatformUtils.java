@@ -21,10 +21,10 @@ package org.sonarlint.eclipse.ui.internal.util;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;

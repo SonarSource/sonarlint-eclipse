@@ -19,9 +19,9 @@
  */
 package org.sonarlint.eclipse.ui.internal.server.wizard;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.sonarlint.eclipse.core.internal.server.Server;
 

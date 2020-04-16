@@ -19,10 +19,10 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExtraPositionTest {
 

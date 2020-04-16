@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import java.util.Locale;
 import java.util.Objects;
-
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public class ExclusionItem {

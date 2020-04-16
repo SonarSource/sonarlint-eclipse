@@ -22,7 +22,6 @@ package org.sonarlint.eclipse.ui.internal;
 import java.net.URL;
 import java.util.Locale;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;

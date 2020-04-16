@@ -22,13 +22,11 @@ package org.sonarlint.eclipse.ui.internal.properties;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.util.regex.PatternSyntaxException;
-
-import org.eclipse.jdt.annotation.Nullable;
-
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.ILabelProvider;

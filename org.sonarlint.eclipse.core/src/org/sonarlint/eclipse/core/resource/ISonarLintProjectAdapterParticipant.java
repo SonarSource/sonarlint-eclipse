@@ -19,8 +19,8 @@
  */
 package org.sonarlint.eclipse.core.resource;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * By default SonarLint try to adapt any {@link IProject} to {@link ISonarLintProject}.

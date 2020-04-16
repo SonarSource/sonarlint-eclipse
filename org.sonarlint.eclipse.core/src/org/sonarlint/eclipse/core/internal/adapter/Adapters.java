@@ -19,11 +19,11 @@
  */
 package org.sonarlint.eclipse.core.internal.adapter;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.PlatformObject;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Copied from Oxygen for backward compatibility with older versions of Eclipse
