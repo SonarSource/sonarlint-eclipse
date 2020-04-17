@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.command;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
@@ -32,6 +33,7 @@ import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
 public class ExcludeCommand extends AbstractHandler {
 
+  @Nullable
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
     for (ISonarLintFile file : SelectionUtils.allSelectedFiles(HandlerUtil.getCurrentSelectionChecked(event), false)) {

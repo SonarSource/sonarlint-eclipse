@@ -383,14 +383,17 @@ public class ServersManager {
     }
   }
 
+  @Nullable
   public static String getUsername(IServer server) throws StorageException {
     return getFromSecure(server, USERNAME_ATTRIBUTE);
   }
 
+  @Nullable
   public static String getPassword(IServer server) throws StorageException {
     return getFromSecure(server, PASSWORD_ATTRIBUTE);
   }
 
+  @Nullable
   private static String getFromSecure(IServer server, String attribute) throws StorageException {
     ISecurePreferences secureServersNode = getSecureServersNode();
     if (!secureServersNode.nodeExists(getServerNodeName(server))) {
@@ -409,6 +412,7 @@ public class ServersManager {
     return StringUtils.urlEncode(server.getId());
   }
 
+  @Nullable
   public String validate(String serverId, boolean editExisting) {
     if (StringUtils.isBlank(serverId)) {
       return "Connection name must be specified";

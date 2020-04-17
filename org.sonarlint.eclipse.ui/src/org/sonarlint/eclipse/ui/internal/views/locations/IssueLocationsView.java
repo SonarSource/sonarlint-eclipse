@@ -211,8 +211,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
         IDocument document = openEditor.getDocumentProvider().getDocument(openEditor.getEditorInput());
         try {
           if (Stream.of(document.getPositions(MarkerUtils.SONARLINT_EXTRA_POSITIONS_CATEGORY))
-            .noneMatch(p -> p instanceof ExtraPosition && ((ExtraPosition) p).getMarkerId() == sonarlintMarker.getId())
-            ) {
+            .noneMatch(p -> p instanceof ExtraPosition && ((ExtraPosition) p).getMarkerId() == sonarlintMarker.getId())) {
             createExtraLocations(document, sonarlintMarker);
           }
         } catch (BadPositionCategoryException e) {
@@ -290,6 +289,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
       }
     }
 
+    @Nullable
     @Override
     public Object getParent(Object element) {
       return null;
@@ -515,7 +515,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
   }
 
   private int getSelectedFlow() {
-    if(selectedNode instanceof FlowRootNode) {
+    if (selectedNode instanceof FlowRootNode) {
       return ((FlowRootNode) selectedNode).id;
     } else if (selectedNode instanceof FlowNode) {
       return ((FlowNode) selectedNode).parentId;

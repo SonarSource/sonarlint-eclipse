@@ -23,6 +23,7 @@ import java.util.Collection;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
@@ -40,6 +41,7 @@ public class BindProjectsCommand extends AbstractHandler {
     return display;
   }
 
+  @Nullable
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
     Collection<ISonarLintProject> selectedProjects = SelectionUtils.allSelectedProjects(event, false);

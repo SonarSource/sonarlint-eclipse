@@ -30,6 +30,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.text.IDocument;
@@ -56,6 +57,7 @@ import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
 public class AnalyzeCommand extends AbstractHandler {
 
+  @Nullable
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
     ISelection selection = HandlerUtil.getCurrentSelectionChecked(event);
@@ -139,6 +141,7 @@ public class AnalyzeCommand extends AbstractHandler {
     return filesToAnalyzePerProject;
   }
 
+  @Nullable
   static FileWithDocument findEditedFile(ExecutionEvent event) {
     IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
     if (activeEditor == null) {

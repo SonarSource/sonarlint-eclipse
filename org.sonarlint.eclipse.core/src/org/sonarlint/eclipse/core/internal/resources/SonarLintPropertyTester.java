@@ -69,6 +69,7 @@ public class SonarLintPropertyTester extends PropertyTester {
     return false;
   }
 
+  @Nullable
   private static ISonarLintFile getFile(Object receiver) {
     if (receiver instanceof ISonarLintFile) {
       return (ISonarLintFile) receiver;
@@ -76,6 +77,7 @@ public class SonarLintPropertyTester extends PropertyTester {
     return null;
   }
 
+  @Nullable
   private static ISonarLintProject getProject(Object receiver) {
     if (receiver instanceof ISonarLintProject) {
       return (ISonarLintProject) receiver;

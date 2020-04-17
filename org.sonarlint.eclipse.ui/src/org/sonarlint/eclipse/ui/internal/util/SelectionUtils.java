@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -46,6 +47,7 @@ public final class SelectionUtils {
    * @param s the selection
    * @return the selected first element or null
    */
+  @Nullable
   public static Object getSingleElement(ISelection s) {
     if (!(s instanceof IStructuredSelection)) {
       return null;

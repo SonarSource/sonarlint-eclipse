@@ -58,7 +58,7 @@ public final class PlatformUtils {
   /**
    * See http://wiki.eclipse.org/FAQ_How_do_I_open_an_editor_on_a_file_in_the_workspace%3F
    */
-  public static void openEditor(IFile file, Integer line) {
+  public static void openEditor(IFile file, @Nullable Integer line) {
     if (line == null) {
       openEditor(file);
       return;

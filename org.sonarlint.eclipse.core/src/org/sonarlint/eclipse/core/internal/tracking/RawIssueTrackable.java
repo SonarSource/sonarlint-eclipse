@@ -60,11 +60,13 @@ public class RawIssueTrackable implements Trackable {
     return digest(content).hashCode();
   }
 
+  @Nullable
   @Override
   public Integer getLine() {
     return issue.getStartLine();
   }
 
+  @Nullable
   @Override
   public String getMessage() {
     return issue.getMessage();
@@ -100,11 +102,13 @@ public class RawIssueTrackable implements Trackable {
     return issue.getSeverity();
   }
 
+  @Nullable
   @Override
   public String getType() {
     return issue.getType();
   }
 
+  @Nullable
   @Override
   public String getRawType() {
     return issue.getType();
@@ -115,11 +119,13 @@ public class RawIssueTrackable implements Trackable {
     return textRange;
   }
 
+  @Nullable
   @Override
   public String getServerIssueKey() {
     return null;
   }
 
+  @Nullable
   @Override
   public Long getCreationDate() {
     return null;

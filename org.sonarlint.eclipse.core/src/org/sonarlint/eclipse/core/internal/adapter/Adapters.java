@@ -54,6 +54,7 @@ public class Adapters {
    *         adapter type, or null if no such representation exists
    */
   @SuppressWarnings("unchecked")
+  @Nullable
   public static <T> T adapt(@Nullable Object sourceObject, Class<T> adapter, boolean allowActivation) {
     if (sourceObject == null) {
       return null;
@@ -112,10 +113,12 @@ public class Adapters {
    * @return a representation of sourceObject that is assignable to the
    *         adapter type, or null if no such representation exists
    */
+  @Nullable
   public static <T> T adapt(Object sourceObject, Class<T> adapter) {
     return adapt(sourceObject, adapter, true);
   }
 
+  @Nullable
   private static Object queryAdapterManager(Object sourceObject, String adapterId, boolean allowActivation) {
     Object result;
     if (allowActivation) {

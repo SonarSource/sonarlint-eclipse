@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.IWorkingSet;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -55,6 +56,7 @@ public class DefaultSonarLintProjectContainerAdapterFactory implements IAdapterF
     }
   }
 
+  @Nullable
   @Override
   public Object getAdapter(Object adaptableObject, Class adapterType) {
     if (ISonarLintProjectContainer.class.equals(adapterType) && adaptableObject instanceof IWorkingSet) {

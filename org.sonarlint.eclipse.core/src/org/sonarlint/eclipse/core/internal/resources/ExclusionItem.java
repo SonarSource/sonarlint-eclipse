@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.resources;
 
 import java.util.Locale;
 import java.util.Objects;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 
 public class ExclusionItem {
@@ -36,6 +37,7 @@ public class ExclusionItem {
     this.item = item;
   }
 
+  @Nullable
   public static ExclusionItem parse(String text) {
     int i = text.indexOf(':');
     if (i < 0) {

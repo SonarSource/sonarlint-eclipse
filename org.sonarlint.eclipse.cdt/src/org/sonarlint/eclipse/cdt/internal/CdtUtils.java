@@ -155,6 +155,7 @@ public class CdtUtils {
     return jsonFilePath;
   }
 
+  @Nullable
   public String language(IFile iFile) {
     return getFileLanguage(iFile.getProject(), iFile);
   }

@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -42,6 +43,7 @@ import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
 
 public class AnalyzeChangeSetCommand extends AbstractHandler {
 
+  @Nullable
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException {
     Collection<ISonarLintProject> selectedProjects = SelectionUtils.allSelectedProjects(event, true);

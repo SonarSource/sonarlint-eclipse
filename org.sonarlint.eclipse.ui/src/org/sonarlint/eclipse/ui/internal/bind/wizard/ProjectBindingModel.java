@@ -83,6 +83,7 @@ public class ProjectBindingModel extends ModelObject {
     this.skipServerSelection = skipServerSelection;
   }
 
+  @Nullable
   public TextSearchIndex<RemoteProject> getProjectIndex() {
     return projectIndex;
   }

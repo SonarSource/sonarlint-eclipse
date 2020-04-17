@@ -150,6 +150,7 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
     addPage(remoteProjectSelectionWizardPage);
   }
 
+  @Nullable
   @Override
   public IWizardPage getNextPage(IWizardPage page) {
     if (page == projectsSelectionWizardPage) {
@@ -161,6 +162,7 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
     return null;
   }
 
+  @Nullable
   @Override
   public IWizardPage getPreviousPage(IWizardPage page) {
     // This method is only used for the first page of a wizard,

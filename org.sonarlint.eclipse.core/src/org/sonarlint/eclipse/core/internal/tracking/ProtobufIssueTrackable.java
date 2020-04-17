@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint.Issues.Issue;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -33,11 +34,13 @@ public class ProtobufIssueTrackable implements Trackable {
     this.issue = issue;
   }
 
+  @Nullable
   @Override
   public Integer getLine() {
     return issue.getLine() != 0 ? issue.getLine() : null;
   }
 
+  @Nullable
   @Override
   public Long getMarkerId() {
     return issue.getMarkerId() == 0 ? null : issue.getMarkerId();
@@ -53,6 +56,7 @@ public class ProtobufIssueTrackable implements Trackable {
     return issue.getMessage();
   }
 
+  @Nullable
   @Override
   public Integer getTextRangeHash() {
     return null;
@@ -73,11 +77,13 @@ public class ProtobufIssueTrackable implements Trackable {
     throw new UnsupportedOperationException();
   }
 
+  @Nullable
   @Override
   public String getServerIssueKey() {
     return !StringUtils.isEmpty(issue.getServerIssueKey()) ? issue.getServerIssueKey() : null;
   }
 
+  @Nullable
   @Override
   public Long getCreationDate() {
     return issue.getCreationDate() != 0 ? issue.getCreationDate() : null;

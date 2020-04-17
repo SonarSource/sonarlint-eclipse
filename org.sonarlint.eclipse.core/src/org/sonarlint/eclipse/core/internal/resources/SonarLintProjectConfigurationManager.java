@@ -79,14 +79,14 @@ public class SonarLintProjectConfigurationManager {
       throw new IllegalStateException("Unable to get SonarLint settings node");
     }
 
-    if (configuration.getExtraProperties() != null) {
+    if (!configuration.getExtraProperties().isEmpty()) {
       String props = PreferencesUtils.serializeExtraProperties(configuration.getExtraProperties());
       projectNode.put(P_EXTRA_PROPS, props);
     } else {
       projectNode.remove(P_EXTRA_PROPS);
     }
 
-    if (configuration.getFileExclusions() != null) {
+    if (!configuration.getFileExclusions().isEmpty()) {
       String props = PreferencesUtils.serializeFileExclusions(configuration.getFileExclusions());
       projectNode.put(P_FILE_EXCLUSIONS, props);
     } else {

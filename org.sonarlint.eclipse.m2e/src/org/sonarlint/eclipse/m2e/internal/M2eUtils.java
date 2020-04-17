@@ -28,6 +28,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.internal.IMavenConstants;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
@@ -77,6 +78,7 @@ public class M2eUtils {
   /**
    * Copied from {@link FileSystemResourceManager} of Oxygen to support older Eclipse versions
    */
+  @Nullable
   private static IFile resourceForLocation(IPath location) {
     int resultProjectPathSegments = 0;
     IFile result = null;
@@ -99,6 +101,7 @@ public class M2eUtils {
     return result;
   }
 
+  @Nullable
   private static IFile resourceFor(IPath path) {
     int numSegments = path.segmentCount();
     if (numSegments < ICoreConstants.MINIMUM_FILE_SEGMENT_LENGTH) {

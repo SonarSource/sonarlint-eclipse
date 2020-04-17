@@ -26,6 +26,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 
 public class IssueRuleNameField extends MarkerField {
 
+  @Nullable
   @Override
   public String getValue(@Nullable MarkerItem item) {
     if (item == null) {

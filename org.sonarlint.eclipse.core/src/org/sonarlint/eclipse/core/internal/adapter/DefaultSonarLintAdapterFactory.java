@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
@@ -37,6 +38,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant;
 
 public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
 
+  @Nullable
   @Override
   public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
     if (!(adaptableObject instanceof IAdaptable)) {
@@ -62,6 +64,7 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
     return null;
   }
 
+  @Nullable
   private static <T> T getProjectAdapter(Class<T> adapterType, IProject project) {
     for (ISonarLintProjectAdapterParticipant projectAdapterParticipant : SonarLintExtensionTracker.getInstance().getProjectAdapterParticipants()) {
       if (projectAdapterParticipant.exclude(project)) {
@@ -86,6 +89,7 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
   /**
    * Change this method with caution since it is critical for some Cobol IDEs integration
    */
+  @Nullable
   private static <T> T getFileAdapter(Class<T> adapterType, IFile file) {
     // First do some very cheap checks to see if we can exclude the physical file
     if (!SonarLintUtils.isSonarLintFileCandidate(file)) {
@@ -101,6 +105,7 @@ public class DefaultSonarLintAdapterFactory implements IAdapterFactory {
     return adaptFile(adapterType, file);
   }
 
+  @Nullable
   private static <T> T adaptFile(Class<T> adapterType, IFile file) {
     // Try to find one ISonarLintFileAdapterParticipant that will adapt the IFile
     for (ISonarLintFileAdapterParticipant p : SonarLintExtensionTracker.getInstance().getFileAdapterParticipants()) {

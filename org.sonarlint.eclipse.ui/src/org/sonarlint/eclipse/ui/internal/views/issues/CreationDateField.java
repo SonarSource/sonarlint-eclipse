@@ -29,6 +29,7 @@ import org.sonarsource.sonarlint.core.client.api.util.DateUtils;
 
 public class CreationDateField extends MarkerField {
 
+  @Nullable
   @Override
   public String getValue(@Nullable MarkerItem item) {
     if (item == null) {

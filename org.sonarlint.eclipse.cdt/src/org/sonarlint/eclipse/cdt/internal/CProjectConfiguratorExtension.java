@@ -28,6 +28,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
@@ -92,6 +93,7 @@ public class CProjectConfiguratorExtension implements IAnalysisConfigurator, IFi
     cdtUtils.configure(context, monitor);
   }
 
+  @Nullable
   @Override
   public String language(ISonarLintFile file) {
     if (canConfigure(file.getProject())) {

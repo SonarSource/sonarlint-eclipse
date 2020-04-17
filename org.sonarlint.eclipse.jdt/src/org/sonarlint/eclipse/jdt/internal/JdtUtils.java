@@ -167,6 +167,7 @@ public class JdtUtils {
     }
   }
 
+  @Nullable
   private static IPath pathIfExist(IPath path) {
     File file = path.toFile();
     if (file.exists()) {
@@ -251,6 +252,7 @@ public class JdtUtils {
     }
   }
 
+  @Nullable
   private static String resolveLibrary(IJavaProject javaProject, IClasspathEntry entry) {
     final String libPath;
     IResource member = findPath(javaProject.getProject(), entry.getPath());
@@ -265,6 +267,7 @@ public class JdtUtils {
     return libPath.endsWith(File.separator) ? libPath.substring(0, libPath.length() - 1) : libPath;
   }
 
+  @Nullable
   private static IResource findPath(IProject project, IPath path) {
     IResource member = project.findMember(path);
     if (member == null) {

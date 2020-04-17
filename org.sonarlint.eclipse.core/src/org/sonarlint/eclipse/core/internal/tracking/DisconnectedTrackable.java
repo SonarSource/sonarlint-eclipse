@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * A trackable that used to match a server issue but it no longer does.
  */
@@ -33,6 +35,7 @@ public class DisconnectedTrackable extends WrappedTrackable {
     this.type = trackable.getRawType();
   }
 
+  @Nullable
   @Override
   public String getServerIssueKey() {
     return null;
