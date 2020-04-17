@@ -253,6 +253,7 @@ stages:
           mavenOptions: $(MAVEN_OPTS)
       - publish: $(Build.Repository.LocalPath)/its/org.sonarlint.eclipse.its/target/output
         artifact: ITCaptureScreenshotAndConsole
+        condition: failed()
       - task: PublishBuildArtifacts@1
         displayName: Store coverage report as build artifact
         inputs:
