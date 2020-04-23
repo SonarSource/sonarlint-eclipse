@@ -63,7 +63,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.javascript</groupId>
                   <artifactId>sonar-javascript-plugin</artifactId>
-                  <version>6.2.0.12043</version>
+                  <version>6.2.1.12157</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
