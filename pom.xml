@@ -55,12 +55,12 @@
     <license.title>SonarLint for Eclipse</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>1.4.0</tycho.version>
+    <tycho.version>1.7.0</tycho.version>
     <tycho-extras.version>${tycho.version}</tycho-extras.version>
     <target.platform>2019-06</target.platform>
     <sonarlint-core.version>4.10.0.17000</sonarlint-core.version>
-    <protobuf.version>3.6.1</protobuf.version>
-    <jacoco.version>0.8.4</jacoco.version>
+    <protobuf.version>3.11.4</protobuf.version>
+    <jacoco.version>0.8.5</jacoco.version>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->
@@ -89,12 +89,12 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>2.28.2</version>
+      <version>3.3.3</version>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.12.2</version>
+      <version>3.15.0</version>
     </dependency>
   </dependencies>
 

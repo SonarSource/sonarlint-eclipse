@@ -3,11 +3,11 @@
 <target includeMode="feature" name="sonar-eclipse-2019-12-dev" sequenceNumber="22">
 <locations>
 <location path="${M2_REPO}/commons-io/commons-io/2.6" type="Directory"/>
-<location path="${M2_REPO}/org/mockito/mockito-core/2.28.2" type="Directory"/>
-<location path="${M2_REPO}/net/bytebuddy/byte-buddy/1.9.10" type="Directory"/>
-<location path="${M2_REPO}/net/bytebuddy/byte-buddy-agent/1.9.10" type="Directory"/>
+<location path="${M2_REPO}/org/mockito/mockito-core/3.3.3" type="Directory"/>
+<location path="${M2_REPO}/net/bytebuddy/byte-buddy/1.10.5" type="Directory"/>
+<location path="${M2_REPO}/net/bytebuddy/byte-buddy-agent/1.10.5" type="Directory"/>
 <location path="${M2_REPO}/org/objenesis/objenesis/2.6" type="Directory"/>
-<location path="${M2_REPO}/org/assertj/assertj-core/3.12.2" type="Directory"/>
+<location path="${M2_REPO}/org/assertj/assertj-core/3.15.0" type="Directory"/>
 <location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.27.0.2172" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>

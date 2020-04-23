@@ -26,10 +26,10 @@ Require-Bundle: org.eclipse.jdt.core,
  org.apache.log4j,
  org.junit;bundle-version="4.11.0",
  org.apache.commons.io;bundle-version="2.5.0",
- org.assertj.core;bundle-version="3.5.2",
  org.sonarsource.orchestrator.sonar-orchestrator-osgi,
  org.eclipse.equinox.security,
- org.eclipse.ui.console
+ org.eclipse.ui.console,
+ assertj-core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonarlint.eclipse.its,
