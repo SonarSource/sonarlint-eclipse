@@ -13,7 +13,6 @@ Require-Bundle: org.eclipse.core.resources,
  org.sonarlint.eclipse.cdt,
  org.sonarlint.eclipse.ui,
  org.mockito.mockito-core,
- org.assertj.core,
  org.junit;bundle-version="4.8.2",
  org.eclipse.core.filebuffers,
  org.eclipse.jface.text,
@@ -21,5 +20,6 @@ Require-Bundle: org.eclipse.core.resources,
  org.eclipse.equinox.security,
  org.sonarsource.sonarlint.core.sonarlint-client-api,
  org.sonarsource.sonarlint.core.sonarlint-core,
- org.eclipse.jdt.annotation;resolution:=optional
+ org.eclipse.jdt.annotation;resolution:=optional,
+ assertj-core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
