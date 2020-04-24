@@ -23,8 +23,6 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
@@ -39,7 +37,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
-import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -256,16 +253,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     JobHelpers.waitForJobsToComplete(bot);
 
-    // Try to make tests more stable on Azure by increasing the timeout
-    long timeout = SWTBotPreferences.TIMEOUT;
-    try {
-      SWTBotPreferences.TIMEOUT = Duration.of(10, ChronoUnit.SECONDS).toMillis();
-      new ProjectExplorerBot(bot).expandAndOpen("php", "foo.php");
-    } finally {
-      // Restore
-      SWTBotPreferences.TIMEOUT = timeout;
-    }
-
+    new ProjectExplorerBot(bot).expandAndOpen("php", "foo.php");
     JobHelpers.waitForJobsToComplete(bot);
 
     List<IMarker> markers = Arrays.asList(project.findMember("foo.php").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
