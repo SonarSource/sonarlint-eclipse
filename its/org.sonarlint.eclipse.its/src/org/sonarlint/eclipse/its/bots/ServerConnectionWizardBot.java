@@ -179,11 +179,11 @@ public class ServerConnectionWizardBot {
     Table proposalsTable = null;
 
     long timeout = SWTBotPreferences.TIMEOUT;
-    SWTBotPreferences.TIMEOUT = 200;
     boolean findInvisibleControls = bot.getFinder().shouldFindInvisibleControls();
-    bot.getFinder().setShouldFindInvisibleControls(true);
 
     try {
+      SWTBotPreferences.TIMEOUT = 200;
+      bot.getFinder().setShouldFindInvisibleControls(true);
       for (Shell shell : shells) {
         try {
           proposalsTable = bot.widget(widgetOfType(Table.class), shell);
@@ -193,6 +193,7 @@ public class ServerConnectionWizardBot {
         break;
       }
     } finally {
+      // Restore
       bot.getFinder().setShouldFindInvisibleControls(findInvisibleControls);
       SWTBotPreferences.TIMEOUT = timeout;
     }
