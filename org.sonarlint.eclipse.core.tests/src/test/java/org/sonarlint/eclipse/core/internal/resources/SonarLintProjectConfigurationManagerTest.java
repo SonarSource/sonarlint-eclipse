@@ -30,16 +30,16 @@ import org.junit.Test;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
 
-  private static final String PROJECT_NAME = "DeprecatedModuleBinding";
+  private static final String PROJECT_WITH_DEPRECATED_SETTINGS = "DeprecatedModuleBinding";
   private final List<String> infos = new ArrayList<>();
   private final List<String> errors = new ArrayList<>();
-  private IProject project;
 
   @Before
   public void prepare() throws Exception {
@@ -59,15 +59,31 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
       }
 
     });
-    project = importEclipseProject(PROJECT_NAME);
+
   }
 
   @Test
   public void load_deprecated_project_config() throws IOException, CoreException, InterruptedException {
+    IProject project = importEclipseProject(PROJECT_WITH_DEPRECATED_SETTINGS);
     // Configure the project
-    SonarLintProjectConfiguration configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), PROJECT_NAME);
+    SonarLintProjectConfiguration configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project), PROJECT_WITH_DEPRECATED_SETTINGS);
     assertThat(configuration.getProjectBinding()).isEmpty();
     assertThat(errors).isEmpty();
-    assertThat(infos).contains("Binding configuration of project '" + PROJECT_NAME + "' is outdated. Please rebind this project.");
+    assertThat(infos).contains("Binding configuration of project '" + PROJECT_WITH_DEPRECATED_SETTINGS + "' is outdated. Please rebind this project.");
+  }
+
+  @Test
+  public void settings_are_written_to_disk() throws IOException, CoreException, InterruptedException {
+    IProject project = importEclipseProject("SimpleProject");
+    ProjectScope projectScope = new ProjectScope(project);
+    assertThat(projectScope.getLocation().append("org.sonarlint.eclipse.core.prefs").toFile()).doesNotExist();
+    SonarLintProjectConfiguration configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(projectScope, "SimpleProject");
+    configuration.setAutoEnabled(false);
+    configuration.setProjectBinding(new EclipseProjectBinding("myServer", "myProjectKey", "aPrefix", "aSuffix"));
+    assertThat(projectScope.getLocation().append("org.sonarlint.eclipse.core.prefs").toFile()).doesNotExist();
+    SonarLintCorePlugin.getInstance().getProjectConfigManager().save(projectScope, configuration);
+    assertThat(projectScope.getLocation().append("org.sonarlint.eclipse.core.prefs").toFile()).exists();
+    assertThat(errors).isEmpty();
+
   }
 }
