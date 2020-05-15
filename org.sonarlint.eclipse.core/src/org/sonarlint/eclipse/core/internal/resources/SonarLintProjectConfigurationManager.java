@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.resources;
 import java.util.List;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IScopeContext;
+import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
@@ -107,6 +108,11 @@ public class SonarLintProjectConfigurationManager {
     }
 
     projectNode.putBoolean(P_AUTO_ENABLED_KEY, configuration.isAutoEnabled());
+    try {
+      projectNode.flush();
+    } catch (BackingStoreException e) {
+      SonarLintLogger.get().error("Failed to save project configuration", e);
+    }
   }
 
 }
