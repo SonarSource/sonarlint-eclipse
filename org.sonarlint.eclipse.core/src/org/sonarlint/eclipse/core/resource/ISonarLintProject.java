@@ -37,6 +37,11 @@ import static java.util.Objects.requireNonNull;
  */
 public interface ISonarLintProject extends ISonarLintIssuable {
 
+  @Override
+  default ISonarLintProject getProject() {
+    return this;
+  }
+
   /**
    * Is the project open. Most actions are disabled on closed projects.
    */

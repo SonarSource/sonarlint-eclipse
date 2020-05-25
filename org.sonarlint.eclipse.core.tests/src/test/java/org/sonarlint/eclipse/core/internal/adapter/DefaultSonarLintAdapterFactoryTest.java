@@ -141,11 +141,6 @@ public class DefaultSonarLintAdapterFactoryTest extends SonarTestCase {
     }
 
     @Override
-    public ISonarLintProject getProject() {
-      return this;
-    }
-
-    @Override
     public boolean supportsFullAnalysis() {
       return false;
     }
