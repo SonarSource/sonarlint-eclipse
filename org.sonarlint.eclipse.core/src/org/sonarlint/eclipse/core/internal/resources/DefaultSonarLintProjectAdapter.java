@@ -158,11 +158,6 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
   }
 
   @Override
-  public ISonarLintProject getProject() {
-    return this;
-  }
-
-  @Override
   public IResource getResource() {
     return project;
   }
