@@ -35,6 +35,11 @@ public class ProjectExplorerBot {
     viewBot = bot.viewById(IPageLayout.ID_PROJECT_EXPLORER);
   }
 
+  public ProjectExplorerBot refresh() {
+    viewBot.bot().tree().contextMenu("Refresh").click();
+    return this;
+  }
+
   public ProjectExplorerBot expandAndSelect(String... nodes) {
     viewBot.bot().tree().expandNode(nodes).select();
     return this;

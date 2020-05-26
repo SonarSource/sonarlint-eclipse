@@ -253,7 +253,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     JobHelpers.waitForJobsToComplete(bot);
 
-    new ProjectExplorerBot(bot).expandAndOpen("php", "foo.php");
+    new ProjectExplorerBot(bot)
+      .refresh() // workaround: sometimes the project disappears after import
+      .expandAndOpen("php", "foo.php");
     JobHelpers.waitForJobsToComplete(bot);
 
     List<IMarker> markers = Arrays.asList(project.findMember("foo.php").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
