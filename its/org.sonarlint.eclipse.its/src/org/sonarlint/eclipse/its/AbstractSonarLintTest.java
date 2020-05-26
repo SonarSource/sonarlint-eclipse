@@ -19,22 +19,15 @@
  */
 package org.sonarlint.eclipse.its;
 
-import com.sonar.orchestrator.Orchestrator;
-import com.sonar.orchestrator.container.Server;
 import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.apache.commons.io.FileUtils;
+import java.lang.reflect.InvocationTargetException;
+
 import org.assertj.core.api.iterable.Extractor;
 import org.assertj.core.groups.Tuple;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -52,6 +45,9 @@ import org.eclipse.swtbot.swt.finder.results.BoolResult;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
+import org.eclipse.ui.dialogs.IOverwriteQuery;
+import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
+import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -64,7 +60,8 @@ import org.sonarqube.ws.client.HttpConnector;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
 
-import static org.junit.Assert.assertTrue;
+import com.sonar.orchestrator.Orchestrator;
+import com.sonar.orchestrator.container.Server;
 
 public abstract class AbstractSonarLintTest {
 
@@ -81,7 +78,6 @@ public abstract class AbstractSonarLintTest {
   protected static final IProgressMonitor monitor = new NullProgressMonitor();
   protected static IWorkspace workspace;
   protected static File projectsWorkdir;
-  private static final ReadWriteLock copyProjectLock = new ReentrantReadWriteLock();
 
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
@@ -113,7 +109,7 @@ public abstract class AbstractSonarLintTest {
   }
 
   @AfterClass
-  public final static void afterClass() throws Exception {
+  public static final void afterClass() {
     try {
       clean();
     } catch (Exception e) {
@@ -127,66 +123,17 @@ public abstract class AbstractSonarLintTest {
     bot.resetWorkbench();
   }
 
-  public static String getProjectPath(String name) throws IOException {
-    return getProject(name).getCanonicalPath();
-  }
-
-  protected static File getProject(String projectName) throws IOException {
-    File destDir = new File(projectsWorkdir, projectName);
-    return getProject(projectName, destDir);
-  }
-
-  /**
-   * Installs specified project to specified directory.
-   *
-   * @param projectName
-   *          name of project
-   * @param destDir
-   *          destination directory
-   * @return project directory
-   * @throws IOException
-   *           if unable to prepare project directory
-   */
-  protected static File getProject(String projectdir, File destDir) throws IOException {
-    copyProjectLock.writeLock().lock();
-    try {
-      File projectFolder = new File("projects", projectdir);
-      assertTrue("Project " + projectdir + " folder not found.\n" + projectFolder.getAbsolutePath(), projectFolder.isDirectory());
-      FileUtils.copyDirectory(projectFolder, destDir);
-      return destDir;
-    } finally {
-      copyProjectLock.writeLock().unlock();
-    }
-  }
-
   /**
    * Import test project into the Eclipse workspace
    *
    * @return created projects
    */
-  public static IProject importEclipseProject(final String projectdir, final String projectName) throws IOException, CoreException {
-    final IWorkspaceRoot root = workspace.getRoot();
-
-    File dst = new File(root.getLocation().toFile(), projectName);
-    getProject(projectdir, dst);
-
+  public static IProject importEclipseProject(final String projectdir, final String projectName) throws InvocationTargetException, InterruptedException, CoreException {
     final IProject project = workspace.getRoot().getProject(projectName);
-
-    workspace.run(new IWorkspaceRunnable() {
-
-      @Override
-      public void run(final IProgressMonitor monitor) throws CoreException {
-        if (!project.exists()) {
-          final IProjectDescription projectDescription = workspace.newProjectDescription(project.getName());
-          projectDescription.setLocation(null);
-          project.create(projectDescription, monitor);
-          project.open(IResource.NONE, monitor);
-        } else {
-          project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-        }
-      }
-    }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
-
+    ImportOperation importOperation = new ImportOperation(project.getFullPath(),
+        new File("projects", projectdir), FileSystemStructureProvider.INSTANCE, file -> IOverwriteQuery.ALL);
+    importOperation.setCreateContainerStructure(false);
+    importOperation.run(monitor);
     return project;
   }
 
