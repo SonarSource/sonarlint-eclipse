@@ -52,6 +52,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.osgi.framework.Version;
+import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.its.bots.ConsoleViewBot;
 import org.sonarlint.eclipse.its.utils.CaptureScreenshotAndConsoleOnFailure;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
@@ -83,7 +84,7 @@ public abstract class AbstractSonarLintTest {
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
 
   @BeforeClass
-  public final static void beforeClass() throws Exception {
+  public static final void beforeClass() throws BackingStoreException {
     System.out.println("Eclipse: " + platformVersion());
     System.out.println("GTK: " + System.getProperty("org.eclipse.swt.internal.gtk.version"));
     SWTBotPreferences.KEYBOARD_LAYOUT = "EN_US";
@@ -211,17 +212,11 @@ public abstract class AbstractSonarLintTest {
     final SWTBotTreeItem serverCell = serversView.bot().tree().getAllItems()[0];
     bot.waitUntil(new DefaultCondition() {
       @Override
-      public boolean test() throws Exception {
-        return UIThreadRunnable.syncExec(new BoolResult() {
-          @Override
-          public Boolean run() {
-            return serverCell.getText().matches(serverName + " \\[" +
-              (isSonarCloud ? "" : "Version: " + substringBefore(orch.getServer().version(), "-") + "(.*), ")
-              + "Last storage update: (.*)\\]");
-          }
-
-        });
-      };
+      public boolean test() {
+        return UIThreadRunnable.syncExec(() -> serverCell.getText().matches(serverName + " \\[" +
+              (isSonarCloud ? "" : "Version: " + substringBefore(orch.getServer().version().toString(), '-') + "(.*), ")
+              + "Last storage update: (.*)\\]"));
+        }
 
       @Override
       public String getFailureMessage() {
@@ -230,12 +225,12 @@ public abstract class AbstractSonarLintTest {
     }, 20_000);
   }
 
-  private String substringBefore(com.sonar.orchestrator.version.Version version, String string) {
-    int indexOfDash = string.indexOf("-");
-    if (indexOfDash == -1) {
+  private String substringBefore(String string, char separator) {
+    int indexOfSeparator = string.indexOf(separator);
+    if (indexOfSeparator == -1) {
       return string;
     }
-    return string.substring(0, indexOfDash);
+    return string.substring(0, indexOfSeparator);
   }
 
 }
