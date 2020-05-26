@@ -128,7 +128,7 @@ public abstract class AbstractSonarLintTest {
    *
    * @return created projects
    */
-  public static IProject importEclipseProject(final String projectdir, final String projectName) throws InvocationTargetException, InterruptedException, CoreException {
+  public static IProject importEclipseProject(final String projectdir, final String projectName) throws InvocationTargetException, InterruptedException {
     final IProject project = workspace.getRoot().getProject(projectName);
     ImportOperation importOperation = new ImportOperation(project.getFullPath(),
         new File("projects", projectdir), FileSystemStructureProvider.INSTANCE, file -> IOverwriteQuery.ALL);
