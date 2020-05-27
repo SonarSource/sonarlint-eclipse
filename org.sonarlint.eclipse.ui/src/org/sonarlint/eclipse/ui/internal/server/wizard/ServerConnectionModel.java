@@ -195,7 +195,14 @@ public class ServerConnectionModel extends ModelObject {
     for (RemoteOrganization org : userOrgs) {
       index.index(org, org.getKey() + " " + org.getName());
     }
+    suggestOrganization(userOrgs);
     this.userOrgsIndex = index;
+  }
+
+  private void suggestOrganization(@Nullable List<RemoteOrganization> userOrgs) {
+    if (!isEdit() && userOrgs != null && userOrgs.size() == 1) {
+      setOrganization(userOrgs.get(0).getKey());
+    }
   }
 
   @Nullable
