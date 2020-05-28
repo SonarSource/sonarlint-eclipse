@@ -20,9 +20,22 @@
 package org.sonarlint.eclipse.core.internal.telemetry;
 
 import java.nio.file.Path;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
+import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.tests.common.SonarTestCase;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
 
@@ -31,16 +44,34 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.sonarlint.eclipse.core.internal.server.ServersManager.PREF_SERVERS;
 
-public class SonarLintTelemetryTest {
+public class SonarLintTelemetryTest extends SonarTestCase {
   private SonarLintTelemetry telemetry;
   private TelemetryManager engine = mock(TelemetryManager.class);
+
+  private static IProject project;
+  private static SonarLintProjectConfiguration configuration;
+  private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(SonarLintCorePlugin.PLUGIN_ID);
+
+  @BeforeClass
+  public static void setUp() throws Exception {
+    project = importEclipseProject("SimpleProject");
+    // Configure the project
+    configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project),
+        "A Project");
+  }
 
   @Before
   public void start() throws Exception {
     // Clear property that is set in the surefire arguments (see pom.xml)
     System.clearProperty(SonarLintTelemetry.DISABLE_PROPERTY_KEY);
     this.telemetry = createTelemetry();
+
+    project.open(MONITOR);
+    ROOT.node(PREF_SERVERS).removeNode();
+    SonarLintCorePlugin.getServersManager().stop();
+    SonarLintCorePlugin.getServersManager().init();
   }
 
   @After
@@ -156,5 +187,68 @@ public class SonarLintTelemetryTest {
     telemetry.analysisDoneOnSingleFile(language, time);
     verify(engine).isEnabled();
     verifyNoMoreInteractions(engine);
+  }
+
+  @Test
+  public void should_not_report_sonar_cloud_usage_when_project_is_not_bound() {
+    clearImportedProjectBinding();
+
+    assertThat(SonarLintTelemetry.isAnyOpenProjectBoundToSonarCloud()).isFalse();
+  }
+
+  @Test
+  public void should_not_report_sonar_cloud_usage_when_project_is_bound_to_localhost() {
+    addServer("localhost", "http://localhost:9000");
+    bindImportedProjectToServer("localhost");
+
+    assertThat(SonarLintTelemetry.isAnyOpenProjectBoundToSonarCloud()).isFalse();
+  }
+
+  @Test
+  public void should_report_sonar_cloud_usage_when_project_is_bound_to_sonar_cloud() {
+    addServer("sonarcloud", "https://sonarcloud.io");
+    bindImportedProjectToServer("sonarcloud");
+
+    assertThat(SonarLintTelemetry.isAnyOpenProjectBoundToSonarCloud()).isTrue();
+  }
+
+  @Test
+  public void should_not_report_connected_mode_usage_when_project_is_not_bound() {
+    clearImportedProjectBinding();
+
+    assertThat(SonarLintTelemetry.isAnyOpenProjectBound()).isFalse();
+  }
+
+  @Test
+  public void should_report_connected_mode_usage_when_project_is_bound() {
+    addServer("localhost", "http://localhost:9000");
+    bindImportedProjectToServer("localhost");
+
+    assertThat(SonarLintTelemetry.isAnyOpenProjectBound()).isTrue();
+  }
+
+  @Test
+  public void should_not_report_any_connected_usage_when_bound_project_is_closed() throws CoreException {
+    addServer("sonarcloud", "https://sonarcloud.io");
+    bindImportedProjectToServer("sonarcloud");
+    project.close(MONITOR);
+
+    assertThat(SonarLintTelemetry.isAnyOpenProjectBound()).isFalse();
+    assertThat(SonarLintTelemetry.isAnyOpenProjectBoundToSonarCloud()).isFalse();
+  }
+
+  private void addServer(String id, String url) {
+    IServer server = SonarLintCorePlugin.getServersManager().create(id, url, "", "", "", false);
+    SonarLintCorePlugin.getServersManager().addServer(server, "login", "pwd");
+  }
+
+  private void bindImportedProjectToServer(String url) {
+    configuration.setProjectBinding(new EclipseProjectBinding(url, "myProjectKey", "aPrefix", "aSuffix"));
+    SonarLintCorePlugin.getInstance().getProjectConfigManager().save(new ProjectScope(project), configuration);
+  }
+
+  private void clearImportedProjectBinding() {
+    configuration.setProjectBinding(null);
+    SonarLintCorePlugin.getInstance().getProjectConfigManager().save(new ProjectScope(project), configuration);
   }
 }

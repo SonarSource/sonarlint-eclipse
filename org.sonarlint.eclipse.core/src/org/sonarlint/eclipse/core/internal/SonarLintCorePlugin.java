@@ -179,7 +179,7 @@ public class SonarLintCorePlugin extends Plugin {
     return getInstance().telemetry;
   }
 
-  public synchronized static ServersManager getServersManager() {
+  public static synchronized ServersManager getServersManager() {
     if (getInstance().serversManager == null) {
       getInstance().serversManager = new ServersManager();
       getInstance().serversManager.init();

@@ -48,7 +48,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
 
 public class ServersManager {
-  static final String PREF_SERVERS = "servers";
+  public static final String PREF_SERVERS = "servers";
   static final String AUTH_ATTRIBUTE = "auth";
   static final String URL_ATTRIBUTE = "url";
   static final String ORG_ATTRIBUTE = "org";

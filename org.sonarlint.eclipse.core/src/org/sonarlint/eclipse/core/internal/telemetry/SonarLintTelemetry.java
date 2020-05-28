@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.telemetry;
 
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -112,7 +113,7 @@ public class SonarLintTelemetry {
 
   // visible for testing
   public TelemetryManager newTelemetryManager(Path path, TelemetryClient client) {
-    return new TelemetryManager(path, client, SonarLintTelemetry::isAnyProjectConnected, SonarLintTelemetry::isAnyServerSonarCloud);
+    return new TelemetryManager(path, client, SonarLintTelemetry::isAnyOpenProjectBound, SonarLintTelemetry::isAnyOpenProjectBoundToSonarCloud);
   }
 
   private class TelemetryJob extends Job {
@@ -149,10 +150,6 @@ public class SonarLintTelemetry {
     }
   }
 
-  private static boolean isAnyServerSonarCloud() {
-    return SonarLintCorePlugin.getServersManager().getServers().stream().anyMatch(IServer::isSonarCloud);
-  }
-
   public void analysisDoneOnMultipleFiles() {
     if (enabled()) {
       telemetry.analysisDoneOnMultipleFiles();
@@ -175,13 +172,23 @@ public class SonarLintTelemetry {
     }
   }
 
-  private static boolean isAnyProjectConnected() {
-    return ProjectsProviderUtils.allProjects().stream().anyMatch(p -> p.isOpen() && SonarLintCorePlugin.loadConfig(p).isBound());
-  }
-
   // visible for testing
   public Job getScheduledJob() {
     return scheduledJob;
+  }
+
+  public static boolean isAnyOpenProjectBound() {
+    return ProjectsProviderUtils.allProjects().stream()
+        .anyMatch(p -> p.isOpen() && SonarLintCorePlugin.loadConfig(p).isBound());
+  }
+
+  public static boolean isAnyOpenProjectBoundToSonarCloud() {
+    return ProjectsProviderUtils.allProjects().stream()
+      .filter(p -> p.isOpen() && SonarLintCorePlugin.loadConfig(p).isBound())
+      .map(SonarLintCorePlugin.getServersManager()::forProject)
+      .filter(Optional::isPresent)
+      .map(Optional::get)
+      .anyMatch(IServer::isSonarCloud);
   }
 
 }
