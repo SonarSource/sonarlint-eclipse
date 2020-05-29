@@ -19,6 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.telemetry;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.sonarlint.eclipse.core.internal.server.ServersManager.PREF_SERVERS;
+
 import java.nio.file.Path;
 
 import org.eclipse.core.resources.IProject;
@@ -31,20 +38,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static org.sonarlint.eclipse.core.internal.server.ServersManager.PREF_SERVERS;
 
 public class SonarLintTelemetryTest extends SonarTestCase {
   private SonarLintTelemetry telemetry;
@@ -200,6 +199,13 @@ public class SonarLintTelemetryTest extends SonarTestCase {
   public void should_not_report_sonar_cloud_usage_when_project_is_bound_to_localhost() {
     addServer("localhost", "http://localhost:9000");
     bindImportedProjectToServer("localhost");
+
+    assertThat(SonarLintTelemetry.isAnyOpenProjectBoundToSonarCloud()).isFalse();
+  }
+
+  @Test
+  public void should_not_report_sonar_cloud_usage_when_sonar_cloud_server_connected_but_project_is_not_bound() {
+    addServer("sonarcloud", "https://sonarcloud.io");
 
     assertThat(SonarLintTelemetry.isAnyOpenProjectBoundToSonarCloud()).isFalse();
   }
