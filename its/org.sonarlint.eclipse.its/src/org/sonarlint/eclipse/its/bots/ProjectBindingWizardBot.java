@@ -38,7 +38,7 @@ public class ProjectBindingWizardBot {
   }
 
   public ProjectBindingWizardBot chooseProject(String projectName) {
-    SWTBot dialogBot = bot.activeShell().bot();
+    SWTBot dialogBot = bot.shell("Project selection").bot();
     dialogBot.text().typeText(projectName);
     dialogBot.button("OK").click();
     return this;
