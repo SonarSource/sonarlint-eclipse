@@ -252,6 +252,7 @@ stages:
           # For Orchestrator
           ARTIFACTORY_API_KEY: $(ARTIFACTORY_API_KEY)
           GITHUB_TOKEN: $(GITHUB_TOKEN)
+          SONARCLOUD_IT_PASSWORD: $(SONARCLOUD_IT_PASSWORD)
         inputs:
           goals: 'org.jacoco:jacoco-maven-plugin:prepare-agent verify'
           mavenPomFile: 'its/pom.xml'
