@@ -26,6 +26,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
+import org.sonarlint.eclipse.its.bots.ServersViewBot;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.setting.SetRequest;
 
@@ -46,7 +47,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   @BeforeClass
   public static void prepare() {
     adminWsClient = newAdminWsClient(orchestrator);
-    adminWsClient.settingsService().set(SetRequest.builder().setKey("sonar.forceAuthentication").setValue("true").build());
+    adminWsClient.settings().set(SetRequest.builder().setKey("sonar.forceAuthentication").setValue("true").build());
   }
 
   @Test
@@ -105,7 +106,8 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     assertThat(wizardBot.isNextEnabled()).isFalse();
     wizardBot.clickFinish();
 
-    waitForServerUpdate("test", orchestrator, false);
+    new ServersViewBot(bot)
+      .waitForServerUpdateAndCheckVersion("test", orchestrator.getServer().version().toString());
   }
 
 }

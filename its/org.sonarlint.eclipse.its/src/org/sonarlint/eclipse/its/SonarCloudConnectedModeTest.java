@@ -19,63 +19,76 @@
  */
 package org.sonarlint.eclipse.its;
 
-import com.sonar.orchestrator.Orchestrator;
-import com.sonar.orchestrator.http.HttpMethod;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
-import org.sonarqube.ws.WsUserTokens.GenerateWsResponse;
-import org.sonarqube.ws.client.WsClient;
-import org.sonarqube.ws.client.organization.CreateWsRequest;
-import org.sonarqube.ws.client.user.CreateRequest;
-import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.InvocationTargetException;
+import java.time.Instant;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.sonarlint.eclipse.its.bots.ProjectBindingWizardBot;
+import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
+import org.sonarlint.eclipse.its.bots.ServersViewBot;
+import org.sonarqube.ws.client.HttpConnector;
+import org.sonarqube.ws.client.WsClient;
+import org.sonarqube.ws.client.WsClientFactories;
+import org.sonarqube.ws.client.project.CreateRequest;
+import org.sonarqube.ws.client.project.DeleteRequest;
+import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
+import org.sonarqube.ws.client.usertoken.RevokeWsRequest;
+
 public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
+  private static final String IMPORTED_PROJECT_NAME = "java-simple";
+  private static final String TIMESTAMP = Long.toString(Instant.now().toEpochMilli());
 
-  private static final String SONARLINT_USER = "sonarlint";
-  private static final String SONARLINT_PWD = "sonarlintpwd";
-  private static final String ORGANIZATION_KEY = "test-org";
-  private static final String ORGANIZATION_NAME = "Test organization";
+  private static final String SONARCLOUD_STAGING_URL = "https://sc-staging.io";
+  private static final String SONARCLOUD_ORGANIZATION_KEY = "sonarlint-it";
+  private static final String SONARCLOUD_ORGANIZATION_NAME = "SonarLint IT Tests";
+  private static final String SONARCLOUD_USER = "sonarlint-it";
+  private static final String SONARCLOUD_PASSWORD = System.getenv("SONARCLOUD_IT_PASSWORD");
+  private static final String SONARCLOUD_PROJECT_KEY = IMPORTED_PROJECT_NAME + '-' +TIMESTAMP;
 
-  @ClassRule
-  public static TemporaryFolder temp = new TemporaryFolder();
+  private static final String TOKEN_NAME = "SLE-IT-" + TIMESTAMP;
 
-  @ClassRule
-  public static Orchestrator orchestrator = Orchestrator.builderEnv()
-    .setServerProperty("sonar.sonarcloud.enabled", "true")
-    .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[6.7]"))
-    .build();
+  private static final String CONNECTION_NAME = "connection";
+
 
   private static WsClient adminWsClient;
   private static String token;
 
   @BeforeClass
   public static void prepare() {
-    // Fake SonarCloud
-    System.setProperty("sonarlint.internal.sonarcloud.url", orchestrator.getServer().getUrl());
-    adminWsClient = newAdminWsClient(orchestrator);
+    System.setProperty("sonarlint.internal.sonarcloud.url", SONARCLOUD_STAGING_URL);
+    adminWsClient = WsClientFactories.getDefault().newClient(HttpConnector.newBuilder()
+        .url(SONARCLOUD_STAGING_URL)
+        .credentials(SONARCLOUD_USER, SONARCLOUD_PASSWORD)
+        .build());
 
-    adminWsClient.users().create(CreateRequest.builder()
-      .setLogin(SONARLINT_USER)
-      .setPassword(SONARLINT_PWD)
-      .setName("SonarLint")
-      .build());
+    token = adminWsClient.userTokens()
+        .generate(new GenerateWsRequest().setName(TOKEN_NAME))
+        .getToken();
 
-    enableOrganizationsSupport();
-    createOrganization();
+    adminWsClient.projects()
+      .create(CreateRequest.builder()
+          .setName(IMPORTED_PROJECT_NAME)
+          .setKey(SONARCLOUD_PROJECT_KEY)
+          .setOrganization(SONARCLOUD_ORGANIZATION_KEY).build());
+  }
 
-    GenerateWsResponse wsResponse = adminWsClient.userTokens().generate(new GenerateWsRequest()
-      .setLogin(SONARLINT_USER)
-      .setName("For SonarLint"));
-    token = wsResponse.getToken();
+  @AfterClass
+  public static void cleanup() {
+    adminWsClient.userTokens()
+      .revoke(new RevokeWsRequest().setName(TOKEN_NAME));
+    adminWsClient.projects()
+      .delete(DeleteRequest.builder()
+          .setKey(SONARCLOUD_PROJECT_KEY).build());
   }
 
   @Test
-  public void configureServerWithTokenAndOrganization() {
+  public void configureServerWithTokenAndOrganization() throws InvocationTargetException, InterruptedException {
+    importEclipseProject("java/java-simple", IMPORTED_PROJECT_NAME);
+
     ServerConnectionWizardBot wizardBot = new ServerConnectionWizardBot(bot);
     wizardBot.openFromFileNewWizard();
 
@@ -95,31 +108,30 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     wizardBot.clickNext();
     wizardBot.waitForOrganizationsToBeFetched();
 
-    wizardBot.typeOrganizationAndSelectFirst("test");
-    assertThat(wizardBot.getOrganization()).isEqualTo(ORGANIZATION_KEY);
+    assertThat(wizardBot.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
+
+    wizardBot.typeOrganizationAndSelectFirst(SONARCLOUD_ORGANIZATION_NAME);
+    assertThat(wizardBot.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
     assertThat(wizardBot.isNextEnabled()).isTrue();
     wizardBot.clickNext();
 
-    assertThat(wizardBot.getConnectionName()).isEqualTo("SonarCloud/" + ORGANIZATION_KEY);
-    wizardBot.setConnectionName("testWithOrga");
+    assertThat(wizardBot.getConnectionName()).isEqualTo("SonarCloud/" + SONARCLOUD_ORGANIZATION_KEY);
+    wizardBot.setConnectionName(CONNECTION_NAME);
     wizardBot.clickNext();
 
     assertThat(wizardBot.isNextEnabled()).isFalse();
     wizardBot.clickFinish();
 
-    waitForServerUpdate("testWithOrga", orchestrator, true);
-  }
+    new ProjectBindingWizardBot(bot)
+      .clickAdd()
+      .chooseProject(IMPORTED_PROJECT_NAME)
+      .clickNext()
+      .waitForOrganizationProjectsToBeFetched()
+      .typeProjectKey(SONARCLOUD_PROJECT_KEY)
+      .clickFinish();
 
-  public static void enableOrganizationsSupport() {
-    orchestrator.getServer().newHttpCall("/api/organizations/enable_support")
-      .setMethod(HttpMethod.POST)
-      .setAdminCredentials()
-      .execute();
-  }
-
-  private static void createOrganization() {
-    adminWsClient.organizations().create(new CreateWsRequest.Builder().setKey(ORGANIZATION_KEY).setName(ORGANIZATION_NAME).build());
-    adminWsClient.organizations().addMember(ORGANIZATION_KEY, SONARLINT_USER);
+    new ServersViewBot(bot)
+      .waitForServerUpdate(CONNECTION_NAME);
   }
 
 }

@@ -167,12 +167,13 @@ public class ServerConnectionWizardBot {
 
   public void typeOrganizationAndSelectFirst(String orgaFragment) {
     SWTBotText orgaTextField = wizardBot.textWithLabel(ORGANIZATION_LABEL);
+    orgaTextField.setText("");
     orgaTextField.typeText(orgaFragment, 100);
-    SWTBotTable proposalsTable = getCompletionProposalsTable(wizardBot, orgaTextField);
+    SWTBotTable proposalsTable = getCompletionProposalsTable(wizardBot);
     selectProposal(proposalsTable, 0);
   }
 
-  private static SWTBotTable getCompletionProposalsTable(SWTBot bot, SWTBotText textField) {
+  private static SWTBotTable getCompletionProposalsTable(SWTBot bot) {
 
     bot.sleep(100); // Wait for auto-completion shell to be displayed
     List<Shell> shells = bot.shells("");
