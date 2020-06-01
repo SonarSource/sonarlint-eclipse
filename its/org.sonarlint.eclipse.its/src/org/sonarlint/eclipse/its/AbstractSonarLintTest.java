@@ -38,7 +38,9 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
+import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
@@ -90,6 +92,8 @@ public abstract class AbstractSonarLintTest {
     ROOT.node("servers").removeNode();
     ROOT_SECURE.node("servers").removeNode();
 
+    activateMainShell();
+
     bot = new SWTWorkbenchBot();
 
     SwtBotUtils.closeViewQuietly(bot, "org.eclipse.ui.internal.introview");
@@ -101,6 +105,11 @@ public abstract class AbstractSonarLintTest {
     new ConsoleViewBot(bot)
       .openSonarLintConsole()
       .enableVerboseLogs();
+  }
+
+  private static void activateMainShell() {
+    // see https://wiki.eclipse.org/SWTBot/Troubleshooting#No_active_Shell_when_running_SWTBot_tests_in_Xvfb
+    UIThreadRunnable.syncExec(() -> PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().forceActive());
   }
 
   @AfterClass
