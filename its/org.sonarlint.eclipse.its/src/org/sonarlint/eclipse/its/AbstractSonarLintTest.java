@@ -26,7 +26,6 @@ import org.assertj.core.api.iterable.Extractor;
 import org.assertj.core.groups.Tuple;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -39,12 +38,7 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
-import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
-import org.eclipse.swtbot.swt.finder.results.BoolResult;
 import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
-import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
@@ -205,32 +199,6 @@ public abstract class AbstractSonarLintTest {
       .url(server.getUrl())
       .credentials(Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD)
       .build());
-  }
-
-  public void waitForServerUpdate(String serverName, Orchestrator orch, boolean isSonarCloud) {
-    SWTBotView serversView = bot.viewById("org.sonarlint.eclipse.ui.ServersView");
-    final SWTBotTreeItem serverCell = serversView.bot().tree().getAllItems()[0];
-    bot.waitUntil(new DefaultCondition() {
-      @Override
-      public boolean test() {
-        return UIThreadRunnable.syncExec(() -> serverCell.getText().matches(serverName + " \\[" +
-              (isSonarCloud ? "" : "Version: " + substringBefore(orch.getServer().version().toString(), '-') + "(.*), ")
-              + "Last storage update: (.*)\\]"));
-        }
-
-      @Override
-      public String getFailureMessage() {
-        return "Server status is: " + serverCell.getText();
-      }
-    }, 20_000);
-  }
-
-  private String substringBefore(String string, char separator) {
-    int indexOfSeparator = string.indexOf(separator);
-    if (indexOfSeparator == -1) {
-      return string;
-    }
-    return string.substring(0, indexOfSeparator);
   }
 
 }

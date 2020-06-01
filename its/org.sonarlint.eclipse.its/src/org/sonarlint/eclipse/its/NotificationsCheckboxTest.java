@@ -25,6 +25,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
+import org.sonarlint.eclipse.its.bots.ServersViewBot;
 import org.sonarqube.ws.WsUserTokens.GenerateWsResponse;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.user.CreateRequest;
@@ -90,6 +91,7 @@ public class NotificationsCheckboxTest extends AbstractSonarLintTest {
     assertThat(wizardBot.isNextEnabled()).isFalse();
     wizardBot.clickFinish();
 
-    waitForServerUpdate(connectionName, orchestrator, false);
+    new ServersViewBot(bot)
+      .waitForServerUpdateAndCheckVersion(connectionName, orchestrator.getServer().version().toString());
   }
 }
