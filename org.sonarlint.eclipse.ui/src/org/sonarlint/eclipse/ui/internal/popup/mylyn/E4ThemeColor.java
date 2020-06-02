@@ -67,7 +67,6 @@ public class E4ThemeColor {
     }
 
     public static String getCssValueFromTheme(Display display, String value) {
-      // use reflection so that this can build against Eclipse 3.x
       BundleContext context = FrameworkUtil.getBundle(E4ThemeColor.class).getBundleContext();
       try {
         ServiceReference<IThemeManager> reference = context.getServiceReference(IThemeManager.class);
