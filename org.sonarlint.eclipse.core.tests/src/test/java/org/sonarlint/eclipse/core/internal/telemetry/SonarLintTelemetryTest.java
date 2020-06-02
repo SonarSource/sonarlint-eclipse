@@ -63,19 +63,12 @@ public class SonarLintTelemetryTest extends SonarTestCase {
 
   @Before
   public void start() throws Exception {
-    // Clear property that is set in the surefire arguments (see pom.xml)
-    System.clearProperty(SonarLintTelemetry.DISABLE_PROPERTY_KEY);
     this.telemetry = createTelemetry();
 
     project.open(MONITOR);
     ROOT.node(PREF_SERVERS).removeNode();
     SonarLintCorePlugin.getServersManager().stop();
     SonarLintCorePlugin.getServersManager().init();
-  }
-
-  @After
-  public void after() {
-    System.clearProperty(SonarLintTelemetry.DISABLE_PROPERTY_KEY);
   }
 
   private SonarLintTelemetry createTelemetry() {
@@ -91,11 +84,8 @@ public class SonarLintTelemetryTest extends SonarTestCase {
   }
 
   @Test
-  public void disable_property_should_disable_telemetry() throws Exception {
-    assertThat(createTelemetry().enabled()).isTrue();
-
-    System.setProperty(SonarLintTelemetry.DISABLE_PROPERTY_KEY, "true");
-    assertThat(createTelemetry().enabled()).isFalse();
+  public void telemetry_should_be_deactivated_for_tests() {
+    assertThat(SonarLintTelemetry.shouldBeActivated()).isFalse();
   }
 
   @Test

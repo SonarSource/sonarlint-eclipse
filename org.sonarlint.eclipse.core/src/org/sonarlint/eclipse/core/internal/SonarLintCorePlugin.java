@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintEngineFacade;
@@ -125,8 +126,17 @@ public class SonarLintCorePlugin extends Plugin {
 
     @Override
     public IStatus run(IProgressMonitor monitor) {
-      telemetry.init();
+      startTelemetry();
       return Status.OK_STATUS;
+    }
+
+    private void startTelemetry() {
+      if (SonarLintTelemetry.shouldBeActivated()) {
+        telemetry.init();
+      }
+      else {
+        SonarLintLogger.get().info("Telemetry disabled");
+      }
     }
   }
 

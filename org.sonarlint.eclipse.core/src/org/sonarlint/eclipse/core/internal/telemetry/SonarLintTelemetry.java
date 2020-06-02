@@ -59,6 +59,10 @@ public class SonarLintTelemetry {
     return SonarLintCorePlugin.getInstance().getStateLocation().toFile().toPath().resolve(OLD_STORAGE_FILENAME);
   }
 
+  public static boolean shouldBeActivated() {
+    return !"true".equals(System.getProperty(DISABLE_PROPERTY_KEY));
+  }
+
   public void optOut(boolean optOut) {
     if (telemetry != null) {
       if (optOut) {
@@ -78,10 +82,6 @@ public class SonarLintTelemetry {
   }
 
   public void init() {
-    if ("true".equals(System.getProperty(DISABLE_PROPERTY_KEY))) {
-      SonarLintLogger.get().info("Telemetry disabled by system property");
-      return;
-    }
     try {
       TelemetryClientConfig clientConfig = getTelemetryClientConfig();
       TelemetryClient client = new TelemetryClient(clientConfig, PRODUCT, SonarLintUtils.getPluginVersion(), ideVersionForTelemetry());
