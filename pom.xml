@@ -203,6 +203,9 @@
           <includes>
             <include>src/**/*.java</include>
           </includes>
+          <excludes>
+            <exclude>src/**/mylyn/*.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>

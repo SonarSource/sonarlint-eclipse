@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.util.function.Consumer;
-import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -33,6 +32,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Monitor;
+import org.sonarlint.eclipse.ui.internal.popup.mylyn.AbstractNotificationPopup;
 
 public abstract class AbstractSonarLintPopup extends AbstractNotificationPopup {
 

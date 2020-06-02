@@ -24,8 +24,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.forms,
  org.sonarsource.sonarlint.core.sonarlint-client-api,
  org.eclipse.team.core,
- org.eclipse.mylyn.commons.ui,
- org.eclipse.jdt.annotation;resolution:=optional
+ org.eclipse.jdt.annotation;resolution:=optional,
+ org.eclipse.e4.ui.css.swt.theme
 Export-Package: org.sonarlint.eclipse.ui.internal.properties;x-friends:="org.sonarlint.eclipse.core.tests"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
