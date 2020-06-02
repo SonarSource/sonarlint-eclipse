@@ -35,7 +35,7 @@ import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
-import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 
 /**
  * Responsible to trigger analysis when files are opened

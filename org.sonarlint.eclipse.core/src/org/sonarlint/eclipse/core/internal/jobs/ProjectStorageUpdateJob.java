@@ -25,7 +25,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 
 public class ProjectStorageUpdateJob extends Job {
 
@@ -41,7 +41,7 @@ public class ProjectStorageUpdateJob extends Job {
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
-      Optional<IServer> server = SonarLintCorePlugin.getServersManager().findById(serverId);
+      Optional<IConnectedEngineFacade> server = SonarLintCorePlugin.getServersManager().findById(serverId);
       server.ifPresent(s -> s.updateProjectStorage(projectKey, monitor));
       return Status.OK_STATUS;
     } catch (Exception e) {

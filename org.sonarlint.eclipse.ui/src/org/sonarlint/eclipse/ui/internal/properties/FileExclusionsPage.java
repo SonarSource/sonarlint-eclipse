@@ -61,7 +61,7 @@ import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfigurati
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 
 public class FileExclusionsPage extends AbstractListPropertyPage implements IWorkbenchPreferencePage {
   private static final String PREFERENCE_ID = "org.sonarlint.eclipse.ui.properties.FileExclusionsPage";

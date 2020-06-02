@@ -24,7 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.sonarlint.eclipse.core.internal.server.ServersManager.PREF_SERVERS;
+import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager.PREF_SERVERS;
 
 import java.nio.file.Path;
 
@@ -38,9 +38,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
-import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
@@ -234,7 +234,7 @@ public class SonarLintTelemetryTest extends SonarTestCase {
   }
 
   private void addServer(String id, String url) {
-    IServer server = SonarLintCorePlugin.getServersManager().create(id, url, "", "", "", false);
+    IConnectedEngineFacade server = SonarLintCorePlugin.getServersManager().create(id, url, "", "", "", false);
     SonarLintCorePlugin.getServersManager().addServer(server, "login", "pwd");
   }
 

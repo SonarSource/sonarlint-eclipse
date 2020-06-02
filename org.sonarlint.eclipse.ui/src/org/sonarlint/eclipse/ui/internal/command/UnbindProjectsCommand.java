@@ -32,11 +32,11 @@ import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
-import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintProjectDecorator;
-import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
 public class UnbindProjectsCommand extends AbstractHandler {
@@ -55,8 +55,8 @@ public class UnbindProjectsCommand extends AbstractHandler {
           for (ISonarLintProject p : selectedProjects) {
             SonarLintProjectConfiguration projectConfig = SonarLintCorePlugin.loadConfig(p);
             projectConfig.getProjectBinding().ifPresent(b -> {
-              String oldServerId = b.serverId();
-              Server.unbind(p);
+              String oldServerId = b.connectionId();
+              ConnectedEngineFacade.unbind(p);
               JobUtils.scheduleAnalysisOfOpenFiles(p, TriggerType.BINDING_CHANGE);
               JobUtils.notifyServerViewAfterBindingChange(p, oldServerId);
             });

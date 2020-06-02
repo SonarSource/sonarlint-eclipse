@@ -43,8 +43,8 @@ import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -285,7 +285,7 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     ISonarLintIssuable issuable = Adapters.adapt(element.getResource(), ISonarLintIssuable.class);
     ISonarLintProject p = issuable.getProject();
     RuleDetails ruleDetails;
-    Optional<IServer> server = SonarLintCorePlugin.getServersManager().forProject(p);
+    Optional<IConnectedEngineFacade> server = SonarLintCorePlugin.getServersManager().forProject(p);
     if (server.isPresent()) {
       ruleDetails = server.get().getRuleDescription(ruleKey);
     } else {

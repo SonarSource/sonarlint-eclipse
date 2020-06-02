@@ -40,20 +40,20 @@ import org.osgi.framework.BundleContext;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.notifications.ListenerFactory;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
-import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
 import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
 import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MissingNodePopup;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
-import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotification;
 import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotificationListener;
@@ -192,7 +192,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public synchronized ListenerFactory listenerFactory() {
     if (listenerFactory == null) {
       // don't replace the anon class with lambda, because then the factory's "create" will always return the same listener instance
-      listenerFactory = (IServer s) -> new SonarQubeNotificationListener() {
+      listenerFactory = (IConnectedEngineFacade s) -> new SonarQubeNotificationListener() {
         @Override
         public void handle(SonarQubeNotification notification) {
           Display.getDefault().asyncExec(() -> {
@@ -233,7 +233,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     }
 
     private static void checkServersStatus() {
-      for (final IServer server : SonarLintCorePlugin.getServersManager().getServers()) {
+      for (final IConnectedEngineFacade server : SonarLintCorePlugin.getServersManager().getServers()) {
         if (server.getStorageState() != State.UPDATED) {
           Display.getDefault().asyncExec(() -> {
             ServerStorageNeedUpdatePopup popup = new ServerStorageNeedUpdatePopup(Display.getCurrent(), server);

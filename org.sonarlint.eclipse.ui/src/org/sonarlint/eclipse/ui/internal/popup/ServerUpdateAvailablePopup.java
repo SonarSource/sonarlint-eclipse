@@ -23,16 +23,16 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
-import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
+import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 
 public class ServerUpdateAvailablePopup extends AbstractSonarLintPopup {
 
-  private final IServer server;
+  private final IConnectedEngineFacade server;
 
-  public ServerUpdateAvailablePopup(Display display, IServer server) {
+  public ServerUpdateAvailablePopup(Display display, IConnectedEngineFacade server) {
     super(display);
     this.server = server;
   }

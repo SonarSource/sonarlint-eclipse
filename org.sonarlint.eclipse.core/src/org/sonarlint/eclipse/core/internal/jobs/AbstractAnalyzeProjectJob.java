@@ -54,14 +54,14 @@ import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
-import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
@@ -100,9 +100,9 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
 
   public static AbstractAnalyzeProjectJob<?> create(AnalyzeProjectRequest request, SonarLintProjectConfiguration projectConfiguration) {
 
-    Optional<IServer> server = SonarLintCorePlugin.getServersManager().forProject(request.getProject(), projectConfiguration);
+    Optional<IConnectedEngineFacade> server = SonarLintCorePlugin.getServersManager().forProject(request.getProject(), projectConfiguration);
     if (server.isPresent()) {
-      return new AnalyzeConnectedProjectJob(request, projectConfiguration.getProjectBinding().get(), (Server) server.get());
+      return new AnalyzeConnectedProjectJob(request, projectConfiguration.getProjectBinding().get(), (ConnectedEngineFacade) server.get());
     } else {
       return new AnalyzeStandaloneProjectJob(request);
     }

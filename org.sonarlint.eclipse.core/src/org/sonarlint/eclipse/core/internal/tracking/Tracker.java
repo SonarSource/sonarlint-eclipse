@@ -61,7 +61,7 @@ public class Tracker<RAW extends Trackable, BASE extends Trackable> {
   public Tracking<RAW, BASE> trackServer(Input<RAW> trackedLocally, Input<BASE> serverIssue) {
     Tracking<RAW, BASE> tracking = new Tracking<>(trackedLocally, serverIssue);
 
-    // Server issues don't have text range hash
+    // ConnectedEngineFacade issues don't have text range hash
     // 1. match issues with same server issue key
     match(tracking, ServerIssueSearchKeyFactory.INSTANCE);
 

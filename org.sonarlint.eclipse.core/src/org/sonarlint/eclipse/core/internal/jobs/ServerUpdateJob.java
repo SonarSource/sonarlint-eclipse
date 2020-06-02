@@ -29,15 +29,15 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
-import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.exceptions.CanceledException;
 
 public class ServerUpdateJob extends Job {
-  private final IServer server;
+  private final IConnectedEngineFacade server;
 
-  public ServerUpdateJob(IServer server) {
+  public ServerUpdateJob(IConnectedEngineFacade server) {
     super("Update SonarLint binding data from '" + server.getId() + "'");
     this.server = server;
   }
