@@ -58,7 +58,7 @@
     <tycho.version>1.7.0</tycho.version>
     <tycho-extras.version>${tycho.version}</tycho-extras.version>
     <target.platform>2019-06</target.platform>
-    <sonarlint-core.version>4.10.0.17000</sonarlint-core.version>
+    <sonarlint-core.version>4.12.0.18542</sonarlint-core.version>
     <protobuf.version>3.11.4</protobuf.version>
     <jacoco.version>0.8.5</jacoco.version>
 
