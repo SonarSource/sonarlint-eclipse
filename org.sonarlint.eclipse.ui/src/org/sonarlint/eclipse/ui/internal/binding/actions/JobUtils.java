@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -45,12 +46,10 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
-import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeConnectedProjectJob;
+import org.sonarlint.eclipse.core.internal.jobs.AbstractAnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
-import org.sonarlint.eclipse.core.internal.jobs.AnalyzeStandaloneProjectJob;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -86,16 +85,7 @@ public class JobUtils {
     }
     SonarLintProjectConfiguration projectConfiguration = SonarLintCorePlugin.loadConfig(project);
     if (projectConfiguration.isAutoEnabled()) {
-      extracted(request, project, projectConfiguration);
-    }
-  }
-
-  private static void extracted(AnalyzeProjectRequest request, ISonarLintProject project, SonarLintProjectConfiguration projectConfiguration) {
-    Optional<IConnectedEngineFacade> server = SonarLintCorePlugin.getServersManager().forProject(project);
-    if (server.isPresent()) {
-      new AnalyzeConnectedProjectJob(request, projectConfiguration.getProjectBinding().get(), (ConnectedEngineFacade) server.get()).schedule();
-    } else {
-      new AnalyzeStandaloneProjectJob(request).schedule();
+      AbstractAnalyzeProjectJob.create(request).schedule();
     }
   }
 

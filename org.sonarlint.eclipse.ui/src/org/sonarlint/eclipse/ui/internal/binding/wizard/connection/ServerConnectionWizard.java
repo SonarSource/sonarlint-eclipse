@@ -298,6 +298,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       return false;
     } catch (InterruptedException e) {
       model.setUserOrgs(null);
+      Thread.currentThread().interrupt();
       return false;
     }
     return true;
@@ -312,6 +313,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       status = testJob.getStatus();
     } catch (InterruptedException canceled) {
       // Should never be run as it is not cancellable
+      Thread.currentThread().interrupt();
       return false;
     } catch (InvocationTargetException e) {
       SonarLintLogger.get().error(message(e), e);

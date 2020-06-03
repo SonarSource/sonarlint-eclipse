@@ -61,22 +61,23 @@ public class FileExclusionsChecker {
   }
 
   public Collection<ISonarLintFile> filterExcludedFiles(ISonarLintProject project, Collection<ISonarLintFile> files, boolean log) {
-    SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(project);
     Set<ISonarLintFile> notExcluded = files
       .stream()
       .filter(file -> !isExcludedByLocalConfiguration(file, log))
       .collect(toCollection(HashSet::new));
 
-    SonarLintCorePlugin.getServersManager().forProject(project).ifPresent(server -> {
-      TestFileClassifier testFileClassifier = TestFileClassifier.get();
-      List<ISonarLintFile> excludedByServerSideExclusions = server.getServerFileExclusions(config.getProjectBinding().get(), notExcluded,
-        testFileClassifier::isTest);
-      notExcluded.removeAll(excludedByServerSideExclusions);
-      excludedByServerSideExclusions.forEach(file -> {
-        notExcluded.remove(file);
-        logIfNeeded(file, log, "server side");
+    SonarLintCorePlugin.getServersManager()
+      .resolveBinding(project)
+      .ifPresent(binding -> {
+        TestFileClassifier testFileClassifier = TestFileClassifier.get();
+        List<ISonarLintFile> excludedByServerSideExclusions = binding.getEngineFacade().getServerFileExclusions(binding.getProjectBinding(), notExcluded,
+          testFileClassifier::isTest);
+        notExcluded.removeAll(excludedByServerSideExclusions);
+        excludedByServerSideExclusions.forEach(file -> {
+          notExcluded.remove(file);
+          logIfNeeded(file, log, "server side");
+        });
       });
-    });
     return notExcluded;
   }
 

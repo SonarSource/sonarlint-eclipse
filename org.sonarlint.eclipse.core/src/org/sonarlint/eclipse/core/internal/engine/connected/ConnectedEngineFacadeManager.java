@@ -316,11 +316,11 @@ public class ConnectedEngineFacadeManager {
     return Optional.ofNullable(facadesByConnectionId.get(Objects.requireNonNull(id)));
   }
 
-  public Optional<IConnectedEngineFacade> forProject(ISonarLintProject project) {
-    return forProject(project, SonarLintCorePlugin.loadConfig(project));
+  public Optional<ResolvedBinding> resolveBinding(ISonarLintProject project) {
+    return resolveBinding(project, SonarLintCorePlugin.loadConfig(project));
   }
 
-  public Optional<IConnectedEngineFacade> forProject(ISonarLintProject project, SonarLintProjectConfiguration config) {
+  public Optional<ResolvedBinding> resolveBinding(ISonarLintProject project, SonarLintProjectConfiguration config) {
     return config
       .getProjectBinding()
       .flatMap(b -> {
@@ -330,7 +330,7 @@ public class ConnectedEngineFacadeManager {
             + "'. Please fix project binding or unbind project.");
           return Optional.empty();
         }
-        return server;
+        return Optional.of(new ResolvedBinding(config.getProjectBinding().get(), server.get()));
       });
   }
 

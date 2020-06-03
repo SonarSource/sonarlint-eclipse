@@ -69,7 +69,7 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
 
   @Override
   protected AnalysisResults runAnalysis(ConnectedAnalysisConfiguration analysisConfig, SonarLintIssueListener issueListener, IProgressMonitor monitor) {
-    return server.runAnalysis((ConnectedAnalysisConfiguration) analysisConfig, issueListener, monitor);
+    return server.runAnalysis(analysisConfig, issueListener, monitor);
   }
 
   @Override

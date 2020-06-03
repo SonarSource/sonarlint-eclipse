@@ -19,14 +19,12 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding;
 
-import java.util.Optional;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.RemoteSonarProject;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class BindingsViewContentProvider extends BaseContentProvider implements ITreeContentProvider {
@@ -52,15 +50,10 @@ public class BindingsViewContentProvider extends BaseContentProvider implements 
   @Override
   public Object getParent(Object element) {
     if (element instanceof ISonarLintProject) {
-      ISonarLintProject project = (ISonarLintProject) element;
-      SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(project);
-      Optional<IConnectedEngineFacade> server = SonarLintCorePlugin.getServersManager().forProject(project, config);
-      if (server.isPresent()) {
-        return server.get()
-          .getRemoteProject(config.getProjectBinding().get().projectKey(), new NullProgressMonitor())
-          .orElse(null);
-      }
-      return null;
+      return SonarLintCorePlugin.getServersManager()
+        .resolveBinding((ISonarLintProject) element)
+        .flatMap(b -> b.getEngineFacade().getRemoteProject(b.getProjectBinding().projectKey(), new NullProgressMonitor()))
+        .orElse(null);
     }
     if (element instanceof RemoteSonarProject) {
       return SonarLintCorePlugin.getServersManager().findById(((RemoteSonarProject) element).getServerId()).orElse(null);

@@ -141,7 +141,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
       bindLink.setText("<a>Bind this Eclipse project to a SonarQube project</a>");
       boundDetails.setText("");
     }
-    if (projectBinding.isPresent() && !SonarLintCorePlugin.getServersManager().forProject(getProject()).isPresent()) {
+    if (projectBinding.isPresent() && !SonarLintCorePlugin.getServersManager().resolveBinding(getProject()).isPresent()) {
       addServerLink.setText("<a>Connect to SonarQube server '" + projectBinding.get().connectionId() + "'</a>");
       addServerLink.setVisible(true);
     } else {

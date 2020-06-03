@@ -20,6 +20,8 @@
 package org.sonarlint.eclipse.ui.internal.binding;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -31,6 +33,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -80,10 +83,13 @@ public class UnbindProjectDialog extends MessageDialog {
           if (monitor.isCanceled()) {
             return Status.CANCEL_STATUS;
           }
-          String oldServerId = SonarLintCorePlugin.loadConfig(project).getProjectBinding().get().connectionId();
-          ConnectedEngineFacade.unbind(project);
-          JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
-          JobUtils.notifyServerViewAfterBindingChange(project, oldServerId);
+          Optional<EclipseProjectBinding> binding = SonarLintCorePlugin.loadConfig(project).getProjectBinding();
+          binding.ifPresent(b -> {
+            String oldConnectionId = b.connectionId();
+            ConnectedEngineFacade.unbind(project);
+            JobUtils.scheduleAnalysisOfOpenFiles(project, TriggerType.BINDING_CHANGE);
+            JobUtils.notifyServerViewAfterBindingChange(project, oldConnectionId);
+          });
         }
       } catch (Exception e) {
         return new Status(IStatus.ERROR, SonarLintUiPlugin.PLUGIN_ID, 0, e.getMessage(), e);

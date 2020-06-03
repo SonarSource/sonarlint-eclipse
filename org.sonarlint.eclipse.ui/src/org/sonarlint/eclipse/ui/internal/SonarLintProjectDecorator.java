@@ -44,7 +44,7 @@ public class SonarLintProjectDecorator implements ILightweightLabelDecorator {
       if (!p.isAutoEnabled()) {
         return;
       }
-      SonarLintCorePlugin.getServersManager().forProject(project)
+      SonarLintCorePlugin.getServersManager().resolveBinding(project)
         .ifPresent(s -> decoration.addOverlay(SonarLintImages.SQ_LABEL_DECORATOR));
     }
   }

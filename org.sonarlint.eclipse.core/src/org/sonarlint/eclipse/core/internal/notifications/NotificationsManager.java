@@ -26,9 +26,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -131,15 +132,16 @@ public class NotificationsManager {
 
   public static class Subscriber {
     public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
-      Optional<IConnectedEngineFacade> server = SonarLintCorePlugin.getServersManager().forProject(project, config);
-      if (!server.isPresent() || !server.get().areNotificationsEnabled()) {
+      Optional<ResolvedBinding> resolvedBinding = SonarLintCorePlugin.getServersManager().resolveBinding(project, config);
+      if (!resolvedBinding.isPresent() || !resolvedBinding.get().getEngineFacade().areNotificationsEnabled()) {
         return false;
       }
 
+      ResolvedBinding binding = resolvedBinding.get();
       LastNotificationTime notificationTime = new ProjectNotificationTime(project);
 
-      NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, config.getProjectBinding().get().connectionId(),
-        ((ConnectedEngineFacade) server.get()).getConfig());
+      NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, binding.getProjectBinding().connectionId(),
+        ((ConnectedEngineFacade) binding.getEngineFacade()).getConfig());
       SonarQubeNotifications.get().register(configuration);
 
       return true;
