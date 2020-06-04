@@ -135,14 +135,14 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     Optional<EclipseProjectBinding> projectBinding = getProjectConfig().getProjectBinding();
     if (projectBinding.isPresent()) {
       boundDetails
-        .setText("Bound to the project '" + projectBinding.get().projectKey() + "' on server '" + serverName(projectBinding.get().connectionId()) + "'");
+        .setText("Bound to the project '" + projectBinding.get().projectKey() + "' on connection '" + serverName(projectBinding.get().connectionId()) + "'");
       bindLink.setText("<a>Update project binding</a>");
     } else {
-      bindLink.setText("<a>Bind this Eclipse project to a SonarQube project</a>");
+      bindLink.setText("<a>Bind this Eclipse project to SonarQube/SonarCloud...</a>");
       boundDetails.setText("");
     }
     if (projectBinding.isPresent() && !SonarLintCorePlugin.getServersManager().resolveBinding(getProject()).isPresent()) {
-      addServerLink.setText("<a>Connect to SonarQube server '" + projectBinding.get().connectionId() + "'</a>");
+      addServerLink.setText("<a>Re-bind to SonarQube/SonarCloud connection '" + projectBinding.get().connectionId() + "'</a>");
       addServerLink.setVisible(true);
     } else {
       addServerLink.setVisible(false);

@@ -38,7 +38,7 @@ public class UrlWizardPage extends AbstractServerConnectionWizardPage {
   private Binding serverUrlTextBinding;
 
   public UrlWizardPage(ServerConnectionModel model) {
-    super("server_url_page", "SonarQube ConnectedEngineFacade URL", model, 2);
+    super("server_url_page", "SonarQube Server URL", model, 2);
   }
 
   @SuppressWarnings("unchecked")

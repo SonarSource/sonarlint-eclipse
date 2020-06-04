@@ -146,7 +146,6 @@ public class BindingsViewActionProvider extends CommonActionProvider {
 
     if (projects.isEmpty()) {
       IAction newServerAction = new NewConnectionWizardAction();
-      newServerAction.setText(Messages.actionNewServer);
       menu.add(newServerAction);
     } else if (servers.isEmpty()) {
       menu.add(updateBindingAction);

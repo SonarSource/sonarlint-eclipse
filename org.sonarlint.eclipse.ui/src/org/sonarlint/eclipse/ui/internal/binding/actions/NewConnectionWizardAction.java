@@ -39,7 +39,7 @@ public class NewConnectionWizardAction extends Action {
     super();
 
     setImageDescriptor(SonarLintImages.WIZ_NEW_SERVER);
-    setText(Messages.actionSetNewServer);
+    setText(Messages.actionNewServer);
   }
 
   @Override
