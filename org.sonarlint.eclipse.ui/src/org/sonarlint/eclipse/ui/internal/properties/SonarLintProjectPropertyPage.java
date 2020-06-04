@@ -142,7 +142,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
       boundDetails.setText("");
     }
     if (projectBinding.isPresent() && !SonarLintCorePlugin.getServersManager().resolveBinding(getProject()).isPresent()) {
-      addServerLink.setText("<a>Re-bind to SonarQube/SonarCloud connection '" + projectBinding.get().connectionId() + "'</a>");
+      addServerLink.setText("<a>Re-create SonarQube/SonarCloud connection '" + projectBinding.get().connectionId() + "'</a>");
       addServerLink.setVisible(true);
     } else {
       addServerLink.setVisible(false);
