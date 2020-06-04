@@ -50,7 +50,7 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
     super.createContentArea(composite);
 
     addLink("Check it here", e -> {
-      DeveloperNotificationPopup.this.close();
+      DeveloperNotificationPopup.this.closeFade();
       try {
         PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(notification.link()));
       } catch (PartInitException | MalformedURLException e1) {

@@ -110,7 +110,7 @@ public interface IConnectedEngineFacade {
 
   List<ISonarLintProject> getBoundProjects();
 
-  void notifyAllListeners();
+  void notifyAllListenersStateChanged();
 
   void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsEnabled);
 

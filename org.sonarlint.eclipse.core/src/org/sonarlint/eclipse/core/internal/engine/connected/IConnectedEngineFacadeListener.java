@@ -19,8 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.engine.connected;
 
-import java.util.function.Consumer;
+public interface IConnectedEngineFacadeListener {
 
-@FunctionalInterface
-public interface IConnectedEngineFacadeListener extends Consumer<IConnectedEngineFacade> {
+  void stateChanged(IConnectedEngineFacade facade);
+
 }

@@ -99,4 +99,10 @@ public class SonarLintLogger {
     }
   }
 
+  public void showNotification(String title, String shortMsg, String longMsg) {
+    for (LogListener listener : logListeners) {
+      listener.showNotification(title, shortMsg, longMsg);
+    }
+  }
+
 }

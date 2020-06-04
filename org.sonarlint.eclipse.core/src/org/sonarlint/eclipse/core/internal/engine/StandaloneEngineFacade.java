@@ -60,10 +60,11 @@ public class StandaloneEngineFacade {
           .addPlugins(pluginEntries.toArray(new URL[0]))
           .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("default").toFile().toPath())
           .setLogOutput(new SonarLintAnalyzerLogOutput())
-          .addEnabledLanguages(SonarLintUtils.getEnabledLanguages())
+          .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
           .build();
         try {
           client = new StandaloneSonarLintEngineImpl(globalConfig);
+          SkippedPluginsNotifier.notifyForSkippedPlugins(client.getPluginDetails(), null);
         } catch (Throwable e) {
           SonarLintLogger.get().error("Unable to start standalone SonarLint engine", e);
           client = null;
