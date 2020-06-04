@@ -56,7 +56,7 @@
 	
 	  <wizard
 	      id="org.sonarlint.eclipse.ui.new.server"
-	      name="New Server Connection"
+	      name="New SonarQube/SonarCloud Connection"
 	      class="org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard"
 	      category="org.sonarlint.eclipse"
 	      icon="icons/full/eview16/bindings.png">

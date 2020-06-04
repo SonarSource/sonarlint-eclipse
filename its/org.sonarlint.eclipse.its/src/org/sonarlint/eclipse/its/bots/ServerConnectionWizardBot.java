@@ -55,7 +55,7 @@ public class ServerConnectionWizardBot {
     bot.menu("File").menu("New", "Other...").click();
     wizardShell = bot.activeShell();
     wizardBot = wizardShell.bot();
-    wizardBot.tree().expandNode("SonarLint").select("New Server Connection");
+    wizardBot.tree().expandNode("SonarLint").select("New SonarQube/SonarCloud Connection");
     wizardBot.button(NEXT_MNEMONIC).click();
     return this;
   }
