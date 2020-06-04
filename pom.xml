@@ -299,6 +299,11 @@
                 <plugin id="org.sonarsource.sonarlint.core.sonarlint-core" />
                 <plugin id="com.google.protobuf" />
                 <plugin id="net.sdruskat.fragment.sun.misc" />
+                <plugin id="org.eclipse.mylyn.commons.ui" />
+                <plugin id="org.eclipse.mylyn.commons.core" />
+                <plugin id="org.eclipse.mylyn.commons.screenshots" />
+                <plugin id="org.apache.commons.lang" />
+                <plugin id="com.google.guava" />
               </excludes>
             </configuration>
           </execution>
