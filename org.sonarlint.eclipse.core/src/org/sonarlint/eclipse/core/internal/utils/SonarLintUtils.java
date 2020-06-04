@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.eclipse.core.net.proxy.IProxyData;
@@ -78,13 +79,13 @@ public class SonarLintUtils {
     }
   }
 
-  public static Language[] getEnabledLanguages() {
+  public static Set<Language> getEnabledLanguages() {
     EnumSet<Language> languagesDisabledByDefault = EnumSet.of(Language.TS, Language.JAVA, Language.CPP, Language.C, Language.OBJC, Language.SWIFT);
     EnumSet<Language> enabledLanguages = EnumSet.complementOf(languagesDisabledByDefault);
     Collection<IAnalysisConfigurator> configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
     for (IAnalysisConfigurator configurator : configurators) {
       enabledLanguages.addAll(configurator.whitelistedLanguages());
     }
-    return enabledLanguages.toArray(new Language[0]);
+    return enabledLanguages;
   }
 }

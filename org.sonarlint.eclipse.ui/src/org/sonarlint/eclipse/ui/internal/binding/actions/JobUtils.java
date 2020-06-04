@@ -203,11 +203,11 @@ public class JobUtils {
     String serverId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
     if (oldServerId != null && !Objects.equals(serverId, oldServerId)) {
       Optional<IConnectedEngineFacade> oldServer = SonarLintCorePlugin.getServersManager().findById(oldServerId);
-      oldServer.ifPresent(IConnectedEngineFacade::notifyAllListeners);
+      oldServer.ifPresent(IConnectedEngineFacade::notifyAllListenersStateChanged);
     }
     if (serverId != null) {
       Optional<IConnectedEngineFacade> server = SonarLintCorePlugin.getServersManager().findById(serverId);
-      server.ifPresent(IConnectedEngineFacade::notifyAllListeners);
+      server.ifPresent(IConnectedEngineFacade::notifyAllListenersStateChanged);
     }
     IBaseLabelProvider labelProvider = PlatformUI.getWorkbench().getDecoratorManager().getBaseLabelProvider(SonarLintProjectDecorator.ID);
     if (labelProvider != null) {

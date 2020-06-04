@@ -27,4 +27,6 @@ public interface LogListener {
 
   void debug(String msg, boolean fromAnalyzer);
 
+  void showNotification(String title, String shortMsg, String longMsg);
+
 }

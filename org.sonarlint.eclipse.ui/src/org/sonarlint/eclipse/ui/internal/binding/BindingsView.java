@@ -205,7 +205,7 @@ public class BindingsView extends CommonNavigator {
 
   }
 
-  protected void refreshServerContent(final IConnectedEngineFacade server) {
+  protected void refreshConnectionContent(final IConnectedEngineFacade server) {
     Display.getDefault().asyncExec(() -> {
       if (!tableViewer.getTree().isDisposed()) {
         tableViewer.refresh(server, true);
@@ -213,7 +213,7 @@ public class BindingsView extends CommonNavigator {
     });
   }
 
-  protected void refreshServerState() {
+  protected void refreshConnectionState() {
     Display.getDefault().asyncExec(() -> {
       IDecoratorManager dm = PlatformUI.getWorkbench().getDecoratorManager();
       dm.update(BindingsViewDecorator.ID);
@@ -234,7 +234,7 @@ public class BindingsView extends CommonNavigator {
 
       @Override
       public void connectionChanged(IConnectedEngineFacade server) {
-        refreshServerContent(server);
+        refreshConnectionContent(server);
       }
 
       @Override
@@ -245,9 +245,9 @@ public class BindingsView extends CommonNavigator {
     };
     SonarLintCorePlugin.getServersManager().addServerLifecycleListener(serverResourceListener);
 
-    serverListener = server -> {
-      refreshServerState();
-      refreshServerContent(server);
+    serverListener = facade -> {
+      refreshConnectionState();
+      refreshConnectionContent(facade);
     };
 
     // add listeners to servers

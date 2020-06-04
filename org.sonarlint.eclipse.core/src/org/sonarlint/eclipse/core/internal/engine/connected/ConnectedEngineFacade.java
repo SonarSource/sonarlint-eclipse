@@ -41,6 +41,7 @@ import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
+import org.sonarlint.eclipse.core.internal.engine.SkippedPluginsNotifier;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
 import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
@@ -52,6 +53,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.ConnectedSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.WsHelperImpl;
+import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
@@ -88,7 +90,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   private String organization;
   private boolean hasAuth;
   private final ConnectedSonarLintEngine client;
-  private final List<IConnectedEngineFacadeListener> listeners = new ArrayList<>();
+  private final List<IConnectedEngineFacadeListener> facadeListeners = new ArrayList<>();
   private GlobalStorageStatus updateStatus;
   private boolean hasUpdates;
   private boolean notificationsEnabled;
@@ -108,13 +110,14 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       .setWorkDir(StoragePathManager.getServerWorkDir(getId()))
       .setStorageRoot(StoragePathManager.getServerStorageRoot())
       .setLogOutput(new SonarLintAnalyzerLogOutput())
-      .addEnabledLanguages(SonarLintUtils.getEnabledLanguages())
+      .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
       .build();
     this.client = new ConnectedSonarLintEngineImpl(globalConfig);
     this.client.addStateListener(this);
     this.updateStatus = client.getGlobalStorageStatus();
     if (client.getState().equals(State.UPDATED)) {
       reloadProjects();
+      SkippedPluginsNotifier.notifyForSkippedPlugins(client.getPluginDetails(), id);
     }
   }
 
@@ -128,13 +131,13 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     if (state.equals(State.UPDATED)) {
       reloadProjects();
     }
-    notifyAllListeners();
+    notifyAllListenersStateChanged();
   }
 
   @Override
-  public void notifyAllListeners() {
-    for (IConnectedEngineFacadeListener listener : listeners) {
-      listener.accept(this);
+  public void notifyAllListenersStateChanged() {
+    for (IConnectedEngineFacadeListener listener : facadeListeners) {
+      listener.stateChanged(this);
     }
   }
 
@@ -220,7 +223,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       // If server is not reachable, just ignore
       SonarLintLogger.get().debug("Unable to check for binding data updates on '" + getId() + "'", e);
     } finally {
-      notifyAllListeners();
+      notifyAllListenersStateChanged();
     }
   }
 
@@ -327,6 +330,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     }
     updateStatus = updateResult.status();
     hasUpdates = false;
+    SkippedPluginsNotifier.notifyForSkippedPlugins(client.getPluginDetails(), id);
   }
 
   private static boolean tooOld(SonarAnalyzer analyzer) {
@@ -404,7 +408,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       SonarLintCorePlugin.saveConfig(p, config);
     });
     // Some prefix/suffix might have been changed
-    notifyAllListeners();
+    notifyAllListenersStateChanged();
   }
 
   public static IStatus testConnection(String url, @Nullable String organization, @Nullable String username, @Nullable String password) {
@@ -506,12 +510,12 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Override
   public void addConnectedEngineListener(IConnectedEngineFacadeListener listener) {
-    listeners.add(listener);
+    facadeListeners.add(listener);
   }
 
   @Override
   public void removeConnectedEngineListener(IConnectedEngineFacadeListener listener) {
-    listeners.remove(listener);
+    facadeListeners.remove(listener);
   }
 
   @Override

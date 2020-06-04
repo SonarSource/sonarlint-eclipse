@@ -53,7 +53,7 @@ public class ServerStorageNeedUpdatePopup extends AbstractSonarLintPopup {
       Job job = new ServerUpdateJob(server);
       JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
       job.schedule();
-      ServerStorageNeedUpdatePopup.this.close();
+      ServerStorageNeedUpdatePopup.this.closeFade();
     });
   }
 

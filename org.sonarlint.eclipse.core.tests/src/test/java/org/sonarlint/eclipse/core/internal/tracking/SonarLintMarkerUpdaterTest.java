@@ -77,6 +77,10 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
       public void debug(String msg, boolean fromAnalyzer) {
       }
 
+      @Override
+      public void showNotification(String title, String shortMsg, String longMsg) {
+      }
+
     });
     project = importEclipseProject("reference");
   }

@@ -41,7 +41,7 @@ public class MissingNodePopup extends AbstractSonarLintPopup {
     super.createContentArea(composite);
 
     addLink("Open console", e -> {
-      MissingNodePopup.this.close();
+      MissingNodePopup.this.closeFade();
       SonarLintUiPlugin.getDefault().getSonarConsole().bringConsoleToFront();
     });
   }
