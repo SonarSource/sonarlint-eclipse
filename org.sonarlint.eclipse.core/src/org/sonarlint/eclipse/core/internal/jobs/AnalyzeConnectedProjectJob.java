@@ -29,8 +29,8 @@ import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
-import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
@@ -48,9 +48,9 @@ import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<ConnectedAnalysisConfiguration> {
 
   private final EclipseProjectBinding binding;
-  private final Server server;
+  private final ConnectedEngineFacade server;
 
-  public AnalyzeConnectedProjectJob(AnalyzeProjectRequest request, EclipseProjectBinding binding, Server server) {
+  public AnalyzeConnectedProjectJob(AnalyzeProjectRequest request, EclipseProjectBinding binding, ConnectedEngineFacade server) {
     super(request);
     this.binding = binding;
     this.server = server;
@@ -58,7 +58,7 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
 
   @Override
   protected ConnectedAnalysisConfiguration prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps) {
-    SonarLintLogger.get().debug("Connected mode (using configuration of '" + binding.projectKey() + "' in server '" + binding.serverId() + "')");
+    SonarLintLogger.get().debug("Connected mode (using configuration of '" + binding.projectKey() + "' in connection '" + binding.connectionId() + "')");
     return ConnectedAnalysisConfiguration.builder()
       .setProjectKey(binding.projectKey())
       .setBaseDir(projectBaseDir)
@@ -69,7 +69,7 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
 
   @Override
   protected AnalysisResults runAnalysis(ConnectedAnalysisConfiguration analysisConfig, SonarLintIssueListener issueListener, IProgressMonitor monitor) {
-    return server.runAnalysis((ConnectedAnalysisConfiguration) analysisConfig, issueListener, monitor);
+    return server.runAnalysis(analysisConfig, issueListener, monitor);
   }
 
   @Override
@@ -107,7 +107,7 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
       .collect(Collectors.toList());
   }
 
-  private void trackServerIssuesAsync(Server server, Collection<ISonarLintIssuable> resources, Map<ISonarLintFile, IDocument> docPerFile, TriggerType triggerType) {
+  private void trackServerIssuesAsync(ConnectedEngineFacade server, Collection<ISonarLintIssuable> resources, Map<ISonarLintFile, IDocument> docPerFile, TriggerType triggerType) {
     ServerConfiguration serverConfiguration = server.getConfig();
     ConnectedSonarLintEngine engine = server.getEngine();
     SonarLintCorePlugin.getInstance().getServerIssueUpdater().updateAsync(serverConfiguration, engine, getProject(), binding,
@@ -115,7 +115,7 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
       docPerFile, triggerType);
   }
 
-  private Collection<Trackable> trackServerIssuesSync(Server server, ISonarLintFile file, Collection<Trackable> tracked, boolean updateServerIssues) {
+  private Collection<Trackable> trackServerIssuesSync(ConnectedEngineFacade server, ISonarLintFile file, Collection<Trackable> tracked, boolean updateServerIssues) {
     ServerConfiguration serverConfiguration = server.getConfig();
     ConnectedSonarLintEngine engine = server.getEngine();
     List<ServerIssue> serverIssues;

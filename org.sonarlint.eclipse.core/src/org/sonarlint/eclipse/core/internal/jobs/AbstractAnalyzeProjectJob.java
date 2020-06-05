@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import static java.text.MessageFormat.format;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -54,14 +57,12 @@ import org.sonarlint.eclipse.core.configurator.ProjectConfigurationRequest;
 import org.sonarlint.eclipse.core.configurator.ProjectConfigurator;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
-import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
@@ -78,8 +79,6 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.exceptions.CanceledException;
 import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
 
-import static java.text.MessageFormat.format;
-
 public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisConfiguration> extends AbstractSonarProjectJob {
   private final List<SonarLintProperty> extraProps;
   private final TriggerType triggerType;
@@ -94,18 +93,11 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     this.shouldClearReport = request.shouldClearReport();
   }
 
-  public static AbstractAnalyzeProjectJob<?> create(AnalyzeProjectRequest request) {
-    return create(request, SonarLintCorePlugin.loadConfig(request.getProject()));
-  }
-
-  public static AbstractAnalyzeProjectJob<?> create(AnalyzeProjectRequest request, SonarLintProjectConfiguration projectConfiguration) {
-
-    Optional<IServer> server = SonarLintCorePlugin.getServersManager().forProject(request.getProject(), projectConfiguration);
-    if (server.isPresent()) {
-      return new AnalyzeConnectedProjectJob(request, projectConfiguration.getProjectBinding().get(), (Server) server.get());
-    } else {
-      return new AnalyzeStandaloneProjectJob(request);
-    }
+  public static AbstractSonarProjectJob create(AnalyzeProjectRequest request) {
+    return SonarLintCorePlugin.getServersManager()
+      .resolveBinding(request.getProject())
+      .<AbstractSonarProjectJob>map(b -> new AnalyzeConnectedProjectJob(request, b.getProjectBinding(), (ConnectedEngineFacade) b.getEngineFacade()))
+      .orElseGet(() -> new AnalyzeStandaloneProjectJob(request));
   }
 
   private static String jobTitle(AnalyzeProjectRequest request) {
@@ -179,7 +171,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       return Status.CANCEL_STATUS;
     } catch (Exception e) {
       SonarLintLogger.get().error("Error during execution of SonarLint analysis", e);
-      return new Status(Status.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
+      return new Status(IStatus.WARNING, SonarLintCorePlugin.PLUGIN_ID, "Error when executing SonarLint analysis", e);
     } finally {
       if (analysisWorkDir != null) {
         try {
@@ -311,7 +303,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
         return;
       }
       ISonarLintFile file = (ISonarLintFile) entry.getKey();
-      Optional<IDocument> openedDocument = Optional.ofNullable(docPerFile.get((ISonarLintFile) file));
+      Optional<IDocument> openedDocument = Optional.ofNullable(docPerFile.get(file));
       IssueTracker issueTracker = SonarLintCorePlugin.getOrCreateIssueTracker(getProject());
       List<Issue> rawIssues = entry.getValue();
       List<Trackable> trackables;

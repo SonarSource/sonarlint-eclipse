@@ -28,7 +28,7 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.bind.wizard.ProjectBindingWizard;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
 public class BindProjectsCommand extends AbstractHandler {

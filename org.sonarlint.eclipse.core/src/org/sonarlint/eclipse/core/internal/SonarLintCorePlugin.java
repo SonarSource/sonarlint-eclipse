@@ -30,15 +30,15 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.engine.StandaloneEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
-import org.sonarlint.eclipse.core.internal.jobs.StandaloneSonarLintEngineFacade;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsTracker;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsTrackerRegistry;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfigurationManager;
-import org.sonarlint.eclipse.core.internal.server.ServersManager;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.IssueStore;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
@@ -62,12 +62,12 @@ public class SonarLintCorePlugin extends Plugin {
   private IssueTrackerRegistry issueTrackerRegistry;
   private ServerIssueUpdater serverIssueUpdater;
 
-  private StandaloneSonarLintEngineFacade sonarlint;
+  private StandaloneEngineFacade sonarlint;
   private final ServiceTracker<IProxyService, IProxyService> proxyTracker;
 
   private AnalysisListenerManager analysisListenerManager = new AnalysisListenerManager();
   private SonarLintTelemetry telemetry = new SonarLintTelemetry();
-  private ServersManager serversManager = null;
+  private ConnectedEngineFacadeManager serversManager = null;
 
   private NotificationsTrackerRegistry notificationsTrackerRegistry;
 
@@ -158,9 +158,9 @@ public class SonarLintCorePlugin extends Plugin {
     super.stop(context);
   }
 
-  public StandaloneSonarLintEngineFacade getDefaultSonarLintClientFacade() {
+  public StandaloneEngineFacade getDefaultSonarLintClientFacade() {
     if (sonarlint == null) {
-      sonarlint = new StandaloneSonarLintEngineFacade();
+      sonarlint = new StandaloneEngineFacade();
     }
     return sonarlint;
   }
@@ -189,9 +189,9 @@ public class SonarLintCorePlugin extends Plugin {
     return getInstance().telemetry;
   }
 
-  public static synchronized ServersManager getServersManager() {
+  public static synchronized ConnectedEngineFacadeManager getServersManager() {
     if (getInstance().serversManager == null) {
-      getInstance().serversManager = new ServersManager();
+      getInstance().serversManager = new ConnectedEngineFacadeManager();
       getInstance().serversManager.init();
     }
     return getInstance().serversManager;

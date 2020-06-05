@@ -21,7 +21,7 @@ package org.sonarlint.eclipse.ui.internal.views;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
@@ -43,8 +43,8 @@ import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -284,13 +284,12 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
 
     ISonarLintIssuable issuable = Adapters.adapt(element.getResource(), ISonarLintIssuable.class);
     ISonarLintProject p = issuable.getProject();
-    RuleDetails ruleDetails;
-    Optional<IServer> server = SonarLintCorePlugin.getServersManager().forProject(p);
-    if (server.isPresent()) {
-      ruleDetails = server.get().getRuleDescription(ruleKey);
-    } else {
-      ruleDetails = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getRuleDescription(ruleKey);
-    }
+
+    RuleDetails ruleDetails = SonarLintCorePlugin.getServersManager()
+      .resolveBinding(p)
+      .map(ResolvedBinding::getEngineFacade)
+      .map(facade -> facade.getRuleDescription(ruleKey))
+      .orElseGet(() -> SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getRuleDescription(ruleKey));
 
     browser.updateRule(ruleDetails);
   }

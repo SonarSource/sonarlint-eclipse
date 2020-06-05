@@ -26,7 +26,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.server.IServer;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.ui.internal.popup.ServerUpdateAvailablePopup;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 
@@ -43,7 +43,7 @@ public class CheckForUpdatesJob extends Job {
     try {
       SubMonitor subMonitor = SubMonitor.convert(monitor, SonarLintCorePlugin.getServersManager().getServers().size());
       subMonitor.setTaskName("Check for updates of binding data on SonarQube/SonarCloud");
-      for (final IServer server : SonarLintCorePlugin.getServersManager().getServers()) {
+      for (final IConnectedEngineFacade server : SonarLintCorePlugin.getServersManager().getServers()) {
         subMonitor.subTask("Checking for updates of binding data from server '" + server.getId() + "'");
         SubMonitor serverMonitor = subMonitor.newChild(1);
 
@@ -61,7 +61,7 @@ public class CheckForUpdatesJob extends Job {
     }
   }
 
-  private static IStatus checkForUpdates(final IServer server, SubMonitor monitor) {
+  private static IStatus checkForUpdates(final IConnectedEngineFacade server, SubMonitor monitor) {
     // No need to check for remote updates if local storage is already outdated
     if (server.getStorageState() == State.UPDATED) {
       server.checkForUpdates(monitor);

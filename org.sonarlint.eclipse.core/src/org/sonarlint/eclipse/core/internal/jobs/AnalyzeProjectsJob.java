@@ -61,7 +61,7 @@ public class AnalyzeProjectsJob extends WorkspaceJob {
         }
         global.setTaskName("Analyzing project " + project.getName());
         AnalyzeProjectRequest req = new AnalyzeProjectRequest(project, entry.getValue(), TriggerType.MANUAL);
-        AbstractAnalyzeProjectJob<?> job = AbstractAnalyzeProjectJob.create(req);
+        AbstractSonarProjectJob job = AbstractAnalyzeProjectJob.create(req);
         SubMonitor subMonitor = analysisMonitor.newChild(1);
         job.run(subMonitor);
         subMonitor.done();

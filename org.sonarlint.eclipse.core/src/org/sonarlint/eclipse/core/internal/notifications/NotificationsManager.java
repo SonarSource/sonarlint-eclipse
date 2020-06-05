@@ -26,11 +26,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
-import org.sonarlint.eclipse.core.internal.server.IServer;
-import org.sonarlint.eclipse.core.internal.server.Server;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.NotificationConfiguration;
 import org.sonarsource.sonarlint.core.client.api.notifications.LastNotificationTime;
@@ -131,15 +132,16 @@ public class NotificationsManager {
 
   public static class Subscriber {
     public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
-      Optional<IServer> server = SonarLintCorePlugin.getServersManager().forProject(project, config);
-      if (!server.isPresent() || !server.get().areNotificationsEnabled()) {
+      Optional<ResolvedBinding> resolvedBinding = SonarLintCorePlugin.getServersManager().resolveBinding(project, config);
+      if (!resolvedBinding.isPresent() || !resolvedBinding.get().getEngineFacade().areNotificationsEnabled()) {
         return false;
       }
 
+      ResolvedBinding binding = resolvedBinding.get();
       LastNotificationTime notificationTime = new ProjectNotificationTime(project);
 
-      NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, config.getProjectBinding().get().serverId(),
-        ((Server) server.get()).getConfig());
+      NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, binding.getProjectBinding().connectionId(),
+        ((ConnectedEngineFacade) binding.getEngineFacade()).getConfig());
       SonarQubeNotifications.get().register(configuration);
 
       return true;

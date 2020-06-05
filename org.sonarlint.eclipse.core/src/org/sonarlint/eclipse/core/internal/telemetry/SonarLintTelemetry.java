@@ -32,8 +32,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.Bundle;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
-import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.client.api.common.TelemetryClientConfig;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
@@ -185,10 +186,11 @@ public class SonarLintTelemetry {
   public static boolean isAnyOpenProjectBoundToSonarCloud() {
     return ProjectsProviderUtils.allProjects().stream()
       .filter(p -> p.isOpen() && SonarLintCorePlugin.loadConfig(p).isBound())
-      .map(SonarLintCorePlugin.getServersManager()::forProject)
+      .map(SonarLintCorePlugin.getServersManager()::resolveBinding)
       .filter(Optional::isPresent)
       .map(Optional::get)
-      .anyMatch(IServer::isSonarCloud);
+      .map(ResolvedBinding::getEngineFacade)
+      .anyMatch(IConnectedEngineFacade::isSonarCloud);
   }
 
 }

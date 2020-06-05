@@ -46,6 +46,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.jobs.AbstractAnalyzeProjectJob;
+import org.sonarlint.eclipse.core.internal.jobs.AbstractSonarProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectsJob;
@@ -94,7 +95,7 @@ public class AnalyzeCommand extends AbstractHandler {
       } else {
         reportTitle = fileCount + " files of project " + entry.getKey().getName();
       }
-      AbstractAnalyzeProjectJob<?> job = AbstractAnalyzeProjectJob.create(req);
+      AbstractSonarProjectJob job = AbstractAnalyzeProjectJob.create(req);
       AnalyzeChangeSetCommand.registerJobListener(job, reportTitle);
       job.schedule();
     } else {

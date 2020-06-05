@@ -64,22 +64,22 @@ public class SonarLintProjectConfiguration {
 
   public static class EclipseProjectBinding extends ProjectBinding {
 
-    private final String serverId;
+    private final String connectionId;
 
-    public EclipseProjectBinding(String serverId, String projectKey, String sqPathPrefix, String idePathPrefix) {
+    public EclipseProjectBinding(String connectionId, String projectKey, String sqPathPrefix, String idePathPrefix) {
       super(projectKey, sqPathPrefix, idePathPrefix);
-      this.serverId = serverId;
+      this.connectionId = connectionId;
     }
 
-    public String serverId() {
-      return serverId;
+    public String connectionId() {
+      return connectionId;
     }
 
     @Override
     public int hashCode() {
       final int prime = 31;
       int result = super.hashCode();
-      result = prime * result + ((serverId == null) ? 0 : serverId.hashCode());
+      result = prime * result + ((connectionId == null) ? 0 : connectionId.hashCode());
       return result;
     }
 
@@ -95,7 +95,7 @@ public class SonarLintProjectConfiguration {
         return false;
       }
       EclipseProjectBinding other = (EclipseProjectBinding) obj;
-      return Objects.equals(serverId, other.serverId);
+      return Objects.equals(connectionId, other.connectionId);
     }
 
   }

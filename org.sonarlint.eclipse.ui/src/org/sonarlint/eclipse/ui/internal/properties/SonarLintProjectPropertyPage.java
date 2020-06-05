@@ -35,13 +35,13 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
-import org.sonarlint.eclipse.core.internal.server.IServer;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
-import org.sonarlint.eclipse.ui.internal.bind.wizard.ProjectBindingWizard;
-import org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 
 import static java.util.Arrays.asList;
 
@@ -103,7 +103,7 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     addServerLink.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        String serverId = getProjectConfig().getProjectBinding().map(EclipseProjectBinding::serverId)
+        String serverId = getProjectConfig().getProjectBinding().map(EclipseProjectBinding::connectionId)
           .orElseThrow(() -> new IllegalStateException("This link should only be visible when there is a serverId"));
         WizardDialog wd = ServerConnectionWizard.createDialog(container.getShell(), serverId);
         if (wd.open() == Window.OK) {
@@ -135,14 +135,14 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     Optional<EclipseProjectBinding> projectBinding = getProjectConfig().getProjectBinding();
     if (projectBinding.isPresent()) {
       boundDetails
-        .setText("Bound to the project '" + projectBinding.get().projectKey() + "' on server '" + serverName(projectBinding.get().serverId()) + "'");
+        .setText("Bound to the project '" + projectBinding.get().projectKey() + "' on connection '" + serverName(projectBinding.get().connectionId()) + "'");
       bindLink.setText("<a>Update project binding</a>");
     } else {
-      bindLink.setText("<a>Bind this Eclipse project to a SonarQube project</a>");
+      bindLink.setText("<a>Bind this Eclipse project to SonarQube/SonarCloud...</a>");
       boundDetails.setText("");
     }
-    if (projectBinding.isPresent() && !SonarLintCorePlugin.getServersManager().forProject(getProject()).isPresent()) {
-      addServerLink.setText("<a>Connect to SonarQube server '" + projectBinding.get().serverId() + "'</a>");
+    if (projectBinding.isPresent() && !SonarLintCorePlugin.getServersManager().resolveBinding(getProject()).isPresent()) {
+      addServerLink.setText("<a>Re-create SonarQube/SonarCloud connection '" + projectBinding.get().connectionId() + "'</a>");
       addServerLink.setVisible(true);
     } else {
       addServerLink.setVisible(false);
@@ -154,8 +154,8 @@ public class SonarLintProjectPropertyPage extends PropertyPage {
     if (serverId == null) {
       return "";
     }
-    Optional<IServer> server = SonarLintCorePlugin.getServersManager().findById(serverId);
-    return server.map(IServer::getId).orElseGet(() -> "Unknown server: '" + serverId + "'");
+    Optional<IConnectedEngineFacade> server = SonarLintCorePlugin.getServersManager().findById(serverId);
+    return server.map(IConnectedEngineFacade::getId).orElseGet(() -> "Unknown server: '" + serverId + "'");
   }
 
   @Override

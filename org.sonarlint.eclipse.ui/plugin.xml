@@ -56,8 +56,8 @@
 	
 	  <wizard
 	      id="org.sonarlint.eclipse.ui.new.server"
-	      name="New Server Connection"
-	      class="org.sonarlint.eclipse.ui.internal.server.wizard.ServerConnectionWizard"
+	      name="New SonarQube/SonarCloud Connection"
+	      class="org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard"
 	      category="org.sonarlint.eclipse"
 	      icon="icons/full/eview16/bindings.png">
 	    <description>Configure a connection with a SonarQube or SonarCloud server</description>
@@ -67,7 +67,7 @@
 	<extension
       point="org.eclipse.ui.decorators">
    <decorator
-         class="org.sonarlint.eclipse.ui.internal.server.ServerDecorator"
+         class="org.sonarlint.eclipse.ui.internal.binding.BindingsViewDecorator"
          icon="icons/full/eview16/bindings.png"
          id="org.sonarlint.eclipse.ui.navigatorDecorator"
          label="SonarLint Server State Decorator"
@@ -77,10 +77,10 @@
       <enablement>
           <or>
             <objectClass
-                  name="org.sonarlint.eclipse.core.internal.server.IServer">
+                  name="org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade">
             </objectClass>
             <objectClass
-                  name="org.sonarlint.eclipse.core.internal.server.RemoteSonarProject">
+                  name="org.sonarlint.eclipse.core.internal.engine.connected.RemoteSonarProject">
             </objectClass>
             <objectClass
                   name="org.sonarlint.eclipse.core.resource.ISonarLintProject">
@@ -130,7 +130,7 @@
     <view
 	        allowMultiple="false"
 	        category="org.sonarlint.eclipse"
-	        class="org.sonarlint.eclipse.ui.internal.server.ServersView"
+	        class="org.sonarlint.eclipse.ui.internal.binding.BindingsView"
 	        icon="icons/full/eview16/bindings.png"
 	        id="org.sonarlint.eclipse.ui.ServersView"
 	        name="SonarLint Bindings">
@@ -150,16 +150,16 @@
       point="org.eclipse.ui.navigator.navigatorContent">
 	   <navigatorContent
 	         activeByDefault="true"
-	         contentProvider="org.sonarlint.eclipse.ui.internal.server.ServerContentProvider"
+	         contentProvider="org.sonarlint.eclipse.ui.internal.binding.BindingsViewContentProvider"
 	         icon="icons/full/eview16/bindings.png"
 	         id="org.sonarlint.eclipse.ui.ServersView.content.root"
-	         labelProvider="org.sonarlint.eclipse.ui.internal.server.ServerLabelProvider"
+	         labelProvider="org.sonarlint.eclipse.ui.internal.binding.BindingsViewLabelProvider"
 	         name="Server Provider"
 	         priority="highest">
 	      <triggerPoints>
 	         <or>
 	            <instanceof
-	                  value="org.sonarlint.eclipse.core.internal.server.IServer">
+	                  value="org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade">
 	            </instanceof>
 	            <instanceof
 	                  value="org.sonarlint.eclipse.core.resource.ISonarLintProject">
@@ -177,13 +177,13 @@
 	         </or>
 	      </possibleChildren>
 			  <actionProvider
-			            class="org.sonarlint.eclipse.ui.internal.server.ServerActionProvider"
+			            class="org.sonarlint.eclipse.ui.internal.binding.BindingsViewActionProvider"
 			            id="org.sonarlint.eclipse.ui.ServersView.ServerActionProvider"
 			            priority="highest">
 					<enablement>
 		             <or>
 		                <instanceof
-		                      value="org.sonarlint.eclipse.core.internal.server.IServer">
+		                      value="org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade">
 		                </instanceof>
 		                <instanceof
 		                      value="org.sonarlint.eclipse.core.resource.ISonarLintProject">

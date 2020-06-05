@@ -34,8 +34,8 @@ import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPart.ExclusionsAndInclusions;
-import org.sonarlint.eclipse.ui.internal.server.actions.JobUtils;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 

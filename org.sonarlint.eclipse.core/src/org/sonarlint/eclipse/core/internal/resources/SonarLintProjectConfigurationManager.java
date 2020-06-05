@@ -97,7 +97,7 @@ public class SonarLintProjectConfigurationManager {
     if (configuration.getProjectBinding().isPresent()) {
       EclipseProjectBinding binding = configuration.getProjectBinding().get();
       projectNode.put(P_PROJECT_KEY, binding.projectKey());
-      projectNode.put(P_SERVER_ID, binding.serverId());
+      projectNode.put(P_SERVER_ID, binding.connectionId());
       projectNode.put(P_SQ_PREFIX_KEY, binding.sqPathPrefix());
       projectNode.put(P_IDE_PREFIX_KEY, binding.idePathPrefix());
     } else {
