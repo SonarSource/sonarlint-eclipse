@@ -234,8 +234,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     if (getStorageState() != State.UPDATED) {
       return NEED_UPDATE;
     }
-    String version = updateStatus.getServerVersion();
-    return version == null ? "Unknown" : version;
+    return updateStatus.getServerVersion();
   }
 
   @Override

@@ -280,7 +280,6 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
       currentPage.setMessage(e.getCause().getMessage(), IMessageProvider.ERROR);
       return false;
     } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
       return false;
     }
     return true;
