@@ -20,9 +20,6 @@
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>target-platform-configuration</artifactId>
-        <configuration>
-          <includePackedArtifacts>true</includePackedArtifacts>
-        </configuration>
       </plugin>
     </plugins>
   </build>
