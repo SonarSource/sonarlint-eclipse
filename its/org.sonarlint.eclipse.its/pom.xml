@@ -130,6 +130,10 @@
                   <type>p2-installable-unit</type>
                   <artifactId>org.eclipse.php.feature.group</artifactId>
                 </dependency>
+                <dependency>
+                  <type>p2-installable-unit</type>
+                  <artifactId>org.eclipse.mylyn.commons.feature.group</artifactId>
+                </dependency>
               </dependencies>
             </configuration>
           </plugin>
