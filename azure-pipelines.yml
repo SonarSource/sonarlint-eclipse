@@ -169,9 +169,9 @@ stages:
             SQ_VERSION: 'LATEST_RELEASE[7.9]'
             JDKVersion: '1.11'
             imageName: 'ubuntu-18.04'
-          2019_09:
-            TARGET_PLATFORM: '2019-09'
-            SQ_VERSION: 'DOGFOOD'
+          2020_06:
+            TARGET_PLATFORM: '2020-06'
+            SQ_VERSION: 'LATEST_RELEASE'
             JDKVersion: '1.11'
             imageName: 'ubuntu-18.04'
           Milestone:
@@ -310,12 +310,12 @@ stages:
       - task: DownloadBuildArtifacts@0
         displayName: 'Download IT Coverage report'
         inputs:
-          artifactName: ITCoverage_2019-09
+          artifactName: ITCoverage_2020-06
           downloadPath: $(Agent.BuildDirectory)
       - bash: |
           set -e
           mkdir $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/
-          mv $(Agent.BuildDirectory)/ITCoverage_2019-09/it-coverage.exec $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/
+          mv $(Agent.BuildDirectory)/ITCoverage_2020-06/it-coverage.exec $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/
         displayName: 'Move IT Coverage report to test target dir'
       - task: Maven@3
         env:
