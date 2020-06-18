@@ -384,11 +384,5 @@ stages:
 
             copyApiUrl = f"$(ARTIFACTORY_URL)/api/copy/sonarsource-public-builds/org/sonarsource/sonarlint/eclipse/org.sonarlint.eclipse.site/{version}/org.sonarlint.eclipse.site-{version}.zip?to=/sonarlint-eclipse-dogfood/org.sonarlint.eclipse.site-dogfood.zip"
             response = requests.post(url=copyApiUrl, auth=('$(ARTIFACTORY_API_USER)', '$(ARTIFACTORY_API_KEY)'))
-            if not response.status_code == 200:
+            if not response.ok:
               sys.exit('[!] [{0}] Server Error: {1}'.format(response.status_code, response.text))
-
-            # Hack for https://stackoverflow.com/questions/62345615/artifactory-cloud-how-to-copy-an-artifact-without-messing-up-the-repo-path-in
-            copyApiUrl2 = f"$(ARTIFACTORY_URL)/api/copy/sonarlint-eclipse-dogfood/org.sonarlint.eclipse.site-dogfood.zip?to=/sonarsource-public-builds/org/sonarsource/sonarlint/eclipse/org.sonarlint.eclipse.site/{version}/org.sonarlint.eclipse.site-{version}.zip"
-            response2 = requests.post(url=copyApiUrl2, auth=('$(ARTIFACTORY_API_USER)', '$(ARTIFACTORY_API_KEY)'))
-            if not response2.status_code == 200:
-              sys.exit('[!] [{0}] Server Error: {1}'.format(response2.status_code, response2.text))
