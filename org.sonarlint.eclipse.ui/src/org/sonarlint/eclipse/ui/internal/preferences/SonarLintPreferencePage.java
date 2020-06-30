@@ -26,7 +26,7 @@ import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.sonarlint.eclipse.core.internal.jobs.TestFileClassifier;
-import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
@@ -48,14 +48,14 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
   @Override
   protected void createFieldEditors() {
 
-    addField(new ComboFieldEditor(PreferencesUtils.PREF_MARKER_SEVERITY,
+    addField(new ComboFieldEditor(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY,
       Messages.SonarPreferencePage_label_marker_severity,
       new String[][] {
         {"Info", String.valueOf(IMarker.SEVERITY_INFO)},
         {"Warning", String.valueOf(IMarker.SEVERITY_WARNING)},
         {"Error", String.valueOf(IMarker.SEVERITY_ERROR)}},
       getFieldEditorParent()));
-    addField(new StringFieldEditor(PreferencesUtils.PREF_TEST_FILE_REGEXPS,
+    addField(new StringFieldEditor(SonarLintGlobalConfiguration.PREF_TEST_FILE_REGEXPS,
       Messages.SonarPreferencePage_label_test_file_regexps, getFieldEditorParent()));
   }
 

@@ -44,8 +44,8 @@ import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFaca
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.notifications.ListenerFactory;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
-import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
@@ -140,7 +140,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     SonarLintLogger.get().addLogListener(logListener);
 
     prefListener = event -> {
-      if (event.getProperty().equals(PreferencesUtils.PREF_MARKER_SEVERITY)) {
+      if (event.getProperty().equals(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY)) {
         try {
           MarkerUtils.updateAllSonarMarkerSeverity();
         } catch (CoreException e) {

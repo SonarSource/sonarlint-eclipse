@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.resources;
+package org.sonarlint.eclipse.core.internal.preferences;
 
 import java.util.List;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -25,8 +25,9 @@ import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration.EclipseProjectBinding;
-import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
+import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isBlank;
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isNotBlank;
@@ -54,9 +55,9 @@ public class SonarLintProjectConfigurationManager {
     }
 
     String extraArgsAsString = projectNode.get(P_EXTRA_PROPS, null);
-    List<SonarLintProperty> sonarProperties = PreferencesUtils.deserializeExtraProperties(extraArgsAsString);
+    List<SonarLintProperty> sonarProperties = SonarLintGlobalConfiguration.deserializeExtraProperties(extraArgsAsString);
     String fileExclusionsAsString = projectNode.get(P_FILE_EXCLUSIONS, null);
-    List<ExclusionItem> fileExclusions = PreferencesUtils.deserializeFileExclusions(fileExclusionsAsString);
+    List<ExclusionItem> fileExclusions = SonarLintGlobalConfiguration.deserializeFileExclusions(fileExclusionsAsString);
 
     projectConfig.getExtraProperties().addAll(sonarProperties);
     projectConfig.getFileExclusions().addAll(fileExclusions);
@@ -81,14 +82,14 @@ public class SonarLintProjectConfigurationManager {
     }
 
     if (!configuration.getExtraProperties().isEmpty()) {
-      String props = PreferencesUtils.serializeExtraProperties(configuration.getExtraProperties());
+      String props = SonarLintGlobalConfiguration.serializeExtraProperties(configuration.getExtraProperties());
       projectNode.put(P_EXTRA_PROPS, props);
     } else {
       projectNode.remove(P_EXTRA_PROPS);
     }
 
     if (!configuration.getFileExclusions().isEmpty()) {
-      String props = PreferencesUtils.serializeFileExclusions(configuration.getFileExclusions());
+      String props = SonarLintGlobalConfiguration.serializeFileExclusions(configuration.getFileExclusions());
       projectNode.put(P_FILE_EXCLUSIONS, props);
     } else {
       projectNode.remove(P_FILE_EXCLUSIONS);

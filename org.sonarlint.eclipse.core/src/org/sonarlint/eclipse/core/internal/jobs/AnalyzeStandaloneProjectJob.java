@@ -27,7 +27,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.StandaloneEngineFacade;
-import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
@@ -40,8 +40,8 @@ public class AnalyzeStandaloneProjectJob extends AbstractAnalyzeProjectJob<Stand
 
   public AnalyzeStandaloneProjectJob(AnalyzeProjectRequest request) {
     super(request);
-    this.excludedRules = PreferencesUtils.getExcludedRules();
-    this.includedRules = PreferencesUtils.getIncludedRules();
+    this.excludedRules = SonarLintGlobalConfiguration.getExcludedRules();
+    this.includedRules = SonarLintGlobalConfiguration.getIncludedRules();
   }
 
   @Override

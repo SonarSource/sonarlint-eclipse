@@ -36,7 +36,7 @@ import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.TextRange.FullTextRange;
-import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 public final class MarkerUtils {
@@ -69,7 +69,7 @@ public final class MarkerUtils {
     for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
       if (project.isAccessible()) {
         for (IMarker marker : project.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE)) {
-          marker.setAttribute(IMarker.SEVERITY, PreferencesUtils.getMarkerSeverity());
+          marker.setAttribute(IMarker.SEVERITY, SonarLintGlobalConfiguration.getMarkerSeverity());
         }
       }
     }

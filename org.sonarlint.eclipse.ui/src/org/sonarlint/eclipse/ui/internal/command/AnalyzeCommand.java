@@ -49,8 +49,8 @@ import org.sonarlint.eclipse.core.internal.jobs.AbstractAnalyzeProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AbstractSonarProjectJob;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectsJob;
-import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
@@ -106,7 +106,7 @@ public class AnalyzeCommand extends AbstractHandler {
   }
 
   private static boolean askConfirmation(Shell shell) {
-    if (PreferencesUtils.skipConfirmAnalyzeMultipleFiles()) {
+    if (SonarLintGlobalConfiguration.skipConfirmAnalyzeMultipleFiles()) {
       return true;
     }
 
@@ -121,7 +121,7 @@ public class AnalyzeCommand extends AbstractHandler {
     boolean proceed = dialog.getReturnCode() == 0;
 
     if (proceed && dialog.getToggleState()) {
-      PreferencesUtils.setSkipConfirmAnalyzeMultipleFiles();
+      SonarLintGlobalConfiguration.setSkipConfirmAnalyzeMultipleFiles();
     }
 
     return proceed;

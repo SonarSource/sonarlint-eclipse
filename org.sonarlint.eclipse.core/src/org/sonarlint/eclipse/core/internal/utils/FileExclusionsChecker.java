@@ -29,9 +29,10 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.jobs.TestFileClassifier;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.FileExclusions;
@@ -44,7 +45,7 @@ public class FileExclusionsChecker {
 
   public FileExclusionsChecker(ISonarLintProject project) {
     SonarLintProjectConfiguration projectConfiguration = SonarLintCorePlugin.loadConfig(project);
-    List<ExclusionItem> globalExclusionItems = PreferencesUtils.getGlobalExclusions();
+    List<ExclusionItem> globalExclusionItems = SonarLintGlobalConfiguration.getGlobalExclusions();
     List<ExclusionItem> projectExclusionItems = projectConfiguration.getFileExclusions();
 
     Set<String> projectFileExclusions = getExclusionsOfType(projectExclusionItems, Type.FILE);

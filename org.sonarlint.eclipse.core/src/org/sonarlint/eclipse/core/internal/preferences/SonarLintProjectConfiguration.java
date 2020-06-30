@@ -17,13 +17,15 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.resources;
+package org.sonarlint.eclipse.core.internal.preferences;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
+import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
+import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 
 public class SonarLintProjectConfiguration {

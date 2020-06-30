@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.utils;
+package org.sonarlint.eclipse.core.internal.preferences;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,12 +36,12 @@ import org.osgi.service.prefs.Preferences;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
-public class PreferencesUtils {
+public class SonarLintGlobalConfiguration {
 
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
   public static final int PREF_MARKER_SEVERITY_DEFAULT = IMarker.SEVERITY_INFO;
@@ -54,7 +54,7 @@ public class PreferencesUtils {
   public static final String PREF_TEST_FILE_REGEXPS_DEFAULT = ""; //$NON-NLS-1$
   public static final String PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES = "skipConfirmAnalyzeMultipleFiles"; //$NON-NLS-1$
 
-  private PreferencesUtils() {
+  private SonarLintGlobalConfiguration() {
     // Utility class
   }
 
@@ -117,7 +117,7 @@ public class PreferencesUtils {
 
   public static List<ExclusionItem> getGlobalExclusions() {
     // add globally-configured exclusions
-    String props = getPreferenceString(PreferencesUtils.PREF_FILE_EXCLUSIONS);
+    String props = getPreferenceString(SonarLintGlobalConfiguration.PREF_FILE_EXCLUSIONS);
     return deserializeFileExclusions(props);
   }
 
