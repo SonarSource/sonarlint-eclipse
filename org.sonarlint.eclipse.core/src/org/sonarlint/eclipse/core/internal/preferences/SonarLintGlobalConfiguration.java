@@ -19,10 +19,16 @@
  */
 package org.sonarlint.eclipse.core.internal.preferences;
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -30,6 +36,7 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
@@ -41,14 +48,28 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
+import static java.util.Arrays.asList;
+
 public class SonarLintGlobalConfiguration {
 
+  private static final String RULE_JSON_PARAMS = "params";
+  private static final String RULE_JSON_IS_ACTIVE = "isActive";
+  private static final String RULE_JSON_KEY = "key";
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
   public static final int PREF_MARKER_SEVERITY_DEFAULT = IMarker.SEVERITY_INFO;
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
   public static final String PREF_FILE_EXCLUSIONS = "fileExclusions"; //$NON-NLS-1$
+  /**
+   * @deprecated replaced by {@link #PREF_RULES_CONFIG}
+   */
+  @Deprecated
   public static final String PREF_RULE_EXCLUSIONS = "ruleExclusions"; //$NON-NLS-1$
+  /**
+   * @deprecated replaced by {@link #PREF_RULES_CONFIG}
+   */
+  @Deprecated
   public static final String PREF_RULE_INCLUSIONS = "ruleInclusions"; //$NON-NLS-1$
+  public static final String PREF_RULES_CONFIG = "rulesConfig"; //$NON-NLS-1$
   public static final String PREF_DEFAULT = ""; //$NON-NLS-1$
   public static final String PREF_TEST_FILE_REGEXPS = "testFileRegexps"; //$NON-NLS-1$
   public static final String PREF_TEST_FILE_REGEXPS_DEFAULT = ""; //$NON-NLS-1$
@@ -122,13 +143,17 @@ public class SonarLintGlobalConfiguration {
   }
 
   private static void savePreferences(Consumer<Preferences> updater, String key, Object value) {
-    Preferences preferences = ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID);
+    Preferences preferences = getInstancePreferenceNode();
     updater.accept(preferences);
     try {
       preferences.flush();
     } catch (BackingStoreException e) {
       SonarLintLogger.get().error("Could not save preference: " + key + " = " + value, e);
     }
+  }
+
+  private static IEclipsePreferences getInstancePreferenceNode() {
+    return ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID);
   }
 
   private static String getPreferenceString(String key) {
@@ -181,6 +206,81 @@ public class SonarLintGlobalConfiguration {
 
   public static void setIncludedRules(Collection<RuleKey> includedRules) {
     setPreferenceString(PREF_RULE_INCLUSIONS, serializeRuleKeyList(includedRules));
+  }
+
+  public static Collection<RuleConfig> readRulesConfig() {
+    IEclipsePreferences instancePreferenceNode = getInstancePreferenceNode();
+    try {
+      if (!instancePreferenceNode.nodeExists(PREF_RULES_CONFIG)) {
+        Collection<RuleConfig> result = new ArrayList<>();
+        // Migration
+        if (asList(instancePreferenceNode.keys()).contains(PREF_RULE_EXCLUSIONS)) {
+          getExcludedRules().stream().map(r -> new RuleConfig(r.toString(), false)).forEach(result::add);
+          instancePreferenceNode.remove(PREF_RULE_EXCLUSIONS);
+        }
+        if (asList(instancePreferenceNode.keys()).contains(PREF_RULE_INCLUSIONS)) {
+          getIncludedRules().stream().map(r -> new RuleConfig(r.toString(), true)).forEach(result::add);
+          instancePreferenceNode.remove(PREF_RULE_INCLUSIONS);
+        }
+        if (!result.isEmpty()) {
+          saveRulesConfig(result);
+        }
+      }
+    } catch (BackingStoreException e) {
+      throw new IllegalStateException("Unable to migrate rules configuration", e);
+    }
+    String json = getPreferenceString(PREF_RULES_CONFIG);
+    return deserializeRulesJson(json);
+  }
+
+  private static Collection<RuleConfig> deserializeRulesJson(String json) {
+    if (StringUtils.isBlank(json)) {
+      return Collections.emptyList();
+    }
+    JsonValue value = Json.parse(json);
+    Collection<RuleConfig> result = new ArrayList<>();
+    try {
+      JsonArray rulesJson = value.asArray();
+      rulesJson.forEach(ruleJson -> {
+        JsonObject ruleObject = ruleJson.asObject();
+        JsonValue keyAttribute = ruleObject.get(RULE_JSON_KEY);
+        if (keyAttribute != null) {
+          RuleConfig rule = new RuleConfig(keyAttribute.asString(), ruleObject.getBoolean(RULE_JSON_IS_ACTIVE, true));
+          JsonValue ruleParamsValue = ruleObject.get(RULE_JSON_PARAMS);
+          if (ruleParamsValue != null) {
+            JsonObject paramsJson = ruleParamsValue.asObject();
+            paramsJson.forEach(p -> rule.getParams().put(p.getName(), p.getValue().asString()));
+          }
+          result.add(rule);
+        }
+      });
+    } catch (UnsupportedOperationException e) {
+      SonarLintLogger.get().error("Invalid JSON format for rules configuration", e);
+    }
+    return result;
+  }
+
+  public static void saveRulesConfig(Collection<RuleConfig> rules) {
+    String json = serializeRulesJson(rules);
+    setPreferenceString(PREF_RULES_CONFIG, json);
+  }
+
+  private static String serializeRulesJson(Collection<RuleConfig> rules) {
+    JsonArray rulesJson = Json.array();
+    for (RuleConfig rule : rules) {
+      JsonObject ruleJson = Json.object();
+      ruleJson.add(RULE_JSON_KEY, rule.getKey())
+        .add(RULE_JSON_IS_ACTIVE, rule.isActive());
+      if (!rule.getParams().isEmpty()) {
+        JsonObject paramsJson = Json.object();
+        for (Map.Entry<String, String> param : rule.getParams().entrySet()) {
+          paramsJson.add(param.getKey(), param.getValue());
+        }
+        ruleJson.add(RULE_JSON_PARAMS, paramsJson);
+      }
+      rulesJson.add(ruleJson);
+    }
+    return rulesJson.toString();
   }
 
   public static void setSkipConfirmAnalyzeMultipleFiles() {
