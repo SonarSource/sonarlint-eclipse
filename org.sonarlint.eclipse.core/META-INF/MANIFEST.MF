@@ -36,6 +36,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.team.core,
  org.sonarsource.sonarlint.core.sonarlint-client-api;bundle-version="4.0.0",
  org.sonarsource.sonarlint.core.sonarlint-core;bundle-version="4.0.0",
- org.eclipse.jdt.annotation;resolution:=optional
+ org.eclipse.jdt.annotation;resolution:=optional,
+ minimal-json
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
