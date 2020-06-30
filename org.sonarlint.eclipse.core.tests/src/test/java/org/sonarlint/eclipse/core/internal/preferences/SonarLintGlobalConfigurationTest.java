@@ -17,27 +17,30 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.utils;
+package org.sonarlint.eclipse.core.internal.preferences;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
-public class PreferencesUtilsTest {
+public class SonarLintGlobalConfigurationTest {
 
   @Before
   public void clean() throws BackingStoreException {
@@ -83,7 +86,7 @@ public class PreferencesUtilsTest {
 
   @Test
   public void should_serialize_and_deserialize_excluded_rules() {
-    List<RuleKey> excludedRules = Arrays.asList(new RuleKey("squid", "S123"), new RuleKey("php", "S456"));
+    List<RuleKey> excludedRules = asList(new RuleKey("squid", "S123"), new RuleKey("php", "S456"));
 
     SonarLintGlobalConfiguration.setExcludedRules(excludedRules);
     Collection<RuleKey> deserialized = SonarLintGlobalConfiguration.getExcludedRules();
@@ -93,7 +96,7 @@ public class PreferencesUtilsTest {
 
   @Test
   public void should_serialize_and_deserialize_included_rules() {
-    List<RuleKey> includedRules = Arrays.asList(new RuleKey("squid", "S123"), new RuleKey("php", "S456"));
+    List<RuleKey> includedRules = asList(new RuleKey("squid", "S123"), new RuleKey("php", "S456"));
 
     SonarLintGlobalConfiguration.setIncludedRules(includedRules);
     Collection<RuleKey> deserialized = SonarLintGlobalConfiguration.getIncludedRules();
@@ -118,7 +121,7 @@ public class PreferencesUtilsTest {
   public void should_ignore_duplicate_excluded_rules() {
     RuleKey ruleKey1 = new RuleKey("squid", "S123");
     RuleKey ruleKey2 = new RuleKey("php", "S456");
-    List<RuleKey> excludedRules = Arrays.asList(ruleKey1, ruleKey2);
+    List<RuleKey> excludedRules = asList(ruleKey1, ruleKey2);
     SonarLintGlobalConfiguration.setExcludedRules(excludedRules);
 
     Collection<RuleKey> orig = SonarLintGlobalConfiguration.getExcludedRules();
@@ -134,8 +137,8 @@ public class PreferencesUtilsTest {
   public void should_store_rule_keys_in_consistent_order() {
     RuleKey ruleKey1 = new RuleKey("squid", "S123");
     RuleKey ruleKey2 = new RuleKey("php", "S456");
-    List<RuleKey> ordering1 = Arrays.asList(ruleKey1, ruleKey2);
-    List<RuleKey> ordering2 = Arrays.asList(ruleKey2, ruleKey1);
+    List<RuleKey> ordering1 = asList(ruleKey1, ruleKey2);
+    List<RuleKey> ordering2 = asList(ruleKey2, ruleKey1);
 
     SonarLintGlobalConfiguration.setExcludedRules(ordering1);
     Collection<RuleKey> deserialized1 = SonarLintGlobalConfiguration.getExcludedRules();
@@ -144,5 +147,49 @@ public class PreferencesUtilsTest {
     Collection<RuleKey> deserialized2 = SonarLintGlobalConfiguration.getExcludedRules();
 
     assertThat(deserialized1).isEqualTo(deserialized2);
+  }
+
+  @Test
+  public void testRulesConfigSerializationRoundTrip() {
+    Collection<RuleConfig> rules = SonarLintGlobalConfiguration.readRulesConfig();
+    assertThat(rules).isEmpty();
+
+    RuleConfig activeRule = new RuleConfig("active", true);
+    RuleConfig inactiveRule = new RuleConfig("inactive", false);
+    RuleConfig ruleWithParams = new RuleConfig("ruleWithParams", true);
+    ruleWithParams.getParams().put("param1", "value1");
+    ruleWithParams.getParams().put("param2", "value2");
+    SonarLintGlobalConfiguration.saveRulesConfig(asList(activeRule, inactiveRule, ruleWithParams));
+
+    rules = SonarLintGlobalConfiguration.readRulesConfig();
+    HashMap<Object, Object> expectedParams = new HashMap<>();
+    expectedParams.put("param1", "value1");
+    expectedParams.put("param2", "value2");
+    assertThat(rules)
+      .extracting(RuleConfig::getKey, RuleConfig::isActive, RuleConfig::getParams)
+      .containsOnly(
+        tuple("active", true, emptyMap()),
+        tuple("inactive", false, emptyMap()),
+        tuple("ruleWithParams", true, expectedParams));
+
+  }
+
+  @Test
+  public void testRulesConfigMigration() throws BackingStoreException {
+    IEclipsePreferences configNode = ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID);
+    configNode.put(SonarLintGlobalConfiguration.PREF_RULE_EXCLUSIONS, "Web:S5255;php:S2010");
+    configNode.put(SonarLintGlobalConfiguration.PREF_RULE_INCLUSIONS, "Web:InputWithoutLabelCheck;Web:UnclosedTagCheck");
+    configNode.flush();
+
+    Collection<RuleConfig> rules = SonarLintGlobalConfiguration.readRulesConfig();
+    assertThat(rules)
+      .extracting(RuleConfig::getKey, RuleConfig::isActive, RuleConfig::getParams)
+      .containsOnly(
+        tuple("Web:S5255", false, emptyMap()),
+        tuple("php:S2010", false, emptyMap()),
+        tuple("Web:InputWithoutLabelCheck", true, emptyMap()),
+        tuple("Web:UnclosedTagCheck", true, emptyMap()));
+
+    assertThat(configNode.keys()).containsOnly(SonarLintGlobalConfiguration.PREF_RULES_CONFIG);
   }
 }

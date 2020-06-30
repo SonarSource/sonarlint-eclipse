@@ -17,23 +17,43 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.command;
+package org.sonarlint.eclipse.core.internal.preferences;
 
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.ui.PlatformUI;
-import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
+import java.util.HashMap;
+import java.util.Map;
 
-public class ShowRuleDescriptionCommand extends AbstractIssueCommand {
+public class RuleConfig {
+  String key;
+  boolean isActive;
 
-  @Override
-  protected void execute(IMarker selectedMarker) {
-    try {
-      RuleDescriptionWebView view = (RuleDescriptionWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(RuleDescriptionWebView.ID);
-      view.setInput(selectedMarker);
-    } catch (Exception e) {
-      SonarLintLogger.get().error("Unable to open RuleConfig Description Web View", e);
-    }
+  Map<String, String> params = new HashMap<>();
+
+  public RuleConfig(String key, boolean isActive) {
+    setKey(key);
+    setActive(isActive);
   }
 
+  public boolean isActive() {
+    return isActive;
+  }
+
+  public void setActive(boolean active) {
+    isActive = active;
+  }
+
+  public String getKey() {
+    return key;
+  }
+
+  public void setKey(String key) {
+    this.key = key;
+  }
+
+  public Map<String, String> getParams() {
+    return params;
+  }
+
+  public void setParams(Map<String, String> params) {
+    this.params = params;
+  }
 }
