@@ -33,8 +33,8 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
-import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
@@ -57,7 +57,7 @@ public class DeactivateRuleUtils {
       return;
     }
 
-    PreferencesUtils.excludeRule(ruleKey);
+    SonarLintGlobalConfiguration.excludeRule(ruleKey);
 
     WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
       @Override

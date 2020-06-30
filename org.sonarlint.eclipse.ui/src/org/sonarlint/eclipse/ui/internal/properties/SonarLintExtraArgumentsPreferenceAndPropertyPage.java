@@ -52,9 +52,9 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
-import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
@@ -389,8 +389,8 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
   private void loadProperties() {
     sonarProperties = new ArrayList<>();
     if (isGlobal()) {
-      String props = getPreferenceStore().getString(PreferencesUtils.PREF_EXTRA_ARGS);
-      sonarProperties.addAll(PreferencesUtils.deserializeExtraProperties(props));
+      String props = getPreferenceStore().getString(SonarLintGlobalConfiguration.PREF_EXTRA_ARGS);
+      sonarProperties.addAll(SonarLintGlobalConfiguration.deserializeExtraProperties(props));
     } else {
       SonarLintProjectConfiguration sonarProject = getProjectConfig();
       if (sonarProject != null) {
@@ -402,8 +402,8 @@ public class SonarLintExtraArgumentsPreferenceAndPropertyPage extends AbstractLi
   @Override
   public boolean performOk() {
     if (isGlobal()) {
-      String props = PreferencesUtils.serializeExtraProperties(sonarProperties);
-      getPreferenceStore().setValue(PreferencesUtils.PREF_EXTRA_ARGS, props);
+      String props = SonarLintGlobalConfiguration.serializeExtraProperties(sonarProperties);
+      getPreferenceStore().setValue(SonarLintGlobalConfiguration.PREF_EXTRA_ARGS, props);
     } else {
       SonarLintProjectConfiguration projectConfig = getProjectConfig();
       if (projectConfig != null) {

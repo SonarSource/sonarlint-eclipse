@@ -30,7 +30,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider.ISonarLintFileType;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
-import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class TestFileClassifier {
@@ -53,7 +53,7 @@ public class TestFileClassifier {
    * Should be called when preferences are changed.
    */
   public void reload() {
-    String allTestPattern = PreferencesUtils.getTestFileRegexps();
+    String allTestPattern = SonarLintGlobalConfiguration.getTestFileRegexps();
     String[] testPatterns = allTestPattern.split(",");
     pathMatchersForTests = createMatchersForTests(testPatterns);
   }

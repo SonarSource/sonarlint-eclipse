@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.osgi.service.prefs.BackingStoreException;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
@@ -49,8 +50,8 @@ public class PreferencesUtilsTest {
     list.add(new ExclusionItem(Type.FILE, "file"));
     list.add(new ExclusionItem(Type.DIRECTORY, "dir"));
 
-    String serialized = PreferencesUtils.serializeFileExclusions(list);
-    List<ExclusionItem> desList = PreferencesUtils.deserializeFileExclusions(serialized);
+    String serialized = SonarLintGlobalConfiguration.serializeFileExclusions(list);
+    List<ExclusionItem> desList = SonarLintGlobalConfiguration.deserializeFileExclusions(serialized);
 
     assertThat(desList).isEqualTo(list);
   }
@@ -61,8 +62,8 @@ public class PreferencesUtilsTest {
     list.add(new SonarLintProperty("key1", "value1"));
     list.add(new SonarLintProperty("key2", "value2"));
 
-    String serialized = PreferencesUtils.serializeExtraProperties(list);
-    List<SonarLintProperty> desList = PreferencesUtils.deserializeExtraProperties(serialized);
+    String serialized = SonarLintGlobalConfiguration.serializeExtraProperties(list);
+    List<SonarLintProperty> desList = SonarLintGlobalConfiguration.deserializeExtraProperties(serialized);
 
     assertThat(desList).isEqualTo(list);
   }
@@ -74,8 +75,8 @@ public class PreferencesUtilsTest {
     list.add(new SonarLintProperty("key1", ""));
     list.add(new SonarLintProperty("key2", "value2"));
 
-    String serialized = PreferencesUtils.serializeExtraProperties(list);
-    List<SonarLintProperty> desList = PreferencesUtils.deserializeExtraProperties(serialized);
+    String serialized = SonarLintGlobalConfiguration.serializeExtraProperties(list);
+    List<SonarLintProperty> desList = SonarLintGlobalConfiguration.deserializeExtraProperties(serialized);
 
     assertThat(desList).isEqualTo(list);
   }
@@ -84,8 +85,8 @@ public class PreferencesUtilsTest {
   public void should_serialize_and_deserialize_excluded_rules() {
     List<RuleKey> excludedRules = Arrays.asList(new RuleKey("squid", "S123"), new RuleKey("php", "S456"));
 
-    PreferencesUtils.setExcludedRules(excludedRules);
-    Collection<RuleKey> deserialized = PreferencesUtils.getExcludedRules();
+    SonarLintGlobalConfiguration.setExcludedRules(excludedRules);
+    Collection<RuleKey> deserialized = SonarLintGlobalConfiguration.getExcludedRules();
 
     assertThat(deserialized).containsExactlyInAnyOrder(excludedRules.toArray(new RuleKey[0]));
   }
@@ -94,23 +95,23 @@ public class PreferencesUtilsTest {
   public void should_serialize_and_deserialize_included_rules() {
     List<RuleKey> includedRules = Arrays.asList(new RuleKey("squid", "S123"), new RuleKey("php", "S456"));
 
-    PreferencesUtils.setIncludedRules(includedRules);
-    Collection<RuleKey> deserialized = PreferencesUtils.getIncludedRules();
+    SonarLintGlobalConfiguration.setIncludedRules(includedRules);
+    Collection<RuleKey> deserialized = SonarLintGlobalConfiguration.getIncludedRules();
 
     assertThat(deserialized).containsExactlyInAnyOrder(includedRules.toArray(new RuleKey[0]));
   }
 
   @Test
   public void should_exclude_rule() {
-    assertThat(PreferencesUtils.getExcludedRules()).isEmpty();
+    assertThat(SonarLintGlobalConfiguration.getExcludedRules()).isEmpty();
 
     RuleKey ruleKey1 = new RuleKey("squid", "S123");
-    PreferencesUtils.excludeRule(ruleKey1);
-    assertThat(PreferencesUtils.getExcludedRules()).isEqualTo(Collections.singleton(ruleKey1));
+    SonarLintGlobalConfiguration.excludeRule(ruleKey1);
+    assertThat(SonarLintGlobalConfiguration.getExcludedRules()).isEqualTo(Collections.singleton(ruleKey1));
 
     RuleKey ruleKey2 = new RuleKey("php", "S456");
-    PreferencesUtils.excludeRule(ruleKey2);
-    assertThat(PreferencesUtils.getExcludedRules()).containsExactlyInAnyOrder(ruleKey1, ruleKey2);
+    SonarLintGlobalConfiguration.excludeRule(ruleKey2);
+    assertThat(SonarLintGlobalConfiguration.getExcludedRules()).containsExactlyInAnyOrder(ruleKey1, ruleKey2);
   }
 
   @Test
@@ -118,15 +119,15 @@ public class PreferencesUtilsTest {
     RuleKey ruleKey1 = new RuleKey("squid", "S123");
     RuleKey ruleKey2 = new RuleKey("php", "S456");
     List<RuleKey> excludedRules = Arrays.asList(ruleKey1, ruleKey2);
-    PreferencesUtils.setExcludedRules(excludedRules);
+    SonarLintGlobalConfiguration.setExcludedRules(excludedRules);
 
-    Collection<RuleKey> orig = PreferencesUtils.getExcludedRules();
+    Collection<RuleKey> orig = SonarLintGlobalConfiguration.getExcludedRules();
 
-    PreferencesUtils.excludeRule(ruleKey1);
-    assertThat(PreferencesUtils.getExcludedRules()).isEqualTo(orig);
+    SonarLintGlobalConfiguration.excludeRule(ruleKey1);
+    assertThat(SonarLintGlobalConfiguration.getExcludedRules()).isEqualTo(orig);
 
-    PreferencesUtils.excludeRule(ruleKey2);
-    assertThat(PreferencesUtils.getExcludedRules()).isEqualTo(orig);
+    SonarLintGlobalConfiguration.excludeRule(ruleKey2);
+    assertThat(SonarLintGlobalConfiguration.getExcludedRules()).isEqualTo(orig);
   }
 
   @Test
@@ -136,11 +137,11 @@ public class PreferencesUtilsTest {
     List<RuleKey> ordering1 = Arrays.asList(ruleKey1, ruleKey2);
     List<RuleKey> ordering2 = Arrays.asList(ruleKey2, ruleKey1);
 
-    PreferencesUtils.setExcludedRules(ordering1);
-    Collection<RuleKey> deserialized1 = PreferencesUtils.getExcludedRules();
+    SonarLintGlobalConfiguration.setExcludedRules(ordering1);
+    Collection<RuleKey> deserialized1 = SonarLintGlobalConfiguration.getExcludedRules();
 
-    PreferencesUtils.setExcludedRules(ordering2);
-    Collection<RuleKey> deserialized2 = PreferencesUtils.getExcludedRules();
+    SonarLintGlobalConfiguration.setExcludedRules(ordering2);
+    Collection<RuleKey> deserialized2 = SonarLintGlobalConfiguration.getExcludedRules();
 
     assertThat(deserialized1).isEqualTo(deserialized2);
   }

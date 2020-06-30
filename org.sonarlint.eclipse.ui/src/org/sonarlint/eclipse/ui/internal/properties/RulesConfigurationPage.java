@@ -31,7 +31,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
@@ -75,18 +75,18 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
   }
 
   private static Collection<RuleKey> getExcludedRules() {
-    return PreferencesUtils.getExcludedRules();
+    return SonarLintGlobalConfiguration.getExcludedRules();
   }
 
   private static Collection<RuleKey> getIncludedRules() {
-    return PreferencesUtils.getIncludedRules();
+    return SonarLintGlobalConfiguration.getIncludedRules();
   }
 
   @Override
   public boolean performOk() {
     ExclusionsAndInclusions config = rulesConfigurationPart.computeExclusionsAndInclusions();
-    PreferencesUtils.setExcludedRules(config.excluded());
-    PreferencesUtils.setIncludedRules(config.included());
+    SonarLintGlobalConfiguration.setExcludedRules(config.excluded());
+    SonarLintGlobalConfiguration.setIncludedRules(config.included());
     JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
     return true;
   }

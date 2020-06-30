@@ -56,9 +56,9 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ExclusionItem;
-import org.sonarlint.eclipse.core.internal.resources.SonarLintProjectConfiguration;
-import org.sonarlint.eclipse.core.internal.utils.PreferencesUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
@@ -233,8 +233,8 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
 
   private List<ExclusionItem> loadExclusions() {
     if (isGlobal()) {
-      String props = getPreferenceStore().getString(PreferencesUtils.PREF_FILE_EXCLUSIONS);
-      return PreferencesUtils.deserializeFileExclusions(props);
+      String props = getPreferenceStore().getString(SonarLintGlobalConfiguration.PREF_FILE_EXCLUSIONS);
+      return SonarLintGlobalConfiguration.deserializeFileExclusions(props);
     } else {
       SonarLintProjectConfiguration sonarProject = getProjectConfig();
       if (sonarProject != null) {
@@ -263,8 +263,8 @@ public class FileExclusionsPage extends AbstractListPropertyPage implements IWor
   @Override
   public boolean performOk() {
     if (isGlobal()) {
-      String serialized = PreferencesUtils.serializeFileExclusions(this.exclusions);
-      getPreferenceStore().setValue(PreferencesUtils.PREF_FILE_EXCLUSIONS, serialized);
+      String serialized = SonarLintGlobalConfiguration.serializeFileExclusions(this.exclusions);
+      getPreferenceStore().setValue(SonarLintGlobalConfiguration.PREF_FILE_EXCLUSIONS, serialized);
       JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
     } else {
       SonarLintProjectConfiguration projectConfig = getProjectConfig();
