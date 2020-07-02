@@ -57,7 +57,7 @@ public class DeactivateRuleUtils {
       return;
     }
 
-    SonarLintGlobalConfiguration.excludeRule(ruleKey);
+    SonarLintGlobalConfiguration.disableRule(ruleKey);
 
     WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
       @Override

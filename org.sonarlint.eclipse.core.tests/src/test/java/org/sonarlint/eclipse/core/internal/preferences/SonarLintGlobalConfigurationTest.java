@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.core.internal.preferences;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
@@ -109,11 +108,11 @@ public class SonarLintGlobalConfigurationTest {
     assertThat(SonarLintGlobalConfiguration.getExcludedRules()).isEmpty();
 
     RuleKey ruleKey1 = new RuleKey("squid", "S123");
-    SonarLintGlobalConfiguration.excludeRule(ruleKey1);
-    assertThat(SonarLintGlobalConfiguration.getExcludedRules()).isEqualTo(Collections.singleton(ruleKey1));
+    SonarLintGlobalConfiguration.disableRule(ruleKey1);
+    assertThat(SonarLintGlobalConfiguration.getExcludedRules()).containsOnly(ruleKey1);
 
     RuleKey ruleKey2 = new RuleKey("php", "S456");
-    SonarLintGlobalConfiguration.excludeRule(ruleKey2);
+    SonarLintGlobalConfiguration.disableRule(ruleKey2);
     assertThat(SonarLintGlobalConfiguration.getExcludedRules()).containsExactlyInAnyOrder(ruleKey1, ruleKey2);
   }
 
@@ -126,10 +125,10 @@ public class SonarLintGlobalConfigurationTest {
 
     Collection<RuleKey> orig = SonarLintGlobalConfiguration.getExcludedRules();
 
-    SonarLintGlobalConfiguration.excludeRule(ruleKey1);
+    SonarLintGlobalConfiguration.disableRule(ruleKey1);
     assertThat(SonarLintGlobalConfiguration.getExcludedRules()).isEqualTo(orig);
 
-    SonarLintGlobalConfiguration.excludeRule(ruleKey2);
+    SonarLintGlobalConfiguration.disableRule(ruleKey2);
     assertThat(SonarLintGlobalConfiguration.getExcludedRules()).isEqualTo(orig);
   }
 
