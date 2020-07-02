@@ -59,7 +59,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     layout.marginWidth = 0;
     pageComponent.setLayout(layout);
 
-    rulesConfigurationPart = new RulesConfigurationPart(loadLanguages(), loadRuleDetails(), getExcludedRules(), getIncludedRules());
+    rulesConfigurationPart = new RulesConfigurationPart(loadLanguages(), loadRuleDetails(), SonarLintGlobalConfiguration.readRulesConfig());
     rulesConfigurationPart.createControls(pageComponent);
     Dialog.applyDialogFont(pageComponent);
     return pageComponent;
@@ -71,14 +71,6 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
 
   private static Collection<StandaloneRuleDetails> loadRuleDetails() {
     return SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getAllRuleDetails();
-  }
-
-  private static Collection<RuleKey> getExcludedRules() {
-    return SonarLintGlobalConfiguration.getExcludedRules();
-  }
-
-  private static Collection<RuleKey> getIncludedRules() {
-    return SonarLintGlobalConfiguration.getIncludedRules();
   }
 
   @Override

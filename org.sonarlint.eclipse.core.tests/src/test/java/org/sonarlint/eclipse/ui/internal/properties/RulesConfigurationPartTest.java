@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
@@ -47,12 +48,10 @@ public class RulesConfigurationPartTest {
       mockRuleDetails(INACTIVE, false),
       mockRuleDetails(INACTIVE_INCLUDED, false));
 
-    Collection<RuleKey> excluded = Arrays.asList(ACTIVE_EXCLUDED, INACTIVE);
-    Collection<RuleKey> included = Arrays.asList(INACTIVE_INCLUDED, ACTIVE);
-
     Map<String, String> languages = new HashMap<>();
     languages.put("java", "Java");
-    return new RulesConfigurationPart(languages, allRuleDetails, excluded, included);
+    Collection<RuleConfig> ruleConfig = Arrays.asList(new RuleConfig(ACTIVE_EXCLUDED.toString(), false), new RuleConfig(INACTIVE_INCLUDED.toString(), true));
+    return new RulesConfigurationPart(languages, allRuleDetails, ruleConfig);
   }
 
   private static RuleKey mockRuleKey(String key) {
