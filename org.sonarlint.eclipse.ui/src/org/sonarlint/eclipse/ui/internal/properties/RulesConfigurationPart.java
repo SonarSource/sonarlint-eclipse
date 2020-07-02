@@ -58,6 +58,7 @@ import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 // Inspired by: http://www.vogella.com/tutorials/EclipseJFaceTree/article.html
 public class RulesConfigurationPart {
@@ -69,7 +70,7 @@ public class RulesConfigurationPart {
   private CheckBoxFilteredTree tree;
   private Map<String, String> languagesNames;
 
-  public RulesConfigurationPart(Map<String, String> languagesNames, Collection<RuleDetails> allRuleDetails, Collection<RuleKey> excluded, Collection<RuleKey> included) {
+  public RulesConfigurationPart(Map<String, String> languagesNames, Collection<StandaloneRuleDetails> allRuleDetails, Collection<RuleKey> excluded, Collection<RuleKey> included) {
     this.languagesNames = languagesNames;
     this.ruleDetailsWrappersByLanguage = allRuleDetails.stream()
       .sorted(Comparator.comparing(RuleDetails::getKey))
@@ -305,10 +306,10 @@ public class RulesConfigurationPart {
   }
 
   private static class RuleDetailsWrapper {
-    private final RuleDetails ruleDetails;
+    private final StandaloneRuleDetails ruleDetails;
     private boolean isActive;
 
-    RuleDetailsWrapper(RuleDetails ruleDetails, Collection<RuleKey> excluded, Collection<RuleKey> included) {
+    RuleDetailsWrapper(StandaloneRuleDetails ruleDetails, Collection<RuleKey> excluded, Collection<RuleKey> included) {
       this.ruleDetails = ruleDetails;
       this.isActive = computeIsActive(ruleDetails.getKey(), ruleDetails.isActiveByDefault(), excluded, included);
     }
