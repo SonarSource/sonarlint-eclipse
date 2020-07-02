@@ -35,7 +35,6 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
-import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPart.ExclusionsAndInclusions;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
@@ -84,9 +83,7 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
 
   @Override
   public boolean performOk() {
-    ExclusionsAndInclusions config = rulesConfigurationPart.computeExclusionsAndInclusions();
-    SonarLintGlobalConfiguration.setExcludedRules(config.excluded());
-    SonarLintGlobalConfiguration.setIncludedRules(config.included());
+    SonarLintGlobalConfiguration.saveRulesConfig(rulesConfigurationPart.computeRulesConfig());
     JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STANDALONE_CONFIG_CHANGE);
     return true;
   }

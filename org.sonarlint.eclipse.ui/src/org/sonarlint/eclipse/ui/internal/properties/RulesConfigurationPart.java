@@ -54,6 +54,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
@@ -323,41 +324,14 @@ public class RulesConfigurationPart {
   }
 
   // visible for testing
-  public static class ExclusionsAndInclusions {
-    private final Collection<RuleKey> excluded;
-    private final Collection<RuleKey> included;
-
-    public ExclusionsAndInclusions(Collection<RuleKey> excluded, Collection<RuleKey> included) {
-      this.excluded = excluded;
-      this.included = included;
-    }
-
-    public Collection<RuleKey> excluded() {
-      return excluded;
-    }
-
-    public Collection<RuleKey> included() {
-      return included;
-    }
-  }
-
-  // visible for testing
-  public ExclusionsAndInclusions computeExclusionsAndInclusions() {
-    Collection<RuleKey> excluded = new ArrayList<>();
-    Collection<RuleKey> included = new ArrayList<>();
+  public Collection<RuleConfig> computeRulesConfig() {
+    Collection<RuleConfig> rules = new ArrayList<>();
     ruleDetailsWrappersByLanguage.entrySet().stream()
       .flatMap(e -> e.getValue().stream())
       .filter(w -> w.isActive != w.ruleDetails.isActiveByDefault())
-      .forEach(w -> {
-        RuleKey ruleKey = RuleKey.parse(w.ruleDetails.getKey());
-        if (w.isActive) {
-          included.add(ruleKey);
-        } else {
-          excluded.add(ruleKey);
-        }
-      });
+      .forEach(w -> rules.add(new RuleConfig(w.ruleDetails.getKey(), w.isActive)));
 
-    return new ExclusionsAndInclusions(excluded, included);
+    return rules;
   }
 
   // visible for testing
