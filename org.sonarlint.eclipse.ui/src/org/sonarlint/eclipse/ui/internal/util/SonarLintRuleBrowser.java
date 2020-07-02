@@ -56,6 +56,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedRuleDetails;
 
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_BACKGROUND_COLOR;
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROUND_COLOR;
@@ -266,9 +267,11 @@ public class SonarLintRuleBrowser extends Composite implements IPropertyChangeLi
       String ruleName = ruleDetails.getName();
       String ruleKey = ruleDetails.getKey();
       String htmlDescription = ruleDetails.getHtmlDescription();
-      String extendedDescription = ruleDetails.getExtendedDescription();
-      if (!extendedDescription.isEmpty()) {
-        htmlDescription += "<div>" + extendedDescription + "</div>";
+      if (ruleDetails instanceof ConnectedRuleDetails) {
+        String extendedDescription = ((ConnectedRuleDetails) ruleDetails).getExtendedDescription();
+        if (StringUtils.isNotBlank(extendedDescription)) {
+          htmlDescription += "<div>" + extendedDescription + "</div>";
+        }
       }
       String type = ruleDetails.getType();
       String typeImg64 = type != null ? getAsBase64(SonarLintImages.getTypeImage(type)) : "";

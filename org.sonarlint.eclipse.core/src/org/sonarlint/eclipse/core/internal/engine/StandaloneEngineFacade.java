@@ -41,6 +41,7 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneSonarLintEngine;
 
 public class StandaloneEngineFacade {
@@ -94,7 +95,7 @@ public class StandaloneEngineFacade {
     return null;
   }
 
-  public Collection<RuleDetails> getAllRuleDetails() {
+  public Collection<StandaloneRuleDetails> getAllRuleDetails() {
     StandaloneSonarLintEngine engine = getClient();
     if (engine != null) {
       return engine.getAllRuleDetails()

@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -41,7 +41,7 @@ public class RulesConfigurationPartTest {
   private static final RuleKey INACTIVE_INCLUDED = mockRuleKey("INACTIVE_INCLUDED");
 
   private RulesConfigurationPart newSampleConfigurationPart() {
-    Collection<RuleDetails> allRuleDetails = Arrays.asList(
+    Collection<StandaloneRuleDetails> allRuleDetails = Arrays.asList(
       mockRuleDetails(ACTIVE, true),
       mockRuleDetails(ACTIVE_EXCLUDED, true),
       mockRuleDetails(INACTIVE, false),
@@ -59,8 +59,8 @@ public class RulesConfigurationPartTest {
     return new RuleKey("squid", key);
   }
 
-  private RuleDetails mockRuleDetails(RuleKey ruleKey, boolean activeByDefault) {
-    RuleDetails ruleDetails = mock(RuleDetails.class);
+  private StandaloneRuleDetails mockRuleDetails(RuleKey ruleKey, boolean activeByDefault) {
+    StandaloneRuleDetails ruleDetails = mock(StandaloneRuleDetails.class);
     when(ruleDetails.getKey()).thenReturn(ruleKey.toString());
     when(ruleDetails.isActiveByDefault()).thenReturn(activeByDefault);
     when(ruleDetails.getLanguageKey()).thenReturn("java");
