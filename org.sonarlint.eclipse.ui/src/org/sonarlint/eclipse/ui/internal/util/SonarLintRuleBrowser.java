@@ -99,6 +99,7 @@ public class SonarLintRuleBrowser extends Composite implements IPropertyChangeLi
       JFaceResources.getColorRegistry().addListener(SonarLintRuleBrowser.this);
       this.defaultFont = getDefaultFont();
       JFaceResources.getFontRegistry().addListener(SonarLintRuleBrowser.this);
+		
     } catch (SWTError e) {
       // Browser is probably not available but it will be partially initialized in parent
       for (Control c : this.getChildren()) {
