@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -49,6 +50,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 public class SonarLintGlobalConfiguration {
 
@@ -133,7 +135,7 @@ public class SonarLintGlobalConfiguration {
     return Arrays.stream(values)
       .map(ExclusionItem::parse)
       .filter(Objects::nonNull)
-      .collect(Collectors.toList());
+      .collect(toList());
   }
 
   public static List<ExclusionItem> getGlobalExclusions() {
@@ -179,21 +181,22 @@ public class SonarLintGlobalConfiguration {
       .collect(Collectors.joining(";"));
   }
 
-  private static Set<RuleKey> deserializeRuleKeyList(@Nullable String property) {
-    String[] values = StringUtils.split(property, ";");
-    return Arrays.stream(values)
-      .map(RuleKey::parse)
-      .collect(Collectors.toSet());
-  }
-
-  public static void excludeRule(RuleKey ruleKey) {
-    Collection<RuleKey> excludedRules = getExcludedRules();
-    excludedRules.add(ruleKey);
-    setExcludedRules(excludedRules);
+  public static void disableRule(RuleKey ruleKey) {
+    Collection<RuleConfig> rules = new ArrayList<>(readRulesConfig());
+    Optional<RuleConfig> ruleToDisable = rules.stream().filter(r -> r.getKey().equals(ruleKey.toString())).findFirst();
+    if (ruleToDisable.isPresent()) {
+      ruleToDisable.get().setActive(false);
+    } else {
+      rules.add(new RuleConfig(ruleKey.toString(), false));
+    }
+    saveRulesConfig(rules);
   }
 
   public static Collection<RuleKey> getExcludedRules() {
-    return deserializeRuleKeyList(getPreferenceString(PREF_RULE_EXCLUSIONS));
+    return readRulesConfig().stream()
+      .filter(r -> !r.isActive())
+      .map(r -> RuleKey.parse(r.getKey()))
+      .collect(toList());
   }
 
   public static void setExcludedRules(Collection<RuleKey> excludedRules) {
@@ -201,11 +204,21 @@ public class SonarLintGlobalConfiguration {
   }
 
   public static Collection<RuleKey> getIncludedRules() {
-    return deserializeRuleKeyList(getPreferenceString(PREF_RULE_INCLUSIONS));
+    return readRulesConfig().stream()
+      .filter(RuleConfig::isActive)
+      .map(r -> RuleKey.parse(r.getKey()))
+      .collect(toList());
   }
 
   public static void setIncludedRules(Collection<RuleKey> includedRules) {
     setPreferenceString(PREF_RULE_INCLUSIONS, serializeRuleKeyList(includedRules));
+  }
+
+  private static Set<RuleKey> deserializeRuleKeyList(@Nullable String property) {
+    String[] values = StringUtils.split(property, ";");
+    return Arrays.stream(values)
+      .map(RuleKey::parse)
+      .collect(Collectors.toSet());
   }
 
   public static Collection<RuleConfig> readRulesConfig() {
@@ -215,11 +228,11 @@ public class SonarLintGlobalConfiguration {
         Collection<RuleConfig> result = new ArrayList<>();
         // Migration
         if (asList(instancePreferenceNode.keys()).contains(PREF_RULE_EXCLUSIONS)) {
-          getExcludedRules().stream().map(r -> new RuleConfig(r.toString(), false)).forEach(result::add);
+          deserializeRuleKeyList(getPreferenceString(PREF_RULE_EXCLUSIONS)).stream().map(r -> new RuleConfig(r.toString(), false)).forEach(result::add);
           instancePreferenceNode.remove(PREF_RULE_EXCLUSIONS);
         }
         if (asList(instancePreferenceNode.keys()).contains(PREF_RULE_INCLUSIONS)) {
-          getIncludedRules().stream().map(r -> new RuleConfig(r.toString(), true)).forEach(result::add);
+          deserializeRuleKeyList(getPreferenceString(PREF_RULE_INCLUSIONS)).stream().map(r -> new RuleConfig(r.toString(), true)).forEach(result::add);
           instancePreferenceNode.remove(PREF_RULE_INCLUSIONS);
         }
         if (!result.isEmpty()) {

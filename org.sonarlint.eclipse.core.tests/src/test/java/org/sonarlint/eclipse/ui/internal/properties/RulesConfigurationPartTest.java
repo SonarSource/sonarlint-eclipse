@@ -24,11 +24,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
-import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPart.ExclusionsAndInclusions;
+import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -70,9 +71,8 @@ public class RulesConfigurationPartTest {
   public void merges_exclusions_correctly() {
     RulesConfigurationPart underTest = newSampleConfigurationPart();
 
-    ExclusionsAndInclusions exclusionsAndInclusions = underTest.computeExclusionsAndInclusions();
-    assertThat(exclusionsAndInclusions.excluded()).containsOnly(ACTIVE_EXCLUDED);
-    assertThat(exclusionsAndInclusions.included()).containsOnly(INACTIVE_INCLUDED);
+    Collection<RuleConfig> rules = underTest.computeRulesConfig();
+    assertThat(rules).extracting(RuleConfig::getKey, RuleConfig::isActive).containsOnly(tuple(ACTIVE_EXCLUDED.toString(), false), tuple(INACTIVE_INCLUDED.toString(), true));
   }
 
   @Test
@@ -81,8 +81,7 @@ public class RulesConfigurationPartTest {
 
     underTest.resetToDefaults();
 
-    ExclusionsAndInclusions exclusionsAndInclusions = underTest.computeExclusionsAndInclusions();
-    assertThat(exclusionsAndInclusions.excluded()).isEmpty();
-    assertThat(exclusionsAndInclusions.included()).isEmpty();
+    Collection<RuleConfig> rules = underTest.computeRulesConfig();
+    assertThat(rules).isEmpty();
   }
 }
