@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.core.internal.preferences;
 
 import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -50,13 +49,15 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 import static java.util.Arrays.asList;
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
 public class SonarLintGlobalConfiguration {
 
-  private static final String RULE_JSON_PARAMS = "params";
-  private static final String RULE_JSON_IS_ACTIVE = "isActive";
-  private static final String RULE_JSON_KEY = "key";
+  private static final String RULE_JSON_PARAMS = "parameters"; //$NON-NLS-1$
+  private static final String RULE_JSON_LEVEL = "level"; //$NON-NLS-1$
+  private static final String RULE_JSON_LEVEL_OFF = "off"; //$NON-NLS-1$
+  private static final String RULE_JSON_LEVEL_ON = "on"; //$NON-NLS-1$
   public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
   public static final int PREF_MARKER_SEVERITY_DEFAULT = IMarker.SEVERITY_INFO;
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
@@ -253,19 +254,16 @@ public class SonarLintGlobalConfiguration {
     JsonValue value = Json.parse(json);
     Collection<RuleConfig> result = new ArrayList<>();
     try {
-      JsonArray rulesJson = value.asArray();
+      JsonObject rulesJson = value.asObject();
       rulesJson.forEach(ruleJson -> {
-        JsonObject ruleObject = ruleJson.asObject();
-        JsonValue keyAttribute = ruleObject.get(RULE_JSON_KEY);
-        if (keyAttribute != null) {
-          RuleConfig rule = new RuleConfig(keyAttribute.asString(), ruleObject.getBoolean(RULE_JSON_IS_ACTIVE, true));
-          JsonValue ruleParamsValue = ruleObject.get(RULE_JSON_PARAMS);
-          if (ruleParamsValue != null) {
-            JsonObject paramsJson = ruleParamsValue.asObject();
-            paramsJson.forEach(p -> rule.getParams().put(p.getName(), p.getValue().asString()));
-          }
-          result.add(rule);
+        JsonObject ruleObject = ruleJson.getValue().asObject();
+        RuleConfig rule = new RuleConfig(ruleJson.getName(), !RULE_JSON_LEVEL_OFF.equals(ruleObject.getString(RULE_JSON_LEVEL, RULE_JSON_LEVEL_ON)));
+        JsonValue ruleParamsValue = ruleObject.get(RULE_JSON_PARAMS);
+        if (ruleParamsValue != null) {
+          JsonObject paramsJson = ruleParamsValue.asObject();
+          paramsJson.forEach(p -> rule.getParams().put(p.getName(), p.getValue().asString()));
         }
+        result.add(rule);
       });
     } catch (UnsupportedOperationException e) {
       SonarLintLogger.get().error("Invalid JSON format for rules configuration", e);
@@ -279,20 +277,23 @@ public class SonarLintGlobalConfiguration {
   }
 
   private static String serializeRulesJson(Collection<RuleConfig> rules) {
-    JsonArray rulesJson = Json.array();
-    for (RuleConfig rule : rules) {
-      JsonObject ruleJson = Json.object();
-      ruleJson.add(RULE_JSON_KEY, rule.getKey())
-        .add(RULE_JSON_IS_ACTIVE, rule.isActive());
-      if (!rule.getParams().isEmpty()) {
-        JsonObject paramsJson = Json.object();
-        for (Map.Entry<String, String> param : rule.getParams().entrySet()) {
-          paramsJson.add(param.getKey(), param.getValue());
+    JsonObject rulesJson = Json.object();
+    rules.stream()
+      // Sort by key to ensure consistent results
+      .sorted(comparing(RuleConfig::getKey))
+      .forEach(rule -> {
+        JsonObject ruleJson = Json.object()
+          .add(RULE_JSON_LEVEL, rule.isActive() ? RULE_JSON_LEVEL_ON : RULE_JSON_LEVEL_OFF);
+        if (!rule.getParams().isEmpty()) {
+          JsonObject paramsJson = Json.object();
+          rule.getParams().entrySet().stream()
+            // Sort by key to ensure consistent results
+            .sorted(comparing(Entry<String, String>::getKey))
+            .forEach(param -> paramsJson.add(param.getKey(), param.getValue()));
+          ruleJson.add(RULE_JSON_PARAMS, paramsJson);
         }
-        ruleJson.add(RULE_JSON_PARAMS, paramsJson);
-      }
-      rulesJson.add(ruleJson);
-    }
+        rulesJson.add(rule.getKey(), ruleJson);
+      });
     return rulesJson.toString();
   }
 
