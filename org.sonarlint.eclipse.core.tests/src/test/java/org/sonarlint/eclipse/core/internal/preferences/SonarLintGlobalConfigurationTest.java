@@ -160,6 +160,10 @@ public class SonarLintGlobalConfigurationTest {
     ruleWithParams.getParams().put("param2", "value2");
     SonarLintGlobalConfiguration.saveRulesConfig(asList(activeRule, inactiveRule, ruleWithParams));
 
+    IEclipsePreferences configNode = ConfigurationScope.INSTANCE.getNode(SonarLintCorePlugin.UI_PLUGIN_ID);
+    assertThat(configNode.get(SonarLintGlobalConfiguration.PREF_RULES_CONFIG, "")).isEqualTo(
+      "{\"active\":{\"level\":\"on\"},\"inactive\":{\"level\":\"off\"},\"ruleWithParams\":{\"level\":\"on\",\"parameters\":{\"param1\":\"value1\",\"param2\":\"value2\"}}}");
+
     rules = SonarLintGlobalConfiguration.readRulesConfig();
     HashMap<Object, Object> expectedParams = new HashMap<>();
     expectedParams.put("param1", "value1");
