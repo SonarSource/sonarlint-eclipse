@@ -23,25 +23,27 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.StandaloneEngineFacade;
+import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 
+import static java.util.stream.Collectors.toList;
+
 public class AnalyzeStandaloneProjectJob extends AbstractAnalyzeProjectJob<StandaloneAnalysisConfiguration> {
 
-  private final Collection<RuleKey> excludedRules;
-  private final Collection<RuleKey> includedRules;
+  private final Collection<RuleConfig> rulesConfig;
 
   public AnalyzeStandaloneProjectJob(AnalyzeProjectRequest request) {
     super(request);
-    this.excludedRules = SonarLintGlobalConfiguration.getExcludedRules();
-    this.includedRules = SonarLintGlobalConfiguration.getIncludedRules();
+    rulesConfig = SonarLintGlobalConfiguration.readRulesConfig();
   }
 
   @Override
@@ -51,8 +53,9 @@ public class AnalyzeStandaloneProjectJob extends AbstractAnalyzeProjectJob<Stand
       .setBaseDir(projectBaseDir)
       .addInputFiles(inputFiles)
       .putAllExtraProperties(mergedExtraProps)
-      .addExcludedRules(excludedRules)
-      .addIncludedRules(includedRules)
+      .addExcludedRules(getExcludedRules())
+      .addIncludedRules(getIncludedRules())
+      .addRuleParameters(getRuleParameters())
       .build();
   }
 
@@ -60,5 +63,26 @@ public class AnalyzeStandaloneProjectJob extends AbstractAnalyzeProjectJob<Stand
   protected AnalysisResults runAnalysis(StandaloneAnalysisConfiguration analysisConfig, SonarLintIssueListener issueListener, IProgressMonitor monitor) {
     StandaloneEngineFacade standaloneEngine = SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade();
     return standaloneEngine.runAnalysis(analysisConfig, issueListener, monitor);
+  }
+
+  private Collection<RuleKey> getExcludedRules() {
+    return rulesConfig.stream()
+      .filter(r -> !r.isActive())
+      .map(r -> RuleKey.parse(r.getKey()))
+      .collect(toList());
+  }
+
+  private Collection<RuleKey> getIncludedRules() {
+    return rulesConfig.stream()
+      .filter(RuleConfig::isActive)
+      .map(r -> RuleKey.parse(r.getKey()))
+      .collect(toList());
+  }
+
+  private Map<RuleKey, Map<String, String>> getRuleParameters() {
+    return rulesConfig.stream()
+      .filter(RuleConfig::isActive)
+      .filter(r -> !r.getParams().isEmpty())
+      .collect(Collectors.toMap(r -> RuleKey.parse(r.getKey()), RuleConfig::getParams));
   }
 }
