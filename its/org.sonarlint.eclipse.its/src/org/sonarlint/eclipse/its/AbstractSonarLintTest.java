@@ -19,10 +19,11 @@
  */
 package org.sonarlint.eclipse.its;
 
+import com.sonar.orchestrator.Orchestrator;
+import com.sonar.orchestrator.container.Server;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-
-import org.assertj.core.api.iterable.Extractor;
+import java.util.function.Function;
 import org.assertj.core.groups.Tuple;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -56,9 +57,6 @@ import org.sonarlint.eclipse.its.utils.WorkspaceHelpers;
 import org.sonarqube.ws.client.HttpConnector;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
-
-import com.sonar.orchestrator.Orchestrator;
-import com.sonar.orchestrator.container.Server;
 
 public abstract class AbstractSonarLintTest {
 
@@ -135,7 +133,7 @@ public abstract class AbstractSonarLintTest {
   public static IProject importEclipseProject(final String projectdir, final String projectName) throws InvocationTargetException, InterruptedException {
     final IProject project = workspace.getRoot().getProject(projectName);
     ImportOperation importOperation = new ImportOperation(project.getFullPath(),
-        new File("projects", projectdir), FileSystemStructureProvider.INSTANCE, file -> IOverwriteQuery.ALL);
+      new File("projects", projectdir), FileSystemStructureProvider.INSTANCE, file -> IOverwriteQuery.ALL);
     importOperation.setCreateContainerStructure(false);
     importOperation.run(monitor);
     return project;
@@ -145,7 +143,7 @@ public abstract class AbstractSonarLintTest {
     return new MarkerAttributesExtractor(attributes);
   }
 
-  public static class MarkerAttributesExtractor implements Extractor<IMarker, Tuple> {
+  public static class MarkerAttributesExtractor implements Function<IMarker, Tuple> {
 
     private final String[] attributes;
 
@@ -154,7 +152,7 @@ public abstract class AbstractSonarLintTest {
     }
 
     @Override
-    public Tuple extract(IMarker marker) {
+    public Tuple apply(IMarker marker) {
       Object[] tupleAttributes = new Object[attributes.length + 1];
       tupleAttributes[0] = marker.getResource().getFullPath().toPortableString();
       for (int i = 0; i < attributes.length; i++) {
