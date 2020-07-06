@@ -19,8 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
-import static java.text.MessageFormat.format;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -35,7 +33,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -78,6 +75,8 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.exceptions.CanceledException;
 import org.sonarsource.sonarlint.core.client.api.util.FileUtils;
+
+import static java.text.MessageFormat.format;
 
 public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisConfiguration> extends AbstractSonarProjectJob {
   private final List<SonarLintProperty> extraProps;
@@ -308,7 +307,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       List<Issue> rawIssues = entry.getValue();
       List<Trackable> trackables;
       if (!rawIssues.isEmpty()) {
-        IDocument document = openedDocument.orElse(file.getDocument());
+        IDocument document = openedDocument.orElseGet(file::getDocument);
         trackables = rawIssues.stream().map(issue -> transform(issue, file, document)).collect(Collectors.toList());
       } else {
         trackables = Collections.emptyList();
