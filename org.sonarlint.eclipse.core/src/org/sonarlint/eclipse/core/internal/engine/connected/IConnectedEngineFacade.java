@@ -102,7 +102,7 @@ public interface IConnectedEngineFacade {
 
   AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor);
 
-  RuleDetails getRuleDescription(String ruleKey);
+  RuleDetails getRuleDescription(String ruleKey, @Nullable String projectKey);
 
   void updateProjectStorage(String moduleKey, IProgressMonitor monitor);
 

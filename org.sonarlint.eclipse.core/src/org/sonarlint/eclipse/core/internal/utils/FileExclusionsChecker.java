@@ -36,6 +36,7 @@ import org.sonarlint.eclipse.core.internal.resources.ExclusionItem.Type;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.FileExclusions;
+import org.sonarsource.sonarlint.core.client.api.exceptions.SonarLintException;
 
 import static java.util.stream.Collectors.toCollection;
 
@@ -71,13 +72,17 @@ public class FileExclusionsChecker {
       .resolveBinding(project)
       .ifPresent(binding -> {
         TestFileClassifier testFileClassifier = TestFileClassifier.get();
-        List<ISonarLintFile> excludedByServerSideExclusions = binding.getEngineFacade().getServerFileExclusions(binding.getProjectBinding(), notExcluded,
-          testFileClassifier::isTest);
-        notExcluded.removeAll(excludedByServerSideExclusions);
-        excludedByServerSideExclusions.forEach(file -> {
-          notExcluded.remove(file);
-          logIfNeeded(file, log, "server side");
-        });
+        try {
+          List<ISonarLintFile> excludedByServerSideExclusions = binding.getEngineFacade().getServerFileExclusions(binding.getProjectBinding(), notExcluded,
+            testFileClassifier::isTest);
+          notExcluded.removeAll(excludedByServerSideExclusions);
+          excludedByServerSideExclusions.forEach(file -> {
+            notExcluded.remove(file);
+            logIfNeeded(file, log, "server side");
+          });
+        } catch (SonarLintException e) {
+          SonarLintLogger.get().error("Unable to read server side exclusions. Check your binding.", e);
+        }
       });
     return notExcluded;
   }

@@ -67,7 +67,6 @@
     <!-- ================== -->
     <sonar.java.source>1.8</sonar.java.source>
     <sonar.java.target>1.8</sonar.java.target>
-    <sonar.scm.ignoreLocalModifications>true</sonar.scm.ignoreLocalModifications>
     <jarsigner.skip>true</jarsigner.skip>
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>

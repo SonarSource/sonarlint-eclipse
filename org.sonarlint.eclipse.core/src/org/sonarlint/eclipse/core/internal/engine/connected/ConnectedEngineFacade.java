@@ -310,8 +310,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   }
 
   @Override
-  public synchronized RuleDetails getRuleDescription(String ruleKey) {
-    return client.getRuleDetails(ruleKey);
+  public synchronized RuleDetails getRuleDescription(String ruleKey, @Nullable String projectKey) {
+    return client.getActiveRuleDetails(ruleKey, projectKey);
   }
 
   public void stop() {
