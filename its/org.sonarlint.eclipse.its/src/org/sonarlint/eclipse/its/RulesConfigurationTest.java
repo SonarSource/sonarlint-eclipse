@@ -21,11 +21,14 @@ package org.sonarlint.eclipse.its;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
+import org.eclipse.swtbot.swt.finder.SWTBot;
+import org.eclipse.swtbot.swt.finder.waits.ICondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.Test;
@@ -73,6 +76,29 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."),
       tuple("/java-exclude-rules/src/hello/Hello3.java", 12, "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed."));
+
+    openComplexityRule();
+    bot.spinner().setSelection(10);
+    bot.button("Apply").click();
+    bot.activeShell().close();
+    JobHelpers.waitForJobsToComplete(bot);
+    markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."),
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 12, "Refactor this method to reduce its Cognitive Complexity from 24 to the 10 allowed."));
+
+    openComplexityRule();
+
+    bot.link().click();
+    bot.button("Apply").click();
+    bot.activeShell().close();
+
+    JobHelpers.waitForJobsToComplete(bot);
+    markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."),
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 12, "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed."));
+
   }
 
   @Test
@@ -110,6 +136,38 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
       bot.button("OK").click();
     }
 
+  }
+
+  void openComplexityRule() {
+    openRulesConfiguration();
+    bot.textWithId("slRuleTreeFilter").setText("java:S3776");
+
+    // wait for the tree filtering complete
+    bot.waitUntil(new ICondition() {
+
+      private SWTBotTree ruleTree;
+
+      @Override
+      public boolean test() throws Exception {
+        return ruleTree.getAllItems().length == 1 && ruleTree.getTreeItem("Java").getItems().length == 1;
+      }
+
+      @Override
+      public void init(SWTBot bot) {
+        ruleTree = bot.treeWithId("slRuleTree");
+      }
+
+      @Override
+      public String getFailureMessage() {
+        return Arrays.stream(ruleTree.getAllItems())
+          .map(SWTBotTreeItem::getText)
+          .collect(Collectors.joining(","));
+      }
+    });
+    
+    bot.treeWithId("slRuleTree")
+      .getTreeItem("Java").getNode(0)
+      .select().click();
   }
 
 }
