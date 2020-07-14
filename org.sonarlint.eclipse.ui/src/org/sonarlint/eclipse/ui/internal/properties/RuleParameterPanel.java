@@ -72,6 +72,7 @@ public class RuleParameterPanel extends Composite {
       paramInputsContainer.dispose();
       createParamInputs(sc);
       paramInputsContainer.requestLayout();
+      setDefaultLinkVisibility();
     });
 
     createParamInputs(sc);
@@ -92,7 +93,7 @@ public class RuleParameterPanel extends Composite {
     sc.setMinSize(paramInputsContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT));
   }
 
-  private void setDefaultLinkVisibility() {
+  public void setDefaultLinkVisibility() {
     boolean allParamAreDefault = selectedRuleMetadata.paramDetails().stream()
       .allMatch(param -> !selectedRuleConfig.getParams().containsKey(param.key())
         || Objects.equals(param.defaultValue(), selectedRuleConfig.getParams().get(param.key())));
