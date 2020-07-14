@@ -39,6 +39,7 @@ import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeNodeContentProvider;
@@ -137,6 +138,7 @@ public class RulesConfigurationPart {
     GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
     tree.setLayoutData(data);
 
+    tree.getViewer().getTree().setData("org.eclipse.swtbot.widget.key", "slRuleTree");
     tree.getViewer().setContentProvider(new ViewContentProvider());
     tree.getViewer().setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new String[ruleDetailsWrappersByLanguage.size()]));
     tree.getViewer().setLabelProvider(new LanguageAndRuleLabelProvider());
@@ -415,10 +417,13 @@ public class RulesConfigurationPart {
     }
 
     private void setActiveForSelection(boolean isActive) {
-      Iterator<?> iterator = ((IStructuredSelection) tree.getViewer().getSelection()).iterator();
+      ITreeSelection selection = tree.getViewer().getStructuredSelection();
+      Iterator<?> iterator = selection.iterator();
       while (iterator.hasNext()) {
         setActiveForElement(iterator.next(), isActive);
       }
+      Object currentSelection = selection.getFirstElement();
+      refreshUiForRuleSelection(currentSelection);
     }
 
     private void setActiveForElement(Object element, boolean isActive) {
