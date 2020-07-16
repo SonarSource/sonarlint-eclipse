@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
@@ -55,50 +56,84 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     javaBot.expandAndDoubleClick("java-exclude-rules", "src", "hello", "Hello3.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."),
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 12, "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed."));
+    checkIssueIsDefault(project);
 
     new JavaPackageExplorerBot(bot).expandAndSelect("java-exclude-rules", "src", "hello", "Hello3.java");
 
     onTheFly.bot().tree().select(1).contextMenu("Deactivate rule").click();
 
     JobHelpers.waitForJobsToComplete(bot);
-    markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."));
 
     reactivateRuleUsingUI();
 
     JobHelpers.waitForJobsToComplete(bot);
-    markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."),
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 12, "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed."));
+    checkIssueIsDefault(project);
+    changeRuleParamValue(project);
+    checkIssueChanged(project);
 
     openComplexityRule();
-    bot.spinner().setSelection(10);
-    bot.button("Apply").click();
-    bot.activeShell().close();
-    JobHelpers.waitForJobsToComplete(bot);
-    markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."),
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 12, "Refactor this method to reduce its Cognitive Complexity from 24 to the 10 allowed."));
-
-    openComplexityRule();
-
     bot.link().click();
     bot.button("Apply").click();
     bot.activeShell().close();
-
     JobHelpers.waitForJobsToComplete(bot);
-    markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."),
-      tuple("/java-exclude-rules/src/hello/Hello3.java", 12, "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed."));
+    checkIssueIsDefault(project);
+  }
 
+  @Test
+  public void ruleParametersGlobalDefaults() throws Exception {
+    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+    IProject project = importEclipseProject("java/java-exclude-rules", "java-exclude-rules");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    JavaPackageExplorerBot javaBot = new JavaPackageExplorerBot(bot);
+    javaBot.expandAndDoubleClick("java-exclude-rules", "src", "hello", "Hello3.java");
+    JobHelpers.waitForJobsToComplete(bot);
+    checkIssueIsDefault(project);
+    changeRuleParamValue(project);
+    checkIssueChanged(project);
+
+    openComplexityRule();
+    bot.button("Restore Defaults").click();
+    bot.button("Apply").click();
+    bot.activeShell().close();
+
+    checkIssueIsDefault(project);
+  }
+
+  @Test
+  public void ruleParametersActivationRoundTrip() {
+    openComplexityRule();
+
+    assertThat(bot.spinner().isEnabled()).isTrue();
+
+    bot.treeWithId("slRuleTree")
+      .getTreeItem("Java").getNode(0)
+      .contextMenu("Deactivate").click();
+
+    assertThat(bot.spinner().isEnabled()).isFalse();
+
+    bot.treeWithId("slRuleTree")
+      .getTreeItem("Java").getNode(0)
+      .contextMenu("Activate").click();
+
+    assertThat(bot.spinner().isEnabled()).isTrue();
+
+    bot.activeShell().close();
+  }
+
+  @Test
+  public void defaultLinkVisibilityRoundTrip() {
+    bot.getFinder().setShouldFindInvisibleControls(true);
+    openComplexityRule();
+    assertThat(bot.link().isVisible()).isFalse();
+    bot.spinner().setSelection(10);
+    assertThat(bot.link().isVisible()).isTrue();
+    bot.spinner().setSelection(15);
+    assertThat(bot.link().isVisible()).isFalse();
+    bot.activeShell().close();
   }
 
   @Test
@@ -164,10 +199,33 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
           .collect(Collectors.joining(","));
       }
     });
-    
+
     bot.treeWithId("slRuleTree")
       .getTreeItem("Java").getNode(0)
       .select().click();
+  }
+
+  void changeRuleParamValue(IProject project) throws CoreException {
+    openComplexityRule();
+    bot.spinner().setSelection(10);
+    bot.button("Apply").click();
+    bot.activeShell().close();
+  }
+
+  static void checkIssueChanged(IProject project) throws CoreException {
+    JobHelpers.waitForJobsToComplete(bot);
+    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."),
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 12, "Refactor this method to reduce its Cognitive Complexity from 24 to the 10 allowed."));
+  }
+
+  void checkIssueIsDefault(IProject project) throws CoreException {
+    List<IMarker> markers;
+    markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."),
+      tuple("/java-exclude-rules/src/hello/Hello3.java", 12, "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed."));
   }
 
 }
