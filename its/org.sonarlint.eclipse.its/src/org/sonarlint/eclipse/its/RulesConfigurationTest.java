@@ -77,8 +77,8 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     openComplexityRule();
     bot.link().click();
     bot.button("Apply").click();
-    bot.activeShell().close();
     JobHelpers.waitForJobsToComplete(bot);
+    bot.activeShell().close();
     checkIssueIsDefault(project);
   }
 
@@ -98,6 +98,8 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     openComplexityRule();
     bot.button("Restore Defaults").click();
     bot.button("Apply").click();
+    JobHelpers.waitForJobsToComplete(bot);
+
     bot.activeShell().close();
 
     checkIssueIsDefault(project);
@@ -209,11 +211,11 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     openComplexityRule();
     bot.spinner().setSelection(10);
     bot.button("Apply").click();
+    JobHelpers.waitForJobsToComplete(bot);
     bot.activeShell().close();
   }
 
   static void checkIssueChanged(IProject project) throws CoreException {
-    JobHelpers.waitForJobsToComplete(bot);
     List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello3.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple("/java-exclude-rules/src/hello/Hello3.java", 9, "Replace this use of System.out or System.err by a logger."),
