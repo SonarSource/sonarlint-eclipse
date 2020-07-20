@@ -24,9 +24,6 @@
    <bundle id="com.google.guava">
       <category name="Third party dependencies"/>
    </bundle>
-   <bundle id="minimal-json">
-      <category name="Third party dependencies"/>
-   </bundle>
    <category-def name="SonarLint for Eclipse" label="SonarLint for Eclipse">
       <description>
          Allows to run SonarLint analysis on your Eclipse projects

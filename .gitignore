@@ -11,4 +11,5 @@ target/
 .idea/
 
 # build products
-org.sonarlint.eclipse.core/plugins/*.jar
+org.sonarlint.eclipse.core/plugins/
+org.sonarlint.eclipse.core/lib/

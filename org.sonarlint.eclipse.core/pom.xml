@@ -39,6 +39,12 @@
                 <include>*.jar</include>
               </includes>
             </fileset>
+            <fileset>
+              <directory>${project.basedir}/lib</directory>
+              <includes>
+                <include>*.jar</include>
+              </includes>
+            </fileset>
           </filesets>
         </configuration>
       </plugin>
@@ -47,7 +53,7 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
-            <id>copy</id>
+            <id>copy-analyzers</id>
             <phase>validate</phase>
             <goals>
               <goal>copy</goal>
@@ -87,6 +93,26 @@
               </artifactItems>
               <outputDirectory>${project.basedir}/plugins</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-libraries</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.eclipsesource.minimal-json</groupId>
+                  <artifactId>minimal-json</artifactId>
+                  <version>0.9.5</version>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>lib</outputDirectory>
+              <stripVersion>true</stripVersion>
+              <overWriteReleases>true</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
           </execution>
