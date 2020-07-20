@@ -42,6 +42,7 @@
       <import plugin="org.sonarsource.sonarlint.core.sonarlint-client-api"/>
       <import plugin="org.sonarsource.sonarlint.core.sonarlint-core"/>
       <import plugin="org.eclipse.mylyn.commons.ui"/>
+      <import plugin="minimal-json"/>
    </requires>
 
    <plugin
