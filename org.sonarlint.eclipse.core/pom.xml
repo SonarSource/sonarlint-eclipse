@@ -69,7 +69,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.php</groupId>
                   <artifactId>sonar-php-plugin</artifactId>
-                  <version>3.4.0.5461</version>
+                  <version>3.6.0.5808</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
