@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.markers;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -48,12 +49,14 @@ public class ShowRuleDescriptionMarkerResolver implements IMarkerResolution2 {
 
   @Override
   public void run(IMarker marker) {
-    try {
-      RuleDescriptionWebView view = (RuleDescriptionWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(RuleDescriptionWebView.ID);
-      view.setInput(marker);
-    } catch (Exception e) {
-      SonarLintLogger.get().error("Unable to open rule description view", e);
-    }
+    Display.getDefault().asyncExec(() -> {
+      try {
+        RuleDescriptionWebView view = (RuleDescriptionWebView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(RuleDescriptionWebView.ID);
+        view.setInput(marker);
+      } catch (Exception e) {
+        SonarLintLogger.get().error("Unable to open rule description view", e);
+      }
+    });
   }
 
   @Override

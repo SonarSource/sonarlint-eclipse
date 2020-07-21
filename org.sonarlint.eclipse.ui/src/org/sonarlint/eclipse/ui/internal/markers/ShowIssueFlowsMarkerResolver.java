@@ -33,6 +33,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -70,16 +71,18 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
 
   @Override
   public void run(IMarker marker) {
-    try {
-      IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-      IEditorPart editorPart = IDE.openEditor(page, marker);
-      if (editorPart instanceof ITextEditor) {
-        ITextEditor textEditor = (ITextEditor) editorPart;
-        toggleAnnotations(marker, textEditor);
+    Display.getDefault().asyncExec(() -> {
+      try {
+        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        IEditorPart editorPart = IDE.openEditor(page, marker);
+        if (editorPart instanceof ITextEditor) {
+          ITextEditor textEditor = (ITextEditor) editorPart;
+          toggleAnnotations(marker, textEditor);
+        }
+      } catch (Exception e) {
+        SonarLintLogger.get().error("Unable to show issue locations", e);
       }
-    } catch (Exception e) {
-      SonarLintLogger.get().error("Unable to show issue locations", e);
-    }
+    });
   }
 
   private static void updateLocationsView(IMarker marker) {
