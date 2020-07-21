@@ -53,7 +53,7 @@ public class RuleParameterPanel extends Composite {
     this.setLayout(new GridLayout());
     Group group = new Group(this, SWT.SHADOW_NONE);
     group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-    group.setText("Options");
+    group.setText("Parameters");
     GridLayout groupLayout = new GridLayout();
     groupLayout.verticalSpacing = 0;
     groupLayout.marginHeight = 0;
