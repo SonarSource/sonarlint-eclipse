@@ -51,6 +51,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.dialogs.FilteredTree;
@@ -105,7 +106,7 @@ public class RulesConfigurationPart {
     ruleBrowser = new SonarLintRuleBrowser(horizontalSplitter, false);
     paramPanelParent = new Composite(horizontalSplitter, SWT.NONE);
     paramPanelParent.setLayout(new GridLayout());
-    paramPanel = new Composite(paramPanelParent, SWT.NONE);
+    paramPanel = emptyRuleParam();
     horizontalSplitter.setWeights(new int[] {70, 30});
   }
 
@@ -170,16 +171,26 @@ public class RulesConfigurationPart {
       RuleDetailsWrapper wrapper = (RuleDetailsWrapper) selectedNode;
       ruleBrowser.updateRule(wrapper.ruleDetails);
       if (wrapper.ruleDetails.paramDetails().isEmpty()) {
-        paramPanel = new Composite(paramPanelParent, SWT.NONE);
+        paramPanel = emptyRuleParam();
       } else {
         paramPanel = new RuleParameterPanel(paramPanelParent, SWT.NONE, wrapper.ruleDetails, wrapper.ruleConfig);
         paramPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
       }
     } else {
       ruleBrowser.updateRule(null);
-      paramPanel = new Composite(paramPanelParent, SWT.NONE);
+      paramPanel = emptyRuleParam();
     }
     paramPanel.requestLayout();
+  }
+
+  private Composite emptyRuleParam() {
+    Composite composite = new Composite(paramPanelParent, SWT.BORDER);
+    composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    composite.setLayout(new GridLayout());
+    Label label = new Label(composite, SWT.NONE);
+    label.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+    label.setText("No parameters");
+    return composite;
   }
 
   enum Type {
@@ -237,6 +248,8 @@ public class RulesConfigurationPart {
           .forEach(w -> w.ruleConfig.setActive(event.getChecked()));
         tree.getViewer().refresh();
       }
+      Object currentSelection = tree.getViewer().getStructuredSelection().getFirstElement();
+      refreshUiForRuleSelection(currentSelection);
     }
   }
 
