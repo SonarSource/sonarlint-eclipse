@@ -31,6 +31,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
@@ -48,15 +49,21 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
+import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
@@ -111,7 +118,14 @@ public class RulesConfigurationPart {
   }
 
   private void createFilterPart(Composite parent) {
-    ComboViewer combo = new ComboViewer(parent, SWT.READ_ONLY);
+    Composite composite = new Composite(parent, SWT.NONE);
+    composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+    GridLayout layout = new GridLayout(2, false);
+    layout.marginHeight = 0;
+    layout.marginWidth = 0;
+    layout.horizontalSpacing = 40;
+    composite.setLayout(layout);
+    ComboViewer combo = new ComboViewer(composite, SWT.READ_ONLY);
     combo.setContentProvider(ArrayContentProvider.getInstance());
     combo.setLabelProvider(new LabelProvider() {
       @Override
@@ -132,6 +146,30 @@ public class RulesConfigurationPart {
       }
     };
     combo.addSelectionChangedListener(selectionChangedListener);
+
+    ToolBar toolbar = new ToolBar(composite, SWT.FLAT);
+    toolbar.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+    createExpansionItem(toolbar, true, SonarLintImages.IMG_EXPAND_ALL, "Expand all");
+    createExpansionItem(toolbar, false, SonarLintImages.IMG_COLLAPSE_ALL, "Collapse all");
+  }
+
+  private ToolItem createExpansionItem(ToolBar toolBar, final boolean expand, ImageDescriptor image, String tooltip) {
+    ToolItem item = new ToolItem(toolBar, SWT.PUSH);
+    final Image createdImage = image.createImage();
+    item.setImage(createdImage);
+    item.setToolTipText(tooltip);
+    item.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        if (expand) {
+          tree.getViewer().expandAll();
+        } else {
+          tree.getViewer().collapseAll();
+        }
+      }
+    });
+    item.addDisposeListener(e -> createdImage.dispose());
+    return item;
   }
 
   private void createTreeViewer(Composite parent) {
@@ -262,7 +300,7 @@ public class RulesConfigurationPart {
       if (element instanceof String) {
         String language = (String) element;
         boolean foundActive = false;
-        boolean foundInActive = false;
+        boolean foundInactive = false;
         for (RuleDetailsWrapper wrapper : ruleDetailsWrappersByLanguage.get(language)) {
           if (!filter.isRuleMatch(wrapper)) {
             continue;
@@ -270,15 +308,15 @@ public class RulesConfigurationPart {
           if (wrapper.ruleConfig.isActive()) {
             foundActive = true;
           } else {
-            foundInActive = true;
+            foundInactive = true;
           }
 
           // stop scanning after found both kinds
-          if (foundActive && foundInActive) {
-            break;
+          if (foundActive && foundInactive) {
+            return true;
           }
         }
-        return foundActive == foundInActive;
+        return foundActive == foundInactive;
       }
       return false;
     }
@@ -436,6 +474,7 @@ public class RulesConfigurationPart {
       while (iterator.hasNext()) {
         setActiveForElement(iterator.next(), isActive);
       }
+      tree.getViewer().refresh();
       Object currentSelection = selection.getFirstElement();
       refreshUiForRuleSelection(currentSelection);
     }
@@ -444,11 +483,9 @@ public class RulesConfigurationPart {
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
         wrapper.ruleConfig.setActive(isActive);
-        tree.getViewer().refresh(element);
       } else if (element instanceof String) {
         String language = (String) element;
         ruleDetailsWrappersByLanguage.get(language).stream().forEach(w -> w.ruleConfig.setActive(isActive));
-        tree.getViewer().refresh();
       }
     }
 
