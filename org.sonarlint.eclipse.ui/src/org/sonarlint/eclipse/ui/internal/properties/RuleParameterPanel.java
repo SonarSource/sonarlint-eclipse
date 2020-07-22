@@ -51,7 +51,7 @@ public class RuleParameterPanel extends Composite {
     this.selectedRuleMetadata = selectedRuleMetadata;
     this.selectedRuleConfig = selectedRuleConfig;
     this.setLayout(new GridLayout());
-    Group group = new Group(this, SWT.SHADOW_NONE);
+    Group group = new Group(this, SWT.LEFT);
     group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     group.setText("Parameters");
     GridLayout groupLayout = new GridLayout();
@@ -60,7 +60,7 @@ public class RuleParameterPanel extends Composite {
     group.setLayout(groupLayout);
 
     defaultLink = new Link(group, SWT.NONE);
-    defaultLink.setText("<a>Defaults</a>");
+    defaultLink.setText("<a>Restore defaults</a>");
     defaultLink.setToolTipText("Restore default parameters values");
     defaultLink.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false));
     defaultLink.setEnabled(selectedRuleConfig.isActive());

@@ -30,8 +30,10 @@ import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
 import org.eclipse.swtbot.swt.finder.waits.ICondition;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotLink;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
+import org.junit.After;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.OnTheFlyViewBot;
@@ -43,6 +45,15 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.Assume.assumeTrue;
 
 public class RulesConfigurationTest extends AbstractSonarLintTest {
+
+  @After
+  public void cleanup() {
+    try {
+      bot.shell("Preferences").close();
+    } catch (Exception e) {
+      // Ignore
+    }
+  }
 
   @Test
   public void deactivate_rule() throws Exception {
@@ -75,7 +86,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     checkIssueChanged(project);
 
     openComplexityRule();
-    bot.link().click();
+    paramRestoreDefaultLink().click();
     bot.button("Apply").click();
     JobHelpers.waitForJobsToComplete(bot);
     bot.activeShell().close();
@@ -130,11 +141,11 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   public void defaultLinkVisibilityRoundTrip() {
     bot.getFinder().setShouldFindInvisibleControls(true);
     openComplexityRule();
-    assertThat(bot.link().isVisible()).isFalse();
+    assertThat(paramRestoreDefaultLink().isVisible()).isFalse();
     bot.spinner().setSelection(10);
-    assertThat(bot.link().isVisible()).isTrue();
+    assertThat(paramRestoreDefaultLink().isVisible()).isTrue();
     bot.spinner().setSelection(15);
-    assertThat(bot.link().isVisible()).isFalse();
+    assertThat(paramRestoreDefaultLink().isVisible()).isFalse();
     bot.activeShell().close();
   }
 
@@ -154,6 +165,10 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     assertThat(htmlNode.cell(0, 0)).isEqualTo("\"<!DOCTYPE>\" declarations should appear before \"<html>\" tags");
 
     bot.button("Cancel").click();
+  }
+
+  private SWTBotLink paramRestoreDefaultLink() {
+    return bot.link("<a>Restore defaults</a>");
   }
 
   void openRulesConfiguration() {
