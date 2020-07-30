@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
@@ -140,7 +139,7 @@ public class NotificationsManager {
       ResolvedBinding binding = resolvedBinding.get();
       LastNotificationTime notificationTime = new ProjectNotificationTime(project);
 
-      NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, binding.getProjectBinding().connectionId(),
+      NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, binding.getProjectBinding().projectKey(),
         ((ConnectedEngineFacade) binding.getEngineFacade()).getConfig());
       SonarQubeNotifications.get().register(configuration);
 
