@@ -144,6 +144,7 @@ public class RuleParameterPanel extends Composite {
   }
 
   private void configureInput(StandaloneRuleParam ruleParam, Text ruleParameterInput) {
+    ruleParameterInput.setToolTipText(ruleParam.description());
     ruleParameterInput.setText(StringUtils.trimToEmpty(selectedRuleConfig.getParams().getOrDefault(ruleParam.key(), ruleParam.defaultValue())));
     ruleParameterInput.addModifyListener(e -> {
       String text = ((Text) e.widget).getText();
@@ -160,6 +161,7 @@ public class RuleParameterPanel extends Composite {
   private void addIntegerInput(Composite parent, StandaloneRuleParam ruleParam) {
     Spinner ruleParameterInput = new Spinner(parent, SWT.WRAP);
     GridData layoutData = new GridData(SWT.FILL, SWT.NONE, false, false);
+    ruleParameterInput.setToolTipText(ruleParam.description());
     ruleParameterInput.setLayoutData(layoutData);
     ruleParameterInput.setMinimum(Integer.MIN_VALUE);
     ruleParameterInput.setMaximum(Integer.MAX_VALUE);
@@ -184,6 +186,7 @@ public class RuleParameterPanel extends Composite {
 
   private void addCheckboxInput(Composite parent, StandaloneRuleParam ruleParam) {
     Button ruleParameterInput = new Button(parent, SWT.CHECK);
+    ruleParameterInput.setToolTipText(ruleParam.description());
     ruleParameterInput.setSelection("true".equals(selectedRuleConfig.getParams().getOrDefault(ruleParam.key(), ruleParam.defaultValue())));
     ruleParameterInput.addListener(SWT.Selection, e -> {
       selectedRuleConfig.getParams().put(ruleParam.key(), String.valueOf(((Button) e.widget).getSelection()));
