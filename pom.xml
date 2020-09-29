@@ -55,7 +55,7 @@
     <license.title>SonarLint for Eclipse</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>1.7.0</tycho.version>
+    <tycho.version>2.0.0</tycho.version>
     <tycho-extras.version>${tycho.version}</tycho-extras.version>
     <target.platform>2020-09</target.platform>
     <sonarlint-core.version>4.13.0.19712</sonarlint-core.version>
