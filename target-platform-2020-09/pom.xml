@@ -10,9 +10,9 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>target-platform-2019-06</artifactId>
+  <artifactId>target-platform-2020-09</artifactId>
   <packaging>eclipse-target-definition</packaging>
 
-  <name>target-platform for Eclipse 4.12 (2019-06)</name>
+  <name>target-platform for Eclipse 4.17 (2020-09)</name>
 
 </project>
