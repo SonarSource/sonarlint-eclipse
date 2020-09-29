@@ -19,14 +19,12 @@
  */
 package org.sonarlint.eclipse.its;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.sonarlint.eclipse.its.bots.ProjectBindingWizardBot;
 import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
 import org.sonarlint.eclipse.its.bots.ServersViewBot;
@@ -38,6 +36,9 @@ import org.sonarqube.ws.client.project.DeleteRequest;
 import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
 import org.sonarqube.ws.client.usertoken.RevokeWsRequest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+@Category(SonarCloud.class)
 public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String IMPORTED_PROJECT_NAME = "java-simple";
   private static final String TIMESTAMP = Long.toString(Instant.now().toEpochMilli());
@@ -47,12 +48,11 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   private static final String SONARCLOUD_ORGANIZATION_NAME = "SonarLint IT Tests";
   private static final String SONARCLOUD_USER = "sonarlint-it";
   private static final String SONARCLOUD_PASSWORD = System.getenv("SONARCLOUD_IT_PASSWORD");
-  private static final String SONARCLOUD_PROJECT_KEY = IMPORTED_PROJECT_NAME + '-' +TIMESTAMP;
+  private static final String SONARCLOUD_PROJECT_KEY = IMPORTED_PROJECT_NAME + '-' + TIMESTAMP;
 
   private static final String TOKEN_NAME = "SLE-IT-" + TIMESTAMP;
 
   private static final String CONNECTION_NAME = "connection";
-
 
   private static WsClient adminWsClient;
   private static String token;
@@ -61,19 +61,19 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   public static void prepare() {
     System.setProperty("sonarlint.internal.sonarcloud.url", SONARCLOUD_STAGING_URL);
     adminWsClient = WsClientFactories.getDefault().newClient(HttpConnector.newBuilder()
-        .url(SONARCLOUD_STAGING_URL)
-        .credentials(SONARCLOUD_USER, SONARCLOUD_PASSWORD)
-        .build());
+      .url(SONARCLOUD_STAGING_URL)
+      .credentials(SONARCLOUD_USER, SONARCLOUD_PASSWORD)
+      .build());
 
     token = adminWsClient.userTokens()
-        .generate(new GenerateWsRequest().setName(TOKEN_NAME))
-        .getToken();
+      .generate(new GenerateWsRequest().setName(TOKEN_NAME))
+      .getToken();
 
     adminWsClient.projects()
       .create(CreateRequest.builder()
-          .setName(IMPORTED_PROJECT_NAME)
-          .setKey(SONARCLOUD_PROJECT_KEY)
-          .setOrganization(SONARCLOUD_ORGANIZATION_KEY).build());
+        .setName(IMPORTED_PROJECT_NAME)
+        .setKey(SONARCLOUD_PROJECT_KEY)
+        .setOrganization(SONARCLOUD_ORGANIZATION_KEY).build());
   }
 
   @AfterClass
@@ -82,7 +82,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
       .revoke(new RevokeWsRequest().setName(TOKEN_NAME));
     adminWsClient.projects()
       .delete(DeleteRequest.builder()
-          .setKey(SONARCLOUD_PROJECT_KEY).build());
+        .setKey(SONARCLOUD_PROJECT_KEY).build());
   }
 
   @Test
