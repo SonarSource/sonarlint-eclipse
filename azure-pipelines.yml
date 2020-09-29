@@ -27,6 +27,11 @@ stages:
         commonMavenArguments: -B -e -Pdeploy-sonarsource -Dmaven.test.skip=true
         fixedBranch: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
       steps:
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '11'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
       - checkout: self
         fetchDepth: 1
       - task: Cache@2
@@ -58,7 +63,6 @@ stages:
         displayName: Fix entropy to speed up JAR signing
       - task: Maven@3
         displayName: 'Run Maven deploy with signing'
-        condition: ne(variables['Build.Reason'], 'PullRequest')
         env:
           ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
           ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
@@ -66,30 +70,18 @@ stages:
           GITHUB_BRANCH: $(fixedBranch)
         inputs:
           goals: 'deploy'
-          options: >-
-            $(commonMavenArguments)
-            --settings $(mavenSettings.secureFilePath)
-            -Djarsigner.skip=false
-            -Dsonarsource.keystore.path=$(jks.secureFilePath)
-            -Dsonarsource.keystore.password=$(jksPassword)
+          ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+            options: >-
+              $(commonMavenArguments)
+              --settings $(mavenSettings.secureFilePath)
+              -Djarsigner.skip=false
+              -Dsonarsource.keystore.path=$(jks.secureFilePath)
+              -Dsonarsource.keystore.password=$(jksPassword)
+          ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+            options: >-
+              $(commonMavenArguments)
+              --settings $(mavenSettings.secureFilePath)
           publishJUnitResults: false
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.11'
-          mavenOptions: $(MAVEN_OPTS)
-      - task: Maven@3
-        displayName: 'Run Maven deploy without signing'
-        condition: eq(variables['Build.Reason'], 'PullRequest')
-        env:
-          ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
-          ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
-        inputs:
-          goals: 'deploy'
-          options: >-
-            $(commonMavenArguments)
-            --settings $(mavenSettings.secureFilePath)
-          publishJUnitResults: false
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.11'
           mavenOptions: $(MAVEN_OPTS)
       - bash: git checkout .
         name: revertPomChanges
@@ -109,6 +101,11 @@ stages:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
       steps:
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '11'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
       - checkout: self
         fetchDepth: 1
       - task: Cache@2
@@ -149,8 +146,6 @@ stages:
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           testRunTitle: 'UTs'
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.11'
           mavenOptions: $(MAVEN_OPTS)   
 - template: stage-with-burgr-notifications.yml@commonTemplates
   parameters:
@@ -167,19 +162,16 @@ stages:
           Photon:
             TARGET_PLATFORM: 'photon'
             SQ_VERSION: 'LATEST_RELEASE[7.9]'
-            JDKVersion: '1.11'
             imageName: 'ubuntu-18.04'
             Category: '-DexcludedGroups=SonarCloud'
           2020_06:
             TARGET_PLATFORM: '2020-06'
             SQ_VERSION: 'SonarCloud'
-            JDKVersion: '1.11'
             imageName: 'ubuntu-18.04'
             Category: '-Dgroups=SonarCloud'
           Milestone:
             TARGET_PLATFORM: 'milestones'
             SQ_VERSION: 'DOGFOOD'
-            JDKVersion: '1.11'
             imageName: 'ubuntu-18.04'
             Category: '-DexcludedGroups=SonarCloud'
       variables:
@@ -189,6 +181,11 @@ stages:
       pool:
         vmImage: $(imageName)
       steps:
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '11'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
       - checkout: self
         fetchDepth: 1
       - task: Cache@2
@@ -216,8 +213,6 @@ stages:
           goals: 'dependency:unpack'
           options: '-B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:$(PROJECT_VERSION):zip -DoutputDirectory=$(Agent.BuildDirectory)/staged-repository'
           publishJUnitResults: false
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.11'
           mavenOptions: $(MAVEN_OPTS)
       - bash: |
           set -e
@@ -256,8 +251,6 @@ stages:
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           testRunTitle: 'ITs $(TARGET_PLATFORM)'
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: $(JDKVersion)
           mavenOptions: $(MAVEN_OPTS)
       - publish: $(Build.Repository.LocalPath)/its/org.sonarlint.eclipse.its/target/output
         artifact: ITCaptureScreenshotAndConsole
@@ -284,6 +277,11 @@ stages:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
       steps:
+      - task: JavaToolInstaller@0
+        inputs:
+          versionSpec: '11'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
       - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
@@ -334,8 +332,6 @@ stages:
             -Pcoverage
             -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=$(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           publishJUnitResults: false
-          javaHomeOption: 'JDKVersion'
-          jdkVersionOption: '1.11'
           mavenOptions: $(MAVEN_OPTS)
           sonarQubeRunAnalysis: true
           sqMavenPluginVersionChoice: 'latest'
