@@ -282,6 +282,7 @@ stages:
           versionSpec: '11'
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
+      - checkout: self
       - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
