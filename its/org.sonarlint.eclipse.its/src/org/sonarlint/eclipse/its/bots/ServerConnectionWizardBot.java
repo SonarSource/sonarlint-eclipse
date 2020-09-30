@@ -34,6 +34,7 @@ import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTable;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotText;
+import org.sonarlint.eclipse.its.AbstractSonarLintTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -78,8 +79,14 @@ public class ServerConnectionWizardBot {
 
   public void assertErrorMessage(String msg) {
     // There is a space added, see TitleAreaDialog#setErrorMessage(String)
+    String msgToFind = " " + msg;
     try {
-      wizardBot.text(" " + msg);
+      if (AbstractSonarLintTest.is2020_12OrGreater()) {
+        // https://github.com/eclipse/eclipse.platform.ui/commit/40b5475e2790b36228537d6446e470b36386b17c#diff-2fdff255edfd3ae715187b2161f594d0
+        wizardBot.label(msgToFind);
+      } else {
+        wizardBot.text(msgToFind);
+      }
     } catch (WidgetNotFoundException e) {
       fail("Expecting error message '" + msg + "'", e);
     }
