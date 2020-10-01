@@ -38,6 +38,7 @@ import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.TelemetryClientConfig;
+import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryPathManager;
@@ -115,7 +116,8 @@ public class SonarLintTelemetry {
 
   // visible for testing
   public TelemetryManager newTelemetryManager(Path path, TelemetryClient client) {
-    return new TelemetryManager(path, client, SonarLintTelemetry::isAnyOpenProjectBound, SonarLintTelemetry::isAnyOpenProjectBoundToSonarCloud, () -> null);
+    return new TelemetryManager(path, client, SonarLintTelemetry::isAnyOpenProjectBound, SonarLintTelemetry::isAnyOpenProjectBoundToSonarCloud,
+      SonarLintTelemetry::getNodeJsVersion);
   }
 
   private class TelemetryJob extends Job {
@@ -192,6 +194,12 @@ public class SonarLintTelemetry {
       .map(Optional::get)
       .map(ResolvedBinding::getEngineFacade)
       .anyMatch(IConnectedEngineFacade::isSonarCloud);
+  }
+
+  @Nullable
+  public static String getNodeJsVersion() {
+    Version v = SonarLintCorePlugin.getNodeJsManager().getNodeJsVersion();
+    return v != null ? v.toString() : null;
   }
 
 }
