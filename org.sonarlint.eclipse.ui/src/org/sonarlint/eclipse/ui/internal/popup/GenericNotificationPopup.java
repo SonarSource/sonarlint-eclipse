@@ -24,6 +24,7 @@ import java.net.URL;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -35,7 +36,10 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.preferences.SonarLintPreferencePage;
 
 public class GenericNotificationPopup extends AbstractSonarLintPopup {
 
@@ -99,11 +103,18 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
       messageLink.addSelectionListener(new SelectionAdapter() {
         @Override
         public void widgetSelected(SelectionEvent e) {
-          try {
-            // Open default external browser
-            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(e.text));
-          } catch (PartInitException | MalformedURLException ex) {
-            ex.printStackTrace();
+          if ("#edit-settings".equals(e.text)) {
+            PreferenceDialog pref = PreferencesUtil.createPreferenceDialogOn(DialogWithLink.this.getShell(), SonarLintPreferencePage.ID, null, null);
+            if (pref != null) {
+              pref.open();
+            }
+          } else {
+            try {
+              // Open default external browser
+              PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(e.text));
+            } catch (PartInitException | MalformedURLException ex) {
+              SonarLintLogger.get().error("Unable to open link", ex);
+            }
           }
         }
       });

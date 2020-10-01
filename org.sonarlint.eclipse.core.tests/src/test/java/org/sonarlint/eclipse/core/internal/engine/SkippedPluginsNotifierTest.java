@@ -33,7 +33,6 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.SkipReason;
-import org.sonarsource.sonarlint.core.client.api.common.SkipReason.UnsatisfiedRuntimeRequirement.RuntimeRequirement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -84,41 +83,6 @@ public class SkippedPluginsNotifierTest {
   }
 
   @Test
-  public void notifyIfSkippedPlugin_JRE() {
-    List<PluginDetails> plugins = Arrays
-      .asList(new FakePluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.JRE, "1.8", "11")));
-    SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
-    assertThat(notifications).containsOnly(tuple("Rules not available", "Some rules are not available until some requirements are satisfied",
-      "Some analyzers can not be loaded.\n\n"
-        + " - 'Plugin 1' requires Java runtime version 11 or later. Current version is 1.8.\n\n"
-        + "Please see <a href=\"https://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM\">the Eclipse Wiki</a> to configure your IDE to run with a more recent JRE."));
-  }
-
-  @Test
-  public void notifyIfSkippedLanguage_JRE() {
-    List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("java", "Java", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.JRE, "1.8", "11")));
-    SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
-    assertThat(notifications).containsOnly(tuple("Language analysis not available", "Java analysis will not be available until some requirements are satisfied",
-      "Some analyzers can not be loaded.\n\n"
-        + "Java analysis will not be available until following requirements are satisfied:\n"
-        + " - 'Java' requires Java runtime version 11 or later. Current version is 1.8.\n\n"
-        + "Please see <a href=\"https://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM\">the Eclipse Wiki</a> to configure your IDE to run with a more recent JRE."));
-  }
-
-  @Test
-  public void notifyIfSkippedLanguages_JRE() {
-    List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("java", "Java", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.JRE, "1.8", "11")),
-      new FakePluginDetails("cpp", "CFamily", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.JRE, "1.8", "11")));
-    SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
-    assertThat(notifications).containsOnly(tuple("Language analysis not available", "Java, C, Cpp analysis will not be available until some requirements are satisfied",
-      "Some analyzers can not be loaded.\n\n"
-        + "Java, C, Cpp analysis will not be available until following requirements are satisfied:\n"
-        + " - 'Java' requires Java runtime version 11 or later. Current version is 1.8.\n"
-        + " - 'CFamily' requires Java runtime version 11 or later. Current version is 1.8.\n\n"
-        + "Please see <a href=\"https://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM\">the Eclipse Wiki</a> to configure your IDE to run with a more recent JRE."));
-  }
-
-  @Test
   public void notifyIfSkippedPlugin_IncompatiblePluginApi() {
     List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("plugin1", "Plugin 1", "1.0", SkipReason.IncompatiblePluginApi.INSTANCE));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
@@ -147,10 +111,11 @@ public class SkippedPluginsNotifierTest {
 
   private static class FakePluginDetails implements PluginDetails {
 
-    private String key;
-    private String name;
-    private String version;
-    private @Nullable SkipReason skipReason;
+    private final String key;
+    private final String name;
+    private final String version;
+    private @Nullable
+    final SkipReason skipReason;
 
     public FakePluginDetails(String key, String name, String version, @Nullable SkipReason skipReason) {
       this.key = key;

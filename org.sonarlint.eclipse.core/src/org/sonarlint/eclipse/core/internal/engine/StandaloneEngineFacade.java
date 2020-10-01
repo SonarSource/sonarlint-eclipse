@@ -32,6 +32,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
 import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
+import org.sonarlint.eclipse.core.internal.utils.NodeJsManager;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
@@ -56,11 +57,13 @@ public class StandaloneEngineFacade {
         List<URL> pluginEntries = Collections.list(pluginEntriesEnum);
         SonarLintLogger.get().debug("Loading embedded analyzers...");
         pluginEntries.stream().forEach(e -> SonarLintLogger.get().debug("  - " + e.getFile()));
+        NodeJsManager nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
         StandaloneGlobalConfiguration globalConfig = StandaloneGlobalConfiguration.builder()
           .addPlugins(pluginEntries.toArray(new URL[0]))
           .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("default").toFile().toPath())
           .setLogOutput(new SonarLintAnalyzerLogOutput())
           .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
+          .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
           .build();
         try {
           client = new StandaloneSonarLintEngineImpl(globalConfig);
@@ -80,7 +83,9 @@ public class StandaloneEngineFacade {
   public AnalysisResults runAnalysis(StandaloneAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor) {
     StandaloneSonarLintEngine engine = getClient();
     if (engine != null) {
-      return engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
+      AnalysisResults analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
+      AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, engine.getPluginDetails());
+      return analysisResults;
     }
     return null;
   }

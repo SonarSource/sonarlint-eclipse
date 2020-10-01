@@ -41,12 +41,14 @@ import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.StoragePathManager;
+import org.sonarlint.eclipse.core.internal.engine.AnalysisRequirementNotifications;
 import org.sonarlint.eclipse.core.internal.engine.SkippedPluginsNotifier;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintAnalyzerLogOutput;
 import org.sonarlint.eclipse.core.internal.jobs.WrappedProgressMonitor;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.internal.utils.NodeJsManager;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
@@ -89,7 +91,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   private String host;
   private String organization;
   private boolean hasAuth;
-  private final ConnectedSonarLintEngine client;
+  private ConnectedSonarLintEngine engine;
   private final List<IConnectedEngineFacadeListener> facadeListeners = new ArrayList<>();
   private GlobalStorageStatus updateStatus;
   private boolean hasUpdates;
@@ -104,26 +106,40 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   ConnectedEngineFacade(String id) {
     this.id = id;
+  }
 
-    ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
-      .setServerId(getId())
-      .setWorkDir(StoragePathManager.getServerWorkDir(getId()))
-      .setStorageRoot(StoragePathManager.getServerStorageRoot())
-      .setLogOutput(new SonarLintAnalyzerLogOutput())
-      .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
-      .build();
-    this.client = new ConnectedSonarLintEngineImpl(globalConfig);
-    this.client.addStateListener(this);
-    this.updateStatus = client.getGlobalStorageStatus();
-    if (client.getState().equals(State.UPDATED)) {
-      reloadProjects();
-      SkippedPluginsNotifier.notifyForSkippedPlugins(client.getPluginDetails(), id);
+  @Nullable
+  public synchronized ConnectedSonarLintEngine getEngine() {
+    if (engine == null) {
+      SonarLintLogger.get().info("Starting SonarLint engine for connection '" + id + "'...");
+      NodeJsManager nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
+      ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
+        .setServerId(getId())
+        .setWorkDir(StoragePathManager.getServerWorkDir(getId()))
+        .setStorageRoot(StoragePathManager.getServerStorageRoot())
+        .setLogOutput(new SonarLintAnalyzerLogOutput())
+        .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
+        .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
+        .build();
+      try {
+        this.engine = new ConnectedSonarLintEngineImpl(globalConfig);
+        this.engine.addStateListener(this);
+        this.updateStatus = engine.getGlobalStorageStatus();
+        if (engine.getState().equals(State.UPDATED)) {
+          reloadProjects();
+          SkippedPluginsNotifier.notifyForSkippedPlugins(engine.getPluginDetails(), id);
+        }
+      } catch (Throwable e) {
+        SonarLintLogger.get().error("Unable to start connected SonarLint engine", e);
+        engine = null;
+      }
     }
+    return engine;
   }
 
   private void reloadProjects() {
     this.allProjectsByKey.clear();
-    this.allProjectsByKey.putAll(client.allProjectsByKey());
+    this.allProjectsByKey.putAll(getEngine().allProjectsByKey());
   }
 
   @Override
@@ -178,7 +194,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Override
   public State getStorageState() {
-    return client.getState();
+    return getEngine().getState();
   }
 
   @Override
@@ -188,7 +204,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       SubMonitor subMonitor = SubMonitor.convert(progress, getBoundProjects().size() + 1);
       SubMonitor globalMonitor = subMonitor.newChild(1);
       SonarLintLogger.get().info("Check for updates from server '" + getId() + "'");
-      StorageUpdateCheckResult checkForUpdateResult = client.checkIfGlobalStorageNeedUpdate(getConfig(),
+      StorageUpdateCheckResult checkForUpdateResult = getEngine().checkIfGlobalStorageNeedUpdate(getConfig(),
         new WrappedProgressMonitor(globalMonitor, "Check for configuration updates on server '" + getId() + "'"));
       if (checkForUpdateResult.needUpdate()) {
         this.hasUpdates = true;
@@ -211,7 +227,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
           return;
         }
         SonarLintLogger.get().info("Check for binding data updates on '" + getId() + "' for project '" + projectKey + "'");
-        StorageUpdateCheckResult projectUpdateCheckResult = client.checkIfProjectStorageNeedUpdate(getConfig(), projectKey,
+        StorageUpdateCheckResult projectUpdateCheckResult = getEngine().checkIfProjectStorageNeedUpdate(getConfig(), projectKey,
           new WrappedProgressMonitor(projectMonitor, "Checking for binding data update for project '" + projectKey + "'"));
         if (projectUpdateCheckResult.needUpdate()) {
           this.hasUpdates = true;
@@ -250,7 +266,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Override
   public String getSonarLintStorageStateLabel() {
-    switch (client.getState()) {
+    switch (getEngine().getState()) {
       case UNKNOWN:
         return "Unknown";
       case NEVER_UPDATED:
@@ -272,13 +288,16 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       case UPDATING:
         return "Updating data...";
       default:
-        throw new IllegalArgumentException(client.getState().name());
+        throw new IllegalArgumentException(getEngine().getState().name());
     }
   }
 
   @Override
   public synchronized void delete() {
-    client.stop(true);
+    if (engine != null) {
+      engine.stop(true);
+      engine = null;
+    }
     for (ISonarLintProject sonarLintProject : getBoundProjects()) {
       unbind(sonarLintProject);
     }
@@ -306,21 +325,26 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Override
   public AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor) {
-    return client.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
+    AnalysisResults analysisResults = getEngine().analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
+    AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, engine.getPluginDetails());
+    return analysisResults;
   }
 
   @Override
   public synchronized RuleDetails getRuleDescription(String ruleKey, @Nullable String projectKey) {
-    return client.getActiveRuleDetails(ruleKey, projectKey);
+    return getEngine().getActiveRuleDetails(ruleKey, projectKey);
   }
 
   public void stop() {
-    client.stop(false);
+    if (engine != null) {
+      engine.stop(false);
+      engine = null;
+    }
   }
 
   @Override
   public synchronized void updateStorage(IProgressMonitor monitor) {
-    UpdateResult updateResult = client.update(getConfig(), new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "'"));
+    UpdateResult updateResult = getEngine().update(getConfig(), new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "'"));
     Collection<SonarAnalyzer> tooOld = updateResult.analyzers().stream()
       .filter(SonarAnalyzer::sonarlintCompatible)
       .filter(ConnectedEngineFacade::tooOld)
@@ -330,7 +354,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     }
     updateStatus = updateResult.status();
     hasUpdates = false;
-    SkippedPluginsNotifier.notifyForSkippedPlugins(client.getPluginDetails(), id);
+    SkippedPluginsNotifier.notifyForSkippedPlugins(getEngine().getPluginDetails(), id);
   }
 
   private static boolean tooOld(SonarAnalyzer analyzer) {
@@ -351,7 +375,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Override
   public void updateProjectList(IProgressMonitor monitor) {
-    client.downloadAllProjects(getConfig(), new WrappedProgressMonitor(monitor, "Download project list from server '" + getId() + "'"));
+    getEngine().downloadAllProjects(getConfig(), new WrappedProgressMonitor(monitor, "Download project list from server '" + getId() + "'"));
     reloadProjects();
   }
 
@@ -397,9 +421,9 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Override
   public synchronized void updateProjectStorage(String projectKey, IProgressMonitor monitor) {
-    client.updateProject(getConfig(), projectKey, new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "' for project '" + projectKey + "'"));
+    getEngine().updateProject(getConfig(), projectKey, new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "' for project '" + projectKey + "'"));
     getBoundProjects(projectKey).forEach(p -> {
-      ProjectBinding projectBinding = client.calculatePathPrefixes(projectKey, p.files().stream().map(ISonarLintFile::getProjectRelativePath).collect(toList()));
+      ProjectBinding projectBinding = getEngine().calculatePathPrefixes(projectKey, p.files().stream().map(ISonarLintFile::getProjectRelativePath).collect(toList()));
       String idePathPrefix = projectBinding.idePathPrefix();
       String sqPathPrefix = projectBinding.sqPathPrefix();
       SonarLintLogger.get().debug("Detected prefixes for " + p.getName() + ":\n  IDE prefix: " + idePathPrefix + "\n  ConnectedEngineFacade side prefix: " + sqPathPrefix);
@@ -505,7 +529,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   @Override
   public List<ISonarLintFile> getServerFileExclusions(ProjectBinding binding, Collection<ISonarLintFile> files, Predicate<ISonarLintFile> testFilePredicate) {
-    return client.getExcludedFiles(binding, files, ISonarLintFile::getProjectRelativePath, testFilePredicate);
+    return getEngine().getExcludedFiles(binding, files, ISonarLintFile::getProjectRelativePath, testFilePredicate);
   }
 
   @Override
@@ -529,10 +553,6 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   @Override
   public int hashCode() {
     return getId().hashCode();
-  }
-
-  public ConnectedSonarLintEngine getEngine() {
-    return client;
   }
 
   @Override

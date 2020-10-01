@@ -28,7 +28,6 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.SkipReason;
-import org.sonarsource.sonarlint.core.client.api.common.SkipReason.UnsatisfiedRuntimeRequirement.RuntimeRequirement;
 
 import static java.util.stream.Collectors.toList;
 import static org.sonarlint.eclipse.core.internal.utils.SonarLintUtils.getEnabledLanguages;
@@ -40,7 +39,8 @@ public class SkippedPluginsNotifier {
   }
 
   public static void notifyForSkippedPlugins(Collection<PluginDetails> allPlugins, @Nullable String connectionId) {
-    List<PluginDetails> skippedPlugins = allPlugins.stream().filter(p -> p.skipReason().isPresent()).collect(toList());
+    List<PluginDetails> skippedPlugins = allPlugins.stream().filter(p -> p.skipReason().isPresent() && !(p.skipReason().get() instanceof SkipReason.UnsatisfiedRuntimeRequirement))
+      .collect(toList());
     if (!skippedPlugins.isEmpty()) {
       List<Language> skippedLanguages = skippedPlugins.stream()
         .flatMap(p -> getLanguagesByPluginKey(p.key()).stream())
@@ -65,7 +65,6 @@ public class SkippedPluginsNotifier {
   }
 
   private static String buildLongMessage(String connectionId, List<PluginDetails> skippedPlugins, List<Language> skippedLanguages) {
-    boolean includeVMtips = false;
     StringBuilder longMessage = new StringBuilder();
     longMessage.append("Some analyzers");
     if (connectionId != null) {
@@ -96,18 +95,7 @@ public class SkippedPluginsNotifier {
         longMessage.append(String.format(" - '%s' is too old for SonarLint. Current version is %s. Minimal supported version is %s. Please update your binding.%n",
           skippedPlugin.name(),
           skippedPlugin.version(), skipReasonCasted.getMinVersion()));
-      } else if (skipReason instanceof SkipReason.UnsatisfiedRuntimeRequirement) {
-        SkipReason.UnsatisfiedRuntimeRequirement skipReasonCasted = (SkipReason.UnsatisfiedRuntimeRequirement) skipReason;
-        if (skipReasonCasted.getRuntime() == RuntimeRequirement.JRE) {
-          includeVMtips = true;
-          longMessage.append(String.format(" - '%s' requires Java runtime version %s or later. Current version is %s.%n", skippedPlugin.name(),
-            skipReasonCasted.getMinVersion(), skipReasonCasted.getCurrentVersion()));
-        }
       }
-    }
-    if (includeVMtips) {
-      longMessage
-        .append("\nPlease see <a href=\"https://wiki.eclipse.org/Eclipse.ini#Specifying_the_JVM\">the Eclipse Wiki</a> to configure your IDE to run with a more recent JRE.");
     }
     return longMessage.toString();
   }
