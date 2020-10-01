@@ -77,6 +77,7 @@ public class SonarLintGlobalConfiguration {
   public static final String PREF_TEST_FILE_REGEXPS = "testFileRegexps"; //$NON-NLS-1$
   public static final String PREF_TEST_FILE_REGEXPS_DEFAULT = ""; //$NON-NLS-1$
   public static final String PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES = "skipConfirmAnalyzeMultipleFiles"; //$NON-NLS-1$
+  public static final String PREF_NODEJS_PATH = "nodeJsPath"; //$NON-NLS-1$
 
   private SonarLintGlobalConfiguration() {
     // Utility class
@@ -303,5 +304,13 @@ public class SonarLintGlobalConfiguration {
 
   public static boolean skipConfirmAnalyzeMultipleFiles() {
     return getPreferenceBoolean(PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES);
+  }
+
+  public static void setNodeJsPath(String path) {
+    setPreferenceString(PREF_NODEJS_PATH, path);
+  }
+
+  public static String getNodejsPath() {
+    return getPreferenceString(PREF_NODEJS_PATH);
   }
 }

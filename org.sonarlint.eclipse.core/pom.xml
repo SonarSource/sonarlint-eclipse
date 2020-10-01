@@ -54,7 +54,7 @@
         <executions>
           <execution>
             <id>copy-analyzers</id>
-            <phase>validate</phase>
+            <phase>generate-resources</phase>
             <goals>
               <goal>copy</goal>
             </goals>

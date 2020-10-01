@@ -46,6 +46,7 @@ import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerCacheFactory;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTrackerRegistry;
 import org.sonarlint.eclipse.core.internal.tracking.PersistentIssueTrackerCache;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueUpdater;
+import org.sonarlint.eclipse.core.internal.utils.NodeJsManager;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class SonarLintCorePlugin extends Plugin {
@@ -70,6 +71,7 @@ public class SonarLintCorePlugin extends Plugin {
   private ConnectedEngineFacadeManager serversManager = null;
 
   private NotificationsTrackerRegistry notificationsTrackerRegistry;
+  private NodeJsManager nodeJsManager;
 
   public SonarLintCorePlugin() {
     plugin = this;
@@ -110,6 +112,8 @@ public class SonarLintCorePlugin extends Plugin {
 
     notificationsTrackerRegistry = new NotificationsTrackerRegistry();
 
+    nodeJsManager = new NodeJsManager();
+
     startupAsync();
   }
 
@@ -133,8 +137,7 @@ public class SonarLintCorePlugin extends Plugin {
     private void startTelemetry() {
       if (SonarLintTelemetry.shouldBeActivated()) {
         telemetry.init();
-      }
-      else {
+      } else {
         SonarLintLogger.get().info("Telemetry disabled");
       }
     }
@@ -187,6 +190,10 @@ public class SonarLintCorePlugin extends Plugin {
 
   public static SonarLintTelemetry getTelemetry() {
     return getInstance().telemetry;
+  }
+
+  public static NodeJsManager getNodeJsManager() {
+    return getInstance().nodeJsManager;
   }
 
   public static synchronized ConnectedEngineFacadeManager getServersManager() {
