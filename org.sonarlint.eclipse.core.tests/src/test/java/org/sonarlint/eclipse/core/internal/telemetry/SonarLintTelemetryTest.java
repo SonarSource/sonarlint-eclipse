@@ -19,21 +19,12 @@
  */
 package org.sonarlint.eclipse.core.internal.telemetry;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager.PREF_SERVERS;
-
 import java.nio.file.Path;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -42,8 +33,16 @@ import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFaca
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
+import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager.PREF_SERVERS;
 
 public class SonarLintTelemetryTest extends SonarTestCase {
   private SonarLintTelemetry telemetry;
@@ -58,7 +57,7 @@ public class SonarLintTelemetryTest extends SonarTestCase {
     project = importEclipseProject("SimpleProject");
     // Configure the project
     configuration = SonarLintCorePlugin.getInstance().getProjectConfigManager().load(new ProjectScope(project),
-        "A Project");
+      "A Project");
   }
 
   @Before
@@ -161,19 +160,17 @@ public class SonarLintTelemetryTest extends SonarTestCase {
   @Test
   public void analysisDoneOnSingleFile_should_trigger_analysisDoneOnSingleFile_when_enabled() {
     when(engine.isEnabled()).thenReturn(true);
-    String language = "java";
     int time = 123;
-    telemetry.analysisDoneOnSingleFile(language, time);
+    telemetry.analysisDoneOnSingleFile(Language.JAVA, time);
     verify(engine).isEnabled();
-    verify(engine).analysisDoneOnSingleLanguage(language, time);
+    verify(engine).analysisDoneOnSingleLanguage(Language.JAVA, time);
   }
 
   @Test
   public void analysisDoneOnSingleFile_should_not_trigger_analysisDoneOnSingleFile_when_disabled() {
     when(engine.isEnabled()).thenReturn(false);
-    String language = "java";
     int time = 123;
-    telemetry.analysisDoneOnSingleFile(language, time);
+    telemetry.analysisDoneOnSingleFile(Language.JAVA, time);
     verify(engine).isEnabled();
     verifyNoMoreInteractions(engine);
   }

@@ -21,11 +21,9 @@ package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
@@ -48,10 +46,8 @@ public class RulesConfigurationPartTest {
       mockRuleDetails(INACTIVE, false),
       mockRuleDetails(INACTIVE_INCLUDED, false));
 
-    Map<String, String> languages = new HashMap<>();
-    languages.put("java", "Java");
     Collection<RuleConfig> ruleConfig = Arrays.asList(new RuleConfig(ACTIVE_EXCLUDED.toString(), false), new RuleConfig(INACTIVE_INCLUDED.toString(), true));
-    return new RulesConfigurationPart(languages, allRuleDetails, ruleConfig);
+    return new RulesConfigurationPart(allRuleDetails, ruleConfig);
   }
 
   private static RuleKey mockRuleKey(String key) {
@@ -62,7 +58,7 @@ public class RulesConfigurationPartTest {
     StandaloneRuleDetails ruleDetails = mock(StandaloneRuleDetails.class);
     when(ruleDetails.getKey()).thenReturn(ruleKey.toString());
     when(ruleDetails.isActiveByDefault()).thenReturn(activeByDefault);
-    when(ruleDetails.getLanguageKey()).thenReturn("java");
+    when(ruleDetails.getLanguage()).thenReturn(Language.JAVA);
     return ruleDetails;
   }
 

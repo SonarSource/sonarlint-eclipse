@@ -65,31 +65,30 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
+import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 // Inspired by: http://www.vogella.com/tutorials/EclipseJFaceTree/article.html
 public class RulesConfigurationPart {
 
-  private final Map<String, List<RuleDetailsWrapper>> ruleDetailsWrappersByLanguage;
+  private final Map<Language, List<RuleDetailsWrapper>> ruleDetailsWrappersByLanguage;
   private final Map<String, RuleConfig> initialRuleConfigs;
 
   private final RuleDetailsWrapperFilter filter;
   private SonarLintRuleBrowser ruleBrowser;
   private CheckBoxFilteredTree tree;
-  private Map<String, String> languagesNames;
   private Composite paramPanelParent;
   private Composite paramPanel;
   SashForm horizontalSplitter;
 
-  public RulesConfigurationPart(Map<String, String> languagesNames, Collection<StandaloneRuleDetails> allRuleDetails, Collection<RuleConfig> initialConfig) {
-    this.languagesNames = languagesNames;
+  public RulesConfigurationPart(Collection<StandaloneRuleDetails> allRuleDetails, Collection<RuleConfig> initialConfig) {
     this.initialRuleConfigs = initialConfig.stream()
       .collect(Collectors.toMap(RuleConfig::getKey, it -> it));
     this.ruleDetailsWrappersByLanguage = allRuleDetails.stream()
       .sorted(Comparator.comparing(RuleDetails::getKey))
       .map(rd -> new RuleDetailsWrapper(rd, initialRuleConfigs.getOrDefault(rd.getKey(), new RuleConfig(rd.getKey(), rd.isActiveByDefault()))))
-      .collect(Collectors.groupingBy(w -> w.ruleDetails.getLanguageKey(), Collectors.toList()));
+      .collect(Collectors.groupingBy(w -> w.ruleDetails.getLanguage(), Collectors.toList()));
     filter = new RuleDetailsWrapperFilter();
     filter.setIncludeLeadingWildcard(true);
   }
@@ -180,7 +179,7 @@ public class RulesConfigurationPart {
     tree.getFilterControl().setData("org.eclipse.swtbot.widget.key", "slRuleTreeFilter");
     tree.getViewer().getTree().setData("org.eclipse.swtbot.widget.key", "slRuleTree");
     tree.getViewer().setContentProvider(new ViewContentProvider());
-    tree.getViewer().setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new String[ruleDetailsWrappersByLanguage.size()]));
+    tree.getViewer().setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new Language[ruleDetailsWrappersByLanguage.size()]));
     tree.getViewer().setLabelProvider(new LanguageAndRuleLabelProvider());
     tree.getViewer().setComparator(new ViewerComparator() {
       @Override
@@ -277,9 +276,9 @@ public class RulesConfigurationPart {
         wrapper.ruleConfig.setActive(event.getChecked());
         tree.getViewer().refresh(wrapper);
         // Refresh the parent to update the check state
-        tree.getViewer().refresh(wrapper.ruleDetails.getLanguageKey());
-      } else if (element instanceof String) {
-        String language = (String) element;
+        tree.getViewer().refresh(wrapper.ruleDetails.getLanguage());
+      } else if (element instanceof Language) {
+        Language language = (Language) element;
         tree.getViewer().setExpandedState(element, true);
         ruleDetailsWrappersByLanguage.get(language).stream()
           .filter(filter::isRuleMatch)
@@ -297,8 +296,8 @@ public class RulesConfigurationPart {
       if (element instanceof RuleDetailsWrapper) {
         return false;
       }
-      if (element instanceof String) {
-        String language = (String) element;
+      if (element instanceof Language) {
+        Language language = (Language) element;
         boolean foundActive = false;
         boolean foundInactive = false;
         for (RuleDetailsWrapper wrapper : ruleDetailsWrappersByLanguage.get(language)) {
@@ -327,8 +326,8 @@ public class RulesConfigurationPart {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
         return wrapper.ruleConfig.isActive();
       }
-      if (element instanceof String) {
-        String language = (String) element;
+      if (element instanceof Language) {
+        Language language = (Language) element;
         return ruleDetailsWrappersByLanguage.get(language).stream()
           .filter(filter::isRuleMatch)
           .anyMatch(w -> w.ruleConfig.isActive());
@@ -340,15 +339,15 @@ public class RulesConfigurationPart {
   private class ViewContentProvider extends TreeNodeContentProvider {
     @Override
     public Object[] getElements(Object inputElement) {
-      return (String[]) inputElement;
+      return (Language[]) inputElement;
     }
 
     @Override
     public Object[] getChildren(Object parentElement) {
-      if (!(parentElement instanceof String)) {
+      if (!(parentElement instanceof Language)) {
         return new Object[0];
       }
-      String language = (String) parentElement;
+      Language language = (Language) parentElement;
       List<RuleDetailsWrapper> list = ruleDetailsWrappersByLanguage.get(language);
       return list.toArray(new RuleDetailsWrapper[list.size()]);
     }
@@ -357,22 +356,22 @@ public class RulesConfigurationPart {
     public Object getParent(Object element) {
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
-        return wrapper.ruleDetails.getLanguageKey();
+        return wrapper.ruleDetails.getLanguage();
       }
       return null;
     }
 
     @Override
     public boolean hasChildren(Object element) {
-      return element instanceof String;
+      return element instanceof Language;
     }
   }
 
-  private class LanguageAndRuleLabelProvider extends LabelProvider {
+  private static class LanguageAndRuleLabelProvider extends LabelProvider {
     @Override
     public String getText(Object element) {
-      if (element instanceof String) {
-        return languagesNames.get(element);
+      if (element instanceof Language) {
+        return ((Language) element).getLabel();
       }
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
@@ -483,8 +482,8 @@ public class RulesConfigurationPart {
       if (element instanceof RuleDetailsWrapper) {
         RuleDetailsWrapper wrapper = (RuleDetailsWrapper) element;
         wrapper.ruleConfig.setActive(isActive);
-      } else if (element instanceof String) {
-        String language = (String) element;
+      } else if (element instanceof Language) {
+        Language language = (Language) element;
         ruleDetailsWrappersByLanguage.get(language).stream().forEach(w -> w.ruleConfig.setActive(isActive));
       }
     }

@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.properties;
 
 import java.util.Collection;
-import java.util.Map;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
@@ -35,7 +34,6 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfigurat
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPreferencePage {
@@ -59,14 +57,10 @@ public class RulesConfigurationPage extends PropertyPage implements IWorkbenchPr
     layout.marginWidth = 0;
     pageComponent.setLayout(layout);
 
-    rulesConfigurationPart = new RulesConfigurationPart(loadLanguages(), loadRuleDetails(), SonarLintGlobalConfiguration.readRulesConfig());
+    rulesConfigurationPart = new RulesConfigurationPart(loadRuleDetails(), SonarLintGlobalConfiguration.readRulesConfig());
     rulesConfigurationPart.createControls(pageComponent);
     Dialog.applyDialogFont(pageComponent);
     return pageComponent;
-  }
-
-  private static Map<String, String> loadLanguages() {
-    return SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade().getAllLanguagesNameByKey();
   }
 
   private static Collection<StandaloneRuleDetails> loadRuleDetails() {

@@ -33,6 +33,7 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 
 /**
@@ -44,12 +45,12 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile
 class EclipseInputFile implements ClientInputFile {
   private final boolean isTestFile;
   private final ISonarLintFile file;
-  private final String language;
+  private final Language language;
   private final IDocument editorDocument;
   private final Path tempDirectory;
   private Path filePath;
 
-  EclipseInputFile(boolean isTestFile, ISonarLintFile file, Path tempDirectory, @Nullable IDocument editorDocument, @Nullable String language) {
+  EclipseInputFile(boolean isTestFile, ISonarLintFile file, Path tempDirectory, @Nullable IDocument editorDocument, @Nullable Language language) {
     this.isTestFile = isTestFile;
     this.file = file;
     this.tempDirectory = tempDirectory;
@@ -93,7 +94,7 @@ class EclipseInputFile implements ClientInputFile {
   }
 
   @Override
-  public String language() {
+  public Language language() {
     return language;
   }
 
