@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -100,26 +99,10 @@ public class StandaloneEngineFacade {
     if (engine != null) {
       return engine.getAllRuleDetails()
         .stream()
-        .filter(r -> isNotTypeScript(r.getLanguageKey()))
+        .filter(r -> r.getLanguage() != Language.TS)
         .collect(Collectors.toSet());
     }
     return Collections.emptyList();
-  }
-
-  public Map<String, String> getAllLanguagesNameByKey() {
-    StandaloneSonarLintEngine engine = getClient();
-    if (engine != null) {
-      return engine.getAllLanguagesNameByKey()
-        .entrySet()
-        .stream()
-        .filter(e -> isNotTypeScript(e.getKey()))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-    return Collections.emptyMap();
-  }
-
-  private static boolean isNotTypeScript(String key) {
-    return !Language.TS.getLanguageKey().equals(key);
   }
 
   public synchronized void stop() {

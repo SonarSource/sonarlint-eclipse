@@ -33,6 +33,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.SkipReason;
+import org.sonarsource.sonarlint.core.client.api.common.SkipReason.UnsatisfiedRuntimeRequirement.RuntimeRequirement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -84,7 +85,8 @@ public class SkippedPluginsNotifierTest {
 
   @Test
   public void notifyIfSkippedPlugin_JRE() {
-    List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.UnsatisfiedJreRequirement("1.8", "11")));
+    List<PluginDetails> plugins = Arrays
+      .asList(new FakePluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.JRE, "1.8", "11")));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
     assertThat(notifications).containsOnly(tuple("Rules not available", "Some rules are not available until some requirements are satisfied",
       "Some analyzers can not be loaded.\n\n"
@@ -94,7 +96,7 @@ public class SkippedPluginsNotifierTest {
 
   @Test
   public void notifyIfSkippedLanguage_JRE() {
-    List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("java", "Java", "1.0", new SkipReason.UnsatisfiedJreRequirement("1.8", "11")));
+    List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("java", "Java", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.JRE, "1.8", "11")));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
     assertThat(notifications).containsOnly(tuple("Language analysis not available", "Java analysis will not be available until some requirements are satisfied",
       "Some analyzers can not be loaded.\n\n"
@@ -105,8 +107,8 @@ public class SkippedPluginsNotifierTest {
 
   @Test
   public void notifyIfSkippedLanguages_JRE() {
-    List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("java", "Java", "1.0", new SkipReason.UnsatisfiedJreRequirement("1.8", "11")),
-      new FakePluginDetails("cpp", "CFamily", "1.0", new SkipReason.UnsatisfiedJreRequirement("1.8", "11")));
+    List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("java", "Java", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.JRE, "1.8", "11")),
+      new FakePluginDetails("cpp", "CFamily", "1.0", new SkipReason.UnsatisfiedRuntimeRequirement(RuntimeRequirement.JRE, "1.8", "11")));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
     assertThat(notifications).containsOnly(tuple("Language analysis not available", "Java, C, Cpp analysis will not be available until some requirements are satisfied",
       "Some analyzers can not be loaded.\n\n"

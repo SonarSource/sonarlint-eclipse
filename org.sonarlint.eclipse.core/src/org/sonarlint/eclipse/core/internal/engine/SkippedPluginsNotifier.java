@@ -28,6 +28,7 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.SkipReason;
+import org.sonarsource.sonarlint.core.client.api.common.SkipReason.UnsatisfiedRuntimeRequirement.RuntimeRequirement;
 
 import static java.util.stream.Collectors.toList;
 import static org.sonarlint.eclipse.core.internal.utils.SonarLintUtils.getEnabledLanguages;
@@ -95,11 +96,13 @@ public class SkippedPluginsNotifier {
         longMessage.append(String.format(" - '%s' is too old for SonarLint. Current version is %s. Minimal supported version is %s. Please update your binding.%n",
           skippedPlugin.name(),
           skippedPlugin.version(), skipReasonCasted.getMinVersion()));
-      } else if (skipReason instanceof SkipReason.UnsatisfiedJreRequirement) {
-        includeVMtips = true;
-        SkipReason.UnsatisfiedJreRequirement skipReasonCasted = (SkipReason.UnsatisfiedJreRequirement) skipReason;
-        longMessage.append(String.format(" - '%s' requires Java runtime version %s or later. Current version is %s.%n", skippedPlugin.name(),
-          skipReasonCasted.getMinVersion(), skipReasonCasted.getCurrentVersion()));
+      } else if (skipReason instanceof SkipReason.UnsatisfiedRuntimeRequirement) {
+        SkipReason.UnsatisfiedRuntimeRequirement skipReasonCasted = (SkipReason.UnsatisfiedRuntimeRequirement) skipReason;
+        if (skipReasonCasted.getRuntime() == RuntimeRequirement.JRE) {
+          includeVMtips = true;
+          longMessage.append(String.format(" - '%s' requires Java runtime version %s or later. Current version is %s.%n", skippedPlugin.name(),
+            skipReasonCasted.getMinVersion(), skipReasonCasted.getCurrentVersion()));
+        }
       }
     }
     if (includeVMtips) {

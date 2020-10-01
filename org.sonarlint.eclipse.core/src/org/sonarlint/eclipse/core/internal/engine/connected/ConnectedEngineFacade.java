@@ -251,7 +251,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   @Override
   public String getSonarLintStorageStateLabel() {
     switch (client.getState()) {
-      case UNKNOW:
+      case UNKNOWN:
         return "Unknown";
       case NEVER_UPDATED:
       case NEED_UPDATE:

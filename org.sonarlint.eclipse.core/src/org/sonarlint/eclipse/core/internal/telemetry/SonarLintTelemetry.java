@@ -36,6 +36,7 @@ import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFaca
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
+import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.TelemetryClientConfig;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
@@ -114,7 +115,7 @@ public class SonarLintTelemetry {
 
   // visible for testing
   public TelemetryManager newTelemetryManager(Path path, TelemetryClient client) {
-    return new TelemetryManager(path, client, SonarLintTelemetry::isAnyOpenProjectBound, SonarLintTelemetry::isAnyOpenProjectBoundToSonarCloud);
+    return new TelemetryManager(path, client, SonarLintTelemetry::isAnyOpenProjectBound, SonarLintTelemetry::isAnyOpenProjectBoundToSonarCloud, () -> null);
   }
 
   private class TelemetryJob extends Job {
@@ -157,7 +158,7 @@ public class SonarLintTelemetry {
     }
   }
 
-  public void analysisDoneOnSingleFile(@Nullable String language, int time) {
+  public void analysisDoneOnSingleFile(@Nullable Language language, int time) {
     if (enabled()) {
       telemetry.analysisDoneOnSingleLanguage(language, time);
     }
@@ -180,7 +181,7 @@ public class SonarLintTelemetry {
 
   public static boolean isAnyOpenProjectBound() {
     return ProjectsProviderUtils.allProjects().stream()
-        .anyMatch(p -> p.isOpen() && SonarLintCorePlugin.loadConfig(p).isBound());
+      .anyMatch(p -> p.isOpen() && SonarLintCorePlugin.loadConfig(p).isBound());
   }
 
   public static boolean isAnyOpenProjectBoundToSonarCloud() {

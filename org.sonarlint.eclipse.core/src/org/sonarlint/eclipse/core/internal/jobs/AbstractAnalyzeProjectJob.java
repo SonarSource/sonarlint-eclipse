@@ -70,6 +70,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.AbstractAnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
@@ -219,7 +220,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
 
     for (final Map.Entry<ISonarLintFile, IDocument> fileWithDoc : filesToAnalyze.entrySet()) {
       ISonarLintFile file = fileWithDoc.getKey();
-      String language = tryDetectLanguage(file);
+      Language language = tryDetectLanguage(file);
       boolean isTest = TestFileClassifier.get().isTest(file);
       ClientInputFile inputFile = new EclipseInputFile(isTest, file, tempDirectory, fileWithDoc.getValue(), language);
       inputFiles.add(inputFile);
@@ -228,7 +229,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   }
 
   @Nullable
-  private static String tryDetectLanguage(ISonarLintFile file) {
+  private static Language tryDetectLanguage(ISonarLintFile file) {
     String language = null;
     for (IFileLanguageProvider languageProvider : SonarLintExtensionTracker.getInstance().getLanguageProviders()) {
       String detectedLanguage = languageProvider.language(file);
@@ -240,7 +241,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
         }
       }
     }
-    return language;
+    return language != null ? Language.forKey(language).orElse(null) : null;
   }
 
   private static Collection<ProjectConfigurator> configureDeprecated(final ISonarLintProject project, Collection<ISonarLintFile> filesToAnalyze,
