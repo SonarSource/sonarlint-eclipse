@@ -66,11 +66,13 @@ public class NodeJsManager {
     }
   }
 
+  @Nullable
   public Path getNodeJsPath() {
     initNodeIfNeeded();
     return nodeJsPath;
   }
 
+  @Nullable
   public Version getNodeJsVersion() {
     initNodeIfNeeded();
     return nodeJsVersion;
