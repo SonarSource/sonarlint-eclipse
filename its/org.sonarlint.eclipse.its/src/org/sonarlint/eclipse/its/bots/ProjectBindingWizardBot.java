@@ -29,7 +29,7 @@ public class ProjectBindingWizardBot {
   private final SWTBot bot;
 
   public ProjectBindingWizardBot(SWTWorkbenchBot bot) {
-    this.bot = bot.activeShell().bot();
+    this.bot = bot.shell("Bind to a SonarQube or SonarCloud project").bot();
   }
 
   public ProjectBindingWizardBot clickAdd() {
