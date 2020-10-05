@@ -17,5 +17,14 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-@org.eclipse.jdt.annotation.NonNullByDefault
 package org.sonarlint.eclipse.core.internal;
+
+public interface LogListener {
+
+  void info(String msg, boolean fromAnalyzer);
+
+  void error(String msg, boolean fromAnalyzer);
+
+  void debug(String msg, boolean fromAnalyzer);
+
+}

@@ -24,7 +24,8 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.SonarLintNotifications;
+import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.SkipReason;
@@ -78,7 +79,7 @@ public class AnalysisRequirementNotifications {
 
   private static void createNotificationOnce(String shortMsg, String longMsg) {
     if (!alreadyNotified.contains(longMsg)) {
-      SonarLintLogger.get().showNotification("Analyzer Requirement", shortMsg, longMsg);
+      SonarLintNotifications.get().showNotification(new Notification("Analyzer Requirement", shortMsg, longMsg));
       alreadyNotified.add(longMsg);
     }
   }
