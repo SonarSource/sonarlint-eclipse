@@ -17,16 +17,12 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.jobs;
+package org.sonarlint.eclipse.core.internal;
 
-public interface LogListener {
+import org.sonarlint.eclipse.core.SonarLintNotifications;
 
-  void info(String msg, boolean fromAnalyzer);
+public interface NotificationListener {
 
-  void error(String msg, boolean fromAnalyzer);
-
-  void debug(String msg, boolean fromAnalyzer);
-
-  void showNotification(String title, String shortMsg, String longMsg);
+  void showNotification(SonarLintNotifications.Notification notification);
 
 }

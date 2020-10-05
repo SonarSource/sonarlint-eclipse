@@ -24,43 +24,29 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.assertj.core.groups.Tuple;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.jobs.LogListener;
+import org.sonarlint.eclipse.core.SonarLintNotifications;
+import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
+import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.SkipReason;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 
 public class SkippedPluginsNotifierTest {
 
-  private static final List<Tuple> notifications = new ArrayList<>();
+  private static final List<Notification> notifications = new ArrayList<>();
 
   @BeforeClass
   public static void prepare() throws Exception {
-    SonarLintLogger.get().addLogListener(new LogListener() {
+    SonarLintNotifications.get().addNotificationListener(new NotificationListener() {
       @Override
-      public void info(String msg, boolean fromAnalyzer) {
+      public void showNotification(Notification notif) {
+        notifications.add(notif);
       }
-
-      @Override
-      public void error(String msg, boolean fromAnalyzer) {
-      }
-
-      @Override
-      public void debug(String msg, boolean fromAnalyzer) {
-      }
-
-      @Override
-      public void showNotification(String title, String shortMsg, String longMsg) {
-        notifications.add(Tuple.tuple(title, shortMsg, longMsg));
-      }
-
     });
   }
 
@@ -86,7 +72,10 @@ public class SkippedPluginsNotifierTest {
   public void notifyIfSkippedPlugin_IncompatiblePluginApi() {
     List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("plugin1", "Plugin 1", "1.0", SkipReason.IncompatiblePluginApi.INSTANCE));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, null);
-    assertThat(notifications).containsOnly(tuple("Rules not available", "Some rules are not available until some requirements are satisfied",
+    assertThat(notifications).usingFieldByFieldElementComparator()
+      .containsOnly(
+        new Notification("Rules not available",
+          "Some rules are not available until some requirements are satisfied",
       "Some analyzers can not be loaded.\n\n"
         + " - 'Plugin 1' is not compatible with this version of SonarLint. Ensure you are using the latest version of SonarLint and check SonarLint output for details.\n"));
   }
@@ -95,7 +84,10 @@ public class SkippedPluginsNotifierTest {
   public void notifyIfSkippedPlugin_UnsatisfiedDependency() {
     List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.UnsatisfiedDependency("java")));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, "mySq");
-    assertThat(notifications).containsOnly(tuple("Rules not available", "Some rules are not available until some requirements are satisfied",
+    assertThat(notifications).usingFieldByFieldElementComparator()
+      .containsOnly(
+        new Notification("Rules not available",
+          "Some rules are not available until some requirements are satisfied",
       "Some analyzers from connection 'mySq' can not be loaded.\n\n"
         + " - 'Plugin 1' is missing dependency 'java'\n"));
   }
@@ -104,7 +96,10 @@ public class SkippedPluginsNotifierTest {
   public void notifyIfSkippedPlugin_IncompatiblePluginVersion() {
     List<PluginDetails> plugins = Arrays.asList(new FakePluginDetails("plugin1", "Plugin 1", "1.0", new SkipReason.IncompatiblePluginVersion("2.0")));
     SkippedPluginsNotifier.notifyForSkippedPlugins(plugins, "mySq");
-    assertThat(notifications).containsOnly(tuple("Rules not available", "Some rules are not available until some requirements are satisfied",
+    assertThat(notifications).usingFieldByFieldElementComparator()
+      .containsOnly(
+        new Notification("Rules not available",
+          "Some rules are not available until some requirements are satisfied",
       "Some analyzers from connection 'mySq' can not be loaded.\n\n"
         + " - 'Plugin 1' is too old for SonarLint. Current version is 1.0. Minimal supported version is 2.0. Please update your binding.\n"));
   }

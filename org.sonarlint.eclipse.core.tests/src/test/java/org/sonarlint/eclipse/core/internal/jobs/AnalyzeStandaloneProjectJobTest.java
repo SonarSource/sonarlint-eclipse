@@ -42,6 +42,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
@@ -62,11 +63,6 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
   @BeforeClass
   public static void prepare() {
     listener = new LogListener() {
-
-      @Override
-      public void showNotification(String title, String shortMsg, String longMsg) {
-
-      }
 
       @Override
       public void info(String msg, boolean fromAnalyzer) {
@@ -145,7 +141,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
    */
   public class SimpleDocument implements IDocument {
 
-    private StringBuffer buffer;
+    private final StringBuffer buffer;
 
     public SimpleDocument(String source) {
       this.buffer = new StringBuffer(source);
@@ -392,6 +388,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
      * @see org.eclipse.jface.text.IDocument#search(int, java.lang.String, boolean, boolean, boolean)
      * @deprecated
      */
+    @Deprecated
     @Override
     public int search(
       int startOffset,

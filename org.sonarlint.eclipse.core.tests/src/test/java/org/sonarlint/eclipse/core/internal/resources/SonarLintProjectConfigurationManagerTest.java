@@ -28,8 +28,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.junit.Before;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
@@ -57,10 +57,6 @@ public class SonarLintProjectConfigurationManagerTest extends SonarTestCase {
 
       @Override
       public void debug(String msg, boolean fromAnalyzer) {
-      }
-
-      @Override
-      public void showNotification(String title, String shortMsg, String longMsg) {
       }
 
     });

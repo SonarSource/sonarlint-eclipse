@@ -34,9 +34,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
-import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
@@ -75,10 +75,6 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
       @Override
       public void debug(String msg, boolean fromAnalyzer) {
-      }
-
-      @Override
-      public void showNotification(String title, String shortMsg, String longMsg) {
       }
 
     });

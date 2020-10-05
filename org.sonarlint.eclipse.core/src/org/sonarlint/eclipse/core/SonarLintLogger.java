@@ -23,7 +23,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import org.sonarlint.eclipse.core.internal.jobs.LogListener;
+import org.sonarlint.eclipse.core.internal.LogListener;
 
 public class SonarLintLogger {
   private static final SonarLintLogger instance = new SonarLintLogger();
@@ -96,12 +96,6 @@ public class SonarLintLogger {
       StringWriter stack = new StringWriter();
       t.printStackTrace(new PrintWriter(stack));
       listener.debug(stack.toString(), false);
-    }
-  }
-
-  public void showNotification(String title, String shortMsg, String longMsg) {
-    for (LogListener listener : logListeners) {
-      listener.showNotification(title, shortMsg, longMsg);
     }
   }
 

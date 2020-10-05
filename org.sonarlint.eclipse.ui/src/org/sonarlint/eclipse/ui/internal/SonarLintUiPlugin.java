@@ -38,10 +38,13 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.SonarLintNotifications;
+import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
+import org.sonarlint.eclipse.core.internal.LogListener;
+import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.jobs.LogListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.notifications.ListenerFactory;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -69,6 +72,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private IPropertyChangeListener prefListener;
 
   private LogListener logListener;
+  private MylynNotifications notifListener;
 
   private SonarLintConsole console;
 
@@ -118,10 +122,14 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       }
     }
 
+  }
+
+  private static class MylynNotifications implements NotificationListener {
+
     @Override
-    public void showNotification(String title, String shortMsg, String longMsg) {
+    public void showNotification(Notification notif) {
       Display.getDefault().asyncExec(() -> {
-        GenericNotificationPopup popup = new GenericNotificationPopup(Display.getCurrent(), title, shortMsg, longMsg);
+        GenericNotificationPopup popup = new GenericNotificationPopup(Display.getCurrent(), notif.getTitle(), notif.getShortMsg(), notif.getLongMsg());
         popup.setFadingEnabled(false);
         popup.setDelayClose(0L);
         popup.open();
@@ -138,6 +146,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     logListener = new SonarLintConsoleLogger();
     SonarLintLogger.get().addLogListener(logListener);
+
+    notifListener = new MylynNotifications();
+    SonarLintNotifications.get().addNotificationListener(notifListener);
 
     prefListener = event -> {
       if (event.getProperty().equals(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY)) {
@@ -161,6 +172,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     removeChangeListener();
     ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
     SonarLintLogger.get().removeLogListener(logListener);
+    SonarLintNotifications.get().removeNotificationListener(notifListener);
     try {
       getPreferenceStore().removePropertyChangeListener(prefListener);
     } finally {

@@ -23,7 +23,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
-import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.SonarLintNotifications;
+import org.sonarlint.eclipse.core.SonarLintNotifications.Notification;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
@@ -60,11 +61,11 @@ public class SkippedPluginsNotifier {
             .map(StringUtils::capitalize)
             .collect(Collectors.joining(", ")));
       }
-      SonarLintLogger.get().showNotification(notificationTitle, notificationMsg, longMessage);
+      SonarLintNotifications.get().showNotification(new Notification(notificationTitle, notificationMsg, longMessage));
     }
   }
 
-  private static String buildLongMessage(String connectionId, List<PluginDetails> skippedPlugins, List<Language> skippedLanguages) {
+  private static String buildLongMessage(@Nullable String connectionId, List<PluginDetails> skippedPlugins, List<Language> skippedLanguages) {
     StringBuilder longMessage = new StringBuilder();
     longMessage.append("Some analyzers");
     if (connectionId != null) {
