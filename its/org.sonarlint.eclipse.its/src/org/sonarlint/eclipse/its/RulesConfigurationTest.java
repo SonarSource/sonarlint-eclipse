@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
+import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.waits.ICondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotLink;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
@@ -80,7 +81,17 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
     reactivateRuleUsingUI();
 
-    JobHelpers.waitForJobsToComplete(bot);
+    bot.waitUntil(new DefaultCondition() {
+      @Override
+      public boolean test() throws Exception {
+        return onTheFly.bot().tree().rowCount() == 2;
+      }
+
+      @Override
+      public String getFailureMessage() {
+        return "Expected 2 issues but found " + onTheFly.bot().tree().rowCount();
+      }
+    }, 10_000);
     checkIssueIsDefault(project);
     changeRuleParamValue(project);
     checkIssueChanged(project);
