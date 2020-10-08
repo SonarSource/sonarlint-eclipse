@@ -43,7 +43,7 @@ public interface IConnectedEngineFacade {
    * Returns the id of this connection.
    * Each connection has a distinct id, fixed for
    * its lifetime.
-   * 
+   *
    * @return the connection id
    */
   String getId();
@@ -52,7 +52,7 @@ public interface IConnectedEngineFacade {
    * Returns the host for the server.
    * The format of the host can be either a qualified or unqualified hostname,
    * or an IP address and must conform to RFC 2732.
-   * 
+   *
    * @return a host string conforming to RFC 2732
    * @see java.net.URL#getHost()
    */
@@ -75,7 +75,7 @@ public interface IConnectedEngineFacade {
 
   /**
    * Adds the given state listener to this engine.
-   * Once registered, a listener starts receiving notification of 
+   * Once registered, a listener starts receiving notification of
    * state changes to this engine. The listener continues to receive
    * notifications until it is removed.
    * Has no effect if an identical listener is already registered.
@@ -88,7 +88,7 @@ public interface IConnectedEngineFacade {
   /**
    * Removes the given state listener from this engine. Has no
    * effect if the listener is not registered.
-   * 
+   *
    * @param listener the listener
    * @see #addConnectedEngineListener(IConnectedEngineFacadeListener)
    */
@@ -100,8 +100,10 @@ public interface IConnectedEngineFacade {
 
   Optional<RemoteProject> getRemoteProject(String projectKey, IProgressMonitor monitor);
 
+  @Nullable
   AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor);
 
+  @Nullable
   RuleDetails getRuleDescription(String ruleKey, @Nullable String projectKey);
 
   void updateProjectStorage(String moduleKey, IProgressMonitor monitor);
