@@ -41,19 +41,17 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
-import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 
 public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<ConnectedAnalysisConfiguration> {
 
   private final EclipseProjectBinding binding;
-  private final ConnectedEngineFacade server;
+  private final ConnectedEngineFacade engineFacade;
 
-  public AnalyzeConnectedProjectJob(AnalyzeProjectRequest request, EclipseProjectBinding binding, ConnectedEngineFacade server) {
+  public AnalyzeConnectedProjectJob(AnalyzeProjectRequest request, EclipseProjectBinding binding, ConnectedEngineFacade engineFacade) {
     super(request);
     this.binding = binding;
-    this.server = server;
+    this.engineFacade = engineFacade;
   }
 
   @Override
@@ -69,23 +67,21 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
 
   @Override
   protected AnalysisResults runAnalysis(ConnectedAnalysisConfiguration analysisConfig, SonarLintIssueListener issueListener, IProgressMonitor monitor) {
-    return server.runAnalysis(analysisConfig, issueListener, monitor);
+    return engineFacade.runAnalysis(analysisConfig, issueListener, monitor);
   }
 
   @Override
   protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,
     IProgressMonitor monitor) {
     if (triggerType.shouldUpdateProjectIssuesSync(rawIssuesPerResource.size())) {
-      ServerConfiguration serverConfiguration = server.getConfig();
-      ConnectedSonarLintEngine engine = server.getEngine();
-      SonarLintLogger.get().debug("Download server issues for project " + getProject().getName());
-      engine.downloadServerIssues(serverConfiguration, binding.projectKey());
+      SonarLintLogger.get().debug("Download engineFacade issues for project " + getProject().getName());
+      engineFacade.downloadServerIssues(binding.projectKey());
     }
     super.trackIssues(docPerFile, rawIssuesPerResource, triggerType, monitor);
     if (triggerType.shouldUpdateFileIssuesAsync()) {
       List<ISonarLintIssuable> filesWithAtLeastOneIssue = filesWithAtLeastOneIssue(rawIssuesPerResource);
       if (!filesWithAtLeastOneIssue.isEmpty()) {
-        trackServerIssuesAsync(server, filesWithAtLeastOneIssue, docPerFile, triggerType);
+        trackServerIssuesAsync(engineFacade, filesWithAtLeastOneIssue, docPerFile, triggerType);
       }
     }
   }
@@ -94,7 +90,7 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
   protected Collection<Trackable> trackFileIssues(ISonarLintFile file, List<Trackable> trackables, IssueTracker issueTracker, TriggerType triggerType, int totalTrackedFiles) {
     Collection<Trackable> tracked = super.trackFileIssues(file, trackables, issueTracker, triggerType, totalTrackedFiles);
     if (!tracked.isEmpty()) {
-      tracked = trackServerIssuesSync(server, file, tracked, triggerType.shouldUpdateFileIssuesSync(totalTrackedFiles));
+      tracked = trackServerIssuesSync(engineFacade, file, tracked, triggerType.shouldUpdateFileIssuesSync(totalTrackedFiles));
     }
     return tracked;
 
@@ -107,22 +103,20 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
       .collect(Collectors.toList());
   }
 
-  private void trackServerIssuesAsync(ConnectedEngineFacade server, Collection<ISonarLintIssuable> resources, Map<ISonarLintFile, IDocument> docPerFile, TriggerType triggerType) {
-    ServerConfiguration serverConfiguration = server.getConfig();
-    ConnectedSonarLintEngine engine = server.getEngine();
-    SonarLintCorePlugin.getInstance().getServerIssueUpdater().updateAsync(serverConfiguration, engine, getProject(), binding,
+  private void trackServerIssuesAsync(ConnectedEngineFacade engineFacade, Collection<ISonarLintIssuable> resources, Map<ISonarLintFile, IDocument> docPerFile,
+    TriggerType triggerType) {
+    SonarLintCorePlugin.getInstance().getServerIssueUpdater().updateAsync(engineFacade, getProject(),
+      binding,
       resources,
       docPerFile, triggerType);
   }
 
-  private Collection<Trackable> trackServerIssuesSync(ConnectedEngineFacade server, ISonarLintFile file, Collection<Trackable> tracked, boolean updateServerIssues) {
-    ServerConfiguration serverConfiguration = server.getConfig();
-    ConnectedSonarLintEngine engine = server.getEngine();
+  private Collection<Trackable> trackServerIssuesSync(ConnectedEngineFacade engineFacade, ISonarLintFile file, Collection<Trackable> tracked, boolean updateServerIssues) {
     List<ServerIssue> serverIssues;
     if (updateServerIssues) {
-      serverIssues = ServerIssueUpdater.fetchServerIssues(serverConfiguration, engine, binding, file);
+      serverIssues = ServerIssueUpdater.fetchServerIssues(engineFacade, binding, file);
     } else {
-      serverIssues = engine.getServerIssues(binding, file.getProjectRelativePath());
+      serverIssues = engineFacade.getServerIssues(binding, file.getProjectRelativePath());
     }
     Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
     return IssueTracker.matchAndTrackServerIssues(serverIssuesTrackable, tracked);

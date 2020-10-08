@@ -24,7 +24,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+import java.util.function.Function;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
@@ -44,13 +45,16 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConf
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneSonarLintEngine;
 
+import static java.util.Collections.emptySet;
+import static java.util.stream.Collectors.toSet;
+
 public class StandaloneEngineFacade {
 
-  private StandaloneSonarLintEngine client;
+  private StandaloneSonarLintEngine wrappedEngine;
 
   @Nullable
-  private synchronized StandaloneSonarLintEngine getClient() {
-    if (client == null) {
+  private synchronized StandaloneSonarLintEngine getOrCreateEngine() {
+    if (wrappedEngine == null) {
       SonarLintLogger.get().info("Starting standalone SonarLint engine " + SonarLintUtils.getPluginVersion() + "...");
       Enumeration<URL> pluginEntriesEnum = SonarLintCorePlugin.getInstance().getBundle().findEntries("/plugins", "*.jar", false);
       if (pluginEntriesEnum != null) {
@@ -66,54 +70,55 @@ public class StandaloneEngineFacade {
           .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
           .build();
         try {
-          client = new StandaloneSonarLintEngineImpl(globalConfig);
-          SkippedPluginsNotifier.notifyForSkippedPlugins(client.getPluginDetails(), null);
+          wrappedEngine = new StandaloneSonarLintEngineImpl(globalConfig);
+          SkippedPluginsNotifier.notifyForSkippedPlugins(wrappedEngine.getPluginDetails(), null);
         } catch (Throwable e) {
           SonarLintLogger.get().error("Unable to start standalone SonarLint engine", e);
-          client = null;
+          wrappedEngine = null;
         }
       } else {
         throw new IllegalStateException("Unable to find any embedded plugin");
       }
     }
-    return client;
+    return wrappedEngine;
+  }
+
+  private <G> Optional<G> withEngine(Function<StandaloneSonarLintEngine, G> function) {
+    getOrCreateEngine();
+    synchronized (this) {
+      if (wrappedEngine != null) {
+        return Optional.ofNullable(function.apply(wrappedEngine));
+      }
+    }
+    return Optional.empty();
   }
 
   @Nullable
   public AnalysisResults runAnalysis(StandaloneAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor) {
-    StandaloneSonarLintEngine engine = getClient();
-    if (engine != null) {
+    return withEngine(engine -> {
       AnalysisResults analysisResults = engine.analyze(config, issueListener, null, new WrappedProgressMonitor(monitor, "Analysis"));
       AnalysisRequirementNotifications.notifyOnceForSkippedPlugins(analysisResults, engine.getPluginDetails());
       return analysisResults;
-    }
-    return null;
+    }).orElse(null);
   }
 
   @Nullable
   public RuleDetails getRuleDescription(String ruleKey) {
-    StandaloneSonarLintEngine engine = getClient();
-    if (engine != null) {
-      return engine.getRuleDetails(ruleKey).orElse(null);
-    }
-    return null;
+    return withEngine(engine -> engine.getRuleDetails(ruleKey).orElse(null)).orElse(null);
   }
 
   public Collection<StandaloneRuleDetails> getAllRuleDetails() {
-    StandaloneSonarLintEngine engine = getClient();
-    if (engine != null) {
-      return engine.getAllRuleDetails()
-        .stream()
-        .filter(r -> r.getLanguage() != Language.TS)
-        .collect(Collectors.toSet());
-    }
-    return Collections.emptyList();
+    return withEngine(engine -> engine.getAllRuleDetails()
+      .stream()
+      .filter(r -> r.getLanguage() != Language.TS)
+      .collect(toSet()))
+        .orElse(emptySet());
   }
 
   public synchronized void stop() {
-    if (client != null) {
-      client.stop();
-      client = null;
+    if (wrappedEngine != null) {
+      wrappedEngine.stop();
+      wrappedEngine = null;
     }
   }
 

@@ -34,13 +34,12 @@ import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.AsyncServerMarkerUpdaterJob;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
-import org.sonarsource.sonarlint.core.client.api.connected.ServerConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
 
@@ -54,29 +53,29 @@ public class ServerIssueUpdater {
     this.issueTrackerRegistry = issueTrackerRegistry;
   }
 
-  public void updateAsync(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project,
+  public void updateAsync(ConnectedEngineFacade engineFacade,
+    ISonarLintProject project,
     ProjectBinding projectBinding, Collection<ISonarLintIssuable> issuables, Map<ISonarLintFile, IDocument> docPerFile, TriggerType triggerType) {
-    new IssueUpdateJob(serverConfiguration, engine, project, projectBinding, issuables, docPerFile, triggerType).schedule();
+    new IssueUpdateJob(engineFacade, project, projectBinding, issuables, docPerFile, triggerType).schedule();
   }
 
   private class IssueUpdateJob extends Job {
-    private final ServerConfiguration serverConfiguration;
-    private final ConnectedSonarLintEngine engine;
     private final ProjectBinding projectBinding;
     private final Collection<ISonarLintIssuable> issuables;
     private final ISonarLintProject project;
     private final Map<ISonarLintFile, IDocument> docPerFile;
     private final TriggerType triggerType;
+    private final ConnectedEngineFacade engineFacade;
 
-    private IssueUpdateJob(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ISonarLintProject project,
+    private IssueUpdateJob(ConnectedEngineFacade engineFacade,
+      ISonarLintProject project,
       ProjectBinding projectBinding, Collection<ISonarLintIssuable> issuables, Map<ISonarLintFile, IDocument> docPerFile,
       TriggerType triggerType) {
       super("Fetch server issues for " + project.getName());
+      this.engineFacade = engineFacade;
       this.docPerFile = docPerFile;
       this.triggerType = triggerType;
       setPriority(DECORATE);
-      this.serverConfiguration = serverConfiguration;
-      this.engine = engine;
       this.project = project;
       this.projectBinding = projectBinding;
       this.issuables = issuables;
@@ -93,7 +92,7 @@ public class ServerIssueUpdater {
           if (issuable instanceof ISonarLintFile) {
             ISonarLintFile file = ((ISonarLintFile) issuable);
             IssueTracker issueTracker = issueTrackerRegistry.getOrCreate(project);
-            List<ServerIssue> serverIssues = fetchServerIssues(serverConfiguration, engine, projectBinding, (ISonarLintFile) issuable);
+            List<ServerIssue> serverIssues = fetchServerIssues(engineFacade, projectBinding, (ISonarLintFile) issuable);
             Collection<Trackable> serverIssuesTrackable = serverIssues.stream().map(ServerIssueTrackable::new).collect(Collectors.toList());
             Collection<Trackable> tracked = issueTracker.matchAndTrackServerIssues(file, serverIssuesTrackable);
             issueTracker.updateCache(file, tracked);
@@ -113,16 +112,17 @@ public class ServerIssueUpdater {
 
   }
 
-  public static List<ServerIssue> fetchServerIssues(ServerConfiguration serverConfiguration, ConnectedSonarLintEngine engine, ProjectBinding projectBinding,
+  public static List<ServerIssue> fetchServerIssues(ConnectedEngineFacade engineFacade,
+    ProjectBinding projectBinding,
     ISonarLintFile file) {
     String filePath = file.getProjectRelativePath();
 
     try {
       SonarLintLogger.get().debug("Download server issues for " + file.getName());
-      return engine.downloadServerIssues(serverConfiguration, projectBinding, filePath);
+      return engineFacade.downloadServerIssues(projectBinding, filePath);
     } catch (DownloadException e) {
       SonarLintLogger.get().info(e.getMessage());
-      return engine.getServerIssues(projectBinding, filePath);
+      return engineFacade.getServerIssues(projectBinding, filePath);
     }
   }
 
