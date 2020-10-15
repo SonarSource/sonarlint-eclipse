@@ -21,12 +21,10 @@ package org.sonarlint.eclipse.ui.internal;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbenchPage;
@@ -45,9 +43,7 @@ import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.notifications.ListenerFactory;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -68,8 +64,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   // The shared instance
   private static SonarLintUiPlugin plugin;
-
-  private IPropertyChangeListener prefListener;
 
   private LogListener logListener;
   private MylynNotifications notifListener;
@@ -150,18 +144,6 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     notifListener = new MylynNotifications();
     SonarLintNotifications.get().addNotificationListener(notifListener);
 
-    prefListener = event -> {
-      if (event.getProperty().equals(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY)) {
-        try {
-          MarkerUtils.updateAllSonarMarkerSeverity();
-        } catch (CoreException e) {
-          SonarLintLogger.get().error("Unable to update marker severity", e);
-        }
-      }
-    };
-
-    getPreferenceStore().addPropertyChangeListener(prefListener);
-
     new CheckForUpdatesJob().schedule((long) 10 * 1000);
 
     startupAsync();
@@ -169,12 +151,11 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   @Override
   public void stop(final BundleContext context) throws Exception {
-    removeChangeListener();
-    ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
-    SonarLintLogger.get().removeLogListener(logListener);
-    SonarLintNotifications.get().removeNotificationListener(notifListener);
     try {
-      getPreferenceStore().removePropertyChangeListener(prefListener);
+      removeChangeListener();
+      ResourcesPlugin.getWorkspace().removeResourceChangeListener(SONARLINT_PROJECT_EVENT_LISTENER);
+      SonarLintLogger.get().removeLogListener(logListener);
+      SonarLintNotifications.get().removeNotificationListener(notifListener);
     } finally {
       super.stop(context);
     }

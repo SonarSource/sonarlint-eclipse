@@ -15,7 +15,7 @@
         name="SonarLint On-The-Fly Issue"
         point="org.eclipse.core.resources.markers">
       <super
-            type="org.eclipse.core.resources.problemmarker">
+            type="org.eclipse.core.resources.textmarker">
       </super>
       <persistent
             value="false">
@@ -36,7 +36,7 @@
         name="SonarLint Report Issue"
         point="org.eclipse.core.resources.markers">
       <super
-            type="org.eclipse.core.resources.problemmarker">
+            type="org.eclipse.core.resources.textmarker">
       </super>
       <persistent
             value="false">

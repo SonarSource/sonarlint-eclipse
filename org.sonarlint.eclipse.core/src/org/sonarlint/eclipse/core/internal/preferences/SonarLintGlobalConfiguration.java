@@ -33,7 +33,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -58,8 +57,6 @@ public class SonarLintGlobalConfiguration {
   private static final String RULE_JSON_LEVEL = "level"; //$NON-NLS-1$
   private static final String RULE_JSON_LEVEL_OFF = "off"; //$NON-NLS-1$
   private static final String RULE_JSON_LEVEL_ON = "on"; //$NON-NLS-1$
-  public static final String PREF_MARKER_SEVERITY = "markerSeverity"; //$NON-NLS-1$
-  public static final int PREF_MARKER_SEVERITY_DEFAULT = IMarker.SEVERITY_INFO;
   public static final String PREF_EXTRA_ARGS = "extraArgs"; //$NON-NLS-1$
   public static final String PREF_FILE_EXCLUSIONS = "fileExclusions"; //$NON-NLS-1$
   /**
@@ -85,10 +82,6 @@ public class SonarLintGlobalConfiguration {
 
   public static String getTestFileRegexps() {
     return Platform.getPreferencesService().getString(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_TEST_FILE_REGEXPS, PREF_TEST_FILE_REGEXPS_DEFAULT, null);
-  }
-
-  public static int getMarkerSeverity() {
-    return Platform.getPreferencesService().getInt(SonarLintCorePlugin.UI_PLUGIN_ID, PREF_MARKER_SEVERITY, PREF_MARKER_SEVERITY_DEFAULT, null);
   }
 
   public static List<SonarLintProperty> getExtraPropertiesForLocalAnalysis(ISonarLintProject project) {

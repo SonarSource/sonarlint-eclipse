@@ -25,9 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.BadLocationException;
@@ -36,7 +34,6 @@ import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.TextRange.FullTextRange;
-import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 public final class MarkerUtils {
@@ -62,16 +59,6 @@ public final class MarkerUtils {
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
       return Collections.emptyList();
-    }
-  }
-
-  public static void updateAllSonarMarkerSeverity() throws CoreException {
-    for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-      if (project.isAccessible()) {
-        for (IMarker marker : project.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE)) {
-          marker.setAttribute(IMarker.SEVERITY, SonarLintGlobalConfiguration.getMarkerSeverity());
-        }
-      }
     }
   }
 

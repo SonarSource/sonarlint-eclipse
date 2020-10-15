@@ -33,7 +33,6 @@ public class SonarLintPreferencesInitializer extends AbstractPreferenceInitializ
     IEclipsePreferences node = DefaultScope.INSTANCE.getNode(SonarLintUiPlugin.PLUGIN_ID);
     node.put(SonarLintConsole.P_SHOW_CONSOLE, SonarLintConsole.P_SHOW_CONSOLE_ON_ERROR);
     node.putBoolean(SonarLintConsole.P_ANALYZER_OUTPUT, false);
-    node.putInt(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY, SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY_DEFAULT);
     node.put(SonarLintGlobalConfiguration.PREF_EXTRA_ARGS, SonarLintGlobalConfiguration.PREF_DEFAULT);
     node.put(SonarLintGlobalConfiguration.PREF_TEST_FILE_REGEXPS, SonarLintGlobalConfiguration.PREF_TEST_FILE_REGEXPS_DEFAULT);
   }

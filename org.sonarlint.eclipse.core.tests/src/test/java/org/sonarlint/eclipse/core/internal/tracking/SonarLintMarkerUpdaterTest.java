@@ -126,9 +126,7 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
   public void test_marker_of_ordinary_trackable() throws Exception {
     Trackable trackable = newMockTrackable();
 
-    int priority = 2;
     String severity = "BLOCKER";
-    int eclipseSeverity = 0;
     when(trackable.getSeverity()).thenReturn(severity);
 
     String message = "Self assignment of field";
@@ -142,8 +140,7 @@ public class SonarLintMarkerUpdaterTest extends SonarTestCase {
 
     IMarker[] markers = processTrackable(trackable);
     assertThat(markers).hasSize(1);
-    assertThat(markers[0].getAttribute(IMarker.PRIORITY)).isEqualTo(priority);
-    assertThat(markers[0].getAttribute(IMarker.SEVERITY)).isEqualTo(eclipseSeverity);
+    assertThat(markers[0].getAttribute(IMarker.PRIORITY)).isEqualTo(IMarker.PRIORITY_HIGH);
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR)).isEqualTo(severity);
     assertThat(markers[0].getAttribute(IMarker.MESSAGE)).isEqualTo(message);
     assertThat(markers[0].getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR)).isEqualTo(serverIssueKey);

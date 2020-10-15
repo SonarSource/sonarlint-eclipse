@@ -23,9 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringButtonFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -65,13 +63,6 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
   @Override
   protected void createFieldEditors() {
 
-    addField(new ComboFieldEditor(SonarLintGlobalConfiguration.PREF_MARKER_SEVERITY,
-      Messages.SonarPreferencePage_label_marker_severity,
-      new String[][] {
-        {"Info", String.valueOf(IMarker.SEVERITY_INFO)},
-        {"Warning", String.valueOf(IMarker.SEVERITY_WARNING)},
-        {"Error", String.valueOf(IMarker.SEVERITY_ERROR)}},
-      getFieldEditorParent()));
     addField(new StringFieldEditor(SonarLintGlobalConfiguration.PREF_TEST_FILE_REGEXPS,
       Messages.SonarPreferencePage_label_test_file_regexps, getFieldEditorParent()));
     addField(new NodeJsField(getFieldEditorParent()));
@@ -125,7 +116,6 @@ public class SonarLintPreferencePage extends FieldEditorPreferencePage implement
       }
       return null;
     }
-
   }
 
   @Override
