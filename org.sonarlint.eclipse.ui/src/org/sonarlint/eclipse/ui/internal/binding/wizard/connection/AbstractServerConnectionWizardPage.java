@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -32,7 +33,7 @@ public abstract class AbstractServerConnectionWizardPage extends WizardPage {
   protected final ServerConnectionModel model;
   private final int numCols;
 
-  public AbstractServerConnectionWizardPage(String pageName, String title, ServerConnectionModel model, int numCols) {
+  protected AbstractServerConnectionWizardPage(String pageName, @Nullable String title, ServerConnectionModel model, int numCols) {
     super(pageName, title, SonarLintImages.IMG_WIZBAN_NEW_SERVER);
     this.model = model;
     this.numCols = numCols;

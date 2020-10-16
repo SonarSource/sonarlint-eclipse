@@ -34,12 +34,12 @@ import org.eclipse.swt.widgets.Text;
 import org.sonarlint.eclipse.ui.internal.Messages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 
-public class ServerIdWizardPage extends AbstractServerConnectionWizardPage {
+public class ConnectionIdWizardPage extends AbstractServerConnectionWizardPage {
 
   private Binding serverIdTextBinding;
 
-  public ServerIdWizardPage(ServerConnectionModel model) {
-    super("server_id_page", model.getConnectionType() == ConnectionType.SONARCLOUD ? "SonarCloud Connection Identifier" : "SonarQube Connection Identifier", model, 2);
+  public ConnectionIdWizardPage(ServerConnectionModel model) {
+    super("server_id_page", null, model, 2);
   }
 
   @SuppressWarnings("unchecked")
@@ -69,6 +69,7 @@ public class ServerIdWizardPage extends AbstractServerConnectionWizardPage {
   public void setVisible(boolean visible) {
     super.setVisible(visible);
     if (visible) {
+      setTitle(model.getConnectionType() == ConnectionType.SONARCLOUD ? "SonarCloud Connection Identifier" : "SonarQube Connection Identifier");
       serverIdTextBinding.validateTargetToModel();
     }
   }

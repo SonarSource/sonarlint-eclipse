@@ -49,7 +49,7 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
   private Binding tokenTextBinding;
 
   public TokenWizardPage(ServerConnectionModel model) {
-    super("server_token_page", model.getConnectionType() == ConnectionType.SONARCLOUD ? "SonarCloud User Authentication Token" : "SonarQube User Authentication Token", model, 3);
+    super("server_token_page", null, model, 3);
   }
 
   @SuppressWarnings("unchecked")
@@ -107,6 +107,7 @@ public class TokenWizardPage extends AbstractServerConnectionWizardPage {
   public void setVisible(boolean visible) {
     super.setVisible(visible);
     if (visible) {
+      setTitle(model.getConnectionType() == ConnectionType.SONARCLOUD ? "SonarCloud User Authentication Token" : "SonarQube User Authentication Token");
       tokenTextBinding.validateTargetToModel();
     }
   }

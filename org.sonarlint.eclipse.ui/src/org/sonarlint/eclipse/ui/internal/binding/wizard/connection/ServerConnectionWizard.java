@@ -68,7 +68,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   private final UsernamePasswordWizardPage credentialsPage;
   private final TokenWizardPage tokenPage;
   private final OrganizationWizardPage orgPage;
-  private final ServerIdWizardPage serverIdPage;
+  private final ConnectionIdWizardPage serverIdPage;
   private final EndWizardPage endPage;
   private final IConnectedEngineFacade editedServer;
 
@@ -85,7 +85,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     credentialsPage = new UsernamePasswordWizardPage(model);
     tokenPage = new TokenWizardPage(model);
     orgPage = new OrganizationWizardPage(model);
-    serverIdPage = new ServerIdWizardPage(model);
+    serverIdPage = new ConnectionIdWizardPage(model);
     endPage = new EndWizardPage(model);
   }
 
