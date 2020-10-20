@@ -19,13 +19,22 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.markers.MarkerSupportView;
+import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.ui.internal.markers.AbstractMarkerSelectionListener;
+import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
-public abstract class MarkerViewWithBottomPanel extends MarkerSupportView {
+public abstract class MarkerViewWithBottomPanel extends MarkerSupportView implements AbstractMarkerSelectionListener {
 
   protected MarkerViewWithBottomPanel(String contentGeneratorId) {
     super(contentGeneratorId);
@@ -45,13 +54,44 @@ public abstract class MarkerViewWithBottomPanel extends MarkerSupportView {
     super.createPartControl(issuesTable);
     Composite bottom = new Composite(parent, SWT.NONE);
     populateBottomPanel(bottom);
+    startListeningForSelectionChanges(getSite().getPage());
   }
 
   protected abstract void populateBottomPanel(Composite bottom);
 
   @Override
   public void dispose() {
+    stopListeningForSelectionChanges(getSite().getPage());
     super.dispose();
+  }
+
+  @Override
+  public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+    SonarLintLogger.get().info("Selection");
+    // Only respond to our own selections
+    if (part != MarkerViewWithBottomPanel.this) {
+      return;
+    }
+    AbstractMarkerSelectionListener.super.selectionChanged(part, selection);
+  }
+
+  @Override
+  public void sonarlintIssueMarkerSelected(IMarker selectedMarker) {
+    if (!MarkerUtils.getIssueFlow(selectedMarker).isEmpty()) {
+      openIssueLocationsView(selectedMarker);
+    }
+  }
+
+  private static void openIssueLocationsView(IMarker selectedMarker) {
+    try {
+      IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IssueLocationsView.ID);
+      if (view == null) {
+        view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
+        view.setInput(selectedMarker);
+      }
+    } catch (PartInitException e) {
+      SonarLintLogger.get().error("Unable to open Issue Locations View", e);
+    }
   }
 
 }

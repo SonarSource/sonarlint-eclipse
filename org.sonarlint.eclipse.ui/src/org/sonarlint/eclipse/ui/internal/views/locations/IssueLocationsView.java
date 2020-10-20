@@ -348,7 +348,7 @@ public class IssueLocationsView extends ViewPart implements AbstractMarkerSelect
 
   @Override
   public void setFocus() {
-    // Nothing to do
+    locationsViewer.getTree().setFocus();
   }
 
   @Override
