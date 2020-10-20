@@ -27,7 +27,7 @@ import org.eclipse.ui.views.markers.MarkerSupportView;
 
 public abstract class MarkerViewWithBottomPanel extends MarkerSupportView {
 
-  public MarkerViewWithBottomPanel(String contentGeneratorId) {
+  protected MarkerViewWithBottomPanel(String contentGeneratorId) {
     super(contentGeneratorId);
   }
 
@@ -48,5 +48,10 @@ public abstract class MarkerViewWithBottomPanel extends MarkerSupportView {
   }
 
   protected abstract void populateBottomPanel(Composite bottom);
+
+  @Override
+  public void dispose() {
+    super.dispose();
+  }
 
 }

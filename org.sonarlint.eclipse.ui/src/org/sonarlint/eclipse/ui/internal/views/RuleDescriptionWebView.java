@@ -19,25 +19,16 @@
  */
 package org.sonarlint.eclipse.ui.internal.views;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -48,6 +39,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.markers.AbstractMarkerSelectionListener;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.exceptions.SonarLintException;
@@ -55,7 +47,7 @@ import org.sonarsource.sonarlint.core.client.api.exceptions.SonarLintException;
 /**
  * Display details of a rule in a web browser
  */
-public class RuleDescriptionWebView extends ViewPart implements ISelectionListener {
+public class RuleDescriptionWebView extends ViewPart implements AbstractMarkerSelectionListener {
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.RuleDescriptionWebView";
 
@@ -75,96 +67,13 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     createToolbar();
     browser = new SonarLintRuleBrowser(parent, true);
 
-    getSite().getWorkbenchWindow().getPartService().addPartListener(partListener);
-    startListeningForSelectionChanges();
+    startListeningForSelectionChanges(getSite().getPage());
   }
 
   @Override
   public final void setFocus() {
     browser.setFocus();
   }
-
-  @Nullable
-  public static IMarker findSelectedSonarIssue(ISelection selection) {
-    try {
-      if (selection instanceof IStructuredSelection) {
-        List<IMarker> selectedSonarMarkers = new ArrayList<>();
-
-        @SuppressWarnings("rawtypes")
-        List elems = ((IStructuredSelection) selection).toList();
-        for (Object elem : elems) {
-          processElement(selectedSonarMarkers, elem);
-        }
-
-        if (!selectedSonarMarkers.isEmpty()) {
-          return selectedSonarMarkers.get(0);
-        }
-      }
-    } catch (Exception e) {
-      return null;
-    }
-    return null;
-  }
-
-  private static void processElement(List<IMarker> selectedSonarMarkers, Object elem) throws CoreException {
-    IMarker marker = Adapters.adapt(elem, IMarker.class);
-    if (marker != null && isSonarLintMarker(marker)) {
-      selectedSonarMarkers.add(marker);
-    }
-  }
-
-  private static boolean isSonarLintMarker(IMarker marker) throws CoreException {
-    return SonarLintCorePlugin.MARKER_ON_THE_FLY_ID.equals(marker.getType()) || SonarLintCorePlugin.MARKER_REPORT_ID.equals(marker.getType());
-  }
-
-  private final IPartListener2 partListener = new IPartListener2() {
-    @Override
-    public void partVisible(IWorkbenchPartReference ref) {
-      if (ref.getId().equals(getSite().getId())) {
-        IWorkbenchPart activePart = ref.getPage().getActivePart();
-        if (activePart != null) {
-          selectionChanged(activePart, ref.getPage().getSelection());
-        }
-      }
-    }
-
-    @Override
-    public void partHidden(IWorkbenchPartReference ref) {
-      // Nothing to do
-    }
-
-    @Override
-    public void partInputChanged(IWorkbenchPartReference ref) {
-      if (!ref.getId().equals(getSite().getId())) {
-        computeAndSetInput(ref.getPart(false));
-      }
-    }
-
-    @Override
-    public void partActivated(IWorkbenchPartReference ref) {
-      // Nothing to do
-    }
-
-    @Override
-    public void partBroughtToTop(IWorkbenchPartReference ref) {
-      // Nothing to do
-    }
-
-    @Override
-    public void partClosed(IWorkbenchPartReference ref) {
-      // Nothing to do
-    }
-
-    @Override
-    public void partDeactivated(IWorkbenchPartReference ref) {
-      // Nothing to do
-    }
-
-    @Override
-    public void partOpened(IWorkbenchPartReference ref) {
-      // Nothing to do
-    }
-  };
 
   private void createToolbar() {
     IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
@@ -213,47 +122,16 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     return linking;
   }
 
-  protected void startListeningForSelectionChanges() {
-    getSite().getPage().addPostSelectionListener(this);
-  }
-
-  protected void stopListeningForSelectionChanges() {
-    getSite().getPage().removePostSelectionListener(this);
-  }
-
   @Override
-  public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-    if (this.equals(part)) {
-      return;
-    }
+  public void sonarlintIssueMarkerSelected(IMarker selectedMarker) {
     if (!linking) {
-      IMarker element = findSelectedSonarIssue(selection);
-      if (element != null) {
-        lastSelection = element;
-      }
+      lastSelection = selectedMarker;
     } else {
       lastSelection = null;
-      computeAndSetInput(part);
+      if (!Objects.equals(currentElement, selectedMarker)) {
+        setInput(selectedMarker);
+      }
     }
-  }
-
-  private void computeAndSetInput(final IWorkbenchPart part) {
-    ISelectionProvider provider = part.getSite().getSelectionProvider();
-    if (provider == null) {
-      return;
-    }
-    final ISelection selection = provider.getSelection();
-    if ((selection == null) || selection.isEmpty()) {
-      return;
-    }
-    final IMarker element = findSelectedSonarIssue(selection);
-    if (isIgnoringNewInput(element)) {
-      return;
-    }
-    if (element == null) {
-      return;
-    }
-    setInput(element);
   }
 
   public void setInput(IMarker element) {
@@ -261,15 +139,9 @@ public class RuleDescriptionWebView extends ViewPart implements ISelectionListen
     open(element);
   }
 
-  protected boolean isIgnoringNewInput(@Nullable IMarker element) {
-    return (currentElement != null) && currentElement.equals(element) && (element != null);
-  }
-
   @Override
   public void dispose() {
-    stopListeningForSelectionChanges();
-    getSite().getWorkbenchWindow().getPartService().removePartListener(partListener);
-
+    stopListeningForSelectionChanges(getSite().getPage());
     super.dispose();
   }
 

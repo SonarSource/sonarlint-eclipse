@@ -17,40 +17,33 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.core.internal.markers;
+package org.sonarlint.eclipse.ui.internal.markers;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 
-public class MarkerFlowLocation {
-  private final MarkerFlow parent;
-  private final int number;
-  private final String message;
-  private IMarker marker;
+public interface AbstractMarkerSelectionListener extends ISelectionListener {
 
-  public MarkerFlowLocation(MarkerFlow parent, String message) {
-    this.parent = parent;
-    this.parent.locations.add(this);
-    this.number = this.parent.locations.size();
-    this.message = message;
+  @Override
+  default void selectionChanged(IWorkbenchPart part, ISelection selection) {
+    IMarker selectedMarker = SelectionUtils.findSelectedSonarLintMarker(selection);
+    if (selectedMarker != null) {
+      sonarlintIssueMarkerSelected(selectedMarker);
+    }
   }
 
-  public MarkerFlow getParent() {
-    return parent;
+  void sonarlintIssueMarkerSelected(IMarker selectedMarker);
+
+  default void startListeningForSelectionChanges(IWorkbenchPage page) {
+    page.addPostSelectionListener(this);
   }
 
-  public int getNumber() {
-    return number;
+  default void stopListeningForSelectionChanges(IWorkbenchPage page) {
+    page.removePostSelectionListener(this);
   }
 
-  public String getMessage() {
-    return message;
-  }
-
-  public void setMarker(IMarker marker) {
-    this.marker = marker;
-  }
-
-  public IMarker getMarker() {
-    return marker;
-  }
 }

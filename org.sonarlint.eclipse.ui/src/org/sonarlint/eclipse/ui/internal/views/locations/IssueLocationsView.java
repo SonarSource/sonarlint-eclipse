@@ -21,15 +21,12 @@ package org.sonarlint.eclipse.ui.internal.views.locations;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.text.Position;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -42,16 +39,12 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
@@ -62,17 +55,16 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.codemining.SonarLintCodeMiningProvider;
+import org.sonarlint.eclipse.ui.internal.markers.AbstractMarkerSelectionListener;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
-import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
 
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 /**
  * Display details of a rule in a web browser
  */
-public class IssueLocationsView extends ViewPart implements ISelectionListener, AnalysisListener {
+public class IssueLocationsView extends ViewPart implements AbstractMarkerSelectionListener, AnalysisListener {
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.IssueLocationsView";
 
@@ -102,6 +94,23 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
       return location;
     }
 
+    @Override
+    public int hashCode() {
+      return Objects.hash(location.getParent().getNumber(), location.getNumber());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof FlowNode)) {
+        return false;
+      }
+      FlowNode other = (FlowNode) obj;
+      return Objects.equals(location.getParent().getNumber(), other.location.getParent().getNumber()) && Objects.equals(location.getNumber(), other.location.getNumber());
+    }
+
   }
 
   private static class FlowRootNode {
@@ -124,6 +133,23 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
     public FlowNode[] getChildren() {
       return children.toArray(new FlowNode[0]);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(flow.getNumber());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof FlowRootNode)) {
+        return false;
+      }
+      FlowRootNode other = (FlowRootNode) obj;
+      return Objects.equals(flow.getNumber(), other.flow.getNumber());
     }
 
   }
@@ -153,12 +179,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     @Override
     public Object[] getElements(Object inputElement) {
       IMarker sonarlintMarker = (IMarker) inputElement;
-      List<MarkerFlow> flowsMarkers;
-      try {
-        flowsMarkers = Optional.ofNullable((List<MarkerFlow>) sonarlintMarker.getAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR)).orElse(emptyList());
-      } catch (CoreException e) {
-        flowsMarkers = emptyList();
-      }
+      List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlow(sonarlintMarker);
       if (!flowsMarkers.isEmpty()) {
         return new Object[] {new RootNode(sonarlintMarker, flowsMarkers)};
       } else {
@@ -247,26 +268,18 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
       if (editorFound != null) {
         selectedNode = null;
         selectedFlow = null;
-        ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound, getSelectedFlow());
+        ShowIssueFlowsMarkerResolver.removeAllAnnotations();
         SonarLintCodeMiningProvider.setCurrentMarker(sonarlintMarker, getSelectedFlow());
       }
     }
   }
 
+
   @Override
-  public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-    IMarker selectedMarker = RuleDescriptionWebView.findSelectedSonarIssue(selection);
-    if (selectedMarker != null && !Objects.equals(selectedMarker, locationsViewer.getInput())) {
+  public void sonarlintIssueMarkerSelected(IMarker selectedMarker) {
+    if (!Objects.equals(selectedMarker, locationsViewer.getInput())) {
       setInput(selectedMarker);
     }
-  }
-
-  private void startListeningForSelectionChanges() {
-    getSite().getPage().addPostSelectionListener(this);
-  }
-
-  private void stopListeningForSelectionChanges() {
-    getSite().getPage().removePostSelectionListener(this);
   }
 
   @Override
@@ -304,7 +317,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
           onTreeNodeDoubleClick(firstElement);
         }
       });
-    startListeningForSelectionChanges();
+    startListeningForSelectionChanges(getSite().getPage());
     SonarLintCorePlugin.getAnalysisListenerManager().addListener(this);
   }
 
@@ -317,19 +330,8 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     if (node instanceof FlowNode) {
       IMarker flowMarker = ((FlowNode) node).getLocation().getMarker();
-      SonarLintLogger.get().info("Line: " + MarkerUtilities.getLineNumber(flowMarker));
-      SonarLintLogger.get().info("Start: " + MarkerUtilities.getCharStart(flowMarker));
-      SonarLintLogger.get().info("End: " + MarkerUtilities.getCharEnd(flowMarker));
       try {
-        IEditorPart editorPart = IDE.openEditor(page, flowMarker);
-        if (editorPart instanceof ITextEditor) {
-          ITextEditor textEditor = (ITextEditor) editorPart;
-          @Nullable
-          Position position = ShowIssueFlowsMarkerResolver.getMarkerPosition(flowMarker, textEditor);
-          SonarLintLogger.get().info("Position: " + position.hashCode());
-          SonarLintLogger.get().info("Position offset: " + position.getOffset());
-          SonarLintLogger.get().info("Position length: " + position.getLength());
-        }
+        IDE.openEditor(page, flowMarker);
       } catch (PartInitException e) {
         SonarLintLogger.get().error(e.getMessage(), e);
       }
@@ -351,7 +353,7 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
 
   @Override
   public void dispose() {
-    stopListeningForSelectionChanges();
+    stopListeningForSelectionChanges(getSite().getPage());
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(this);
     ShowIssueFlowsMarkerResolver.removeAllAnnotations();
     super.dispose();
@@ -428,12 +430,8 @@ public class IssueLocationsView extends ViewPart implements ISelectionListener, 
     showAnnotationsAction.setChecked(b);
   }
 
-  public void selectPosition(int number) {
-    if (selectedNode instanceof FlowRootNode) {
-      locationsViewer.setSelection(new StructuredSelection(((FlowRootNode) selectedNode).getChildren()[number - 1]), true);
-    } else if (selectedNode instanceof FlowNode) {
-      // TODO
-    }
+  public void selectLocation(MarkerFlowLocation location) {
+    locationsViewer.setSelection(new StructuredSelection(new FlowNode(location)), true);
   }
 
 }

@@ -23,10 +23,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
@@ -48,13 +46,10 @@ import org.eclipse.ui.texteditor.AbstractMarkerAnnotationModel;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.codemining.SonarLintCodeMiningProvider;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
-
-import static java.util.Collections.emptyList;
 
 public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
 
@@ -133,7 +128,8 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
   }
 
   private static Map<Annotation, Position> createAnnotations(IMarker marker, ITextEditor textEditor, int selectedFlow) {
-    return getSelectedFlow(marker, selectedFlow).getLocations()
+    return MarkerUtils.getIssueFlow(marker).get(selectedFlow - 1)
+      .getLocations()
       .stream()
       .collect(Collectors.toMap(p -> new Annotation(ISSUE_FLOW_ANNOTATION_TYPE, false, p.getMessage()),
         p -> {
@@ -152,16 +148,6 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
       return markerModel.getMarkerPosition(marker);
     }
     return null;
-  }
-
-  public static MarkerFlow getSelectedFlow(IMarker marker, int selectedFlow) {
-    List<MarkerFlow> flowsMarkers;
-    try {
-      flowsMarkers = Optional.ofNullable((List<MarkerFlow>) marker.getAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR)).orElse(emptyList());
-    } catch (CoreException e) {
-      flowsMarkers = emptyList();
-    }
-    return flowsMarkers.get(selectedFlow - 1);
   }
 
   private static void removePreviousAnnotations(IAnnotationModel annotationModel) {

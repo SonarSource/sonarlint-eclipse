@@ -1,6 +1,6 @@
 /*
  * SonarLint for Eclipse
- * Copyright (C) 2015-2019 SonarSource SA
+ * Copyright (C) 2015-2020 SonarSource SA
  * sonarlint@sonarsource.com
  *
  * This program is free software; you can redistribute it and/or
@@ -62,7 +62,7 @@ public class SonarLintFlowNumberCodeMining extends AbstractCodeMining {
   private static void onClick(MouseEvent e, MarkerFlowLocation location) {
     try {
       IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
-      view.selectPosition(location.getNumber());
+      view.selectLocation(location);
     } catch (Exception ex) {
       SonarLintLogger.get().error("Unable to open Issue Location View", ex);
     }
