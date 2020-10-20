@@ -35,6 +35,10 @@ import org.eclipse.jface.text.codemining.AbstractCodeMiningProvider;
 import org.eclipse.jface.text.codemining.ICodeMining;
 import org.eclipse.jface.text.source.ISourceViewerExtension5;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPartListener2;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -44,14 +48,16 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.markers.AbstractMarkerSelectionListener;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
+import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView.FlowSelectionListener;
 
 import static java.util.stream.Collectors.toList;
 
-public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider implements AbstractMarkerSelectionListener {
+public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider implements AbstractMarkerSelectionListener, FlowSelectionListener {
 
   @Nullable
   private IMarker currentMarker;
-  private int selectedFlowNum = 1;
+  private int selectedFlowNum = -1;
+  private final IPartListener2 partListener;
 
   public SonarLintCodeMiningProvider() {
     startListeningForSelectionChanges(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage());
@@ -59,13 +65,35 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider impl
     if (view != null) {
       this.currentMarker = view.getCurrentMarker();
       this.selectedFlowNum = view.getSelectedFlowNum();
+      view.addFlowSelectionListener(this);
     }
+    partListener = new IPartListener2() {
+      @Override
+      public void partOpened(IWorkbenchPartReference partRef) {
+        IWorkbenchPart part = partRef.getPart(true);
+        if (part instanceof IViewPart) {
+          IViewPart viewPart = (IViewPart) part;
+          if (viewPart instanceof IssueLocationsView) {
+            IssueLocationsView issueLocationsView = (IssueLocationsView) viewPart;
+            issueLocationsView.addFlowSelectionListener(SonarLintCodeMiningProvider.this);
+            SonarLintCodeMiningProvider.this.selectedFlowNum = issueLocationsView.getSelectedFlowNum();
+            forceRefreshCodeMinings();
+          }
+        }
+      }
+    };
+    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListener);
   }
 
   @Override
   public void dispose() {
     // FIXME dispose is never called
     stopListeningForSelectionChanges(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage());
+    IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IssueLocationsView.ID);
+    if (view != null) {
+      view.removeFlowSelectionListener(this);
+    }
+    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().removePartListener(partListener);
     super.dispose();
   }
 
@@ -78,11 +106,20 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider impl
     }
   }
 
+  @Override
+  public void flowSelected(int flowNumber) {
+    if (!Objects.equals(selectedFlowNum, flowNumber)) {
+      this.selectedFlowNum = flowNumber;
+      forceRefreshCodeMinings();
+    }
+  }
+
   @Nullable
   @Override
   public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(ITextViewer viewer, IProgressMonitor monitor) {
     IMarker markerToUse = currentMarker;
-    if (markerToUse == null) {
+    int flowNum = selectedFlowNum;
+    if (markerToUse == null || flowNum < 1) {
       return null;
     }
 
@@ -102,8 +139,8 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider impl
       if (flowsMarkers.stream().allMatch(f -> f.getLocations().size() == 1)) {
         // Flatten all locations
         locations = flowsMarkers.stream().flatMap(f -> f.getLocations().stream()).collect(toList());
-      } else if (flowsMarkers.size() >= selectedFlowNum) {
-        locations = flowsMarkers.get(selectedFlowNum - 1).getLocations();
+      } else if (flowsMarkers.size() >= flowNum) {
+        locations = flowsMarkers.get(flowNum - 1).getLocations();
       } else {
         locations = Collections.emptyList();
       }

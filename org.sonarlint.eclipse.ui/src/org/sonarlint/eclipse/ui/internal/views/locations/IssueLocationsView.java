@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.views.locations;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
@@ -74,6 +75,8 @@ public class IssueLocationsView extends ViewPart implements AbstractMarkerSelect
   private Object selectedNode;
 
   private Integer selectedFlow;
+
+  private final CopyOnWriteArrayList<FlowSelectionListener> flowSelectionListeners = new CopyOnWriteArrayList<>();
 
   private static class FlowNode {
 
@@ -261,12 +264,18 @@ public class IssueLocationsView extends ViewPart implements AbstractMarkerSelect
 
   public void setInput(@Nullable IMarker sonarlintMarker) {
     locationsViewer.setInput(sonarlintMarker);
-    if (sonarlintMarker != null && showAnnotationsAction.isChecked()) {
-      ITextEditor editorFound = LocationsUtils.findOpenEditorFor(sonarlintMarker);
-      if (editorFound != null) {
-        selectedNode = null;
-        selectedFlow = null;
-        ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound, getSelectedFlowNum());
+    if (sonarlintMarker != null) {
+      List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlow(sonarlintMarker);
+      if (!flowsMarkers.isEmpty()) {
+        locationsViewer.setSelection(new StructuredSelection(new FlowRootNode(flowsMarkers.get(0))), true);
+      }
+      if (showAnnotationsAction.isChecked()) {
+        ITextEditor editorFound = LocationsUtils.findOpenEditorFor(sonarlintMarker);
+        if (editorFound != null) {
+          selectedNode = null;
+          selectedFlow = null;
+          ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound, getSelectedFlowNum());
+        }
       }
     }
   }
@@ -323,6 +332,7 @@ public class IssueLocationsView extends ViewPart implements AbstractMarkerSelect
 
   private void onTreeNodeSelected(Object node) {
     selectedNode = node;
+    flowSelectionListeners.forEach(l -> l.flowSelected(getSelectedFlowNum()));
     showAnnotationsAction.run();
   }
 
@@ -356,6 +366,7 @@ public class IssueLocationsView extends ViewPart implements AbstractMarkerSelect
     stopListeningForSelectionChanges(getSite().getPage());
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(this);
     ShowIssueFlowsMarkerResolver.removeAllAnnotations();
+    flowSelectionListeners.forEach(l -> l.flowSelected(-1));
     super.dispose();
   }
 
@@ -391,8 +402,10 @@ public class IssueLocationsView extends ViewPart implements AbstractMarkerSelect
     public void run() {
       if (isChecked()) {
         showAnnotations();
+        flowSelectionListeners.forEach(l -> l.flowSelected(getSelectedFlowNum()));
       } else {
         ShowIssueFlowsMarkerResolver.removeAllAnnotations();
+        flowSelectionListeners.forEach(l -> l.flowSelected(-1));
       }
     }
 
@@ -433,4 +446,15 @@ public class IssueLocationsView extends ViewPart implements AbstractMarkerSelect
     locationsViewer.setSelection(new StructuredSelection(new FlowNode(location)), true);
   }
 
+  public interface FlowSelectionListener {
+    void flowSelected(int flowNumber);
+  }
+
+  public void addFlowSelectionListener(FlowSelectionListener l) {
+    flowSelectionListeners.addIfAbsent(l);
+  }
+
+  public void removeFlowSelectionListener(FlowSelectionListener l) {
+    flowSelectionListeners.remove(l);
+  }
 }
