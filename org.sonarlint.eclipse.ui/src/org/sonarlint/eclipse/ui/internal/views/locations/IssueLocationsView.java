@@ -54,7 +54,6 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.codemining.SonarLintCodeMiningProvider;
 import org.sonarlint.eclipse.ui.internal.markers.AbstractMarkerSelectionListener;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
@@ -261,19 +260,20 @@ public class IssueLocationsView extends ViewPart implements AbstractMarkerSelect
   }
 
   public void setInput(@Nullable IMarker sonarlintMarker) {
-    ShowIssueFlowsMarkerResolver.removeAllAnnotations();
     locationsViewer.setInput(sonarlintMarker);
     if (sonarlintMarker != null && showAnnotationsAction.isChecked()) {
       ITextEditor editorFound = LocationsUtils.findOpenEditorFor(sonarlintMarker);
       if (editorFound != null) {
         selectedNode = null;
         selectedFlow = null;
-        ShowIssueFlowsMarkerResolver.removeAllAnnotations();
-        SonarLintCodeMiningProvider.setCurrentMarker(sonarlintMarker, getSelectedFlow());
+        ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound, getSelectedFlowNum());
       }
     }
   }
 
+  public @Nullable IMarker getCurrentMarker() {
+    return (@Nullable IMarker) locationsViewer.getInput();
+  }
 
   @Override
   public void sonarlintIssueMarkerSelected(IMarker selectedMarker) {
@@ -403,19 +403,18 @@ public class IssueLocationsView extends ViewPart implements AbstractMarkerSelect
     if (sonarlintMarker != null) {
       ITextEditor editorFound = LocationsUtils.findOpenEditorFor(sonarlintMarker);
       if (editorFound != null) {
-        Integer newSelectedFlow = getSelectedFlow();
+        Integer newSelectedFlow = getSelectedFlowNum();
         // Clean annotations only when a different flow is selected to avoid flickering
         if (!newSelectedFlow.equals(selectedFlow)) {
           ShowIssueFlowsMarkerResolver.removeAllAnnotations();
           selectedFlow = newSelectedFlow;
         }
-        ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound, getSelectedFlow());
-        SonarLintCodeMiningProvider.setCurrentMarker(sonarlintMarker, getSelectedFlow());
+        ShowIssueFlowsMarkerResolver.showAnnotations(sonarlintMarker, editorFound, getSelectedFlowNum());
       }
     }
   }
 
-  private int getSelectedFlow() {
+  public int getSelectedFlowNum() {
     if (selectedNode instanceof FlowRootNode) {
       return ((FlowRootNode) selectedNode).getFlow().getNumber();
     } else if (selectedNode instanceof FlowNode) {
