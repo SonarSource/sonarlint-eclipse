@@ -48,10 +48,7 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_CREATION_DATE_ATTR = "creationdate";
 
   public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";
-  public static final String SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR = "hasextralocation";
-  public static final String SONAR_MARKER_EXTRA_LOCATIONS_ATTR = "extralocation";
-
-  public static final String SONARLINT_EXTRA_POSITIONS_CATEGORY = "sonarlintextralocations";
+  public static final String SONAR_MARKER_EXTRA_LOCATIONS_ATTR = "extralocations";
 
   private MarkerUtils() {
   }
@@ -116,8 +113,7 @@ public final class MarkerUtils {
   }
 
   @Nullable
-  public static ExtraPosition getExtraPosition(final IDocument document, TextRange textRange, String message, long markerId,
-    ExtraPosition parent) {
+  public static ExtraPosition getExtraPosition(final IDocument document, TextRange textRange, @Nullable String message, long markerId, @Nullable ExtraPosition parent) {
     try {
       return convertToGlobalOffset(document, (FullTextRange) textRange, (o, l) -> new ExtraPosition(o, l, message, markerId, parent));
     } catch (BadLocationException e) {

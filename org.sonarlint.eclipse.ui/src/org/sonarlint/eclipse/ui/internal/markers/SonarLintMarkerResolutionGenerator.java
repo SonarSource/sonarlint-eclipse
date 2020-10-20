@@ -63,7 +63,11 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
   }
 
   private static boolean hasExtraLocations(IMarker marker) {
-    return marker.getAttribute(MarkerUtils.SONAR_MARKER_HAS_EXTRA_LOCATION_KEY_ATTR, false);
+    try {
+      return marker.getAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR) != null;
+    } catch (CoreException e) {
+      return false;
+    }
   }
 
   private static boolean isStandaloneIssue(IMarker marker) {

@@ -19,9 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.codemining;
 
-import java.util.function.Consumer;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.codemining.AbstractCodeMining;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.MouseEvent;
@@ -31,23 +29,22 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
-import org.sonarlint.eclipse.core.internal.markers.MarkerUtils.ExtraPosition;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
-public class SonarLintCodeMining extends /* LineHeaderCodeMining */AbstractCodeMining {
+public class SonarLintFlowNumberCodeMining extends AbstractCodeMining {
 
-  private final ExtraPosition position;
+  private final MarkerFlowLocation location;
 
-  public SonarLintCodeMining(IDocument doc, ExtraPosition position, SonarLintCodeMiningProvider provider) throws BadLocationException {
-    /* super(doc.getLineOfOffset(position.getOffset()), doc, provider); */
-    super(position, provider, null);
-    this.position = position;
-    setLabel(Integer.toString(position.getNumber()));
+  public SonarLintFlowNumberCodeMining(MarkerFlowLocation location, Position position, SonarLintCodeMiningProvider provider) {
+    super(new Position(position.getOffset(), position.getLength()), provider, e -> onClick(e, location));
+    this.location = location;
+    setLabel(location.getMessage());
   }
 
   @Override
   public Point draw(GC gc, StyledText textWidget, Color color, int x, int y) {
-    String numberStr = Integer.toString(position.getNumber());
+    String numberStr = Integer.toString(location.getNumber());
     Point numberExtent = gc.stringExtent(numberStr);
     Point rect = new Point(numberExtent.x + 6, numberExtent.y);
     gc.setLineWidth(1);
@@ -62,16 +59,13 @@ public class SonarLintCodeMining extends /* LineHeaderCodeMining */AbstractCodeM
     return rect;
   }
 
-  @Override
-  public Consumer<MouseEvent> getAction() {
-    return e -> {
-      try {
-        IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
-        view.selectPosition(position.getNumber());
-      } catch (Exception ex) {
-        SonarLintLogger.get().error("Unable to open Issue Location View", ex);
-      }
-    };
+  private static void onClick(MouseEvent e, MarkerFlowLocation location) {
+    try {
+      IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
+      view.selectPosition(location.getNumber());
+    } catch (Exception ex) {
+      SonarLintLogger.get().error("Unable to open Issue Location View", ex);
+    }
   }
 
 }

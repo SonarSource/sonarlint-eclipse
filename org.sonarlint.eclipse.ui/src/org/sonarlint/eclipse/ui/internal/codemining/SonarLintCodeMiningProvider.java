@@ -28,6 +28,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.codemining.AbstractCodeMiningProvider;
 import org.eclipse.jface.text.codemining.ICodeMining;
 import org.eclipse.jface.text.source.ISourceViewerExtension5;
@@ -58,9 +59,14 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider {
       IEditorInput editorInput = textEditor.getEditorInput();
       IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
 
-      ShowIssueFlowsMarkerResolver.getExtraPositions(markerToUse, doc, selectedFlow).forEach(p -> {
+      ShowIssueFlowsMarkerResolver.getSelectedFlow(markerToUse, selectedFlow).getLocations().forEach(p -> {
         try {
-          minings.add(new SonarLintCodeMining(doc, p, this));
+          @Nullable
+          Position position = ShowIssueFlowsMarkerResolver.getMarkerPosition(p.getMarker(), textEditor);
+          if (position != null && !position.isDeleted()) {
+            minings.add(new SonarLintFlowMessageCodeMining(p, doc, position, this));
+            minings.add(new SonarLintFlowNumberCodeMining(p, position, this));
+          }
         } catch (BadLocationException e) {
           SonarLintLogger.get().error("Unable to create code mining", e);
         }
