@@ -32,19 +32,19 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
-public class SonarLintFlowNumberCodeMining extends AbstractCodeMining {
+public class SonarLintFlowLocationNumberCodeMining extends AbstractCodeMining {
 
-  private final MarkerFlowLocation location;
+  private final int number;
 
-  public SonarLintFlowNumberCodeMining(MarkerFlowLocation location, Position position, SonarLintCodeMiningProvider provider) {
+  public SonarLintFlowLocationNumberCodeMining(MarkerFlowLocation location, Position position, SonarLintCodeMiningProvider provider, int number) {
     super(new Position(position.getOffset(), position.getLength()), provider, e -> onClick(e, location));
-    this.location = location;
-    setLabel(location.getMessage());
+    this.number = number;
+    setLabel(Integer.toString(number));
   }
 
   @Override
   public Point draw(GC gc, StyledText textWidget, Color color, int x, int y) {
-    String numberStr = Integer.toString(location.getNumber());
+    String numberStr = Integer.toString(number);
     Point numberExtent = gc.stringExtent(numberStr);
     Point rect = new Point(numberExtent.x + 6, numberExtent.y);
     gc.setLineWidth(1);

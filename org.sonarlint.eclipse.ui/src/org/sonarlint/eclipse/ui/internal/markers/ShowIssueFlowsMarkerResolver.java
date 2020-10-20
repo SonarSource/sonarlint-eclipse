@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -42,13 +41,13 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.texteditor.AbstractMarkerAnnotationModel;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.codemining.SonarLintCodeMiningProvider;
+import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
 public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
@@ -128,26 +127,19 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
   }
 
   private static Map<Annotation, Position> createAnnotations(IMarker marker, ITextEditor textEditor, int selectedFlow) {
-    return MarkerUtils.getIssueFlow(marker).get(selectedFlow - 1)
-      .getLocations()
-      .stream()
-      .collect(Collectors.toMap(p -> new Annotation(ISSUE_FLOW_ANNOTATION_TYPE, false, p.getMessage()),
-        p -> {
-          Position markerPosition = getMarkerPosition(p.getMarker(), textEditor);
-          // Copy the position to avoid having it updated twice when document is updated
-          return new Position(markerPosition.getOffset(), markerPosition.getLength());
-        }));
-  }
-
-  @Nullable
-  public static Position getMarkerPosition(IMarker marker, ITextEditor textEditor) {
-    // look up the current range of the marker when the document has been edited
-    IAnnotationModel model = textEditor.getDocumentProvider().getAnnotationModel(textEditor.getEditorInput());
-    if (model instanceof AbstractMarkerAnnotationModel) {
-      AbstractMarkerAnnotationModel markerModel = (AbstractMarkerAnnotationModel) model;
-      return markerModel.getMarkerPosition(marker);
+    List<MarkerFlow> issueFlow = MarkerUtils.getIssueFlow(marker);
+    if (issueFlow.size() >= selectedFlow) {
+      return issueFlow.get(selectedFlow - 1)
+        .getLocations()
+        .stream()
+        .collect(Collectors.toMap(p -> new Annotation(ISSUE_FLOW_ANNOTATION_TYPE, false, p.getMessage()),
+          p -> {
+            Position markerPosition = LocationsUtils.getMarkerPosition(p.getMarker(), textEditor);
+            // Copy the position to avoid having it updated twice when document is updated
+            return new Position(markerPosition.getOffset(), markerPosition.getLength());
+          }));
     }
-    return null;
+    return Collections.emptyMap();
   }
 
   private static void removePreviousAnnotations(IAnnotationModel annotationModel) {
@@ -168,7 +160,6 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
   }
 
   public static void removeAllAnnotations() {
-    SonarLintCodeMiningProvider.setCurrentMarker(null, -1);
     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     for (IEditorReference editorRef : page.getEditorReferences()) {
       IEditorPart editorPart = editorRef.getEditor(false);
