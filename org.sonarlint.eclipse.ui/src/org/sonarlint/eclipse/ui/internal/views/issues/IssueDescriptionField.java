@@ -122,7 +122,6 @@ public class IssueDescriptionField extends MarkerField {
   @Override
   public void update(ViewerCell cell) {
     super.update(cell);
-
     MarkerItem item = (MarkerItem) cell.getElement();
     if (item != null) {
       cell.setImage(getImage(item));

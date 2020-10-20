@@ -61,6 +61,7 @@ public class SonarLintMarkerUpdater {
     try {
       Set<IMarker> previousMarkersToDelete;
       if (triggerType.isOnTheFly()) {
+        file.getResource().deleteMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID, false, IResource.DEPTH_ZERO);
         previousMarkersToDelete = new HashSet<>(Arrays.asList(file.getResource().findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, false, IResource.DEPTH_ZERO)));
       } else {
         previousMarkersToDelete = Collections.emptySet();
@@ -176,21 +177,16 @@ public class SonarLintMarkerUpdater {
       setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_END, position.getOffset() + position.getLength());
     }
 
-    if (existingAttributes.containsKey(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR)) {
-      List<MarkerFlow> previousFlowsMarkers = (List<MarkerFlow>) existingAttributes.get(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR);
-      previousFlowsMarkers.stream().flatMap(f -> f.getLocations().stream()).map(MarkerFlowLocation::getMarker).filter(Objects::nonNull).forEach(m -> {
-        try {
-          m.delete();
-        } catch (CoreException e) {
-          // Ignore
-        }
-      });
-    }
+    createFlowMarkers(document, issuable, trackable, marker, triggerType);
 
+    updateServerMarkerAttributes(trackable, marker);
+  }
+
+  private static void createFlowMarkers(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, TriggerType triggerType) throws CoreException {
     List<MarkerFlow> flowsMarkers = new ArrayList<>();
     int i = 1;
     for (org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow engineFlow : trackable.getFlows()) {
-      MarkerFlow flow = new MarkerFlow(i++);
+      MarkerFlow flow = new MarkerFlow(i);
       flowsMarkers.add(flow);
       List<IssueLocation> locations = new ArrayList<>(engineFlow.locations());
       Collections.reverse(locations);
@@ -210,10 +206,9 @@ public class SonarLintMarkerUpdater {
           SonarLintLogger.get().debug("Unable to create flow marker", e);
         }
       }
+      i++;
     }
     marker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, flowsMarkers);
-
-    updateServerMarkerAttributes(trackable, marker);
   }
 
   /**
@@ -265,6 +260,9 @@ public class SonarLintMarkerUpdater {
   public static void deleteAllMarkersFromReport() {
     ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
-      .forEach(p -> p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID));
+      .forEach(p -> {
+        p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
+        p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_FLOW_ID);
+      });
   }
 }

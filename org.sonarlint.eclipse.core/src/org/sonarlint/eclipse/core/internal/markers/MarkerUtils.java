@@ -19,10 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -39,6 +37,8 @@ import org.sonarlint.eclipse.core.internal.markers.TextRange.FullTextRange;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
+import static java.util.Collections.emptyList;
+
 public final class MarkerUtils {
 
   public static final String SONAR_MARKER_RULE_KEY_ATTR = "rulekey";
@@ -51,15 +51,6 @@ public final class MarkerUtils {
   public static final String SONAR_MARKER_EXTRA_LOCATIONS_ATTR = "extralocations";
 
   private MarkerUtils() {
-  }
-
-  public static List<IMarker> findReportIssuesMarkers(IResource resource) {
-    try {
-      return Arrays.asList(resource.findMarkers(SonarLintCorePlugin.MARKER_REPORT_ID, true, IResource.DEPTH_INFINITE));
-    } catch (CoreException e) {
-      SonarLintLogger.get().error(e.getMessage(), e);
-      return Collections.emptyList();
-    }
   }
 
   public static void updateAllSonarMarkerSeverity() throws CoreException {
@@ -112,16 +103,6 @@ public final class MarkerUtils {
     }
   }
 
-  @Nullable
-  public static ExtraPosition getExtraPosition(final IDocument document, TextRange textRange, @Nullable String message, long markerId, @Nullable ExtraPosition parent) {
-    try {
-      return convertToGlobalOffset(document, (FullTextRange) textRange, (o, l) -> new ExtraPosition(o, l, message, markerId, parent));
-    } catch (BadLocationException e) {
-      SonarLintLogger.get().error("failed to compute line offsets for start, end = " + textRange.getStartLine() + ", " + textRange.getEndLine(), e);
-      return null;
-    }
-  }
-
   private static <G> G convertToGlobalOffset(final IDocument document, FullTextRange textRange, BiFunction<Integer, Integer, G> function)
     throws BadLocationException {
     int startLineStartOffset = document.getLineOffset(textRange.getStartLine() - 1);
@@ -140,66 +121,13 @@ public final class MarkerUtils {
     return RuleKey.parse(repositoryAndKey);
   }
 
-  public static class ExtraPosition extends Position {
-    private final String message;
-    private final long markerId;
-    private final ExtraPosition previous;
-    private final int number;
-
-    public ExtraPosition(int offset, int length, @Nullable String message, long markerId, @Nullable ExtraPosition previous) {
-      super(offset, length);
-      this.message = message;
-      this.markerId = markerId;
-      this.previous = previous;
-      this.number = previous != null ? (previous.number + 1) : 1;
+  public static List<MarkerFlow> getIssueFlow(IMarker marker) {
+    List<MarkerFlow> flowsMarkers;
+    try {
+      flowsMarkers = Optional.ofNullable((List<MarkerFlow>) marker.getAttribute(SONAR_MARKER_EXTRA_LOCATIONS_ATTR)).orElse(emptyList());
+    } catch (CoreException e) {
+      flowsMarkers = emptyList();
     }
-
-    @Nullable
-    public String getMessage() {
-      return message;
-    }
-
-    public long getMarkerId() {
-      return markerId;
-    }
-
-    @Nullable
-    public ExtraPosition getParent() {
-      return previous;
-    }
-
-    public int getNumber() {
-      return number;
-    }
-
-    public boolean isDescendantOf(@Nullable ExtraPosition possibleAncestor) {
-      if (previous == null) {
-        return this.equals(possibleAncestor);
-      } else {
-        return previous.isDescendantOf(possibleAncestor);
-      }
-    }
-
-    @Override
-    public boolean equals(Object other) {
-      if (other instanceof ExtraPosition) {
-        ExtraPosition rp = (ExtraPosition) other;
-        return (rp.offset == offset)
-          && (rp.length == length)
-          && (rp.markerId == markerId)
-          && Objects.equals(rp.message, message)
-          && Objects.equals(rp.previous, previous);
-      }
-      return super.equals(other);
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = super.hashCode();
-      result = prime * result + (int) (markerId ^ (markerId >>> 32));
-      return result;
-    }
+    return flowsMarkers;
   }
-
 }

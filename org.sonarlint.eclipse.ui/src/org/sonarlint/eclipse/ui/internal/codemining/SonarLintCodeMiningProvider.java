@@ -1,6 +1,6 @@
 /*
  * SonarLint for Eclipse
- * Copyright (C) 2015-2019 SonarSource SA
+ * Copyright (C) 2015-2020 SonarSource SA
  * sonarlint@sonarsource.com
  *
  * This program is free software; you can redistribute it and/or
@@ -35,6 +35,8 @@ import org.eclipse.jface.text.source.ISourceViewerExtension5;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.markers.ShowIssueFlowsMarkerResolver;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 
@@ -59,18 +61,21 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider {
       IEditorInput editorInput = textEditor.getEditorInput();
       IDocument doc = textEditor.getDocumentProvider().getDocument(editorInput);
 
-      ShowIssueFlowsMarkerResolver.getSelectedFlow(markerToUse, selectedFlow).getLocations().forEach(p -> {
-        try {
-          @Nullable
-          Position position = ShowIssueFlowsMarkerResolver.getMarkerPosition(p.getMarker(), textEditor);
-          if (position != null && !position.isDeleted()) {
-            minings.add(new SonarLintFlowMessageCodeMining(p, doc, position, this));
-            minings.add(new SonarLintFlowNumberCodeMining(p, position, this));
+      List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlow(markerToUse);
+      if (flowsMarkers.size() >= selectedFlow) {
+        flowsMarkers.get(selectedFlow - 1).getLocations().forEach(p -> {
+          try {
+            @Nullable
+            Position position = ShowIssueFlowsMarkerResolver.getMarkerPosition(p.getMarker(), textEditor);
+            if (position != null && !position.isDeleted()) {
+              minings.add(new SonarLintFlowMessageCodeMining(p, doc, position, this));
+              minings.add(new SonarLintFlowNumberCodeMining(p, position, this));
+            }
+          } catch (BadLocationException e) {
+            SonarLintLogger.get().error("Unable to create code mining", e);
           }
-        } catch (BadLocationException e) {
-          SonarLintLogger.get().error("Unable to create code mining", e);
-        }
-      });
+        });
+      }
 
       monitor.isCanceled();
       return minings;
