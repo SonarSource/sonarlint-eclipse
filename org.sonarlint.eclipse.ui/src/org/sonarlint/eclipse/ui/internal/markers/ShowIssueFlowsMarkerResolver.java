@@ -21,9 +21,9 @@ package org.sonarlint.eclipse.ui.internal.markers;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
@@ -49,6 +49,8 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
+
+import static java.util.Collections.emptyMap;
 
 public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
 
@@ -129,17 +131,19 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
   private static Map<Annotation, Position> createAnnotations(IMarker marker, ITextEditor textEditor, int selectedFlow) {
     List<MarkerFlow> issueFlow = MarkerUtils.getIssueFlow(marker);
     if (issueFlow.size() >= selectedFlow) {
-      return issueFlow.get(selectedFlow - 1)
-        .getLocations()
-        .stream()
-        .collect(Collectors.toMap(p -> new Annotation(ISSUE_FLOW_ANNOTATION_TYPE, false, p.getMessage()),
-          p -> {
-            Position markerPosition = LocationsUtils.getMarkerPosition(p.getMarker(), textEditor);
+      Map<Annotation, Position> result = new HashMap<>();
+      issueFlow.get(selectedFlow - 1)
+        .getLocations().forEach(location -> {
+          Position markerPosition = LocationsUtils.getMarkerPosition(location.getMarker(), textEditor);
+          if (markerPosition != null && !markerPosition.isDeleted()) {
+            Annotation annotation = new Annotation(ISSUE_FLOW_ANNOTATION_TYPE, false, location.getMessage());
             // Copy the position to avoid having it updated twice when document is updated
-            return new Position(markerPosition.getOffset(), markerPosition.getLength());
-          }));
+            result.put(annotation, new Position(markerPosition.getOffset(), markerPosition.getLength()));
+          }
+        });
+      return result;
     }
-    return Collections.emptyMap();
+    return emptyMap();
   }
 
   private static void removePreviousAnnotations(IAnnotationModel annotationModel) {

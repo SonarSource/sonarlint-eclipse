@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.codemining;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -50,6 +49,7 @@ import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView.FlowSelectionListener;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider implements AbstractMarkerSelectionListener, FlowSelectionListener {
@@ -114,20 +114,19 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider impl
     }
   }
 
-  @Nullable
   @Override
   public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(ITextViewer viewer, IProgressMonitor monitor) {
     IMarker markerToUse = currentMarker;
     int flowNum = selectedFlowNum;
     if (markerToUse == null || flowNum < 1) {
-      return null;
+      return CompletableFuture.completedFuture(emptyList());
     }
 
     // Return fast if the maker is not for the current editor
     ITextEditor textEditor = super.getAdapter(ITextEditor.class);
     IFileEditorInput editorInput = textEditor.getEditorInput().getAdapter(IFileEditorInput.class);
     if (editorInput == null || !editorInput.getFile().equals(markerToUse.getResource())) {
-      return null;
+      return CompletableFuture.completedFuture(emptyList());
     }
 
     return CompletableFuture.supplyAsync(() -> {
@@ -142,7 +141,7 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider impl
       } else if (flowsMarkers.size() >= flowNum) {
         locations = flowsMarkers.get(flowNum - 1).getLocations();
       } else {
-        locations = Collections.emptyList();
+        locations = emptyList();
       }
       List<ICodeMining> minings = createMiningsForLocations(textEditor, locations, doc);
 
