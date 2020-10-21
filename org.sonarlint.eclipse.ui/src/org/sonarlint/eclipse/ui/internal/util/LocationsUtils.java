@@ -71,8 +71,7 @@ public class LocationsUtils {
     return null;
   }
 
-  @Nullable
-  public static Position getMarkerPosition(IMarker marker, ITextEditor textEditor) {
+  public static @Nullable Position getMarkerPosition(IMarker marker, ITextEditor textEditor) {
     // look up the current range of the marker when the document has been edited
     IAnnotationModel model = textEditor.getDocumentProvider().getAnnotationModel(textEditor.getEditorInput());
     if (model instanceof AbstractMarkerAnnotationModel) {
