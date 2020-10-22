@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.views.locations;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
@@ -444,6 +445,10 @@ public class IssueLocationsView extends ViewPart implements AbstractMarkerSelect
 
   public void selectLocation(MarkerFlowLocation location) {
     locationsViewer.setSelection(new StructuredSelection(new FlowNode(location)), true);
+  }
+
+  public Optional<MarkerFlowLocation> getSelectedLocation() {
+    return selectedNode instanceof FlowNode ? Optional.of(((FlowNode) selectedNode).location) : Optional.empty();
   }
 
   public interface FlowSelectionListener {

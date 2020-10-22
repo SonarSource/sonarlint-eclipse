@@ -19,8 +19,10 @@
  */
 package org.sonarlint.eclipse.ui.internal.codemining;
 
+import java.util.Optional;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.codemining.AbstractCodeMining;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Color;
@@ -30,42 +32,99 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
+import org.sonarlint.eclipse.ui.internal.ColorUtil;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
 public class SonarLintFlowLocationNumberCodeMining extends AbstractCodeMining {
 
+  private static final int HORIZONTAL_MARGIN = 2;
+  private static final int HORIZONTAL_PADDING = 4;
+  private static final int VERTICAL_PADDING = 1;
+  private static final int ARC_RADIUS = 5;
+
+  private static final RGB LIGHT_BACKGROUND = new RGB(0xd1, 0x85, 0x82);
+  private static final RGB LIGHT_SELECTED_BACKGROUND = new RGB(0xa4, 0x03, 0x0f);
+
+  private static final RGB DARK_BACKGROUND = new RGB(0x74, 0x23, 0x2f);
+  private static final RGB DARK_SELECTED_BACKGROUND = new RGB(0xb4, 0x13, 0x1f);
+
+  private static final RGB LIGHT_FOREGROUND = new RGB(0xff, 0xff, 0xff);
+  private static final RGB LIGHT_SELECTED_FOREGROUND = new RGB(0xff, 0xff, 0xff);
+
+  private static final RGB DARK_FOREGROUND = new RGB(0xc0, 0xc0, 0xc0);
+  private static final RGB DARK_SELECTED_FOREGROUND = new RGB(0xff, 0xff, 0xff);
+
   private final int number;
+  private final MarkerFlowLocation location;
 
   public SonarLintFlowLocationNumberCodeMining(MarkerFlowLocation location, Position position, SonarLintCodeMiningProvider provider, int number) {
     super(new Position(position.getOffset(), position.getLength()), provider, e -> onClick(e, location));
     this.number = number;
+    this.location = location;
     setLabel(Integer.toString(number));
   }
 
   @Override
   public Point draw(GC gc, StyledText textWidget, Color color, int x, int y) {
+    boolean selected = isSelected();
+    boolean isDark = ColorUtil.isDark(textWidget.getShell().getBackground().getRGB());
+    gc.setAntialias(SWT.ON);
     String numberStr = Integer.toString(number);
     Point numberExtent = gc.stringExtent(numberStr);
-    Point rect = new Point(numberExtent.x + 6, numberExtent.y);
+    Point labelRect = new Point(numberExtent.x + 2 * (HORIZONTAL_MARGIN + HORIZONTAL_PADDING), numberExtent.y + 2 * VERTICAL_PADDING);
     gc.setLineWidth(1);
-    Color bgColor = new Color(gc.getDevice(), new RGB(209, 133, 130));
-    Color fgColor = new Color(gc.getDevice(), new RGB(255, 255, 255));
+    Color bgColor = new Color(gc.getDevice(), getBackgroundRGB(selected, isDark));
+    Color fgColor = new Color(gc.getDevice(), getForegroundRGB(selected, isDark));
     gc.setBackground(bgColor);
     gc.setForeground(fgColor);
-    gc.fillRoundRectangle(x, y, rect.x - 2, rect.y, 5, 5);
-    gc.drawString(numberStr, x + 2, y, true);
+    gc.fillRoundRectangle(x + HORIZONTAL_MARGIN, y - VERTICAL_PADDING, labelRect.x - HORIZONTAL_MARGIN - HORIZONTAL_PADDING, labelRect.y, ARC_RADIUS, ARC_RADIUS);
+    gc.drawString(numberStr, x + HORIZONTAL_MARGIN + HORIZONTAL_PADDING, y, true);
     bgColor.dispose();
     fgColor.dispose();
-    return rect;
+    return labelRect;
+  }
+
+  private RGB getBackgroundRGB(boolean selected, boolean isDark) {
+    return selected ? getSelectedBackgroundRGB(isDark) : getUnselectedBackgroundRGB(isDark);
+  }
+
+  private RGB getSelectedBackgroundRGB(boolean isDark) {
+    return isDark ? DARK_SELECTED_BACKGROUND : LIGHT_SELECTED_BACKGROUND;
+  }
+
+  private RGB getUnselectedBackgroundRGB(boolean isDark) {
+    return isDark ? DARK_BACKGROUND : LIGHT_BACKGROUND;
+  }
+
+  private RGB getForegroundRGB(boolean selected, boolean isDark) {
+    return selected ? getSelectedForegroundRGB(isDark) : getUnselectedForegroundRGB(isDark);
+  }
+
+  private RGB getSelectedForegroundRGB(boolean isDark) {
+    return isDark ? DARK_SELECTED_FOREGROUND : LIGHT_SELECTED_FOREGROUND;
+  }
+
+  private RGB getUnselectedForegroundRGB(boolean isDark) {
+    return isDark ? DARK_FOREGROUND : LIGHT_FOREGROUND;
   }
 
   private static void onClick(MouseEvent e, MarkerFlowLocation location) {
-    try {
-      IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
-      view.selectLocation(location);
-    } catch (Exception ex) {
-      SonarLintLogger.get().error("Unable to open Issue Location View", ex);
-    }
+    findLocationsView().ifPresent(view -> view.selectLocation(location));
   }
 
+  private boolean isSelected() {
+    return findLocationsView()
+      .flatMap(IssueLocationsView::getSelectedLocation)
+      .map(this.location::equals)
+      .orElse(false);
+  }
+
+  private static Optional<IssueLocationsView> findLocationsView() {
+    try {
+      return Optional.of((IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID));
+    } catch (Exception ex) {
+      SonarLintLogger.get().error("Unable to open Issue Location View", ex);
+      return Optional.empty();
+    }
+  }
 }
