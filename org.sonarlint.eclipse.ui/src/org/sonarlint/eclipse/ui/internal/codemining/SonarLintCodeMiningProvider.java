@@ -33,6 +33,7 @@ import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.codemining.AbstractCodeMiningProvider;
 import org.eclipse.jface.text.codemining.ICodeMining;
 import org.eclipse.jface.text.source.ISourceViewerExtension5;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IViewPart;
@@ -81,13 +82,25 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider impl
           }
         }
       }
+
+      @Override
+      public void partClosed(IWorkbenchPartReference partRef) {
+        // Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=568243
+        IWorkbenchPart part = partRef.getPart(true);
+        if (part instanceof IEditorPart) {
+          IEditorPart editorPart = (IEditorPart) part;
+          ITextEditor myTextEditor = SonarLintCodeMiningProvider.this.getAdapter(ITextEditor.class);
+          if (Objects.equals(editorPart.getEditorSite(), myTextEditor.getEditorSite())) {
+            dispose();
+          }
+        }
+      }
     };
     PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().addPartListener(partListener);
   }
 
   @Override
   public void dispose() {
-    // FIXME dispose is never called
     stopListeningForSelectionChanges(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage());
     IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IssueLocationsView.ID);
     if (view != null) {
