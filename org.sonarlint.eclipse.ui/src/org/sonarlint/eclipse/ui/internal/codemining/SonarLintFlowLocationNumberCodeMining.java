@@ -56,25 +56,26 @@ public class SonarLintFlowLocationNumberCodeMining extends AbstractCodeMining {
 
   private final int number;
   private final MarkerFlowLocation location;
+  private final boolean isSelected;
 
-  public SonarLintFlowLocationNumberCodeMining(MarkerFlowLocation location, Position position, SonarLintCodeMiningProvider provider, int number) {
+  public SonarLintFlowLocationNumberCodeMining(MarkerFlowLocation location, Position position, SonarLintCodeMiningProvider provider, int number, boolean isSelected) {
     super(new Position(position.getOffset(), position.getLength()), provider, e -> onClick(e, location));
     this.number = number;
     this.location = location;
+    this.isSelected = isSelected;
     setLabel(Integer.toString(number));
   }
 
   @Override
   public Point draw(GC gc, StyledText textWidget, Color color, int x, int y) {
-    boolean selected = isSelected();
     boolean isDark = ColorUtil.isDark(textWidget.getShell().getBackground().getRGB());
     gc.setAntialias(SWT.ON);
     String numberStr = Integer.toString(number);
     Point numberExtent = gc.stringExtent(numberStr);
     Point labelRect = new Point(numberExtent.x + 2 * (HORIZONTAL_MARGIN + HORIZONTAL_PADDING), numberExtent.y + 2 * VERTICAL_PADDING);
     gc.setLineWidth(1);
-    Color bgColor = new Color(gc.getDevice(), getBackgroundRGB(selected, isDark));
-    Color fgColor = new Color(gc.getDevice(), getForegroundRGB(selected, isDark));
+    Color bgColor = new Color(gc.getDevice(), getBackgroundRGB(isSelected, isDark));
+    Color fgColor = new Color(gc.getDevice(), getForegroundRGB(isSelected, isDark));
     gc.setBackground(bgColor);
     gc.setForeground(fgColor);
     gc.fillRoundRectangle(x + HORIZONTAL_MARGIN, y - VERTICAL_PADDING, labelRect.x - HORIZONTAL_MARGIN - HORIZONTAL_PADDING, labelRect.y, ARC_RADIUS, ARC_RADIUS);
@@ -84,39 +85,32 @@ public class SonarLintFlowLocationNumberCodeMining extends AbstractCodeMining {
     return labelRect;
   }
 
-  private RGB getBackgroundRGB(boolean selected, boolean isDark) {
+  private static RGB getBackgroundRGB(boolean selected, boolean isDark) {
     return selected ? getSelectedBackgroundRGB(isDark) : getUnselectedBackgroundRGB(isDark);
   }
 
-  private RGB getSelectedBackgroundRGB(boolean isDark) {
+  private static RGB getSelectedBackgroundRGB(boolean isDark) {
     return isDark ? DARK_SELECTED_BACKGROUND : LIGHT_SELECTED_BACKGROUND;
   }
 
-  private RGB getUnselectedBackgroundRGB(boolean isDark) {
+  private static RGB getUnselectedBackgroundRGB(boolean isDark) {
     return isDark ? DARK_BACKGROUND : LIGHT_BACKGROUND;
   }
 
-  private RGB getForegroundRGB(boolean selected, boolean isDark) {
+  private static RGB getForegroundRGB(boolean selected, boolean isDark) {
     return selected ? getSelectedForegroundRGB(isDark) : getUnselectedForegroundRGB(isDark);
   }
 
-  private RGB getSelectedForegroundRGB(boolean isDark) {
+  private static RGB getSelectedForegroundRGB(boolean isDark) {
     return isDark ? DARK_SELECTED_FOREGROUND : LIGHT_SELECTED_FOREGROUND;
   }
 
-  private RGB getUnselectedForegroundRGB(boolean isDark) {
+  private static RGB getUnselectedForegroundRGB(boolean isDark) {
     return isDark ? DARK_FOREGROUND : LIGHT_FOREGROUND;
   }
 
   private static void onClick(MouseEvent e, MarkerFlowLocation location) {
     findLocationsView().ifPresent(view -> view.selectLocation(location));
-  }
-
-  private boolean isSelected() {
-    return findLocationsView()
-      .flatMap(IssueLocationsView::getSelectedLocation)
-      .map(this.location::equals)
-      .orElse(false);
   }
 
   private static Optional<IssueLocationsView> findLocationsView() {

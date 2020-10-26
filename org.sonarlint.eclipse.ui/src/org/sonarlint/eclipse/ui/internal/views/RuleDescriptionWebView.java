@@ -19,10 +19,10 @@
  */
 package org.sonarlint.eclipse.ui.internal.views;
 
-import java.util.Objects;
 import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
@@ -39,7 +39,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.markers.AbstractMarkerSelectionListener;
+import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintMarkerSelectionListener;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.exceptions.SonarLintException;
@@ -47,18 +47,11 @@ import org.sonarsource.sonarlint.core.client.api.exceptions.SonarLintException;
 /**
  * Display details of a rule in a web browser
  */
-public class RuleDescriptionWebView extends ViewPart implements AbstractMarkerSelectionListener {
+public class RuleDescriptionWebView extends ViewPart implements SonarLintMarkerSelectionListener {
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.RuleDescriptionWebView";
 
-  protected IMarker currentElement;
-
   private boolean linking = true;
-
-  /**
-   * The last selected element if linking was disabled.
-   */
-  private IMarker lastSelection;
 
   private SonarLintRuleBrowser browser;
 
@@ -67,7 +60,7 @@ public class RuleDescriptionWebView extends ViewPart implements AbstractMarkerSe
     createToolbar();
     browser = new SonarLintRuleBrowser(parent, true);
 
-    startListeningForSelectionChanges(getSite().getPage());
+    SonarLintUiPlugin.getSonarlintMarkerSelectionService().addMarkerSelectionListener(this);
   }
 
   @Override
@@ -88,14 +81,13 @@ public class RuleDescriptionWebView extends ViewPart implements AbstractMarkerSe
     public LinkAction() {
       super(LINK_WITH_SELECTION, IAction.AS_CHECK_BOX);
       setTitleToolTip(LINK_WITH_SELECTION);
-      setImageDescriptor(PlatformUI.getWorkbench()
-        .getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_SYNCED));
-      setChecked(isLinkingEnabled());
+      setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_SYNCED));
+      setChecked(linking);
     }
 
     @Override
     public void run() {
-      setLinkingEnabled(!isLinkingEnabled());
+      setLinkingEnabled(!linking);
     }
   }
 
@@ -108,45 +100,37 @@ public class RuleDescriptionWebView extends ViewPart implements AbstractMarkerSe
    */
   protected void setLinkingEnabled(boolean enabled) {
     linking = enabled;
-    if (linking && (lastSelection != null)) {
-      setInput(lastSelection);
+    if (linking) {
+      setInput(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedMarker().orElse(null));
     }
-  }
-
-  /**
-   * Returns whether this info view reacts to selection changes in the workbench.
-   *
-   * @return true if linking with selection is enabled
-   */
-  protected boolean isLinkingEnabled() {
-    return linking;
   }
 
   @Override
-  public void sonarlintIssueMarkerSelected(IMarker selectedMarker) {
-    if (!linking) {
-      lastSelection = selectedMarker;
-    } else {
-      lastSelection = null;
-      if (!Objects.equals(currentElement, selectedMarker)) {
-        setInput(selectedMarker);
-      }
+  public void markerSelected(Optional<IMarker> marker) {
+    if (linking) {
+      setInput(marker.orElse(null));
     }
   }
 
-  public void setInput(IMarker element) {
-    currentElement = element;
-    open(element);
+  public void setInput(@Nullable IMarker marker) {
+    if (marker != null) {
+      showRuleDescription(marker);
+    } else {
+      clear();
+    }
+  }
+
+  private void clear() {
+    browser.updateRule(null);
   }
 
   @Override
   public void dispose() {
-    stopListeningForSelectionChanges(getSite().getPage());
+    SonarLintUiPlugin.getSonarlintMarkerSelectionService().removeMarkerSelectionListener(this);
     super.dispose();
   }
 
-  private void open(IMarker element) {
-
+  private void showRuleDescription(IMarker element) {
     String ruleKey;
     try {
       ruleKey = element.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR).toString();

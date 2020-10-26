@@ -131,8 +131,7 @@ public final class SelectionUtils {
     }
   }
 
-  @Nullable
-  public static IMarker findSelectedSonarLintMarker(ISelection selection) {
+  public static @Nullable IMarker findSelectedSonarLintMarker(ISelection selection) {
     try {
       if (selection instanceof IStructuredSelection) {
         List<IMarker> selectedSonarMarkers = new ArrayList<>();

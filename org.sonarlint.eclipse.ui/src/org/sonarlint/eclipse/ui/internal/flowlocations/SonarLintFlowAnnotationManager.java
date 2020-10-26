@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.markers;
+package org.sonarlint.eclipse.ui.internal.flowlocations;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,70 +31,27 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.ISourceViewerExtension5;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
 import static java.util.Collections.emptyMap;
 
-public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
+public class SonarLintFlowAnnotationManager {
 
   public static final String ISSUE_FLOW_ANNOTATION_TYPE = "org.sonarlint.eclipse.issueFlowAnnotationType";
   private final IMarker marker;
 
-  public ShowIssueFlowsMarkerResolver(IMarker marker) {
+  public SonarLintFlowAnnotationManager(IMarker marker) {
     this.marker = marker;
-  }
-
-  @Override
-  public String getDescription() {
-    return "Show/Hide all locations to better understand the issue: " + marker.getAttribute(IMarker.MESSAGE, "unknown");
-  }
-
-  @Override
-  public String getLabel() {
-    return "Toggle all issue locations";
-  }
-
-  @Override
-  public void run(IMarker marker) {
-    Display.getDefault().asyncExec(() -> {
-      try {
-        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        IEditorPart editorPart = IDE.openEditor(page, marker);
-        if (editorPart instanceof ITextEditor) {
-          ITextEditor textEditor = (ITextEditor) editorPart;
-          toggleAnnotations(marker, textEditor);
-        }
-      } catch (Exception e) {
-        SonarLintLogger.get().error("Unable to show issue locations", e);
-      }
-    });
-  }
-
-  private static void updateLocationsView(IMarker marker) {
-    try {
-      IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
-      view.setShowAnnotations(true);
-      view.setInput(marker);
-    } catch (PartInitException e) {
-      SonarLintLogger.get().error("Unable to open Issue Locations View", e);
-    }
   }
 
   private static void toggleAnnotations(IMarker marker, ITextEditor textEditor) {
@@ -105,7 +62,7 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
     boolean annotationAlreadyDisplayedForThisMarker = !existingFlowAnnotations.isEmpty()
       && newAnnotations.containsValue(annotationModel.getPosition(existingFlowAnnotations.iterator().next()));
     if (!annotationAlreadyDisplayedForThisMarker) {
-      updateLocationsView(marker);
+      // updateLocationsView(marker);
     } else {
       IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IssueLocationsView.ID);
       if (view != null) {
@@ -190,10 +147,5 @@ public class ShowIssueFlowsMarkerResolver implements IMarkerResolution2 {
       }
     });
     return result;
-  }
-
-  @Override
-  public Image getImage() {
-    return SonarLintImages.RESOLUTION_SHOW_LOCATIONS;
   }
 }

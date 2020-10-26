@@ -65,7 +65,7 @@ public final class MarkerUtils {
 
   @Nullable
   public static Position getPosition(final IDocument document, @Nullable TextRange textRange) {
-    if (textRange == null || ! textRange.isValid()) {
+    if (textRange == null || !textRange.isValid()) {
       return null;
     }
     if (textRange.isLineOnly()) {
@@ -129,5 +129,12 @@ public final class MarkerUtils {
       flowsMarkers = emptyList();
     }
     return flowsMarkers;
+  }
+
+  /**
+   * Special case when all flows have a single location, this is called "secondary locations"
+   */
+  public static boolean isSecondaryLocations(List<MarkerFlow> flowsMarkers) {
+    return !flowsMarkers.isEmpty() && flowsMarkers.stream().allMatch(f -> f.getLocations().size() == 1);
   }
 }
