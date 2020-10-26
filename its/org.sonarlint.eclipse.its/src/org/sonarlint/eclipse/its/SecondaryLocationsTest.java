@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.its;
 
+import java.util.stream.Stream;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
@@ -26,6 +27,8 @@ import org.eclipse.swtbot.swt.finder.SWTBot;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
@@ -38,8 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SecondaryLocationsTest extends AbstractSonarLintTest {
 
   private static OnTheFlyViewBot onTheFlyBot;
-  private static SWTBotView onTheFly;
-  private static SWTBotEclipseEditor helloEditor;
+  private SWTBotView onTheFly;
 
   @BeforeClass
   public static void openSampleProjectAndFileWithFlows() throws Exception {
@@ -48,20 +50,31 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     JobHelpers.waitForJobsToComplete(bot);
 
     onTheFlyBot = new OnTheFlyViewBot(bot);
+  }
+
+  @Before
+  public void showOnTheFlyView() {
     onTheFly = onTheFlyBot.show();
+  }
+
+  @After
+  public void closeActiveEditor() {
+    bot.activeEditor().close();
+    JobHelpers.waitForJobsToComplete(bot);
   }
 
   @Test
   public void shouldShowMultipleFlows() throws Exception {
 
     JavaPackageExplorerBot explorerBot = new JavaPackageExplorerBot(bot);
-    explorerBot.expandAndDoubleClick("java-multiple-flows", "src", "hello", "Hello.java");
+    explorerBot.expandAndDoubleClick("java-multiple-flows", "src", "hello", "MultiFlows.java");
     JobHelpers.waitForJobsToComplete(bot);
 
-    helloEditor = bot.editorByTitle("Hello.java").toTextEditor();
+    SWTBotEclipseEditor helloEditor = bot.editorByTitle("MultiFlows.java").toTextEditor();
     helloEditor.setFocus();
 
-    waitUntilOnTheFlyViewHasItems(1);
+    String issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
+    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle);
     onTheFly.bot().tree().getAllItems()[0].select();
 
     SWTBotView issueLocationsView = getIssueLocationsView();
@@ -70,7 +83,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     assertThat(allItems).hasSize(1);
 
     SWTBotTreeItem locationRoot = allItems[0];
-    assertThat(locationRoot.getText()).isEqualTo("\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".");
+    assertThat(locationRoot.getText()).isEqualTo(issueTitle);
     assertThat(locationRoot.getItems()).hasSize(2);
 
     SWTBotTreeItem flow1 = locationRoot.getNode("Flow 1");
@@ -92,22 +105,55 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     assertThat(flow1Line).isNotEqualTo(flow2Line);
   }
 
+  @Test
+  public void shouldShowFlattenedFlows() throws Exception {
+
+    JavaPackageExplorerBot explorerBot = new JavaPackageExplorerBot(bot);
+    explorerBot.expandAndDoubleClick("java-multiple-flows", "src", "hello", "CognitiveComplexity.java");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    SWTBotEclipseEditor cognitiveComplexityEditor = bot.editorByTitle("CognitiveComplexity.java").toTextEditor();
+    cognitiveComplexityEditor.setFocus();
+
+    String issueTitle = "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.";
+    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle);
+    onTheFly.bot().tree().getAllItems()[0].select();
+
+    SWTBotView issueLocationsView = getIssueLocationsView();
+
+    SWTBotTreeItem[] allItems = issueLocationsView.bot().tree().getAllItems();
+    assertThat(allItems).hasSize(1);
+
+    SWTBotTreeItem locationRoot = allItems[0];
+    assertThat(locationRoot.getText()).isEqualTo(issueTitle);
+    SWTBotTreeItem[] allNodes = locationRoot.getItems();
+    assertThat(allNodes).hasSize(15);
+
+    allNodes[0].doubleClick();
+    assertThat(cognitiveComplexityEditor.getSelection()).isEqualTo("if");
+    assertThat(cognitiveComplexityEditor.cursorPosition()).extracting(p -> p.line, p -> p.column).containsExactly(18, 6);
+
+    allNodes[14].doubleClick();
+    assertThat(cognitiveComplexityEditor.getSelection()).isEqualTo("else");
+    assertThat(cognitiveComplexityEditor.cursorPosition()).extracting(p -> p.line, p -> p.column).containsExactly(45, 12);
+  }
+
   private SWTBotView getIssueLocationsView() {
     return bot.viewById("org.sonarlint.eclipse.ui.views.IssueLocationsView");
   }
 
-  public void waitUntilOnTheFlyViewHasItems(int expectedItems) {
+  public void waitUntilOnTheFlyViewHasItemWithTitle(String expectedTitle) {
     SWTBot otfBot = onTheFly.bot();
     otfBot.waitUntil(new DefaultCondition() {
       @Override
       public boolean test() throws Exception {
         SWTBotTree otfTree = otfBot.tree();
-        return otfTree.hasItems() && otfTree.getAllItems().length == expectedItems; 
+        return otfTree.hasItems() && Stream.of(otfTree.getAllItems()).anyMatch(i -> i.cell(1).equals(expectedTitle)); 
       }
       @Override
       public String getFailureMessage() {
         return "On the fly view not updated";
       }
-    });
+    }, 10_000L);
   }
 }

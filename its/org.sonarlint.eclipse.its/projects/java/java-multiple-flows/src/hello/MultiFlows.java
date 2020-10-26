@@ -3,11 +3,11 @@ package hello;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-public class Hello {
+public class MultiFlows {
 
   private static final Logger LOG = Logger.getGlobal();
 
-  private Hello() {
+  private MultiFlows() {
     // Nothing
   }
 
