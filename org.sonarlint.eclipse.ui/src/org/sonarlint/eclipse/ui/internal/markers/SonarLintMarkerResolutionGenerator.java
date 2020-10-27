@@ -63,7 +63,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
   }
 
   private static boolean hasExtraLocations(IMarker marker) {
-    return !MarkerUtils.getIssueFlow(marker).isEmpty();
+    return !MarkerUtils.getIssueFlows(marker).isEmpty();
   }
 
   private static boolean isStandaloneIssue(IMarker marker) {

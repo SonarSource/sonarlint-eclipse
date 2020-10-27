@@ -23,12 +23,13 @@ import org.eclipse.ui.IPageListener;
 import org.eclipse.ui.IWindowListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowAnnotator;
 
 class WindowOpenCloseListener implements IWindowListener {
 
-  private static final EditorOpenCloseListener SONARLINT_PART_LISTENER = new EditorOpenCloseListener();
+  private static final OpenEditorAnalysisTrigger OPEN_EDITOR_ANALYSIS_TRIGGER = new OpenEditorAnalysisTrigger();
 
-  private static IPageListener PAGE_OPEN_CLOSE_LISTENER = new IPageListener() {
+  private static final IPageListener PAGE_OPEN_CLOSE_LISTENER = new IPageListener() {
 
     @Override
     public void pageOpened(IWorkbenchPage page) {
@@ -77,7 +78,8 @@ class WindowOpenCloseListener implements IWindowListener {
   }
 
   private static void addListenersToPage(IWorkbenchPage page) {
-    page.addPartListener(SONARLINT_PART_LISTENER);
+    page.addPartListener(OPEN_EDITOR_ANALYSIS_TRIGGER);
+    page.addPartListener(SonarLintFlowAnnotator.PART_LISTENER);
     page.addPostSelectionListener(SonarLintUiPlugin.getSonarlintMarkerSelectionService());
   }
 
@@ -88,7 +90,8 @@ class WindowOpenCloseListener implements IWindowListener {
   }
 
   private static void removeListenersFromPage(IWorkbenchPage page) {
-    page.removePartListener(SONARLINT_PART_LISTENER);
+    page.removePartListener(OPEN_EDITOR_ANALYSIS_TRIGGER);
+    page.removePartListener(SonarLintFlowAnnotator.PART_LISTENER);
     page.removePostSelectionListener(SonarLintUiPlugin.getSonarlintMarkerSelectionService());
   }
 }
