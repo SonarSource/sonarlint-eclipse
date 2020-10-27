@@ -27,6 +27,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
@@ -35,12 +38,14 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
+import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -111,6 +116,32 @@ public class SonarLintFlowAnnotator implements SonarLintMarkerSelectionListener,
 
   public SonarLintFlowAnnotator(ITextEditor textEditor) {
     this.textEditor = textEditor;
+    ITextViewer textViewer = textEditor.getAdapter(ITextViewer.class);
+    textViewer.getDocument().addDocumentListener(new IDocumentListener() {
+
+      @Override
+      public void documentChanged(DocumentEvent event) {
+        Optional<IMarker> lastSelectedMarker = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedMarker();
+        if (lastSelectedMarker.isPresent()) {
+          List<MarkerFlow> issueFlows = MarkerUtils.getIssueFlows(lastSelectedMarker.get());
+          IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IssueLocationsView.ID);
+          issueFlows.stream().flatMap(f -> f.getLocations().stream()).forEach(l -> {
+            Position markerPosition = LocationsUtils.getMarkerPosition(l.getMarker(), textEditor);
+            if (markerPosition != null && markerPosition.isDeleted() != l.isDeleted()) {
+              l.setDeleted(markerPosition.isDeleted());
+              if (view != null) {
+                view.refreshLabel(l);
+              }
+            }
+          });
+        }
+      }
+
+      @Override
+      public void documentAboutToBeChanged(DocumentEvent event) {
+        // Nothing to do
+      }
+    });
     updateFlowAnnotations(textEditor);
     SonarLintUiPlugin.getSonarlintMarkerSelectionService().addMarkerSelectionListener(this);
     SonarLintUiPlugin.getSonarlintMarkerSelectionService().addFlowSelectionListener(this);
