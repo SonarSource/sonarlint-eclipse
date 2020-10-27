@@ -28,7 +28,7 @@ class WindowOpenCloseListener implements IWindowListener {
 
   private static final EditorOpenCloseListener SONARLINT_PART_LISTENER = new EditorOpenCloseListener();
 
-  private static IPageListener PAGE_OPEN_CLOSE_LISTENER = new IPageListener() {
+  private static final IPageListener PAGE_OPEN_CLOSE_LISTENER = new IPageListener() {
 
     @Override
     public void pageOpened(IWorkbenchPage page) {

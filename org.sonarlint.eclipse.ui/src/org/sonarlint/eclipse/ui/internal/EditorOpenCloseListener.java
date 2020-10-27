@@ -75,4 +75,39 @@ public class EditorOpenCloseListener implements IPartListener2 {
     JobUtils.scheduleAutoAnalysisIfEnabled(request);
   }
 
+  @Override
+  public void partVisible(IWorkbenchPartReference partRef) {
+    // Nothing to do
+  }
+
+  @Override
+  public void partInputChanged(IWorkbenchPartReference partRef) {
+    // Nothing to do
+  }
+
+  @Override
+  public void partHidden(IWorkbenchPartReference partRef) {
+    // Nothing to do
+  }
+
+  @Override
+  public void partDeactivated(IWorkbenchPartReference partRef) {
+    // Nothing to do
+  }
+
+  @Override
+  public void partClosed(IWorkbenchPartReference partRef) {
+    // Nothing to do
+  }
+
+  @Override
+  public void partBroughtToTop(IWorkbenchPartReference partRef) {
+    // Nothing to do
+  }
+
+  @Override
+  public void partActivated(IWorkbenchPartReference partRef) {
+    // Nothing to do
+  }
+
 }
