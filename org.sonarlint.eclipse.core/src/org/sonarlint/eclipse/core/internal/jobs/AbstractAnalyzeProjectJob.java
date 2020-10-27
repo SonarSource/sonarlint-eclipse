@@ -134,13 +134,21 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
         .collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()), HashMap::putAll);
 
       SonarLintLogger.get().debug("Clear markers on " + excludedFiles.size() + " excluded files");
-      ResourcesPlugin.getWorkspace().run(m -> {
-        excludedFiles.forEach(SonarLintMarkerUpdater::clearMarkers);
-
-        if (shouldClearReport) {
-          SonarLintMarkerUpdater.deleteAllMarkersFromReport();
+      excludedFiles.forEach(f -> {
+        ISchedulingRule markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(f.getResource());
+        try {
+          getJobManager().beginRule(markerRule, monitor);
+          SonarLintMarkerUpdater.clearMarkers(f);
+        } finally {
+          getJobManager().endRule(markerRule);
         }
-      }, monitor);
+      });
+
+      if (shouldClearReport) {
+        ResourcesPlugin.getWorkspace().run(m -> {
+          SonarLintMarkerUpdater.deleteAllMarkersFromReport();
+        }, monitor);
+      }
 
       if (filesToAnalyze.isEmpty()) {
         return Status.OK_STATUS;
@@ -292,7 +300,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       .filter(e -> e.getKey() instanceof ISonarLintFile)
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
-    ResourcesPlugin.getWorkspace().run(m -> trackIssues(docPerFile, successfulFiles, triggerType, m), monitor);
+    trackIssues(docPerFile, successfulFiles, triggerType, monitor);
   }
 
   protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,
