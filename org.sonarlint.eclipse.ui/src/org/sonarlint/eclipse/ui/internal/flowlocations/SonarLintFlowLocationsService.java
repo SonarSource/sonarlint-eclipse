@@ -75,7 +75,7 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
           // Marker has been deleted during the last analysis
           markerSelected(null, false);
         } else {
-          List<MarkerFlow> newIssueFlows = MarkerUtils.getIssueFlow(lastSelectedMarker.get());
+          List<MarkerFlow> newIssueFlows = MarkerUtils.getIssueFlows(lastSelectedMarker.get());
           // Try to reselect the same flow number than before
           Integer pastFlowNum = lastSelectedFlow.map(MarkerFlow::getNumber).orElse(null);
           if (pastFlowNum != null && newIssueFlows.size() >= pastFlowNum) {
@@ -150,7 +150,7 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
     if (forceShowAnnotationsInEditor) {
       this.showAnnotationsInEditor = true;
     }
-    if (selectedMarker != null && !MarkerUtils.getIssueFlow(selectedMarker).isEmpty()) {
+    if (selectedMarker != null && !MarkerUtils.getIssueFlows(selectedMarker).isEmpty()) {
       openIssueLocationsView(forceShowAnnotationsInEditor);
     }
     if (!Objects.equals(lastSelectedMarker.orElse(null), selectedMarker)) {
@@ -158,7 +158,7 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
       lastSelectedFlow = Optional.empty();
       lastSelectedFlowLocation = Optional.empty();
       if (selectedMarker != null) {
-        List<MarkerFlow> issueFlow = MarkerUtils.getIssueFlow(selectedMarker);
+        List<MarkerFlow> issueFlow = MarkerUtils.getIssueFlows(selectedMarker);
         if (!MarkerUtils.isSecondaryLocations(issueFlow) && !issueFlow.isEmpty()) {
           // Select the first flow
           lastSelectedFlow = Optional.of(issueFlow.get(0));

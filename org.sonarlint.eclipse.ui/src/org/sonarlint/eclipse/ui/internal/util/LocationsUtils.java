@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.util;
 
+import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.Position;
@@ -34,6 +35,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractMarkerAnnotationModel;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
 
 public class LocationsUtils {
 
@@ -79,5 +81,9 @@ public class LocationsUtils {
       return markerModel.getMarkerPosition(marker);
     }
     return null;
+  }
+
+  public static boolean hasAtLeastOneLocationOnTheSameResourceThanEditor(Stream<MarkerFlowLocation> allFlowLocations, IFileEditorInput editorInput) {
+    return allFlowLocations.map(MarkerFlowLocation::getMarker).filter(m -> m != null && m.exists()).map(IMarker::getResource).anyMatch(r -> r.equals(editorInput.getFile()));
   }
 }

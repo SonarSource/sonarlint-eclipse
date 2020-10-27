@@ -40,7 +40,7 @@ import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 /**
  * Responsible to trigger analysis when editor are opened
  */
-public class EditorOpenCloseListener implements IPartListener2 {
+public class OpenEditorAnalysisTrigger implements IPartListener2 {
   @Override
   public void partOpened(IWorkbenchPartReference partRef) {
     IWorkbenchPart part = partRef.getPart(true);
