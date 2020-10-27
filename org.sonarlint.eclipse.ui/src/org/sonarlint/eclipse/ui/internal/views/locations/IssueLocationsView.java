@@ -31,12 +31,16 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IWorkbenchPage;
@@ -224,10 +228,16 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
   }
 
-  private static class LocationsTreeLabelProvider extends LabelProvider {
+  private static class LocationsTreeLabelProvider extends StyledCellLabelProvider {
 
-    @Override
-    public String getText(Object element) {
+    private final Styler invalidLocationStyler = new Styler() {
+      @Override
+      public void applyStyles(TextStyle textStyle) {
+        textStyle.strikeout = true;
+      }
+    };
+
+    private static String getText(Object element) {
       if (element instanceof RootNode) {
         return ((RootNode) element).getMarker().getAttribute(IMarker.MESSAGE, "No message");
       } else if (element instanceof FlowRootNode) {
@@ -240,14 +250,44 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       throw new IllegalArgumentException("Unknow node type: " + element);
     }
 
-    @Override
-    public Image getImage(Object element) {
+    private static @Nullable Image getImage(Object element) {
       if (element instanceof RootNode) {
         return SonarLintImages.ISSUE_ANNOTATION;
       }
-      return super.getImage(element);
+      return null;
     }
 
+    @Override
+    public void update(ViewerCell cell) {
+      Object element = cell.getElement();
+      StyledString styledString = getStyledString(element);
+      cell.setText(styledString.toString());
+      cell.setImage(getImage(element));
+      cell.setStyleRanges(styledString.getStyleRanges());
+      super.update(cell);
+    }
+
+    private StyledString getStyledString(Object element) {
+      return new StyledString(getText(element), isValidLocation(element) ? null : invalidLocationStyler);
+    }
+
+  }
+
+  private static boolean isValidLocation(Object element) {
+    if (element instanceof RootNode) {
+      return ((RootNode) element).getMarker().exists();
+    } else if (element instanceof FlowRootNode) {
+      return Stream.of(((FlowRootNode) element).getChildren()).anyMatch(IssueLocationsView::isValidFlowLocation);
+    } else if (element instanceof FlowNode) {
+      return isValidFlowLocation(((FlowNode) element));
+    } else if (element instanceof String) {
+      return true;
+    }
+    throw new IllegalArgumentException("Unknow node type: " + element);
+  }
+
+  private static boolean isValidFlowLocation(FlowNode flowNode) {
+    return flowNode.getLocation().getMarker().exists() && !flowNode.getLocation().isDeleted();
   }
 
   @Override
@@ -303,7 +343,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     locationsViewer.setInput(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedMarker().orElse(null));
   }
 
-  private void onTreeNodeSelected(Object selectedNode) {
+  private static void onTreeNodeSelected(Object selectedNode) {
     if (selectedNode instanceof RootNode) {
       SonarLintUiPlugin.getSonarlintMarkerSelectionService().flowSelected(null);
     } else if (selectedNode instanceof FlowRootNode) {
@@ -319,10 +359,12 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
     if (node instanceof FlowNode) {
       IMarker flowMarker = ((FlowNode) node).getLocation().getMarker();
-      try {
-        IDE.openEditor(page, flowMarker);
-      } catch (PartInitException e) {
-        SonarLintLogger.get().error(e.getMessage(), e);
+      if (flowMarker.exists()) {
+        try {
+          IDE.openEditor(page, flowMarker);
+        } catch (PartInitException e) {
+          SonarLintLogger.get().error(e.getMessage(), e);
+        }
       }
     }
   }
@@ -381,6 +423,10 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
   public void selectFlow(MarkerFlow flow) {
     locationsViewer.setSelection(new StructuredSelection(new FlowRootNode(flow)), true);
+  }
+
+  public void refreshLabel(MarkerFlowLocation location) {
+    locationsViewer.refresh(new FlowNode(location));
   }
 
 }

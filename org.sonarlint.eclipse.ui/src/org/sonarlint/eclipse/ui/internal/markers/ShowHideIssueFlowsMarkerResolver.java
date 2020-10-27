@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.ui.internal.markers;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMarkerResolution2;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
@@ -29,27 +30,45 @@ public class ShowHideIssueFlowsMarkerResolver implements IMarkerResolution2 {
 
   private final IMarker marker;
   private final boolean alreadySelected;
+  private final boolean isSecondaryLocation;
 
   public ShowHideIssueFlowsMarkerResolver(IMarker marker) {
     this.marker = marker;
     this.alreadySelected = marker.equals(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedMarker().orElse(null));
+    isSecondaryLocation = MarkerUtils.isSecondaryLocations(MarkerUtils.getIssueFlows(marker));
   }
 
   @Override
   public String getDescription() {
+    String action;
+    String theIssue = " the issue: " + marker.getAttribute(IMarker.MESSAGE, "unknown");
+    String suffix;
     if (alreadySelected) {
-      return "Hide locations of the issue: " + marker.getAttribute(IMarker.MESSAGE, "unknown");
+      action = "Hide";
+      suffix = " of" + theIssue;
     } else {
-      return "Show all locations to better understand the issue: " + marker.getAttribute(IMarker.MESSAGE, "unknown");
+      action = "Show";
+      suffix = " to better understand" + theIssue;
+    }
+    if (isSecondaryLocation) {
+      return action + " all locations" + suffix;
+    } else {
+      return action + " data flows" + suffix;
     }
   }
 
   @Override
   public String getLabel() {
+    String action;
     if (alreadySelected) {
-      return "Hide all issue locations";
+      action = "Hide";
     } else {
-      return "Show all issue locations";
+      action = "Show";
+    }
+    if (isSecondaryLocation) {
+      return action + " issue locations";
+    } else {
+      return action + " issue data flows";
     }
   }
 

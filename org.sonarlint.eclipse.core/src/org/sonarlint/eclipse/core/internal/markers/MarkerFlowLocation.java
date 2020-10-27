@@ -26,6 +26,7 @@ public class MarkerFlowLocation {
   private final int number;
   private final String message;
   private IMarker marker;
+  private boolean deleted;
 
   public MarkerFlowLocation(MarkerFlow parent, String message) {
     this.parent = parent;
@@ -52,5 +53,13 @@ public class MarkerFlowLocation {
 
   public IMarker getMarker() {
     return marker;
+  }
+
+  public boolean isDeleted() {
+    return deleted;
+  }
+
+  public void setDeleted(boolean deleted) {
+    this.deleted = deleted;
   }
 }

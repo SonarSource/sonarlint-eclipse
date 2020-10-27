@@ -64,6 +64,34 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
   }
 
   @Test
+  public void shouldShowSingleFlow() throws Exception {
+
+    JavaPackageExplorerBot explorerBot = new JavaPackageExplorerBot(bot);
+    explorerBot.expandAndDoubleClick("java-multiple-flows", "src", "hello", "SingleFlow.java");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    SWTBotEclipseEditor helloEditor = bot.editorByTitle("SingleFlow.java").toTextEditor();
+    helloEditor.setFocus();
+
+    String issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
+    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+1 flow]");
+    onTheFly.bot().tree().getAllItems()[0].select();
+
+    SWTBotView issueLocationsView = getIssueLocationsView();
+
+    SWTBotTreeItem[] allItems = issueLocationsView.bot().tree().getAllItems();
+    assertThat(allItems).hasSize(1);
+
+    SWTBotTreeItem locationRoot = allItems[0];
+    assertThat(locationRoot.getText()).isEqualTo(issueTitle);
+    assertThat(locationRoot.getItems()).hasSize(5);
+
+    locationRoot.getItems()[0].doubleClick();
+    assertThat(helloEditor.getSelection()).isEqualTo("arg = null");
+    assertThat(helloEditor.cursorPosition().line).isEqualTo(20);
+  }
+
+  @Test
   public void shouldShowMultipleFlows() throws Exception {
 
     JavaPackageExplorerBot explorerBot = new JavaPackageExplorerBot(bot);
@@ -74,7 +102,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     helloEditor.setFocus();
 
     String issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
-    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle);
+    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+2 flows]");
     onTheFly.bot().tree().getAllItems()[0].select();
 
     SWTBotView issueLocationsView = getIssueLocationsView();
@@ -116,7 +144,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     cognitiveComplexityEditor.setFocus();
 
     String issueTitle = "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.";
-    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle);
+    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+15 locations]");
     onTheFly.bot().tree().getAllItems()[0].select();
 
     SWTBotView issueLocationsView = getIssueLocationsView();
