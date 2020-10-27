@@ -121,7 +121,7 @@ public final class MarkerUtils {
     return RuleKey.parse(repositoryAndKey);
   }
 
-  public static List<MarkerFlow> getIssueFlow(IMarker marker) {
+  public static List<MarkerFlow> getIssueFlows(IMarker marker) {
     List<MarkerFlow> flowsMarkers;
     try {
       flowsMarkers = Optional.ofNullable((List<MarkerFlow>) marker.getAttribute(SONAR_MARKER_EXTRA_LOCATIONS_ATTR)).orElse(emptyList());

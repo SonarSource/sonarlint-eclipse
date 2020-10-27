@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ui.IEditorPart;
@@ -86,7 +87,7 @@ public final class PlatformUtils {
     for (IWorkbenchWindow win : workbench.getWorkbenchWindows()) {
       for (IWorkbenchPage page : win.getPages()) {
         // handle the common case where the editor input is a FileEditorInput and ISonarLintFile wrap an IFile
-        IEditorPart result = findInFileEditorInput(file, page);
+        IEditorPart result = findInFileEditorInput(file.getResource(), page);
         if (result != null) {
           return result;
         }
@@ -101,10 +102,10 @@ public final class PlatformUtils {
   }
 
   @Nullable
-  private static IEditorPart findInFileEditorInput(ISonarLintFile file, IWorkbenchPage page) {
-    if (file.getResource() instanceof IFile) {
+  private static IEditorPart findInFileEditorInput(IResource resource, IWorkbenchPage page) {
+    if (resource instanceof IFile) {
       // Don't use page.findEditor(IEditorInput) because it will try to restore the editor before returning it
-      IEditorReference[] references = page.findEditors(new FileEditorInput((IFile) file.getResource()), null, IWorkbenchPage.MATCH_INPUT);
+      IEditorReference[] references = page.findEditors(new FileEditorInput((IFile) resource), null, IWorkbenchPage.MATCH_INPUT);
       if (references.length == 0) {
         return null;
       }

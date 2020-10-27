@@ -53,6 +53,7 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintMarkerSelectionListener;
 
 import static java.util.stream.Collectors.toList;
+import static org.eclipse.jface.viewers.AbstractTreeViewer.ALL_LEVELS;
 
 /**
  * Display details of a rule in a web browser
@@ -168,7 +169,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     @Override
     public Object[] getElements(Object inputElement) {
       IMarker sonarlintMarker = (IMarker) inputElement;
-      List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlow(sonarlintMarker);
+      List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlows(sonarlintMarker);
       if (!flowsMarkers.isEmpty()) {
         return new Object[] {new RootNode(sonarlintMarker, flowsMarkers)};
       } else {
@@ -249,10 +250,6 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
   }
 
-  public @Nullable IMarker getCurrentMarker() {
-    return (@Nullable IMarker) locationsViewer.getInput();
-  }
-
   @Override
   public void markerSelected(Optional<IMarker> marker) {
     locationsViewer.setInput(marker.orElse(null));
@@ -270,9 +267,9 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
   @Override
   public void createPartControl(Composite parent) {
     createToolbar();
-    Tree tree = new Tree(parent, SWT.MULTI);
+    Tree tree = new Tree(parent, SWT.SINGLE);
     locationsViewer = new TreeViewer(tree);
-    locationsViewer.setAutoExpandLevel(TreeViewer.ALL_LEVELS);
+    locationsViewer.setAutoExpandLevel(ALL_LEVELS);
     locationsViewer.setUseHashlookup(true);
     locationsViewer.setContentProvider(new LocationsProvider());
     locationsViewer.setLabelProvider(new LocationsTreeLabelProvider());
@@ -316,7 +313,6 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     } else {
       throw new IllegalStateException("Unsupported node type");
     }
-    showAnnotationsAction.run();
   }
 
   private static void onTreeNodeDoubleClick(Object node) {
@@ -334,6 +330,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
   private void createToolbar() {
     IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
     showAnnotationsAction = new ToggleAnnotationsAction();
+    showAnnotationsAction.setChecked(SonarLintUiPlugin.getSonarlintMarkerSelectionService().isShowAnnotationsInEditor());
     toolbarManager.add(showAnnotationsAction);
     toolbarManager.add(new Separator());
     toolbarManager.update(false);
@@ -346,8 +343,9 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
   @Override
   public void dispose() {
-    SonarLintUiPlugin.getSonarlintMarkerSelectionService().markerSelected(null, false);
     SonarLintUiPlugin.getSonarlintMarkerSelectionService().removeMarkerSelectionListener(this);
+    // Unselect marker to make annotations disappear
+    SonarLintUiPlugin.getSonarlintMarkerSelectionService().markerSelected(null, false);
     super.dispose();
   }
 
@@ -361,7 +359,6 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       setDescription("Show/hide annotations in editor");
       setToolTipText("Show/hide annotations in editor");
       setImageDescriptor(SonarLintImages.MARK_OCCURENCES_IMG);
-      setChecked(true);
     }
 
     /**

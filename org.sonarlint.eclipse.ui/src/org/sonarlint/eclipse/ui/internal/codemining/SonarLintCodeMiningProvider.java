@@ -97,7 +97,7 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
   @Override
   public void markerSelected(Optional<IMarker> marker) {
     forceRefreshCodeMiningsIfNecessary(marker, m -> {
-      List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlow(m);
+      List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlows(m);
       return flowsMarkers.stream().flatMap(f -> f.getLocations().stream());
     });
   }
@@ -124,7 +124,7 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
       Stream<MarkerFlowLocation> allFlowLocations = flowLocationExtractor.apply(selected.get());
       ITextEditor textEditor = super.getAdapter(ITextEditor.class);
       IFileEditorInput editorInput = textEditor.getEditorInput().getAdapter(IFileEditorInput.class);
-      if (editorInput != null && hasAtLeastOneLocationOnTheSameResourceThanEditor(allFlowLocations, editorInput)) {
+      if (editorInput != null && LocationsUtils.hasAtLeastOneLocationOnTheSameResourceThanEditor(allFlowLocations, editorInput)) {
         shouldRefresh = true;
       }
     }
@@ -133,12 +133,11 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
     }
   }
 
-  private static boolean hasAtLeastOneLocationOnTheSameResourceThanEditor(Stream<MarkerFlowLocation> allFlowLocations, IFileEditorInput editorInput) {
-    return allFlowLocations.map(MarkerFlowLocation::getMarker).filter(m -> m != null && m.exists()).map(IMarker::getResource).anyMatch(r -> r.equals(editorInput.getFile()));
-  }
-
   @Override
   public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(ITextViewer viewer, IProgressMonitor monitor) {
+    if (!SonarLintUiPlugin.getSonarlintMarkerSelectionService().isShowAnnotationsInEditor()) {
+      return CompletableFuture.completedFuture(emptyList());
+    }
     IMarker markerToUse = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedMarker().orElse(null);
     if (markerToUse == null) {
       return CompletableFuture.completedFuture(emptyList());
@@ -149,7 +148,7 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
     if (editorInput == null || !editorInput.getFile().equals(markerToUse.getResource())) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlow(markerToUse);
+    List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlows(markerToUse);
     if (flowsMarkers.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }
