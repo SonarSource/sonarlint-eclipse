@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
+import java.util.List;
 import java.util.Locale;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,6 +29,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.CompatibilityUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -58,7 +60,24 @@ public class IssueDescriptionField extends MarkerField {
 
   @Override
   public String getValue(MarkerItem item) {
-    return item.getAttributeValue(IMarker.MESSAGE, "Unknow");
+    StringBuilder sb = new StringBuilder();
+    sb.append(item.getAttributeValue(IMarker.MESSAGE, "No message"));
+    List<MarkerFlow> issueFlows = MarkerUtils.getIssueFlows(item.getMarker());
+    if (!issueFlows.isEmpty()) {
+      boolean isSecondary = MarkerUtils.isSecondaryLocations(issueFlows);
+      String kind;
+      if (isSecondary) {
+        kind = "location";
+      } else {
+        kind = "flow";
+      }
+      sb.append(" [+").append(issueFlows.size()).append(" ").append(pluralize(kind, issueFlows.size())).append("]");
+    }
+    return sb.toString();
+  }
+
+  private static String pluralize(String str, int count) {
+    return count == 1 ? str : (str + "s");
   }
 
   @Override

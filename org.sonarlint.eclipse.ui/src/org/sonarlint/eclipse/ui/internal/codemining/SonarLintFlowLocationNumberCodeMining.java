@@ -24,7 +24,6 @@ import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.codemining.AbstractCodeMining;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
@@ -55,13 +54,11 @@ public class SonarLintFlowLocationNumberCodeMining extends AbstractCodeMining {
   private static final RGB DARK_SELECTED_FOREGROUND = new RGB(0xff, 0xff, 0xff);
 
   private final int number;
-  private final MarkerFlowLocation location;
   private final boolean isSelected;
 
   public SonarLintFlowLocationNumberCodeMining(MarkerFlowLocation location, Position position, SonarLintCodeMiningProvider provider, int number, boolean isSelected) {
-    super(new Position(position.getOffset(), position.getLength()), provider, e -> onClick(e, location));
+    super(new Position(position.getOffset(), position.getLength()), provider, e -> onClick(location));
     this.number = number;
-    this.location = location;
     this.isSelected = isSelected;
     setLabel(Integer.toString(number));
   }
@@ -109,7 +106,7 @@ public class SonarLintFlowLocationNumberCodeMining extends AbstractCodeMining {
     return isDark ? DARK_FOREGROUND : LIGHT_FOREGROUND;
   }
 
-  private static void onClick(MouseEvent e, MarkerFlowLocation location) {
+  private static void onClick(MarkerFlowLocation location) {
     findLocationsView().ifPresent(view -> view.selectLocation(location));
   }
 

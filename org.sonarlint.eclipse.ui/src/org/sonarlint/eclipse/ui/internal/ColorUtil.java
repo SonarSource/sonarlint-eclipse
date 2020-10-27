@@ -44,7 +44,9 @@ public final class ColorUtil {
   }
 
   private static double getLinearRGBComponentValue(double colorValue) {
-    if (colorValue <= 0.03928) return colorValue / 12.92;
+    if (colorValue <= 0.03928) {
+      return colorValue / 12.92;
+    }
     return Math.pow(((colorValue + 0.055) / 1.055), 2.4);
   }
 }
