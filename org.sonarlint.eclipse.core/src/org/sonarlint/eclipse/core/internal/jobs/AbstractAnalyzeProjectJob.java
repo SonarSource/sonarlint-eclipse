@@ -85,7 +85,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   private final boolean shouldClearReport;
   private final Collection<FileWithDocument> files;
 
-  public AbstractAnalyzeProjectJob(AnalyzeProjectRequest request) {
+  protected AbstractAnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
     this.extraProps = SonarLintGlobalConfiguration.getExtraPropertiesForLocalAnalysis(request.getProject());
     this.files = request.getFiles();
@@ -134,13 +134,19 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
         .collect(HashMap::new, (m, fWithDoc) -> m.put(fWithDoc.getFile(), fWithDoc.getDocument()), HashMap::putAll);
 
       SonarLintLogger.get().debug("Clear markers on " + excludedFiles.size() + " excluded files");
-      ResourcesPlugin.getWorkspace().run(m -> {
-        excludedFiles.forEach(SonarLintMarkerUpdater::clearMarkers);
-
-        if (shouldClearReport) {
-          SonarLintMarkerUpdater.deleteAllMarkersFromReport();
+      excludedFiles.forEach(f -> {
+        ISchedulingRule markerRule = ResourcesPlugin.getWorkspace().getRuleFactory().markerRule(f.getResource());
+        try {
+          getJobManager().beginRule(markerRule, monitor);
+          SonarLintMarkerUpdater.clearMarkers(f);
+        } finally {
+          getJobManager().endRule(markerRule);
         }
-      }, monitor);
+      });
+
+      if (shouldClearReport) {
+        ResourcesPlugin.getWorkspace().run(m -> SonarLintMarkerUpdater.deleteAllMarkersFromReport(), monitor);
+      }
 
       if (filesToAnalyze.isEmpty()) {
         return Status.OK_STATUS;
@@ -283,8 +289,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   }
 
   private void updateMarkers(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> issuesPerResource, AnalysisResults result,
-    TriggerType triggerType, final IProgressMonitor monitor)
-    throws CoreException {
+    TriggerType triggerType, final IProgressMonitor monitor) {
     Set<ISonarLintFile> failedFiles = result.failedAnalysisFiles().stream().map(ClientInputFile::<ISonarLintFile>getClientObject).collect(Collectors.toSet());
     Map<ISonarLintIssuable, List<Issue>> successfulFiles = issuesPerResource.entrySet().stream()
       .filter(e -> !failedFiles.contains(e.getKey()))
@@ -292,7 +297,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       .filter(e -> e.getKey() instanceof ISonarLintFile)
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
-    ResourcesPlugin.getWorkspace().run(m -> trackIssues(docPerFile, successfulFiles, triggerType, m), monitor);
+    trackIssues(docPerFile, successfulFiles, triggerType, monitor);
   }
 
   protected void trackIssues(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource, TriggerType triggerType,

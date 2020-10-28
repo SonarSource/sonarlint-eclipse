@@ -39,23 +39,21 @@ import static java.util.stream.Collectors.toList;
 
 public class AnalyzeStandaloneProjectJob extends AbstractAnalyzeProjectJob<StandaloneAnalysisConfiguration> {
 
-  private final Collection<RuleConfig> rulesConfig;
-
   public AnalyzeStandaloneProjectJob(AnalyzeProjectRequest request) {
     super(request);
-    rulesConfig = SonarLintGlobalConfiguration.readRulesConfig();
   }
 
   @Override
   protected StandaloneAnalysisConfiguration prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps) {
     SonarLintLogger.get().debug("Standalone mode (project not bound)");
+    Collection<RuleConfig> rulesConfig = SonarLintGlobalConfiguration.readRulesConfig();
     return StandaloneAnalysisConfiguration.builder()
       .setBaseDir(projectBaseDir)
       .addInputFiles(inputFiles)
       .putAllExtraProperties(mergedExtraProps)
-      .addExcludedRules(getExcludedRules())
-      .addIncludedRules(getIncludedRules())
-      .addRuleParameters(getRuleParameters())
+      .addExcludedRules(getExcludedRules(rulesConfig))
+      .addIncludedRules(getIncludedRules(rulesConfig))
+      .addRuleParameters(getRuleParameters(rulesConfig))
       .build();
   }
 
@@ -65,21 +63,21 @@ public class AnalyzeStandaloneProjectJob extends AbstractAnalyzeProjectJob<Stand
     return standaloneEngine.runAnalysis(analysisConfig, issueListener, monitor);
   }
 
-  private Collection<RuleKey> getExcludedRules() {
+  private static Collection<RuleKey> getExcludedRules(Collection<RuleConfig> rulesConfig) {
     return rulesConfig.stream()
       .filter(r -> !r.isActive())
       .map(r -> RuleKey.parse(r.getKey()))
       .collect(toList());
   }
 
-  private Collection<RuleKey> getIncludedRules() {
+  private static Collection<RuleKey> getIncludedRules(Collection<RuleConfig> rulesConfig) {
     return rulesConfig.stream()
       .filter(RuleConfig::isActive)
       .map(r -> RuleKey.parse(r.getKey()))
       .collect(toList());
   }
 
-  private Map<RuleKey, Map<String, String>> getRuleParameters() {
+  private static Map<RuleKey, Map<String, String>> getRuleParameters(Collection<RuleConfig> rulesConfig) {
     return rulesConfig.stream()
       .filter(RuleConfig::isActive)
       .filter(r -> !r.getParams().isEmpty())
