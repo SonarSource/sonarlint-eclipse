@@ -85,7 +85,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   private final boolean shouldClearReport;
   private final Collection<FileWithDocument> files;
 
-  public AbstractAnalyzeProjectJob(AnalyzeProjectRequest request) {
+  protected AbstractAnalyzeProjectJob(AnalyzeProjectRequest request) {
     super(jobTitle(request), request.getProject());
     this.extraProps = SonarLintGlobalConfiguration.getExtraPropertiesForLocalAnalysis(request.getProject());
     this.files = request.getFiles();
@@ -145,9 +145,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       });
 
       if (shouldClearReport) {
-        ResourcesPlugin.getWorkspace().run(m -> {
-          SonarLintMarkerUpdater.deleteAllMarkersFromReport();
-        }, monitor);
+        ResourcesPlugin.getWorkspace().run(m -> SonarLintMarkerUpdater.deleteAllMarkersFromReport(), monitor);
       }
 
       if (filesToAnalyze.isEmpty()) {
@@ -291,8 +289,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   }
 
   private void updateMarkers(Map<ISonarLintFile, IDocument> docPerFile, Map<ISonarLintIssuable, List<Issue>> issuesPerResource, AnalysisResults result,
-    TriggerType triggerType, final IProgressMonitor monitor)
-    throws CoreException {
+    TriggerType triggerType, final IProgressMonitor monitor) {
     Set<ISonarLintFile> failedFiles = result.failedAnalysisFiles().stream().map(ClientInputFile::<ISonarLintFile>getClientObject).collect(Collectors.toSet());
     Map<ISonarLintIssuable, List<Issue>> successfulFiles = issuesPerResource.entrySet().stream()
       .filter(e -> !failedFiles.contains(e.getKey()))
