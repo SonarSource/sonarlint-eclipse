@@ -74,7 +74,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     helloEditor.setFocus();
 
     String issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
-    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle);
+    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+2 flows]");
     onTheFly.bot().tree().getAllItems()[0].select();
 
     SWTBotView issueLocationsView = getIssueLocationsView();
@@ -116,7 +116,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     cognitiveComplexityEditor.setFocus();
 
     String issueTitle = "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.";
-    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle);
+    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+15 locations]");
     onTheFly.bot().tree().getAllItems()[0].select();
 
     SWTBotView issueLocationsView = getIssueLocationsView();
