@@ -65,13 +65,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldShowSingleFlow() throws Exception {
-
-    JavaPackageExplorerBot explorerBot = new JavaPackageExplorerBot(bot);
-    explorerBot.expandAndDoubleClick("java-multiple-flows", "src", "hello", "SingleFlow.java");
-    JobHelpers.waitForJobsToComplete(bot);
-
-    SWTBotEclipseEditor helloEditor = bot.editorByTitle("SingleFlow.java").toTextEditor();
-    helloEditor.setFocus();
+    SWTBotEclipseEditor helloEditor = openAndAnalyzeFile("SingleFlow.java");
 
     String issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
     waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+1 flow]");
@@ -92,14 +86,26 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
   }
 
   @Test
+  public void shouldShowHighlightsOnly() throws Exception {
+    openAndAnalyzeFile("HighlightOnly.java");
+
+    String issueTitle = "Remove these useless parentheses.";
+    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+1 location]");
+    onTheFly.bot().tree().getAllItems()[0].select();
+
+    SWTBotView issueLocationsView = getIssueLocationsView();
+
+    SWTBotTreeItem[] allItems = issueLocationsView.bot().tree().getAllItems();
+    assertThat(allItems).hasSize(1);
+
+    SWTBotTreeItem locationRoot = allItems[0];
+    assertThat(locationRoot.getText()).isEqualTo(issueTitle);
+    assertThat(locationRoot.getItems()).isEmpty();
+  }
+
+  @Test
   public void shouldShowMultipleFlows() throws Exception {
-
-    JavaPackageExplorerBot explorerBot = new JavaPackageExplorerBot(bot);
-    explorerBot.expandAndDoubleClick("java-multiple-flows", "src", "hello", "MultiFlows.java");
-    JobHelpers.waitForJobsToComplete(bot);
-
-    SWTBotEclipseEditor helloEditor = bot.editorByTitle("MultiFlows.java").toTextEditor();
-    helloEditor.setFocus();
+    SWTBotEclipseEditor helloEditor = openAndAnalyzeFile("MultiFlows.java");
 
     String issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
     waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+2 flows]");
@@ -135,13 +141,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldShowFlattenedFlows() throws Exception {
-
-    JavaPackageExplorerBot explorerBot = new JavaPackageExplorerBot(bot);
-    explorerBot.expandAndDoubleClick("java-multiple-flows", "src", "hello", "CognitiveComplexity.java");
-    JobHelpers.waitForJobsToComplete(bot);
-
-    SWTBotEclipseEditor cognitiveComplexityEditor = bot.editorByTitle("CognitiveComplexity.java").toTextEditor();
-    cognitiveComplexityEditor.setFocus();
+    SWTBotEclipseEditor cognitiveComplexityEditor = openAndAnalyzeFile("CognitiveComplexity.java");
 
     String issueTitle = "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.";
     waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+15 locations]");
@@ -168,6 +168,16 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
 
   private SWTBotView getIssueLocationsView() {
     return bot.viewById("org.sonarlint.eclipse.ui.views.IssueLocationsView");
+  }
+
+  public SWTBotEclipseEditor openAndAnalyzeFile(String fileName) {
+    JavaPackageExplorerBot explorerBot = new JavaPackageExplorerBot(bot);
+    explorerBot.expandAndDoubleClick("java-multiple-flows", "src", "hello", fileName);
+    JobHelpers.waitForJobsToComplete(bot);
+
+    SWTBotEclipseEditor helloEditor = bot.editorByTitle(fileName).toTextEditor();
+    helloEditor.setFocus();
+    return helloEditor;
   }
 
   public void waitUntilOnTheFlyViewHasItemWithTitle(String expectedTitle) {

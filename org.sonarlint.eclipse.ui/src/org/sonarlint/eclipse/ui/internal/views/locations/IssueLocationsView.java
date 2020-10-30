@@ -52,6 +52,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintMarkerSelectionListener;
@@ -114,7 +115,11 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
     public FlowRootNode(MarkerFlow flow) {
       this.flow = flow;
-      children = flow.getLocations().stream().map(FlowNode::new).collect(toList());
+      children = flow.getLocations().stream()
+        // SLE-388 - "Highlight-only" locations don't have a message
+        .filter(l -> !StringUtils.isEmpty(l.getMessage()))
+        .map(FlowNode::new)
+        .collect(toList());
     }
 
     public MarkerFlow getFlow() {
