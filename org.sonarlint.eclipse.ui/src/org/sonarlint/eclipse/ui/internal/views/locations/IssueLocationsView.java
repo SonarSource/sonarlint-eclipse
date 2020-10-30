@@ -116,7 +116,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       this.flow = flow;
       children = flow.getLocations().stream()
         // SLE-388 - "Highlight-only" locations don't have a message
-        .filter(l -> l.getMessage() != null && !"".equals(l.getMessage()))
+        .filter(l -> !StringUtils.isEmpty(l.getMessage()))
         .map(FlowNode::new)
         .collect(toList());
     }
