@@ -36,10 +36,9 @@ import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
 public class SonarLintFlowLocationNumberCodeMining extends AbstractCodeMining {
 
-  private static final int HORIZONTAL_MARGIN = 2;
-  private static final int HORIZONTAL_PADDING = 4;
-  private static final int VERTICAL_PADDING = 1;
-  private static final int ARC_RADIUS = 5;
+  private static final double HORIZONTAL_MARGIN_RATIO = 0.2;
+  private static final double HORIZONTAL_PADDING_RATIO = 0.2;
+  private static final double ARC_RADIUS_RATIO = 0.5;
 
   private static final RGB LIGHT_BACKGROUND = new RGB(0xd1, 0x85, 0x82);
   private static final RGB LIGHT_SELECTED_BACKGROUND = new RGB(0xa4, 0x03, 0x0f);
@@ -69,14 +68,18 @@ public class SonarLintFlowLocationNumberCodeMining extends AbstractCodeMining {
     gc.setAntialias(SWT.ON);
     String numberStr = Integer.toString(number);
     Point numberExtent = gc.stringExtent(numberStr);
-    Point labelRect = new Point(numberExtent.x + 2 * (HORIZONTAL_MARGIN + HORIZONTAL_PADDING), numberExtent.y + 2 * VERTICAL_PADDING);
+    // Compute all sizes based on text size to adapt to zoom in/ou
+    int arcRadius = (int) (numberExtent.y * ARC_RADIUS_RATIO);
+    int horizontalPadding = (int) (numberExtent.y * HORIZONTAL_PADDING_RATIO);
+    int horizontalMargin = (int) (numberExtent.y * HORIZONTAL_MARGIN_RATIO);
+    Point labelRect = new Point(numberExtent.x + 2 * (horizontalMargin + horizontalPadding), numberExtent.y);
     gc.setLineWidth(1);
     Color bgColor = new Color(gc.getDevice(), getBackgroundRGB(isSelected, isDark));
     Color fgColor = new Color(gc.getDevice(), getForegroundRGB(isSelected, isDark));
     gc.setBackground(bgColor);
     gc.setForeground(fgColor);
-    gc.fillRoundRectangle(x + HORIZONTAL_MARGIN, y - VERTICAL_PADDING, labelRect.x - HORIZONTAL_MARGIN - HORIZONTAL_PADDING, labelRect.y, ARC_RADIUS, ARC_RADIUS);
-    gc.drawString(numberStr, x + HORIZONTAL_MARGIN + HORIZONTAL_PADDING, y, true);
+    gc.fillRoundRectangle(x + horizontalMargin, y, labelRect.x - 2 * horizontalMargin, labelRect.y, arcRadius, arcRadius);
+    gc.drawString(numberStr, x + horizontalMargin + horizontalPadding, y, true);
     bgColor.dispose();
     fgColor.dispose();
     return labelRect;
