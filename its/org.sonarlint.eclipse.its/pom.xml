@@ -59,7 +59,7 @@
             <groupId>org.eclipse.tycho</groupId>
             <artifactId>tycho-surefire-plugin</artifactId>
             <configuration>
-              <excludedGroups>org.sonarlint.eclipse.its.RequiresExtraDependency</excludedGroups>
+              <excludedGroups>org.sonarlint.eclipse.its.RequiresExtraDependency,org.sonarlint.eclipse.its.SonarCloud</excludedGroups>
               <dependencies>
                 <dependency>
                   <type>p2-installable-unit</type>

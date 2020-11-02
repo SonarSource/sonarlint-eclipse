@@ -173,7 +173,8 @@ stages:
             TARGET_PLATFORM: 'milestones'
             SQ_VERSION: 'DOGFOOD'
             imageName: 'ubuntu-18.04'
-            Category: '-DexcludedGroups=SonarCloud'
+            # SonarCloud category already excluded in the pom.xml
+            Category: ''
       variables:
         MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
         MAVEN_OPTS: '-Xmx3072m -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
@@ -313,12 +314,24 @@ stages:
       - task: DownloadBuildArtifacts@0
         displayName: 'Download IT Coverage report'
         inputs:
+          artifactName: ITCoverage_photon
+          downloadPath: $(Agent.BuildDirectory)
+      - task: DownloadBuildArtifacts@0
+        displayName: 'Download IT Coverage report'
+        inputs:
           artifactName: ITCoverage_2020-06
+          downloadPath: $(Agent.BuildDirectory)
+      - task: DownloadBuildArtifacts@0
+        displayName: 'Download IT Coverage report'
+        inputs:
+          artifactName: ITCoverage_milestones
           downloadPath: $(Agent.BuildDirectory)
       - bash: |
           set -e
           mkdir $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/
-          mv $(Agent.BuildDirectory)/ITCoverage_2020-06/it-coverage.exec $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/
+          mv $(Agent.BuildDirectory)/ITCoverage_photon/it-coverage.exec $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/it-coverage-photon.exec
+          mv $(Agent.BuildDirectory)/ITCoverage_2020-06/it-coverage.exec $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/it-coverage-2020-06.exec
+          mv $(Agent.BuildDirectory)/ITCoverage_milestones/it-coverage.exec $(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/it-coverage-milestones.exec
         displayName: 'Move IT Coverage report to test target dir'
       - task: Maven@3
         env:
