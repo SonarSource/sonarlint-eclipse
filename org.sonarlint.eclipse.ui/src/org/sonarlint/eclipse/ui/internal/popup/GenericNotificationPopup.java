@@ -43,9 +43,9 @@ import org.sonarlint.eclipse.ui.internal.preferences.SonarLintPreferencePage;
 
 public class GenericNotificationPopup extends AbstractSonarLintPopup {
 
-  private String title;
-  private String shortMsg;
-  private String longMsg;
+  private final String title;
+  private final String shortMsg;
+  private final String longMsg;
 
   public GenericNotificationPopup(Display display, String title, String shortMsg, String longMsg) {
     super(display);
@@ -68,14 +68,14 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
     addLink("More details...", e -> {
       DialogWithLink dialog = new DialogWithLink(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "SonarLint - " + title, longMsg);
       dialog.open();
-      GenericNotificationPopup.this.closeFade();
+      GenericNotificationPopup.this.close();
     });
   }
 
   private static class DialogWithLink extends Dialog {
 
-    private String title;
-    private String message;
+    private final String title;
+    private final String message;
 
     protected DialogWithLink(Shell parentShell, String title, String message) {
       super(parentShell);

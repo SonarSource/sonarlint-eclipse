@@ -32,7 +32,7 @@ import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotifica
 public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
 
   private final SonarQubeNotification notification;
-  private boolean isSonarCloud;
+  private final boolean isSonarCloud;
 
   public DeveloperNotificationPopup(Display display, SonarQubeNotification notification, boolean isSonarCloud) {
     super(display);
@@ -50,7 +50,7 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
     super.createContentArea(composite);
 
     addLink("Check it here", e -> {
-      DeveloperNotificationPopup.this.closeFade();
+      DeveloperNotificationPopup.this.close();
       try {
         PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(notification.link()));
       } catch (PartInitException | MalformedURLException e1) {
