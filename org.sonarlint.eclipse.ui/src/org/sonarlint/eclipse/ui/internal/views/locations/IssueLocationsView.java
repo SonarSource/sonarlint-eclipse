@@ -392,7 +392,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
   public void dispose() {
     SonarLintUiPlugin.getSonarlintMarkerSelectionService().removeMarkerSelectionListener(this);
     // Unselect marker to make annotations disappear
-    SonarLintUiPlugin.getSonarlintMarkerSelectionService().markerSelected(null, false);
+    SonarLintUiPlugin.getSonarlintMarkerSelectionService().markerSelected(null, false, false);
     super.dispose();
   }
 

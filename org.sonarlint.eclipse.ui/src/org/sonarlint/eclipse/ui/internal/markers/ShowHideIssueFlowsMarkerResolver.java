@@ -74,7 +74,7 @@ public class ShowHideIssueFlowsMarkerResolver implements IMarkerResolution2 {
 
   @Override
   public void run(IMarker marker) {
-    SonarLintUiPlugin.getSonarlintMarkerSelectionService().markerSelected(alreadySelected ? null : marker, true);
+    SonarLintUiPlugin.getSonarlintMarkerSelectionService().markerSelected(alreadySelected ? null : marker, true, !alreadySelected);
   }
 
   @Override
