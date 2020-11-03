@@ -66,7 +66,7 @@
     <dependency>
       <groupId>org.sonarsource.orchestrator</groupId>
       <artifactId>sonar-orchestrator-osgi</artifactId>
-      <version>3.29.0.2543</version>
+      <version>3.32.0.2670</version>
     </dependency>
   </dependencies>
 
