@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.views;
 
+import java.util.Objects;
 import java.util.Optional;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -27,8 +28,11 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -39,7 +43,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintMarkerSelectionListener;
+import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.exceptions.SonarLintException;
@@ -47,11 +51,18 @@ import org.sonarsource.sonarlint.core.client.api.exceptions.SonarLintException;
 /**
  * Display details of a rule in a web browser
  */
-public class RuleDescriptionWebView extends ViewPart implements SonarLintMarkerSelectionListener {
+public class RuleDescriptionWebView extends ViewPart implements ISelectionListener {
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.RuleDescriptionWebView";
 
+  protected IMarker currentElement;
+
   private boolean linking = true;
+
+  /**
+   * The last selected element if linking was disabled.
+   */
+  private IMarker lastSelection;
 
   private SonarLintRuleBrowser browser;
 
@@ -60,7 +71,7 @@ public class RuleDescriptionWebView extends ViewPart implements SonarLintMarkerS
     createToolbar();
     browser = new SonarLintRuleBrowser(parent, true);
 
-    SonarLintUiPlugin.getSonarlintMarkerSelectionService().addMarkerSelectionListener(this);
+    startListeningForSelectionChanges();
   }
 
   @Override
@@ -100,19 +111,21 @@ public class RuleDescriptionWebView extends ViewPart implements SonarLintMarkerS
    */
   protected void setLinkingEnabled(boolean enabled) {
     linking = enabled;
-    if (linking) {
-      setInput(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedMarker().orElse(null));
+    if (linking && (lastSelection != null)) {
+      setInput(lastSelection);
     }
   }
 
-  @Override
-  public void markerSelected(Optional<IMarker> marker) {
-    if (linking) {
-      setInput(marker.orElse(null));
-    }
+  protected void startListeningForSelectionChanges() {
+    getSite().getPage().addPostSelectionListener(this);
+  }
+
+  protected void stopListeningForSelectionChanges() {
+    getSite().getPage().removePostSelectionListener(this);
   }
 
   public void setInput(@Nullable IMarker marker) {
+    currentElement = marker;
     if (marker != null) {
       showRuleDescription(marker);
     } else {
@@ -126,7 +139,8 @@ public class RuleDescriptionWebView extends ViewPart implements SonarLintMarkerS
 
   @Override
   public void dispose() {
-    SonarLintUiPlugin.getSonarlintMarkerSelectionService().removeMarkerSelectionListener(this);
+    stopListeningForSelectionChanges();
+
     super.dispose();
   }
 
@@ -157,6 +171,17 @@ public class RuleDescriptionWebView extends ViewPart implements SonarLintMarkerS
       browser.updateRule(ruleDetails);
     }
 
+  }
+
+  @Override
+  public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+    IMarker selectedMarker = SelectionUtils.findSelectedSonarLintMarker(selection);
+    if (selectedMarker != null) {
+      lastSelection = selectedMarker;
+      if (linking && !Objects.equals(selectedMarker, currentElement)) {
+        setInput(selectedMarker);
+      }
+    }
   }
 
 }
