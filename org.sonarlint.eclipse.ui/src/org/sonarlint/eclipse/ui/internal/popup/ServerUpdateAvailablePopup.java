@@ -46,13 +46,13 @@ public class ServerUpdateAvailablePopup extends AbstractSonarLintPopup {
   protected void createContentArea(Composite composite) {
     super.createContentArea(composite);
 
-    addLink("Remind me later", e -> ServerUpdateAvailablePopup.this.closeFade());
+    addLink("Remind me later", e -> ServerUpdateAvailablePopup.this.close());
 
     addLink("Update now", e -> {
       ServerUpdateJob job = new ServerUpdateJob(server);
       JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
       job.schedule();
-      ServerUpdateAvailablePopup.this.closeFade();
+      ServerUpdateAvailablePopup.this.close();
     });
   }
 
