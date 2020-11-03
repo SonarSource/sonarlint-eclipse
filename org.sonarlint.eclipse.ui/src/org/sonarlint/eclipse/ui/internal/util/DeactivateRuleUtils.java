@@ -79,7 +79,7 @@ public class DeactivateRuleUtils {
 
   private static void removeAnnotations(IMarker marker) {
     if (marker.equals(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedMarker().orElse(null))) {
-      SonarLintUiPlugin.getSonarlintMarkerSelectionService().markerSelected(null, false);
+      SonarLintUiPlugin.getSonarlintMarkerSelectionService().markerSelected(null, false, false);
     }
   }
 

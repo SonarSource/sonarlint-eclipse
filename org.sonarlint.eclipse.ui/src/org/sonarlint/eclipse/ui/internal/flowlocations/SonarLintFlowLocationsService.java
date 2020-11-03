@@ -32,6 +32,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -62,7 +63,7 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
   public void selectionChanged(IWorkbenchPart part, ISelection selection) {
     if (part instanceof IViewPart && sonarlintMarkerViewsIds.contains(((IViewPart) part).getViewSite().getId())) {
       IMarker selectedMarker = SelectionUtils.findSelectedSonarLintMarker(selection);
-      markerSelected(selectedMarker, false);
+      markerSelected(selectedMarker, false, false);
     }
   }
 
@@ -73,7 +74,7 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
         IMarker lastMarker = lastSelectedMarker.get();
         if (!lastMarker.exists()) {
           // Marker has been deleted during the last analysis
-          markerSelected(null, false);
+          markerSelected(null, false, false);
         } else {
           List<MarkerFlow> newIssueFlows = MarkerUtils.getIssueFlows(lastSelectedMarker.get());
           // Try to reselect the same flow number than before
@@ -146,12 +147,12 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
     }
   }
 
-  public void markerSelected(@Nullable IMarker selectedMarker, boolean forceShowAnnotationsInEditor) {
+  public void markerSelected(@Nullable IMarker selectedMarker, boolean forceShowAnnotationsInEditor, boolean bringLocationViewToTop) {
     if (forceShowAnnotationsInEditor) {
       this.showAnnotationsInEditor = true;
     }
     if (selectedMarker != null && !MarkerUtils.getIssueFlows(selectedMarker).isEmpty()) {
-      openIssueLocationsView(forceShowAnnotationsInEditor);
+      openIssueLocationsView(forceShowAnnotationsInEditor, bringLocationViewToTop);
     }
     if (!Objects.equals(lastSelectedMarker.orElse(null), selectedMarker)) {
       lastSelectedMarker = Optional.ofNullable(selectedMarker);
@@ -172,11 +173,15 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
     markerSelectionListeners.forEach(l -> l.markerSelected(lastSelectedMarker));
   }
 
-  private static void openIssueLocationsView(boolean forceShowAnnotationsInEditor) {
+  private static void openIssueLocationsView(boolean forceShowAnnotationsInEditor, boolean bringToTop) {
     try {
-      IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IssueLocationsView.ID);
+      IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+      IssueLocationsView view = (IssueLocationsView) activePage.findView(IssueLocationsView.ID);
       if (view == null) {
-        view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IssueLocationsView.ID);
+        view = (IssueLocationsView) activePage.showView(IssueLocationsView.ID);
+      }
+      if (bringToTop) {
+        activePage.bringToTop(view);
       }
       if (forceShowAnnotationsInEditor) {
         view.setShowAnnotations(true);
