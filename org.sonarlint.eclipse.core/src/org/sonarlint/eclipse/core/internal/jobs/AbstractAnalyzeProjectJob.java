@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceRuleFactory;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -42,6 +45,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -160,12 +164,13 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
 
       analysisWorkDir = Files.createTempDirectory(getProject().getWorkingDir(), "sonarlint");
       List<ClientInputFile> inputFiles = buildInputFiles(analysisWorkDir, filesToAnalyzeMap);
-      Collection<IAnalysisConfigurator> usedConfigurators = configure(getProject(), inputFiles, mergedExtraProps, analysisWorkDir, monitor);
+      Set<IResource> resourcesForSchedulingRule = new HashSet<>();
+      Collection<IAnalysisConfigurator> usedConfigurators = configure(getProject(), inputFiles, mergedExtraProps, resourcesForSchedulingRule, analysisWorkDir, monitor);
 
       extraProps.forEach(sonarProperty -> mergedExtraProps.put(sonarProperty.getName(), sonarProperty.getValue()));
 
       if (!inputFiles.isEmpty()) {
-        runAnalysisAndUpdateMarkers(filesToAnalyzeMap, monitor, mergedExtraProps, inputFiles, analysisWorkDir);
+        runAnalysisAndUpdateMarkers(filesToAnalyzeMap, monitor, mergedExtraProps, inputFiles, resourcesForSchedulingRule, analysisWorkDir);
       }
 
       analysisCompleted(usedDeprecatedConfigurators, usedConfigurators, mergedExtraProps, monitor);
@@ -191,8 +196,19 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
   }
 
+  @Nullable
+  private static ISchedulingRule createRule(Collection<IResource> resources) {
+    ISchedulingRule combinedRule = null;
+    IResourceRuleFactory ruleFactory = ResourcesPlugin.getWorkspace().getRuleFactory();
+    for (IResource res : resources) {
+      ISchedulingRule rule = ruleFactory.createRule(res);
+      combinedRule = MultiRule.combine(rule, combinedRule);
+    }
+    return combinedRule;
+  }
+
   private void runAnalysisAndUpdateMarkers(Map<ISonarLintFile, IDocument> docPerFiles, final IProgressMonitor monitor,
-    Map<String, String> mergedExtraProps, List<ClientInputFile> inputFiles, Path analysisWorkDir) throws CoreException {
+    Map<String, String> mergedExtraProps, List<ClientInputFile> inputFiles, Set<IResource> resourcesForSchedulingRule, Path analysisWorkDir) throws CoreException {
     IPath projectLocation = getProject().getResource().getLocation();
     // In some unfrequent cases the project may be virtual and don't have physical location
     // so fallback to use analysis work dir
@@ -203,7 +219,15 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     docPerFiles.keySet().forEach(slFile -> issuesPerResource.put(slFile, new ArrayList<>()));
 
     long start = System.currentTimeMillis();
-    AnalysisResults result = run(config, issuesPerResource, monitor);
+    @Nullable
+    ISchedulingRule resourcesRule = createRule(resourcesForSchedulingRule);
+    AnalysisResults result;
+    try {
+      getJobManager().beginRule(resourcesRule, monitor);
+      result = run(config, issuesPerResource, monitor);
+    } finally {
+      getJobManager().endRule(resourcesRule);
+    }
     if (!monitor.isCanceled()) {
       updateMarkers(docPerFiles, issuesPerResource, result, triggerType, monitor);
       updateTelemetry(result, start);
@@ -274,10 +298,10 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
   }
 
   private static Collection<IAnalysisConfigurator> configure(final ISonarLintProject project, List<ClientInputFile> filesToAnalyze,
-    final Map<String, String> extraProperties, Path tempDir, final IProgressMonitor monitor) {
+    final Map<String, String> extraProperties, Set<IResource> resourcesForSchedulingRule, Path tempDir, final IProgressMonitor monitor) {
     Collection<IAnalysisConfigurator> usedConfigurators = new ArrayList<>();
     Collection<IAnalysisConfigurator> configurators = SonarLintExtensionTracker.getInstance().getAnalysisConfigurators();
-    DefaultPreAnalysisContext context = new DefaultPreAnalysisContext(project, extraProperties, filesToAnalyze, tempDir);
+    DefaultPreAnalysisContext context = new DefaultPreAnalysisContext(project, extraProperties, resourcesForSchedulingRule, filesToAnalyze, tempDir);
     for (IAnalysisConfigurator configurator : configurators) {
       if (configurator.canConfigure(project)) {
         configurator.configure(context, monitor);

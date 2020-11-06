@@ -21,6 +21,8 @@ package org.sonarlint.eclipse.core.analysis;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Set;
+import org.eclipse.core.resources.IResource;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -44,5 +46,11 @@ public interface IPreAnalysisContext {
    * A temporary location that will be cleaned after the analysis.
    */
   Path getAnalysisTemporaryFolder();
+
+  /**
+   * Resources that will be locked during the analysis
+   * @since 5.6
+   */
+  Set<IResource> getResourcesForSchedulingRule();
 
 }
