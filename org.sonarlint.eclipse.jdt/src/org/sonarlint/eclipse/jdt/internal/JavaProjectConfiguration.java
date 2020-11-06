@@ -19,8 +19,10 @@
  */
 package org.sonarlint.eclipse.jdt.internal;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.eclipse.core.resources.IResource;
 
 public class JavaProjectConfiguration {
 
@@ -30,6 +32,7 @@ public class JavaProjectConfiguration {
   private final Set<String> testLibraries = new LinkedHashSet<>();
   private final Set<String> binaries = new LinkedHashSet<>();
   private final Set<String> testBinaries = new LinkedHashSet<>();
+  private final Set<IResource> resourcesForSchedulingRule = new HashSet<>();
 
   public Set<Object> dependentProjects() {
     return dependentProjects;
@@ -53,6 +56,10 @@ public class JavaProjectConfiguration {
 
   public Set<String> testBinaries() {
     return testBinaries;
+  }
+
+  public Set<IResource> getResourcesForSchedulingRule() {
+    return resourcesForSchedulingRule;
   }
 
 }

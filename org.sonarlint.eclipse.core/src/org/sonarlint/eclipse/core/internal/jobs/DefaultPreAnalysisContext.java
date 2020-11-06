@@ -24,8 +24,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.eclipse.core.resources.IResource;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
@@ -41,10 +43,13 @@ public class DefaultPreAnalysisContext implements IPreAnalysisContext {
   private final Map<String, String> analysisProperties;
   private final Path tempDir;
   private final Map<ISonarLintFile, ClientInputFile> filesToAnalyze;
+  private final Set<IResource> resourcesForSchedulingRule;
 
-  public DefaultPreAnalysisContext(ISonarLintProject project, Map<String, String> analysisProperties, List<ClientInputFile> filesToAnalyze, Path tempDir) {
+  public DefaultPreAnalysisContext(ISonarLintProject project, Map<String, String> analysisProperties, Set<IResource> resourcesForSchedulingRule,
+    List<ClientInputFile> filesToAnalyze, Path tempDir) {
     this.project = project;
     this.analysisProperties = analysisProperties;
+    this.resourcesForSchedulingRule = resourcesForSchedulingRule;
     this.filesToAnalyze = Collections
       .unmodifiableMap(filesToAnalyze.stream()
         .map(EclipseInputFile.class::cast)
@@ -73,6 +78,11 @@ public class DefaultPreAnalysisContext implements IPreAnalysisContext {
   @Override
   public Collection<ISonarLintFile> getFilesToAnalyze() {
     return filesToAnalyze.keySet();
+  }
+
+  @Override
+  public Set<IResource> getResourcesForSchedulingRule() {
+    return resourcesForSchedulingRule;
   }
 
   /**

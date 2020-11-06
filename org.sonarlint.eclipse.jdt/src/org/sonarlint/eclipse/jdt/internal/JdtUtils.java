@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Set;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -67,7 +68,7 @@ public class JdtUtils {
   }
 
   /**
-   * SLE-34 Remove Java files that are not compiled.This should automatically exclude files that are excluded / unparseable. 
+   * SLE-34 Remove Java files that are not compiled.This should automatically exclude files that are excluded / unparseable.
    */
   public static boolean shouldExclude(IFile file) {
     IJavaElement javaElt = JavaCore.create(file);
@@ -195,8 +196,21 @@ public class JdtUtils {
           addMainClasspathEntry(context, outDir);
         }
       }
+      IFolder folderHandle = createFolderHandle(outputDir);
+      if (folderHandle != null) {
+        context.getResourcesForSchedulingRule().add(folderHandle);
+      }
     } else {
       SonarLintLogger.get().debug("Binary directory '" + outputDir + "' was not added because it was not found. Maybe you should enable auto build of your project.");
+    }
+  }
+
+  @Nullable
+  private static IFolder createFolderHandle(IPath folderPath) {
+    if (folderPath.isValidPath(folderPath.toString()) && folderPath.segmentCount() >= 2) {
+      return ResourcesPlugin.getWorkspace().getRoot().getFolder(folderPath);
+    } else {
+      return null;
     }
   }
 
@@ -222,7 +236,7 @@ public class JdtUtils {
     if (!topProject && !entry.isExported()) {
       return;
     }
-    final String libPath = resolveLibrary(javaProject, entry);
+    final String libPath = resolveLibrary(javaProject, entry, context);
     if (libPath != null) {
       if (testEntry || isTest(entry)) {
         context.testLibraries().add(libPath);
@@ -253,11 +267,12 @@ public class JdtUtils {
   }
 
   @Nullable
-  private static String resolveLibrary(IJavaProject javaProject, IClasspathEntry entry) {
+  private static String resolveLibrary(IJavaProject javaProject, IClasspathEntry entry, JavaProjectConfiguration context) {
     final String libPath;
     IResource member = findPath(javaProject.getProject(), entry.getPath());
     if (member != null) {
       libPath = member.getLocation().toOSString();
+      context.getResourcesForSchedulingRule().add(member);
     } else {
       libPath = entry.getPath().makeAbsolute().toOSString();
     }
@@ -316,6 +331,7 @@ public class JdtUtils {
     analysisContext.setAnalysisProperty("sonar.java.test.libraries", context.testLibraries());
     analysisContext.setAnalysisProperty("sonar.java.binaries", context.binaries());
     analysisContext.setAnalysisProperty("sonar.java.test.binaries", context.testBinaries());
+    analysisContext.getResourcesForSchedulingRule().addAll(context.getResourcesForSchedulingRule());
   }
 
   public static ISonarLintFileType qualify(ISonarLintFile slFile) {
