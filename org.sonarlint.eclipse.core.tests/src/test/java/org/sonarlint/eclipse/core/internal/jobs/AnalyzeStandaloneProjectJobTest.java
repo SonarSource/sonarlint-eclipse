@@ -19,14 +19,20 @@
  */
 package org.sonarlint.eclipse.core.internal.jobs;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import org.assertj.core.groups.Tuple;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -38,6 +44,7 @@ import org.eclipse.jface.text.IPositionUpdater;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.Position;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -59,9 +66,10 @@ import static org.assertj.core.api.Assertions.tuple;
 public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   private static LogListener listener;
+  private static IProject project;
 
   @BeforeClass
-  public static void prepare() {
+  public static void addLogListener() throws IOException, CoreException {
     listener = new LogListener() {
 
       @Override
@@ -78,16 +86,23 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       }
     };
     SonarLintLogger.get().addLogListener(listener);
+
+    project = importEclipseProject("SimpleJdtProject");
   }
 
   @AfterClass
-  public static void cleanup() {
+  public static void removeLogListener() {
     SonarLintLogger.get().removeLogListener(listener);
+  }
+
+  @After
+  public void cleanup() {
+    SonarLintGlobalConfiguration.saveRulesConfig(Collections.emptyList());
+    SonarLintMarkerUpdater.deleteAllMarkersFromReport();
   }
 
   @Test
   public void analyzeWithRuleParameters() throws Exception {
-    IProject project = importEclipseProject("SimpleJdtProject");
     IFile file = (IFile) project.findMember("src/main/sample.js");
     DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
     IDocument document = new SimpleDocument("function hello() {\n" +
@@ -109,8 +124,163 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       .containsOnly(tuple("/SimpleJdtProject/src/main/sample.js", 1, "Rename this 'hello' function to match the regular expression '^[0-9]+$'."));
   }
 
+  @Test
+  public void analyze_should_only_triggers_a_single_event_for_all_marker_operations() throws Exception {
+    DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
+    FileWithDocument file1ToAnalyze = prepareFile1(project, slProject);
+    FileWithDocument file2ToAnalyze = prepareFile2(project, slProject);
+
+    MarkerChangeListener mcl = new MarkerChangeListener();
+    workspace.addResourceChangeListener(mcl);
+
+    try {
+      AnalyzeStandaloneProjectJob underTest = new AnalyzeStandaloneProjectJob(
+        new AnalyzeProjectRequest(slProject, asList(file1ToAnalyze, file2ToAnalyze), TriggerType.EDITOR_CHANGE));
+      underTest.schedule();
+      assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
+      assertThat(underTest.getResult().isOK()).isTrue();
+
+      verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
+
+      assertThat(mcl.getEventCount()).isEqualTo(1);
+
+      // Run the same analysis a second time to ensure the behavior is the same when markers are already present
+      mcl.clearCounter();
+
+      underTest.schedule();
+      assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
+      assertThat(underTest.getResult().isOK()).isTrue();
+
+      verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
+
+      assertThat(mcl.getEventCount()).isEqualTo(1);
+
+    } finally {
+      workspace.removeResourceChangeListener(mcl);
+    }
+
+  }
+
+  @Test
+  public void analyze_report_should_only_triggers_two_events_for_all_marker_operations_when_clear_report() throws Exception {
+    DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
+    FileWithDocument file1ToAnalyze = prepareFile1(project, slProject);
+    FileWithDocument file2ToAnalyze = prepareFile2(project, slProject);
+
+    MarkerChangeListener mcl = new MarkerChangeListener();
+    workspace.addResourceChangeListener(mcl);
+
+    try {
+      AnalyzeStandaloneProjectJob underTest = new AnalyzeStandaloneProjectJob(
+        new AnalyzeProjectRequest(slProject, asList(file1ToAnalyze, file2ToAnalyze), TriggerType.MANUAL, true));
+      underTest.schedule();
+      assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
+      assertThat(underTest.getResult().isOK()).isTrue();
+
+      verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_REPORT_ID);
+
+      // Only one event since there are no markers to clear
+      assertThat(mcl.getEventCount()).isEqualTo(1);
+
+      // Run the same analysis a second time to ensure the behavior is the same when markers are already present
+      mcl.clearCounter();
+
+      underTest.schedule();
+      assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
+      assertThat(underTest.getResult().isOK()).isTrue();
+
+      verifyMarkers(file1ToAnalyze, file2ToAnalyze, SonarLintCorePlugin.MARKER_REPORT_ID);
+
+      // Two events, one for clearing past markers, one to create new markers
+      assertThat(mcl.getEventCount()).isEqualTo(2);
+
+    } finally {
+      workspace.removeResourceChangeListener(mcl);
+    }
+
+  }
+
+  private void verifyMarkers(FileWithDocument file1ToAnalyze, FileWithDocument file2ToAnalyze, String markerType) throws CoreException {
+    List<IMarker> markers1 = Arrays.asList(file1ToAnalyze.getFile().getResource().findMarkers(markerType, true, IResource.DEPTH_ONE));
+    assertThat(markers1).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).hasSize(6);
+    List<IMarker> markers2 = Arrays.asList(file2ToAnalyze.getFile().getResource().findMarkers(markerType, true, IResource.DEPTH_ONE));
+    assertThat(markers2).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).hasSize(6);
+  }
+
+  private FileWithDocument prepareFile2(IProject project, DefaultSonarLintProjectAdapter slProject) {
+    IFile file2 = (IFile) project.findMember("src/main/java/com/sonarsource/NpeWithFlow2.java");
+    IDocument document2 = new SimpleDocument("package com.sonarsource;\n" +
+      "\n" +
+      "public class NpeWithFlow2 {\n" +
+      "\n" +
+      "  public int foo(boolean a, String foo) {\n" +
+      "    if (a) {\n" +
+      "      foo = null;\n" +
+      "    } else {\n" +
+      "      foo = null;\n" +
+      "    }\n" +
+      "    foo.toString();\n" +
+      "    return 0;\n" +
+      "  }\n" +
+      "}");
+    return new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file2), document2);
+  }
+
+  private FileWithDocument prepareFile1(IProject project, DefaultSonarLintProjectAdapter slProject) {
+    IFile file1 = (IFile) project.findMember("src/main/java/com/sonarsource/NpeWithFlow.java");
+    IDocument document = new SimpleDocument("package com.sonarsource;\n" +
+      "\n" +
+      "public class NpeWithFlow {\n" +
+      "\n" +
+      "  public int foo(boolean a, String foo) {\n" +
+      "    if (a) {\n" +
+      "      foo = null;\n" +
+      "    } else {\n" +
+      "      foo = null;\n" +
+      "    }\n" +
+      "    foo.toString();\n" +
+      "    return 0;\n" +
+      "  }\n" +
+      "}");
+    return new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file1), document);
+  }
+
   public static MarkerAttributesExtractor markerAttributes(String... attributes) {
     return new MarkerAttributesExtractor(attributes);
+  }
+
+  private static class MarkerChangeListener implements IResourceChangeListener {
+
+    private final AtomicInteger markerChangeEventChangeCount = new AtomicInteger(0);
+
+    @Override
+    public void resourceChanged(IResourceChangeEvent event) {
+      if (isMarkerChangeEvent(event.getDelta())) {
+        markerChangeEventChangeCount.incrementAndGet();
+      }
+    }
+
+    private boolean isMarkerChangeEvent(IResourceDelta delta) {
+      int flags = delta.getFlags();
+      if ((flags & IResourceDelta.MARKERS) > 0) {
+        System.out.println("Changed markers: " + delta.getMarkerDeltas().length);
+        return true;
+      }
+      for (IResourceDelta child : delta.getAffectedChildren()) {
+        if (isMarkerChangeEvent(child)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    public int getEventCount() {
+      return markerChangeEventChangeCount.get();
+    }
+
+    public void clearCounter() {
+      markerChangeEventChangeCount.set(0);
+    }
   }
 
   public static class MarkerAttributesExtractor implements Function<IMarker, Tuple> {

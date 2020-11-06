@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.tracking;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -105,7 +106,7 @@ class IndexedObjectStore<K, V> implements ObjectStore<K, V> {
     if (!parent.toFile().exists()) {
       Files.createDirectories(parent);
     }
-    try (OutputStream out = Files.newOutputStream(path)) {
+    try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(path))) {
       writer.accept(out, value);
     }
   }

@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -95,6 +94,10 @@ public class JobUtils {
 
   private static void collectOpenedFiles(@Nullable ISonarLintProject project, Map<ISonarLintProject, List<FileWithDocument>> filesByProject,
     Predicate<ISonarLintFile> filter) {
+    if (!PlatformUI.isWorkbenchRunning()) {
+      // headless tests
+      return;
+    }
     for (IWorkbenchWindow win : PlatformUI.getWorkbench().getWorkbenchWindows()) {
       for (IWorkbenchPage page : win.getPages()) {
         for (IEditorReference ref : page.getEditorReferences()) {

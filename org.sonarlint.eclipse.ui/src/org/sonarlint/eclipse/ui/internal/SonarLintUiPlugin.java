@@ -175,8 +175,10 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     SonarLintCorePlugin.getAnalysisListenerManager().removeListener(SONARLINT_FLOW_LOCATION_SERVICE);
     SonarLintLogger.get().removeLogListener(logListener);
     SonarLintNotifications.get().removeNotificationListener(notifListener);
-    for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-      WindowOpenCloseListener.removeListenerFromAllPages(window);
+    if (PlatformUI.isWorkbenchRunning()) {
+      for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+        WindowOpenCloseListener.removeListenerFromAllPages(window);
+      }
     }
     try {
       getPreferenceStore().removePropertyChangeListener(prefListener);
@@ -247,11 +249,13 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
       JobUtils.scheduleAnalysisOfOpenFiles((ISonarLintProject) null, TriggerType.STARTUP);
 
-      // Handle future opened/closed windows
-      PlatformUI.getWorkbench().addWindowListener(WINDOW_OPEN_CLOSE_LISTENER);
-      // Now we can attach listeners to existing windows
-      for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-        WindowOpenCloseListener.addListenerToAllPages(window);
+      if (PlatformUI.isWorkbenchRunning()) {
+        // Handle future opened/closed windows
+        PlatformUI.getWorkbench().addWindowListener(WINDOW_OPEN_CLOSE_LISTENER);
+        // Now we can attach listeners to existing windows
+        for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+          WindowOpenCloseListener.addListenerToAllPages(window);
+        }
       }
 
       subscribeToNotifications();
