@@ -28,8 +28,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
-import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
@@ -116,8 +116,8 @@ public class SonarLintFlowAnnotator implements SonarLintMarkerSelectionListener,
 
   public SonarLintFlowAnnotator(ITextEditor textEditor) {
     this.textEditor = textEditor;
-    ITextViewer textViewer = textEditor.getAdapter(ITextViewer.class);
-    textViewer.getDocument().addDocumentListener(new IDocumentListener() {
+    IDocument doc = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
+    doc.addDocumentListener(new IDocumentListener() {
 
       @Override
       public void documentChanged(DocumentEvent event) {
