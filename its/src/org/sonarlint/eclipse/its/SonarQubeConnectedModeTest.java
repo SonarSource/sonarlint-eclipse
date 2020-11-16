@@ -155,7 +155,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   @Test
   public void testLocalServerStatusRequest() throws Exception {
 
-    HttpURLConnection statusConnection = (HttpURLConnection) new URL(String.format("http://localhost:%d/sonarlint/api/status", hostspotServerPort)).openConnection();
+    HttpURLConnection statusConnection = (HttpURLConnection) new URL(String.format("http://localhost:%d/sonarlint/api/status", hotspotServerPort)).openConnection();
     statusConnection.setConnectTimeout(1000);
     statusConnection.connect();
     int code = statusConnection.getResponseCode();

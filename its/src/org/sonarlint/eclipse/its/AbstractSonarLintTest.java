@@ -22,140 +22,94 @@ package org.sonarlint.eclipse.its;
 import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.container.Server;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Optional;
+import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.assertj.core.groups.Tuple;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
-import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.swtbot.swt.finder.finders.UIThreadRunnable;
-import org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.IOverwriteQuery;
-import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
-import org.eclipse.ui.wizards.datatransfer.ImportOperation;
-import org.junit.AfterClass;
+import org.eclipse.reddeer.common.wait.TimePeriod;
+import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
+import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
+import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage.ImportProject;
+import org.eclipse.reddeer.junit.runner.RedDeerSuite;
+import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement.CleanWorkspace;
+import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.hamcrest.core.StringContains;
 import org.junit.BeforeClass;
-import org.junit.Rule;
+import org.junit.runner.RunWith;
 import org.osgi.framework.Version;
 import org.osgi.service.prefs.BackingStoreException;
-import org.sonarlint.eclipse.its.bots.ConsoleViewBot;
-import org.sonarlint.eclipse.its.utils.CaptureScreenshotAndConsoleOnFailure;
-import org.sonarlint.eclipse.its.utils.SwtBotUtils;
-import org.sonarlint.eclipse.its.utils.WorkspaceHelpers;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole.ShowConsoleOption;
 import org.sonarqube.ws.client.HttpConnector;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(RedDeerSuite.class)
+@CleanWorkspace
 public abstract class AbstractSonarLintTest {
 
   public static final String PLUGIN_ID = "org.sonarlint.eclipse.core";
   public static final String UI_PLUGIN_ID = "org.sonarlint.eclipse.ui";
   public static final String MARKER_ON_THE_FLY_ID = PLUGIN_ID + ".sonarlintOnTheFlyProblem";
   public static final String MARKER_REPORT_ID = PLUGIN_ID + ".sonarlintReportProblem";
-
-  protected static SWTWorkbenchBot bot;
-
-  @Rule
-  public CaptureScreenshotAndConsoleOnFailure screenshot = new CaptureScreenshotAndConsoleOnFailure();
-
-  protected static final IProgressMonitor monitor = new NullProgressMonitor();
-  protected static IWorkspace workspace;
-  protected static File projectsWorkdir;
+  public static final String PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES = "skipConfirmAnalyzeMultipleFiles";
 
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
 
-  protected static int hostspotServerPort = -1;
+  protected static int hotspotServerPort = -1;
 
   @BeforeClass
   public static final void beforeClass() throws BackingStoreException {
     System.out.println("Eclipse: " + platformVersion());
     System.out.println("GTK: " + System.getProperty("org.eclipse.swt.internal.gtk.version"));
-    SWTBotPreferences.KEYBOARD_LAYOUT = "EN_US";
-
-    projectsWorkdir = new File("target/projects-target");
-
-    workspace = ResourcesPlugin.getWorkspace();
 
     ROOT.node("servers").removeNode();
     ROOT_SECURE.node("servers").removeNode();
 
-    activateMainShell();
-
-    bot = new SWTWorkbenchBot();
-
-    SwtBotUtils.closeViewQuietly(bot, "org.eclipse.ui.internal.introview");
-    SwtBotUtils.closeViewQuietly(bot, "org.eclipse.ui.views.ContentOutline");
-    SwtBotUtils.closeViewQuietly(bot, "org.eclipse.mylyn.tasks.ui.views.tasks");
-
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
-
-    new ConsoleViewBot(bot)
-      .openSonarLintConsole()
-      .enableVerboseLogs();
-
-    Optional<Integer> maybePort = WorkspaceHelpers.withSonarLintConsole(bot, c -> {
-      if (c.getDocument().get().contains("Started security hotspot handler on port")) {
-        Pattern p = Pattern.compile(".*Started security hotspot handler on port (\\d+).*");
-        Matcher m = p.matcher(c.getDocument().get());
-        assertThat(m.find()).isTrue();
-        return Optional.of(Integer.parseInt(m.group(1)));
-      } else {
-        return Optional.empty();
-      }
-    });
-    maybePort.ifPresent(port -> hostspotServerPort = port);
-  }
-
-  private static void activateMainShell() {
-    // see https://wiki.eclipse.org/SWTBot/Troubleshooting#No_active_Shell_when_running_SWTBot_tests_in_Xvfb
-    UIThreadRunnable.syncExec(() -> PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().forceActive());
-  }
-
-  @AfterClass
-  public static final void afterClass() {
-    try {
-      clean();
-    } catch (Exception e) {
-      // Silently ignore exceptions at this point
-      System.err.println("[WARN] Error during cleanup: " + e.getMessage());
+    SonarLintConsole consoleView = new SonarLintConsole();
+    consoleView.open();
+    consoleView.openConsole("SonarLint");
+    consoleView.enableAnalysisLogs();
+    consoleView.showConsole(ShowConsoleOption.NEVER);
+    String consoleText = consoleView.getConsoleText();
+    if (consoleText.contains("Started security hotspot handler on port")) {
+      Pattern p = Pattern.compile(".*Started security hotspot handler on port (\\d+).*");
+      Matcher m = p.matcher(consoleText);
+      assertThat(m.find()).isTrue();
+      hotspotServerPort = Integer.parseInt(m.group(1));
     }
   }
 
-  private static void clean() throws InterruptedException, CoreException {
-    WorkspaceHelpers.cleanWorkspace(bot);
-    bot.resetWorkbench();
+  protected final ImportProject importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
+    ExternalProjectImportWizardDialog dialog = new ExternalProjectImportWizardDialog();
+    dialog.open();
+    WizardProjectsImportPage importPage = new WizardProjectsImportPage(dialog);
+    importPage.copyProjectsIntoWorkspace(true);
+    importPage.setRootDirectory(new File("projects", relativePathFromProjectsFolder).getAbsolutePath());
+    List<ImportProject> projects = importPage.getProjects();
+    assertThat(projects).hasSize(1);
+    dialog.finish();
+    return projects.get(0);
   }
 
-  /**
-   * Import test project into the Eclipse workspace
-   *
-   * @return created projects
-   */
-  public static IProject importEclipseProject(final String projectdir, final String projectName) throws InvocationTargetException, InterruptedException {
-    final IProject project = workspace.getRoot().getProject(projectName);
-    ImportOperation importOperation = new ImportOperation(project.getFullPath(),
-      new File("projects", projectdir), FileSystemStructureProvider.INSTANCE, file -> IOverwriteQuery.ALL);
-    importOperation.setCreateContainerStructure(false);
-    importOperation.run(monitor);
-    return project;
+  protected final void waitForSonarLintJob() {
+    // Wait for the job to start. Don't wait too long and don't fail if missing, since it may have already been completed
+    new WaitUntil(new JobIsRunning(StringContains.containsString("SonarLint")), TimePeriod.SHORT, false);
+    // Wait for the job to complete
+    new WaitWhile(new JobIsRunning(StringContains.containsString("SonarLint")), TimePeriod.LONG);
   }
 
   public static MarkerAttributesExtractor markerAttributes(String... attributes) {

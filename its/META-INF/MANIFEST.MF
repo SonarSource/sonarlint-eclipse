@@ -30,7 +30,17 @@ Require-Bundle: org.eclipse.jdt.core,
  org.eclipse.equinox.security,
  org.eclipse.ui.console,
  assertj-core,
+ org.eclipse.reddeer.junit,
+ org.eclipse.reddeer.requirements,
+ org.eclipse.reddeer.eclipse,
+ org.eclipse.reddeer.swt,
+ org.eclipse.reddeer.common,
+ org.eclipse.reddeer.workbench.core,
+ org.eclipse.reddeer.workbench,
+ org.eclipse.reddeer.jface,
+ org.eclipse.reddeer.core,
  minimal-json;bundle-version="0.9.5"
+Import-Package: org.sonarlint.eclipse.ui.internal.views.issues
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonarlint.eclipse.its,
