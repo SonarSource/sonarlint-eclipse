@@ -70,6 +70,41 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
     partListener = new IPartListener2() {
 
       @Override
+      public void partVisible(IWorkbenchPartReference partRef) {
+        // Nothing to do
+      }
+
+      @Override
+      public void partInputChanged(IWorkbenchPartReference partRef) {
+        // Nothing to do
+      }
+
+      @Override
+      public void partHidden(IWorkbenchPartReference partRef) {
+        // Nothing to do
+      }
+
+      @Override
+      public void partDeactivated(IWorkbenchPartReference partRef) {
+        // Nothing to do
+      }
+
+      @Override
+      public void partOpened(IWorkbenchPartReference partRef) {
+        // Nothing to do
+      }
+
+      @Override
+      public void partBroughtToTop(IWorkbenchPartReference partRef) {
+        // Nothing to do
+      }
+
+      @Override
+      public void partActivated(IWorkbenchPartReference partRef) {
+        // Nothing to do
+      }
+
+      @Override
       public void partClosed(IWorkbenchPartReference partRef) {
         // Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=568243
         IWorkbenchPart part = partRef.getPart(true);
