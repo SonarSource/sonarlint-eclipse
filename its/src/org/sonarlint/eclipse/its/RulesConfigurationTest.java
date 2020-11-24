@@ -26,7 +26,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
 import org.eclipse.swtbot.swt.finder.waits.ICondition;
@@ -38,7 +38,6 @@ import org.junit.Test;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.OnTheFlyViewBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
-import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -57,7 +56,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
   @Test
   public void deactivate_rule() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+    new JavaPerspective().open();
     IProject project = importEclipseProject("java/java-exclude-rules", "java-exclude-rules");
     JobHelpers.waitForJobsToComplete(bot);
 
@@ -97,7 +96,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
   @Test
   public void ruleParametersGlobalDefaults() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+    new JavaPerspective().open();
     IProject project = importEclipseProject("java/java-exclude-rules", "java-exclude-rules");
     JobHelpers.waitForJobsToComplete(bot);
 

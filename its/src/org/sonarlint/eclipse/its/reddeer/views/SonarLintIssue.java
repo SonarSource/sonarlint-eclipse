@@ -25,9 +25,13 @@ public class SonarLintIssue extends AbstractMarker {
 
   @Override
   protected String getCell(Column column) {
+    return getCell(column.toString());
+  }
+
+  private String getCell(String column) {
     OnTheFlyView onTheFlyView = new OnTheFlyView();
     List<String> columns = onTheFlyView.getProblemColumns();
-    if (columns.contains(column.toString())) {
+    if (columns.contains(column)) {
       return markerItem.getCell(onTheFlyView.getIndexOfColumn(column));
     }
     return null;
@@ -36,5 +40,9 @@ public class SonarLintIssue extends AbstractMarker {
   @Override
   public String toString() {
     return super.toString();
+  }
+
+  public String getCreationDate() {
+    return getCell("Date");
   }
 }

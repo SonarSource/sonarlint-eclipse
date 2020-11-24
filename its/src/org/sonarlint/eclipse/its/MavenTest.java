@@ -23,11 +23,10 @@ import java.util.Arrays;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
-import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -36,7 +35,7 @@ public class MavenTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldNotAnalyzeResourcesInSubModules() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+    new JavaPerspective().open();
     IProject root = importEclipseProject("java/maven", "sample-maven");
     IProject module1 = importEclipseProject("java/maven/sample-module1", "sample-module1");
     importEclipseProject("java/maven/sample-module2", "sample-module2");

@@ -20,7 +20,7 @@
 package org.sonarlint.eclipse.its;
 
 import java.util.stream.Stream;
-import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
 import org.eclipse.swtbot.swt.finder.SWTBot;
@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.OnTheFlyViewBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
-import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -45,7 +44,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
 
   @BeforeClass
   public static void openSampleProjectAndFileWithFlows() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+    new JavaPerspective().open();
     importEclipseProject("java/java-multiple-flows", "java-multiple-flows");
     JobHelpers.waitForJobsToComplete(bot);
 
