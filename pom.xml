@@ -247,27 +247,6 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jarsigner-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <id>sign</id>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <alias>sonarsource-codesign-2019-2021</alias>
-          <keystore>${sonarsource.keystore.path}</keystore>
-          <storepass>${sonarsource.keystore.password}</storepass>
-          <skip>${jarsigner.skip}</skip>
-          <tsa>http://timestamp.digicert.com?alg=sha256</tsa>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-source-plugin</artifactId>
         <version>${tycho.version}</version>
@@ -307,6 +286,28 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      
+      <!-- Keep sign after source-feature to ensure source feature is signed as well -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jarsigner-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>sign</id>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <alias>sonarsource-codesign-2019-2021</alias>
+          <keystore>${sonarsource.keystore.path}</keystore>
+          <storepass>${sonarsource.keystore.password}</storepass>
+          <skip>${jarsigner.skip}</skip>
+          <tsa>http://timestamp.digicert.com?alg=sha256</tsa>
+        </configuration>
       </plugin>
 
       <plugin>
