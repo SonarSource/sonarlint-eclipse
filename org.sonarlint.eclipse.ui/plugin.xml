@@ -381,10 +381,9 @@
         name="%sonar.issues.view.serverissuekeyfield">
     </markerField>
 
-    <markerTypeCategory
-          name="SonarLint">
-       <markerTypeReference id="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem">
-       </markerTypeReference>
+    <markerTypeCategory name="SonarLint">
+       <markerTypeReference id="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem"/>
+       <markerTypeReference id="org.sonarlint.eclipse.core.sonarlintReportProblem"/>
     </markerTypeCategory>
   </extension>
 
