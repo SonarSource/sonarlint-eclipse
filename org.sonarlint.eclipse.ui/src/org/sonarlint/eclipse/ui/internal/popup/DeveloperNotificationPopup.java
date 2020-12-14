@@ -27,14 +27,14 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotification;
+import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotification;
 
 public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
 
-  private final SonarQubeNotification notification;
+  private final ServerNotification notification;
   private final boolean isSonarCloud;
 
-  public DeveloperNotificationPopup(Display display, SonarQubeNotification notification, boolean isSonarCloud) {
+  public DeveloperNotificationPopup(Display display, ServerNotification notification, boolean isSonarCloud) {
     super(display);
     this.notification = notification;
     this.isSonarCloud = isSonarCloud;

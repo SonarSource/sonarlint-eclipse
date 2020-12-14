@@ -39,7 +39,8 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.TelemetryClientConfig;
 import org.sonarsource.sonarlint.core.client.api.common.Version;
-import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
+import org.sonarsource.sonarlint.core.telemetry.TelemetryClientAttributesProvider;
+import org.sonarsource.sonarlint.core.telemetry.TelemetryHttpClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryPathManager;
 
@@ -87,7 +88,7 @@ public class SonarLintTelemetry {
   public void init() {
     try {
       TelemetryClientConfig clientConfig = getTelemetryClientConfig();
-      TelemetryClient client = new TelemetryClient(clientConfig, PRODUCT, SonarLintUtils.getPluginVersion(), ideVersionForTelemetry());
+      TelemetryHttpClient client = new TelemetryHttpClient(clientConfig, PRODUCT, SonarLintUtils.getPluginVersion(), ideVersionForTelemetry());
       this.telemetry = newTelemetryManager(getStorageFilePath(), client);
       this.scheduledJob = new TelemetryJob();
       scheduledJob.schedule(TimeUnit.MINUTES.toMillis(1));
@@ -115,9 +116,29 @@ public class SonarLintTelemetry {
   }
 
   // visible for testing
-  public TelemetryManager newTelemetryManager(Path path, TelemetryClient client) {
-    return new TelemetryManager(path, client, SonarLintTelemetry::isAnyOpenProjectBound, SonarLintTelemetry::isAnyOpenProjectBoundToSonarCloud,
-      SonarLintTelemetry::getNodeJsVersion);
+  public TelemetryManager newTelemetryManager(Path path, TelemetryHttpClient client) {
+    return new TelemetryManager(path, client, new TelemetryClientAttributesProvider() {
+
+      @Override
+      public boolean usesConnectedMode() {
+        return isAnyOpenProjectBound();
+      }
+
+      @Override
+      public boolean useSonarCloud() {
+        return isAnyOpenProjectBoundToSonarCloud();
+      }
+
+      @Override
+      public Optional<String> nodeVersion() {
+        return Optional.ofNullable(getNodeJsVersion());
+      }
+
+      @Override
+      public boolean devNotificationsDisabled() {
+        return isDevNotificationsDisabled();
+      }
+    });
   }
 
   private class TelemetryJob extends Job {
@@ -127,6 +148,7 @@ public class SonarLintTelemetry {
       setSystem(true);
     }
 
+    @Override
     protected IStatus run(IProgressMonitor monitor) {
       schedule(TimeUnit.HOURS.toMillis(6));
       upload();
@@ -194,6 +216,10 @@ public class SonarLintTelemetry {
       .map(Optional::get)
       .map(ResolvedBinding::getEngineFacade)
       .anyMatch(IConnectedEngineFacade::isSonarCloud);
+  }
+
+  private static boolean isDevNotificationsDisabled() {
+    return SonarLintCorePlugin.getServersManager().getServers().stream().anyMatch(f -> !f.areNotificationsEnabled());
   }
 
   @Nullable
