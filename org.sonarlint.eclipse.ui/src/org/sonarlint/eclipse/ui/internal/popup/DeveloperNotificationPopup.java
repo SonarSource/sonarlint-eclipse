@@ -33,11 +33,14 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
 
   private final ServerNotification notification;
   private final boolean isSonarCloud;
+  private final String sqOrSc;
 
   public DeveloperNotificationPopup(Display display, ServerNotification notification, boolean isSonarCloud) {
     super(display);
     this.notification = notification;
     this.isSonarCloud = isSonarCloud;
+    sqOrSc = isSonarCloud ? "SonarCloud" : "SonarQube";
+    setDelayClose(0);
   }
 
   @Override
@@ -49,7 +52,7 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
   protected void createContentArea(Composite composite) {
     super.createContentArea(composite);
 
-    addLink("Check it here", e -> {
+    addLink("Open in " + sqOrSc, e -> {
       DeveloperNotificationPopup.this.close();
       try {
         PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(notification.link()));
@@ -61,11 +64,11 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
 
   @Override
   protected String getPopupShellTitle() {
-    return isSonarCloud ? "SonarCloud event" : "SonarQube event";
+    return sqOrSc + " Notification";
   }
 
   @Override
   protected Image getPopupShellImage(int maximumHeight) {
-    return SonarLintImages.BALLOON_IMG;
+    return isSonarCloud ? SonarLintImages.SONARCLOUD_SERVER_ICON_IMG : SonarLintImages.SONARQUBE_SERVER_ICON_IMG;
   }
 }

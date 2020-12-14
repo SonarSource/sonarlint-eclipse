@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class NotificationsTracker {
 
@@ -73,6 +74,7 @@ public class NotificationsTracker {
     }
   }
 
+  @Nullable
   private ZonedDateTime readFromFile() {
     if (!lastEventPollingPath.toFile().isFile()) {
       return null;
