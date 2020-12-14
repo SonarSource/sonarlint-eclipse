@@ -132,18 +132,25 @@ public class NotificationsManager {
   public static class Subscriber {
     public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, ServerNotificationListener listener) {
       Optional<ResolvedBinding> resolvedBinding = SonarLintCorePlugin.getServersManager().resolveBinding(project, config);
-      if (!resolvedBinding.isPresent() || !resolvedBinding.get().getEngineFacade().areNotificationsEnabled()) {
+      if (!resolvedBinding.isPresent()) {
         return false;
       }
 
       ResolvedBinding binding = resolvedBinding.get();
+      if (binding.getEngineFacade().areNotificationsDisabled()) {
+        return false;
+      }
+      ConnectedEngineFacade connectedEngineFacade = (ConnectedEngineFacade) binding.getEngineFacade();
+      if (!connectedEngineFacade.checkNotificationsSupported()) {
+        return false;
+      }
       LastNotificationTime notificationTime = new ProjectNotificationTime(project);
 
       NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, binding.getProjectBinding().projectKey(),
-        ((ConnectedEngineFacade) binding.getEngineFacade())::getConfig);
+        connectedEngineFacade::getConfig);
       ServerNotifications.get().register(configuration);
-
       return true;
+
     }
 
     public void unsubscribe(ServerNotificationListener listener) {

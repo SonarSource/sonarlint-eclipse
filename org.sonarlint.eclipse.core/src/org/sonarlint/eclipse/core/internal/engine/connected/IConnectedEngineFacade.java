@@ -124,7 +124,7 @@ public interface IConnectedEngineFacade {
 
   boolean isSonarCloud();
 
-  boolean areNotificationsEnabled();
+  boolean areNotificationsDisabled();
 
   List<ISonarLintFile> getServerFileExclusions(ProjectBinding binding, Collection<ISonarLintFile> files, Predicate<ISonarLintFile> testFilePredicate);
 

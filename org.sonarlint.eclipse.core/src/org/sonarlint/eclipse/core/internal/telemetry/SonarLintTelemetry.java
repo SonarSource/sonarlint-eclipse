@@ -219,7 +219,7 @@ public class SonarLintTelemetry {
   }
 
   private static boolean isDevNotificationsDisabled() {
-    return SonarLintCorePlugin.getServersManager().getServers().stream().anyMatch(f -> !f.areNotificationsEnabled());
+    return SonarLintCorePlugin.getServersManager().getServers().stream().anyMatch(IConnectedEngineFacade::areNotificationsDisabled);
   }
 
   @Nullable
