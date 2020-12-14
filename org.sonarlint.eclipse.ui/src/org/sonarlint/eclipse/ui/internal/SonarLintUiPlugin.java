@@ -100,7 +100,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         if (isNodeCommandException(msg)) {
           getSonarConsole().info(msg, false);
           Display.getDefault().asyncExec(() -> {
-            MissingNodePopup popup = new MissingNodePopup(Display.getCurrent());
+            MissingNodePopup popup = new MissingNodePopup();
             popup.setFadingEnabled(false);
             popup.setDelayClose(0L);
             popup.open();
@@ -129,7 +129,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     @Override
     public void showNotification(Notification notif) {
       Display.getDefault().asyncExec(() -> {
-        GenericNotificationPopup popup = new GenericNotificationPopup(Display.getCurrent(), notif.getTitle(), notif.getShortMsg(), notif.getLongMsg());
+        GenericNotificationPopup popup = new GenericNotificationPopup(notif.getTitle(), notif.getShortMsg(), notif.getLongMsg());
         popup.setFadingEnabled(false);
         popup.setDelayClose(0L);
         popup.open();
@@ -226,7 +226,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         @Override
         public void handle(ServerNotification notification) {
           Display.getDefault().asyncExec(() -> {
-            DeveloperNotificationPopup popup = new DeveloperNotificationPopup(Display.getCurrent(), notification, s.isSonarCloud());
+            DeveloperNotificationPopup popup = new DeveloperNotificationPopup(notification, s.isSonarCloud());
             popup.open();
           });
         }
@@ -267,7 +267,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       for (final IConnectedEngineFacade server : SonarLintCorePlugin.getServersManager().getServers()) {
         if (server.getStorageState() != State.UPDATED) {
           Display.getDefault().asyncExec(() -> {
-            ServerStorageNeedUpdatePopup popup = new ServerStorageNeedUpdatePopup(Display.getCurrent(), server);
+            ServerStorageNeedUpdatePopup popup = new ServerStorageNeedUpdatePopup(server);
             popup.open();
           });
         }

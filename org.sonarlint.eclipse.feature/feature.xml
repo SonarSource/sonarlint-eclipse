@@ -41,7 +41,6 @@
       <import plugin="org.eclipse.ui.forms"/>
       <import plugin="org.sonarsource.sonarlint.core.sonarlint-client-api"/>
       <import plugin="org.sonarsource.sonarlint.core.sonarlint-core"/>
-      <import plugin="org.eclipse.mylyn.commons.ui"/>
    </requires>
 
    <plugin

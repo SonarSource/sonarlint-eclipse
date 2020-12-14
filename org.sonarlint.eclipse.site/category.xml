@@ -9,21 +9,6 @@
    <feature id="org.sonarlint.eclipse.feature.source" version="0.0.0">
       <category name="SonarLint for Eclipse Source Code"/>
    </feature>
-   <bundle id="org.eclipse.mylyn.commons.ui">
-      <category name="Third party dependencies"/>
-   </bundle>
-   <bundle id="org.eclipse.mylyn.commons.core">
-      <category name="Third party dependencies"/>
-   </bundle>
-   <bundle id="org.eclipse.mylyn.commons.screenshots">
-      <category name="Third party dependencies"/>
-   </bundle>
-   <bundle id="org.apache.commons.lang">
-      <category name="Third party dependencies"/>
-   </bundle>
-   <bundle id="com.google.guava">
-      <category name="Third party dependencies"/>
-   </bundle>
    <category-def name="SonarLint for Eclipse" label="SonarLint for Eclipse">
       <description>
          Allows to run SonarLint analysis on your Eclipse projects
@@ -32,11 +17,6 @@
    <category-def name="SonarLint for Eclipse Source Code" label="SonarLint for Eclipse Source Code">
       <description>
          Source files when developing SonarLint integration
-      </description>
-   </category-def>
-   <category-def name="Third party dependencies" label="Third party dependencies">
-      <description>
-         Third party dependencies possibly needed by SonarLint
       </description>
    </category-def>
 </site>
