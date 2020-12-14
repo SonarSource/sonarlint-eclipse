@@ -68,8 +68,9 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   private final UsernamePasswordWizardPage credentialsPage;
   private final TokenWizardPage tokenPage;
   private final OrganizationWizardPage orgPage;
-  private final ConnectionIdWizardPage serverIdPage;
-  private final EndWizardPage endPage;
+  private final ConnectionIdWizardPage connectionIdPage;
+  private final NotificationsWizardPage notifPage;
+  private final ConfirmWizardPage confirmPage;
   private final IConnectedEngineFacade editedServer;
 
   private ServerConnectionWizard(String title, ServerConnectionModel model, IConnectedEngineFacade editedServer) {
@@ -85,8 +86,9 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     credentialsPage = new UsernamePasswordWizardPage(model);
     tokenPage = new TokenWizardPage(model);
     orgPage = new OrganizationWizardPage(model);
-    serverIdPage = new ConnectionIdWizardPage(model);
-    endPage = new EndWizardPage(model);
+    connectionIdPage = new ConnectionIdWizardPage(model);
+    notifPage = new NotificationsWizardPage(model);
+    confirmPage = new ConfirmWizardPage(model);
   }
 
   /**
@@ -141,14 +143,15 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   public void addPages() {
     if (!model.isEdit()) {
       addPage(connectionTypeWizardPage);
-      addPage(serverIdPage);
+      addPage(connectionIdPage);
     }
     addPage(urlPage);
     addPage(authMethodPage);
     addPage(credentialsPage);
     addPage(tokenPage);
     addPage(orgPage);
-    addPage(endPage);
+    addPage(notifPage);
+    addPage(confirmPage);
   }
 
   @Override
@@ -172,14 +175,22 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     if (page == orgPage) {
       return afterOrgPage();
     }
-    if (page == serverIdPage) {
-      return endPage;
+    if (page == connectionIdPage) {
+      return notifPageIfSupportedOrConfirm();
+    }
+    if (page == notifPage) {
+      return confirmPage;
     }
     return null;
   }
 
   private IWizardPage afterOrgPage() {
-    return model.isEdit() ? endPage : serverIdPage;
+    return model.isEdit() ? notifPageIfSupportedOrConfirm() : connectionIdPage;
+  }
+
+  private IWizardPage notifPageIfSupportedOrConfirm() {
+    populateNotificationsSupported();
+    return model.getNotificationsSupported() ? notifPage : confirmPage;
   }
 
   @Override
@@ -197,7 +208,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   @Override
   public boolean canFinish() {
     IWizardPage currentPage = getContainer().getCurrentPage();
-    return currentPage == endPage;
+    return currentPage == confirmPage;
   }
 
   @Override
@@ -208,23 +219,23 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     IConnectedEngineFacade server;
 
     if (model.isEdit()) {
-      editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsEnabled());
+      editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsDisabled());
       server = editedServer;
 
     } else {
       server = SonarLintCorePlugin.getServersManager().create(model.getServerId(), model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(),
-        model.getNotificationsEnabled());
+        model.getNotificationsDisabled());
       SonarLintCorePlugin.getServersManager().addServer(server, model.getUsername(), model.getPassword());
       try {
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BindingsView.ID);
       } catch (PartInitException e) {
-        SonarLintLogger.get().error("Unable to open server view", e);
+        SonarLintLogger.get().error("Unable to open SonarLint bindings view", e);
       }
     }
     Job job = new ServerUpdateJob(server);
 
     List<ISonarLintProject> boundProjects = server.getBoundProjects();
-    if (model.getNotificationsSupported() && model.getNotificationsEnabled() && !boundProjects.isEmpty()) {
+    if (model.getNotificationsSupported() && !model.getNotificationsDisabled() && !boundProjects.isEmpty()) {
       Job subscribeToNotificationsJob = new Job("Subscribe to notifications") {
         @Override
         protected IStatus run(IProgressMonitor monitor) {
@@ -241,9 +252,11 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     job.schedule();
     List<ISonarLintProject> selectedProjects = model.getSelectedProjects();
     if (selectedProjects != null && !selectedProjects.isEmpty()) {
-      ProjectBindingWizard.createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, (ConnectedEngineFacade) server).open();
+      ProjectBindingWizard.createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, (ConnectedEngineFacade) server)
+        .open();
     } else if (boundProjects.isEmpty()) {
-      ProjectBindingWizard.createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), (ConnectedEngineFacade) server).open();
+      ProjectBindingWizard.createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), (ConnectedEngineFacade) server)
+        .open();
     }
     return true;
   }
@@ -262,15 +275,27 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     }
     if (advance && currentPage == orgPage && model.hasOrganizations() && !testConnection(model.getOrganization())) {
       event.doit = false;
+    }
+  }
+
+  private void populateNotificationsSupported() {
+    if (model.getConnectionType() == ConnectionType.SONARCLOUD) {
+      model.setNotificationsSupported(true);
       return;
     }
-    if (advance && event.getTargetPage() == endPage) {
-      boolean notificationsSupported = ConnectedEngineFacade.checkNotificationsSupported(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword());
-      endPage.setNotificationsSupported(notificationsSupported);
-      model.setNotificationsSupported(notificationsSupported);
-      if (notificationsSupported && !model.isEdit()) {
-        model.setNotificationsEnabled(true);
-      }
+    try {
+      getContainer().run(true, false, new IRunnableWithProgress() {
+
+        @Override
+        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+          model
+            .setNotificationsSupported(ConnectedEngineFacade.checkNotificationsSupported(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword()));
+        }
+      });
+    } catch (InvocationTargetException e) {
+      SonarLintLogger.get().debug("Unable to test notifications", e.getCause());
+    } catch (InterruptedException e) {
+      // Nothing to do, the task was simply canceled
     }
   }
 

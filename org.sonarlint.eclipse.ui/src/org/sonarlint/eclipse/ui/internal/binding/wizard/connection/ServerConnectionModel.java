@@ -68,7 +68,7 @@ public class ServerConnectionModel extends ModelObject {
   private List<RemoteOrganization> userOrgs;
   private TextSearchIndex<RemoteOrganization> userOrgsIndex;
   private boolean notificationsSupported;
-  private boolean notificationsEnabled;
+  private boolean notificationsDisabled;
 
   private List<ISonarLintProject> selectedProjects;
 
@@ -92,7 +92,7 @@ public class ServerConnectionModel extends ModelObject {
       }
       this.authMethod = StringUtils.isBlank(password) ? AuthMethod.TOKEN : AuthMethod.PASSWORD;
     }
-    this.notificationsEnabled = server.areNotificationsEnabled();
+    this.notificationsDisabled = server.areNotificationsDisabled();
   }
 
   public boolean isEdit() {
@@ -234,18 +234,24 @@ public class ServerConnectionModel extends ModelObject {
     return notificationsSupported;
   }
 
+  /**
+   * Used by bean binding
+   */
   public void setNotificationsSupported(boolean value) {
     notificationsSupported = value;
   }
 
+  /**
+   * Used by bean binding
+   */
   public boolean getNotificationsEnabled() {
-    return notificationsEnabled;
+    return !notificationsDisabled;
   }
 
   public void setNotificationsEnabled(boolean value) {
-    boolean old = this.notificationsEnabled;
-    this.notificationsEnabled = value;
-    firePropertyChange(PROPERTY_NOTIFICATIONS_ENABLED, old, this.notificationsEnabled);
+    boolean old = !this.notificationsDisabled;
+    this.notificationsDisabled = !value;
+    firePropertyChange(PROPERTY_NOTIFICATIONS_ENABLED, old, !this.notificationsDisabled);
   }
 
   public void setSelectedProjects(List<ISonarLintProject> selectedProjects) {
@@ -255,5 +261,9 @@ public class ServerConnectionModel extends ModelObject {
   @Nullable
   public List<ISonarLintProject> getSelectedProjects() {
     return selectedProjects;
+  }
+
+  public boolean getNotificationsDisabled() {
+    return this.notificationsDisabled;
   }
 }

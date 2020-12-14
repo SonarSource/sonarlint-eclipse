@@ -98,7 +98,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   private final List<IConnectedEngineFacadeListener> facadeListeners = new ArrayList<>();
   private GlobalStorageStatus updateStatus;
   private boolean hasUpdates;
-  private boolean notificationsEnabled;
+  private boolean notificationsDisabled;
   // Cache the project list to avoid dead lock
   private final Map<String, RemoteProject> allProjectsByKey = new ConcurrentHashMap<>();
 
@@ -339,11 +339,11 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   }
 
   @Override
-  public void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsEnabled) {
+  public void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsDisabled) {
     this.host = url;
     this.organization = organization;
     this.hasAuth = StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
-    this.notificationsEnabled = notificationsEnabled;
+    this.notificationsDisabled = notificationsDisabled;
     SonarLintCorePlugin.getServersManager().updateConnection(this, username, password);
   }
 
@@ -537,6 +537,19 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     return ServerNotifications.get().isSupported(builder.build());
   }
 
+  public boolean checkNotificationsSupported() {
+    if (isSonarCloud()) {
+      return true;
+    }
+    try {
+      return ServerNotifications.get().isSupported(getConfig());
+    } catch (Exception e) {
+      // Maybe the server is temporarily unavailable
+      SonarLintLogger.get().debug("Unable to check for if notifications are supported for server '" + getHost() + "'", e);
+      return false;
+    }
+  }
+
   @Override
   public TextSearchIndex<RemoteProject> computeProjectIndex() {
     TextSearchIndex<RemoteProject> index = new TextSearchIndex<>();
@@ -600,12 +613,12 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   }
 
   @Override
-  public boolean areNotificationsEnabled() {
-    return notificationsEnabled;
+  public boolean areNotificationsDisabled() {
+    return notificationsDisabled;
   }
 
-  public ConnectedEngineFacade setNotificationsEnabled(boolean value) {
-    this.notificationsEnabled = value;
+  public ConnectedEngineFacade setNotificationsDisabled(boolean value) {
+    this.notificationsDisabled = value;
     return this;
   }
 

@@ -54,7 +54,7 @@ public class ConnectedEngineFacadeManager {
   static final String ORG_ATTRIBUTE = "org";
   static final String USERNAME_ATTRIBUTE = "username";
   static final String PASSWORD_ATTRIBUTE = "password";
-  static final String NOTIFICATIONS_ENABLED_ATTRIBUTE = "notificationsEnabled";
+  static final String NOTIFICATIONS_DISABLED_ATTRIBUTE = "notificationsDisabled";
 
   private static final byte EVENT_ADDED = 0;
   private static final byte EVENT_CHANGED = 1;
@@ -242,7 +242,7 @@ public class ConnectedEngineFacadeManager {
       url,
       connectionNode.get(ORG_ATTRIBUTE, null),
       connectionNode.getBoolean(AUTH_ATTRIBUTE, false),
-      connectionNode.getBoolean(NOTIFICATIONS_ENABLED_ATTRIBUTE, false));
+      connectionNode.getBoolean(NOTIFICATIONS_DISABLED_ATTRIBUTE, false));
   }
 
   private static String getConnectionIdFromNodeName(String name) {
@@ -308,7 +308,7 @@ public class ConnectedEngineFacadeManager {
 
   /**
    * Returns the server with the given id.
-   * 
+   *
    * @param id a server id
    * @return a server or empty
    */
@@ -358,7 +358,7 @@ public class ConnectedEngineFacadeManager {
       storeCredentials(facade, username, password);
     }
     ConnectedEngineFacade connectionToUpdate = (ConnectedEngineFacade) facadesByConnectionId.get(facade.getId());
-    update(connectionToUpdate, facade.getHost(), facade.getOrganization(), facade.hasAuth(), facade.areNotificationsEnabled());
+    update(connectionToUpdate, facade.getHost(), facade.getOrganization(), facade.hasAuth(), facade.areNotificationsDisabled());
 
     fireServerEvent(connectionToUpdate, EVENT_CHANGED);
   }
@@ -372,9 +372,15 @@ public class ConnectedEngineFacadeManager {
       serverNode.put(URL_ATTRIBUTE, facade.getHost());
       if (StringUtils.isNotBlank(facade.getOrganization())) {
         serverNode.put(ORG_ATTRIBUTE, facade.getOrganization());
+      } else {
+        serverNode.remove(ORG_ATTRIBUTE);
       }
       serverNode.putBoolean(AUTH_ATTRIBUTE, facade.hasAuth());
-      serverNode.putBoolean(NOTIFICATIONS_ENABLED_ATTRIBUTE, facade.areNotificationsEnabled());
+      if (facade.areNotificationsDisabled()) {
+        serverNode.putBoolean(NOTIFICATIONS_DISABLED_ATTRIBUTE, true);
+      } else {
+        serverNode.remove(NOTIFICATIONS_DISABLED_ATTRIBUTE);
+      }
       serversNode.flush();
     } catch (BackingStoreException e) {
       throw new IllegalStateException("Unable to save server list", e);
@@ -440,11 +446,11 @@ public class ConnectedEngineFacadeManager {
     return StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password);
   }
 
-  private static ConnectedEngineFacade update(ConnectedEngineFacade facade, String url, @Nullable String organization, boolean hasAuth, boolean notificationsEnabled) {
+  private static ConnectedEngineFacade update(ConnectedEngineFacade facade, String url, @Nullable String organization, boolean hasAuth, boolean notificationsDisabled) {
     return facade.setHost(url)
       .setOrganization(organization)
       .setHasAuth(hasAuth)
-      .setNotificationsEnabled(notificationsEnabled);
+      .setNotificationsDisabled(notificationsDisabled);
   }
 
 }
