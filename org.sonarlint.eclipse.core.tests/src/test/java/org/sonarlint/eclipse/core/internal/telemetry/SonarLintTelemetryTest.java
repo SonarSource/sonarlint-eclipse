@@ -34,7 +34,7 @@ import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfigura
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
-import org.sonarsource.sonarlint.core.telemetry.TelemetryClient;
+import org.sonarsource.sonarlint.core.telemetry.TelemetryHttpClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +46,7 @@ import static org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngi
 
 public class SonarLintTelemetryTest extends SonarTestCase {
   private SonarLintTelemetry telemetry;
-  private TelemetryManager engine = mock(TelemetryManager.class);
+  private final TelemetryManager engine = mock(TelemetryManager.class);
 
   private static IProject project;
   private static SonarLintProjectConfiguration configuration;
@@ -74,7 +74,7 @@ public class SonarLintTelemetryTest extends SonarTestCase {
     when(engine.isEnabled()).thenReturn(true);
 
     SonarLintTelemetry telemetry = new SonarLintTelemetry() {
-      public TelemetryManager newTelemetryManager(Path path, TelemetryClient client) {
+      public TelemetryManager newTelemetryManager(Path path, TelemetryHttpClient client) {
         return engine;
       }
     };

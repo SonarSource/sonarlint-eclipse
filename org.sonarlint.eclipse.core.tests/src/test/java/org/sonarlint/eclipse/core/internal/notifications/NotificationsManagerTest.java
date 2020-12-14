@@ -33,7 +33,7 @@ import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.Pr
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.SonarLintProjectConfigurationReader;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotificationListener;
+import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificationListener;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -45,17 +45,17 @@ public class NotificationsManagerTest {
   public TemporaryFolder tmp = new TemporaryFolder();
 
   private NotificationsManager notificationsManager;
-  private SonarQubeNotificationListener listener;
+  private ServerNotificationListener listener;
 
   private final FakeSubscriber subscriber = new FakeSubscriber();
 
   private final String projectKey1 = "pkey1";
   private final String projectKey2 = "pkey2";
 
-  private ISonarLintProject project1mod1 = mock(ISonarLintProject.class);
-  private ISonarLintProject project1mod2 = mock(ISonarLintProject.class);
-  private ISonarLintProject project2mod1 = mock(ISonarLintProject.class);
-  private ISonarLintProject project2mod2 = mock(ISonarLintProject.class);
+  private final ISonarLintProject project1mod1 = mock(ISonarLintProject.class);
+  private final ISonarLintProject project1mod2 = mock(ISonarLintProject.class);
+  private final ISonarLintProject project2mod1 = mock(ISonarLintProject.class);
+  private final ISonarLintProject project2mod2 = mock(ISonarLintProject.class);
 
   Map<ISonarLintProject, SonarLintProjectConfiguration> configs = new HashMap<>();
   {
@@ -77,12 +77,13 @@ public class NotificationsManagerTest {
     int count;
 
     @Override
-    public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
+    public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, ServerNotificationListener listener) {
       count++;
       return true;
     }
 
-    public void unsubscribe(SonarQubeNotificationListener listener) {
+    @Override
+    public void unsubscribe(ServerNotificationListener listener) {
       count--;
     }
   }
@@ -160,7 +161,7 @@ public class NotificationsManagerTest {
   public void should_not_subscribe_when_notifications_are_disabled() {
     FakeSubscriber disabled = new FakeSubscriber() {
       @Override
-      public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, SonarQubeNotificationListener listener) {
+      public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, ServerNotificationListener listener) {
         return false;
       }
     };

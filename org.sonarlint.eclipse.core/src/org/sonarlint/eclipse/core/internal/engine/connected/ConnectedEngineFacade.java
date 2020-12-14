@@ -79,7 +79,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
 import org.sonarsource.sonarlint.core.client.api.connected.WsHelper;
 import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
-import org.sonarsource.sonarlint.core.notifications.SonarQubeNotifications;
+import org.sonarsource.sonarlint.core.notifications.ServerNotifications;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableMap;
@@ -534,7 +534,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       builder.credentials(username, password);
     }
 
-    return SonarQubeNotifications.get().isSupported(builder.build());
+    return ServerNotifications.get().isSupported(builder.build());
   }
 
   @Override

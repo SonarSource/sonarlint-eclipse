@@ -58,8 +58,8 @@ import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MissingNodePopup;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
-import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotification;
-import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotificationListener;
+import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotification;
+import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificationListener;
 
 public class SonarLintUiPlugin extends AbstractUIPlugin {
 
@@ -222,9 +222,9 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public synchronized ListenerFactory listenerFactory() {
     if (listenerFactory == null) {
       // don't replace the anon class with lambda, because then the factory's "create" will always return the same listener instance
-      listenerFactory = (IConnectedEngineFacade s) -> new SonarQubeNotificationListener() {
+      listenerFactory = (IConnectedEngineFacade s) -> new ServerNotificationListener() {
         @Override
-        public void handle(SonarQubeNotification notification) {
+        public void handle(ServerNotification notification) {
           Display.getDefault().asyncExec(() -> {
             DeveloperNotificationPopup popup = new DeveloperNotificationPopup(Display.getCurrent(), notification, s.isSonarCloud());
             popup.open();

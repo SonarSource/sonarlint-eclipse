@@ -20,10 +20,10 @@
 package org.sonarlint.eclipse.core.internal.notifications;
 
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
-import org.sonarsource.sonarlint.core.client.api.notifications.SonarQubeNotificationListener;
+import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificationListener;
 
 public interface ListenerFactory {
 
-  SonarQubeNotificationListener create(IConnectedEngineFacade s);
+  ServerNotificationListener create(IConnectedEngineFacade s);
 
 }
