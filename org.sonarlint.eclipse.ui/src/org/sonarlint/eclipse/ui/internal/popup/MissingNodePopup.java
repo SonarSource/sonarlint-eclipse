@@ -21,15 +21,10 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 public class MissingNodePopup extends AbstractSonarLintPopup {
-
-  public MissingNodePopup(Display display) {
-    super(display);
-  }
 
   @Override
   protected String getMessage() {
@@ -41,8 +36,8 @@ public class MissingNodePopup extends AbstractSonarLintPopup {
     super.createContentArea(composite);
 
     addLink("Open console", e -> {
-      MissingNodePopup.this.close();
       SonarLintUiPlugin.getDefault().getSonarConsole().bringConsoleToFront();
+      close();
     });
   }
 

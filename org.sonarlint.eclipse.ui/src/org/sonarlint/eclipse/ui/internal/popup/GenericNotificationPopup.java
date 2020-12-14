@@ -31,7 +31,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
@@ -47,8 +46,7 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
   private final String shortMsg;
   private final String longMsg;
 
-  public GenericNotificationPopup(Display display, String title, String shortMsg, String longMsg) {
-    super(display);
+  public GenericNotificationPopup(String title, String shortMsg, String longMsg) {
     this.title = title;
     this.shortMsg = shortMsg;
     this.longMsg = longMsg;
@@ -63,12 +61,12 @@ public class GenericNotificationPopup extends AbstractSonarLintPopup {
   protected void createContentArea(Composite composite) {
     super.createContentArea(composite);
 
-    addLink("Dismiss", e -> GenericNotificationPopup.this.close());
+    addLink("Dismiss", e -> close());
 
     addLink("More details...", e -> {
       DialogWithLink dialog = new DialogWithLink(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "SonarLint - " + title, longMsg);
       dialog.open();
-      GenericNotificationPopup.this.close();
+      close();
     });
   }
 

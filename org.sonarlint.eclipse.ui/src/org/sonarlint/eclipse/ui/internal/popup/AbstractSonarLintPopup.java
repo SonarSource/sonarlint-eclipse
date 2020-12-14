@@ -20,48 +20,25 @@
 package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.util.function.Consumer;
-import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Monitor;
+import org.eclipse.ui.PlatformUI;
+import org.sonarlint.eclipse.ui.internal.notifications.AbstractNotificationPopup;
 
 public abstract class AbstractSonarLintPopup extends AbstractNotificationPopup {
 
-  public AbstractSonarLintPopup(Display display) {
-    super(display);
+  protected AbstractSonarLintPopup() {
+    super(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
+    setDelayClose(0);
   }
 
-  private static final int MAX_WIDTH = 400;
-  private static final int MIN_HEIGHT = 100;
-  private static final int PADDING_EDGE = 5;
-  private Composite links;
-
-  @Override
-  protected void initializeBounds() {
-    Rectangle clArea = getPrimaryClientArea();
-    // Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=539794
-    Point initialSize = getShell().computeSize(MAX_WIDTH, SWT.DEFAULT);
-    int height = Math.max(initialSize.y, MIN_HEIGHT);
-    int width = Math.min(initialSize.x, MAX_WIDTH);
-
-    Point size = new Point(width, height);
-    getShell().setLocation(clArea.width + clArea.x - size.x - PADDING_EDGE, clArea.height + clArea.y - size.y - PADDING_EDGE);
-    getShell().setSize(size);
-  }
-
-  private Rectangle getPrimaryClientArea() {
-    Monitor primaryMonitor = getShell().getDisplay().getPrimaryMonitor();
-    return (primaryMonitor != null) ? primaryMonitor.getClientArea() : getShell().getDisplay().getClientArea();
-  }
+  private Composite linksContainer;
 
   @Override
   protected void createContentArea(Composite composite) {
@@ -70,22 +47,22 @@ public abstract class AbstractSonarLintPopup extends AbstractNotificationPopup {
     messageLabel.setLayoutData(messageLayoutData);
 
     messageLabel.setText(getMessage());
-    messageLabel.setBackground(composite.getBackground());
 
-    links = new Composite(composite, SWT.NONE);
-    GridData linksLayoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    linksLayoutData.horizontalAlignment = GridData.HORIZONTAL_ALIGN_END;
-    links.setLayoutData(linksLayoutData);
+    linksContainer = new Composite(composite, SWT.NONE);
+    GridData linksLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
+    linksLayoutData.horizontalAlignment = SWT.END;
+    linksLayoutData.verticalAlignment = SWT.BOTTOM;
+    linksContainer.setLayoutData(linksLayoutData);
 
     RowLayout rowLayout = new RowLayout();
     rowLayout.spacing = 20;
-    links.setLayout(rowLayout);
+    linksContainer.setLayout(rowLayout);
   }
 
   protected abstract String getMessage();
 
   protected void addLink(String text, Consumer<SelectionEvent> selectionHandler) {
-    Link detailsLink = new Link(links, SWT.NONE);
+    Link detailsLink = new Link(linksContainer, SWT.NONE);
     detailsLink.setText("<a>" + text + "</a>");
     detailsLink.addSelectionListener(new SelectionAdapter() {
       @Override

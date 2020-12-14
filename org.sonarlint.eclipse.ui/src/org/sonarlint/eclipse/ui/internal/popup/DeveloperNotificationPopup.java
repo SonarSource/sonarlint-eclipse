@@ -23,7 +23,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -35,12 +34,10 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
   private final boolean isSonarCloud;
   private final String sqOrSc;
 
-  public DeveloperNotificationPopup(Display display, ServerNotification notification, boolean isSonarCloud) {
-    super(display);
+  public DeveloperNotificationPopup(ServerNotification notification, boolean isSonarCloud) {
     this.notification = notification;
     this.isSonarCloud = isSonarCloud;
     sqOrSc = isSonarCloud ? "SonarCloud" : "SonarQube";
-    setDelayClose(0);
   }
 
   @Override
@@ -53,12 +50,12 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
     super.createContentArea(composite);
 
     addLink("Open in " + sqOrSc, e -> {
-      DeveloperNotificationPopup.this.close();
       try {
         PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(notification.link()));
       } catch (PartInitException | MalformedURLException e1) {
         // ignore
       }
+      close();
     });
   }
 
