@@ -119,6 +119,10 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     wizardBot.setConnectionName(CONNECTION_NAME);
     wizardBot.clickNext();
 
+    assertThat(wizardBot.getNotificationEnabled()).isTrue();
+    assertThat(wizardBot.isNextEnabled()).isTrue();
+    wizardBot.clickNext();
+
     assertThat(wizardBot.isNextEnabled()).isFalse();
     wizardBot.clickFinish();
 
