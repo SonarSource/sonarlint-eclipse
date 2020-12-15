@@ -46,7 +46,7 @@ public class ServerConnectionModel extends ModelObject {
   public static final String PROPERTY_USERNAME = "username";
   public static final String PROPERTY_PASSWORD = "password";
   public static final String PROPERTY_ORGANIZATION = "organization";
-  public static final String PROPERTY_SERVER_ID = "serverId";
+  public static final String PROPERTY_CONNECTION_ID = "connectionId";
   public static final String PROPERTY_NOTIFICATIONS_ENABLED = "notificationsEnabled";
 
   public enum ConnectionType {
@@ -60,7 +60,7 @@ public class ServerConnectionModel extends ModelObject {
   private final boolean edit;
   private ConnectionType connectionType = ConnectionType.SONARCLOUD;
   private AuthMethod authMethod = AuthMethod.TOKEN;
-  private String serverId;
+  private String connectionId;
   private String serverUrl = ConnectedEngineFacade.getSonarCloudUrl();
   private String organization;
   private String username;
@@ -78,7 +78,7 @@ public class ServerConnectionModel extends ModelObject {
 
   public ServerConnectionModel(IConnectedEngineFacade server) {
     this.edit = true;
-    this.serverId = server.getId();
+    this.connectionId = server.getId();
     this.serverUrl = server.getHost();
     this.connectionType = ConnectedEngineFacade.getSonarCloudUrl().equals(serverUrl) ? ConnectionType.SONARCLOUD : ConnectionType.ONPREMISE;
     this.organization = server.getOrganization();
@@ -127,14 +127,14 @@ public class ServerConnectionModel extends ModelObject {
     setPassword(null);
   }
 
-  public String getServerId() {
-    return serverId;
+  public String getConnectionId() {
+    return connectionId;
   }
 
-  public void setServerId(String serverId) {
-    String old = this.serverId;
-    this.serverId = serverId;
-    firePropertyChange(PROPERTY_SERVER_ID, old, this.serverId);
+  public void setConnectionId(String connectionId) {
+    String old = this.connectionId;
+    this.connectionId = connectionId;
+    firePropertyChange(PROPERTY_CONNECTION_ID, old, this.connectionId);
   }
 
   public String getServerUrl() {
@@ -223,7 +223,7 @@ public class ServerConnectionModel extends ModelObject {
         if (StringUtils.isNotBlank(organization)) {
           suggestedId += "/" + organization;
         }
-        setServerId(suggestedId);
+        setConnectionId(suggestedId);
       } catch (MalformedURLException e1) {
         // Ignore, should not occurs
       }

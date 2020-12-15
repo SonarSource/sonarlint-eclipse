@@ -26,9 +26,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 public class SonarLintReportView extends MarkerViewWithBottomPanel {
 
@@ -76,13 +76,8 @@ public class SonarLintReportView extends MarkerViewWithBottomPanel {
     SonarLintReportView.reportTitle = title;
     if (SonarLintReportView.instance != null) {
       instance.refreshText();
-      instance.requestLayout();
+      PlatformUtils.requestLayout(instance.bottom);
     }
-  }
-
-  private void requestLayout() {
-    // TODO replace by requestLayout() when supporting only Eclipse 4.6+
-    bottom.getShell().layout(new Control[] {instance.bottom}, SWT.DEFER);
   }
 
 }

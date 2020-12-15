@@ -37,6 +37,7 @@ import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Display;
@@ -54,8 +55,7 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
-import org.sonarlint.eclipse.ui.internal.util.wizard.ParentAwareWizard;
-import org.sonarlint.eclipse.ui.internal.util.wizard.WizardDialogWithoutHelp;
+import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
@@ -64,7 +64,7 @@ import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 import static org.sonarlint.eclipse.core.internal.utils.StringUtils.isEmpty;
 
-public class ProjectBindingWizard extends ParentAwareWizard implements INewWizard, IPageChangedListener {
+public class ProjectBindingWizard extends Wizard implements INewWizard, IPageChangedListener {
 
   private static final String STORE_LAST_SELECTED_SERVER_ID = "ProjectBindingWizard.last_selected_server";
 
@@ -117,14 +117,14 @@ public class ProjectBindingWizard extends ParentAwareWizard implements INewWizar
   }
 
   public static WizardDialog createDialogSkipServerSelection(Shell activeShell, Collection<ISonarLintProject> selectedProjects, ConnectedEngineFacade selectedServer) {
-    return new WizardDialogWithoutHelp(activeShell, new ProjectBindingWizard(selectedProjects, selectedServer));
+    return new SonarLintWizardDialog(activeShell, new ProjectBindingWizard(selectedProjects, selectedServer));
   }
 
   public static WizardDialog createDialog(Shell activeShell, Collection<ISonarLintProject> selectedProjects) {
     if (SonarLintCorePlugin.getServersManager().getServers().isEmpty()) {
       return ServerConnectionWizard.createDialog(activeShell);
     }
-    return new WizardDialogWithoutHelp(activeShell, new ProjectBindingWizard(selectedProjects, null));
+    return new SonarLintWizardDialog(activeShell, new ProjectBindingWizard(selectedProjects, null));
   }
 
   @Override

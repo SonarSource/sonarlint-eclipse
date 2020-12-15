@@ -26,6 +26,8 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
@@ -132,5 +134,10 @@ public final class PlatformUtils {
       }
     }
     return null;
+  }
+
+  // TODO replace by requestLayout() when supporting only Eclipse 4.6+
+  public static void requestLayout(Control control) {
+    control.getShell().layout(new Control[] {control}, SWT.DEFER);
   }
 }

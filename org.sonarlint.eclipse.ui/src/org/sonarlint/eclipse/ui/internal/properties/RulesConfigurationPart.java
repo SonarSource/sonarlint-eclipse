@@ -64,6 +64,7 @@ import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintRuleBrowser;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
@@ -217,7 +218,7 @@ public class RulesConfigurationPart {
       ruleBrowser.updateRule(null);
       paramPanel = emptyRuleParam();
     }
-    paramPanel.requestLayout();
+    PlatformUtils.requestLayout(paramPanel);
   }
 
   private Composite emptyRuleParam() {

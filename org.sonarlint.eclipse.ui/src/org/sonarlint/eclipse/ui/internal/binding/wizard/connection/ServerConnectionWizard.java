@@ -55,7 +55,7 @@ import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
-import org.sonarlint.eclipse.ui.internal.util.wizard.WizardDialogWithoutHelp;
+import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
 import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.exceptions.UnsupportedServerException;
 
@@ -72,6 +72,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   private final NotificationsWizardPage notifPage;
   private final ConfirmWizardPage confirmPage;
   private final IConnectedEngineFacade editedServer;
+  private boolean redirectedAfterNotificationCheck;
 
   private ServerConnectionWizard(String title, ServerConnectionModel model, IConnectedEngineFacade editedServer) {
     super();
@@ -107,23 +108,23 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   }
 
   public static WizardDialog createDialog(Shell parent) {
-    return new WizardDialogWithoutHelp(parent, new ServerConnectionWizard());
+    return new SonarLintWizardDialog(parent, new ServerConnectionWizard());
   }
 
   public static WizardDialog createDialog(Shell parent, List<ISonarLintProject> selectedProjects) {
     ServerConnectionModel model = new ServerConnectionModel();
     model.setSelectedProjects(selectedProjects);
-    return new WizardDialogWithoutHelp(parent, new ServerConnectionWizard(model));
+    return new SonarLintWizardDialog(parent, new ServerConnectionWizard(model));
   }
 
-  public static WizardDialog createDialog(Shell parent, String serverId) {
+  public static WizardDialog createDialog(Shell parent, String connectionId) {
     ServerConnectionModel model = new ServerConnectionModel();
-    model.setServerId(serverId);
-    return new WizardDialogWithoutHelp(parent, new ServerConnectionWizard(model));
+    model.setConnectionId(connectionId);
+    return new SonarLintWizardDialog(parent, new ServerConnectionWizard(model));
   }
 
   public static WizardDialog createDialog(Shell parent, IConnectedEngineFacade sonarServer) {
-    return new WizardDialogWithoutHelp(parent, new ServerConnectionWizard(sonarServer));
+    return new SonarLintWizardDialog(parent, new ServerConnectionWizard(sonarServer));
   }
 
   @Override
@@ -222,7 +223,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       server = editedServer;
 
     } else {
-      server = SonarLintCorePlugin.getServersManager().create(model.getServerId(), model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(),
+      server = SonarLintCorePlugin.getServersManager().create(model.getConnectionId(), model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(),
         model.getNotificationsDisabled());
       SonarLintCorePlugin.getServersManager().addServer(server, model.getUsername(), model.getPassword());
       try {
@@ -231,6 +232,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
         SonarLintLogger.get().error("Unable to open SonarLint bindings view", e);
       }
     }
+
     Job job = new ServerUpdateJob(server);
 
     List<ISonarLintProject> boundProjects = server.getBoundProjects();
@@ -264,12 +266,23 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   public void handlePageChanging(PageChangingEvent event) {
     WizardPage currentPage = (WizardPage) event.getCurrentPage();
     boolean advance = getNextPage(currentPage) == event.getTargetPage();
-    if (advance && (currentPage == credentialsPage || currentPage == tokenPage)) {
+    if (advance && !redirectedAfterNotificationCheck && (currentPage == credentialsPage || currentPage == tokenPage)) {
       if (!testConnection(null)) {
         event.doit = false;
         return;
       }
+      // We need to wait for credentials before testing if notifications are supported
       populateNotificationsSupported();
+      // Next page depends if notifications are supported
+      IWizardPage newNextPage = getNextPage(currentPage);
+      if (newNextPage != event.getTargetPage()) {
+        // Avoid infinite recursion
+        redirectedAfterNotificationCheck = true;
+        getContainer().showPage(newNextPage);
+        redirectedAfterNotificationCheck = false;
+        event.doit = false;
+        return;
+      }
     }
     if (advance && event.getTargetPage() == orgPage) {
       event.doit = tryLoadOrganizations(currentPage);
@@ -371,4 +384,5 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     }
     return "";
   }
+
 }

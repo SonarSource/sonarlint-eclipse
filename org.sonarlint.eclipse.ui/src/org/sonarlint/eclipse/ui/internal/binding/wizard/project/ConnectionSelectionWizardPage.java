@@ -43,7 +43,6 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacad
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
-import org.sonarlint.eclipse.ui.internal.util.wizard.ParentAwareWizard;
 
 public class ConnectionSelectionWizardPage extends AbstractProjectBindingWizardPage {
 
@@ -97,7 +96,7 @@ public class ConnectionSelectionWizardPage extends AbstractProjectBindingWizardP
       @Override
       public void widgetSelected(SelectionEvent e) {
         ServerConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), model.getEclipseProjects()).open();
-        ((ParentAwareWizard) getWizard()).getParent().close();
+        getContainer().getShell().close();
       }
 
     });

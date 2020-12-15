@@ -114,7 +114,7 @@ public interface IConnectedEngineFacade {
 
   void notifyAllListenersStateChanged();
 
-  void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsEnabled);
+  void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsDisabled);
 
   void checkForUpdates(IProgressMonitor progress);
 
