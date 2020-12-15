@@ -81,7 +81,15 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
       + "    \"install_time\":\"2018-02-01T16:30:49.124+01:00\",\n"
       + "    \"analyses\":[{\"language\":\"java\",\"rate_per_duration\":{\"0-300\":100,\"300-500\":0,\"500-1000\":0,\"1000-2000\":0,\"2000-4000\":0,\"4000+\":0}}]\n,"
       + "    \"os\": \"Linux\",\n"
-      + "    \"jre\": \"11.0.6\""
+      + "    \"jre\": \"11.0.6\",\n" +
+      "      \"nodejs\": \"11.12.0\",\n" +
+      "      \"server_notifications\": {\n" +
+      "            \"disabled\":false,\n" +
+      "            \"count_by_type\":{\n" +
+      "                  \"NEW_ISSUES\": {\"received\":1,\"clicked\":1},\n" +
+      "                  \"QUALITY_GATE\": {\"received\":1,\"clicked\":0}\n" +
+      "            }\n" +
+      "      }"
       + "}");
 
     text.addSelectionListener(new SelectionAdapter() {

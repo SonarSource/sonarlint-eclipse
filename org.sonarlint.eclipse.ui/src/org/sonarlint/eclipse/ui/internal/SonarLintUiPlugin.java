@@ -47,6 +47,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.notifications.ListenerFactory;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
@@ -228,6 +229,8 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
           Display.getDefault().asyncExec(() -> {
             DeveloperNotificationPopup popup = new DeveloperNotificationPopup(notification, s.isSonarCloud());
             popup.open();
+            SonarLintTelemetry telemetry = SonarLintCorePlugin.getTelemetry();
+            telemetry.devNotificationsReceived(notification.category());
           });
         }
       };

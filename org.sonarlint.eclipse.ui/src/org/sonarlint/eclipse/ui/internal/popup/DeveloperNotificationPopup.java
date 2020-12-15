@@ -25,6 +25,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotification;
 
@@ -50,6 +52,8 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
     super.createContentArea(composite);
 
     addLink("Open in " + sqOrSc, e -> {
+      SonarLintTelemetry telemetry = SonarLintCorePlugin.getTelemetry();
+      telemetry.devNotificationsClicked(notification.category());
       try {
         PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(notification.link()));
       } catch (PartInitException | MalformedURLException e1) {
