@@ -189,7 +189,6 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   }
 
   private IWizardPage notifPageIfSupportedOrConfirm() {
-    populateNotificationsSupported();
     return model.getNotificationsSupported() ? notifPage : confirmPage;
   }
 
@@ -265,9 +264,12 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   public void handlePageChanging(PageChangingEvent event) {
     WizardPage currentPage = (WizardPage) event.getCurrentPage();
     boolean advance = getNextPage(currentPage) == event.getTargetPage();
-    if (advance && (currentPage == credentialsPage || currentPage == tokenPage) && !testConnection(null)) {
-      event.doit = false;
-      return;
+    if (advance && (currentPage == credentialsPage || currentPage == tokenPage)) {
+      if (!testConnection(null)) {
+        event.doit = false;
+        return;
+      }
+      populateNotificationsSupported();
     }
     if (advance && event.getTargetPage() == orgPage) {
       event.doit = tryLoadOrganizations(currentPage);
@@ -288,8 +290,14 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
 
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-          model
-            .setNotificationsSupported(ConnectedEngineFacade.checkNotificationsSupported(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword()));
+          monitor.beginTask("Check if notifications are supported", IProgressMonitor.UNKNOWN);
+          try {
+            model
+              .setNotificationsSupported(
+                ConnectedEngineFacade.checkNotificationsSupported(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword()));
+          } finally {
+            monitor.done();
+          }
         }
       });
     } catch (InvocationTargetException e) {

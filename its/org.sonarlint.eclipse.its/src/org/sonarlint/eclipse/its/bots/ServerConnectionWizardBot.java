@@ -229,4 +229,9 @@ public class ServerConnectionWizardBot {
     });
   }
 
+  public boolean getNotificationEnabled() {
+    // checkBoxWithLabel("Receive notifications from SonarCloud") doesn't work :(
+    return wizardBot.checkBox().isChecked();
+  }
+
 }
