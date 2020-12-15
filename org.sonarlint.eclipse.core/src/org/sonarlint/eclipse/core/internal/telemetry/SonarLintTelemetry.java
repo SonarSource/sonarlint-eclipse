@@ -188,6 +188,18 @@ public class SonarLintTelemetry {
     }
   }
 
+  public void devNotificationsReceived(String eventType) {
+    if (enabled()) {
+      telemetry.devNotificationsReceived(eventType);
+    }
+  }
+
+  public void devNotificationsClicked(String eventType) {
+    if (enabled()) {
+      telemetry.devNotificationsClicked(eventType);
+    }
+  }
+
   public void stop() {
     if (scheduledJob != null) {
       scheduledJob.cancel();
