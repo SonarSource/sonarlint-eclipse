@@ -21,13 +21,16 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.EditNotificationsWizard;
 import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotification;
 
 public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
@@ -35,8 +38,10 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
   private final ServerNotification notification;
   private final boolean isSonarCloud;
   private final String sqOrSc;
+  private final IConnectedEngineFacade server;
 
-  public DeveloperNotificationPopup(ServerNotification notification, boolean isSonarCloud) {
+  public DeveloperNotificationPopup(IConnectedEngineFacade server, ServerNotification notification, boolean isSonarCloud) {
+    this.server = server;
     this.notification = notification;
     this.isSonarCloud = isSonarCloud;
     sqOrSc = isSonarCloud ? "SonarCloud" : "SonarQube";
@@ -60,6 +65,11 @@ public class DeveloperNotificationPopup extends AbstractSonarLintPopup {
         // ignore
       }
       close();
+    });
+
+    addLink("Configure", e -> {
+      WizardDialog wd = EditNotificationsWizard.createDialog(getParentShell(), server);
+      wd.open();
     });
   }
 

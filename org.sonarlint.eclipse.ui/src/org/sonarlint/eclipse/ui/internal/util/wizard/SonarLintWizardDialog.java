@@ -19,17 +19,16 @@
  */
 package org.sonarlint.eclipse.ui.internal.util.wizard;
 
-import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Shell;
 
-public abstract class ParentAwareWizard extends Wizard {
-  private WizardDialog parent;
+public class SonarLintWizardDialog extends WizardDialog {
 
-  public void setParent(WizardDialog parent) {
-    this.parent = parent;
+  public SonarLintWizardDialog(Shell parentShell, IWizard newWizard) {
+    super(parentShell, newWizard);
+    setHelpAvailable(false);
+    setBlockOnOpen(false);
   }
 
-  public WizardDialog getParent() {
-    return parent;
-  }
 }

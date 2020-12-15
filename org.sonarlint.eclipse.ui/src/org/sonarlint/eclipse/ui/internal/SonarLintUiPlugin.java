@@ -227,7 +227,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         @Override
         public void handle(ServerNotification notification) {
           Display.getDefault().asyncExec(() -> {
-            DeveloperNotificationPopup popup = new DeveloperNotificationPopup(notification, s.isSonarCloud());
+            DeveloperNotificationPopup popup = new DeveloperNotificationPopup(s, notification, s.isSonarCloud());
             popup.open();
             SonarLintTelemetry telemetry = SonarLintCorePlugin.getTelemetry();
             telemetry.devNotificationsReceived(notification.category());
