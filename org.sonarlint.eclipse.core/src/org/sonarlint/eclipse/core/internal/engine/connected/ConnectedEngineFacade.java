@@ -464,7 +464,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
         ProjectBinding projectBinding = engine.calculatePathPrefixes(projectKey, p.files().stream().map(ISonarLintFile::getProjectRelativePath).collect(toList()));
         String idePathPrefix = projectBinding.idePathPrefix();
         String sqPathPrefix = projectBinding.sqPathPrefix();
-        SonarLintLogger.get().debug("Detected prefixes for " + p.getName() + ":\n  IDE prefix: " + idePathPrefix + "\n  ConnectedEngineFacade side prefix: " + sqPathPrefix);
+        SonarLintLogger.get().debug("Detected prefixes for " + p.getName() + ":\n  IDE prefix: " + idePathPrefix + "\n  Server side prefix: " + sqPathPrefix);
         SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(p);
         config.setProjectBinding(new EclipseProjectBinding(getId(), projectKey, sqPathPrefix, idePathPrefix));
         SonarLintCorePlugin.saveConfig(p, config);
