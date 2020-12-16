@@ -633,4 +633,8 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   public List<ServerIssue> getServerIssues(ProjectBinding projectBinding, String filePath) {
     return withEngine(engine -> engine.getServerIssues(projectBinding, filePath)).orElse(emptyList());
   }
+
+  public ProjectBinding calculatePathPrefixes(String projectKey, List<String> ideFilePaths) {
+    return withEngine(engine -> engine.calculatePathPrefixes(projectKey, ideFilePaths)).orElse(new ProjectBinding(projectKey, "", ""));
+  }
 }

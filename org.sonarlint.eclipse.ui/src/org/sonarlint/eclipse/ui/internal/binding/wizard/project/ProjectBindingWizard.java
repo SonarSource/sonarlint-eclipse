@@ -191,6 +191,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
       String oldServerId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
       String oldProjectKey = projectConfig.getProjectBinding().map(EclipseProjectBinding::projectKey).orElse(null);
       if (!Objects.equals(serverId, oldServerId) || !Objects.equals(projectKey, oldProjectKey)) {
+        // We can ignore path prefixes for now, they will be update by the ProjectStorageUpdateJob
         projectConfig.setProjectBinding(new EclipseProjectBinding(serverId, projectKey, "", ""));
         changed = true;
       }
