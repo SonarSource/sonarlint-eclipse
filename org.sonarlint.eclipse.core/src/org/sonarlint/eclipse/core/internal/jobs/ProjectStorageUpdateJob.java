@@ -29,23 +29,23 @@ import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFaca
 
 public class ProjectStorageUpdateJob extends Job {
 
-  private final String serverId;
+  private final String connectionId;
   private final String projectKey;
 
-  public ProjectStorageUpdateJob(String serverId, String projectKey) {
-    super("Update SonarLint binding data for project '" + projectKey + "' on '" + serverId + "'");
-    this.serverId = serverId;
+  public ProjectStorageUpdateJob(String connectionId, String projectKey) {
+    super("Update SonarLint binding data for project '" + projectKey + "' on '" + connectionId + "'");
+    this.connectionId = connectionId;
     this.projectKey = projectKey;
   }
 
   @Override
   protected IStatus run(IProgressMonitor monitor) {
     try {
-      Optional<IConnectedEngineFacade> server = SonarLintCorePlugin.getServersManager().findById(serverId);
+      Optional<IConnectedEngineFacade> server = SonarLintCorePlugin.getServersManager().findById(connectionId);
       server.ifPresent(s -> s.updateProjectStorage(projectKey, monitor));
       return Status.OK_STATUS;
     } catch (Exception e) {
-      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update SonarLint binding data for project '" + projectKey + "' on '" + serverId + "'", e);
+      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unable to update SonarLint binding data for project '" + projectKey + "' on '" + connectionId + "'", e);
     }
   }
 }

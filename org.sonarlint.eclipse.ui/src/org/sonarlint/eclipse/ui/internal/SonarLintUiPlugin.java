@@ -297,9 +297,13 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   public static void subscribeToNotifications(ISonarLintProject project) {
     SonarLintCorePlugin.getServersManager()
       .resolveBinding(project)
-      .ifPresent(binding -> SonarLintCorePlugin.getInstance()
-        .notificationsManager()
-        .subscribe(project, getDefault().listenerFactory().create(binding.getEngineFacade())));
+      .ifPresent(binding -> {
+        if (!binding.getEngineFacade().areNotificationsDisabled()) {
+          SonarLintCorePlugin.getInstance()
+            .notificationsManager()
+            .subscribe(project, getDefault().listenerFactory().create(binding.getEngineFacade()));
+        }
+      });
   }
 
   public static void unsubscribeToNotifications(ISonarLintProject project) {
