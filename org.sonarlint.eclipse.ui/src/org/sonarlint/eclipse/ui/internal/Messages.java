@@ -65,7 +65,6 @@ public final class Messages extends NLS {
   public static String actionChangeBinding;
   public static String actionEdit;
   public static String actionNewServer;
-  public static String actionSetNewServer;
 
   public static String toolTipEnableFocus;
   public static String toolTipDisableFocus;
