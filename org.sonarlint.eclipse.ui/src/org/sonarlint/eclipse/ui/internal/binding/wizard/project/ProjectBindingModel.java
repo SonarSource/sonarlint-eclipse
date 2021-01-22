@@ -25,8 +25,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ModelObject;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
+import org.sonarsource.sonarlint.core.serverapi.project.ServerProject;
 
 public class ProjectBindingModel extends ModelObject {
 
@@ -38,7 +38,7 @@ public class ProjectBindingModel extends ModelObject {
   private ConnectedEngineFacade server;
   private String remoteProjectKey;
   private boolean skipServerSelection;
-  private TextSearchIndex<RemoteProject> projectIndex;
+  private TextSearchIndex<ServerProject> projectIndex;
 
   public void setProjects(List<ISonarLintProject> eclipseProjects) {
     this.eclipseProjects = eclipseProjects;
@@ -84,11 +84,11 @@ public class ProjectBindingModel extends ModelObject {
   }
 
   @Nullable
-  public TextSearchIndex<RemoteProject> getProjectIndex() {
+  public TextSearchIndex<ServerProject> getProjectIndex() {
     return projectIndex;
   }
 
-  public void setProjectIndex(TextSearchIndex<RemoteProject> projectIndex) {
+  public void setProjectIndex(TextSearchIndex<ServerProject> projectIndex) {
     this.projectIndex = projectIndex;
 
   }

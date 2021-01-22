@@ -34,8 +34,8 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
+import org.sonarsource.sonarlint.core.serverapi.project.ServerProject;
 
 public interface IConnectedEngineFacade {
 
@@ -94,11 +94,11 @@ public interface IConnectedEngineFacade {
    */
   void removeConnectedEngineListener(IConnectedEngineFacadeListener listener);
 
-  TextSearchIndex<RemoteProject> computeProjectIndex();
+  TextSearchIndex<ServerProject> computeProjectIndex();
 
-  Map<String, RemoteProject> getCachedRemoteProjects();
+  Map<String, ServerProject> getCachedRemoteProjects();
 
-  Optional<RemoteProject> getRemoteProject(String projectKey, IProgressMonitor monitor);
+  Optional<ServerProject> getRemoteProject(String projectKey, IProgressMonitor monitor);
 
   @Nullable
   AnalysisResults runAnalysis(ConnectedAnalysisConfiguration config, IssueListener issueListener, IProgressMonitor monitor);

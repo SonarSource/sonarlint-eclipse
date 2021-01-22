@@ -28,8 +28,8 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
+import org.sonarsource.sonarlint.core.serverapi.project.ServerProject;
 
 public class RemoteProjectProvider implements IContentProposalProvider {
 
@@ -44,18 +44,18 @@ public class RemoteProjectProvider implements IContentProposalProvider {
   @Override
   public IContentProposal[] getProposals(String contents, int position) {
     List<IContentProposal> list = new ArrayList<>();
-    TextSearchIndex<RemoteProject> projectIndex = model.getProjectIndex();
-    Map<RemoteProject, Double> filtered = projectIndex != null ? projectIndex.search(contents) : Collections.emptyMap();
+    TextSearchIndex<ServerProject> projectIndex = model.getProjectIndex();
+    Map<ServerProject, Double> filtered = projectIndex != null ? projectIndex.search(contents) : Collections.emptyMap();
     if (filtered.isEmpty()) {
       parentPage.setMessage("No results", IMessageProvider.INFORMATION);
     } else {
       parentPage.setMessage("", IMessageProvider.NONE);
     }
-    List<Map.Entry<RemoteProject, Double>> entries = new ArrayList<>(filtered.entrySet());
+    List<Map.Entry<ServerProject, Double>> entries = new ArrayList<>(filtered.entrySet());
     entries.sort(
-      Comparator.comparing(Map.Entry<RemoteProject, Double>::getValue).reversed()
+      Comparator.comparing(Map.Entry<ServerProject, Double>::getValue).reversed()
         .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)));
-    for (Map.Entry<RemoteProject, Double> e : entries) {
+    for (Map.Entry<ServerProject, Double> e : entries) {
       list.add(new ProjectContentProposal(e.getKey()));
     }
     return list.toArray(new IContentProposal[list.size()]);
@@ -63,9 +63,9 @@ public class RemoteProjectProvider implements IContentProposalProvider {
 
   public static class ProjectContentProposal implements IContentProposal {
 
-    private RemoteProject remoteProject;
+    private final ServerProject remoteProject;
 
-    public ProjectContentProposal(RemoteProject remoteProject) {
+    public ProjectContentProposal(ServerProject remoteProject) {
       this.remoteProject = remoteProject;
     }
 
@@ -84,7 +84,7 @@ public class RemoteProjectProvider implements IContentProposalProvider {
       return remoteProject.getName();
     }
 
-    public RemoteProject getRemoteProject() {
+    public ServerProject getRemoteProject() {
       return remoteProject;
     }
 

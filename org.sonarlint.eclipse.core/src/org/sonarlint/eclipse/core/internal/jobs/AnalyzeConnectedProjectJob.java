@@ -75,7 +75,7 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
     IProgressMonitor monitor) {
     if (triggerType.shouldUpdateProjectIssuesSync(rawIssuesPerResource.size())) {
       SonarLintLogger.get().debug("Download engineFacade issues for project " + getProject().getName());
-      engineFacade.downloadServerIssues(binding.projectKey());
+      engineFacade.downloadServerIssues(binding.projectKey(), monitor);
     }
     super.trackIssues(docPerFile, rawIssuesPerResource, triggerType, monitor);
     if (triggerType.shouldUpdateFileIssuesAsync()) {
@@ -87,10 +87,11 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
   }
 
   @Override
-  protected Collection<Trackable> trackFileIssues(ISonarLintFile file, List<Trackable> trackables, IssueTracker issueTracker, TriggerType triggerType, int totalTrackedFiles) {
-    Collection<Trackable> tracked = super.trackFileIssues(file, trackables, issueTracker, triggerType, totalTrackedFiles);
+  protected Collection<Trackable> trackFileIssues(ISonarLintFile file, List<Trackable> trackables, IssueTracker issueTracker, TriggerType triggerType, int totalTrackedFiles,
+    IProgressMonitor monitor) {
+    Collection<Trackable> tracked = super.trackFileIssues(file, trackables, issueTracker, triggerType, totalTrackedFiles, monitor);
     if (!tracked.isEmpty()) {
-      tracked = trackServerIssuesSync(engineFacade, file, tracked, triggerType.shouldUpdateFileIssuesSync(totalTrackedFiles));
+      tracked = trackServerIssuesSync(engineFacade, file, tracked, triggerType.shouldUpdateFileIssuesSync(totalTrackedFiles), monitor);
     }
     return tracked;
 
@@ -111,10 +112,11 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
       docPerFile, triggerType);
   }
 
-  private Collection<Trackable> trackServerIssuesSync(ConnectedEngineFacade engineFacade, ISonarLintFile file, Collection<Trackable> tracked, boolean updateServerIssues) {
+  private Collection<Trackable> trackServerIssuesSync(ConnectedEngineFacade engineFacade, ISonarLintFile file, Collection<Trackable> tracked, boolean updateServerIssues,
+    IProgressMonitor monitor) {
     List<ServerIssue> serverIssues;
     if (updateServerIssues) {
-      serverIssues = ServerIssueUpdater.fetchServerIssues(engineFacade, binding, file);
+      serverIssues = ServerIssueUpdater.fetchServerIssues(engineFacade, binding, file, monitor);
     } else {
       serverIssues = engineFacade.getServerIssues(binding, file.getProjectRelativePath());
     }

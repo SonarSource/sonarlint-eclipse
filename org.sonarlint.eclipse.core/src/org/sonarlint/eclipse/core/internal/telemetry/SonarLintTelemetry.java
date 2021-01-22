@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.telemetry;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import okhttp3.OkHttpClient;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -34,10 +35,10 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
+import org.sonarlint.eclipse.core.internal.http.SonarLintHttpClientOkHttpImpl;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
-import org.sonarsource.sonarlint.core.client.api.common.TelemetryClientConfig;
 import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClientAttributesProvider;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryHttpClient;
@@ -87,8 +88,9 @@ public class SonarLintTelemetry {
 
   public void init() {
     try {
-      TelemetryClientConfig clientConfig = getTelemetryClientConfig();
-      TelemetryHttpClient client = new TelemetryHttpClient(clientConfig, PRODUCT, SonarLintUtils.getPluginVersion(), ideVersionForTelemetry());
+      OkHttpClient.Builder clientWithProxy = SonarLintUtils.withProxy(TelemetryHttpClient.TELEMETRY_ENDPOINT, SonarLintCorePlugin.getOkHttpClient());
+      TelemetryHttpClient client = new TelemetryHttpClient(PRODUCT, SonarLintUtils.getPluginVersion(), ideVersionForTelemetry(),
+        new SonarLintHttpClientOkHttpImpl(clientWithProxy.build()));
       this.telemetry = newTelemetryManager(getStorageFilePath(), client);
       this.scheduledJob = new TelemetryJob();
       scheduledJob.schedule(TimeUnit.MINUTES.toMillis(1));
@@ -155,18 +157,6 @@ public class SonarLintTelemetry {
       return Status.OK_STATUS;
     }
 
-  }
-
-  public static TelemetryClientConfig getTelemetryClientConfig() {
-    TelemetryClientConfig.Builder clientConfigBuilder = new TelemetryClientConfig.Builder()
-      .userAgent("SonarLint");
-
-    SonarLintUtils.configureProxy(TelemetryManager.TELEMETRY_ENDPOINT, clientConfigBuilder::proxy, (user, pwd) -> {
-      clientConfigBuilder.proxyLogin(user);
-      clientConfigBuilder.proxyPassword(pwd);
-    });
-
-    return clientConfigBuilder.build();
   }
 
   // visible for testing

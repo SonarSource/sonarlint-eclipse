@@ -33,8 +33,8 @@ import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFaca
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.wizard.ModelObject;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
+import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
 
 public class ServerConnectionModel extends ModelObject {
 
@@ -65,8 +65,8 @@ public class ServerConnectionModel extends ModelObject {
   private String organization;
   private String username;
   private String password;
-  private List<RemoteOrganization> userOrgs;
-  private TextSearchIndex<RemoteOrganization> userOrgsIndex;
+  private List<ServerOrganization> userOrgs;
+  private TextSearchIndex<ServerOrganization> userOrgsIndex;
   private boolean notificationsSupported;
   private boolean notificationsDisabled;
 
@@ -181,7 +181,7 @@ public class ServerConnectionModel extends ModelObject {
   }
 
   @Nullable
-  public List<RemoteOrganization> getUserOrgs() {
+  public List<ServerOrganization> getUserOrgs() {
     return userOrgs;
   }
 
@@ -189,24 +189,24 @@ public class ServerConnectionModel extends ModelObject {
     return userOrgs != null && userOrgs.size() > 1;
   }
 
-  public void setUserOrgs(@Nullable List<RemoteOrganization> userOrgs) {
+  public void setUserOrgs(@Nullable List<ServerOrganization> userOrgs) {
     this.userOrgs = userOrgs;
-    TextSearchIndex<RemoteOrganization> index = new TextSearchIndex<>();
-    for (RemoteOrganization org : userOrgs) {
+    TextSearchIndex<ServerOrganization> index = new TextSearchIndex<>();
+    for (ServerOrganization org : userOrgs) {
       index.index(org, org.getKey() + " " + org.getName());
     }
     suggestOrganization(userOrgs);
     this.userOrgsIndex = index;
   }
 
-  private void suggestOrganization(@Nullable List<RemoteOrganization> userOrgs) {
+  private void suggestOrganization(@Nullable List<ServerOrganization> userOrgs) {
     if (!isEdit() && userOrgs != null && userOrgs.size() == 1) {
       setOrganization(userOrgs.get(0).getKey());
     }
   }
 
   @Nullable
-  public TextSearchIndex<RemoteOrganization> getUserOrgsIndex() {
+  public TextSearchIndex<ServerOrganization> getUserOrgsIndex() {
     return userOrgsIndex;
   }
 

@@ -29,14 +29,22 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager;
+import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.ProjectNotificationTime;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.SonarLintProjectConfigurationReader;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificationListener;
+import org.sonarsource.sonarlint.core.notifications.ServerNotificationsRegistry;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class NotificationsManagerTest {
@@ -44,13 +52,16 @@ public class NotificationsManagerTest {
   @Rule
   public TemporaryFolder tmp = new TemporaryFolder();
 
-  private NotificationsManager notificationsManager;
+  private NotificationsManager underTest;
   private ServerNotificationListener listener;
+  private final ConnectedEngineFacadeManager facadeManager = mock(ConnectedEngineFacadeManager.class);
+  private final ServerNotificationsRegistry registry = mock(ServerNotificationsRegistry.class);
+  private final ConnectedEngineFacade engineFacade = mock(ConnectedEngineFacade.class);
 
-  private final FakeSubscriber subscriber = new FakeSubscriber();
-
-  private final String projectKey1 = "pkey1";
-  private final String projectKey2 = "pkey2";
+  private static final String PROJECT_KEY_1 = "pkey1";
+  private static final String PROJECT_KEY_2 = "pkey2";
+  private static final SonarLintProjectConfiguration.EclipseProjectBinding BINDING_1 = new SonarLintProjectConfiguration.EclipseProjectBinding("serverId", PROJECT_KEY_1, "", "");
+  private static final SonarLintProjectConfiguration.EclipseProjectBinding BINDING_2 = new SonarLintProjectConfiguration.EclipseProjectBinding("serverId", PROJECT_KEY_2, "", "");
 
   private final ISonarLintProject project1mod1 = mock(ISonarLintProject.class);
   private final ISonarLintProject project1mod2 = mock(ISonarLintProject.class);
@@ -59,127 +70,143 @@ public class NotificationsManagerTest {
 
   Map<ISonarLintProject, SonarLintProjectConfiguration> configs = new HashMap<>();
   {
-    configs.put(project1mod1, mockConfig(projectKey1));
-    configs.put(project1mod2, mockConfig(projectKey1));
-    configs.put(project2mod1, mockConfig(projectKey2));
-    configs.put(project2mod2, mockConfig(projectKey2));
+    configs.put(project1mod1, mockConfig(BINDING_1));
+    configs.put(project1mod2, mockConfig(BINDING_1));
+    configs.put(project2mod1, mockConfig(BINDING_2));
+    configs.put(project2mod2, mockConfig(BINDING_2));
   }
 
   SonarLintProjectConfigurationReader configReader = p -> configs.get(p);
 
-  private SonarLintProjectConfiguration mockConfig(String projectKey) {
+  private SonarLintProjectConfiguration mockConfig(SonarLintProjectConfiguration.EclipseProjectBinding binding) {
     SonarLintProjectConfiguration config = mock(SonarLintProjectConfiguration.class);
-    when(config.getProjectBinding()).thenReturn(Optional.of(new SonarLintProjectConfiguration.EclipseProjectBinding("serverId", projectKey, "", "")));
+    when(config.getProjectBinding()).thenReturn(Optional.of(binding));
     return config;
   }
 
-  static class FakeSubscriber extends NotificationsManager.Subscriber {
-    int count;
-
-    @Override
-    public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, ServerNotificationListener listener) {
-      count++;
-      return true;
-    }
-
-    @Override
-    public void unsubscribe(ServerNotificationListener listener) {
-      count--;
-    }
-  }
-
   @Before
-  public void setUp() {
-    notificationsManager = new NotificationsManager(subscriber, configReader);
+  public void setUp() throws IOException {
+    underTest = new NotificationsManager(registry, configReader, facadeManager);
     when(project1mod1.getName()).thenReturn("project1-module1");
+    when(project1mod1.getWorkingDir()).thenReturn(tmp.newFolder().toPath());
     when(project1mod2.getName()).thenReturn("project1-module2");
+    when(project1mod2.getWorkingDir()).thenReturn(tmp.newFolder().toPath());
     when(project2mod1.getName()).thenReturn("project2-module1");
+    when(project2mod1.getWorkingDir()).thenReturn(tmp.newFolder().toPath());
     when(project2mod2.getName()).thenReturn("project2-module2");
+    when(project2mod2.getWorkingDir()).thenReturn(tmp.newFolder().toPath());
+
+    when(engineFacade.checkNotificationsSupported()).thenReturn(true);
+
+    when(facadeManager.resolveBinding(project1mod1, configs.get(project1mod1)))
+      .thenReturn(Optional.of(new ResolvedBinding(BINDING_1, engineFacade)));
+    when(facadeManager.resolveBinding(project1mod2, configs.get(project1mod2)))
+      .thenReturn(Optional.of(new ResolvedBinding(BINDING_1, engineFacade)));
+    when(facadeManager.resolveBinding(project2mod1, configs.get(project2mod1)))
+      .thenReturn(Optional.of(new ResolvedBinding(BINDING_2, engineFacade)));
+    when(facadeManager.resolveBinding(project2mod2, configs.get(project2mod2)))
+      .thenReturn(Optional.of(new ResolvedBinding(BINDING_2, engineFacade)));
   }
 
   @Test
   public void test_subscribe_and_unsubscribe_one_module_one_project() {
-    notificationsManager.subscribe(project1mod1, listener);
-    assertThat(subscriber.count).isEqualTo(1);
+    underTest.subscribe(project1mod1, listener);
+    verify(registry).register(any());
 
-    notificationsManager.unsubscribe(project1mod1);
-    assertThat(subscriber.count).isEqualTo(0);
+    underTest.unsubscribe(project1mod1);
+    verify(registry).remove(any());
+
+    verifyNoMoreInteractions(registry);
   }
 
   @Test
   public void test_subscribe_and_unsubscribe_two_modules_one_project() {
-    notificationsManager.subscribe(project1mod1, listener);
-    notificationsManager.subscribe(project1mod2, listener);
-    assertThat(subscriber.count).isEqualTo(1);
+    underTest.subscribe(project1mod1, listener);
+    underTest.subscribe(project1mod2, listener);
+    verify(registry, times(1)).register(any());
 
-    notificationsManager.unsubscribe(project1mod1);
-    notificationsManager.unsubscribe(project1mod2);
-    assertThat(subscriber.count).isEqualTo(0);
+    underTest.unsubscribe(project1mod1);
+    underTest.unsubscribe(project1mod2);
+    verify(registry, times(1)).remove(any());
+
+    verifyNoMoreInteractions(registry);
   }
 
   @Test
   public void test_subscribe_and_unsubscribe_one_module_each_of_two_projects() {
-    notificationsManager.subscribe(project1mod1, listener);
-    assertThat(subscriber.count).isEqualTo(1);
+    underTest.subscribe(project1mod1, listener);
+    underTest.subscribe(project2mod1, listener);
+    verify(registry, times(2)).register(any());
 
-    notificationsManager.subscribe(project2mod1, listener);
-    assertThat(subscriber.count).isEqualTo(2);
+    underTest.unsubscribe(project1mod1);
+    underTest.unsubscribe(project2mod1);
+    verify(registry, times(2)).remove(any());
 
-    notificationsManager.unsubscribe(project1mod1);
-    assertThat(subscriber.count).isEqualTo(1);
-
-    notificationsManager.unsubscribe(project2mod1);
-    assertThat(subscriber.count).isEqualTo(0);
-  }
-
-  @Test
-  public void second_module_per_project_should_not_trigger_subscription() {
-    notificationsManager.subscribe(project1mod1, listener);
-    assertThat(subscriber.count).isEqualTo(1);
-
-    notificationsManager.subscribe(project1mod2, listener);
-    assertThat(subscriber.count).isEqualTo(1);
+    verifyNoMoreInteractions(registry);
   }
 
   @Test
   public void unsubscribe_non_last_module_should_not_unsubscribe_from_project() {
-    notificationsManager.subscribe(project1mod1, listener);
-    assertThat(subscriber.count).isEqualTo(1);
+    underTest.subscribe(project1mod1, listener);
+    underTest.subscribe(project1mod2, listener);
+    verify(registry, times(1)).register(any());
 
-    notificationsManager.subscribe(project1mod2, listener);
-    notificationsManager.unsubscribe(project1mod1);
-    assertThat(subscriber.count).isEqualTo(1);
+    underTest.unsubscribe(project1mod1);
+
+    verifyNoMoreInteractions(registry);
   }
 
   @Test
   public void unsubscribe_non_subscribed_should_do_nothing() {
-    notificationsManager.unsubscribe(project1mod1);
-    assertThat(subscriber.count).isEqualTo(0);
+    underTest.unsubscribe(project1mod1);
+
+    verifyNoMoreInteractions(registry);
   }
 
   @Test
   public void should_not_subscribe_when_notifications_are_disabled() {
-    FakeSubscriber disabled = new FakeSubscriber() {
-      @Override
-      public boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, ServerNotificationListener listener) {
-        return false;
-      }
-    };
+    when(engineFacade.areNotificationsDisabled()).thenReturn(true);
 
-    NotificationsManager notificationsManager = new NotificationsManager(disabled, configReader);
-    notificationsManager.subscribe(project1mod1, listener);
-    notificationsManager.unsubscribe(project1mod1);
+    underTest.subscribe(project1mod1, listener);
+    underTest.unsubscribe(project1mod1);
 
-    // should be 0 if unsubscribe was correctly ignored, otherwise it would be -1
-    assertThat(disabled.count).isEqualTo(0);
+    verifyNoMoreInteractions(registry);
+  }
+
+  @Test
+  public void should_not_subscribe_when_notifications_are_unsupported() {
+    when(engineFacade.checkNotificationsSupported()).thenReturn(false);
+
+    underTest.subscribe(project1mod1, listener);
+    underTest.unsubscribe(project1mod1);
+
+    verifyNoMoreInteractions(registry);
+  }
+
+  @Test
+  public void should_not_subscribe_when_project_not_correctly_bound() {
+    when(facadeManager.resolveBinding(project1mod1, configs.get(project1mod1))).thenReturn(Optional.empty());
+
+    underTest.subscribe(project1mod1, listener);
+
+    verifyNoMoreInteractions(registry);
   }
 
   @Test
   public void should_not_subscribe_when_project_key_null() {
     ISonarLintProject moduleWithoutProjectKey = mock(ISonarLintProject.class);
     configs.put(moduleWithoutProjectKey, mock(SonarLintProjectConfiguration.class));
-    notificationsManager.subscribe(moduleWithoutProjectKey, listener);
-    assertThat(subscriber.count).isEqualTo(0);
+
+    underTest.subscribe(moduleWithoutProjectKey, listener);
+
+    verifyNoMoreInteractions(registry);
+  }
+
+  @Test
+  public void should_stop_registry() {
+    underTest.stop();
+
+    verify(registry).stop();
   }
 
   ProjectNotificationTime newProjectNotificationTime() throws IOException {

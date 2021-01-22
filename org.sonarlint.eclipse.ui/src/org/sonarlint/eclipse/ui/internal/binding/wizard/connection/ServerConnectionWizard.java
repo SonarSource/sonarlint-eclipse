@@ -56,8 +56,8 @@ import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnect
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.exceptions.UnsupportedServerException;
+import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
 
 public class ServerConnectionWizard extends Wizard implements INewWizard, IPageChangingListener {
 
@@ -328,7 +328,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
           try {
-            List<RemoteOrganization> userOrgs = ConnectedEngineFacade.listUserOrganizations(model.getServerUrl(), model.getUsername(), model.getPassword(), monitor);
+            List<ServerOrganization> userOrgs = ConnectedEngineFacade.listUserOrganizations(model.getServerUrl(), model.getUsername(), model.getPassword(), monitor);
             model.setUserOrgs(userOrgs);
           } catch (UnsupportedServerException e) {
             model.setUserOrgs(null);
