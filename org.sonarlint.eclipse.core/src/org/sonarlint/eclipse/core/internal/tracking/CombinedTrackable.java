@@ -40,9 +40,7 @@ public class CombinedTrackable extends WrappedTrackable {
     this.resolved = serverIssue.isResolved();
     this.assignee = serverIssue.getAssignee();
     this.severity = serverIssue.getSeverity();
-    // TODO when we are able to get server side issue type
-    // this.type = serverIssue.getType();
-    this.type = currentIssue.getType();
+    this.type = serverIssue.getType();
   }
 
   @Override

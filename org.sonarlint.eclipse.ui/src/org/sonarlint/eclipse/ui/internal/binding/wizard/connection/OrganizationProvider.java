@@ -29,8 +29,8 @@ import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.wizard.WizardPage;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteOrganization;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
+import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
 
 public class OrganizationProvider implements IContentProposalProvider {
 
@@ -46,13 +46,13 @@ public class OrganizationProvider implements IContentProposalProvider {
   public IContentProposal[] getProposals(String contents, int position) {
     List<IContentProposal> list = new ArrayList<>();
     if (contents.isEmpty()) {
-      List<RemoteOrganization> allUserOrgs = model.getUserOrgs();
+      List<ServerOrganization> allUserOrgs = model.getUserOrgs();
       if (allUserOrgs != null) {
         allUserOrgs.stream().limit(10).forEach(o -> list.add(new ContentProposal(o.getKey(), o.getName(), toDescription(o))));
       }
     } else {
-      TextSearchIndex<RemoteOrganization> organizationsIndex = model.getUserOrgsIndex();
-      Map<RemoteOrganization, Double> filtered = organizationsIndex != null ? organizationsIndex.search(contents) : Collections.emptyMap();
+      TextSearchIndex<ServerOrganization> organizationsIndex = model.getUserOrgsIndex();
+      Map<ServerOrganization, Double> filtered = organizationsIndex != null ? organizationsIndex.search(contents) : Collections.emptyMap();
       if (filtered.isEmpty()) {
         parentPage.setMessage("No results", IMessageProvider.INFORMATION);
       } else {
@@ -60,7 +60,7 @@ public class OrganizationProvider implements IContentProposalProvider {
       }
       filtered.entrySet()
         .stream()
-        .sorted(Comparator.comparing(Map.Entry<RemoteOrganization, Double>::getValue).reversed()
+        .sorted(Comparator.comparing(Map.Entry<ServerOrganization, Double>::getValue).reversed()
           .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)))
         .map(Map.Entry::getKey)
         .forEach(o -> list.add(new ContentProposal(o.getKey(), o.getName(), toDescription(o))));
@@ -68,7 +68,7 @@ public class OrganizationProvider implements IContentProposalProvider {
     return list.toArray(new IContentProposal[list.size()]);
   }
 
-  private static String toDescription(RemoteOrganization org) {
+  private static String toDescription(ServerOrganization org) {
     StringBuilder sb = new StringBuilder();
     sb.append("Name: ").append(org.getName()).append("\n");
     sb.append("Key: ").append(org.getKey()).append("\n");

@@ -38,6 +38,7 @@ public interface Trackable {
   @Nullable
   Integer getLine();
 
+  @Nullable
   String getMessage();
 
   @Nullable

@@ -39,7 +39,6 @@
       <import plugin="org.eclipse.ui.navigator"/>
       <import plugin="org.eclipse.ui.editors"/>
       <import plugin="org.eclipse.ui.forms"/>
-      <import plugin="org.sonarsource.sonarlint.core.sonarlint-client-api"/>
       <import plugin="org.sonarsource.sonarlint.core.sonarlint-core"/>
    </requires>
 
@@ -52,13 +51,6 @@
 
    <plugin
          id="org.sonarlint.eclipse.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.sonarsource.sonarlint.core.sonarlint-client-api"
          download-size="0"
          install-size="0"
          version="0.0.0"

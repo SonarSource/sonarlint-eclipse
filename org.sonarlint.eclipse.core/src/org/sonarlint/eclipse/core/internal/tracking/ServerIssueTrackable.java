@@ -43,14 +43,16 @@ public class ServerIssueTrackable implements Trackable {
     throw new UnsupportedOperationException();
   }
 
+  @Nullable
   @Override
   public Integer getLine() {
-    return serverIssue.line();
+    return serverIssue.getStartLine();
   }
 
+  @Nullable
   @Override
   public String getMessage() {
-    return serverIssue.message();
+    return serverIssue.getMessage();
   }
 
   @Nullable
@@ -62,7 +64,7 @@ public class ServerIssueTrackable implements Trackable {
 
   @Override
   public Integer getLineHash() {
-    return serverIssue.checksum().hashCode();
+    return serverIssue.lineHash().hashCode();
   }
 
   @Override
@@ -107,8 +109,7 @@ public class ServerIssueTrackable implements Trackable {
 
   @Override
   public String getType() {
-    // FIXME We are not able to get server side issue type
-    throw new UnsupportedOperationException();
+    return serverIssue.type();
   }
 
   @Override
@@ -118,7 +119,7 @@ public class ServerIssueTrackable implements Trackable {
 
   @Override
   public TextRange getTextRange() {
-    return TextRange.get(serverIssue.line());
+    return TextRange.get(serverIssue.getStartLine(), serverIssue.getStartLineOffset(), serverIssue.getEndLine(), serverIssue.getEndLineOffset());
   }
 
   @Override

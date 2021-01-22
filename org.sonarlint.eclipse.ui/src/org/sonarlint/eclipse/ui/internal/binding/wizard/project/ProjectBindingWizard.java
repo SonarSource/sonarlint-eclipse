@@ -57,8 +57,8 @@ import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
-import org.sonarsource.sonarlint.core.client.api.connected.RemoteProject;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
+import org.sonarsource.sonarlint.core.serverapi.project.ServerProject;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
@@ -232,16 +232,16 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
   }
 
   private void tryAutoBind() {
-    TextSearchIndex<RemoteProject> index = model.getProjectIndex();
-    RemoteProject bestCandidate = null;
+    TextSearchIndex<ServerProject> index = model.getProjectIndex();
+    ServerProject bestCandidate = null;
     for (ISonarLintProject project : model.getEclipseProjects()) {
-      Map<RemoteProject, Double> results = index.search(project.getName());
+      Map<ServerProject, Double> results = index.search(project.getName());
       if (results.isEmpty()) {
         continue;
       }
-      List<Map.Entry<RemoteProject, Double>> entries = new ArrayList<>(results.entrySet());
+      List<Map.Entry<ServerProject, Double>> entries = new ArrayList<>(results.entrySet());
       entries.sort(
-        Comparator.comparing(Map.Entry<RemoteProject, Double>::getValue).reversed()
+        Comparator.comparing(Map.Entry<ServerProject, Double>::getValue).reversed()
           .thenComparing(Comparator.comparing(e -> e.getKey().getName(), String.CASE_INSENSITIVE_ORDER)));
       if (bestCandidate == null) {
         bestCandidate = entries.get(0).getKey();

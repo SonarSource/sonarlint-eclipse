@@ -375,9 +375,9 @@ public class IssueTrackerTest {
 
     ServerIssue serverIssue = mock(ServerIssue.class);
     when(serverIssue.ruleKey()).thenReturn(ruleKey);
-    when(serverIssue.message()).thenReturn(message);
-    when(serverIssue.checksum()).thenReturn(DigestUtils.digest(lineContent));
-    when(serverIssue.line()).thenReturn(newLine + 3);
+    when(serverIssue.getMessage()).thenReturn(message);
+    when(serverIssue.lineHash()).thenReturn(DigestUtils.digest(lineContent));
+    when(serverIssue.getStartLine()).thenReturn(newLine + 3);
     when(serverIssue.creationDate()).thenReturn(Instant.now());
     when(serverIssue.key()).thenReturn(serverIssueKey);
     when(serverIssue.resolution()).thenReturn("fixed");
@@ -417,9 +417,9 @@ public class IssueTrackerTest {
 
     ServerIssue serverIssue1 = mock(ServerIssue.class);
     when(serverIssue1.ruleKey()).thenReturn(ruleKey);
-    when(serverIssue1.message()).thenReturn(message);
-    when(serverIssue1.checksum()).thenReturn(DigestUtils.digest(lineContent));
-    when(serverIssue1.line()).thenReturn(1);
+    when(serverIssue1.getMessage()).thenReturn(message);
+    when(serverIssue1.lineHash()).thenReturn(DigestUtils.digest(lineContent));
+    when(serverIssue1.getStartLine()).thenReturn(1);
     when(serverIssue1.creationDate()).thenReturn(Instant.now());
     when(serverIssue1.key()).thenReturn(serverIssueKey1);
     when(serverIssue1.resolution()).thenReturn("");
@@ -427,9 +427,9 @@ public class IssueTrackerTest {
 
     ServerIssue serverIssue2 = mock(ServerIssue.class);
     when(serverIssue2.ruleKey()).thenReturn(ruleKey);
-    when(serverIssue2.message()).thenReturn(message);
-    when(serverIssue2.checksum()).thenReturn(DigestUtils.digest(lineContent));
-    when(serverIssue2.line()).thenReturn(2);
+    when(serverIssue2.getMessage()).thenReturn(message);
+    when(serverIssue2.lineHash()).thenReturn(DigestUtils.digest(lineContent));
+    when(serverIssue2.getStartLine()).thenReturn(2);
     when(serverIssue2.creationDate()).thenReturn(Instant.now());
     when(serverIssue2.key()).thenReturn(serverIssueKey2);
     when(serverIssue2.resolution()).thenReturn("");

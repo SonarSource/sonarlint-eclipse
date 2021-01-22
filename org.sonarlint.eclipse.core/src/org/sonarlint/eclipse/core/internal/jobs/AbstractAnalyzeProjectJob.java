@@ -311,14 +311,15 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       } else {
         trackables = Collections.emptyList();
       }
-      Collection<Trackable> tracked = trackFileIssues(file, trackables, issueTracker, triggerType, rawIssuesPerResource.size());
+      Collection<Trackable> tracked = trackFileIssues(file, trackables, issueTracker, triggerType, rawIssuesPerResource.size(), monitor);
       SonarLintMarkerUpdater.createOrUpdateMarkers(file, openedDocument, tracked, triggerType);
       // Now that markerId are set, store issues in cache
       issueTracker.updateCache(file, tracked);
     }
   }
 
-  protected Collection<Trackable> trackFileIssues(ISonarLintFile file, List<Trackable> trackables, IssueTracker issueTracker, TriggerType triggerType, int totalTrackedFiles) {
+  protected Collection<Trackable> trackFileIssues(ISonarLintFile file, List<Trackable> trackables, IssueTracker issueTracker, TriggerType triggerType, int totalTrackedFiles,
+    IProgressMonitor monitor) {
     return issueTracker.matchAndTrackAsNew(file, trackables);
   }
 
