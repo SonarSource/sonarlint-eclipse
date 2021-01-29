@@ -104,7 +104,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     wizardBot.clickNext();
 
     if (orchestrator.getServer().version().isGreaterThanOrEquals(8, 7)) {
-      // Starting from 8.7, dev notifications are available
+      // SONAR-14306 Starting from 8.7, dev notifications are available even in community edition
       assertThat(wizardBot.getNotificationEnabled()).isTrue();
       assertThat(wizardBot.isNextEnabled()).isTrue();
       wizardBot.clickNext();
