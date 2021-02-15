@@ -218,7 +218,7 @@ stages:
       - bash: |
           set -e
           sudo apt-get update
-          sudo apt-get install -y xvfb metacity
+          sudo apt-get install -y xvfb metacity ffmpeg
           sudo cp .azure-pipelines/xvfb.init /etc/init.d/xvfb
           sudo chmod +x /etc/init.d/xvfb
           sudo update-rc.d xvfb defaults
@@ -227,7 +227,12 @@ stages:
           export DISPLAY=:10
           metacity --sm-disable --replace &
           sleep 10 # give metacity some time to start
-        displayName: Setup Xvfb and Metacity
+          
+          echo 'Recording tests on video'
+          ffmpeg -loglevel warning -f x11grab -video_size 1280x960 -framerate 10 -i :10 -q:v 0 /tmp/recording_$(TARGET_PLATFORM).mp4 &
+          echo "##vso[task.setvariable variable=recordingPid;isOutput=true]$!"
+        name: 'prepareIts'
+        displayName: "Setup Xvfb, Metacity and starts recording"
         condition: ne(variables['imageName'], 'windows-latest')
       - task: Maven@3
         displayName: 'Run Maven ITs for Eclipse $(TARGET_PLATFORM) and Server $(SQ_VERSION)'
@@ -256,6 +261,13 @@ stages:
       - publish: $(Build.Repository.LocalPath)/its/org.sonarlint.eclipse.its/target/output
         artifact: 'ITCaptureScreenshotAndConsole_$(TARGET_PLATFORM)'
         condition: failed()
+      - bash: |
+          kill -2 $(prepareIts.recordingPid)
+        displayName: 'Stop video recording'
+        condition: always()
+      - publish: /tmp/recording_$(TARGET_PLATFORM).mp4
+        artifact: ITCaptureScreen_$(TARGET_PLATFORM)
+        condition: always()
       - task: PublishBuildArtifacts@1
         displayName: Store coverage report as build artifact
         inputs:
