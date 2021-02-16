@@ -28,10 +28,10 @@
       <import plugin="org.eclipse.core.net"/>
       <import plugin="org.eclipse.core.filesystem"/>
       <import plugin="org.eclipse.team.core"/>
+      <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.core.databinding"/>
       <import plugin="org.eclipse.core.databinding.beans"/>
       <import plugin="org.eclipse.core.databinding.property"/>
-      <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.ui.ide"/>
       <import plugin="org.eclipse.ui.console"/>
       <import plugin="org.eclipse.ui.workbench.texteditor"/>
@@ -39,7 +39,8 @@
       <import plugin="org.eclipse.ui.navigator"/>
       <import plugin="org.eclipse.ui.editors"/>
       <import plugin="org.eclipse.ui.forms"/>
-      <import plugin="org.sonarsource.sonarlint.core.sonarlint-core"/>
+      <import plugin="org.sonarsource.sonarlint.core.sonarlint-core" version="5.0.0" match="greaterOrEqual"/>
+      <import plugin="minimal-json" version="0.9.5" match="greaterOrEqual"/>
    </requires>
 
    <plugin
@@ -79,6 +80,13 @@
 
    <plugin
          id="org.sonarlint.eclipse.m2e"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="minimal-json"
          download-size="0"
          install-size="0"
          version="0.0.0"
