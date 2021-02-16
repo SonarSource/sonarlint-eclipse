@@ -121,7 +121,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
     List<IMarker> markers = Arrays.asList(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE))
-      .containsOnly(tuple("/SimpleJdtProject/src/main/sample.js", 1, "Rename this 'hello' function to match the regular expression '^[0-9]+$'."));
+      .contains(tuple("/SimpleJdtProject/src/main/sample.js", 1, "Rename this 'hello' function to match the regular expression '^[0-9]+$'."));
   }
 
   @Test
@@ -339,219 +339,209 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
     @Override
     public void set(String text) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void replace(int offset, int length, String text) {
-
       this.buffer.replace(offset, offset + length, text);
     }
 
     @Override
     public void addDocumentListener(IDocumentListener listener) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void removeDocumentListener(IDocumentListener listener) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void addPrenotifiedDocumentListener(IDocumentListener documentAdapter) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void removePrenotifiedDocumentListener(IDocumentListener documentAdapter) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void addPositionCategory(String category) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void removePositionCategory(String category) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public String[] getPositionCategories() {
-      // defining interface method
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean containsPositionCategory(String category) {
-      // defining interface method
-      return false;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void addPosition(Position position) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void removePosition(Position position) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void addPosition(String category, Position position) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void removePosition(String category, Position position) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public Position[] getPositions(String category) {
-      // defining interface method
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean containsPosition(String category, int offset, int length) {
-      // defining interface method
-      return false;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public int computeIndexInCategory(String category, int offset) {
-      // defining interface method
-      return 0;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void addPositionUpdater(IPositionUpdater updater) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void removePositionUpdater(IPositionUpdater updater) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void insertPositionUpdater(IPositionUpdater updater, int index) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public IPositionUpdater[] getPositionUpdaters() {
-      // defining interface method
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public String[] getLegalContentTypes() {
-      // defining interface method
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public String getContentType(int offset) {
-      // defining interface method
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public ITypedRegion getPartition(int offset) {
-      // defining interface method
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public ITypedRegion[] computePartitioning(int offset, int length) {
-      // defining interface method
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void addDocumentPartitioningListener(IDocumentPartitioningListener listener) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void removeDocumentPartitioningListener(IDocumentPartitioningListener listener) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public void setDocumentPartitioner(IDocumentPartitioner partitioner) {
-      // defining interface method
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public IDocumentPartitioner getDocumentPartitioner() {
-      // defining interface method
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public int getLineLength(int line) {
-      // defining interface method
-      return 0;
+      return buffer.toString().split("\\n")[line].length();
     }
 
     @Override
     public int getLineOfOffset(int offset) {
-      // defining interface method
-      return 0;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public int getLineOffset(int line) {
-      // defining interface method
-      return 0;
+      int offset = 0;
+      int currentLine = 0;
+      int bufferLength = buffer.length();
+      while (offset < bufferLength) {
+        if (currentLine == line) {
+          return offset;
+        }
+        if (buffer.charAt(offset) == '\n') {
+          currentLine++;
+        }
+        offset++;
+      }
+      return offset;
     }
 
     @Override
     public IRegion getLineInformation(int line) {
-      // defining interface method
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public IRegion getLineInformationOfOffset(int offset) {
-      // defining interface method
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public int getNumberOfLines() {
-      // defining interface method
-      return 0;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public int getNumberOfLines(int offset, int length) {
-      // defining interface method
-      return 0;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public int computeNumberOfLines(String text) {
-      // defining interface method
-      return 0;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public String[] getLegalLineDelimiters() {
-      // defining interface method
-      return null;
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public String getLineDelimiter(int line) {
-      // defining interface method
-      return null;
+      return "\n";
     }
 
     /**
@@ -566,8 +556,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       boolean forwardSearch,
       boolean caseSensitive,
       boolean wholeWord) {
-      // defining interface method
-      return 0;
+      throw new UnsupportedOperationException();
     }
 
   }
