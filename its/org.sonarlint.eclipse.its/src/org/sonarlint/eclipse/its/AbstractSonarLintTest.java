@@ -23,7 +23,10 @@ import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.container.Server;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.assertj.core.groups.Tuple;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -58,6 +61,8 @@ import org.sonarqube.ws.client.HttpConnector;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public abstract class AbstractSonarLintTest {
 
   public static final String PLUGIN_ID = "org.sonarlint.eclipse.core";
@@ -76,6 +81,8 @@ public abstract class AbstractSonarLintTest {
 
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
+
+  protected static int hostspotServerPort = -1;
 
   @BeforeClass
   public static final void beforeClass() throws BackingStoreException {
@@ -103,6 +110,18 @@ public abstract class AbstractSonarLintTest {
     new ConsoleViewBot(bot)
       .openSonarLintConsole()
       .enableVerboseLogs();
+
+    Optional<Integer> maybePort = WorkspaceHelpers.withSonarLintConsole(bot, c -> {
+      if (c.getDocument().get().contains("Started security hotspot handler on port")) {
+        Pattern p = Pattern.compile(".*Started security hotspot handler on port (\\d+).*");
+        Matcher m = p.matcher(c.getDocument().get());
+        assertThat(m.find()).isTrue();
+        return Optional.of(Integer.parseInt(m.group(1)));
+      } else {
+        return Optional.empty();
+      }
+    });
+    maybePort.ifPresent(port -> hostspotServerPort = port);
   }
 
   private static void activateMainShell() {

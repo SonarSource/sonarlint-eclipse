@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.its.utils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.function.Function;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
@@ -38,18 +39,29 @@ import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.TextConsole;
+import org.sonarlint.eclipse.its.bots.ConsoleViewBot;
 
 public final class WorkspaceHelpers {
 
-  public static void cleanWorkspace(SWTWorkbenchBot bot) throws InterruptedException, CoreException {
+  public static <G> G withSonarLintConsole(SWTWorkbenchBot bot, Function<TextConsole, G> consumer) {
+    new ConsoleViewBot(bot).openSonarLintConsole();
     IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
+
     IConsole[] consoles = manager.getConsoles();
     for (IConsole iConsole : consoles) {
       if ("SonarLint Console".equals(iConsole.getName())) {
-        System.out.println(((TextConsole) iConsole).getDocument().get());
-        ((TextConsole) iConsole).clearConsole();
+        return consumer.apply((TextConsole) iConsole);
       }
     }
+    throw new IllegalStateException("Unable to find the SonarLint console");
+  }
+
+  public static void cleanWorkspace(SWTWorkbenchBot bot) throws InterruptedException, CoreException {
+    withSonarLintConsole(bot, c -> {
+      System.out.println(c.getDocument().get());
+      c.clearConsole();
+      return null;
+    });
     Exception cause = null;
     int i;
     for (i = 0; i < 10; i++) {
