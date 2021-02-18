@@ -62,16 +62,20 @@ public class IssueDescriptionField extends MarkerField {
   public String getValue(MarkerItem item) {
     StringBuilder sb = new StringBuilder();
     sb.append(item.getAttributeValue(IMarker.MESSAGE, "No message"));
-    List<MarkerFlow> issueFlows = MarkerUtils.getIssueFlows(item.getMarker());
-    if (!issueFlows.isEmpty()) {
-      boolean isSecondary = MarkerUtils.isSecondaryLocations(issueFlows);
-      String kind;
-      if (isSecondary) {
-        kind = "location";
-      } else {
-        kind = "flow";
+    IMarker marker = item.getMarker();
+    // When grouping by severity, MarkerItem will be a MarkerCategory, that doesn't have an attached marker
+    if (marker != null) {
+      List<MarkerFlow> issueFlows = MarkerUtils.getIssueFlows(marker);
+      if (!issueFlows.isEmpty()) {
+        boolean isSecondary = MarkerUtils.isSecondaryLocations(issueFlows);
+        String kind;
+        if (isSecondary) {
+          kind = "location";
+        } else {
+          kind = "flow";
+        }
+        sb.append(" [+").append(issueFlows.size()).append(" ").append(pluralize(kind, issueFlows.size())).append("]");
       }
-      sb.append(" [+").append(issueFlows.size()).append(" ").append(pluralize(kind, issueFlows.size())).append("]");
     }
     return sb.toString();
   }
