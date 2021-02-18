@@ -29,8 +29,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -69,6 +67,7 @@ import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot.Status;
 
 public class HotspotsView extends ViewPart implements SonarLintMarkerSelectionListener {
 
+  private static final String NO_SECURITY_HOTSPOTS_SELECTED = "<em>No security hotspots selected<em>";
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.HotspotsView";
   private PageBook book;
   private Control hotspotsPage;
@@ -201,7 +200,7 @@ public class HotspotsView extends ViewPart implements SonarLintMarkerSelectionLi
       protected String body() {
         ServerHotspot hotspot = (ServerHotspot) hotspotViewer.getStructuredSelection().getFirstElement();
         if (hotspot == null) {
-          return "<em>No security hotspots selected<em>";
+          return NO_SECURITY_HOTSPOTS_SELECTED;
         }
         return hotspot.rule.riskDescription;
       }
@@ -216,7 +215,7 @@ public class HotspotsView extends ViewPart implements SonarLintMarkerSelectionLi
       protected String body() {
         ServerHotspot hotspot = (ServerHotspot) hotspotViewer.getStructuredSelection().getFirstElement();
         if (hotspot == null) {
-          return "<em>No security hotspots selected<em>";
+          return NO_SECURITY_HOTSPOTS_SELECTED;
         }
         return hotspot.rule.vulnerabilityDescription;
       }
@@ -231,7 +230,7 @@ public class HotspotsView extends ViewPart implements SonarLintMarkerSelectionLi
       protected String body() {
         ServerHotspot hotspot = (ServerHotspot) hotspotViewer.getStructuredSelection().getFirstElement();
         if (hotspot == null) {
-          return "<em>No security hotspots selected<em>";
+          return NO_SECURITY_HOTSPOTS_SELECTED;
         }
         return hotspot.rule.fixRecommendations;
       }
@@ -257,14 +256,10 @@ public class HotspotsView extends ViewPart implements SonarLintMarkerSelectionLi
       }
     });
 
-    hotspotViewer.addPostSelectionChangedListener(new ISelectionChangedListener() {
-
-      @Override
-      public void selectionChanged(SelectionChangedEvent event) {
-        riskDescriptionBrowser.refresh();
-        vulnerabilityDescriptionBrowser.refresh();
-        fixRecommendationsBrowser.refresh();
-      }
+    hotspotViewer.addPostSelectionChangedListener(event -> {
+      riskDescriptionBrowser.refresh();
+      vulnerabilityDescriptionBrowser.refresh();
+      fixRecommendationsBrowser.refresh();
     });
 
     // The first column is always left aligned at least on Linux... so add an empty one
