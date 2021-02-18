@@ -19,36 +19,4 @@
             class="org.sonarlint.eclipse.core.internal.adapter.DefaultSonarLintAdapterFactoryTest$CobolSLFileAdapterParticipant">
       </participant>
    </extension>
-   <extension
-         id="testNotification"
-         name="Test Notification"
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            allPopups="false"
-            locationURI="toolbar:org.eclipse.ui.main.toolbar">
-         <toolbar
-               id="org.sonarlint.eclipse.core.tests.sampleToolbar"
-               label="Test">
-            <command
-                  commandId="org.sonarlint.eclipse.core.tests.openNotification"
-                  label="Open Notification"
-                  style="push">
-            </command>
-         </toolbar>
-      </menuContribution>
-   </extension>
-   <extension
-         point="org.eclipse.ui.commands">
-      <command
-            id="org.sonarlint.eclipse.core.tests.openNotification"
-            name="Open Notif">
-      </command>
-   </extension>
-   <extension
-         point="org.eclipse.ui.handlers">
-      <handler
-            class="org.sonarlint.eclipse.core.tests.OpenNotification"
-            commandId="org.sonarlint.eclipse.core.tests.openNotification">
-      </handler>
-   </extension> 
 </plugin>
