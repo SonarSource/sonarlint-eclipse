@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.INodeChangeListener;
@@ -314,6 +315,16 @@ public class ConnectedEngineFacadeManager {
    */
   public Optional<IConnectedEngineFacade> findById(String id) {
     return Optional.ofNullable(facadesByConnectionId.get(Objects.requireNonNull(id)));
+  }
+
+  public List<IConnectedEngineFacade> findByUrl(String serverUrl) {
+    return facadesByConnectionId.values().stream()
+        .filter(facade -> equalsIgnoringTrailingSlash(facade.getHost(), serverUrl))
+        .collect(Collectors.toList());
+  }
+
+  private static boolean equalsIgnoringTrailingSlash(String aString, String anotherString) {
+    return StringUtils.removeEnd(aString, "/").equals(StringUtils.removeEnd(anotherString, "/"));
   }
 
   public Optional<ResolvedBinding> resolveBinding(ISonarLintProject project) {

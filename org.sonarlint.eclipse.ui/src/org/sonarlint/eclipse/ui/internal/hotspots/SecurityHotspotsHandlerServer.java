@@ -22,13 +22,22 @@ package org.sonarlint.eclipse.ui.internal.hotspots;
 import com.eclipsesource.json.Json;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.Method;
+import org.apache.hc.core5.http.MethodNotSupportedException;
+import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.impl.bootstrap.HttpServer;
 import org.apache.hc.core5.http.impl.bootstrap.ServerBootstrap;
 import org.apache.hc.core5.http.io.HttpFilterChain;
@@ -38,12 +47,23 @@ import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.io.CloseMode;
+import org.apache.hc.core5.net.URLEncodedUtils;
 import org.eclipse.core.runtime.IProduct;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
 
 public class SecurityHotspotsHandlerServer {
 
@@ -71,6 +91,7 @@ public class SecurityHotspotsHandlerServer {
           .setSocketConfig(socketConfig)
           .addFilterFirst("CORS", new CorsFilter())
           .register("/sonarlint/api/status", new StatusRequestHandler())
+          .register("/sonarlint/api/hotspots/show", new ShowHotspotRequestHandler())
           .create();
         startedServer.start();
         port = triedPort;
@@ -124,6 +145,150 @@ public class SecurityHotspotsHandlerServer {
       } else {
         response.setEntity(new StringEntity("Workbench is not running", ContentType.DEFAULT_TEXT));
         response.setCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+      }
+    }
+  }
+
+  private static class ShowHotspotRequestHandler implements HttpRequestHandler {
+
+    @Override
+    public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context)
+        throws HttpException, IOException {
+      if (!Method.GET.isSame(request.getMethod())) {
+        throw new MethodNotSupportedException("Only POST is supported");
+      }
+      ShowHotspotParameters parameters = getParameters(request, response);
+      if (parameters == null) {
+        return;
+      }
+
+      response.setCode(HttpStatus.SC_OK);
+
+      new Job("Opening security hotspot...") {
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+          openSecurityHotspot(parameters);
+          return Status.OK_STATUS;
+        }
+      }.schedule();
+    }
+
+    @Nullable
+    private static ShowHotspotParameters getParameters(ClassicHttpRequest request, ClassicHttpResponse response)
+        throws HttpException {
+      Map<String, String> parameters = extractParameters(request);
+      String projectKey = checkParameter(parameters, "project", response);
+      if (projectKey == null) {
+        return null;
+      }
+      String hotspotKey = checkParameter(parameters, "hotspot", response);
+      if (hotspotKey == null) {
+        return null;
+      }
+      String serverUrl = checkParameter(parameters, "server", response);
+      if (serverUrl == null) {
+        return null;
+      }
+      return new ShowHotspotParameters(projectKey, hotspotKey, serverUrl);
+    }
+
+    private static Map<String, String> extractParameters(ClassicHttpRequest request) throws HttpException {
+      try {
+        List<NameValuePair> parameters = URLEncodedUtils.parse(request.getUri().getQuery(), Charset.defaultCharset());
+        return parameters.stream().collect(Collectors.toMap(NameValuePair::getName, NameValuePair::getValue));
+      } catch (URISyntaxException e) {
+        throw new HttpException("Unable to parse the request URI", e);
+      }
+    }
+
+    @Nullable
+    private static String checkParameter(Map<String, String> parameters, String parameterName,
+        ClassicHttpResponse response) {
+      String parameterValue = parameters.get(parameterName);
+      if (StringUtils.isEmpty(parameterValue)) {
+        missingParameter(response, parameterName);
+        return null;
+      }
+      return parameterValue;
+    }
+
+    private static void missingParameter(ClassicHttpResponse response, String parameterName) {
+      response
+          .setEntity(new StringEntity("Missing or empty '" + parameterName + "' parameter", ContentType.DEFAULT_TEXT));
+      response.setCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    private static void openSecurityHotspot(ShowHotspotParameters parameters) {
+      List<IConnectedEngineFacade> serverConnections = SonarLintCorePlugin.getServersManager().findByUrl(parameters.serverUrl);
+      if (serverConnections.isEmpty()) {
+        // no connection - help creation
+        return;
+      }
+      Optional<FetchedHotspot> fetchedHotspot = fetchHotspotFromAny(serverConnections, parameters);
+      if (!fetchedHotspot.isPresent()) {
+        // cannot fetch it - network errors or insufficient permissions
+        // actions: error popup with a retry link ? 
+        return;
+      }
+
+      Optional<ISonarLintFile> hotspotFile = findHotspotFile(fetchedHotspot.get(), parameters.projectKey);
+      if (!hotspotFile.isPresent()) {
+        // file not found - search not bound projects, or propose manual selection of the project (and bind it if needed)
+        return;
+      }
+      show(hotspotFile.get(), fetchedHotspot.get().hotspot);
+    }
+
+    private static Optional<ISonarLintFile> findHotspotFile(FetchedHotspot fetchedHotspot, String projectKey) {
+      List<ISonarLintProject> projects = fetchedHotspot.origin.getBoundProjects(projectKey);
+      for (ISonarLintProject project : projects) {
+        Optional<ISonarLintFile> hotspotFile = SonarLintCorePlugin.getServersManager().resolveBinding(project)
+          .map(binding -> binding.getProjectBinding().serverPathToIdePath(fetchedHotspot.hotspot.filePath))
+          .flatMap(project::find);
+        if (hotspotFile.isPresent()) {
+          return hotspotFile;
+        }
+      }
+      return Optional.empty();
+    }
+
+    private static class FetchedHotspot {
+      public final IConnectedEngineFacade origin;
+      public final ServerHotspot hotspot;
+
+      public FetchedHotspot(IConnectedEngineFacade origin, ServerHotspot hotspot) {
+        this.origin = origin;
+        this.hotspot = hotspot;
+      }
+    }
+
+    private static Optional<FetchedHotspot> fetchHotspotFromAny(List<IConnectedEngineFacade> serverConnections, ShowHotspotParameters parameters) {
+      for (IConnectedEngineFacade serverConnection : serverConnections) {
+        if (serverConnection != null) {
+          Optional<ServerHotspot> serverHotspot = serverConnection.getServerHotspot(parameters.hotspotKey, parameters.projectKey);
+          if (serverHotspot.isPresent()) {
+            return Optional.of(new FetchedHotspot(serverConnection, serverHotspot.get()));
+          } else {
+            SonarLintLogger.get().info("Cannot fetch security hotspot from connection '" + serverConnection.getId() + "'");
+          }
+        }
+      }
+      return Optional.empty();
+    }
+
+    private static void show(ISonarLintFile file, ServerHotspot hotspot) {
+      SonarLintLogger.get().info("Hotspot fetched: " + hotspot.message + ", located in " + file.getName());
+    }
+
+    private static class ShowHotspotParameters {
+      public final String projectKey;
+      public final String hotspotKey;
+      public final String serverUrl;
+
+      public ShowHotspotParameters(String projectKey, String hotspotKey, String serverUrl) {
+        this.projectKey = projectKey;
+        this.hotspotKey = hotspotKey;
+        this.serverUrl = serverUrl;
       }
     }
   }
