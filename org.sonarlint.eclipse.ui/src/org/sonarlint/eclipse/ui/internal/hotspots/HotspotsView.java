@@ -21,12 +21,7 @@ package org.sonarlint.eclipse.ui.internal.hotspots;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Optional;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -54,18 +49,11 @@ import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.part.PageBook;
 import org.eclipse.ui.part.ViewPart;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintMarkerSelectionListener;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintWebView;
-import org.sonarsource.sonarlint.core.client.api.common.TextRange;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
-import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot.Resolution;
-import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot.Rule;
-import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot.Rule.Probability;
-import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot.Status;
 
-public class HotspotsView extends ViewPart implements SonarLintMarkerSelectionListener {
+public class HotspotsView extends ViewPart {
 
   private static final String NO_SECURITY_HOTSPOTS_SELECTED = "<em>No security hotspots selected<em>";
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.HotspotsView";
@@ -82,18 +70,10 @@ public class HotspotsView extends ViewPart implements SonarLintMarkerSelectionLi
   private SonarLintWebView fixRecommendationsBrowser;
 
   @Override
-  public void markerSelected(Optional<IMarker> marker) {
-  }
-
-  @Override
   public void createPartControl(Composite parent) {
     highPriorityColor = new Color(parent.getDisplay(), 212, 51, 63);
     mediumPriorityColor = new Color(parent.getDisplay(), 237, 125, 32);
     lowPriorityColor = new Color(parent.getDisplay(), 234, 190, 6);
-
-    SonarLintUiPlugin.getSonarlintMarkerSelectionService().addMarkerSelectionListener(this);
-
-    createToolbar();
 
     FormToolkit toolkit = new FormToolkit(parent.getDisplay());
     book = new PageBook(parent, SWT.NONE);
@@ -101,38 +81,6 @@ public class HotspotsView extends ViewPart implements SonarLintMarkerSelectionLi
     Control noHotspotsMessage = createNoHotspotsMessage(toolkit);
     hotspotsPage = createHotspotsPage(toolkit);
     book.showPage(noHotspotsMessage);
-
-  }
-
-  private void createToolbar() {
-    IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
-    OpenFakeHotspotAction action = new OpenFakeHotspotAction();
-    toolbarManager.add(action);
-    toolbarManager.add(new Separator());
-    toolbarManager.update(false);
-  }
-
-  private class OpenFakeHotspotAction extends Action {
-
-    /**
-     * Constructs a new action.
-     */
-    public OpenFakeHotspotAction() {
-      super("Open fake hotspot");
-      setDescription("Open fake hotspot");
-      setToolTipText("Open fake hotspot");
-      setImageDescriptor(SonarLintImages.DEBUG);
-    }
-
-    /**
-     * Runs the action.
-     */
-    @Override
-    public void run() {
-      ServerHotspot hotspot = new ServerHotspot("Some message", "foo/bar/Foo.java", new TextRange(1, 2, 3, 4), "henryju", Status.TO_REVIEW, Resolution.FIXED,
-        new Rule("java:S123", "Do not do this", "foo", Probability.LOW, "Risk", "Vulnerability", "Fix"));
-      openHotspot(hotspot);
-    }
 
   }
 
@@ -326,7 +274,11 @@ public class HotspotsView extends ViewPart implements SonarLintMarkerSelectionLi
 
   @Override
   public void setFocus() {
-    hotspotViewer.getTable().forceFocus();
+    if (hotspotsPage.isVisible()) {
+      hotspotViewer.getTable().setFocus();
+    } else {
+      book.setFocus();
+    }
   }
 
   @Override
@@ -334,7 +286,6 @@ public class HotspotsView extends ViewPart implements SonarLintMarkerSelectionLi
     highPriorityColor.dispose();
     mediumPriorityColor.dispose();
     lowPriorityColor.dispose();
-    SonarLintUiPlugin.getSonarlintMarkerSelectionService().removeMarkerSelectionListener(this);
     super.dispose();
   }
 
