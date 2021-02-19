@@ -34,7 +34,7 @@ Development setup in Eclipse
 1. Run `mvn compile` on the command line to fetch artifacts referenced in the parent pom
 2. In Eclipse, import the project root as Maven project
 3. In Eclipse, import the `its/` folder as Maven project
-4. Open `target-platform-its-e47/target-platform-its-e47-dev.target`
+4. Open `target-platform-its-2020-06/target-platform-its-2020-06-dev.target`
     - Click on **Environment** tab and add `M2_REPO` variable pointing to your local maven repo (for example `/home/youruser/.m2/repository`)
     - On the **Definition** tab, click **Reload**
     - Click **Set as Target Platform** (or **Reload Target Platform**) in the top-right corner
