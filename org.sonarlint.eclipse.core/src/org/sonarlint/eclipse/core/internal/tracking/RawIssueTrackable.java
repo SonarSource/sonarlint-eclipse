@@ -102,13 +102,11 @@ public class RawIssueTrackable implements Trackable {
     return issue.getSeverity();
   }
 
-  @Nullable
   @Override
   public String getType() {
     return issue.getType();
   }
 
-  @Nullable
   @Override
   public String getRawType() {
     return issue.getType();
