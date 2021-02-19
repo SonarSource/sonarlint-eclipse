@@ -135,6 +135,14 @@
 	        id="org.sonarlint.eclipse.ui.ServersView"
 	        name="SonarLint Bindings">
 	  </view>
+    <view
+	        allowMultiple="false"
+	        category="org.sonarlint.eclipse"
+	        class="org.sonarlint.eclipse.ui.internal.hotspots.HotspotsView"
+	        icon="icons/full/eview16/hotspots.png"
+	        id="org.sonarlint.eclipse.ui.views.HotspotsView"
+	        name="SonarLint Security Hotspots">
+	  </view>
   </extension>
   
   <extension point="org.eclipse.ui.contexts">
