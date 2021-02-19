@@ -46,7 +46,6 @@ import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFaca
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.notifications.ListenerFactory;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
-import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -261,7 +260,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
         }
       }
 
-      subscribeToNotifications();
+      SonarLintCorePlugin.getInstance().notificationsManager().subscribeAllNeedingProjectsToNotifications(SonarLintUiPlugin.getDefault().listenerFactory());
 
       return Status.OK_STATUS;
     }
@@ -277,33 +276,11 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
       }
     }
 
-    private static void subscribeToNotifications() {
-      try {
-        ProjectsProviderUtils.allProjects().stream()
-          .filter(p -> SonarLintCorePlugin.loadConfig(p).isBound())
-          .forEach(SonarLintUiPlugin::subscribeToNotifications);
-      } catch (IllegalStateException e) {
-        SonarLintLogger.get().error("Could not subscribe to notifications", e);
-      }
-    }
-
   }
 
   public static void startupAsync() {
     // SLE-122 Delay a little bit to let the time to the workspace to initialize (and avoid NPE)
     new StartupJob().schedule(2000);
-  }
-
-  public static void subscribeToNotifications(ISonarLintProject project) {
-    SonarLintCorePlugin.getServersManager()
-      .resolveBinding(project)
-      .ifPresent(binding -> {
-        if (!binding.getEngineFacade().areNotificationsDisabled()) {
-          SonarLintCorePlugin.getInstance()
-            .notificationsManager()
-            .subscribe(project, getDefault().listenerFactory().create(binding.getEngineFacade()));
-        }
-      });
   }
 
   public static void unsubscribeToNotifications(ISonarLintProject project) {

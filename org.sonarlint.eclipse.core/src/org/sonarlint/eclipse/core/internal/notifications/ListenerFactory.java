@@ -24,6 +24,6 @@ import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificatio
 
 public interface ListenerFactory {
 
-  ServerNotificationListener create(IConnectedEngineFacade s);
+  ServerNotificationListener create(IConnectedEngineFacade connectedEngineFacade);
 
 }

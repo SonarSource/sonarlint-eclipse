@@ -55,6 +55,7 @@ import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.AuthMethod;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingWizard;
+import org.sonarlint.eclipse.ui.internal.job.SubscribeToNotificationsJob;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
 import org.sonarsource.sonarlint.core.client.api.exceptions.UnsupportedServerException;
 import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
@@ -237,14 +238,9 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
 
     List<ISonarLintProject> boundProjects = server.getBoundProjects();
     if (model.getNotificationsSupported() && !model.getNotificationsDisabled() && !boundProjects.isEmpty()) {
-      Job subscribeToNotificationsJob = new Job("Subscribe to notifications") {
-        @Override
-        protected IStatus run(IProgressMonitor monitor) {
-          boundProjects.forEach(SonarLintUiPlugin::subscribeToNotifications);
-          return Status.OK_STATUS;
-        }
-      };
+      Job subscribeToNotificationsJob = new SubscribeToNotificationsJob(boundProjects);
       JobUtils.scheduleAfterSuccess(job, subscribeToNotificationsJob::schedule);
+      subscribeToNotificationsJob.schedule();
     } else {
       boundProjects.forEach(SonarLintUiPlugin::unsubscribeToNotifications);
     }

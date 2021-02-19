@@ -20,18 +20,24 @@
 package org.sonarlint.eclipse.core.internal.notifications;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager;
+import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
+import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.NotificationConfiguration;
 import org.sonarsource.sonarlint.core.client.api.notifications.LastNotificationTime;
@@ -46,7 +52,7 @@ public class NotificationsManager {
   // project key -> listener
   private final Map<String, ServerNotificationListener> listeners = new HashMap<>();
 
-  private final SonarLintProjectConfigurationReader configReader;
+  private final Function<ISonarLintProject, SonarLintProjectConfiguration> configReader;
   private final ServerNotificationsRegistry serverNotificationsRegistry;
   private final ConnectedEngineFacadeManager facadeManager;
 
@@ -55,33 +61,42 @@ public class NotificationsManager {
   }
 
   // only for testing
-  public NotificationsManager(ServerNotificationsRegistry serverNotificationsRegistry, SonarLintProjectConfigurationReader configReader,
+  public NotificationsManager(ServerNotificationsRegistry serverNotificationsRegistry, Function<ISonarLintProject, SonarLintProjectConfiguration> configReader,
     ConnectedEngineFacadeManager facadeManager) {
     this.configReader = configReader;
     this.serverNotificationsRegistry = serverNotificationsRegistry;
     this.facadeManager = facadeManager;
   }
 
-  public synchronized void subscribe(ISonarLintProject project, ServerNotificationListener listener) {
-    SonarLintProjectConfiguration config = configReader.apply(project);
-
-    Optional<EclipseProjectBinding> binding = config.getProjectBinding();
-    if (!binding.isPresent()) {
-      return;
+  public void subscribeAllNeedingProjectsToNotifications(ListenerFactory listenerFactory) {
+    try {
+      subscribeToNotifications(ProjectsProviderUtils.allProjects(), listenerFactory);
+    } catch (IllegalStateException e) {
+      SonarLintLogger.get().error("Could not subscribe to notifications", e);
     }
-    binding.ifPresent(b -> {
-      Set<String> names = subscribers.get(b.projectKey());
-      if (names == null) {
-        if (!subscribe(project, config, listener)) {
-          return;
-        }
-        names = new HashSet<>();
-        subscribers.put(b.projectKey(), names);
-        listeners.put(b.projectKey(), listener);
-      }
-      names.add(project.getName());
-    });
+  }
 
+  public void subscribeToNotifications(Collection<ISonarLintProject> projects, ListenerFactory listenerFactory) {
+    Map<IConnectedEngineFacade, List<ISonarLintProject>> projectsPerConnection = filterBoundProjectsAndGroupByConnection(projects);
+    projectsPerConnection.forEach((facade, projectsToSubscribe) -> {
+      if (((ConnectedEngineFacade) facade).checkNotificationsSupported()) {
+        projectsToSubscribe.forEach(p -> subscribeBoundProject(p,
+          facadeManager.resolveBinding(p).orElseThrow(() -> new IllegalStateException("Project was supposed to be bound")),
+          listenerFactory.create(facade)));
+      }
+    });
+  }
+
+  private Map<IConnectedEngineFacade, List<ISonarLintProject>> filterBoundProjectsAndGroupByConnection(Collection<ISonarLintProject> projects) {
+    Map<IConnectedEngineFacade, List<ISonarLintProject>> projectsPerConnection = new HashMap<>();
+    projects.forEach(p -> {
+      facadeManager.resolveBinding(p).ifPresent(binding -> {
+        if (!binding.getEngineFacade().areNotificationsDisabled()) {
+          projectsPerConnection.computeIfAbsent(binding.getEngineFacade(), k -> new ArrayList<>()).add(p);
+        }
+      });
+    });
+    return projectsPerConnection;
   }
 
   /**
@@ -133,33 +148,25 @@ public class NotificationsManager {
     });
   }
 
-  private boolean subscribe(ISonarLintProject project, SonarLintProjectConfiguration config, ServerNotificationListener listener) {
-    Optional<ResolvedBinding> resolvedBinding = facadeManager.resolveBinding(project, config);
-    if (!resolvedBinding.isPresent()) {
-      return false;
+  private synchronized void subscribeBoundProject(ISonarLintProject project, ResolvedBinding binding, ServerNotificationListener listener) {
+    String projectKey = binding.getProjectBinding().projectKey();
+    Set<String> names = subscribers.get(projectKey);
+    if (names == null) {
+      register(project, binding, listener);
+      names = new HashSet<>();
+      subscribers.put(projectKey, names);
+      listeners.put(projectKey, listener);
     }
+    names.add(project.getName());
+  }
 
-    ResolvedBinding binding = resolvedBinding.get();
-    if (binding.getEngineFacade().areNotificationsDisabled()) {
-      return false;
-    }
+  private void register(ISonarLintProject project, ResolvedBinding binding, ServerNotificationListener listener) {
     ConnectedEngineFacade connectedEngineFacade = (ConnectedEngineFacade) binding.getEngineFacade();
-    if (!connectedEngineFacade.checkNotificationsSupported()) {
-      return false;
-    }
     LastNotificationTime notificationTime = new ProjectNotificationTime(project);
 
     NotificationConfiguration configuration = new NotificationConfiguration(listener, notificationTime, binding.getProjectBinding().projectKey(),
       connectedEngineFacade::createEndpointParams, connectedEngineFacade::buildClientWithProxyAndCredentials);
     serverNotificationsRegistry.register(configuration);
-    return true;
-
-  }
-
-  // visible for testing
-  public interface SonarLintProjectConfigurationReader extends Function<ISonarLintProject, SonarLintProjectConfiguration> {
-    @Override
-    SonarLintProjectConfiguration apply(ISonarLintProject project);
   }
 
   public void stop() {
