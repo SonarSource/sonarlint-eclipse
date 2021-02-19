@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.actions.SelectionProviderAction;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.jobs.ServerUpdateJob;
@@ -85,7 +86,8 @@ public class ConnectionUpdateAction extends SelectionProviderAction {
       for (final IConnectedEngineFacade server : servers) {
         Job job = new ServerUpdateJob(server);
         // note: this is only necessary for projects bound before SQ 6.6
-        JobUtils.scheduleAfterSuccess(job, () -> server.getBoundProjects().forEach(SonarLintUiPlugin::subscribeToNotifications));
+        JobUtils.scheduleAfterSuccess(job,
+          () -> SonarLintCorePlugin.getInstance().notificationsManager().subscribeToNotifications(server.getBoundProjects(), SonarLintUiPlugin.getDefault().listenerFactory()));
         JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(job, server, TriggerType.BINDING_CHANGE);
         job.schedule();
       }

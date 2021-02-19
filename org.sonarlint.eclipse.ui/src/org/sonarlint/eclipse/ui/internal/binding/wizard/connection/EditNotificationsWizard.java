@@ -20,10 +20,6 @@
 package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 
 import java.util.List;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -34,6 +30,7 @@ import org.eclipse.ui.IWorkbench;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.job.SubscribeToNotificationsJob;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
 
 public class EditNotificationsWizard extends Wizard implements INewWizard {
@@ -85,14 +82,7 @@ public class EditNotificationsWizard extends Wizard implements INewWizard {
 
     List<ISonarLintProject> boundProjects = editedServer.getBoundProjects();
     if (model.getNotificationsSupported() && !model.getNotificationsDisabled() && !boundProjects.isEmpty()) {
-      Job subscribeToNotificationsJob = new Job("Subscribe to notifications") {
-        @Override
-        protected IStatus run(IProgressMonitor monitor) {
-          boundProjects.forEach(SonarLintUiPlugin::subscribeToNotifications);
-          return Status.OK_STATUS;
-        }
-      };
-      subscribeToNotificationsJob.schedule();
+      new SubscribeToNotificationsJob(boundProjects).schedule();
     } else {
       boundProjects.forEach(SonarLintUiPlugin::unsubscribeToNotifications);
     }

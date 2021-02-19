@@ -33,12 +33,13 @@ import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacad
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.ProjectNotificationTime;
-import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager.SonarLintProjectConfigurationReader;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificationListener;
 import org.sonarsource.sonarlint.core.notifications.ServerNotificationsRegistry;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -76,8 +77,6 @@ public class NotificationsManagerTest {
     configs.put(project2mod2, mockConfig(BINDING_2));
   }
 
-  SonarLintProjectConfigurationReader configReader = p -> configs.get(p);
-
   private SonarLintProjectConfiguration mockConfig(SonarLintProjectConfiguration.EclipseProjectBinding binding) {
     SonarLintProjectConfiguration config = mock(SonarLintProjectConfiguration.class);
     when(config.getProjectBinding()).thenReturn(Optional.of(binding));
@@ -86,7 +85,7 @@ public class NotificationsManagerTest {
 
   @Before
   public void setUp() throws IOException {
-    underTest = new NotificationsManager(registry, configReader, facadeManager);
+    underTest = new NotificationsManager(registry, p -> configs.get(p), facadeManager);
     when(project1mod1.getName()).thenReturn("project1-module1");
     when(project1mod1.getWorkingDir()).thenReturn(tmp.newFolder().toPath());
     when(project1mod2.getName()).thenReturn("project1-module2");
@@ -98,19 +97,19 @@ public class NotificationsManagerTest {
 
     when(engineFacade.checkNotificationsSupported()).thenReturn(true);
 
-    when(facadeManager.resolveBinding(project1mod1, configs.get(project1mod1)))
+    when(facadeManager.resolveBinding(project1mod1))
       .thenReturn(Optional.of(new ResolvedBinding(BINDING_1, engineFacade)));
-    when(facadeManager.resolveBinding(project1mod2, configs.get(project1mod2)))
+    when(facadeManager.resolveBinding(project1mod2))
       .thenReturn(Optional.of(new ResolvedBinding(BINDING_1, engineFacade)));
-    when(facadeManager.resolveBinding(project2mod1, configs.get(project2mod1)))
+    when(facadeManager.resolveBinding(project2mod1))
       .thenReturn(Optional.of(new ResolvedBinding(BINDING_2, engineFacade)));
-    when(facadeManager.resolveBinding(project2mod2, configs.get(project2mod2)))
+    when(facadeManager.resolveBinding(project2mod2))
       .thenReturn(Optional.of(new ResolvedBinding(BINDING_2, engineFacade)));
   }
 
   @Test
   public void test_subscribe_and_unsubscribe_one_module_one_project() {
-    underTest.subscribe(project1mod1, listener);
+    underTest.subscribeToNotifications(singletonList(project1mod1), f -> listener);
     verify(registry).register(any());
 
     underTest.unsubscribe(project1mod1);
@@ -121,8 +120,7 @@ public class NotificationsManagerTest {
 
   @Test
   public void test_subscribe_and_unsubscribe_two_modules_one_project() {
-    underTest.subscribe(project1mod1, listener);
-    underTest.subscribe(project1mod2, listener);
+    underTest.subscribeToNotifications(asList(project1mod1, project1mod2), f -> listener);
     verify(registry, times(1)).register(any());
 
     underTest.unsubscribe(project1mod1);
@@ -134,8 +132,7 @@ public class NotificationsManagerTest {
 
   @Test
   public void test_subscribe_and_unsubscribe_one_module_each_of_two_projects() {
-    underTest.subscribe(project1mod1, listener);
-    underTest.subscribe(project2mod1, listener);
+    underTest.subscribeToNotifications(asList(project1mod1, project2mod1), f -> listener);
     verify(registry, times(2)).register(any());
 
     underTest.unsubscribe(project1mod1);
@@ -147,8 +144,7 @@ public class NotificationsManagerTest {
 
   @Test
   public void unsubscribe_non_last_module_should_not_unsubscribe_from_project() {
-    underTest.subscribe(project1mod1, listener);
-    underTest.subscribe(project1mod2, listener);
+    underTest.subscribeToNotifications(asList(project1mod1, project1mod2), f -> listener);
     verify(registry, times(1)).register(any());
 
     underTest.unsubscribe(project1mod1);
@@ -167,7 +163,7 @@ public class NotificationsManagerTest {
   public void should_not_subscribe_when_notifications_are_disabled() {
     when(engineFacade.areNotificationsDisabled()).thenReturn(true);
 
-    underTest.subscribe(project1mod1, listener);
+    underTest.subscribeToNotifications(singletonList(project1mod1), f -> listener);
     underTest.unsubscribe(project1mod1);
 
     verifyNoMoreInteractions(registry);
@@ -177,7 +173,7 @@ public class NotificationsManagerTest {
   public void should_not_subscribe_when_notifications_are_unsupported() {
     when(engineFacade.checkNotificationsSupported()).thenReturn(false);
 
-    underTest.subscribe(project1mod1, listener);
+    underTest.subscribeToNotifications(singletonList(project1mod1), f -> listener);
     underTest.unsubscribe(project1mod1);
 
     verifyNoMoreInteractions(registry);
@@ -185,9 +181,9 @@ public class NotificationsManagerTest {
 
   @Test
   public void should_not_subscribe_when_project_not_correctly_bound() {
-    when(facadeManager.resolveBinding(project1mod1, configs.get(project1mod1))).thenReturn(Optional.empty());
+    when(facadeManager.resolveBinding(project1mod1)).thenReturn(Optional.empty());
 
-    underTest.subscribe(project1mod1, listener);
+    underTest.subscribeToNotifications(singletonList(project1mod1), f -> listener);
 
     verifyNoMoreInteractions(registry);
   }
@@ -197,7 +193,7 @@ public class NotificationsManagerTest {
     ISonarLintProject moduleWithoutProjectKey = mock(ISonarLintProject.class);
     configs.put(moduleWithoutProjectKey, mock(SonarLintProjectConfiguration.class));
 
-    underTest.subscribe(moduleWithoutProjectKey, listener);
+    underTest.subscribeToNotifications(singletonList(moduleWithoutProjectKey), f -> listener);
 
     verifyNoMoreInteractions(registry);
   }
