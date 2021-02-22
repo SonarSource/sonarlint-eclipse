@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,16 +45,12 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
-import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
-import org.sonarlint.eclipse.core.internal.jobs.ProjectStorageUpdateJob;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
-import org.sonarlint.eclipse.ui.internal.job.SubscribeToNotificationsJob;
 import org.sonarlint.eclipse.ui.internal.util.wizard.SonarLintWizardDialog;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
@@ -184,34 +179,7 @@ public class ProjectBindingWizard extends Wizard implements INewWizard, IPageCha
   public boolean performFinish() {
     String serverId = model.getServer().getId();
     getDialogSettings().put(STORE_LAST_SELECTED_SERVER_ID, serverId);
-    String projectKey = model.getRemoteProjectKey();
-    ProjectStorageUpdateJob job = new ProjectStorageUpdateJob(serverId, projectKey);
-    List<ISonarLintProject> projectToSubscribeToNotifications = new ArrayList<>();
-    model.getEclipseProjects().forEach(p -> {
-      boolean changed = false;
-      SonarLintProjectConfiguration projectConfig = SonarLintCorePlugin.loadConfig(p);
-      String oldServerId = projectConfig.getProjectBinding().map(EclipseProjectBinding::connectionId).orElse(null);
-      String oldProjectKey = projectConfig.getProjectBinding().map(EclipseProjectBinding::projectKey).orElse(null);
-      if (!Objects.equals(serverId, oldServerId) || !Objects.equals(projectKey, oldProjectKey)) {
-        // We can ignore path prefixes for now, they will be update by the ProjectStorageUpdateJob
-        projectConfig.setProjectBinding(new EclipseProjectBinding(serverId, projectKey, "", ""));
-        changed = true;
-      }
-      if (changed) {
-        SonarLintUiPlugin.unsubscribeToNotifications(p);
-        SonarLintCorePlugin.saveConfig(p, projectConfig);
-        p.deleteAllMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID);
-        p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
-        SonarLintCorePlugin.clearIssueTracker(p);
-        JobUtils.notifyServerViewAfterBindingChange(p, oldServerId);
-        projectToSubscribeToNotifications.add(p);
-      }
-    });
-    if (!projectToSubscribeToNotifications.isEmpty()) {
-      new SubscribeToNotificationsJob(projectToSubscribeToNotifications).schedule();
-    }
-    JobUtils.scheduleAnalysisOfOpenFiles(job, model.getEclipseProjects(), TriggerType.BINDING_CHANGE);
-    job.schedule();
+    ProjectBindingProcess.scheduleProjectBinding(serverId, model.getEclipseProjects(), model.getRemoteProjectKey());
     return true;
   }
 

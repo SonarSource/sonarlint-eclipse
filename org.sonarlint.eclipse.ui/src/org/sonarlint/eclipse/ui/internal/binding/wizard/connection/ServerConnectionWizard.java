@@ -74,6 +74,9 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
   private final ConfirmWizardPage confirmPage;
   private final IConnectedEngineFacade editedServer;
   private boolean redirectedAfterNotificationCheck;
+  private boolean skipBindingWizard;
+
+  private IConnectedEngineFacade resultServer;
 
   private ServerConnectionWizard(String title, ServerConnectionModel model, IConnectedEngineFacade editedServer) {
     super();
@@ -100,7 +103,7 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     this(new ServerConnectionModel());
   }
 
-  private ServerConnectionWizard(ServerConnectionModel model) {
+  public ServerConnectionWizard(ServerConnectionModel model) {
     this("Connect to SonarQube or SonarCloud", model, null);
   }
 
@@ -128,9 +131,17 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     return new SonarLintWizardDialog(parent, new ServerConnectionWizard(sonarServer));
   }
 
+  public static WizardDialog createDialog(Shell parent, ServerConnectionWizard wizard) {
+    return new SonarLintWizardDialog(parent, wizard);
+  }
+
   @Override
   public void init(IWorkbench workbench, IStructuredSelection selection) {
     // Nothing to do
+  }
+
+  public void setSkipBindingWizard(boolean skipBindingWizard) {
+    this.skipBindingWizard = skipBindingWizard;
   }
 
   @Override
@@ -217,16 +228,15 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     if (model.isEdit() && !testConnection(model.getOrganization())) {
       return false;
     }
-    IConnectedEngineFacade server;
 
     if (model.isEdit()) {
       editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsDisabled());
-      server = editedServer;
+      resultServer = editedServer;
 
     } else {
-      server = SonarLintCorePlugin.getServersManager().create(model.getConnectionId(), model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(),
+      resultServer = SonarLintCorePlugin.getServersManager().create(model.getConnectionId(), model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(),
         model.getNotificationsDisabled());
-      SonarLintCorePlugin.getServersManager().addServer(server, model.getUsername(), model.getPassword());
+      SonarLintCorePlugin.getServersManager().addServer(resultServer, model.getUsername(), model.getPassword());
       try {
         PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BindingsView.ID);
       } catch (PartInitException e) {
@@ -234,9 +244,9 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       }
     }
 
-    Job job = new ServerUpdateJob(server);
+    Job job = new ServerUpdateJob(resultServer);
 
-    List<ISonarLintProject> boundProjects = server.getBoundProjects();
+    List<ISonarLintProject> boundProjects = resultServer.getBoundProjects();
     if (model.getNotificationsSupported() && !model.getNotificationsDisabled() && !boundProjects.isEmpty()) {
       Job subscribeToNotificationsJob = new SubscribeToNotificationsJob(boundProjects);
       JobUtils.scheduleAfterSuccess(job, subscribeToNotificationsJob::schedule);
@@ -245,17 +255,23 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
       boundProjects.forEach(SonarLintUiPlugin::unsubscribeToNotifications);
     }
 
-    JobUtils.scheduleAfterSuccess(job, () -> JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(server, TriggerType.BINDING_CHANGE));
+    JobUtils.scheduleAfterSuccess(job, () -> JobUtils.scheduleAnalysisOfOpenFilesInBoundProjects(resultServer, TriggerType.BINDING_CHANGE));
     job.schedule();
     List<ISonarLintProject> selectedProjects = model.getSelectedProjects();
-    if (selectedProjects != null && !selectedProjects.isEmpty()) {
-      ProjectBindingWizard.createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, (ConnectedEngineFacade) server)
-        .open();
-    } else if (boundProjects.isEmpty()) {
-      ProjectBindingWizard.createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), (ConnectedEngineFacade) server)
-        .open();
+    if (!skipBindingWizard) {
+      if (selectedProjects != null && !selectedProjects.isEmpty()) {
+        ProjectBindingWizard.createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, (ConnectedEngineFacade) resultServer)
+          .open();
+      } else if (boundProjects.isEmpty()) {
+        ProjectBindingWizard.createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), (ConnectedEngineFacade) resultServer)
+          .open();
+      }
     }
     return true;
+  }
+
+  public IConnectedEngineFacade getResultServer() {
+    return resultServer;
   }
 
   @Override
