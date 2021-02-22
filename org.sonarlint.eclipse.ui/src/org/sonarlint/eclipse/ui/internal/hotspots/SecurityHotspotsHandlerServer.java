@@ -313,6 +313,7 @@ public class SecurityHotspotsHandlerServer {
       });
     }
 
+    @Nullable
     private static IMarker createMarker(ISonarLintFile file, ServerHotspot hotspot, IDocument doc) {
       IMarker marker = null;
       try {
