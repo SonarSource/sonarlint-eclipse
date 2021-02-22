@@ -21,7 +21,9 @@ package org.sonarlint.eclipse.ui.internal.hotspots;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -276,6 +278,8 @@ public class HotspotsView extends ViewPart {
   }
 
   public void openHotspot(ServerHotspot hotspot, @Nullable IMarker marker) {
+    clearMarkers();
+
     HotspotAndMarker hotspotAndMarker = new HotspotAndMarker(hotspot, marker);
 
     book.showPage(hotspotsPage);
@@ -288,6 +292,19 @@ public class HotspotsView extends ViewPart {
     splitter.layout();
 
     openMarkerOfSelectedHotspot();
+  }
+
+  private void clearMarkers() {
+    HotspotAndMarker[] previous = (HotspotAndMarker[]) hotspotViewer.getInput();
+    Stream.of(previous).forEach(h -> {
+      if (h.marker != null) {
+        try {
+          h.marker.delete();
+        } catch (CoreException e) {
+          SonarLintLogger.get().error("Unable to delete previous marker", e);
+        }
+      }
+    });
   }
 
   private void openMarkerOfSelectedHotspot() {
@@ -325,6 +342,7 @@ public class HotspotsView extends ViewPart {
 
   @Override
   public void dispose() {
+    clearMarkers();
     highPriorityColor.dispose();
     mediumPriorityColor.dispose();
     lowPriorityColor.dispose();
