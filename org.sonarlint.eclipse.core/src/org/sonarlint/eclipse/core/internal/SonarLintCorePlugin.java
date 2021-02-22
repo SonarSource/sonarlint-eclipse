@@ -60,6 +60,7 @@ public class SonarLintCorePlugin extends Plugin {
   public static final String MARKER_ON_THE_FLY_FLOW_ID = PLUGIN_ID + ".sonarlintOnTheFlyFlowLocation";
   public static final String MARKER_REPORT_ID = PLUGIN_ID + ".sonarlintReportProblem";
   public static final String MARKER_REPORT_FLOW_ID = PLUGIN_ID + ".sonarlintReportFlowLocation";
+  public static final String MARKER_HOTSPOT_ID = PLUGIN_ID + ".sonarlintHotspot";
 
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectConfigurationManager configManager;

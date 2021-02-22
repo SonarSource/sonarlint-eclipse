@@ -48,6 +48,7 @@ import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.io.CloseMode;
 import org.apache.hc.core5.net.URLEncodedUtils;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -55,14 +56,23 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Position;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
 
 public class SecurityHotspotsHandlerServer {
@@ -153,7 +163,7 @@ public class SecurityHotspotsHandlerServer {
 
     @Override
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context)
-        throws HttpException, IOException {
+      throws HttpException, IOException {
       if (!Method.GET.isSame(request.getMethod())) {
         throw new MethodNotSupportedException("Only POST is supported");
       }
@@ -175,7 +185,7 @@ public class SecurityHotspotsHandlerServer {
 
     @Nullable
     private static ShowHotspotParameters getParameters(ClassicHttpRequest request, ClassicHttpResponse response)
-        throws HttpException {
+      throws HttpException {
       Map<String, String> parameters = extractParameters(request);
       String projectKey = checkParameter(parameters, "project", response);
       if (projectKey == null) {
@@ -203,7 +213,7 @@ public class SecurityHotspotsHandlerServer {
 
     @Nullable
     private static String checkParameter(Map<String, String> parameters, String parameterName,
-        ClassicHttpResponse response) {
+      ClassicHttpResponse response) {
       String parameterValue = parameters.get(parameterName);
       if (StringUtils.isEmpty(parameterValue)) {
         missingParameter(response, parameterName);
@@ -214,11 +224,12 @@ public class SecurityHotspotsHandlerServer {
 
     private static void missingParameter(ClassicHttpResponse response, String parameterName) {
       response
-          .setEntity(new StringEntity("Missing or empty '" + parameterName + "' parameter", ContentType.DEFAULT_TEXT));
+        .setEntity(new StringEntity("Missing or empty '" + parameterName + "' parameter", ContentType.DEFAULT_TEXT));
       response.setCode(HttpStatus.SC_BAD_REQUEST);
     }
 
     private static void openSecurityHotspot(ShowHotspotParameters parameters) {
+      bringToFront();
       List<IConnectedEngineFacade> serverConnections = SonarLintCorePlugin.getServersManager().findByUrl(parameters.serverUrl);
       if (serverConnections.isEmpty()) {
         // no connection - help creation
@@ -227,7 +238,7 @@ public class SecurityHotspotsHandlerServer {
       Optional<FetchedHotspot> fetchedHotspot = fetchHotspotFromAny(serverConnections, parameters);
       if (!fetchedHotspot.isPresent()) {
         // cannot fetch it - network errors or insufficient permissions
-        // actions: error popup with a retry link ? 
+        // actions: error popup with a retry link ?
         return;
       }
 
@@ -237,6 +248,19 @@ public class SecurityHotspotsHandlerServer {
         return;
       }
       show(hotspotFile.get(), fetchedHotspot.get().hotspot);
+    }
+
+    private static void bringToFront() {
+      Display.getDefault().syncExec(() -> {
+        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        Shell shell = window.getShell();
+        if (shell != null) {
+          if (shell.getMinimized()) {
+            shell.setMinimized(false);
+          }
+          shell.forceActive();
+        }
+      });
     }
 
     private static Optional<ISonarLintFile> findHotspotFile(FetchedHotspot fetchedHotspot, String projectKey) {
@@ -277,7 +301,46 @@ public class SecurityHotspotsHandlerServer {
     }
 
     private static void show(ISonarLintFile file, ServerHotspot hotspot) {
-      SonarLintLogger.get().info("Hotspot fetched: " + hotspot.message + ", located in " + file.getName());
+      Display.getDefault().syncExec(() -> {
+        IDocument doc = getDocumentFromEditorOrFile(file);
+        IMarker marker = createMarker(file, hotspot, doc);
+        try {
+          HotspotsView view = (HotspotsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(HotspotsView.ID);
+          view.openHotspot(hotspot, marker);
+        } catch (Exception e) {
+          SonarLintLogger.get().error("Unable to open Hotspots View", e);
+        }
+      });
+    }
+
+    private static IMarker createMarker(ISonarLintFile file, ServerHotspot hotspot, IDocument doc) {
+      IMarker marker = null;
+      try {
+        marker = file.getResource().createMarker(SonarLintCorePlugin.MARKER_HOTSPOT_ID);
+        marker.setAttribute(IMarker.MESSAGE, hotspot.message);
+        marker.setAttribute(IMarker.LINE_NUMBER, hotspot.textRange.getStartLine() != null ? hotspot.textRange.getStartLine() : 1);
+        @Nullable
+        Position position = MarkerUtils.getPosition(doc,
+          TextRange.get(hotspot.textRange.getStartLine(), hotspot.textRange.getStartLineOffset(), hotspot.textRange.getEndLine(), hotspot.textRange.getEndLineOffset()));
+        if (position != null) {
+          marker.setAttribute(IMarker.CHAR_START, position.getOffset());
+          marker.setAttribute(IMarker.CHAR_END, position.getOffset() + position.getLength());
+        }
+      } catch (Exception e) {
+        SonarLintLogger.get().debug("Unable to create hotspot marker", e);
+      }
+      return marker;
+    }
+
+    private static IDocument getDocumentFromEditorOrFile(ISonarLintFile file) {
+      IDocument doc;
+      IEditorPart editorPart = PlatformUtils.findEditor(file);
+      if (editorPart instanceof ITextEditor) {
+        doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
+      } else {
+        doc = file.getDocument();
+      }
+      return doc;
     }
 
     private static class ShowHotspotParameters {
