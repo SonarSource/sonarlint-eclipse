@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,6 +59,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
@@ -73,6 +75,12 @@ import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
+import org.sonarlint.eclipse.ui.internal.binding.ProjectSelectionDialog;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
+import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
 
 public class SecurityHotspotsHandlerServer {
@@ -232,8 +240,11 @@ public class SecurityHotspotsHandlerServer {
       bringToFront();
       List<IConnectedEngineFacade> serverConnections = SonarLintCorePlugin.getServersManager().findByUrl(parameters.serverUrl);
       if (serverConnections.isEmpty()) {
-        // no connection - help creation
-        return;
+        IConnectedEngineFacade connection = createConnection(parameters.serverUrl);
+        if (connection == null) {
+          return;
+        }
+        serverConnections = Arrays.asList(connection);
       }
       Optional<FetchedHotspot> fetchedHotspot = fetchHotspotFromAny(serverConnections, parameters);
       if (!fetchedHotspot.isPresent()) {
@@ -244,8 +255,14 @@ public class SecurityHotspotsHandlerServer {
 
       Optional<ISonarLintFile> hotspotFile = findHotspotFile(fetchedHotspot.get(), parameters.projectKey);
       if (!hotspotFile.isPresent()) {
-        // file not found - search not bound projects, or propose manual selection of the project (and bind it if needed)
-        return;
+        Optional<ISonarLintProject> boundProject = bindProjectTo(fetchedHotspot.get().origin, parameters.projectKey);
+        if (!boundProject.isPresent()) {
+          return;
+        }
+        hotspotFile = findHotspotFile(fetchedHotspot.get(), boundProject.get());
+        if (!hotspotFile.isPresent()) {
+          return;
+        }
       }
       show(hotspotFile.get(), fetchedHotspot.get().hotspot);
     }
@@ -263,15 +280,54 @@ public class SecurityHotspotsHandlerServer {
       });
     }
 
+    @Nullable
+    private static IConnectedEngineFacade createConnection(String serverUrl) {
+      ServerConnectionModel model = new ServerConnectionModel();
+      model.setConnectionType(ConnectionType.ONPREMISE);
+      model.setServerUrl(serverUrl);
+      ServerConnectionWizard wizard = new ServerConnectionWizard(model);
+      wizard.setSkipBindingWizard(true);
+      return DisplayUtils.syncExec(() -> {
+        WizardDialog dialog = ServerConnectionWizard.createDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), wizard);
+        dialog.setBlockOnOpen(true);
+        dialog.open();
+        return wizard.getResultServer();
+      });
+    }
+
+    private static Optional<ISonarLintProject> bindProjectTo(IConnectedEngineFacade connection, String projectKey) {
+      Optional<ISonarLintProject> pickedProject = DisplayUtils.syncExec(ProjectSelectionDialog::pickProject);
+      if (!pickedProject.isPresent()) {
+        return Optional.empty();
+      }
+      ISonarLintProject project = pickedProject.get();
+      Job bindingJob = ProjectBindingProcess.scheduleProjectBinding(connection.getId(), Arrays.asList(project), projectKey);
+      try {
+        bindingJob.join();
+      } catch (InterruptedException e) {
+        SonarLintLogger.get().error("Cannot bind project", e);
+        return Optional.empty();
+      }
+      return pickedProject;
+    }
+
     private static Optional<ISonarLintFile> findHotspotFile(FetchedHotspot fetchedHotspot, String projectKey) {
       List<ISonarLintProject> projects = fetchedHotspot.origin.getBoundProjects(projectKey);
       for (ISonarLintProject project : projects) {
-        Optional<ISonarLintFile> hotspotFile = SonarLintCorePlugin.getServersManager().resolveBinding(project)
-          .map(binding -> binding.getProjectBinding().serverPathToIdePath(fetchedHotspot.hotspot.filePath))
-          .flatMap(project::find);
+        Optional<ISonarLintFile> hotspotFile = findHotspotFile(fetchedHotspot, project);
         if (hotspotFile.isPresent()) {
           return hotspotFile;
         }
+      }
+      return Optional.empty();
+    }
+
+    private static Optional<ISonarLintFile> findHotspotFile(FetchedHotspot fetchedHotspot, ISonarLintProject project) {
+      Optional<ISonarLintFile> hotspotFile = SonarLintCorePlugin.getServersManager().resolveBinding(project)
+        .map(binding -> binding.getProjectBinding().serverPathToIdePath(fetchedHotspot.hotspot.filePath))
+        .flatMap(project::find);
+      if (hotspotFile.isPresent()) {
+        return hotspotFile;
       }
       return Optional.empty();
     }
