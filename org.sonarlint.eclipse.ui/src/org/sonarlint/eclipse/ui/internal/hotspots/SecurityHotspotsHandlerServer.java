@@ -237,6 +237,7 @@ public class SecurityHotspotsHandlerServer {
     }
 
     private static void openSecurityHotspot(ShowHotspotParameters parameters) {
+      SonarLintCorePlugin.getTelemetry().showHotspotRequestReceived();
       bringToFront();
       List<IConnectedEngineFacade> serverConnections = SonarLintCorePlugin.getServersManager().findByUrl(parameters.serverUrl);
       if (serverConnections.isEmpty()) {

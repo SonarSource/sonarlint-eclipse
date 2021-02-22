@@ -190,6 +190,12 @@ public class SonarLintTelemetry {
     }
   }
 
+  public void showHotspotRequestReceived() {
+    if (enabled()) {
+      telemetry.showHotspotRequestReceived();
+    }
+  }
+
   public void stop() {
     if (scheduledJob != null) {
       scheduledJob.cancel();
