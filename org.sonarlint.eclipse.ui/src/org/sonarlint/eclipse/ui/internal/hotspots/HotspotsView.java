@@ -296,15 +296,17 @@ public class HotspotsView extends ViewPart {
 
   private void clearMarkers() {
     HotspotAndMarker[] previous = (HotspotAndMarker[]) hotspotViewer.getInput();
-    Stream.of(previous).forEach(h -> {
-      if (h.marker != null) {
-        try {
-          h.marker.delete();
-        } catch (CoreException e) {
-          SonarLintLogger.get().error("Unable to delete previous marker", e);
+    if (previous != null) {
+      Stream.of(previous).forEach(h -> {
+        if (h.marker != null) {
+          try {
+            h.marker.delete();
+          } catch (CoreException e) {
+            SonarLintLogger.get().error("Unable to delete previous marker", e);
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   private void openMarkerOfSelectedHotspot() {
