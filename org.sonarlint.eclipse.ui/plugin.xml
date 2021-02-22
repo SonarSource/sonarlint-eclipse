@@ -774,16 +774,15 @@
             name="org.sonarlint.eclipse.onTheFlyIssueAnnotationType"
             markerType="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem"/>
         <type
-            name="org.sonarlint.eclipse.issueFlowAnnotationType"/>
-    </extension>
-    
-    <extension
-        point="org.eclipse.ui.editors.annotationTypes">
-        <type
             name="org.sonarlint.eclipse.reportIssueAnnotationType"
             markerType="org.sonarlint.eclipse.core.sonarlintReportProblem"/>
+        <type
+            name="org.sonarlint.eclipse.issueFlowAnnotationType"/>
+        <type
+            name="org.sonarlint.eclipse.hotspotAnnotationType"
+            markerType="org.sonarlint.eclipse.core.sonarlintHotspot"/>
     </extension>
-
+    
     <extension
         point="org.eclipse.ui.editors.markerAnnotationSpecification">
         <specification
@@ -834,6 +833,30 @@
               textStylePreferenceValue="NONE"
               verticalRulerPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.verticalruler"
               verticalRulerPreferenceValue="false"/>
+        <specification
+              annotationImageProvider="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerImageProvider"
+              annotationType="org.sonarlint.eclipse.hotspotAnnotationType"
+              colorPreferenceKey="org.sonarlint.eclipse.ui.hotspot.color"
+              colorPreferenceValue="30,144,255"
+              highlightPreferenceKey="org.sonarlint.eclipse.ui.hotspot.highlight"
+              highlightPreferenceValue="false"
+              icon="icons/full/eview16/hotspots.png"
+              isGoToNextNavigationTarget="true"
+              isGoToNextNavigationTargetKey="org.sonarlint.eclipse.hotspot.next"
+              isGoToPreviousNavigationTarget="true"
+              isGoToPreviousNavigationTargetKey="org.sonarlint.eclipse.hotspot.previous"
+              label="SonarLint Security Hotspot"
+              overviewRulerPreferenceKey="org.sonarlint.eclipse.ui.hotspot.overviewruler"
+              overviewRulerPreferenceValue="true"
+              presentationLayer="3"
+              showInNextPrevDropdownToolbarAction="true"
+              showInNextPrevDropdownToolbarActionKey="org.sonarlint.eclipse.hotspot.dropdown"
+              textPreferenceKey="org.sonarlint.eclipse.ui.hotspot.error.text"
+              textPreferenceValue="true"
+              textStylePreferenceKey="org.sonarlint.eclipse.ui.hotspot.text.style"
+              textStylePreferenceValue="SQUIGGLES"
+              verticalRulerPreferenceKey="org.sonarlint.eclipse.ui.hotspot.verticalruler"
+              verticalRulerPreferenceValue="true"/>
   </extension>
   
   <!-- Marker resolver -->
