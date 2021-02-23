@@ -27,6 +27,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -74,13 +75,14 @@ import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
-import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarlint.eclipse.ui.internal.binding.ProjectSelectionDialog;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel;
-import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionModel.ConnectionType;
+import org.sonarlint.eclipse.ui.internal.binding.wizard.connection.ServerConnectionWizard;
 import org.sonarlint.eclipse.ui.internal.binding.wizard.project.ProjectBindingProcess;
+import org.sonarlint.eclipse.ui.internal.popup.FailedToOpenHotspotPopup;
 import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
+import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
 
 public class SecurityHotspotsHandlerServer {
@@ -177,6 +179,7 @@ public class SecurityHotspotsHandlerServer {
       }
       ShowHotspotParameters parameters = getParameters(request, response);
       if (parameters == null) {
+        response.setCode(HttpStatus.SC_BAD_REQUEST);
         return;
       }
 
@@ -243,29 +246,38 @@ public class SecurityHotspotsHandlerServer {
       if (serverConnections.isEmpty()) {
         IConnectedEngineFacade connection = createConnection(parameters.serverUrl);
         if (connection == null) {
+          showErrorPopup("No connections found for URL: " + parameters.serverUrl);
           return;
         }
         serverConnections = Arrays.asList(connection);
       }
-      Optional<FetchedHotspot> fetchedHotspot = fetchHotspotFromAny(serverConnections, parameters);
-      if (!fetchedHotspot.isPresent()) {
-        // cannot fetch it - network errors or insufficient permissions
-        // actions: error popup with a retry link ?
+      Optional<FetchedHotspot> fetchedHotspotOpt = fetchHotspotFromAny(serverConnections, parameters);
+      if (!fetchedHotspotOpt.isPresent()) {
+        showErrorPopup("Unable to fetch hotspot details using configured connections");
         return;
       }
-
-      Optional<ISonarLintFile> hotspotFile = findHotspotFile(fetchedHotspot.get(), parameters.projectKey);
+      FetchedHotspot fetchedHotspot = fetchedHotspotOpt.get();
+      Optional<ISonarLintFile> hotspotFile = findHotspotFile(fetchedHotspot, parameters.projectKey);
       if (!hotspotFile.isPresent()) {
-        Optional<ISonarLintProject> boundProject = bindProjectTo(fetchedHotspot.get().origin, parameters.projectKey);
+        Optional<ISonarLintProject> boundProject = bindProjectTo(fetchedHotspot, parameters.projectKey);
         if (!boundProject.isPresent()) {
+          showErrorPopup("No Eclipse projects bound to project '" + parameters.projectKey + "'");
           return;
         }
-        hotspotFile = findHotspotFile(fetchedHotspot.get(), boundProject.get());
+        hotspotFile = findHotspotFile(fetchedHotspot, boundProject.get());
         if (!hotspotFile.isPresent()) {
+          showErrorPopup("Unable to find file '" + fetchedHotspot.hotspot.filePath + "' in bound project(s)");
           return;
         }
       }
-      show(hotspotFile.get(), fetchedHotspot.get().hotspot);
+      show(hotspotFile.get(), fetchedHotspot.hotspot);
+    }
+
+    private static void showErrorPopup(String msg) {
+      Display.getDefault().asyncExec(() -> {
+        FailedToOpenHotspotPopup popup = new FailedToOpenHotspotPopup(msg);
+        popup.open();
+      });
     }
 
     private static void bringToFront() {
@@ -296,8 +308,9 @@ public class SecurityHotspotsHandlerServer {
       });
     }
 
-    private static Optional<ISonarLintProject> bindProjectTo(IConnectedEngineFacade connection, String projectKey) {
-      Optional<ISonarLintProject> pickedProject = DisplayUtils.syncExec(ProjectSelectionDialog::pickProject);
+    private static Optional<ISonarLintProject> bindProjectTo(FetchedHotspot fetchedHotspot, String projectKey) {
+      IConnectedEngineFacade connection = fetchedHotspot.origin;
+      Optional<ISonarLintProject> pickedProject = DisplayUtils.syncExec(() -> ProjectSelectionDialog.pickProject(fetchedHotspot.hotspot.filePath, projectKey, connection.getId()));
       if (!pickedProject.isPresent()) {
         return Optional.empty();
       }
@@ -380,7 +393,7 @@ public class SecurityHotspotsHandlerServer {
         @Nullable
         Position position = MarkerUtils.getPosition(doc,
           TextRange.get(hotspot.textRange.getStartLine(), hotspot.textRange.getStartLineOffset(), hotspot.textRange.getEndLine(), hotspot.textRange.getEndLineOffset()));
-        if (position != null) {
+        if (position != null && Objects.equals(hotspot.codeSnippet, doc.get(position.getOffset(), position.getLength()))) {
           marker.setAttribute(IMarker.CHAR_START, position.getOffset());
           marker.setAttribute(IMarker.CHAR_END, position.getOffset() + position.getLength());
         }

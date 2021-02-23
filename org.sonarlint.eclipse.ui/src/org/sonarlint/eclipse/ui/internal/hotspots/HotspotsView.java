@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -35,6 +36,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -54,8 +56,11 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.PageBook;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintWebView;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
 
@@ -97,7 +102,7 @@ public class HotspotsView extends ViewPart {
     body.setLayout(layout);
 
     Link emptyMsg = new Link(body, SWT.CENTER | SWT.WRAP);
-    emptyMsg.setText("You can open a Security Hotspot from SonarQube. <a>More infos</a>");
+    emptyMsg.setText("You can open a Security Hotspot from SonarQube. <a>Learn more</a>");
     GridData gd = new GridData(SWT.LEFT, SWT.FILL, true, false);
     emptyMsg.setLayoutData(gd);
     emptyMsg.setBackground(emptyMsg.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
@@ -203,8 +208,8 @@ public class HotspotsView extends ViewPart {
     hotspotViewer = new TableViewer(splitter, SWT.H_SCROLL | SWT.V_SCROLL | SWT.HIDE_SELECTION | SWT.FULL_SELECTION | SWT.SINGLE | SWT.READ_ONLY);
 
     final Table table = hotspotViewer.getTable();
-    table.setHeaderVisible(false);
-    table.setLinesVisible(false);
+    table.setHeaderVisible(true);
+    table.setLinesVisible(true);
 
     // Deselect line when clicking on a blank space in the table
     table.addListener(SWT.MouseDown, event -> {
@@ -225,52 +230,92 @@ public class HotspotsView extends ViewPart {
 
     hotspotViewer.addDoubleClickListener(event -> openMarkerOfSelectedHotspot());
 
-    // The first column is always left aligned at least on Linux... so add an empty one
-    TableViewerColumn colEmpty = new TableViewerColumn(hotspotViewer, SWT.NONE);
-    colEmpty.getColumn().setWidth(0);
-    colEmpty.setLabelProvider(new ColumnLabelProvider() {
-      @Nullable
+    TableViewerColumn colMessage = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    colMessage.getColumn().setText("Description");
+    colMessage.getColumn().setResizable(true);
+    colMessage.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
-        return null;
-      }
-    });
+        boolean locationValid = isLocationValid(element);
 
-    TableViewerColumn colPriority = new TableViewerColumn(hotspotViewer, SWT.NONE);
-    colPriority.getColumn().setText("Review priority");
-    colPriority.getColumn().setAlignment(SWT.CENTER);
-    colPriority.setLabelProvider(new ColumnLabelProvider() {
-      @Override
-      public String getText(Object element) {
-        return ((HotspotAndMarker) element).hotspot.rule.vulnerabilityProbability.name();
+        return ((HotspotAndMarker) element).hotspot.message + (locationValid ? "" : " (Local code not matching)");
       }
 
       @Override
-      public Color getBackground(Object element) {
+      public Image getImage(Object element) {
         switch (((HotspotAndMarker) element).hotspot.rule.vulnerabilityProbability) {
           case HIGH:
-            return highPriorityColor;
+            return SonarLintImages.IMG_HOTSPOT_HIGH;
           case MEDIUM:
-            return mediumPriorityColor;
+            return SonarLintImages.IMG_HOTSPOT_MEDIUM;
           case LOW:
-            return lowPriorityColor;
+            return SonarLintImages.IMG_HOTSPOT_LOW;
           default:
             throw new IllegalStateException("Unexpected probablility");
         }
       }
 
-      @Override
-      public Color getForeground(Object element) {
-        return table.getDisplay().getSystemColor(SWT.COLOR_WHITE);
+      private boolean isLocationValid(Object element) {
+        boolean locationValid;
+        @Nullable
+        IMarker marker = ((HotspotAndMarker) element).marker;
+        if (marker != null) {
+          locationValid = marker.exists() && marker.getAttribute(IMarker.CHAR_START, -1) >= 0;
+          ITextEditor editor = LocationsUtils.findOpenEditorFor(marker);
+          if (editor != null) {
+            Position p = LocationsUtils.getMarkerPosition(marker, editor);
+            locationValid = locationValid && p != null && !p.isDeleted();
+          }
+        } else {
+          locationValid = false;
+        }
+        return locationValid;
       }
     });
 
-    TableViewerColumn colMessage = new TableViewerColumn(hotspotViewer, SWT.NONE);
-    colMessage.getColumn().setText("Description");
-    colMessage.setLabelProvider(new ColumnLabelProvider() {
+    TableViewerColumn colCategory = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    colCategory.getColumn().setText("Category");
+    colCategory.getColumn().setResizable(true);
+    colCategory.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
-        return ((HotspotAndMarker) element).hotspot.message;
+        HotspotAndMarker hotspotAndMarker = (HotspotAndMarker) element;
+        return SecurityHotspotCategory.findByShortName(hotspotAndMarker.hotspot.rule.securityCategory)
+          .map(SecurityHotspotCategory::getLongName)
+          .orElse(hotspotAndMarker.hotspot.rule.securityCategory);
+      }
+    });
+
+    TableViewerColumn colResource = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    colResource.getColumn().setText("Resource");
+    colResource.getColumn().setResizable(true);
+    colResource.setLabelProvider(new ColumnLabelProvider() {
+      @Override
+      public String getText(Object element) {
+        HotspotAndMarker hotspotAndMarker = (HotspotAndMarker) element;
+        return hotspotAndMarker.marker != null ? hotspotAndMarker.marker.getResource().getName() : "";
+      }
+    });
+
+    TableViewerColumn colLine = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    colLine.getColumn().setText("Location");
+    colLine.getColumn().setResizable(true);
+    colLine.setLabelProvider(new ColumnLabelProvider() {
+      @Override
+      public String getText(Object element) {
+        HotspotAndMarker hotspotAndMarker = (HotspotAndMarker) element;
+        return "line " + hotspotAndMarker.hotspot.textRange.getStartLine();
+      }
+    });
+
+    TableViewerColumn colRuleKey = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    colRuleKey.getColumn().setText("Rule");
+    colRuleKey.getColumn().setResizable(true);
+    colRuleKey.setLabelProvider(new ColumnLabelProvider() {
+      @Override
+      public String getText(Object element) {
+        HotspotAndMarker hotspotAndMarker = (HotspotAndMarker) element;
+        return hotspotAndMarker.hotspot.rule.key;
       }
     });
 

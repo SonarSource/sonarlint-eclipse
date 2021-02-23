@@ -72,7 +72,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
   private IPropertyChangeListener prefListener;
 
   private LogListener logListener;
-  private MylynNotifications notifListener;
+  private PopupNotification notifListener;
 
   private SonarLintConsole console;
 
@@ -127,14 +127,12 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
   }
 
-  private static class MylynNotifications implements NotificationListener {
+  private static class PopupNotification implements NotificationListener {
 
     @Override
     public void showNotification(Notification notif) {
       Display.getDefault().asyncExec(() -> {
         GenericNotificationPopup popup = new GenericNotificationPopup(notif.getTitle(), notif.getShortMsg(), notif.getLongMsg());
-        popup.setFadingEnabled(false);
-        popup.setDelayClose(0L);
         popup.open();
       });
     }
@@ -151,7 +149,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     logListener = new SonarLintConsoleLogger();
     SonarLintLogger.get().addLogListener(logListener);
 
-    notifListener = new MylynNotifications();
+    notifListener = new PopupNotification();
     SonarLintNotifications.get().addNotificationListener(notifListener);
 
     prefListener = event -> {
