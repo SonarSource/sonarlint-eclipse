@@ -27,6 +27,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -380,9 +381,12 @@ public class SecurityHotspotsHandlerServer {
         @Nullable
         Position position = MarkerUtils.getPosition(doc,
           TextRange.get(hotspot.textRange.getStartLine(), hotspot.textRange.getStartLineOffset(), hotspot.textRange.getEndLine(), hotspot.textRange.getEndLineOffset()));
-        if (position != null) {
+        if (position != null && Objects.equals(hotspot.codeSnippet, doc.get(position.getOffset(), position.getLength()))) {
           marker.setAttribute(IMarker.CHAR_START, position.getOffset());
           marker.setAttribute(IMarker.CHAR_END, position.getOffset() + position.getLength());
+        } else {
+          // marker.setAttribute(IMarker.CHAR_START, 0);
+          // marker.setAttribute(IMarker.CHAR_END, 0);
         }
       } catch (Exception e) {
         SonarLintLogger.get().debug("Unable to create hotspot marker", e);

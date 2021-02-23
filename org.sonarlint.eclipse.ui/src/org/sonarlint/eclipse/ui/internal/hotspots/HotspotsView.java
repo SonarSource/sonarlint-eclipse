@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -54,8 +55,10 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.PageBook;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
+import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintWebView;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
 
@@ -270,7 +273,26 @@ public class HotspotsView extends ViewPart {
     colMessage.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
-        return ((HotspotAndMarker) element).hotspot.message;
+        boolean locationValid = isLocationValid(element);
+
+        return ((HotspotAndMarker) element).hotspot.message + (locationValid ? "" : " (Local code not matching)");
+      }
+
+      private boolean isLocationValid(Object element) {
+        boolean locationValid;
+        @Nullable
+        IMarker marker = ((HotspotAndMarker) element).marker;
+        if (marker != null) {
+          locationValid = marker.exists() && marker.getAttribute(IMarker.CHAR_START, -1) >= 0;
+          ITextEditor editor = LocationsUtils.findOpenEditorFor(marker);
+          if (editor != null) {
+            Position p = LocationsUtils.getMarkerPosition(marker, editor);
+            locationValid = locationValid && p != null && !p.isDeleted();
+          }
+        } else {
+          locationValid = false;
+        }
+        return locationValid;
       }
     });
 

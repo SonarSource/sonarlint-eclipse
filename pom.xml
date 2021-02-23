@@ -57,7 +57,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho.version>2.2.0</tycho.version>
     <target.platform>2020-09</target.platform>
-    <sonarlint-core.version>5.1.0.27580</sonarlint-core.version>
+    <sonarlint-core.version>5.2.0.27954</sonarlint-core.version>
     <protobuf.version>3.11.4</protobuf.version>
     <jacoco.version>0.8.5</jacoco.version>
     <okhttp.version>3.14.9</okhttp.version>
