@@ -396,9 +396,6 @@ public class SecurityHotspotsHandlerServer {
         if (position != null && Objects.equals(hotspot.codeSnippet, doc.get(position.getOffset(), position.getLength()))) {
           marker.setAttribute(IMarker.CHAR_START, position.getOffset());
           marker.setAttribute(IMarker.CHAR_END, position.getOffset() + position.getLength());
-        } else {
-          // marker.setAttribute(IMarker.CHAR_START, 0);
-          // marker.setAttribute(IMarker.CHAR_END, 0);
         }
       } catch (Exception e) {
         SonarLintLogger.get().debug("Unable to create hotspot marker", e);
