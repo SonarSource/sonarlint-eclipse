@@ -52,6 +52,13 @@ public class OnTheFlyView extends AbstractMarkersSupportView {
     result.addAll(getMarkers(matchers));
     return result;
   }
+  
+  public void selectItem(int index) {
+    activate();
+    new WaitUntil(new OnTheFlyIssuesViewMarkerIsUpdating(), TimePeriod.SHORT, false);
+    new WaitWhile(new OnTheFlyIssuesViewMarkerIsUpdating());
+    new DefaultTree(cTabItem).getItems().get(index).select();
+  }
 
   protected List<SonarLintIssue> getMarkers(AbstractMarkerMatcher... matchers) {
     List<SonarLintIssue> filteredResult = new ArrayList<>();
