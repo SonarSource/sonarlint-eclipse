@@ -34,15 +34,16 @@ import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
 public class ProjectSelectionDialog {
 
-  public static Optional<ISonarLintProject> pickProject() {
+  public static Optional<ISonarLintProject> pickProject(String filePath, String projectKey, String connectionId) {
     List<ISonarLintProject> projects = ProjectsProviderUtils.allProjects()
       .stream()
       .sorted(Comparator.comparing(ISonarLintProject::getName))
       .collect(Collectors.toList());
     ElementListSelectionDialog dialog = new ElementListSelectionDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), new SonarLintProjectLabelProvider());
     dialog.setElements(projects.toArray());
-    dialog.setMessage("Select a project to bind:");
-    dialog.setTitle("Project selection");
+    dialog.setMessage(
+      "Select the project containing the file " + filePath + ".\nThis Eclipse project will be bound to the project '" + projectKey + "' using connection '" + connectionId + "'");
+    dialog.setTitle("SonarLint - Project binding");
     dialog.setHelpAvailable(false);
     if (dialog.open() == Window.OK) {
       return Optional.of((ISonarLintProject) dialog.getResult()[0]);
