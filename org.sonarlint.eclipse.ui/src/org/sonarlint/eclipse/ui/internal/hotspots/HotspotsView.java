@@ -21,6 +21,9 @@ package org.sonarlint.eclipse.ui.internal.hotspots;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.stream.Stream;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -43,12 +46,15 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.PageBook;
 import org.eclipse.ui.part.ViewPart;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.util.SonarLintWebView;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
@@ -146,12 +152,13 @@ public class HotspotsView extends ViewPart {
 
       @Override
       protected String body() {
-        ServerHotspot hotspot = (ServerHotspot) hotspotViewer.getStructuredSelection().getFirstElement();
+        ServerHotspot hotspot = getSelectedHotspot();
         if (hotspot == null) {
           return NO_SECURITY_HOTSPOTS_SELECTED;
         }
         return hotspot.rule.riskDescription;
       }
+
     };
     return riskDescriptionBrowser;
   }
@@ -161,7 +168,7 @@ public class HotspotsView extends ViewPart {
 
       @Override
       protected String body() {
-        ServerHotspot hotspot = (ServerHotspot) hotspotViewer.getStructuredSelection().getFirstElement();
+        ServerHotspot hotspot = getSelectedHotspot();
         if (hotspot == null) {
           return NO_SECURITY_HOTSPOTS_SELECTED;
         }
@@ -176,7 +183,7 @@ public class HotspotsView extends ViewPart {
 
       @Override
       protected String body() {
-        ServerHotspot hotspot = (ServerHotspot) hotspotViewer.getStructuredSelection().getFirstElement();
+        ServerHotspot hotspot = getSelectedHotspot();
         if (hotspot == null) {
           return NO_SECURITY_HOTSPOTS_SELECTED;
         }
@@ -184,6 +191,12 @@ public class HotspotsView extends ViewPart {
       }
     };
     return fixRecommendationsBrowser;
+  }
+
+  @Nullable
+  private ServerHotspot getSelectedHotspot() {
+    Object firstElement = hotspotViewer.getStructuredSelection().getFirstElement();
+    return firstElement != null ? ((HotspotAndMarker) firstElement).hotspot : null;
   }
 
   private void createHotspotTable() {
@@ -210,6 +223,8 @@ public class HotspotsView extends ViewPart {
       fixRecommendationsBrowser.refresh();
     });
 
+    hotspotViewer.addDoubleClickListener(event -> openMarkerOfSelectedHotspot());
+
     // The first column is always left aligned at least on Linux... so add an empty one
     TableViewerColumn colEmpty = new TableViewerColumn(hotspotViewer, SWT.NONE);
     colEmpty.getColumn().setWidth(0);
@@ -227,12 +242,12 @@ public class HotspotsView extends ViewPart {
     colPriority.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
-        return ((ServerHotspot) element).rule.vulnerabilityProbability.name();
+        return ((HotspotAndMarker) element).hotspot.rule.vulnerabilityProbability.name();
       }
 
       @Override
       public Color getBackground(Object element) {
-        switch (((ServerHotspot) element).rule.vulnerabilityProbability) {
+        switch (((HotspotAndMarker) element).hotspot.rule.vulnerabilityProbability) {
           case HIGH:
             return highPriorityColor;
           case MEDIUM:
@@ -255,21 +270,67 @@ public class HotspotsView extends ViewPart {
     colMessage.setLabelProvider(new ColumnLabelProvider() {
       @Override
       public String getText(Object element) {
-        return ((ServerHotspot) element).message;
+        return ((HotspotAndMarker) element).hotspot.message;
       }
     });
 
     hotspotViewer.setContentProvider(ArrayContentProvider.getInstance());
   }
 
-  public void openHotspot(ServerHotspot hotspot) {
+  public void openHotspot(ServerHotspot hotspot, @Nullable IMarker marker) {
+    clearMarkers();
+
+    HotspotAndMarker hotspotAndMarker = new HotspotAndMarker(hotspot, marker);
+
     book.showPage(hotspotsPage);
-    hotspotViewer.setInput(new ServerHotspot[] {hotspot});
+    hotspotViewer.setInput(new HotspotAndMarker[] {hotspotAndMarker});
+    hotspotViewer.setSelection(new StructuredSelection(hotspotAndMarker));
     hotspotViewer.refresh();
     for (TableColumn c : hotspotViewer.getTable().getColumns()) {
       c.pack();
     }
     splitter.layout();
+
+    openMarkerOfSelectedHotspot();
+  }
+
+  private void clearMarkers() {
+    HotspotAndMarker[] previous = (HotspotAndMarker[]) hotspotViewer.getInput();
+    if (previous != null) {
+      Stream.of(previous).forEach(h -> {
+        if (h.marker != null) {
+          try {
+            h.marker.delete();
+          } catch (CoreException e) {
+            SonarLintLogger.get().error("Unable to delete previous marker", e);
+          }
+        }
+      });
+    }
+  }
+
+  private void openMarkerOfSelectedHotspot() {
+    Object firstElement = hotspotViewer.getStructuredSelection().getFirstElement();
+    IMarker marker = firstElement != null ? ((HotspotAndMarker) firstElement).marker : null;
+    if (marker != null && marker.exists()) {
+      try {
+        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        IDE.openEditor(page, marker);
+      } catch (PartInitException e) {
+        SonarLintLogger.get().error("Unable to open editor with hotspot", e);
+      }
+    }
+  }
+
+  private static class HotspotAndMarker {
+    private final ServerHotspot hotspot;
+    @Nullable
+    private final IMarker marker;
+
+    public HotspotAndMarker(ServerHotspot hotspot, @Nullable IMarker marker) {
+      this.hotspot = hotspot;
+      this.marker = marker;
+    }
   }
 
   @Override
@@ -283,6 +344,7 @@ public class HotspotsView extends ViewPart {
 
   @Override
   public void dispose() {
+    clearMarkers();
     highPriorityColor.dispose();
     mediumPriorityColor.dispose();
     lowPriorityColor.dispose();

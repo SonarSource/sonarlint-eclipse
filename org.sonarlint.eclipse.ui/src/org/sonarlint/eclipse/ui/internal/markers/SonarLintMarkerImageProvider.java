@@ -39,6 +39,9 @@ public class SonarLintMarkerImageProvider implements IAnnotationImageProvider {
 
   @Override
   public Image getManagedImage(Annotation annotation) {
+    if (annotation.getType().equals("org.sonarlint.eclipse.hotspotAnnotationType")) {
+      return SonarLintImages.HOTSPOT_ANNOTATION;
+    }
     return SonarLintImages.ISSUE_ANNOTATION;
   }
 
