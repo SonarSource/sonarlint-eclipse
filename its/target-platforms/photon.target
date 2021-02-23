@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="sonar-eclipse-2019-09" sequenceNumber="3">
+<?pde version="3.8"?><target name="sonarlint-eclipse-its-photon" sequenceNumber="3">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.cdt.feature.group" version="0.0.0"/>
@@ -10,7 +10,7 @@
 <unit id="org.eclipse.wst.jsdt.feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.php.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/releases/2019-09/"/>
+<repository location="http://download.eclipse.org/releases/photon/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.8.0.201906121535"/>

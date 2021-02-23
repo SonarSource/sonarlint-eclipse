@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.8"?>
+<!-- Not used, this is just because Tycho need one target platform named like the artifactId -->
+<target name="sonarlint-eclipse-its-placeholder" sequenceNumber="1">
+<targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11"/>
+</target>
