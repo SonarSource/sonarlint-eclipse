@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.popup;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
@@ -42,8 +43,10 @@ public class FailedToOpenHotspotPopup extends AbstractSonarLintPopup {
     super.createContentArea(composite);
 
     addLink("Open console", e -> {
-      SonarLintUiPlugin.getDefault().getSonarConsole().bringConsoleToFront();
-      close();
+      Display.getDefault().asyncExec(() -> {
+        close();
+        SonarLintUiPlugin.getDefault().getSonarConsole().bringConsoleToFront();
+      });
     });
   }
 
