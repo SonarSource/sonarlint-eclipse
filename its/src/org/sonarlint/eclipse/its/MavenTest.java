@@ -19,14 +19,12 @@
  */
 package org.sonarlint.eclipse.its;
 
-import java.util.Arrays;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
+import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
+import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.junit.Test;
-import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
-import org.sonarlint.eclipse.its.utils.JobHelpers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -34,39 +32,37 @@ import static org.assertj.core.api.Assertions.tuple;
 public class MavenTest extends AbstractSonarLintTest {
 
   @Test
-  public void shouldNotAnalyzeResourcesInSubModules() throws Exception {
+  public void shouldNotAnalyzeResourcesInSubModules() {
     new JavaPerspective().open();
-    IProject root = importEclipseProject("java/maven", "sample-maven");
-    IProject module1 = importEclipseProject("java/maven/sample-module1", "sample-module1");
-    importEclipseProject("java/maven/sample-module2", "sample-module2");
-    JobHelpers.waitForJobsToComplete(bot);
+    importExistingProjectIntoWorkspace("java/maven");
+    importExistingProjectIntoWorkspace("java/maven/sample-module1");
+    importExistingProjectIntoWorkspace("java/maven/sample-module2");
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("sample-maven", "sample-module1", "src", "main", "java", "hello", "Hello1.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    PackageExplorerPart explorer = new PackageExplorerPart();
+    DefaultProject rootProject = explorer.getProject("sample-maven");
+    rootProject.getResource("sample-module1", "src", "main", "java", "hello", "Hello1.java").open();
+    waitForSonarLintJob();
+    DefaultEditor defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers()).isEmpty();
+    defaultEditor.close();
 
-    assertThat(Arrays.asList(root.findMember("sample-module1/src/main/java/hello/Hello1.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE))).isEmpty();
-    assertThat(Arrays.asList(root.findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE))).isEmpty();
-
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("sample-module1", "src/main/java", "hello", "Hello1.java");
-    JobHelpers.waitForJobsToComplete(bot);
-
-    assertThat(Arrays.asList(root.findMember("sample-module1/src/main/java/hello/Hello1.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE))).isEmpty();
-    assertThat(Arrays.asList(root.findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE))).isEmpty();
-
-    assertThat(Arrays.asList(module1.findMember("src/main/java/hello/Hello1.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
-      .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-        tuple("/sample-module1/src/main/java/hello/Hello1.java", 9, "Replace this use of System.out or System.err by a logger."));
+    explorer.getProject("sample-module1").getResource("src/main/java", "hello", "Hello1.java").open();
+    waitForSonarLintJob();
+    defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
+    defaultEditor.close();
 
     if (!platformVersion().toString().startsWith("4.4") && !platformVersion().toString().startsWith("4.5")) {
       // Issues on pom.xml
-      new JavaPackageExplorerBot(bot)
-        .expandAndDoubleClick("sample-maven", "pom.xml");
-      JobHelpers.waitForJobsToComplete(bot);
-      assertThat(Arrays.asList(root.findMember("pom.xml").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE)))
-        .extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-          tuple("/sample-maven/pom.xml", 11, "Replace \"pom.name\" with \"project.name\"."));
+      rootProject.getResource("pom.xml").open();
+      waitForSonarLintJob();
+      defaultEditor = new DefaultEditor();
+      assertThat(defaultEditor.getMarkers())
+        .extracting(Marker::getText, Marker::getLineNumber)
+        .containsExactly(tuple("Replace \"pom.name\" with \"project.name\".", 11));
+      defaultEditor.close();
     }
   }
 
