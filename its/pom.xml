@@ -28,17 +28,7 @@
 
   <modules>
     <module>org.sonarlint.eclipse.its</module>
-    <module>target-platform-kepler</module>
-    <module>target-platform-luna</module>
-    <module>target-platform-mars</module>
-    <module>target-platform-neon</module>
-    <module>target-platform-oxygen</module>
-    <module>target-platform-photon</module>
-    <module>target-platform-2019-06</module>
-    <module>target-platform-2019-09</module>
-    <module>target-platform-2019-12</module>
-    <module>target-platform-2020-06</module>
-    <module>target-platform-milestones</module>
+    <module>target-platforms</module>
   </modules>
 
   <!-- These dependencies will be added to the target platform -->
@@ -165,8 +155,9 @@
           <target>
             <artifact>
               <groupId>${project.groupId}</groupId>
-              <artifactId>target-platform-its-${target.platform}</artifactId>
+              <artifactId>target-platform-its</artifactId>
               <version>${project.version}</version>
+              <classifier>${target.platform}</classifier>
             </artifact>
           </target>
           <environments>

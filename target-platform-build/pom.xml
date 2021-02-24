@@ -4,14 +4,17 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.sonarsource.sonarlint.eclipse.its</groupId>
-    <artifactId>sonarlint-eclipse-its-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <groupId>org.sonarsource.sonarlint.eclipse</groupId>
+    <artifactId>sonarlint-eclipse-parent</artifactId>
+    <version>5.7.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>target-platform-its-mars</artifactId>
+  <artifactId>target-platform-build</artifactId>
   <packaging>eclipse-target-definition</packaging>
 
-  <name>target-platform for Eclipse 4.5 (Mars)</name>
+  <name>target-platform for SonarLint</name>
+  <description>Target platform used to build SonarLint Eclipse</description>
+  
 
 </project>

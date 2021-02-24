@@ -30,11 +30,12 @@ Make sure that you follow our [code style](https://github.com/SonarSource/sonar-
 Development setup in Eclipse
 ----------------------------
 
+We assume basic knowledge of Eclipse PDE and Tycho.
 
-1. Run `mvn compile` on the command line to fetch artifacts referenced in the parent pom
+1. Run `mvn verify` on the command line to fetch artifacts referenced in the parent pom
 2. In Eclipse, import the project root as Maven project
-3. In Eclipse, import the `its/` folder as Maven project
-4. Open `target-platform-its-2020-06/target-platform-its-2020-06-dev.target`
+3. (Optional) In Eclipse, import the `its/` folder as Maven project
+4. Open `target-platform-build/dev.target` with the target platform editor
     - Click on **Environment** tab and add `M2_REPO` variable pointing to your local maven repo (for example `/home/youruser/.m2/repository`)
     - On the **Definition** tab, click **Reload**
     - Click **Set as Target Platform** (or **Reload Target Platform**) in the top-right corner
@@ -120,7 +121,7 @@ To verify the content of the package: `mvn clean package` and check content of t
 
 ### For Eclipse
 
-Add to `target-platform-its-e47/target-platform-its-e47-dev.target` (or whatever target you use) the path of the artifact in your local maven repository as a filesystem path, similar to already existing dependencies.
+Add to `target-platforms/dev.target` (or whatever target you use) the path of the artifact in your local maven repository as a filesystem path, similar to already existing dependencies.
 
 In the target editor (or open `plugin.xml`), click **Set as Target Platform**.
 Note that this will trigger a compilation in Eclipse.
@@ -129,6 +130,6 @@ At this point, and if the artifact exists at the specified path, it should be us
 
 ### License
 
-Copyright 2015-2020 SonarSource.
+Copyright 2015-2021 SonarSource.
 
 Licensed under the [GNU Lesser General Public License, Version 3.0](http://www.gnu.org/licenses/lgpl.txt)
