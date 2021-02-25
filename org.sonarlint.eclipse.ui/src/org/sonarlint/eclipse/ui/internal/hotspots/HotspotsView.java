@@ -230,16 +230,10 @@ public class HotspotsView extends ViewPart {
 
     hotspotViewer.addDoubleClickListener(event -> openMarkerOfSelectedHotspot());
 
-    TableViewerColumn colMessage = new TableViewerColumn(hotspotViewer, SWT.NONE);
-    colMessage.getColumn().setText("Description");
-    colMessage.getColumn().setResizable(true);
-    colMessage.setLabelProvider(new ColumnLabelProvider() {
-      @Override
-      public String getText(Object element) {
-        boolean locationValid = isLocationValid(element);
-
-        return ((HotspotAndMarker) element).hotspot.message + (locationValid ? "" : " (Local code not matching)");
-      }
+    TableViewerColumn colPriority = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    colPriority.getColumn().setText("Priority");
+    colPriority.getColumn().setResizable(true);
+    colPriority.setLabelProvider(new ColumnLabelProvider() {
 
       @Override
       public Image getImage(Object element) {
@@ -253,6 +247,24 @@ public class HotspotsView extends ViewPart {
           default:
             throw new IllegalStateException("Unexpected probablility");
         }
+      }
+
+      @Nullable
+      @Override
+      public String getText(Object element) {
+        return null;
+      }
+    });
+
+    TableViewerColumn colDescription = new TableViewerColumn(hotspotViewer, SWT.NONE);
+    colDescription.getColumn().setText("Description");
+    colDescription.getColumn().setResizable(true);
+    colDescription.setLabelProvider(new ColumnLabelProvider() {
+      @Override
+      public String getText(Object element) {
+        boolean locationValid = isLocationValid(element);
+
+        return ((HotspotAndMarker) element).hotspot.message + (locationValid ? "" : " (Local code not matching)");
       }
 
       private boolean isLocationValid(Object element) {
