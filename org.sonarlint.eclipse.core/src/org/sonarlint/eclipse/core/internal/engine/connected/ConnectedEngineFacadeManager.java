@@ -20,6 +20,8 @@
 package org.sonarlint.eclipse.core.internal.engine.connected;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -323,8 +325,14 @@ public class ConnectedEngineFacadeManager {
         .collect(Collectors.toList());
   }
 
-  private static boolean equalsIgnoringTrailingSlash(String aString, String anotherString) {
-    return StringUtils.removeEnd(aString, "/").equals(StringUtils.removeEnd(anotherString, "/"));
+  private static boolean equalsIgnoringTrailingSlash(String aUrl, String anotherUrl) {
+    try {
+      return new URI(StringUtils.removeEnd(aUrl, "/")).equals(new URI(StringUtils.removeEnd(anotherUrl, "/")));
+    } catch (URISyntaxException e) {
+      // should never happen at this stage
+      SonarLintLogger.get().error("Malformed server URL", e);
+      return false;
+    }
   }
 
   public Optional<ResolvedBinding> resolveBinding(ISonarLintProject project) {
