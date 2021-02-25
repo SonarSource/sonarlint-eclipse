@@ -85,6 +85,8 @@ import org.sonarlint.eclipse.ui.internal.util.DisplayUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
 
+import static org.sonarlint.eclipse.core.internal.utils.StringUtils.defaultString;
+
 public class SecurityHotspotsHandlerServer {
 
   static final int STARTING_PORT = 64120;
@@ -150,16 +152,12 @@ public class SecurityHotspotsHandlerServer {
     public void handle(ClassicHttpRequest request, ClassicHttpResponse response, HttpContext context) throws HttpException, IOException {
       if (PlatformUI.isWorkbenchRunning()) {
         Display.getDefault().syncExec(() -> {
-          String productName = "Eclipse";
+          String ideName = "Eclipse";
           IProduct product = Platform.getProduct();
           if (product != null) {
-            productName = product.getName();
+            ideName = defaultString(product.getName(), "Eclipse");
           }
-          String windowTitle = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().getText();
-          // Description is likely to end with product name, so we should remove it to avoid duplicates
-          // https://github.com/eclipse/eclipse.platform.ui/blob/986fa01f25930d37c716e3ad4e72e129322ab8c0/bundles/org.eclipse.ui.ide.application/src/org/eclipse/ui/internal/ide/application/IDEWorkbenchWindowAdvisor.java#L417
-          String description = StringUtils.removeEnd(windowTitle, " - " + productName);
-          response.setEntity(new StringEntity(new StatusResponse(productName, description).toJson(), ContentType.APPLICATION_JSON));
+          response.setEntity(new StringEntity(new StatusResponse(ideName, "").toJson(), ContentType.APPLICATION_JSON));
           response.setCode(HttpStatus.SC_OK);
         });
       } else {
