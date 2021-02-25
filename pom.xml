@@ -50,12 +50,20 @@
     <system>JIRA</system>
     <url>https://jira.sonarsource.com/browse/SLE</url>
   </issueManagement>
+  
+    <!-- Waiting for tycho 2.3 to be released -->
+  <pluginRepositories>
+    <pluginRepository>
+      <id>tycho-snapshots</id>
+      <url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
+    </pluginRepository>
+  </pluginRepositories>
 
   <properties>
     <license.title>SonarLint for Eclipse</license.title>
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <tycho.version>2.2.0</tycho.version>
+    <tycho.version>2.3.0-SNAPSHOT</tycho.version>
     <sonarlint-core.version>5.2.0.28039</sonarlint-core.version>
     <protobuf.version>3.11.4</protobuf.version>
     <jacoco.version>0.8.5</jacoco.version>
@@ -63,6 +71,7 @@
     <okio.version>1.17.2</okio.version>
     <minimal-json.version>0.9.5</minimal-json.version>
     <apache.http.version>5.0.3</apache.http.version>
+    <version.enforcer.plugin>3.0.0-M3</version.enforcer.plugin>
 
     <!-- ================== -->
     <!-- For SonarQube analysis -->
@@ -77,7 +86,7 @@
 
   <!-- These dependencies will be added to the target platform -->
   <dependencies>
-  <dependency>
+    <dependency>
       <groupId>org.sonarsource.sonarlint.core</groupId>
       <artifactId>sonarlint-core</artifactId>
       <version>${sonarlint-core.version}</version>
@@ -269,28 +278,6 @@
         </executions>
       </plugin>
 
-      <!-- Keep sign after source-feature to ensure source feature is signed as well -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jarsigner-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <id>sign</id>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <alias>sonarsource-codesign-2019-2021</alias>
-          <keystore>${sonarsource.keystore.path}</keystore>
-          <storepass>${sonarsource.keystore.password}</storepass>
-          <skip>${jarsigner.skip}</skip>
-          <tsa>http://timestamp.digicert.com?alg=sha256</tsa>
-        </configuration>
-      </plugin>
-
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-p2-plugin</artifactId>
@@ -306,6 +293,26 @@
         <configuration>
           <defaultP2Metadata>false</defaultP2Metadata>
         </configuration>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requirePluginVersions>
+                   <banSnapshots>false</banSnapshots>
+                </requirePluginVersions>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
