@@ -18,7 +18,7 @@
 		<link>
 			<name>src/hello/HelloLinked.java</name>
 			<type>1</type>
-			<location>${PLACEHOLDER}</location>
+			<location>/home/dam/eclipse-workspace/sonarlint-eclipse/its/org.sonarlint.eclipse.its/projects/java/java-linked-target/hello/HelloLinked.java</location>
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -1,6 +1,6 @@
 /*
  * SonarLint for Eclipse ITs
- * Copyright (C) 2009-2020 SonarSource SA
+ * Copyright (C) 2009-2021 SonarSource SA
  * sonarlint@sonarsource.com
  *
  * This program is free software; you can redistribute it and/or

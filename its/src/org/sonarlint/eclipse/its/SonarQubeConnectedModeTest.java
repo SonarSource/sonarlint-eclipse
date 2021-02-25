@@ -178,7 +178,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
       JsonValue response = Json.parse(new InputStreamReader(inputStream));
 
       assertThat(response.asObject().iterator()).toIterable().extracting(JsonObject.Member::getName, m -> m.getValue().asString()).containsOnly(
-        tuple("ideName", "Eclipse"),
+        tuple("ideName", "Eclipse Platform"),
         tuple("description", ""));
     }
   }

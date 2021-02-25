@@ -43,6 +43,7 @@ import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImport
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage.ImportProject;
 import org.eclipse.reddeer.junit.runner.RedDeerSuite;
+import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement.CleanWorkspace;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
@@ -81,10 +82,11 @@ public abstract class AbstractSonarLintTest {
       preferenceDialog.cancel();
     }
     
-    new JavaPerspective().open();
+    /*new JavaPerspective().open();
     PackageExplorerPart packageExplorerPart = new PackageExplorerPart();
     packageExplorerPart.open();
-    packageExplorerPart.deleteAllProjects(false);
+    packageExplorerPart.deleteAllProjects();*/
+    new CleanWorkspaceRequirement().fulfill();
   }
 
   protected static int hotspotServerPort = -1;
