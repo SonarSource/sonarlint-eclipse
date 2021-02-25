@@ -17,19 +17,14 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.its.reddeer.views;
+package org.sonarlint.eclipse.its.reddeer.perspectives;
 
-import org.eclipse.reddeer.swt.impl.browser.InternalBrowser;
-import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
+import org.eclipse.reddeer.eclipse.ui.perspectives.AbstractPerspective;
 
-public class RuleDescriptionView extends WorkbenchView {
+public class PydevPerspective extends AbstractPerspective {
 
-  public RuleDescriptionView() {
-    super("SonarLint Rule Description");
-  }
-
-  public String getContent() {
-    return new InternalBrowser(getCTabItem()).getText();
+  public PydevPerspective() {
+    super("PyDev");
   }
 
 }

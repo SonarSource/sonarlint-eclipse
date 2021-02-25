@@ -19,17 +19,12 @@
  */
 package org.sonarlint.eclipse.its.reddeer.views;
 
-import org.eclipse.reddeer.swt.impl.browser.InternalBrowser;
-import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
+import org.eclipse.reddeer.eclipse.ui.navigator.resources.AbstractExplorer;
 
-public class RuleDescriptionView extends WorkbenchView {
+public class PydevPackageExplorer extends AbstractExplorer {
 
-  public RuleDescriptionView() {
-    super("SonarLint Rule Description");
-  }
-
-  public String getContent() {
-    return new InternalBrowser(getCTabItem()).getText();
+  public PydevPackageExplorer() {
+    super("PyDev Package Explorer");
   }
 
 }

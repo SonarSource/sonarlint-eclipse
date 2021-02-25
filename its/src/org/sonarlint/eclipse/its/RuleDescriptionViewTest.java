@@ -46,8 +46,8 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     
     importExistingProjectIntoWorkspace("java/java-simple");
 
-    PackageExplorerPart explorer = new PackageExplorerPart();
-    DefaultProject project = explorer.getProject("java-simple");
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    DefaultProject project = packageExplorer.getProject("java-simple");
     project.getResource("src", "hello", "Hello.java").open();
     waitForSonarLintJob();
 

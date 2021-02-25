@@ -19,17 +19,19 @@
  */
 package org.sonarlint.eclipse.its.reddeer.views;
 
-import org.eclipse.reddeer.swt.impl.browser.InternalBrowser;
+import org.eclipse.reddeer.swt.api.Tree;
+import org.eclipse.reddeer.swt.impl.tree.DefaultTree;
 import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
 
-public class RuleDescriptionView extends WorkbenchView {
+public class IssueLocationsView extends WorkbenchView {
 
-  public RuleDescriptionView() {
-    super("SonarLint Rule Description");
+  public IssueLocationsView() {
+    super("SonarLint Issue Locations");
   }
 
-  public String getContent() {
-    return new InternalBrowser(getCTabItem()).getText();
+  public Tree getTree() {
+    activate();
+    return new DefaultTree(this);
   }
 
 }

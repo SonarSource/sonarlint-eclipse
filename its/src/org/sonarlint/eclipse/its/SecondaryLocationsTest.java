@@ -19,69 +19,67 @@
  */
 package org.sonarlint.eclipse.its;
 
-import java.util.stream.Stream;
+import java.util.List;
+import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
+import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
-import org.eclipse.swtbot.swt.finder.SWTBot;
-import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
+import org.eclipse.reddeer.swt.api.TreeItem;
+import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
+import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
-import org.sonarlint.eclipse.its.bots.OnTheFlyViewBot;
-import org.sonarlint.eclipse.its.utils.JobHelpers;
+import org.sonarlint.eclipse.its.reddeer.views.IssueLocationsView;
+import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SecondaryLocationsTest extends AbstractSonarLintTest {
 
-  private static OnTheFlyViewBot onTheFlyBot;
-  private SWTBotView onTheFly;
+  private static OnTheFlyView onTheFlyView;
+  private static IssueLocationsView locationsView;
 
   @BeforeClass
-  public static void openSampleProjectAndFileWithFlows() throws Exception {
+  public static void openSampleProjectAndFileWithFlows() {
     new JavaPerspective().open();
-    importEclipseProject("java/java-multiple-flows", "java-multiple-flows");
-    JobHelpers.waitForJobsToComplete(bot);
-
-    onTheFlyBot = new OnTheFlyViewBot(bot);
+    locationsView = new IssueLocationsView();
+    locationsView.open();
+    onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
   }
 
   @Before
-  public void showOnTheFlyView() {
-    onTheFly = onTheFlyBot.show();
+  public void importProject() {
+    importExistingProjectIntoWorkspace("java/java-multiple-flows");
   }
 
   @After
   public void closeActiveEditor() {
-    bot.activeEditor().close();
-    JobHelpers.waitForJobsToComplete(bot);
+    new DefaultEditor().close();
   }
 
   @Test
   public void shouldShowSingleFlow() {
-    SWTBotEclipseEditor helloEditor = openAndAnalyzeFile("SingleFlow.java");
+    TextEditor helloEditor = openAndAnalyzeFile("SingleFlow.java");
 
     String issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
-    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+5 locations]");
-    onTheFly.bot().tree().getAllItems()[0].select();
+    assertThat(onTheFlyView.getIssues())
+      .extracting(SonarLintIssue::getDescription)
+      .containsOnly(issueTitle + " [+5 locations]");
+    onTheFlyView.getItems().get(0).select();
 
-    SWTBotView issueLocationsView = getIssueLocationsView();
+    List<TreeItem> flowItems = locationsView.getTree().getItems();
+    assertThat(flowItems).hasSize(1);
 
-    SWTBotTreeItem[] allItems = issueLocationsView.bot().tree().getAllItems();
-    assertThat(allItems).hasSize(1);
-
-    SWTBotTreeItem locationRoot = allItems[0];
+    TreeItem locationRoot = flowItems.get(0);
     assertThat(locationRoot.getText()).isEqualTo(issueTitle);
     assertThat(locationRoot.getItems()).hasSize(5);
 
-    locationRoot.getItems()[0].doubleClick();
-    assertThat(helloEditor.getSelection()).isEqualTo("arg = null");
-    assertThat(helloEditor.cursorPosition().line).isEqualTo(20);
+    locationRoot.getItems().get(0).doubleClick();
+    assertThat(helloEditor.getSelectedText()).isEqualTo("arg = null");
+    assertThat(helloEditor.getCursorPosition().x).isEqualTo(21);
   }
 
   @Test
@@ -89,108 +87,95 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     openAndAnalyzeFile("HighlightOnly.java");
 
     String issueTitle = "Remove these useless parentheses.";
-    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+1 location]");
-    onTheFly.bot().tree().getAllItems()[0].select();
+    assertThat(onTheFlyView.getIssues())
+      .extracting(SonarLintIssue::getDescription)
+      .containsOnly(issueTitle + " [+1 location]");
+    onTheFlyView.getItems().get(0).select();
 
-    SWTBotView issueLocationsView = getIssueLocationsView();
-
-    SWTBotTreeItem[] allItems = issueLocationsView.bot().tree().getAllItems();
+    List<TreeItem> allItems = locationsView.getTree().getItems();
     assertThat(allItems).hasSize(1);
 
-    SWTBotTreeItem locationRoot = allItems[0];
+    TreeItem locationRoot = allItems.get(0);
     assertThat(locationRoot.getText()).isEqualTo(issueTitle);
     assertThat(locationRoot.getItems()).isEmpty();
   }
 
   @Test
   public void shouldShowMultipleFlows() {
+<<<<<<< HEAD
     SWTBotEclipseEditor helloEditor = openAndAnalyzeFile("MultiFlows.java");
+=======
+    TextEditor helloEditor = openAndAnalyzeFile("MultiFlows.java");
+>>>>>>> 1e43257a (Migrate more tests)
 
     String issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
-    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+2 flows]");
-    onTheFly.bot().tree().getAllItems()[0].select();
+    assertThat(onTheFlyView.getIssues())
+      .extracting(SonarLintIssue::getDescription)
+      .containsOnly(issueTitle + " [+2 flows]");
+    onTheFlyView.getItems().get(0).select();
 
-    SWTBotView issueLocationsView = getIssueLocationsView();
-
-    SWTBotTreeItem[] allItems = issueLocationsView.bot().tree().getAllItems();
+    List<TreeItem> allItems = locationsView.getTree().getItems();
     assertThat(allItems).hasSize(1);
 
-    SWTBotTreeItem locationRoot = allItems[0];
+    TreeItem locationRoot = allItems.get(0);
     assertThat(locationRoot.getText()).isEqualTo(issueTitle);
     assertThat(locationRoot.getItems()).hasSize(2);
 
-    SWTBotTreeItem flow1 = locationRoot.getNode("Flow 1");
+    TreeItem flow1 = locationRoot.getItem("Flow 1");
     assertThat(flow1.getItems()).hasSize(5);
 
-    SWTBotTreeItem flow2 = locationRoot.getNode("Flow 2");
+    TreeItem flow2 = locationRoot.getItem("Flow 2");
     assertThat(flow2.getItems()).hasSize(5);
 
     // Flows are not ordered, we can only check that the first nodes do not point to the same location
 
-    flow1.getItems()[0].doubleClick();
-    assertThat(helloEditor.getSelection()).isEqualTo("arg = null");
-    int flow1Line = helloEditor.cursorPosition().line;
+    flow1.getItems().get(0).doubleClick();
+    assertThat(helloEditor.getSelectedText()).isEqualTo("arg = null");
+    int flow1Line = helloEditor.getCursorPosition().x;
 
-    flow2.getItems()[0].doubleClick();
-    assertThat(helloEditor.getSelection()).isEqualTo("arg = null");
-    int flow2Line = helloEditor.cursorPosition().line;
+    flow2.getItems().get(0).doubleClick();
+    assertThat(helloEditor.getSelectedText()).isEqualTo("arg = null");
+    int flow2Line = helloEditor.getCursorPosition().x;
 
     assertThat(flow1Line).isNotEqualTo(flow2Line);
   }
 
   @Test
   public void shouldShowFlattenedFlows() {
+<<<<<<< HEAD
     SWTBotEclipseEditor cognitiveComplexityEditor = openAndAnalyzeFile("CognitiveComplexity.java");
+=======
+    TextEditor cognitiveComplexityEditor = openAndAnalyzeFile("CognitiveComplexity.java");
+>>>>>>> 1e43257a (Migrate more tests)
 
     String issueTitle = "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.";
-    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+15 locations]");
-    onTheFly.bot().tree().getAllItems()[0].select();
+    assertThat(onTheFlyView.getIssues())
+      .extracting(SonarLintIssue::getDescription)
+      .containsOnly(issueTitle + " [+15 locations]");
+    onTheFlyView.getItems().get(0).select();
 
-    SWTBotView issueLocationsView = getIssueLocationsView();
-
-    SWTBotTreeItem[] allItems = issueLocationsView.bot().tree().getAllItems();
+    List<TreeItem> allItems = locationsView.getTree().getItems();
     assertThat(allItems).hasSize(1);
 
-    SWTBotTreeItem locationRoot = allItems[0];
+    TreeItem locationRoot = allItems.get(0);
     assertThat(locationRoot.getText()).isEqualTo(issueTitle);
-    SWTBotTreeItem[] allNodes = locationRoot.getItems();
+    List<TreeItem> allNodes = locationRoot.getItems();
     assertThat(allNodes).hasSize(15);
 
-    allNodes[0].doubleClick();
-    assertThat(cognitiveComplexityEditor.getSelection()).isEqualTo("if");
-    assertThat(cognitiveComplexityEditor.cursorPosition()).extracting(p -> p.line, p -> p.column).containsExactly(18, 6);
+    allNodes.get(0).doubleClick();
+    assertThat(cognitiveComplexityEditor.getSelectedText()).isEqualTo("if");
+    assertThat(cognitiveComplexityEditor.getCursorPosition()).extracting(p -> p.x, p -> p.y).containsExactly(18, 4);
 
-    allNodes[14].doubleClick();
-    assertThat(cognitiveComplexityEditor.getSelection()).isEqualTo("else");
-    assertThat(cognitiveComplexityEditor.cursorPosition()).extracting(p -> p.line, p -> p.column).containsExactly(45, 12);
+    allNodes.get(14).doubleClick();
+    assertThat(cognitiveComplexityEditor.getSelectedText()).isEqualTo("else");
+    assertThat(cognitiveComplexityEditor.getCursorPosition()).extracting(p -> p.x, p -> p.y).containsExactly(45, 8);
   }
 
-  private SWTBotView getIssueLocationsView() {
-    return bot.viewById("org.sonarlint.eclipse.ui.views.IssueLocationsView");
-  }
-
-  public SWTBotEclipseEditor openAndAnalyzeFile(String fileName) {
-    JavaPackageExplorerBot explorerBot = new JavaPackageExplorerBot(bot);
-    explorerBot.expandAndDoubleClick("java-multiple-flows", "src", "hello", fileName);
-    JobHelpers.waitForJobsToComplete(bot);
-
-    SWTBotEclipseEditor helloEditor = bot.editorByTitle(fileName).toTextEditor();
-    helloEditor.setFocus();
-    return helloEditor;
-  }
-
-  public void waitUntilOnTheFlyViewHasItemWithTitle(String expectedTitle) {
-    SWTBot otfBot = onTheFly.bot();
-    otfBot.waitUntil(new DefaultCondition() {
-      @Override
-      public boolean test() throws Exception {
-        SWTBotTree otfTree = otfBot.tree();
-        return otfTree.hasItems() && Stream.of(otfTree.getAllItems()).anyMatch(i -> i.cell(1).equals(expectedTitle)); 
-      }
-      @Override
-      public String getFailureMessage() {
-        return "On the fly view not updated";
-      }
-    }, 10_000L);
+  public TextEditor openAndAnalyzeFile(String fileName) {
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    DefaultProject rootProject = packageExplorer.getProject("java-multiple-flows");
+    rootProject.getResource("src", "hello", fileName).open();
+    waitForSonarLintJob();
+    return new TextEditor();
   }
 }

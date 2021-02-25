@@ -43,5 +43,4 @@ Require-Bundle: org.eclipse.jdt.core,
 Import-Package: org.sonarlint.eclipse.ui.internal.views.issues
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Export-Package: org.sonarlint.eclipse.its,
- org.sonarlint.eclipse.its.utils
+Export-Package: org.sonarlint.eclipse.its

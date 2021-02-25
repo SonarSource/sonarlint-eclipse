@@ -37,13 +37,17 @@ import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
+import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage.ImportProject;
 import org.eclipse.reddeer.junit.runner.RedDeerSuite;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement.CleanWorkspace;
 import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.hamcrest.core.StringContains;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Version;
@@ -68,6 +72,20 @@ public abstract class AbstractSonarLintTest {
 
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
+  private static SonarLintConsole consoleView;
+  
+  @After
+  public void cleanup() {
+    WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
+    if (preferenceDialog.isOpen()) {
+      preferenceDialog.cancel();
+    }
+    
+    new JavaPerspective().open();
+    PackageExplorerPart packageExplorerPart = new PackageExplorerPart();
+    packageExplorerPart.open();
+    packageExplorerPart.deleteAllProjects(false);
+  }
 
   protected static int hotspotServerPort = -1;
 
@@ -79,21 +97,23 @@ public abstract class AbstractSonarLintTest {
     ROOT.node("servers").removeNode();
     ROOT_SECURE.node("servers").removeNode();
 
-    SonarLintConsole consoleView = new SonarLintConsole();
-    consoleView.open();
-    consoleView.openConsole("SonarLint");
-    consoleView.enableAnalysisLogs();
-    consoleView.showConsole(ShowConsoleOption.NEVER);
-    String consoleText = consoleView.getConsoleText();
-    if (consoleText.contains("Started security hotspot handler on port")) {
-      Pattern p = Pattern.compile(".*Started security hotspot handler on port (\\d+).*");
-      Matcher m = p.matcher(consoleText);
-      assertThat(m.find()).isTrue();
-      hotspotServerPort = Integer.parseInt(m.group(1));
+    if (consoleView == null) {
+      consoleView = new SonarLintConsole();
+      consoleView.open();
+      consoleView.openConsole("SonarLint");
+      consoleView.enableAnalysisLogs();
+      consoleView.showConsole(ShowConsoleOption.NEVER);
+      String consoleText = consoleView.getConsoleText();
+      if (consoleText.contains("Started security hotspot handler on port")) {
+        Pattern p = Pattern.compile(".*Started security hotspot handler on port (\\d+).*");
+        Matcher m = p.matcher(consoleText);
+        assertThat(m.find()).isTrue();
+        hotspotServerPort = Integer.parseInt(m.group(1));
+      }
     }
   }
 
-  protected final ImportProject importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
+  protected static final ImportProject importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
     ExternalProjectImportWizardDialog dialog = new ExternalProjectImportWizardDialog();
     dialog.open();
     WizardProjectsImportPage importPage = new WizardProjectsImportPage(dialog);

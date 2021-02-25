@@ -42,6 +42,19 @@ public class OnTheFlyView extends AbstractMarkersSupportView {
   public OnTheFlyView() {
     super("SonarLint On-The-Fly");
   }
+  
+  public DefaultTree getTree() {
+    activate();
+    return new DefaultTree(cTabItem);
+  }
+
+  public List<TreeItem> getItems() {
+    activate();
+    new WaitUntil(new OnTheFlyIssuesViewMarkerIsUpdating(), TimePeriod.SHORT, false);
+    new WaitWhile(new OnTheFlyIssuesViewMarkerIsUpdating());
+    return new DefaultTree(cTabItem).getItems();
+  }
+  
 
   public List<SonarLintIssue> getIssues(AbstractMarkerMatcher... matchers) {
     activate();

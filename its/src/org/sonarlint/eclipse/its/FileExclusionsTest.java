@@ -24,11 +24,12 @@ import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.eclipse.core.resources.Project;
-import org.eclipse.reddeer.eclipse.core.resources.ProjectItem;
+import org.eclipse.reddeer.eclipse.core.resources.Resource;
 import org.eclipse.reddeer.eclipse.jdt.ui.javaeditor.JavaEditor;
 import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.button.OkButton;
+import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.Test;
@@ -47,16 +48,16 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     new JavaPerspective().open();
     importExistingProjectIntoWorkspace("java/java-simple");
 
-    PackageExplorerPart packageExplorerPart = new PackageExplorerPart();
-    Project javaSimple = packageExplorerPart.getProject("java-simple");
-    ProjectItem helloFile = javaSimple.getProjectItem("src", "hello", "Hello.java");
+    OnTheFlyView issuesView = new OnTheFlyView();
+    issuesView.open();
+    
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    Project rootProject = packageExplorer.getProject("java-simple");
+    Resource helloFile = rootProject.getResource("src", "hello", "Hello.java");
     helloFile.open();
 
     waitForSonarLintJob();
 
-    OnTheFlyView issuesView = new OnTheFlyView();
-    issuesView.open();
-    helloFile.select();
     List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();
 
     assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription)
@@ -66,7 +67,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
 
     // Exclude file
     helloFile.select();
-    new ContextMenuItem("SonarLint", "Exclude").select();
+    new ContextMenu(helloFile.getTreeItem()).getItem("SonarLint", "Exclude").select();
 
     // ensure issues markers are cleared even before the next analysis
     new WaitUntil(new OnTheFlyViewIsEmpty(issuesView), TimePeriod.MEDIUM);
@@ -94,8 +95,8 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     // Trigger manual analysis of the project
     // Clear the preference when running tests locally in developper env
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES);
-    javaSimple.select();
-    new ContextMenuItem("SonarLint", "Analyze").select();
+    rootProject.select();
+    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
     new OkButton().click();
 
     waitForSonarLintJob();

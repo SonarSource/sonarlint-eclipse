@@ -21,10 +21,10 @@ package org.sonarlint.eclipse.its;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
@@ -34,23 +34,51 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.reddeer.common.wait.TimePeriod;
+import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
+import org.eclipse.reddeer.eclipse.core.resources.Resource;
+import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
+import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyDialog;
+import org.eclipse.reddeer.eclipse.ui.navigator.resources.ProjectExplorer;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
+import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
+import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
+import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage.ImportProject;
+import org.eclipse.reddeer.jface.condition.WindowIsAvailable;
+import org.eclipse.reddeer.swt.api.Button;
+import org.eclipse.reddeer.swt.api.MenuItem;
+import org.eclipse.reddeer.swt.api.TreeItem;
+import org.eclipse.reddeer.swt.impl.button.FinishButton;
+import org.eclipse.reddeer.swt.impl.button.PushButton;
+import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
+import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
+import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
+import org.eclipse.reddeer.workbench.impl.editor.Marker;
+import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
+import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
-import org.sonarlint.eclipse.its.bots.ProjectExplorerBot;
-import org.sonarlint.eclipse.its.bots.PydevPackageExplorerBot;
-import org.sonarlint.eclipse.its.bots.SonarLintProjectPropertiesBot;
+import org.sonarlint.eclipse.its.reddeer.perspectives.PhpPerspective;
+import org.sonarlint.eclipse.its.reddeer.perspectives.PydevPerspective;
+import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences;
+import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintProperties;
+import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
+import org.sonarlint.eclipse.its.reddeer.views.PydevPackageExplorer;
+import org.sonarlint.eclipse.its.reddeer.views.ReportView;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssue;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
@@ -64,245 +92,272 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public static TemporaryFolder temp = new TemporaryFolder();
 
   @Test
-  public void shouldAnalyseJava() throws Exception {
+  public void shouldAnalyseJava() {
     System.out.println("shouldAnalyseJava");
     Assume.assumeFalse(platformVersion().toString().startsWith("4.4"));
 
     new JavaPerspective().open();
-    IProject project = importEclipseProject("java/java-simple", "java-simple");
-    JobHelpers.waitForJobsToComplete(bot);
+    importExistingProjectIntoWorkspace("java/java-simple");
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    OnTheFlyView onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-simple/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."));
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    packageExplorer.open();
+    DefaultProject rootProject = packageExplorer.getProject("java-simple");
+    Resource helloJavaFile = rootProject.getResource("src", "hello", "Hello.java");
+    helloJavaFile.open();
+    waitForSonarLintJob();
 
-    bot.editorByTitle("Hello.java").close();
+    DefaultEditor defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
+    defaultEditor.close();
 
-    // Disable auto analysis on open
-    new JavaPackageExplorerBot(bot)
-      .openSonarLintProperties("java-simple");
-    new SonarLintProjectPropertiesBot(bot, "java-simple")
-      .clickAutoAnalysis()
-      .ok();
-    project.deleteMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_INFINITE);
+    // clear marker (probably a better way to do that)
+    new ContextMenu(onTheFlyView.getItems().get(0)).getItem("Delete").select();
+    new PushButton(new DefaultShell("Delete Selected Entries"), "Delete").click();
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
-    JobHelpers.waitForJobsToComplete(bot);
-    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).isEmpty();
+    rootProject.select();
+    PropertyDialog dialog = new PropertyDialog(rootProject.getName());
+    dialog.open();
 
-    SWTBotEclipseEditor editor = bot.editorByTitle("Hello.java").toTextEditor();
-    editor.navigateTo(8, 29);
-    editor.insertText("2");
-    editor.save();
-    JobHelpers.waitForJobsToComplete(bot);
+    SonarLintProperties sonarLintProperties = new SonarLintProperties(dialog);
+    dialog.select(sonarLintProperties);
+    sonarLintProperties.disableAutomaticAnalysis();
+    dialog.ok();
 
-    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).isEmpty();
+    helloJavaFile.open();
+    waitForSonarLintJob();
+
+    TextEditor textEditor = new TextEditor();
+    assertThat(textEditor.getMarkers()).isEmpty();
+
+    textEditor.insertText(8, 29, "2");
+    textEditor.save();
+    waitForSonarLintJob();
+
+    assertThat(textEditor.getMarkers()).isEmpty();
 
     // Trigger manual analysis of a single file
-    new JavaPackageExplorerBot(bot)
-      .triggerManualAnalysis("java-simple", "src", "hello", "Hello.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    new ContextMenu(helloJavaFile.getTreeItem()).getItem("SonarLint", "Analyze").select();
+    waitForSonarLintJob();
 
-    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_REPORT_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-simple/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."));
+    assertThat(textEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
 
     // Trigger manual analysis of all files
-    new JavaPackageExplorerBot(bot)
-      .triggerManualAnalysis("java-simple");
+    rootProject.getTreeItem().select();
+    MenuItem menuItem = new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze");
+    menuItem.select();
+    new PushButton(new DefaultShell("Confirmation"), "OK").click();
+    waitForSonarLintJob();
 
-    bot.shell("Confirmation").bot().button("OK").click();
+    ReportView reportView = new ReportView();
+    reportView.open();
+    List<TreeItem> items = reportView.getItems();
 
-    JobHelpers.waitForJobsToComplete(bot);
-
-    markers = Arrays.asList(project.findMarkers(MARKER_REPORT_ID, true, IResource.DEPTH_INFINITE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-simple/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."),
-      tuple("/java-simple/src/hello/Hello2.java", 9, "Replace this use of System.out or System.err by a logger."));
+    assertThat(items)
+      .extracting(item -> item.getCell(0), item -> item.getCell(2))
+      .containsExactlyInAnyOrder(
+        tuple("Hello.java", "Replace this use of System.out or System.err by a logger."),
+        tuple("Hello2.java", "Replace this use of System.out or System.err by a logger."));
   }
 
   @Test
-  public void shouldAnalyseJavaJunit() throws Exception {
+  public void shouldAnalyseJavaJunit() {
     System.out.println("shouldAnalyseJavaJunit");
     assumeTrue(supportJunit());
     new JavaPerspective().open();
-    IProject project = importEclipseProject("java/java-junit", "java-junit");
-    JobHelpers.waitForJobsToComplete(bot);
+    importExistingProjectIntoWorkspace("java/java-junit");
 
-    bot.menu("Window").menu("Preferences").click();
-    bot.shell("Preferences").activate();
-    bot.tree().getTreeItem("SonarLint").select();
-    bot.textWithLabel("Test file regular expressions:").setText("**/*TestUtil*");
-    bot.button("Apply and Close").click();
-    JobHelpers.waitForJobsToComplete(bot);
+    WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
+    preferenceDialog.open();
+    SonarLintPreferences preferences = new SonarLintPreferences(preferenceDialog);
+    preferenceDialog.select(preferences);
+    preferences.setTestFileRegularExpressions("**/*TestUtil*");
+    preferenceDialog.ok();
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("java-junit", "src", "hello", "Hello.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    DefaultProject rootProject = packageExplorer.getProject("java-junit");
+    rootProject.getResource("src", "hello", "Hello.java").open();
+    waitForSonarLintJob();
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-junit/src/hello/Hello.java", 12, "Replace this use of System.out or System.err by a logger."),
-      tuple("/java-junit/src/hello/Hello.java", 16, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries is set
+    DefaultEditor defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsExactly(
+        tuple("Replace this use of System.out or System.err by a logger.", 12),
+        tuple("Remove this unnecessary cast to \"int\".", 16)); // Test that sonar.java.libraries is set
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("java-junit", "src", "hello", "HelloTestUtil.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    rootProject.getResource("src", "hello", "HelloTestUtil.java").open();
+    waitForSonarLintJob();
 
-    List<IMarker> testUtilMarkers = Arrays.asList(project.findMember("src/hello/HelloTestUtil.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    // File is flagged as test by regexp, only test rules are applied
-    assertThat(testUtilMarkers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-junit/src/hello/HelloTestUtil.java", 11, "Remove this use of \"Thread.sleep()\"."));
+    defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsExactly(
+        // File is flagged as test by regexp, only test rules are applied
+        tuple("Remove this use of \"Thread.sleep()\".", 11));
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("java-junit", "tests", "hello", "HelloTest.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    rootProject.getResource("tests", "hello", "HelloTest.java").open();
+    waitForSonarLintJob();
 
-    List<IMarker> testMarkers = Arrays.asList(project.findMember("tests/hello/HelloTest.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(testMarkers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-junit/tests/hello/HelloTest.java", 10, "Either add an explanation about why this test is skipped or remove the \"@Ignore\" annotation."),
-      tuple("/java-junit/tests/hello/HelloTest.java", 10, "Add at least one assertion to this test case."));
+    defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(
+        tuple("Either add an explanation about why this test is skipped or remove the \"@Ignore\" annotation.", 10),
+        tuple("Add at least one assertion to this test case.", 10));
   }
 
   @Test
-  public void shouldAnalyseJava8() throws Exception {
+  public void shouldAnalyseJava8() {
     System.out.println("shouldAnalyseJava8");
 
     assumeTrue(supportJava8());
     new JavaPerspective().open();
-    IProject project = importEclipseProject("java/java8", "java8");
-    JobHelpers.waitForJobsToComplete(bot);
+    importExistingProjectIntoWorkspace("java/java8");
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("java8", "src", "hello", "Hello.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    DefaultProject rootProject = packageExplorer.getProject("java8");
+    rootProject.getResource("src", "hello", "Hello.java").open();
+    waitForSonarLintJob();
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java8/src/hello/Hello.java", 13, "Make this anonymous inner class a lambda"),
-      tuple("/java8/src/hello/Hello.java", 13, "Refactor the code so this stream pipeline is used.")); // Test that sonar.java.source is set
+    DefaultEditor defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(
+        tuple("Make this anonymous inner class a lambda", 13),
+        tuple("Refactor the code so this stream pipeline is used.", 13)); // Test that sonar.java.source is set
   }
 
   // SONARIDE-349
   // SONARIDE-350
   // SONARIDE-353
   @Test
-  public void shouldAnalyseJavaWithDependentProject() throws Exception {
+  public void shouldAnalyseJavaWithDependentProject() {
     System.out.println("shouldAnalyseJavaWithDependentProject");
 
     new JavaPerspective().open();
-    importEclipseProject("java/java-dependent-projects/java-dependent-project", "java-dependent-project");
-    IProject mainProject = importEclipseProject("java/java-dependent-projects/java-main-project", "java-main-project");
-    JobHelpers.waitForJobsToComplete(bot);
+    importExistingProjectIntoWorkspace("java/java-dependent-projects/java-dependent-project");
+    importExistingProjectIntoWorkspace("java/java-dependent-projects/java-main-project");
 
-    final IWorkspaceRoot root = workspace.getRoot();
-    File toBeDeleted = new File(root.getLocation().toFile(), "java-main-project/libs/toBeDeleted.jar");
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    DefaultProject rootProject = packageExplorer.getProject("java-main-project");
+    File toBeDeleted = new File("projects/java/java-dependent-projects/java-main-project", "libs/toBeDeleted.jar");
     assertThat(toBeDeleted.delete()).as("Unable to delete JAR to test SONARIDE-350").isTrue();
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("java-main-project", "src", "use", "UseUtils.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    rootProject.getResource("src", "use", "UseUtils.java").open();
+    waitForSonarLintJob();
 
-    List<IMarker> markers = Arrays.asList(mainProject.findMember("src/use/UseUtils.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-main-project/src/use/UseUtils.java", 9, "Remove this unnecessary cast to \"int\".")); // Test that sonar.java.libraries
-                                                                                                         // is
-                                                                                                         // set on dependent project
+    DefaultEditor defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(tuple("Remove this unnecessary cast to \"int\".", 9)); // Test that sonar.java.libraries is set on dependent project
   }
 
   // Need PyDev
-  @Category(RequiresExtraDependency.class)
   @Test
-  public void shouldAnalysePython() throws Exception {
+  @Category(RequiresExtraDependency.class)
+  public void shouldAnalysePython() {
     System.out.println("shouldAnalysePython");
+    new PydevPerspective().open();
+    importPythonProjectIntoWorkspace("python");
 
-    // PythonPerspectiveFactory.PERSPECTIVE_ID
-    SwtBotUtils.openPerspective(bot, "org.python.pydev.ui.PythonPerspective");
-    IProject project = importEclipseProject("python", "python");
+    OnTheFlyView onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
 
-    bot.shell("Python not configured").activate();
-    bot.button("Don't ask again").click();
+    DefaultProject rootProject = new PydevPackageExplorer().getProject("python");
+    rootProject.getResource("src", "root", "nested", "example.py").open();
 
-    JobHelpers.waitForJobsToComplete(bot);
+    new PushButton(new DefaultShell("Default Eclipse preferences for PyDev"), "OK").click();
+    waitForSonarLintJob();
 
-    new PydevPackageExplorerBot(bot)
-      .expandAndOpen("python", "src", "root", "nested", "example.py");
+    assertThat(onTheFlyView.getIssues())
+      .extracting(SonarLintIssue::getDescription, SonarLintIssue::getResource)
+      .containsOnly(
+        tuple("Merge this if statement with the enclosing one. [+1 location]", "example.py"),
+        tuple("Replace print statement by built-in function.", "example.py"),
+        tuple("Replace \"<>\" by \"!=\".", "example.py"));
+  }
 
-    bot.shell("Default Eclipse preferences for PyDev").activate();
-    bot.button("OK").click();
+  private static void importPythonProjectIntoWorkspace(String relativePathFromProjectsFolder) {
+    ExternalProjectImportWizardDialog dialog = new ExternalProjectImportWizardDialog();
+    dialog.open();
+    WizardProjectsImportPage importPage = new WizardProjectsImportPage(dialog);
+    importPage.copyProjectsIntoWorkspace(true);
+    importPage.setRootDirectory(new File("projects", relativePathFromProjectsFolder).getAbsolutePath());
+    List<ImportProject> projects = importPage.getProjects();
+    assertThat(projects).hasSize(1);
+    Button button = new FinishButton(dialog);
+    button.click();
+    new PushButton(new DefaultShell("Python not configured"), "Don't ask again").click();
 
-    JobHelpers.waitForJobsToComplete(bot);
-
-    List<IMarker> markers = Arrays.asList(project.findMember("src/root/nested/example.py").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/python/src/root/nested/example.py", 9, "Merge this if statement with the enclosing one."),
-      tuple("/python/src/root/nested/example.py", 10, "Replace print statement by built-in function."),
-      tuple("/python/src/root/nested/example.py", 9, "Replace \"<>\" by \"!=\"."));
+    new WaitWhile(new WindowIsAvailable(dialog), TimePeriod.LONG);
+    try {
+      new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
+    } catch (NoClassDefFoundError e) {
+      // do nothing, reddeer.workbench plugin is not available
+    }
   }
 
   // Need PDT
-  @Category(RequiresExtraDependency.class)
   @Test
-  public void shouldAnalysePHP() throws Exception {
+  @Category(RequiresExtraDependency.class)
+  public void shouldAnalysePHP() {
     System.out.println("shouldAnalysePHP");
 
-    SwtBotUtils.openPerspective(bot, "org.eclipse.php.perspective");
-    IProject project = importEclipseProject("php", "php");
+    new PhpPerspective().open();
+    importExistingProjectIntoWorkspace("php");
 
-    JobHelpers.waitForJobsToComplete(bot);
+    DefaultProject rootProject = new ProjectExplorer().getProject("php");
+    rootProject.getResource("foo.php").open();
+    waitForSonarLintJob();
 
-    new ProjectExplorerBot(bot)
-      .refresh() // workaround: sometimes the project disappears after import
-      .expandAndOpen("php", "foo.php");
-    JobHelpers.waitForJobsToComplete(bot);
-
-    List<IMarker> markers = Arrays.asList(project.findMember("foo.php").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/php/foo.php", 9, "This branch duplicates the one on line 5."));
+    OnTheFlyView onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
+    assertThat(onTheFlyView.getIssues())
+      .extracting(SonarLintIssue::getDescription, SonarLintIssue::getResource)
+      .containsOnly(tuple("This branch duplicates the one on line 5. [+1 location]", "foo.php"));
 
     // SLE-342
-    new ProjectExplorerBot(bot)
-      .expandAndOpen("php", "foo.inc");
+    rootProject.getResource("foo.inc").open();
+    waitForSonarLintJob();
 
-    JobHelpers.waitForJobsToComplete(bot);
-
-    markers = Arrays.asList(project.findMember("foo.inc").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/php/foo.inc", 9, "This branch duplicates the one on line 5."));
+    assertThat(onTheFlyView.getIssues())
+      .extracting(SonarLintIssue::getDescription, SonarLintIssue::getResource)
+      .containsOnly(tuple("This branch duplicates the one on line 5. [+1 location]", "foo.inc"));
   }
 
   @Test
-  public void shouldAnalyseLinkedFile() throws Exception {
+  public void shouldAnalyseLinkedFile() throws IOException {
     System.out.println("shouldAnalyseLinkedFile");
 
-    new JavaPerspective().open();
-    IProject project = importEclipseProject("java/java-linked", "java-linked");
-    JobHelpers.waitForJobsToComplete(bot);
-
-    File dotProject = new File(project.getLocation().toFile(), ".project");
+    File dotProject = new File("projects/java/java-linked", ".project");
     String content = FileUtils.readFileToString(dotProject, StandardCharsets.UTF_8);
     FileUtils.write(dotProject, content.replace("${PLACEHOLDER}", new File("projects/java/java-linked-target/hello/HelloLinked.java").getAbsolutePath()), StandardCharsets.UTF_8);
-    project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("java-linked", "src", "hello", "HelloLinked.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    new JavaPerspective().open();
+    importExistingProjectIntoWorkspace("java/java-linked");
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/HelloLinked.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-linked/src/hello/HelloLinked.java", 13, "Replace this use of System.out or System.err by a logger."));
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    DefaultProject rootProject = packageExplorer.getProject("java-linked");
+
+    rootProject.getResource("src", "hello", "HelloLinked.java").open();
+    waitForSonarLintJob();
+
+    DefaultEditor defaultEditor = new DefaultEditor("HelloLinked.java");
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", 13));
   }
 
   // Need RSE
-  @Category(RequiresExtraDependency.class)
   @Test
+  @Category(RequiresExtraDependency.class)
   public void shouldAnalyseVirtualProject() throws Exception {
     System.out.println("shouldAnalyseVirtualProject");
 
@@ -310,6 +365,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     FileUtils.copyDirectory(new File("projects/java/java-simple"), remoteProjectDir);
 
     new JavaPerspective().open();
+    IWorkspace workspace = ResourcesPlugin.getWorkspace();
     final IProject rseProject = workspace.getRoot().getProject("Local_java-simple");
 
     workspace.run(new IWorkspaceRunnable() {
@@ -326,16 +382,17 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
         rseProject.create(projectDescription, monitor);
         rseProject.open(IResource.NONE, monitor);
       }
-    }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, monitor);
-    JobHelpers.waitForJobsToComplete(bot);
+    }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, new NullProgressMonitor());
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("Local_java-simple", "src", "hello", "Hello.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    DefaultProject rootProject = packageExplorer.getProject("Local_java-simple");
+    rootProject.getResource("src", "hello", "Hello.java").open();
+    waitForSonarLintJob();
 
-    List<IMarker> markers = Arrays.asList(rseProject.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/Local_java-simple/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."));
+    DefaultEditor defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(tuple("Replace this use of System.out or System.err by a logger.", 9));
   }
 
   @Test

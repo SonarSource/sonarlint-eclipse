@@ -17,19 +17,24 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.its.reddeer.views;
+package org.sonarlint.eclipse.its.reddeer.conditions;
 
-import org.eclipse.reddeer.swt.impl.browser.InternalBrowser;
-import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
+import org.eclipse.reddeer.common.condition.AbstractWaitCondition;
+import org.eclipse.reddeer.jface.dialogs.TitleAreaDialog;
 
-public class RuleDescriptionView extends WorkbenchView {
+public class DialogMessageIsExpected extends AbstractWaitCondition {
 
-  public RuleDescriptionView() {
-    super("SonarLint Rule Description");
+  private final TitleAreaDialog dialog;
+  private final String expectedMessage;
+
+  public DialogMessageIsExpected(TitleAreaDialog dialog, String expectedMessage) {
+    this.dialog = dialog;
+    this.expectedMessage = expectedMessage;
   }
 
-  public String getContent() {
-    return new InternalBrowser(getCTabItem()).getText();
+  @Override
+  public boolean test() {
+    return dialog.getMessage().equals(expectedMessage);
   }
 
 }

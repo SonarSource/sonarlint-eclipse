@@ -17,19 +17,17 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.its.reddeer.views;
+package org.sonarlint.eclipse.its.reddeer.conditions;
 
-import org.eclipse.reddeer.swt.impl.browser.InternalBrowser;
-import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
+import org.eclipse.reddeer.core.condition.WidgetIsFound;
+import org.eclipse.reddeer.core.matcher.WithTextMatcher;
+import org.eclipse.reddeer.jface.wizard.WizardPage;
+import org.eclipse.swt.widgets.Label;
 
-public class RuleDescriptionView extends WorkbenchView {
+public class OrganizationsAreFetched extends WidgetIsFound {
 
-  public RuleDescriptionView() {
-    super("SonarLint Rule Description");
-  }
-
-  public String getContent() {
-    return new InternalBrowser(getCTabItem()).getText();
+  public OrganizationsAreFetched(WizardPage page) {
+    super(Label.class, page.getControl(), new WithTextMatcher("Organization:"));
   }
 
 }

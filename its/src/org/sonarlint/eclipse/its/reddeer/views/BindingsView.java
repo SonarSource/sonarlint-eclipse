@@ -19,17 +19,27 @@
  */
 package org.sonarlint.eclipse.its.reddeer.views;
 
-import org.eclipse.reddeer.swt.impl.browser.InternalBrowser;
+import org.eclipse.reddeer.common.wait.TimePeriod;
+import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.swt.api.Tree;
+import org.eclipse.reddeer.swt.impl.tree.DefaultTree;
 import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
+import org.sonarlint.eclipse.its.reddeer.conditions.ServerStorageIsUpToDate;
 
-public class RuleDescriptionView extends WorkbenchView {
+public class BindingsView extends WorkbenchView {
 
-  public RuleDescriptionView() {
-    super("SonarLint Rule Description");
+  public BindingsView() {
+    super("SonarLint Bindings");
   }
 
-  public String getContent() {
-    return new InternalBrowser(getCTabItem()).getText();
+  private Tree getTree() {
+    activate();
+    return new DefaultTree(this);
+  }
+
+  public void waitForServerUpdate(String connectionName, String version) {
+    String firstServerSescription = getTree().getItems().get(0).getText();
+    new WaitUntil(new ServerStorageIsUpToDate(firstServerSescription, connectionName, version), TimePeriod.LONG);
   }
 
 }

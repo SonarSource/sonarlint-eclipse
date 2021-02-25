@@ -19,15 +19,17 @@
  */
 package org.sonarlint.eclipse.its;
 
-import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
+import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.sonarlint.eclipse.its.bots.ProjectBindingWizardBot;
-import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
-import org.sonarlint.eclipse.its.bots.ServersViewBot;
+import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
+import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
+import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
+import org.sonarlint.eclipse.its.reddeer.wizards.ProjectSelectionDialog;
+import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
 import org.sonarqube.ws.client.HttpConnector;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
@@ -45,7 +47,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   private static final String SONARCLOUD_STAGING_URL = "https://sc-staging.io";
   private static final String SONARCLOUD_ORGANIZATION_KEY = "sonarlint-it";
-  private static final String SONARCLOUD_ORGANIZATION_NAME = "SonarLint IT Tests";
+  //private static final String SONARCLOUD_ORGANIZATION_NAME = "SonarLint IT Tests";
   private static final String SONARCLOUD_USER = "sonarlint-it";
   private static final String SONARCLOUD_PASSWORD = System.getenv("SONARCLOUD_IT_PASSWORD");
   private static final String SONARCLOUD_PROJECT_KEY = IMPORTED_PROJECT_NAME + '-' + TIMESTAMP;
@@ -77,7 +79,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @AfterClass
-  public static void cleanup() {
+  public static void cleanupOrchestrator() {
     adminWsClient.userTokens()
       .revoke(new RevokeWsRequest().setName(TOKEN_NAME));
     adminWsClient.projects()
@@ -86,56 +88,67 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
-  public void configureServerWithTokenAndOrganization() throws InvocationTargetException, InterruptedException {
-    importEclipseProject("java/java-simple", IMPORTED_PROJECT_NAME);
+  public void configureServerWithTokenAndOrganization() {
+    importExistingProjectIntoWorkspace("java/java-simple");
 
-    ServerConnectionWizardBot wizardBot = new ServerConnectionWizardBot(bot);
-    wizardBot.openFromFileNewWizard();
+    ServerConnectionWizard wizard = new ServerConnectionWizard();
+    wizard.open();
+    new ServerConnectionWizard.ServerTypePage(wizard).selectSonarCloud();
+    wizard.next();
 
-    wizardBot.assertTitle("Connect to SonarQube or SonarCloud");
+    assertThat(wizard.isNextEnabled()).isFalse();
+    ServerConnectionWizard.AuthenticationPage authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
+    authenticationPage.setToken("Foo");
+    assertThat(wizard.isNextEnabled()).isTrue();
 
-    wizardBot.selectSonarCloud();
-    wizardBot.clickNext();
+    wizard.next();
+    new WaitUntil(new DialogMessageIsExpected(wizard, "Authentication failed"));
 
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.setToken("Foo");
-    assertThat(wizardBot.isNextEnabled()).isTrue();
+    authenticationPage.setToken(token);
+    wizard.next();
 
-    wizardBot.clickNext();
-    wizardBot.assertErrorMessage("Authentication failed");
+    ServerConnectionWizard.OrganizationsPage organizationsPage = new ServerConnectionWizard.OrganizationsPage(wizard);
+    organizationsPage.waitForOrganizationsToBeFetched();
 
-    wizardBot.setToken(token);
-    wizardBot.clickNext();
-    wizardBot.waitForOrganizationsToBeFetched();
+    assertThat(organizationsPage.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
 
-    assertThat(wizardBot.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
+    //organizationsPage.typeOrganizationAndSelectFirst(SONARCLOUD_ORGANIZATION_NAME);
+    //assertThat(organizationsPage.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
+    organizationsPage.setOrganization(SONARCLOUD_ORGANIZATION_KEY);
+    assertThat(wizard.isNextEnabled()).isTrue();
+    wizard.next();
 
-    wizardBot.typeOrganizationAndSelectFirst(SONARCLOUD_ORGANIZATION_NAME);
-    assertThat(wizardBot.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
-    assertThat(wizardBot.isNextEnabled()).isTrue();
-    wizardBot.clickNext();
+    ServerConnectionWizard.ConnectionNamePage connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
+    assertThat(connectionNamePage.getConnectionName()).isEqualTo("SonarCloud/" + SONARCLOUD_ORGANIZATION_KEY);
+    connectionNamePage.setConnectionName(CONNECTION_NAME);
+    wizard.next();
 
-    assertThat(wizardBot.getConnectionName()).isEqualTo("SonarCloud/" + SONARCLOUD_ORGANIZATION_KEY);
-    wizardBot.setConnectionName(CONNECTION_NAME);
-    wizardBot.clickNext();
+    ServerConnectionWizard.NotificationsPage notificationsPage = new ServerConnectionWizard.NotificationsPage(wizard);
+    assertThat(notificationsPage.areNotificationsEnabled()).isTrue();
+    assertThat(wizard.isNextEnabled()).isTrue();
+    wizard.next();
 
-    assertThat(wizardBot.getNotificationEnabled()).isTrue();
-    assertThat(wizardBot.isNextEnabled()).isTrue();
-    wizardBot.clickNext();
+    assertThat(wizard.isNextEnabled()).isFalse();
+    wizard.finish();
 
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.clickFinish();
-
-    new ProjectBindingWizardBot(bot)
-      .clickAdd()
-      .chooseProject(IMPORTED_PROJECT_NAME)
-      .clickNext()
-      .waitForOrganizationProjectsToBeFetched()
-      .typeProjectKey(SONARCLOUD_PROJECT_KEY)
-      .clickFinish();
-
-    new ServersViewBot(bot)
-      .waitForServerUpdate(CONNECTION_NAME);
+    
+    ProjectBindingWizard projectBindingWizard = new ProjectBindingWizard();
+    ProjectBindingWizard.BoundProjectsPage projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
+    projectsToBindPage.clickAdd();
+    
+    ProjectSelectionDialog projectSelectionDialog = new ProjectSelectionDialog();
+    projectSelectionDialog.setProjectName(IMPORTED_PROJECT_NAME);
+    projectSelectionDialog.ok();
+    
+    projectBindingWizard.next();
+    ProjectBindingWizard.ServerProjectSelectionPage serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
+    serverProjectSelectionPage.waitForProjectsToBeFetched();
+    serverProjectSelectionPage.setProjectKey(SONARCLOUD_PROJECT_KEY);
+    projectBindingWizard.finish();
+    
+    BindingsView bindingsView = new BindingsView();
+    bindingsView.open();
+    bindingsView.waitForServerUpdate(CONNECTION_NAME, null);
   }
 
 }

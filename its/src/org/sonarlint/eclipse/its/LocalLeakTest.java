@@ -35,10 +35,8 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class LocalLeakTest extends AbstractSonarLintTest {
 
-  private static final String CREATIONDATE_ATT = "creationdate";
-
   @Test
-  public void shouldComputeLocalLeak() throws Exception {
+  public void shouldComputeLocalLeak() {
     new JavaPerspective().open();
 
     OnTheFlyView issuesView = new OnTheFlyView();
@@ -49,8 +47,8 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     importExistingProjectIntoWorkspace("java/leak");
 
-    PackageExplorerPart packageExplorerPart = new PackageExplorerPart();
-    Project javaSimple = packageExplorerPart.getProject("leak");
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    Project javaSimple = packageExplorer.getProject("leak");
     ProjectItem helloFile = javaSimple.getProjectItem("src", "hello", "Hello.java");
     helloFile.open();
 
@@ -76,7 +74,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
   }
 
   @Test
-  public void dontLooseLeakOnParsingError() throws Exception {
+  public void dontLooseLeakOnParsingError() {
     new JavaPerspective().open();
 
     OnTheFlyView issuesView = new OnTheFlyView();
@@ -84,8 +82,8 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     importExistingProjectIntoWorkspace("js/js-simple");
 
-    PackageExplorerPart packageExplorerPart = new PackageExplorerPart();
-    Project javaSimple = packageExplorerPart.getProject("js-simple");
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    Project javaSimple = packageExplorer.getProject("js-simple");
     ProjectItem helloFile = javaSimple.getProjectItem("src", "hello.js");
     helloFile.open();
 
