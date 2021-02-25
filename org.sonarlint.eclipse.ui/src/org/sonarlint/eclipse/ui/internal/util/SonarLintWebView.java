@@ -180,12 +180,13 @@ public abstract class SonarLintWebView extends Composite implements IPropertyCha
       + "div.typeseverity { padding: 0; margin: 0}"
       + "a { border-bottom: 1px solid " + hexColor(this.linkColor) + "; color: " + hexColor(this.linkColor)
       + "; cursor: pointer; outline: none; text-decoration: none;}"
-      + "code { padding: .2em .45em; margin: 0; background-color: " + hexColor(this.foreground, 50) + "; border-radius: 3px; white-space: nowrap;}"
+      + "code { padding: .2em .45em; margin: 0; background-color: " + hexColor(this.foreground, 50) + "; border-radius: 3px; white-space: nowrap; line-height: 1.6em}"
       + "pre { padding: .7em; border-top: 1px solid " + hexColor(this.foreground, 200) + "; border-bottom: 1px solid "
       + hexColor(this.foreground, 100)
       + "; overflow: auto;}"
       + "code, pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;}"
       + "ul { padding-left: 2.5em; list-style: disc;}"
+      + ".rule-desc { line-height: 1.5em }"
       + "</style>";
   }
 
