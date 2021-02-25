@@ -44,7 +44,11 @@
           <storepass>${sonarsource.keystore.password}</storepass>
           <skip>${jarsigner.skip}</skip>
           <tsa>http://timestamp.digicert.com?alg=sha256</tsa>
-          <archiveDirectory>${project.build.directory}/repository/plugins/</archiveDirectory>
+          <archiveDirectory>${project.build.directory}/repository/</archiveDirectory>
+          <includes>
+            <include>features/*</include>
+            <include>plugins/*</include>
+          </includes>
           <processAttachedArtifacts>false</processAttachedArtifacts>
           <processMainArtifact>false</processMainArtifact>
         </configuration>
