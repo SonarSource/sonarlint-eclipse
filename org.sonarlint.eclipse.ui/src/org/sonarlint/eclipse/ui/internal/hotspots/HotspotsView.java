@@ -161,7 +161,7 @@ public class HotspotsView extends ViewPart {
         if (hotspot == null) {
           return NO_SECURITY_HOTSPOTS_SELECTED;
         }
-        return hotspot.rule.riskDescription;
+        return wrapInDiv(hotspot.rule.riskDescription);
       }
 
     };
@@ -177,7 +177,7 @@ public class HotspotsView extends ViewPart {
         if (hotspot == null) {
           return NO_SECURITY_HOTSPOTS_SELECTED;
         }
-        return hotspot.rule.vulnerabilityDescription;
+        return wrapInDiv(hotspot.rule.vulnerabilityDescription);
       }
     };
     return vulnerabilityDescriptionBrowser;
@@ -192,10 +192,14 @@ public class HotspotsView extends ViewPart {
         if (hotspot == null) {
           return NO_SECURITY_HOTSPOTS_SELECTED;
         }
-        return hotspot.rule.fixRecommendations;
+        return wrapInDiv(hotspot.rule.fixRecommendations);
       }
     };
     return fixRecommendationsBrowser;
+  }
+
+  private static String wrapInDiv(String content) {
+    return "<div class=\"rule-desc\">" + content + "</div>";
   }
 
   @Nullable
