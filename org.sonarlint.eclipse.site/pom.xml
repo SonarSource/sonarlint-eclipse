@@ -18,8 +18,54 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jarsigner-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+					<execution>
+						<id>sign</id>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+						<phase>prepare-package</phase>
+					</execution>
+					<execution>
+						<id>verify</id>
+						<goals>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+        <configuration>
+          <certs>true</certs>
+          <verbose>false</verbose>
+          <alias>sonarsource-codesign-2019-2021</alias>
+          <keystore>${sonarsource.keystore.path}</keystore>
+          <storepass>${sonarsource.keystore.password}</storepass>
+          <skip>${jarsigner.skip}</skip>
+          <tsa>http://timestamp.digicert.com?alg=sha256</tsa>
+          <archiveDirectory>${project.build.directory}/repository/plugins/</archiveDirectory>
+          <processAttachedArtifacts>false</processAttachedArtifacts>
+          <processMainArtifact>false</processMainArtifact>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.eclipse.tycho</groupId>
-        <artifactId>target-platform-configuration</artifactId>
+        <artifactId>tycho-p2-repository-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>update</id>
+            <goals>
+              <goal>fix-artifacts-metadata</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <goals>
+              <goal>verify-repository</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
