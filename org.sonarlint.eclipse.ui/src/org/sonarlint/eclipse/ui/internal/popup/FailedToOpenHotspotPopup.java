@@ -17,32 +17,46 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.markers;
+package org.sonarlint.eclipse.ui.internal.popup;
 
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.texteditor.IAnnotationImageProvider;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
-public class SonarLintMarkerImageProvider implements IAnnotationImageProvider {
+public class FailedToOpenHotspotPopup extends AbstractSonarLintPopup {
 
-  @Override
-  public ImageDescriptor getImageDescriptor(String imageDescritporId) {
-    return null;
+  private final String msg;
+
+  public FailedToOpenHotspotPopup(String msg) {
+    this.msg = msg;
   }
 
   @Override
-  public String getImageDescriptorId(Annotation annotation) {
-    return null;
+  protected String getMessage() {
+    return msg;
   }
 
   @Override
-  public Image getManagedImage(Annotation annotation) {
-    if (annotation.getType().equals("org.sonarlint.eclipse.hotspotAnnotationType")) {
-      return SonarLintImages.HOTSPOT_ANNOTATION;
-    }
-    return SonarLintImages.ISSUE_ANNOTATION;
+  protected void createContentArea(Composite composite) {
+    super.createContentArea(composite);
+
+    addLink("Open console", e -> {
+      Display.getDefault().asyncExec(() -> {
+        close();
+        SonarLintUiPlugin.getDefault().getSonarConsole().bringConsoleToFront();
+      });
+    });
   }
 
+  @Override
+  protected String getPopupShellTitle() {
+    return "SonarLint - Unable to open hotspot";
+  }
+
+  @Override
+  protected Image getPopupShellImage(int maximumHeight) {
+    return SonarLintImages.BALLOON_IMG;
+  }
 }

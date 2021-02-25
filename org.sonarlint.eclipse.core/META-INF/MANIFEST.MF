@@ -4,7 +4,6 @@ Bundle-Name: %bundle_name
 Bundle-SymbolicName: org.sonarlint.eclipse.core;singleton:=true
 Bundle-Version: 5.7.0.qualifier
 Bundle-ClassPath: .,
- lib/minimal-json.jar,
  lib/okhttp.jar,
  lib/okio.jar
 Bundle-Activator: org.sonarlint.eclipse.core.internal.SonarLintCorePlugin
@@ -38,6 +37,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.filesystem,
  org.eclipse.team.core,
  org.eclipse.jdt.annotation;resolution:=optional,
- org.sonarsource.sonarlint.core.sonarlint-core;bundle-version="5.0.0"
+ org.sonarsource.sonarlint.core.sonarlint-core;bundle-version="5.1.0",
+ minimal-json;bundle-version="0.9.5"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

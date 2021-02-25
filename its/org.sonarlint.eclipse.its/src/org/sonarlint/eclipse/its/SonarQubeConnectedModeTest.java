@@ -19,8 +19,15 @@
  */
 package org.sonarlint.eclipse.its;
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.container.Server;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -31,6 +38,7 @@ import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.setting.SetRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
@@ -115,6 +123,25 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
     new ServersViewBot(bot)
       .waitForServerUpdateAndCheckVersion("test", orchestrator.getServer().version().toString());
+
+    bot.shell("Bind to a SonarQube or SonarCloud project").close();
+  }
+
+  @Test
+  public void testLocalServerStatusRequest() throws Exception {
+
+    HttpURLConnection statusConnection = (HttpURLConnection) new URL(String.format("http://localhost:%d/sonarlint/api/status", hostspotServerPort)).openConnection();
+    statusConnection.setConnectTimeout(1000);
+    statusConnection.connect();
+    int code = statusConnection.getResponseCode();
+    assertThat(code).isEqualTo(200);
+    try (InputStream inputStream = statusConnection.getInputStream()) {
+      JsonValue response = Json.parse(new InputStreamReader(inputStream));
+
+      assertThat(response.asObject().iterator()).toIterable().extracting(JsonObject.Member::getName, m -> m.getValue().asString()).containsOnly(
+        tuple("ideName", "Eclipse"),
+        tuple("description", ""));
+    }
   }
 
 }

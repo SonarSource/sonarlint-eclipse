@@ -83,6 +83,8 @@ import org.sonarsource.sonarlint.core.serverapi.EndpointParams;
 import org.sonarsource.sonarlint.core.serverapi.HttpClient;
 import org.sonarsource.sonarlint.core.serverapi.ServerApi;
 import org.sonarsource.sonarlint.core.serverapi.ServerApiHelper;
+import org.sonarsource.sonarlint.core.serverapi.hotspot.GetSecurityHotspotRequestParams;
+import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
 import org.sonarsource.sonarlint.core.serverapi.organization.ServerOrganization;
 import org.sonarsource.sonarlint.core.serverapi.project.ServerProject;
 
@@ -453,6 +455,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       .collect(toList());
   }
 
+  @Override
   public List<ISonarLintProject> getBoundProjects(String projectKey) {
     return ProjectsProviderUtils.allProjects().stream()
       .filter(ISonarLintProject::isOpen)
@@ -654,5 +657,11 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
 
   public ProjectBinding calculatePathPrefixes(String projectKey, List<String> ideFilePaths) {
     return withEngine(engine -> engine.calculatePathPrefixes(projectKey, ideFilePaths)).orElse(new ProjectBinding(projectKey, "", ""));
+  }
+
+  @Override
+  public Optional<ServerHotspot> getServerHotspot(String hotspotKey, String projectKey) {
+    ServerApi serverApi = new ServerApi(createEndpointParams(), buildClientWithProxyAndCredentials());
+    return serverApi.hotspot().fetch(new GetSecurityHotspotRequestParams(hotspotKey, projectKey));
   }
 }

@@ -35,6 +35,7 @@ import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConf
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
+import org.sonarsource.sonarlint.core.serverapi.hotspot.ServerHotspot;
 import org.sonarsource.sonarlint.core.serverapi.project.ServerProject;
 
 public interface IConnectedEngineFacade {
@@ -112,6 +113,8 @@ public interface IConnectedEngineFacade {
 
   List<ISonarLintProject> getBoundProjects();
 
+  List<ISonarLintProject> getBoundProjects(String projectKey);
+
   void notifyAllListenersStateChanged();
 
   void updateConfig(String url, @Nullable String organization, String username, String password, boolean notificationsDisabled);
@@ -128,4 +131,5 @@ public interface IConnectedEngineFacade {
 
   List<ISonarLintFile> getServerFileExclusions(ProjectBinding binding, Collection<ISonarLintFile> files, Predicate<ISonarLintFile> testFilePredicate);
 
+  Optional<ServerHotspot> getServerHotspot(String hotspotKey, String projectKey);
 }

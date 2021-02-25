@@ -17,32 +17,42 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.markers;
+package org.sonarlint.eclipse.ui.internal.util;
 
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.source.Annotation;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.texteditor.IAnnotationImageProvider;
-import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import java.util.function.Supplier;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.swt.widgets.Display;
 
-public class SonarLintMarkerImageProvider implements IAnnotationImageProvider {
+public class DisplayUtils {
 
-  @Override
-  public ImageDescriptor getImageDescriptor(String imageDescritporId) {
-    return null;
+  @Nullable
+  public static <T> T syncExec(Supplier<T> supplier) {
+    RunnableWithResult<T> runnable = new RunnableWithResult<>(supplier);
+    Display.getDefault().syncExec(runnable);
+    return runnable.getResult();
   }
 
-  @Override
-  public String getImageDescriptorId(Annotation annotation) {
-    return null;
-  }
+  private static class RunnableWithResult<T> implements Runnable {
 
-  @Override
-  public Image getManagedImage(Annotation annotation) {
-    if (annotation.getType().equals("org.sonarlint.eclipse.hotspotAnnotationType")) {
-      return SonarLintImages.HOTSPOT_ANNOTATION;
+    private final Supplier<T> supplier;
+    private T result;
+
+    private RunnableWithResult(Supplier<T> supplier) {
+      this.supplier = supplier;
     }
-    return SonarLintImages.ISSUE_ANNOTATION;
+
+    public T getResult() {
+      return result;
+    }
+
+    @Override
+    public void run() {
+      result = supplier.get();
+    }
+  }
+
+  private DisplayUtils() {
+    // utility class
   }
 
 }

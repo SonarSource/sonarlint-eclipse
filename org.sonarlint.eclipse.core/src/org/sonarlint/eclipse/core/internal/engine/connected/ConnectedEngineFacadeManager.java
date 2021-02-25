@@ -20,6 +20,8 @@
 package org.sonarlint.eclipse.core.internal.engine.connected;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.INodeChangeListener;
@@ -314,6 +317,22 @@ public class ConnectedEngineFacadeManager {
    */
   public Optional<IConnectedEngineFacade> findById(String id) {
     return Optional.ofNullable(facadesByConnectionId.get(Objects.requireNonNull(id)));
+  }
+
+  public List<IConnectedEngineFacade> findByUrl(String serverUrl) {
+    return facadesByConnectionId.values().stream()
+        .filter(facade -> equalsIgnoringTrailingSlash(facade.getHost(), serverUrl))
+        .collect(Collectors.toList());
+  }
+
+  private static boolean equalsIgnoringTrailingSlash(String aUrl, String anotherUrl) {
+    try {
+      return new URI(StringUtils.removeEnd(aUrl, "/")).equals(new URI(StringUtils.removeEnd(anotherUrl, "/")));
+    } catch (URISyntaxException e) {
+      // should never happen at this stage
+      SonarLintLogger.get().error("Malformed server URL", e);
+      return false;
+    }
   }
 
   public Optional<ResolvedBinding> resolveBinding(ISonarLintProject project) {

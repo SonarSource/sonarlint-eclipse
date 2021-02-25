@@ -64,7 +64,7 @@
       </persistent>
    </extension>
    
-    <extension
+   <extension
         id="sonarlintReportFlowLocation"
         name="SonarLint Report Issue Flow Location"
         point="org.eclipse.core.resources.markers">
@@ -76,6 +76,18 @@
       </persistent>
    </extension>
 
+   <extension
+        id="sonarlintHotspot"
+        name="SonarLint Hotspot Location"
+        point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="false">
+      </persistent>
+   </extension>
+   
   <extension
         point="org.eclipse.core.expressions.propertyTesters">
      <propertyTester

@@ -77,6 +77,22 @@ public class SonarLintProjectConfiguration {
       return connectionId;
     }
 
+    @Nullable
+    public String serverPathToIdePath(String serverPath) {
+      if (!serverPath.startsWith(sqPathPrefix())) {
+        return null;
+      }
+      int localPrefixLen = sqPathPrefix().length();
+      if (localPrefixLen > 0) {
+        localPrefixLen++;
+      }
+      String idePathPrefix = idePathPrefix();
+      if (!idePathPrefix.isEmpty()) {
+        idePathPrefix = idePathPrefix + "/";
+      }
+      return idePathPrefix + serverPath.substring(localPrefixLen);
+    }
+
     @Override
     public int hashCode() {
       final int prime = 31;

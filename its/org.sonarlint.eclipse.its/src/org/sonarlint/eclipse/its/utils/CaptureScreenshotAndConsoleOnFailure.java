@@ -20,13 +20,10 @@
 package org.sonarlint.eclipse.its.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.TextConsole;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -40,16 +37,22 @@ public class CaptureScreenshotAndConsoleOnFailure implements TestRule {
         try {
           base.evaluate();
         } catch (Throwable onHold) {
-          String fileName = constructFilename(description, ".png");
-          new SWTWorkbenchBot().captureScreenshot(fileName);
+          try {
+            String fileName = constructFilename(description, ".png");
+            SWTWorkbenchBot bot = new SWTWorkbenchBot();
+            bot.captureScreenshot(fileName);
+            bot.closeAllShells();
 
-          IConsoleManager manager = ConsolePlugin.getDefault().getConsoleManager();
-
-          IConsole[] consoles = manager.getConsoles();
-          for (IConsole iConsole : consoles) {
-            if ("SonarLint".equals(iConsole.getName())) {
-              FileUtils.write(new File(constructFilename(description, "-console.txt")), ((TextConsole) iConsole).getDocument().get(), StandardCharsets.UTF_8);
-            }
+            WorkspaceHelpers.withSonarLintConsole(bot, c -> {
+              try {
+                FileUtils.write(new File(constructFilename(description, "-console.txt")), c.getDocument().get(), StandardCharsets.UTF_8);
+              } catch (IOException e) {
+                throw new IllegalStateException(e);
+              }
+              return null;
+            });
+          } catch (Exception e) {
+            onHold.addSuppressed(e);
           }
 
           throw onHold;

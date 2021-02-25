@@ -42,6 +42,7 @@ public final class SonarLintImages {
   public static final ImageDescriptor UNBIND = createImageDescriptor("full/menu16/disconnect_co.png"); //$NON-NLS-1$
 
   public static final Image ISSUE_ANNOTATION = createImage("full/annotation16/issue.png"); //$NON-NLS-1$
+  public static final Image HOTSPOT_ANNOTATION = createImage("full/annotation16/hotspot.png"); //$NON-NLS-1$
   public static final Image RESOLUTION_SHOW_RULE = createImage("full/marker_resolution16/showrule.png"); //$NON-NLS-1$
   public static final Image RESOLUTION_SHOW_LOCATIONS = createImage("full/marker_resolution16/showlocations.png"); //$NON-NLS-1$
   public static final Image RESOLUTION_DISABLE_RULE = createImage("full/marker_resolution16/disablerule.png"); //$NON-NLS-1$
@@ -51,6 +52,9 @@ public final class SonarLintImages {
   public static final Image IMG_SEVERITY_MAJOR = createImage("severity/major.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_MINOR = createImage("severity/minor.png"); //$NON-NLS-1$
   public static final Image IMG_SEVERITY_INFO = createImage("severity/info.png"); //$NON-NLS-1$
+  public static final Image IMG_HOTSPOT_HIGH = createImage("priority/high.png"); //$NON-NLS-1$
+  public static final Image IMG_HOTSPOT_MEDIUM = createImage("priority/medium.png"); //$NON-NLS-1$
+  public static final Image IMG_HOTSPOT_LOW = createImage("priority/low.png"); //$NON-NLS-1$
 
   public static final Image IMG_TYPE_BUG = createImage("type/bug.png"); //$NON-NLS-1$
   public static final Image IMG_TYPE_CODE_SMELL = createImage("type/code_smell.png"); //$NON-NLS-1$
