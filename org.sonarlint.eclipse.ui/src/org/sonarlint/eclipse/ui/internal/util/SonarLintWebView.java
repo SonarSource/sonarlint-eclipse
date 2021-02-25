@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
@@ -36,12 +37,15 @@ import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -50,8 +54,10 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_BACKGROUND_COLOR;
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROUND_COLOR;
 
-public abstract class SonarLintWebView extends Composite implements IPropertyChangeListener {
+public abstract class SonarLintWebView extends Composite implements Listener, IPropertyChangeListener {
 
+  private static final RGB DEFAULT_ACTIVE_LINK_COLOR = new RGB(0, 0, 128);
+  private static final RGB DEFAULT_LINK_COLOR = new RGB(0, 0, 255);
   // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=155993
   private static final String UNIT;
   static {
@@ -61,7 +67,10 @@ public abstract class SonarLintWebView extends Composite implements IPropertyCha
   private Browser browser;
   private Color foreground;
   private Color background;
+  @Nullable
   private Color linkColor;
+  @Nullable
+  private Color activeLinkColor;
   private Font defaultFont;
   private final boolean useEditorFontSize;
 
@@ -81,12 +90,11 @@ public abstract class SonarLintWebView extends Composite implements IPropertyCha
       browser.addOpenWindowListener(event -> event.required = true);
       // Replace browser's built-in context menu with none
       browser.setMenu(new Menu(parent.getShell(), SWT.NONE));
-      this.foreground = getFgColor();
-      this.background = getBgColor();
-      this.linkColor = getLinkColor();
-      JFaceResources.getColorRegistry().addListener(SonarLintWebView.this);
+      updateColorAndFontCache();
+      parent.getDisplay().addListener(SWT.Settings, this);
+      JFaceResources.getColorRegistry().addListener(this);
       this.defaultFont = getDefaultFont();
-      JFaceResources.getFontRegistry().addListener(SonarLintWebView.this);
+      JFaceResources.getFontRegistry().addListener(this);
 
     } catch (SWTError e) {
       // Browser is probably not available but it will be partially initialized in parent
@@ -101,6 +109,16 @@ public abstract class SonarLintWebView extends Composite implements IPropertyCha
     refresh();
   }
 
+  @Override
+  public void handleEvent(Event event) {
+    updateColorAndFontCache();
+  }
+
+  @Override
+  public void propertyChange(PropertyChangeEvent event) {
+    updateColorAndFontCache();
+  }
+
   private Font getDefaultFont() {
     if (useEditorFontSize) {
       return JFaceResources.getTextFont();
@@ -109,33 +127,35 @@ public abstract class SonarLintWebView extends Composite implements IPropertyCha
     }
   }
 
-  @Override
-  public void propertyChange(PropertyChangeEvent event) {
+  private void updateColorAndFontCache() {
     boolean shouldRefresh = false;
     if (!getDefaultFont().equals(defaultFont)) {
       this.defaultFont = getDefaultFont();
       shouldRefresh = true;
     }
-    if (INFORMATION_BACKGROUND_COLOR.equals(event.getProperty()) || INFORMATION_FOREGROUND_COLOR.equals(event.getProperty())) {
-      Color newFg = getFgColor();
-      if (!Objects.equals(newFg, foreground)) {
-        SonarLintWebView.this.foreground = newFg;
-        shouldRefresh = true;
-      }
-      Color newBg = getBgColor();
-      if (!Objects.equals(newBg, background)) {
-        SonarLintWebView.this.background = newBg;
-        shouldRefresh = true;
-      }
-      Color newLink = getLinkColor();
-      if (!Objects.equals(newLink, linkColor)) {
-        SonarLintWebView.this.linkColor = newLink;
-        shouldRefresh = true;
-      }
+    Color newFg = getFgColor();
+    if (!Objects.equals(newFg, foreground)) {
+      SonarLintWebView.this.foreground = newFg;
+      shouldRefresh = true;
+    }
+    Color newBg = getBgColor();
+    if (!Objects.equals(newBg, background)) {
+      SonarLintWebView.this.background = newBg;
+      shouldRefresh = true;
+    }
+    Color newLink = getLinkColor();
+    if (!Objects.equals(newLink, linkColor)) {
+      SonarLintWebView.this.linkColor = newLink;
+      shouldRefresh = true;
+    }
+    Color newActiveLink = getActiveLinkColor();
+    if (!Objects.equals(newActiveLink, activeLinkColor)) {
+      SonarLintWebView.this.activeLinkColor = newActiveLink;
+      shouldRefresh = true;
     }
     if (shouldRefresh) {
       // Reload HTML to possibly apply theme change
-      refresh();
+      getDisplay().asyncExec(this::refresh);
     }
   }
 
@@ -178,8 +198,9 @@ public abstract class SonarLintWebView extends Composite implements IPropertyCha
       + "img { height: " + (fontSizePt + 1) + UNIT + "; width: " + (fontSizePt + 1) + UNIT + "; vertical-align: middle; }"
       + ".typeseverity span { font-size: 1em; margin-left: 0.5em; margin-right: 1em;}"
       + "div.typeseverity { padding: 0; margin: 0}"
-      + "a { border-bottom: 1px solid " + hexColor(this.linkColor) + "; color: " + hexColor(this.linkColor)
+      + "a { border-bottom: 1px solid " + hexColor(this.linkColor, DEFAULT_LINK_COLOR) + "; color: " + hexColor(this.linkColor)
       + "; cursor: pointer; outline: none; text-decoration: none;}"
+      + "a:hover { color: " + hexColor(this.activeLinkColor, DEFAULT_ACTIVE_LINK_COLOR) + "}"
       + "code { padding: .2em .45em; margin: 0; background-color: " + hexColor(this.foreground, 50) + "; border-radius: 3px; white-space: nowrap; line-height: 1.6em}"
       + "pre { padding: .7em; border-top: 1px solid " + hexColor(this.foreground, 200) + "; border-bottom: 1px solid "
       + hexColor(this.foreground, 100)
@@ -242,8 +263,14 @@ public abstract class SonarLintWebView extends Composite implements IPropertyCha
     return display.getSystemColor(SWT.COLOR_LIST_FOREGROUND);
   }
 
+  @Nullable
   private Color getLinkColor() {
     return JFaceColors.getHyperlinkText(this.getDisplay());
+  }
+
+  @Nullable
+  private Color getActiveLinkColor() {
+    return JFaceColors.getActiveHyperlinkText(this.getDisplay());
   }
 
   public void refresh() {
@@ -270,6 +297,13 @@ public abstract class SonarLintWebView extends Composite implements IPropertyCha
     return out.toString();
   }
 
+  private static String hexColor(@Nullable Color color, RGB defaultColor) {
+    if (color != null) {
+      return hexColor(color);
+    }
+    return "rgb(" + defaultColor.red + ", " + defaultColor.green + ", " + defaultColor.blue + ")";
+  }
+
   private static String hexColor(Color color, Integer alpha) {
     return "rgba(" + color.getRed() + ", " + color.getGreen() + ", " + color.getBlue() + ", " + alpha / 255.0 + ")";
   }
@@ -292,6 +326,7 @@ public abstract class SonarLintWebView extends Composite implements IPropertyCha
     super.dispose();
     JFaceResources.getColorRegistry().removeListener(this);
     JFaceResources.getFontRegistry().removeListener(this);
+    browser.getDisplay().removeListener(SWT.Settings, this);
   }
 
 }
