@@ -271,6 +271,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     onTheFlyView.open();
 
     DefaultProject rootProject = new PydevPackageExplorer().getProject("python");
+    rootProject.getTreeItem().select();
     rootProject.getResource("src", "root", "nested", "example.py").open();
 
     new PushButton(new DefaultShell("Default Eclipse preferences for PyDev"), "OK").click();
