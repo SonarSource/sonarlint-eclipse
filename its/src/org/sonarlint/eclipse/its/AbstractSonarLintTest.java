@@ -124,7 +124,7 @@ public abstract class AbstractSonarLintTest {
         }
 
         private boolean isSonarLintAnalysisJob(IJobChangeEvent event) {
-          return event.getJob().belongsTo("org.sonarlint.eclipse.projectJob");
+          return event.getJob().belongsTo("org.sonarlint.eclipse.projectJob") || event.getJob().belongsTo("org.sonarlint.eclipse.projectsJob");
         }
       };
       Job.getJobManager().addJobChangeListener(sonarlintItJobListener);

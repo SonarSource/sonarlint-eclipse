@@ -153,12 +153,13 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     // Trigger manual analysis of all files
     rootProject.getTreeItem().select();
-    MenuItem menuItem = new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze");
-    menuItem.select();
-    doAndWaitForSonarLintAnalysisJob(() -> new PushButton(new DefaultShell("Confirmation"), "OK").click());
+    doAndWaitForSonarLintAnalysisJob(() -> {
+      MenuItem menuItem = new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze");
+      menuItem.select();
+      new PushButton(new DefaultShell("Confirmation"), "OK").click();
+    });
 
     ReportView reportView = new ReportView();
-    reportView.open();
     List<TreeItem> items = reportView.getItems();
 
     assertThat(items)
