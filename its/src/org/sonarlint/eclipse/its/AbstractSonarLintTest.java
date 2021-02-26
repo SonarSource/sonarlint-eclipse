@@ -50,6 +50,7 @@ import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportP
 import org.eclipse.reddeer.junit.runner.RedDeerSuite;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement.CleanWorkspace;
+import org.eclipse.reddeer.requirements.closeeditors.CloseAllEditorsRequirement.CloseAllEditors;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -67,6 +68,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 @RunWith(RedDeerSuite.class)
 @CleanWorkspace
+@CloseAllEditors
 public abstract class AbstractSonarLintTest {
 
   public static final String PLUGIN_ID = "org.sonarlint.eclipse.core";

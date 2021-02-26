@@ -24,11 +24,8 @@ import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
 import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.api.TreeItem;
-import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.reddeer.views.IssueLocationsView;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
@@ -41,23 +38,14 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
   private static OnTheFlyView onTheFlyView;
   private static IssueLocationsView locationsView;
 
-  @BeforeClass
-  public static void openSampleProjectAndFileWithFlows() {
+  @Before
+  public void importProject() {
     new JavaPerspective().open();
     locationsView = new IssueLocationsView();
     locationsView.open();
     onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
-  }
-
-  @Before
-  public void importProject() {
     importExistingProjectIntoWorkspace("java/java-multiple-flows");
-  }
-
-  @After
-  public void closeActiveEditor() {
-    new DefaultEditor().close();
   }
 
   @Test

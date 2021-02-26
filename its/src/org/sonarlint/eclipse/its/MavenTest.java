@@ -40,7 +40,9 @@ public class MavenTest extends AbstractSonarLintTest {
 
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
     DefaultProject rootProject = packageExplorer.getProject("sample-maven");
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("sample-module1", "src", "main", "java", "hello", "Hello1.java").open());
+    int previousAnalysisJobCount = scheduledAnalysisJobCount.get();
+    rootProject.getResource("sample-module1", "src", "main", "java", "hello", "Hello1.java").open();
+    assertThat(scheduledAnalysisJobCount.get()).isEqualTo(previousAnalysisJobCount);
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers()).isEmpty();
     defaultEditor.close();
