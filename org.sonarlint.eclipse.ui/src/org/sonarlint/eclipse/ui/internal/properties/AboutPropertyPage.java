@@ -89,7 +89,10 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
       "                  \"NEW_ISSUES\": {\"received\":1,\"clicked\":1},\n" +
       "                  \"QUALITY_GATE\": {\"received\":1,\"clicked\":0}\n" +
       "            }\n" +
-      "      }"
+      "      },\n" +
+      "      \"show_hotspot\": {\n" +
+      "            \"requests_count\": 3\n" +
+      "      }\n"
       + "}");
 
     text.addSelectionListener(new SelectionAdapter() {
