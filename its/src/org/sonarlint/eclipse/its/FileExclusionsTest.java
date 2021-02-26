@@ -66,7 +66,6 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     // Exclude file
     helloFile.select();
     new ContextMenu(helloFile.getTreeItem()).getItem("SonarLint", "Exclude").select();
-    waitForSonarLintJob();
 
     // ensure issues markers are cleared even before the next analysis
     new WaitUntil(new OnTheFlyViewIsEmpty(issuesView), TimePeriod.MEDIUM);
