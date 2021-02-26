@@ -48,29 +48,24 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
     DefaultProject rootProject = packageExplorer.getProject("java-exclude-rules");
-    rootProject.getResource("src", "hello", "Hello3.java").open();
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello3.java").open());
 
     checkIssueIsDefault();
 
-    new ContextMenu(onTheFlyView.getItems().get(1)).getItem("Deactivate rule").select();
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> new ContextMenu(onTheFlyView.getItems().get(1)).getItem("Deactivate rule").select());
 
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
 
-    restoreDefaultRulesConfiguration();
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> restoreDefaultRulesConfiguration());
 
     checkIssueIsDefault();
-    lowerCognitiveComplexityRuleParameter();
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> lowerCognitiveComplexityRuleParameter());
     checkIssueChanged();
 
-    restoreDefaultRulesConfiguration();
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> restoreDefaultRulesConfiguration());
     checkIssueIsDefault();
   }
 
@@ -81,16 +76,13 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
     DefaultProject rootProject = packageExplorer.getProject("java-exclude-rules");
-    rootProject.getResource("src", "hello", "Hello3.java").open();
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello3.java").open());
 
     checkIssueIsDefault();
-    lowerCognitiveComplexityRuleParameter();
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> lowerCognitiveComplexityRuleParameter());
     checkIssueChanged();
 
-    restoreDefaultRulesConfiguration();
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> restoreDefaultRulesConfiguration());
 
     checkIssueIsDefault();
   }

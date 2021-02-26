@@ -50,9 +50,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
     Project javaSimple = packageExplorer.getProject("leak");
     ProjectItem helloFile = javaSimple.getProjectItem("src", "hello", "Hello.java");
-    helloFile.open();
-
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
 
     List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();
 
@@ -62,9 +60,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     // Change content
     JavaEditor javaEditor = new JavaEditor("Hello.java");
     javaEditor.insertText(7, 43, "\nSystem.out.println(\"Hello1\");");
-    javaEditor.save();
-
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> javaEditor.save());
 
     sonarlintIssues = issuesView.getIssues();
 
@@ -85,9 +81,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
     Project javaSimple = packageExplorer.getProject("js-simple");
     ProjectItem helloFile = javaSimple.getProjectItem("src", "hello.js");
-    helloFile.open();
-
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
 
     List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();
 
@@ -97,9 +91,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     // Change content
     TextEditor textEditor = new TextEditor("hello.js");
     textEditor.insertText(2, 17, "\nvar i;");
-    textEditor.save();
-
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
 
     sonarlintIssues = issuesView.getIssues();
 
@@ -110,9 +102,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     // Insert content that should crash analyzer
     String beforeCrash = textEditor.getText();
     textEditor.insertText(3, 8, "\nvar");
-    textEditor.save();
-
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
 
     // Issues are still there
     sonarlintIssues = issuesView.getIssues();
@@ -123,9 +113,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     // Fix parsing issue
     textEditor.setText(beforeCrash);
-    textEditor.save();
-
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
 
     sonarlintIssues = issuesView.getIssues();
 

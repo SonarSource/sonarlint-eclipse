@@ -50,13 +50,11 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
 
     OnTheFlyView issuesView = new OnTheFlyView();
     issuesView.open();
-    
+
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
     Project rootProject = packageExplorer.getProject("java-simple");
     Resource helloFile = rootProject.getResource("src", "hello", "Hello.java");
-    helloFile.open();
-
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
 
     List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();
 
@@ -78,17 +76,13 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     assertThat(new ContextMenuItem("SonarLint", "Analyze").isEnabled()).isFalse();
 
     // reopen the file to ensure issue doesn't come back
-    helloFile.open();
-
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
 
     assertThat(issuesView.getIssues()).isEmpty();
 
     JavaEditor javaEditor = new JavaEditor("Hello.java");
     javaEditor.insertText(8, 29, "2");
-    javaEditor.save();
-
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> javaEditor.save());
 
     assertThat(issuesView.getIssues()).isEmpty();
 
@@ -97,9 +91,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES);
     rootProject.select();
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
-    new OkButton().click();
-
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> new OkButton().click());
 
     assertThat(issuesView.getIssues()).isEmpty();
   }

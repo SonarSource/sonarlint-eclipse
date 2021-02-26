@@ -43,13 +43,12 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     ruleDescriptionView.open();
     OnTheFlyView onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
-    
+
     importExistingProjectIntoWorkspace("java/java-simple");
 
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
     DefaultProject project = packageExplorer.getProject("java-simple");
-    project.getResource("src", "hello", "Hello.java").open();
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> project.getResource("src", "hello", "Hello.java").open());
 
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())

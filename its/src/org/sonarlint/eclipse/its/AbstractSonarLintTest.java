@@ -23,6 +23,10 @@ import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.container.Server;
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,13 +34,15 @@ import org.assertj.core.groups.Tuple;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
-import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
-import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.eclipse.condition.ConsoleHasText;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
@@ -44,9 +50,7 @@ import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportP
 import org.eclipse.reddeer.junit.runner.RedDeerSuite;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement.CleanWorkspace;
-import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
-import org.hamcrest.core.StringContains;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -59,6 +63,7 @@ import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.WsClientFactories;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 @RunWith(RedDeerSuite.class)
 @CleanWorkspace
@@ -73,22 +78,27 @@ public abstract class AbstractSonarLintTest {
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
   private static SonarLintConsole consoleView;
-  
+
   @After
   public void cleanup() {
     WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
     if (preferenceDialog.isOpen()) {
       preferenceDialog.cancel();
     }
-    
-    /*new JavaPerspective().open();
-    PackageExplorerPart packageExplorerPart = new PackageExplorerPart();
-    packageExplorerPart.open();
-    packageExplorerPart.deleteAllProjects();*/
+
+    /*
+     * new JavaPerspective().open();
+     * PackageExplorerPart packageExplorerPart = new PackageExplorerPart();
+     * packageExplorerPart.open();
+     * packageExplorerPart.deleteAllProjects();
+     */
     new CleanWorkspaceRequirement().fulfill();
   }
 
   protected static int hotspotServerPort = -1;
+  private static IJobChangeListener sonarlintItJobListener;
+  protected static final AtomicInteger scheduledAnalysisJobCount = new AtomicInteger();
+  private static final List<CountDownLatch> analysisJobCountDownLatch = new CopyOnWriteArrayList<>();
 
   @BeforeClass
   public static final void beforeClass() throws BackingStoreException {
@@ -97,6 +107,32 @@ public abstract class AbstractSonarLintTest {
 
     ROOT.node("servers").removeNode();
     ROOT_SECURE.node("servers").removeNode();
+
+    if (sonarlintItJobListener == null) {
+      sonarlintItJobListener = new JobChangeAdapter() {
+
+        @Override
+        public void scheduled(IJobChangeEvent event) {
+          if (isSonarLintAnalysisJob(event)) {
+            System.out.println("Job scheduled: " + event.getJob().getName());
+            scheduledAnalysisJobCount.incrementAndGet();
+          }
+        }
+
+        @Override
+        public void done(IJobChangeEvent event) {
+          if (isSonarLintAnalysisJob(event)) {
+            System.out.println("Job done: " + event.getJob().getName());
+            analysisJobCountDownLatch.forEach(l -> l.countDown());
+          }
+        }
+
+        private boolean isSonarLintAnalysisJob(IJobChangeEvent event) {
+          return event.getJob().belongsTo("org.sonarlint.eclipse.projectJob");
+        }
+      };
+      Job.getJobManager().addJobChangeListener(sonarlintItJobListener);
+    }
 
     if (consoleView == null) {
       consoleView = new SonarLintConsole();
@@ -125,11 +161,17 @@ public abstract class AbstractSonarLintTest {
     return projects.get(0);
   }
 
-  protected final void waitForSonarLintJob() {
-    // Wait for the job to start. Don't wait too long and don't fail if missing, since it may have already been completed
-    new WaitUntil(new JobIsRunning(StringContains.containsString("SonarLint")), TimePeriod.SHORT, false);
-    // Wait for the job to complete
-    new WaitWhile(new JobIsRunning(StringContains.containsString("SonarLint")), TimePeriod.LONG);
+  protected final void doAndWaitForSonarLintAnalysisJob(Runnable r) {
+    CountDownLatch latch = new CountDownLatch(1);
+    analysisJobCountDownLatch.add(latch);
+    r.run();
+    try {
+      assertThat(latch.await(1, TimeUnit.MINUTES)).as("Timeout expired without SonarLint analysis job").isTrue();
+    } catch (InterruptedException e) {
+      fail("Interrupted", e);
+    } finally {
+      analysisJobCountDownLatch.remove(latch);
+    }
   }
 
   public static MarkerAttributesExtractor markerAttributes(String... attributes) {

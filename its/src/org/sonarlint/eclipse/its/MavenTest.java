@@ -40,14 +40,12 @@ public class MavenTest extends AbstractSonarLintTest {
 
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
     DefaultProject rootProject = packageExplorer.getProject("sample-maven");
-    rootProject.getResource("sample-module1", "src", "main", "java", "hello", "Hello1.java").open();
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("sample-module1", "src", "main", "java", "hello", "Hello1.java").open());
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers()).isEmpty();
     defaultEditor.close();
 
-    packageExplorer.getProject("sample-module1").getResource("src/main/java", "hello", "Hello1.java").open();
-    waitForSonarLintJob();
+    doAndWaitForSonarLintAnalysisJob(() -> packageExplorer.getProject("sample-module1").getResource("src/main/java", "hello", "Hello1.java").open());
     defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
@@ -56,8 +54,7 @@ public class MavenTest extends AbstractSonarLintTest {
 
     if (!platformVersion().toString().startsWith("4.4") && !platformVersion().toString().startsWith("4.5")) {
       // Issues on pom.xml
-      rootProject.getResource("pom.xml").open();
-      waitForSonarLintJob();
+      doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("pom.xml").open());
       defaultEditor = new DefaultEditor();
       assertThat(defaultEditor.getMarkers())
         .extracting(Marker::getText, Marker::getLineNumber)
