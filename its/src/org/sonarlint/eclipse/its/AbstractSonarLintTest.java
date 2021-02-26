@@ -37,6 +37,7 @@ import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
+import org.eclipse.reddeer.eclipse.condition.ConsoleHasText;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage.ImportProject;
@@ -103,13 +104,12 @@ public abstract class AbstractSonarLintTest {
       consoleView.openConsole("SonarLint");
       consoleView.enableAnalysisLogs();
       consoleView.showConsole(ShowConsoleOption.NEVER);
+      new WaitUntil(new ConsoleHasText(consoleView, "Started security hotspot handler on port"));
       String consoleText = consoleView.getConsoleText();
-      if (consoleText.contains("Started security hotspot handler on port")) {
-        Pattern p = Pattern.compile(".*Started security hotspot handler on port (\\d+).*");
-        Matcher m = p.matcher(consoleText);
-        assertThat(m.find()).isTrue();
-        hotspotServerPort = Integer.parseInt(m.group(1));
-      }
+      Pattern p = Pattern.compile(".*Started security hotspot handler on port (\\d+).*");
+      Matcher m = p.matcher(consoleText);
+      assertThat(m.find()).isTrue();
+      hotspotServerPort = Integer.parseInt(m.group(1));
     }
   }
 
