@@ -33,9 +33,9 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -73,19 +73,12 @@ public class HotspotsView extends ViewPart {
   private TableViewer hotspotViewer;
   private SashForm splitter;
 
-  private Color highPriorityColor;
-  private Color mediumPriorityColor;
-  private Color lowPriorityColor;
   private SonarLintWebView riskDescriptionBrowser;
   private SonarLintWebView vulnerabilityDescriptionBrowser;
   private SonarLintWebView fixRecommendationsBrowser;
 
   @Override
   public void createPartControl(Composite parent) {
-    highPriorityColor = new Color(parent.getDisplay(), 212, 51, 63);
-    mediumPriorityColor = new Color(parent.getDisplay(), 237, 125, 32);
-    lowPriorityColor = new Color(parent.getDisplay(), 234, 190, 6);
-
     FormToolkit toolkit = new FormToolkit(parent.getDisplay());
     book = new PageBook(parent, SWT.NONE);
 
@@ -209,7 +202,13 @@ public class HotspotsView extends ViewPart {
   }
 
   private void createHotspotTable() {
-    hotspotViewer = new TableViewer(splitter, SWT.H_SCROLL | SWT.V_SCROLL | SWT.HIDE_SELECTION | SWT.FULL_SELECTION | SWT.SINGLE | SWT.READ_ONLY);
+    hotspotViewer = new TableViewer(splitter, SWT.H_SCROLL | SWT.V_SCROLL | SWT.HIDE_SELECTION | SWT.FULL_SELECTION | SWT.SINGLE | SWT.READ_ONLY) {
+      @Override
+      protected void handleDispose(DisposeEvent event) {
+        clearMarkers();
+        super.handleDispose(event);
+      }
+    };
 
     final Table table = hotspotViewer.getTable();
     table.setHeaderVisible(true);
@@ -401,15 +400,6 @@ public class HotspotsView extends ViewPart {
     } else {
       book.setFocus();
     }
-  }
-
-  @Override
-  public void dispose() {
-    clearMarkers();
-    highPriorityColor.dispose();
-    mediumPriorityColor.dispose();
-    lowPriorityColor.dispose();
-    super.dispose();
   }
 
 }
