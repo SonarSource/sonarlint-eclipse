@@ -247,7 +247,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
     DefaultProject rootProject = packageExplorer.getProject("java-main-project");
-    File toBeDeleted = new File("projects/java/java-dependent-projects/java-main-project", "libs/toBeDeleted.jar");
+    File toBeDeleted = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-main-project").getLocation().toFile(), "libs/toBeDeleted.jar");
     assertThat(toBeDeleted.delete()).as("Unable to delete JAR to test SONARIDE-350").isTrue();
 
     rootProject.getResource("src", "use", "UseUtils.java").open();
@@ -268,6 +268,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     importPythonProjectIntoWorkspace("python");
 
     OnTheFlyView onTheFlyView = new OnTheFlyView();
+    onTheFlyView.open();
+    // workaround a view refresh problem
+    onTheFlyView.close();
     onTheFlyView.open();
 
     DefaultProject rootProject = new PydevPackageExplorer().getProject("python");
@@ -336,16 +339,17 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   public void shouldAnalyseLinkedFile() throws IOException {
     System.out.println("shouldAnalyseLinkedFile");
-
-    File dotProject = new File("projects/java/java-linked", ".project");
-    String content = FileUtils.readFileToString(dotProject, StandardCharsets.UTF_8);
-    FileUtils.write(dotProject, content.replace("${PLACEHOLDER}", new File("projects/java/java-linked-target/hello/HelloLinked.java").getAbsolutePath()), StandardCharsets.UTF_8);
-
     new JavaPerspective().open();
     importExistingProjectIntoWorkspace("java/java-linked");
 
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
     DefaultProject rootProject = packageExplorer.getProject("java-linked");
+
+    File dotProject = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-linked").getLocation().toFile(), ".project");
+    String content = FileUtils.readFileToString(dotProject, StandardCharsets.UTF_8);
+    FileUtils.write(dotProject, content.replace("${PLACEHOLDER}", new File("projects/java/java-linked-target/hello/HelloLinked.java").getAbsolutePath()), StandardCharsets.UTF_8);
+
+    rootProject.refresh();
 
     rootProject.getResource("src", "hello", "HelloLinked.java").open();
     waitForSonarLintJob();
