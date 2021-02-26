@@ -189,7 +189,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
-      .containsExactly(
+      .containsOnly(
         tuple("Replace this use of System.out or System.err by a logger.", 12),
         tuple("Remove this unnecessary cast to \"int\".", 16)); // Test that sonar.java.libraries is set
 

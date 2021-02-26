@@ -86,12 +86,6 @@ public abstract class AbstractSonarLintTest {
       preferenceDialog.cancel();
     }
 
-    /*
-     * new JavaPerspective().open();
-     * PackageExplorerPart packageExplorerPart = new PackageExplorerPart();
-     * packageExplorerPart.open();
-     * packageExplorerPart.deleteAllProjects();
-     */
     new CleanWorkspaceRequirement().fulfill();
   }
 

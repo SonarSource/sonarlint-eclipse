@@ -102,11 +102,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldShowMultipleFlows() {
-<<<<<<< HEAD
-    SWTBotEclipseEditor helloEditor = openAndAnalyzeFile("MultiFlows.java");
-=======
     TextEditor helloEditor = openAndAnalyzeFile("MultiFlows.java");
->>>>>>> 1e43257a (Migrate more tests)
 
     String issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
     assertThat(onTheFlyView.getIssues())
@@ -142,11 +138,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldShowFlattenedFlows() {
-<<<<<<< HEAD
-    SWTBotEclipseEditor cognitiveComplexityEditor = openAndAnalyzeFile("CognitiveComplexity.java");
-=======
     TextEditor cognitiveComplexityEditor = openAndAnalyzeFile("CognitiveComplexity.java");
->>>>>>> 1e43257a (Migrate more tests)
 
     String issueTitle = "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.";
     assertThat(onTheFlyView.getIssues())
