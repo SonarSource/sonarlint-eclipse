@@ -153,6 +153,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
 
   public TextEditor openAndAnalyzeFile(String fileName) {
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    packageExplorer.open();
     DefaultProject rootProject = packageExplorer.getProject("java-multiple-flows");
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", fileName).open());
     return new TextEditor();
