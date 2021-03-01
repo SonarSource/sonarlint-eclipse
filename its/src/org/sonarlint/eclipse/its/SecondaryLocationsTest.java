@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.its;
 
 import java.util.List;
 import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
-import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.api.TreeItem;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
@@ -152,9 +151,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
   }
 
   public TextEditor openAndAnalyzeFile(String fileName) {
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
-    packageExplorer.open();
-    DefaultProject rootProject = packageExplorer.getProject("java-multiple-flows");
+    DefaultProject rootProject = getOpenedJavaProject("java-multiple-flows");
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", fileName).open());
     return new TextEditor();
   }

@@ -23,7 +23,6 @@ import java.util.List;
 import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.core.resources.ProjectItem;
 import org.eclipse.reddeer.eclipse.jdt.ui.javaeditor.JavaEditor;
-import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.junit.Test;
@@ -47,8 +46,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     importExistingProjectIntoWorkspace("java/leak");
 
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
-    Project javaSimple = packageExplorer.getProject("leak");
+    Project javaSimple = getOpenedJavaProject("leak");
     ProjectItem helloFile = javaSimple.getProjectItem("src", "hello", "Hello.java");
     doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
 
@@ -78,8 +76,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     importExistingProjectIntoWorkspace("js/js-simple");
 
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
-    Project javaSimple = packageExplorer.getProject("js-simple");
+    Project javaSimple = getOpenedJavaProject("js-simple");
     ProjectItem helloFile = javaSimple.getProjectItem("src", "hello.js");
     doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
 

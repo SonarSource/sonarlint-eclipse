@@ -44,6 +44,8 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.eclipse.condition.ConsoleHasText;
+import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
+import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage.ImportProject;
@@ -155,6 +157,12 @@ public abstract class AbstractSonarLintTest {
     assertThat(projects).hasSize(1);
     dialog.finish();
     return projects.get(0);
+  }
+
+  protected static DefaultProject getOpenedJavaProject(String projectName) {
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    packageExplorer.open();
+    return packageExplorer.getProject(projectName);
   }
 
   protected final void doAndWaitForSonarLintAnalysisJob(Runnable r) {

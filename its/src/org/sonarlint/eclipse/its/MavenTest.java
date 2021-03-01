@@ -20,7 +20,6 @@
 package org.sonarlint.eclipse.its;
 
 import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
-import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
@@ -38,8 +37,7 @@ public class MavenTest extends AbstractSonarLintTest {
     importExistingProjectIntoWorkspace("java/maven/sample-module1");
     importExistingProjectIntoWorkspace("java/maven/sample-module2");
 
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
-    DefaultProject rootProject = packageExplorer.getProject("sample-maven");
+    DefaultProject rootProject = getOpenedJavaProject("sample-maven");
     int previousAnalysisJobCount = scheduledAnalysisJobCount.get();
     rootProject.getResource("sample-module1", "src", "main", "java", "hello", "Hello1.java").open();
     assertThat(scheduledAnalysisJobCount.get()).isEqualTo(previousAnalysisJobCount);
@@ -47,7 +45,7 @@ public class MavenTest extends AbstractSonarLintTest {
     assertThat(defaultEditor.getMarkers()).isEmpty();
     defaultEditor.close();
 
-    doAndWaitForSonarLintAnalysisJob(() -> packageExplorer.getProject("sample-module1").getResource("src/main/java", "hello", "Hello1.java").open());
+    doAndWaitForSonarLintAnalysisJob(() -> getOpenedJavaProject("sample-module1").getResource("src/main/java", "hello", "Hello1.java").open());
     defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)

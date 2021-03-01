@@ -26,7 +26,6 @@ import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.core.resources.Resource;
 import org.eclipse.reddeer.eclipse.jdt.ui.javaeditor.JavaEditor;
-import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.impl.button.OkButton;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
@@ -51,8 +50,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     OnTheFlyView issuesView = new OnTheFlyView();
     issuesView.open();
 
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
-    Project rootProject = packageExplorer.getProject("java-simple");
+    Project rootProject = getOpenedJavaProject("java-simple");
     Resource helloFile = rootProject.getResource("src", "hello", "Hello.java");
     doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
 

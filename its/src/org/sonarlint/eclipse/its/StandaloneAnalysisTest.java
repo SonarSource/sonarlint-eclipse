@@ -46,7 +46,6 @@ import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
 import org.eclipse.reddeer.eclipse.core.resources.Resource;
-import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyDialog;
 import org.eclipse.reddeer.eclipse.ui.navigator.resources.ProjectExplorer;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
@@ -105,9 +104,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     OnTheFlyView onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
 
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
-    packageExplorer.open();
-    DefaultProject rootProject = packageExplorer.getProject("java-simple");
+    DefaultProject rootProject = getOpenedJavaProject("java-simple");
     Resource helloJavaFile = rootProject.getResource("src", "hello", "Hello.java");
     doAndWaitForSonarLintAnalysisJob(() -> helloJavaFile.open());
 
@@ -183,8 +180,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     preferences.setTestFileRegularExpressions("**/*TestUtil*");
     preferenceDialog.ok();
 
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
-    DefaultProject rootProject = packageExplorer.getProject("java-junit");
+    DefaultProject rootProject = getOpenedJavaProject("java-junit");
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello.java").open());
 
     DefaultEditor defaultEditor = new DefaultEditor();
@@ -221,8 +217,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new JavaPerspective().open();
     importExistingProjectIntoWorkspace("java/java8");
 
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
-    DefaultProject rootProject = packageExplorer.getProject("java8");
+    DefaultProject rootProject = getOpenedJavaProject("java8");
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello.java").open());
 
     DefaultEditor defaultEditor = new DefaultEditor();
@@ -244,8 +239,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     importExistingProjectIntoWorkspace("java/java-dependent-projects/java-dependent-project");
     importExistingProjectIntoWorkspace("java/java-dependent-projects/java-main-project");
 
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
-    DefaultProject rootProject = packageExplorer.getProject("java-main-project");
+    DefaultProject rootProject = getOpenedJavaProject("java-main-project");
     File toBeDeleted = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-main-project").getLocation().toFile(), "libs/toBeDeleted.jar");
     assertThat(toBeDeleted.delete()).as("Unable to delete JAR to test SONARIDE-350").isTrue();
 
@@ -341,8 +335,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new JavaPerspective().open();
     importExistingProjectIntoWorkspace("java/java-linked");
 
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
-    DefaultProject rootProject = packageExplorer.getProject("java-linked");
+    DefaultProject rootProject = getOpenedJavaProject("java-linked");
 
     File dotProject = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-linked").getLocation().toFile(), ".project");
     String content = FileUtils.readFileToString(dotProject, StandardCharsets.UTF_8);
@@ -387,8 +380,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       }
     }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, new NullProgressMonitor());
 
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
-    DefaultProject rootProject = packageExplorer.getProject("Local_java-simple");
+    DefaultProject rootProject = getOpenedJavaProject("Local_java-simple");
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello.java").open());
 
     DefaultEditor defaultEditor = new DefaultEditor();
