@@ -30,8 +30,8 @@ import org.sonarsource.sonarlint.core.client.api.connected.ProjectBinding;
 
 public class SonarLintProjectConfiguration {
 
-  private List<SonarLintProperty> extraProperties = new ArrayList<>();
-  private List<ExclusionItem> fileExclusions = new ArrayList<>();
+  private final List<SonarLintProperty> extraProperties = new ArrayList<>();
+  private final List<ExclusionItem> fileExclusions = new ArrayList<>();
   @Nullable
   private EclipseProjectBinding projectBinding;
   private boolean autoEnabled = true;
@@ -75,22 +75,6 @@ public class SonarLintProjectConfiguration {
 
     public String connectionId() {
       return connectionId;
-    }
-
-    @Nullable
-    public String serverPathToIdePath(String serverPath) {
-      if (!serverPath.startsWith(sqPathPrefix())) {
-        return null;
-      }
-      int localPrefixLen = sqPathPrefix().length();
-      if (localPrefixLen > 0) {
-        localPrefixLen++;
-      }
-      String idePathPrefix = idePathPrefix();
-      if (!idePathPrefix.isEmpty()) {
-        idePathPrefix = idePathPrefix + "/";
-      }
-      return idePathPrefix + serverPath.substring(localPrefixLen);
     }
 
     @Override
