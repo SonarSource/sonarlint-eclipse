@@ -336,7 +336,7 @@ public class SecurityHotspotsHandlerServer {
 
     private static Optional<ISonarLintFile> findHotspotFile(FetchedHotspot fetchedHotspot, ISonarLintProject project) {
       Optional<ISonarLintFile> hotspotFile = SonarLintCorePlugin.getServersManager().resolveBinding(project)
-        .map(binding -> binding.getProjectBinding().serverPathToIdePath(fetchedHotspot.hotspot.filePath))
+        .flatMap(binding -> binding.getProjectBinding().serverPathToIdePath(fetchedHotspot.hotspot.filePath))
         .flatMap(project::find);
       if (hotspotFile.isPresent()) {
         return hotspotFile;
