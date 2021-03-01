@@ -50,14 +50,8 @@
     <system>JIRA</system>
     <url>https://jira.sonarsource.com/browse/SLE</url>
   </issueManagement>
-  
-    <!-- Waiting for tycho 2.3 to be released -->
-  <pluginRepositories>
-    <pluginRepository>
-      <id>tycho-snapshots</id>
-      <url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
-    </pluginRepository>
-  </pluginRepositories>
+
+
 
   <properties>
     <license.title>SonarLint for Eclipse</license.title>
@@ -108,6 +102,14 @@
       <version>3.19.0</version>
     </dependency>
   </dependencies>
+
+  <!-- Waiting for tycho 2.3 to be released -->
+  <pluginRepositories>
+    <pluginRepository>
+      <id>tycho-snapshots</id>
+      <url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
+    </pluginRepository>
+  </pluginRepositories>
 
   <build>
     <pluginManagement>
@@ -294,7 +296,7 @@
           <defaultP2Metadata>false</defaultP2Metadata>
         </configuration>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -307,7 +309,7 @@
             <configuration>
               <rules>
                 <requirePluginVersions>
-                   <banSnapshots>false</banSnapshots>
+                  <banSnapshots>false</banSnapshots>
                 </requirePluginVersions>
               </rules>
             </configuration>
