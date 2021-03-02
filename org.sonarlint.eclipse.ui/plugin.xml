@@ -143,6 +143,14 @@
 	        id="org.sonarlint.eclipse.ui.views.HotspotsView"
 	        name="SonarLint Security Hotspots">
 	  </view>
+    <view
+        allowMultiple="false"
+        category="org.sonarlint.eclipse"
+        class="org.sonarlint.eclipse.ui.internal.views.issues.TaintVulnerabilitiesView"
+        icon="icons/full/eview16/vulnerabilities.png"
+        id="org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView"
+        name="SonarLint Taint Vulnerabilities">
+    </view>
   </extension>
   
   <extension point="org.eclipse.ui.contexts">
@@ -360,6 +368,99 @@
               name="All Issues"
               scope="ON_ANY">
         </markerFieldConfiguration>
+    </markerContentGenerator>
+    <markerContentGenerator
+         id="org.sonarlint.eclipse.ui.views.issues.taintIssueMarkerGenerator"
+         name="SonarLint Taint Vulnerabilities Marker Generator">
+        <markerTypeReference
+              id="org.sonarlint.eclipse.core.sonarlintTaintVulnerability"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.issueCreationDateField"
+              visible="true"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.issueDescriptionField"
+              visible="true"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.issueRuleKeyField"
+              visible="false"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.issueRuleNameField"
+              visible="false"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.serverIssueKeyField"
+              visible="false"/>
+        <markerFieldReference
+              id="org.eclipse.ui.ide.resourceField"
+              visible="true"/>
+        <markerFieldReference
+              id="org.eclipse.ui.ide.pathField"
+              visible="false"/>
+        <!-- Default Filtering -->
+        <markerFieldConfiguration
+              enabled="true"
+              id="org.sonarlint.eclipse.ui.issues.allIssuesOnSelectionFiltering"
+              name="All Issues on Selection"
+              scope="ON_SELECTED_AND_CHILDREN">
+        </markerFieldConfiguration>
+
+      <markerGrouping
+            id="org.sonarlint.eclipse.ui.issues.severityGrouping"
+            label="Severity">
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
+               label="Blocker"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="5">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.critical"
+               label="Critical"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="4">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.major"
+               label="Major"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="3">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.minor"
+               label="Minor"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="2">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.info"
+               label="Info"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="1">
+         </markerGroupingEntry>
+         <markerAttributeGrouping
+               attribute="sonarseverity"
+               markerType="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem">
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
+                  value="BLOCKER">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.critical"
+                  value="CRITICAL">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.major"
+                  value="MAJOR">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.minor"
+                  value="MINOR">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.info"
+                  value="INFO">
+            </markerAttributeMapping>
+         </markerAttributeGrouping>
+      </markerGrouping>
     </markerContentGenerator>
     <markerField
         class="org.sonarlint.eclipse.ui.internal.views.issues.IssueDescriptionField"
