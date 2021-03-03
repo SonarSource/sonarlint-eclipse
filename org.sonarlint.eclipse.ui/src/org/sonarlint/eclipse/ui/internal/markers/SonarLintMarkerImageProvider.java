@@ -42,6 +42,9 @@ public class SonarLintMarkerImageProvider implements IAnnotationImageProvider {
     if (annotation.getType().equals("org.sonarlint.eclipse.hotspotAnnotationType")) {
       return SonarLintImages.HOTSPOT_ANNOTATION;
     }
+    if (annotation.getType().equals("org.sonarlint.eclipse.taintAnnotationType")) {
+      return SonarLintImages.VULNERABILITY_ANNOTATION;
+    }
     return SonarLintImages.ISSUE_ANNOTATION;
   }
 

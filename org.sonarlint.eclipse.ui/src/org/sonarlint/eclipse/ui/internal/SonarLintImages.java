@@ -43,6 +43,7 @@ public final class SonarLintImages {
 
   public static final Image ISSUE_ANNOTATION = createImage("full/annotation16/issue.png"); //$NON-NLS-1$
   public static final Image HOTSPOT_ANNOTATION = createImage("full/annotation16/hotspot.png"); //$NON-NLS-1$
+  public static final Image VULNERABILITY_ANNOTATION = createImage("full/annotation16/vulnerability.png"); //$NON-NLS-1$
   public static final Image RESOLUTION_SHOW_RULE = createImage("full/marker_resolution16/showrule.png"); //$NON-NLS-1$
   public static final Image RESOLUTION_SHOW_LOCATIONS = createImage("full/marker_resolution16/showlocations.png"); //$NON-NLS-1$
   public static final Image RESOLUTION_DISABLE_RULE = createImage("full/marker_resolution16/disablerule.png"); //$NON-NLS-1$

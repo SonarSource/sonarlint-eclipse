@@ -384,9 +384,6 @@
               id="org.sonarlint.eclipse.ui.views.issues.issueRuleKeyField"
               visible="false"/>
         <markerFieldReference
-              id="org.sonarlint.eclipse.ui.views.issues.issueRuleNameField"
-              visible="false"/>
-        <markerFieldReference
               id="org.sonarlint.eclipse.ui.views.issues.serverIssueKeyField"
               visible="false"/>
         <markerFieldReference
@@ -398,9 +395,9 @@
         <!-- Default Filtering -->
         <markerFieldConfiguration
               enabled="true"
-              id="org.sonarlint.eclipse.ui.issues.allIssuesOnSelectionFiltering"
-              name="All Issues on Selection"
-              scope="ON_SELECTED_AND_CHILDREN">
+              id="org.sonarlint.eclipse.ui.issues.allIssuesOnTaintVulnerabilities"
+              name="All Taint Vulnerabilities"
+              scope="ON_ANY">
         </markerFieldConfiguration>
 
       <markerGrouping
@@ -596,7 +593,7 @@
            label="Show"
            mnemonic="S">
          </menu>
-     <menu
+         <menu
            id="problemsGroupByMenu"
            label="Group By"
            mnemonic="G">
@@ -731,6 +728,43 @@
           </visibleWhen>
        </command>
 	</menuContribution>
+	<menuContribution
+            locationURI="menu:org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView">
+         <menu
+           id="org.eclipse.ui.ide.problems.filtersMenu"
+           label="Show"
+           mnemonic="S">
+         </menu>
+         <menu
+           id="problemsGroupByMenu"
+           label="Group By"
+           mnemonic="G">
+         </menu>
+         <menu
+               id="org.eclipse.ui.ide.problems.markerSortMenu"
+               label="Sort By"
+               mnemonic="S">
+         </menu>
+         <command
+               commandId="org.eclipse.ui.ide.configureFilters"
+               mnemonic="%command.configureFilters.mnemonic"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.ide.configureColumns"
+               mnemonic="%command.configureColumns.mnemonic"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView">
+           <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
+                 icon="icons/full/marker_resolution16/showrule.png"
+                 style="push"
+                 mnemonic="R">
+         </command>
+      </menuContribution>
   </extension>
 
   <extension point="org.eclipse.ui.commands">
@@ -882,6 +916,9 @@
         <type
             name="org.sonarlint.eclipse.hotspotAnnotationType"
             markerType="org.sonarlint.eclipse.core.sonarlintHotspot"/>
+        <type
+            name="org.sonarlint.eclipse.taintAnnotationType"
+            markerType="org.sonarlint.eclipse.core.sonarlintTaintVulnerability"/>
     </extension>
     
     <extension
@@ -957,6 +994,30 @@
               textStylePreferenceKey="org.sonarlint.eclipse.ui.hotspot.text.style"
               textStylePreferenceValue="SQUIGGLES"
               verticalRulerPreferenceKey="org.sonarlint.eclipse.ui.hotspot.verticalruler"
+              verticalRulerPreferenceValue="true"/>
+        <specification
+              annotationImageProvider="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerImageProvider"
+              annotationType="org.sonarlint.eclipse.taintAnnotationType"
+              colorPreferenceKey="org.sonarlint.eclipse.ui.taint.color"
+              colorPreferenceValue="30,144,255"
+              highlightPreferenceKey="org.sonarlint.eclipse.ui.taint.highlight"
+              highlightPreferenceValue="false"
+              icon="icons/full/eview16/vulnerabilities.png"
+              isGoToNextNavigationTarget="true"
+              isGoToNextNavigationTargetKey="org.sonarlint.eclipse.taint.next"
+              isGoToPreviousNavigationTarget="true"
+              isGoToPreviousNavigationTargetKey="org.sonarlint.eclipse.taint.previous"
+              label="SonarLint Taint Vulnerability"
+              overviewRulerPreferenceKey="org.sonarlint.eclipse.ui.taint.overviewruler"
+              overviewRulerPreferenceValue="true"
+              presentationLayer="3"
+              showInNextPrevDropdownToolbarAction="true"
+              showInNextPrevDropdownToolbarActionKey="org.sonarlint.eclipse.taint.dropdown"
+              textPreferenceKey="org.sonarlint.eclipse.ui.taint.error.text"
+              textPreferenceValue="true"
+              textStylePreferenceKey="org.sonarlint.eclipse.ui.taint.text.style"
+              textStylePreferenceValue="SQUIGGLES"
+              verticalRulerPreferenceKey="org.sonarlint.eclipse.ui.taint.verticalruler"
               verticalRulerPreferenceValue="true"/>
   </extension>
   

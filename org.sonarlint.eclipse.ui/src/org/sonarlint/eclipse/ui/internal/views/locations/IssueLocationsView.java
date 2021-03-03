@@ -51,6 +51,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlows;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -156,19 +157,19 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
   private static class RootNode {
 
     private final IMarker rootMarker;
-    private final List<MarkerFlow> flowsMarkers;
+    private final MarkerFlows flows;
 
-    public RootNode(IMarker rootMarker, List<MarkerFlow> flowsMarkers) {
+    public RootNode(IMarker rootMarker, MarkerFlows flows) {
       this.rootMarker = rootMarker;
-      this.flowsMarkers = flowsMarkers;
+      this.flows = flows;
     }
 
     public IMarker getMarker() {
       return rootMarker;
     }
 
-    public List<MarkerFlow> getFlows() {
-      return flowsMarkers;
+    public MarkerFlows getFlows() {
+      return flows;
     }
 
   }
@@ -178,7 +179,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     @Override
     public Object[] getElements(Object inputElement) {
       IMarker sonarlintMarker = (IMarker) inputElement;
-      List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlows(sonarlintMarker);
+      MarkerFlows flowsMarkers = MarkerUtils.getIssueFlows(sonarlintMarker);
       if (!flowsMarkers.isEmpty()) {
         return new Object[] {new RootNode(sonarlintMarker, flowsMarkers)};
       } else {
@@ -189,17 +190,17 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     @Override
     public Object[] getChildren(Object parentElement) {
       if (parentElement instanceof RootNode) {
-        List<MarkerFlow> flows = ((RootNode) parentElement).getFlows();
-        if (flows.size() > 1) {
+        MarkerFlows flows = ((RootNode) parentElement).getFlows();
+        if (flows.count() > 1) {
           // Flatten if all flows have a single location
-          if (flows.stream().allMatch(f -> f.getLocations().size() <= 1)) {
-            return flows.stream().map(FlowRootNode::new).flatMap(f -> Stream.of(f.getChildren())).toArray();
+          if (flows.isSecondaryLocations()) {
+            return flows.getFlows().stream().map(FlowRootNode::new).flatMap(f -> Stream.of(f.getChildren())).toArray();
           } else {
-            return flows.stream().map(FlowRootNode::new).toArray();
+            return flows.getFlows().stream().map(FlowRootNode::new).toArray();
           }
-        } else if (flows.size() == 1) {
+        } else if (flows.count() == 1) {
           // Don't show flow number
-          return new FlowRootNode(flows.get(0)).getChildren();
+          return new FlowRootNode(flows.getFlows().get(0)).getChildren();
         } else {
           return new Object[0];
         }

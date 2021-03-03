@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.flowlocations;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -41,10 +40,12 @@ import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlows;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.util.SelectionUtils;
 import org.sonarlint.eclipse.ui.internal.views.issues.OnTheFlyIssuesView;
 import org.sonarlint.eclipse.ui.internal.views.issues.SonarLintReportView;
+import org.sonarlint.eclipse.ui.internal.views.issues.TaintVulnerabilitiesView;
 import org.sonarlint.eclipse.ui.internal.views.locations.IssueLocationsView;
 
 public class SonarLintFlowLocationsService implements ISelectionListener, AnalysisListener {
@@ -57,7 +58,7 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
   private Optional<MarkerFlowLocation> lastSelectedFlowLocation = Optional.empty();
   private boolean showAnnotationsInEditor = true;
 
-  private static final Set<String> sonarlintMarkerViewsIds = new HashSet<>(Arrays.asList(SonarLintReportView.ID, OnTheFlyIssuesView.ID));
+  private static final Set<String> sonarlintMarkerViewsIds = new HashSet<>(Arrays.asList(SonarLintReportView.ID, OnTheFlyIssuesView.ID, TaintVulnerabilitiesView.ID));
 
   @Override
   public void selectionChanged(IWorkbenchPart part, ISelection selection) {
@@ -76,11 +77,11 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
           // Marker has been deleted during the last analysis
           markerSelected(null, false, false);
         } else {
-          List<MarkerFlow> newIssueFlows = MarkerUtils.getIssueFlows(lastSelectedMarker.get());
+          MarkerFlows newIssueFlows = MarkerUtils.getIssueFlows(lastSelectedMarker.get());
           // Try to reselect the same flow number than before
           Integer pastFlowNum = lastSelectedFlow.map(MarkerFlow::getNumber).orElse(null);
-          if (pastFlowNum != null && newIssueFlows.size() >= pastFlowNum) {
-            lastSelectedFlow = Optional.of(newIssueFlows.get(pastFlowNum - 1));
+          if (pastFlowNum != null && newIssueFlows.count() >= pastFlowNum) {
+            lastSelectedFlow = Optional.of(newIssueFlows.getFlows().get(pastFlowNum - 1));
           }
           // Try to select the same flow location
           Integer pastFlowLocationNum = lastSelectedFlowLocation.map(MarkerFlowLocation::getNumber).orElse(null);
@@ -159,10 +160,10 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
       lastSelectedFlow = Optional.empty();
       lastSelectedFlowLocation = Optional.empty();
       if (selectedMarker != null) {
-        List<MarkerFlow> issueFlow = MarkerUtils.getIssueFlows(selectedMarker);
-        if (!MarkerUtils.isSecondaryLocations(issueFlow) && !issueFlow.isEmpty()) {
+        MarkerFlows issueFlow = MarkerUtils.getIssueFlows(selectedMarker);
+        if (!issueFlow.isSecondaryLocations() && !issueFlow.isEmpty()) {
           // Select the first flow
-          lastSelectedFlow = Optional.of(issueFlow.get(0));
+          lastSelectedFlow = Optional.of(issueFlow.getFlows().get(0));
         }
       }
       notifyAllOfMarkerChange();

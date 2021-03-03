@@ -79,10 +79,7 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
     }
     super.trackIssues(docPerFile, rawIssuesPerResource, triggerType, monitor);
     if (triggerType.shouldUpdateFileIssuesAsync()) {
-      List<ISonarLintIssuable> filesWithAtLeastOneIssue = filesWithAtLeastOneIssue(rawIssuesPerResource);
-      if (!filesWithAtLeastOneIssue.isEmpty()) {
-        trackServerIssuesAsync(engineFacade, filesWithAtLeastOneIssue, docPerFile, triggerType);
-      }
+      trackServerIssuesAsync(engineFacade, rawIssuesPerResource.keySet(), docPerFile, triggerType);
     }
   }
 
@@ -95,13 +92,6 @@ public class AnalyzeConnectedProjectJob extends AbstractAnalyzeProjectJob<Connec
     }
     return tracked;
 
-  }
-
-  private static List<ISonarLintIssuable> filesWithAtLeastOneIssue(Map<ISonarLintIssuable, List<Issue>> rawIssuesPerResource) {
-    return rawIssuesPerResource.entrySet().stream()
-      .filter(e -> !e.getValue().isEmpty())
-      .map(Map.Entry::getKey)
-      .collect(Collectors.toList());
   }
 
   private void trackServerIssuesAsync(ConnectedEngineFacade engineFacade, Collection<ISonarLintIssuable> resources, Map<ISonarLintFile, IDocument> docPerFile,

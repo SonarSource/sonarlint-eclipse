@@ -19,8 +19,9 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -37,7 +38,7 @@ import org.sonarlint.eclipse.core.internal.markers.TextRange.FullTextRange;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
-import static java.util.Collections.emptyList;
+import static java.util.Arrays.asList;
 
 public final class MarkerUtils {
 
@@ -49,6 +50,9 @@ public final class MarkerUtils {
 
   public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";
   public static final String SONAR_MARKER_EXTRA_LOCATIONS_ATTR = "extralocations";
+
+  public static final Set<String> SONARLINT_PRIMARY_MARKER_IDS = new HashSet<>(
+    asList(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, SonarLintCorePlugin.MARKER_REPORT_ID, SonarLintCorePlugin.MARKER_TAINT_ID));
 
   private MarkerUtils() {
   }
@@ -121,20 +125,12 @@ public final class MarkerUtils {
     return RuleKey.parse(repositoryAndKey);
   }
 
-  public static List<MarkerFlow> getIssueFlows(IMarker marker) {
-    List<MarkerFlow> flowsMarkers;
+  public static MarkerFlows getIssueFlows(IMarker marker) {
     try {
-      flowsMarkers = Optional.ofNullable((List<MarkerFlow>) marker.getAttribute(SONAR_MARKER_EXTRA_LOCATIONS_ATTR)).orElse(emptyList());
+      return Optional.ofNullable((MarkerFlows) marker.getAttribute(SONAR_MARKER_EXTRA_LOCATIONS_ATTR)).orElse(new MarkerFlows());
     } catch (CoreException e) {
-      flowsMarkers = emptyList();
+      return new MarkerFlows();
     }
-    return flowsMarkers;
   }
 
-  /**
-   * Special case when all flows have a single location, this is called "secondary locations"
-   */
-  public static boolean isSecondaryLocations(List<MarkerFlow> flowsMarkers) {
-    return !flowsMarkers.isEmpty() && flowsMarkers.stream().allMatch(f -> f.getLocations().size() == 1);
-  }
 }

@@ -42,6 +42,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlows;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
@@ -123,9 +124,9 @@ public class SonarLintFlowAnnotator implements SonarLintMarkerSelectionListener,
       public void documentChanged(DocumentEvent event) {
         Optional<IMarker> lastSelectedMarker = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedMarker();
         if (lastSelectedMarker.isPresent()) {
-          List<MarkerFlow> issueFlows = MarkerUtils.getIssueFlows(lastSelectedMarker.get());
+          MarkerFlows issueFlows = MarkerUtils.getIssueFlows(lastSelectedMarker.get());
           IssueLocationsView view = (IssueLocationsView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(IssueLocationsView.ID);
-          issueFlows.stream().flatMap(f -> f.getLocations().stream()).forEach(l -> {
+          issueFlows.allLocationsAsStream().forEach(l -> {
             Position markerPosition = LocationsUtils.getMarkerPosition(l.getMarker(), textEditor);
             if (markerPosition != null && markerPosition.isDeleted() != l.isDeleted()) {
               l.setDeleted(markerPosition.isDeleted());
@@ -192,16 +193,15 @@ public class SonarLintFlowAnnotator implements SonarLintMarkerSelectionListener,
     if (markerToUse == null) {
       return emptyMap();
     }
-    List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlows(markerToUse);
+    MarkerFlows flowsMarkers = MarkerUtils.getIssueFlows(markerToUse);
     if (flowsMarkers.isEmpty()) {
       return emptyMap();
     }
-    boolean isSecondaryLocation = MarkerUtils.isSecondaryLocations(flowsMarkers);
     Optional<MarkerFlow> lastSelectedFlow = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlow();
     List<MarkerFlowLocation> locations;
-    if (isSecondaryLocation) {
+    if (flowsMarkers.isSecondaryLocations()) {
       // Flatten all locations
-      locations = flowsMarkers.stream().flatMap(f -> f.getLocations().stream()).collect(toList());
+      locations = flowsMarkers.allLocationsAsStream().collect(toList());
     } else if (lastSelectedFlow.isPresent()) {
       locations = lastSelectedFlow.get().getLocations();
     } else {

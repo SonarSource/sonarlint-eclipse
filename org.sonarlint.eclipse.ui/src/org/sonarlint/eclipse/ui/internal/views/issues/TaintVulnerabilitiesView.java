@@ -20,15 +20,12 @@
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
-import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 public class TaintVulnerabilitiesView extends MarkerViewWithBottomPanel {
 
@@ -36,7 +33,7 @@ public class TaintVulnerabilitiesView extends MarkerViewWithBottomPanel {
   private static LocalDateTime reportDate;
   private static String reportTitle;
   private static TaintVulnerabilitiesView instance;
-  private Label label;
+  private Link label;
   private Composite bottom;
 
   public TaintVulnerabilitiesView() {
@@ -59,25 +56,8 @@ public class TaintVulnerabilitiesView extends MarkerViewWithBottomPanel {
     GridData bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     bottom.setLayoutData(bottomLayoutData);
 
-    label = new Label(bottom, SWT.NONE);
-    refreshText();
-  }
-
-  private void refreshText() {
-    if (reportTitle != null) {
-      label.setText(reportTitle + " (at " + DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(reportDate) + ")");
-    } else {
-      label.setText("Run the analysis from the SonarLint context menu to find issues in the SCM change set or in all your project files");
-    }
-  }
-
-  public static void setReportTitle(@Nullable String title) {
-    TaintVulnerabilitiesView.reportDate = title != null ? LocalDateTime.now() : null;
-    TaintVulnerabilitiesView.reportTitle = title;
-    if (TaintVulnerabilitiesView.instance != null) {
-      instance.refreshText();
-      PlatformUtils.requestLayout(instance.bottom);
-    }
+    label = new Link(bottom, SWT.NONE);
+    label.setText("This view displays taint vulnerabilities found by SonarQube or SonarCloud during last analysis. For more informations see <a>TODO</a>");
   }
 
 }

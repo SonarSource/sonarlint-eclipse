@@ -35,7 +35,7 @@ public class ShowHideIssueFlowsMarkerResolver implements IMarkerResolution2 {
   public ShowHideIssueFlowsMarkerResolver(IMarker marker) {
     this.marker = marker;
     this.alreadySelected = marker.equals(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedMarker().orElse(null));
-    isSecondaryLocation = MarkerUtils.isSecondaryLocations(MarkerUtils.getIssueFlows(marker));
+    isSecondaryLocation = MarkerUtils.getIssueFlows(marker).isSecondaryLocations();
   }
 
   @Override

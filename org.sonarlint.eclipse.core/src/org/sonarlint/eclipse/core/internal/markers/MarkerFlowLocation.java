@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.core.internal.markers;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jdt.annotation.Nullable;
 
 public class MarkerFlowLocation {
   private final MarkerFlow parent;
@@ -51,6 +52,7 @@ public class MarkerFlowLocation {
     this.marker = marker;
   }
 
+  @Nullable
   public IMarker getMarker() {
     return marker;
   }

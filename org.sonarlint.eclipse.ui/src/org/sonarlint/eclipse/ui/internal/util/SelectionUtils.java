@@ -31,8 +31,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectContainer;
@@ -160,7 +160,7 @@ public final class SelectionUtils {
   }
 
   private static boolean isSonarLintMarker(IMarker marker) throws CoreException {
-    return SonarLintCorePlugin.MARKER_ON_THE_FLY_ID.equals(marker.getType()) || SonarLintCorePlugin.MARKER_REPORT_ID.equals(marker.getType());
+    return MarkerUtils.SONARLINT_PRIMARY_MARKER_IDS.contains(marker.getType());
   }
 
 }
