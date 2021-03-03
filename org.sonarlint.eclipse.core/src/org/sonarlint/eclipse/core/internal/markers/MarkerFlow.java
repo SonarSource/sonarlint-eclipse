@@ -38,4 +38,11 @@ public class MarkerFlow {
     return locations;
   }
 
+  public boolean areAllLocationsInSameFile() {
+    return locations.stream()
+      .map(MarkerFlowLocation::getFilePath)
+      .distinct()
+      .count() == 1;
+  }
+
 }

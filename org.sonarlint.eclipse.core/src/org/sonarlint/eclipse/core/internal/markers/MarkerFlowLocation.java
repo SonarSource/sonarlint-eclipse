@@ -28,12 +28,18 @@ public class MarkerFlowLocation {
   private final String message;
   private IMarker marker;
   private boolean deleted;
+  private String filePath;
 
   public MarkerFlowLocation(MarkerFlow parent, String message) {
     this.parent = parent;
     this.parent.locations.add(this);
     this.number = this.parent.locations.size();
     this.message = message;
+  }
+
+  public MarkerFlowLocation(MarkerFlow parent, String message, String filePath) {
+    this(parent, message);
+    this.filePath = filePath;
   }
 
   public MarkerFlow getParent() {
@@ -63,5 +69,10 @@ public class MarkerFlowLocation {
 
   public void setDeleted(boolean deleted) {
     this.deleted = deleted;
+  }
+
+  @Nullable
+  public String getFilePath() {
+    return filePath;
   }
 }

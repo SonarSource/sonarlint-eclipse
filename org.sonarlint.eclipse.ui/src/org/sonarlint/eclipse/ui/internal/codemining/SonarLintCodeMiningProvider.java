@@ -134,9 +134,7 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
 
   @Override
   public void markerSelected(Optional<IMarker> marker) {
-    forceRefreshCodeMiningsIfNecessary(marker, m -> {
-      return MarkerUtils.getIssueFlows(m).allLocationsAsStream();
-    });
+    forceRefreshCodeMiningsIfNecessary(marker, m -> MarkerUtils.getIssueFlows(m).allLocationsAsStream());
   }
 
   @Override
@@ -181,12 +179,8 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
     if (markerToUse == null) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    // Return fast if the marker is not for the current editor
     ITextEditor textEditor = super.getAdapter(ITextEditor.class);
     IFileEditorInput editorInput = textEditor.getEditorInput().getAdapter(IFileEditorInput.class);
-    if (editorInput == null || !editorInput.getFile().equals(markerToUse.getResource())) {
-      return CompletableFuture.completedFuture(emptyList());
-    }
     MarkerFlows flowsMarkers = MarkerUtils.getIssueFlows(markerToUse);
     if (flowsMarkers.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());

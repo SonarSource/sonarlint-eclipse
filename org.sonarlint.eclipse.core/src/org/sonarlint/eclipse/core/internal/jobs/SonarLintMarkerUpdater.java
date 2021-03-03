@@ -310,7 +310,7 @@ public class SonarLintMarkerUpdater {
       List<ServerIssueLocation> locations = new ArrayList<>(engineFlow.locations());
       Collections.reverse(locations);
       for (ServerIssueLocation l : locations) {
-        MarkerFlowLocation flowLocation = new MarkerFlowLocation(flow, l.getMessage());
+        MarkerFlowLocation flowLocation = new MarkerFlowLocation(flow, l.getMessage(), l.getFilePath());
 
         Optional<ISonarLintFile> locationFile = findFileForLocationInBoundProjects(bindingsPerProjects, l.getFilePath());
         if (!locationFile.isPresent()) {
