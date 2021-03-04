@@ -67,6 +67,9 @@ public final class SonarLintImages {
   public static final Image IMG_SONARQUBE_LOGO = createImage("logo/sonarqube-black-256px.png"); //$NON-NLS-1$
   public static final Image IMG_SONARCLOUD_LOGO = createImage("logo/sonarcloud-black-256px.png"); //$NON-NLS-1$
 
+  public static final ImageDescriptor SONARCLOUD_16 = createImageDescriptor("sonarcloud-16.png"); //$NON-NLS-1$
+  public static final ImageDescriptor SONARQUBE_16 = createImageDescriptor("sonarqube-16.png"); //$NON-NLS-1$
+
   public static final Image IMG_OPEN_EXTERNAL = createImage("external-link-16.png"); //$NON-NLS-1$
 
   public static final ImageDescriptor DEBUG = createImageDescriptor("debug.gif"); //$NON-NLS-1$

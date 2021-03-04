@@ -200,7 +200,7 @@ public class SonarLintMarkerUpdater {
           createMarker(lazyInitDocument, file, issue, triggerType);
         } else {
           IMarker marker = file.getResource().findMarker(issue.getMarkerId());
-          updateMarkerAttributes(lazyInitDocument, file, issue, marker);
+          updateMarkerAttributes(lazyInitDocument, issue, marker);
           createFlowMarkersForLocalIssues(lazyInitDocument, file, issue, marker, markerIdForFlows(triggerType));
           previousMarkersToDelete.remove(marker);
         }
@@ -219,7 +219,7 @@ public class SonarLintMarkerUpdater {
 
     setMarkerViewUtilsAttributes(issuable, marker);
 
-    updateMarkerAttributes(document, issuable, trackable, marker);
+    updateMarkerAttributes(document, trackable, marker);
     createFlowMarkersForLocalIssues(document, issuable, trackable, marker, markerIdForFlows(triggerType));
 
   }
@@ -235,7 +235,7 @@ public class SonarLintMarkerUpdater {
 
       setMarkerViewUtilsAttributes(issuable, marker);
 
-      updateMarkerAttributes(document, issuable, new ServerIssueTrackable(taintIssue), marker);
+      updateMarkerAttributes(document, new ServerIssueTrackable(taintIssue), marker);
       createFlowMarkersForTaint(taintIssue, marker, bindingsPerProjects);
     } catch (CoreException e) {
       SonarLintLogger.get().error("Unable to create marker", e);
@@ -248,7 +248,7 @@ public class SonarLintMarkerUpdater {
     marker.setAttribute("org.eclipse.ui.views.markers.path", issuable.getResourceContainerForMarker());
   }
 
-  private static void updateMarkerAttributes(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker) throws CoreException {
+  private static void updateMarkerAttributes(IDocument document, Trackable trackable, IMarker marker) throws CoreException {
     Map<String, Object> existingAttributes = marker.getAttributes();
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());

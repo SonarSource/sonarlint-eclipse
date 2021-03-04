@@ -587,6 +587,14 @@
          </command>
       </menuContribution>
       <menuContribution
+            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView">
+           <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand"
+                 style="push"
+                 mnemonic="O">
+         </command>
+      </menuContribution>
+      <menuContribution
             locationURI="menu:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
          <menu
            id="org.eclipse.ui.ide.problems.filtersMenu"
@@ -786,6 +794,12 @@
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
+          description="Open issue in the browser"
+          id="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand"
+          name="Open in browser"
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
+    <command
           description="Analyze with SonarLint"
           id="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
           name="Analyze"
@@ -831,6 +845,10 @@
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand">
+    </handler>
+    <handler
+          class="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand">
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
