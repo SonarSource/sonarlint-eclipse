@@ -1046,6 +1046,10 @@
            class="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerResolutionGenerator"
            markerType="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem">
      </markerResolutionGenerator>
+     <markerResolutionGenerator
+           class="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerResolutionGenerator"
+           markerType="org.sonarlint.eclipse.core.sonarlintTaintVulnerability">
+     </markerResolutionGenerator>
   </extension>
 
   <extension

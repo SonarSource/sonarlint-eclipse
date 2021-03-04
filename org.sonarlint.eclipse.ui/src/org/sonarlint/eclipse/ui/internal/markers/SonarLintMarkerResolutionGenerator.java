@@ -56,7 +56,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
 
   private static boolean isSonarLintIssueMarker(IMarker marker) {
     try {
-      return SonarLintCorePlugin.MARKER_ON_THE_FLY_ID.equals(marker.getType()) || SonarLintCorePlugin.MARKER_REPORT_ID.equals(marker.getType());
+      return MarkerUtils.SONARLINT_PRIMARY_MARKER_IDS.contains(marker.getType());
     } catch (final CoreException e) {
       return false;
     }
