@@ -112,7 +112,7 @@ public class SonarLintMarkerUpdater {
 
   }
 
-  private static void deleteTaintMarkers(ISonarLintFile currentFile) {
+  public static void deleteTaintMarkers(ISonarLintFile currentFile) {
     try {
       Set<IMarker> markersToDelete = new HashSet<>(Arrays.asList(currentFile.getResource().findMarkers(SonarLintCorePlugin.MARKER_TAINT_ID, false, IResource.DEPTH_ZERO)));
       for (IMarker primaryLocationMarker : markersToDelete) {
