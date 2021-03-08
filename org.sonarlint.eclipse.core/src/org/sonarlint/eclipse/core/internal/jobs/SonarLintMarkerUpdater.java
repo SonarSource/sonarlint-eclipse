@@ -53,6 +53,7 @@ import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.listener.TaintVulnerabilitiesListener;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
@@ -63,7 +64,13 @@ import org.sonarsource.sonarlint.core.client.api.connected.ServerIssueLocation;
 
 public class SonarLintMarkerUpdater {
 
+  private static TaintVulnerabilitiesListener taintVulnerabilitiesListener;
+
   private SonarLintMarkerUpdater() {
+  }
+
+  public static void setTaintVulnerabilitiesListener(TaintVulnerabilitiesListener listener) {
+    taintVulnerabilitiesListener = listener;
   }
 
   public static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument, Collection<Trackable> issues, TriggerType triggerType) {
@@ -107,6 +114,9 @@ public class SonarLintMarkerUpdater {
         if (primaryLocationFile.isPresent()) {
           createTaintMarker(primaryLocationFile.get().getDocument(), primaryLocationFile.get(), taintIssue, bindings);
         }
+      }
+      if (!taintVulnerabilities.isEmpty() && taintVulnerabilitiesListener != null) {
+        taintVulnerabilitiesListener.markersCreated(taintVulnerabilities);
       }
     });
 
