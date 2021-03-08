@@ -196,6 +196,18 @@ public class SonarLintTelemetry {
     }
   }
 
+  public void taintVulnerabilitiesInvestigatedLocally() {
+    if (enabled()) {
+      telemetry.taintVulnerabilitiesInvestigatedLocally();
+    }
+  }
+
+  public void taintVulnerabilitiesInvestigatedRemotely() {
+    if (enabled()) {
+      telemetry.taintVulnerabilitiesInvestigatedRemotely();
+    }
+  }
+
   public void stop() {
     if (scheduledJob != null) {
       scheduledJob.cancel();

@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
-import java.time.LocalDateTime;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
@@ -30,33 +29,20 @@ import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 public class TaintVulnerabilitiesView extends MarkerViewWithBottomPanel {
 
   public static final String ID = SonarLintUiPlugin.PLUGIN_ID + ".views.issues.TaintVulnerabilitiesView";
-  private static LocalDateTime reportDate;
-  private static String reportTitle;
-  private static TaintVulnerabilitiesView instance;
-  private Link label;
-  private Composite bottom;
 
   public TaintVulnerabilitiesView() {
     super(SonarLintUiPlugin.PLUGIN_ID + ".views.issues.taintIssueMarkerGenerator");
-    instance = this;
   }
-
-  @Override
-  public void dispose() {
-    super.dispose();
-    instance = null;
-  }
-
+  
   @Override
   protected void populateBottomPanel(Composite bottom) {
-    this.bottom = bottom;
     RowLayout bottomLayout = new RowLayout();
     bottomLayout.center = true;
     bottom.setLayout(bottomLayout);
     GridData bottomLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
     bottom.setLayoutData(bottomLayoutData);
 
-    label = new Link(bottom, SWT.NONE);
+    Link label = new Link(bottom, SWT.NONE);
     label.setText("This view displays taint vulnerabilities found by SonarQube or SonarCloud during last analysis. For more informations see <a>TODO</a>");
   }
 

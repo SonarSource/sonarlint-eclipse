@@ -59,6 +59,7 @@ public class OpenInBrowserCommand extends AbstractIssueCommand implements IEleme
         SonarLintLogger.get().info("Unable to open issue in browser: project is not bound");
         return;
       }
+      SonarLintCorePlugin.getTelemetry().taintVulnerabilitiesInvestigatedRemotely();
       String issueKey = (String) selectedMarker.getAttribute(MarkerUtils.SONAR_MARKER_SERVER_ISSUE_KEY_ATTR);
       String serverIssueLink = buildLink(binding.get().getEngineFacade().getHost(), binding.get().getProjectBinding().projectKey(), issueKey);
       PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(serverIssueLink));

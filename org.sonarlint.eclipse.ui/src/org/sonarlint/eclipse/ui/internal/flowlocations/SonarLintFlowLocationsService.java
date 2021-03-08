@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Display;
@@ -36,6 +37,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.event.AnalysisEvent;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListener;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
@@ -165,6 +167,7 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
           // Select the first flow
           lastSelectedFlow = Optional.of(issueFlow.getFlows().get(0));
         }
+        triggerTelemetryOnShowTaintVulnerability(selectedMarker);
       }
       notifyAllOfMarkerChange();
     }
@@ -200,6 +203,16 @@ public class SonarLintFlowLocationsService implements ISelectionListener, Analys
     if (showAnnotationsInEditor != enabled) {
       this.showAnnotationsInEditor = enabled;
       notifyAllOfMarkerChange();
+    }
+  }
+
+  private static void triggerTelemetryOnShowTaintVulnerability(IMarker marker) {
+    try {
+      if (marker.getType().equals(SonarLintCorePlugin.MARKER_TAINT_ID)) {
+        SonarLintCorePlugin.getTelemetry().taintVulnerabilitiesInvestigatedLocally();
+      }
+    } catch (CoreException e) {
+      SonarLintLogger.get().debug("Cannot get marker type", e);
     }
   }
 }
