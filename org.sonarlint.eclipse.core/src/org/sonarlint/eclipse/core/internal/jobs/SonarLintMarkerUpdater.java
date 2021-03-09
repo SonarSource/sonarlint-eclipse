@@ -117,7 +117,7 @@ public class SonarLintMarkerUpdater {
         }
       }
       if (!taintVulnerabilities.isEmpty() && taintVulnerabilitiesListener != null) {
-        taintVulnerabilitiesListener.markersCreated(taintVulnerabilities);
+        taintVulnerabilitiesListener.markersCreated(facade.isSonarCloud());
       }
     });
 

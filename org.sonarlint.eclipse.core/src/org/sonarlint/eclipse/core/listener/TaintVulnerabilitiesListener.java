@@ -19,9 +19,6 @@
  */
 package org.sonarlint.eclipse.core.listener;
 
-import java.util.List;
-import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
-
 public interface TaintVulnerabilitiesListener {
-  void markersCreated(List<ServerIssue> taintVulnerabilities);
+  void markersCreated(boolean comeFromSonarCloud);
 }

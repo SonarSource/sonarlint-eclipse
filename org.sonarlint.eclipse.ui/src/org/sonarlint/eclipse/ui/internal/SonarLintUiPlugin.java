@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal;
 
-import java.util.List;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -62,7 +61,6 @@ import org.sonarlint.eclipse.ui.internal.popup.MissingNodePopup;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
 import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
-import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotification;
 import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificationListener;
 
@@ -175,15 +173,15 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     startupAsync();
   }
 
-  private static void notifyTaintVulnerabilitiesDisplayed(List<ServerIssue> taintVulnerabilities) {
+  private static void notifyTaintVulnerabilitiesDisplayed(boolean comeFromSonarCloud) {
     if (SonarLintGlobalConfiguration.taintVulnerabilityNeverBeenDisplayed()) {
       SonarLintGlobalConfiguration.setTaintVulnerabilityDisplayed();
-      Display.getDefault().syncExec(() -> showTaintVulnerabitilityNotification(taintVulnerabilities));
+      Display.getDefault().syncExec(() -> showTaintVulnerabitilityNotification(comeFromSonarCloud));
     }
   }
 
-  private static void showTaintVulnerabitilityNotification(List<ServerIssue> taintVulnerabilities) {
-    new TaintVulnerabilityAvailablePopup(taintVulnerabilities).open();
+  private static void showTaintVulnerabitilityNotification(boolean comeFromSonarCloud) {
+    new TaintVulnerabilityAvailablePopup(comeFromSonarCloud).open();
   }
 
   @Override
