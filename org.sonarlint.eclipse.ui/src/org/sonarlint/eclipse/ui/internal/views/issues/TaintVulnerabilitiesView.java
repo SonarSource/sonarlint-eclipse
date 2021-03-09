@@ -19,11 +19,16 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 
 public class TaintVulnerabilitiesView extends MarkerViewWithBottomPanel {
@@ -43,7 +48,14 @@ public class TaintVulnerabilitiesView extends MarkerViewWithBottomPanel {
     bottom.setLayoutData(bottomLayoutData);
 
     Link label = new Link(bottom, SWT.NONE);
-    label.setText("This view displays taint vulnerabilities found by SonarQube or SonarCloud during last analysis. For more informations see <a>TODO</a>");
+    label.setText("This view displays taint vulnerabilities found by SonarQube or SonarCloud during last analysis. <a>Learn more</a>");
+    label.addListener(SWT.Selection, e -> {
+      try {
+        PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL("https://github.com/SonarSource/sonarlint-eclipse/wiki/Taint-Vulnerabilities"));
+      } catch (PartInitException | MalformedURLException ex) {
+        SonarLintLogger.get().error("Unable to open the browser", ex);
+      }
+    });
   }
 
 }
