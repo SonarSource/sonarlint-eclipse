@@ -216,13 +216,15 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
     List<ICodeMining> result = new ArrayList<>();
     for (MarkerFlowLocation l : locations) {
       try {
-        @Nullable
-        Position position = LocationsUtils.getMarkerPosition(l.getMarker(), textEditor);
-        if (position != null && !position.isDeleted()) {
-          result.add(new SonarLintFlowMessageCodeMining(l, doc, position, this));
-          result.add(
-            new SonarLintFlowLocationNumberCodeMining(l, position, this, number,
-              l.equals(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlowLocation().orElse(null))));
+        IMarker marker = l.getMarker();
+        if (marker != null && !l.isDeleted()) {
+          Position position = LocationsUtils.getMarkerPosition(marker, textEditor);
+          if (position != null && !position.isDeleted()) {
+            result.add(new SonarLintFlowMessageCodeMining(l, doc, position, this));
+            result.add(
+              new SonarLintFlowLocationNumberCodeMining(l, position, this, number,
+                l.equals(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlowLocation().orElse(null))));
+          }
         }
         number++;
       } catch (BadLocationException e) {

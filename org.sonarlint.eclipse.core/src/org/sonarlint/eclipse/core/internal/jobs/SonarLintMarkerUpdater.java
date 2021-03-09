@@ -326,17 +326,27 @@ public class SonarLintMarkerUpdater {
         if (!locationFile.isPresent()) {
           continue;
         }
+        ISonarLintFile file = locationFile.get();
         try {
-          IMarker m = locationFile.get().getResource().createMarker(SonarLintCorePlugin.MARKER_TAINT_FLOW_ID);
-          m.setAttribute(IMarker.MESSAGE, l.getMessage());
-          m.setAttribute(IMarker.LINE_NUMBER, l.getStartLine() != null ? l.getStartLine() : 1);
-          Position flowPosition = MarkerUtils.getPosition(locationFile.get().getDocument(),
-            TextRange.get(l.getStartLine(), l.getStartLineOffset(), l.getEndLine(), l.getEndLineOffset()));
-          if (flowPosition != null) {
-            m.setAttribute(IMarker.CHAR_START, flowPosition.getOffset());
-            m.setAttribute(IMarker.CHAR_END, flowPosition.getOffset() + flowPosition.getLength());
+          IDocument document = file.getDocument();
+          int startOffset = document.getLineOffset(l.getStartLine() - 1) + l.getStartLineOffset();
+          int endOffset = document.getLineOffset(l.getEndLine() - 1) + l.getEndLineOffset();
+          String inEditorCode = document.get(startOffset, endOffset - startOffset);
+          if (inEditorCode.equals(l.getCodeSnippet())) {
+            IMarker m = file.getResource().createMarker(SonarLintCorePlugin.MARKER_TAINT_FLOW_ID);
+            m.setAttribute(IMarker.MESSAGE, l.getMessage());
+            m.setAttribute(IMarker.LINE_NUMBER, l.getStartLine() != null ? l.getStartLine() : 1);
+            Position flowPosition = MarkerUtils.getPosition(document,
+              TextRange.get(l.getStartLine(), l.getStartLineOffset(), l.getEndLine(), l.getEndLineOffset()));
+            if (flowPosition != null) {
+              m.setAttribute(IMarker.CHAR_START, flowPosition.getOffset());
+              m.setAttribute(IMarker.CHAR_END, flowPosition.getOffset() + flowPosition.getLength());
+            }
+            flowLocation.setMarker(m);
           }
-          flowLocation.setMarker(m);
+          else {
+            flowLocation.setDeleted(true);
+          }
         } catch (Exception e) {
           SonarLintLogger.get().debug("Unable to create flow marker", e);
         }

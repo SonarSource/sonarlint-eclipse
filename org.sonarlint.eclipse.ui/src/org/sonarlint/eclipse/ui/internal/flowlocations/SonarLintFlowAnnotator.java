@@ -209,11 +209,14 @@ public class SonarLintFlowAnnotator implements SonarLintMarkerSelectionListener,
     }
     Map<Annotation, Position> result = new HashMap<>();
     locations.forEach(location -> {
-      Position markerPosition = LocationsUtils.getMarkerPosition(location.getMarker(), textEditor);
-      if (markerPosition != null && !markerPosition.isDeleted()) {
-        Annotation annotation = new Annotation(ISSUE_FLOW_ANNOTATION_TYPE, false, location.getMessage());
-        // Copy the position to avoid having it updated twice when document is updated
-        result.put(annotation, new Position(markerPosition.getOffset(), markerPosition.getLength()));
+      IMarker marker = location.getMarker();
+      if (marker != null && !location.isDeleted()) {
+        Position markerPosition = LocationsUtils.getMarkerPosition(marker, textEditor);
+        if (markerPosition != null && !markerPosition.isDeleted()) {
+          Annotation annotation = new Annotation(ISSUE_FLOW_ANNOTATION_TYPE, false, location.getMessage());
+          // Copy the position to avoid having it updated twice when document is updated
+          result.put(annotation, new Position(markerPosition.getOffset(), markerPosition.getLength()));
+        }
       }
     });
     return result;

@@ -98,7 +98,8 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
     @Override
     public boolean isValid() {
-      return location.getMarker().exists() && !location.isDeleted();
+      IMarker marker = location.getMarker();
+      return marker != null && marker.exists() && !location.isDeleted();
     }
 
     @Override
@@ -446,7 +447,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     }
     if (location != null) {
       IMarker flowMarker = location.getMarker();
-      if (flowMarker.exists()) {
+      if (flowMarker != null && flowMarker.exists()) {
         try {
           IDE.openEditor(page, flowMarker);
         } catch (PartInitException e) {
