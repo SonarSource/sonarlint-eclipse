@@ -35,6 +35,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
@@ -328,23 +329,10 @@ public class SonarLintMarkerUpdater {
         }
         ISonarLintFile file = locationFile.get();
         try {
-          IDocument document = file.getDocument();
-          int startOffset = document.getLineOffset(l.getStartLine() - 1) + l.getStartLineOffset();
-          int endOffset = document.getLineOffset(l.getEndLine() - 1) + l.getEndLineOffset();
-          String inEditorCode = document.get(startOffset, endOffset - startOffset);
-          if (inEditorCode.equals(l.getCodeSnippet())) {
-            IMarker m = file.getResource().createMarker(SonarLintCorePlugin.MARKER_TAINT_FLOW_ID);
-            m.setAttribute(IMarker.MESSAGE, l.getMessage());
-            m.setAttribute(IMarker.LINE_NUMBER, l.getStartLine() != null ? l.getStartLine() : 1);
-            Position flowPosition = MarkerUtils.getPosition(document,
-              TextRange.get(l.getStartLine(), l.getStartLineOffset(), l.getEndLine(), l.getEndLineOffset()));
-            if (flowPosition != null) {
-              m.setAttribute(IMarker.CHAR_START, flowPosition.getOffset());
-              m.setAttribute(IMarker.CHAR_END, flowPosition.getOffset() + flowPosition.getLength());
-            }
-            flowLocation.setMarker(m);
-          }
-          else {
+          IMarker marker = createMarkerIfCodeMatches(file, l);
+          if (marker != null) {
+            flowLocation.setMarker(marker);
+          } else {
             flowLocation.setDeleted(true);
           }
         } catch (Exception e) {
@@ -354,6 +342,27 @@ public class SonarLintMarkerUpdater {
       i++;
     }
     primaryLocationMarker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, flowsMarkers);
+  }
+
+  @Nullable
+  private static IMarker createMarkerIfCodeMatches(ISonarLintFile file, ServerIssueLocation location) throws BadLocationException, CoreException {
+    IDocument document = file.getDocument();
+    int startOffset = document.getLineOffset(location.getStartLine() - 1) + location.getStartLineOffset();
+    int endOffset = document.getLineOffset(location.getEndLine() - 1) + location.getEndLineOffset();
+    String inEditorCode = document.get(startOffset, endOffset - startOffset);
+    if (inEditorCode.equals(location.getCodeSnippet())) {
+      IMarker marker = file.getResource().createMarker(SonarLintCorePlugin.MARKER_TAINT_FLOW_ID);
+      marker.setAttribute(IMarker.MESSAGE, location.getMessage());
+      marker.setAttribute(IMarker.LINE_NUMBER, location.getStartLine() != null ? location.getStartLine() : 1);
+      Position flowPosition = MarkerUtils.getPosition(document,
+        TextRange.get(location.getStartLine(), location.getStartLineOffset(), location.getEndLine(), location.getEndLineOffset()));
+      if (flowPosition != null) {
+        marker.setAttribute(IMarker.CHAR_START, flowPosition.getOffset());
+        marker.setAttribute(IMarker.CHAR_END, flowPosition.getOffset() + flowPosition.getLength());
+      }
+      return marker;
+    }
+    return null;
   }
 
   /**

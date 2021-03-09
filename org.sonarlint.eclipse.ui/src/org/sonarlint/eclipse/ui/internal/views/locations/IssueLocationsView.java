@@ -74,7 +74,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
   private ToggleAnnotationsAction showAnnotationsAction;
 
-  private static interface LocationNode {
+  private interface LocationNode {
     boolean isValid();
   }
 
@@ -136,11 +136,10 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
           .collect(toList());
       } else {
         children = new ArrayList<>();
-        int groupIndex = 0;
         LocationFileGroupNode lastNode = null;
         for (MarkerFlowLocation location : flow.getLocations()) {
           if (lastNode == null || !lastNode.getFilePath().equals(location.getFilePath())) {
-            lastNode = new LocationFileGroupNode(groupIndex++, location.getFilePath());
+            lastNode = new LocationFileGroupNode(children.size(), location.getFilePath());
             children.add(lastNode);
           }
           lastNode.addLocation(new FlowLocationNode(location));
