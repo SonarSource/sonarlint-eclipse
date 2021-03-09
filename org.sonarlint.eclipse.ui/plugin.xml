@@ -986,7 +986,7 @@
               textPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.error.text"
               textPreferenceValue="true"
               textStylePreferenceKey="org.sonarlint.eclipse.ui.issueFlow.text.style"
-              textStylePreferenceValue="NONE"
+              textStylePreferenceValue="BOX"
               verticalRulerPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.verticalruler"
               verticalRulerPreferenceValue="false"/>
         <specification
