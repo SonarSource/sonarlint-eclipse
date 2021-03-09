@@ -81,7 +81,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.python</groupId>
                   <artifactId>sonar-python-plugin</artifactId>
-                  <version>3.2.0.7856</version>
+                  <version>3.3.0.7945</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
