@@ -282,11 +282,11 @@ public class SonarLintMarkerUpdater {
 
   private static void createFlowMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, String flowMarkerId)
     throws CoreException {
-    MarkerFlows flowsMarkers = new MarkerFlows();
+    List<MarkerFlow> flows = new ArrayList<>();
     int i = 1;
     for (org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow engineFlow : trackable.getFlows()) {
       MarkerFlow flow = new MarkerFlow(i);
-      flowsMarkers.getFlows().add(flow);
+      flows.add(flow);
       List<IssueLocation> locations = new ArrayList<>(engineFlow.locations());
       Collections.reverse(locations);
       for (IssueLocation l : locations) {
@@ -308,16 +308,16 @@ public class SonarLintMarkerUpdater {
       }
       i++;
     }
-    marker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, flowsMarkers);
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, new MarkerFlows(flows));
   }
 
   private static void createFlowMarkersForTaint(ServerIssue taintIssue, IMarker primaryLocationMarker, Map<ISonarLintProject, EclipseProjectBinding> bindingsPerProjects)
     throws CoreException {
-    MarkerFlows flowsMarkers = new MarkerFlows();
+    List<MarkerFlow> flows = new ArrayList<>();
     int i = 1;
     for (Flow engineFlow : taintIssue.getFlows()) {
       MarkerFlow flow = new MarkerFlow(i);
-      flowsMarkers.getFlows().add(flow);
+      flows.add(flow);
       List<ServerIssueLocation> locations = new ArrayList<>(engineFlow.locations());
       Collections.reverse(locations);
       for (ServerIssueLocation l : locations) {
@@ -341,7 +341,7 @@ public class SonarLintMarkerUpdater {
       }
       i++;
     }
-    primaryLocationMarker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, flowsMarkers);
+    primaryLocationMarker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, new MarkerFlows(flows));
   }
 
   @Nullable

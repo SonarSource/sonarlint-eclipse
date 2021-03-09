@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -127,9 +128,9 @@ public final class MarkerUtils {
 
   public static MarkerFlows getIssueFlows(IMarker marker) {
     try {
-      return Optional.ofNullable((MarkerFlows) marker.getAttribute(SONAR_MARKER_EXTRA_LOCATIONS_ATTR)).orElse(new MarkerFlows());
+      return Optional.ofNullable((MarkerFlows) marker.getAttribute(SONAR_MARKER_EXTRA_LOCATIONS_ATTR)).orElseGet(() -> new MarkerFlows(Collections.emptyList()));
     } catch (CoreException e) {
-      return new MarkerFlows();
+      return new MarkerFlows(Collections.emptyList());
     }
   }
 

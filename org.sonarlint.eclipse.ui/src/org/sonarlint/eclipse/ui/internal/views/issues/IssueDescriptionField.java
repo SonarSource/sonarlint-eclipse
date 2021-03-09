@@ -65,21 +65,9 @@ public class IssueDescriptionField extends MarkerField {
     // When grouping by severity, MarkerItem will be a MarkerCategory, that doesn't have an attached marker
     if (marker != null) {
       MarkerFlows issueFlows = MarkerUtils.getIssueFlows(marker);
-      if (!issueFlows.isEmpty()) {
-        String kind;
-        if (issueFlows.isSecondaryLocations()) {
-          kind = "location";
-        } else {
-          kind = "flow";
-        }
-        sb.append(" [+").append(issueFlows.count()).append(" ").append(pluralize(kind, issueFlows.count())).append("]");
-      }
+      sb.append(issueFlows.getSummaryDescription());
     }
     return sb.toString();
-  }
-
-  private static String pluralize(String str, int count) {
-    return count == 1 ? str : (str + "s");
   }
 
   @Override

@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.core.internal.markers;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -28,7 +27,11 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 
 public class MarkerFlows {
 
-  private final List<MarkerFlow> flows = new ArrayList<>();
+  private final List<MarkerFlow> flows;
+
+  public MarkerFlows(List<MarkerFlow> flows) {
+    this.flows = flows;
+  }
 
   public List<MarkerFlow> getFlows() {
     return flows;
@@ -65,5 +68,25 @@ public class MarkerFlows {
 
   public int count() {
     return flows.size();
+  }
+
+  public String getSummaryDescription() {
+    if (!isEmpty()) {
+      String kind;
+      int count;
+      if (isSecondaryLocations() || count() == 1) {
+        kind = "location";
+        count = (int) flows.stream().flatMap(flow -> flow.locations.stream()).count();
+      } else {
+        kind = "flow";
+        count = count();
+      }
+      return " [+" + count + " " + pluralize(kind, count) + "]";
+    }
+    return "";
+  }
+
+  private static String pluralize(String str, int count) {
+    return count == 1 ? str : (str + "s");
   }
 }
