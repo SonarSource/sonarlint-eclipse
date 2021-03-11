@@ -48,7 +48,7 @@ public class TaintVulnerabilitiesView extends MarkerViewWithBottomPanel {
     bottom.setLayoutData(bottomLayoutData);
 
     Link label = new Link(bottom, SWT.NONE);
-    label.setText("This view displays taint vulnerabilities found by SonarQube or SonarCloud during last analysis. <a>Learn more</a>");
+    label.setText("This view displays taint vulnerabilities found by SonarQube or SonarCloud on the main branch during last analysis. <a>Learn more</a>");
     label.addListener(SWT.Selection, e -> {
       try {
         PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL("https://github.com/SonarSource/sonarlint-eclipse/wiki/Taint-Vulnerabilities"));
