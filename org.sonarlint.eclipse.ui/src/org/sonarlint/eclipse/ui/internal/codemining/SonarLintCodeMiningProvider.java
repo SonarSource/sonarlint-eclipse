@@ -46,6 +46,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlows;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintUiPlugin;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationSelectionListener;
@@ -133,10 +134,7 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
 
   @Override
   public void markerSelected(Optional<IMarker> marker) {
-    forceRefreshCodeMiningsIfNecessary(marker, m -> {
-      List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlows(m);
-      return flowsMarkers.stream().flatMap(f -> f.getLocations().stream());
-    });
+    forceRefreshCodeMiningsIfNecessary(marker, m -> MarkerUtils.getIssueFlows(m).allLocationsAsStream());
   }
 
   @Override
@@ -181,17 +179,13 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
     if (markerToUse == null) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    // Return fast if the marker is not for the current editor
     ITextEditor textEditor = super.getAdapter(ITextEditor.class);
     IFileEditorInput editorInput = textEditor.getEditorInput().getAdapter(IFileEditorInput.class);
-    if (editorInput == null || !editorInput.getFile().equals(markerToUse.getResource())) {
-      return CompletableFuture.completedFuture(emptyList());
-    }
-    List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlows(markerToUse);
+    MarkerFlows flowsMarkers = MarkerUtils.getIssueFlows(markerToUse);
     if (flowsMarkers.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    boolean isSecondaryLocation = MarkerUtils.isSecondaryLocations(flowsMarkers);
+    boolean isSecondaryLocation = flowsMarkers.isSecondaryLocations();
     Optional<MarkerFlow> lastSelectedFlow = SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlow();
     if (!isSecondaryLocation && !lastSelectedFlow.isPresent()) {
       return CompletableFuture.completedFuture(emptyList());
@@ -204,7 +198,7 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
       List<MarkerFlowLocation> locations;
       if (isSecondaryLocation) {
         // Flatten all locations
-        locations = flowsMarkers.stream().flatMap(f -> f.getLocations().stream()).collect(toList());
+        locations = flowsMarkers.allLocationsAsStream().collect(toList());
       } else if (lastSelectedFlow.isPresent()) {
         locations = lastSelectedFlow.get().getLocations();
       } else {
@@ -222,13 +216,15 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
     List<ICodeMining> result = new ArrayList<>();
     for (MarkerFlowLocation l : locations) {
       try {
-        @Nullable
-        Position position = LocationsUtils.getMarkerPosition(l.getMarker(), textEditor);
-        if (position != null && !position.isDeleted()) {
-          result.add(new SonarLintFlowMessageCodeMining(l, doc, position, this));
-          result.add(
-            new SonarLintFlowLocationNumberCodeMining(l, position, this, number,
-              l.equals(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlowLocation().orElse(null))));
+        IMarker marker = l.getMarker();
+        if (marker != null && !l.isDeleted()) {
+          Position position = LocationsUtils.getMarkerPosition(marker, textEditor);
+          if (position != null && !position.isDeleted()) {
+            result.add(new SonarLintFlowMessageCodeMining(l, doc, position, this));
+            result.add(
+              new SonarLintFlowLocationNumberCodeMining(l, position, this, number,
+                l.equals(SonarLintUiPlugin.getSonarlintMarkerSelectionService().getLastSelectedFlowLocation().orElse(null))));
+          }
         }
         number++;
       } catch (BadLocationException e) {

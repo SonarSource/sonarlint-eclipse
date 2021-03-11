@@ -46,7 +46,6 @@ public class LocalLeakTest extends AbstractSonarLintTest {
 
     SWTBotView view = new OnTheFlyViewBot(bot).show();
     assertThat(view.bot().tree().columns()).containsExactly("Date", "Description", "Resource");
-    assertThat(view.bot().tree().getAllItems()).isEmpty();
 
     IProject project = importEclipseProject("java/leak", "leak");
     JobHelpers.waitForJobsToComplete(bot);

@@ -88,6 +88,39 @@
       </persistent>
    </extension>
    
+   <extension
+        id="sonarlintTaintVulnerability"
+        name="SonarLint Taint Vulnerability"
+        point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="false">
+      </persistent>
+      <attribute
+            name="rulename">
+      </attribute>
+      <attribute
+            name="rulekey">
+      </attribute>
+      <attribute
+            name="creationdate">
+      </attribute>
+   </extension>
+   
+   <extension
+        id="sonarlintTaintVulnerabilityFlowLocation"
+        name="SonarLint Taint Vulnerability Flow Location"
+        point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.textmarker">
+      </super>
+      <persistent
+            value="false">
+      </persistent>
+   </extension>
+   
   <extension
         point="org.eclipse.core.expressions.propertyTesters">
      <propertyTester

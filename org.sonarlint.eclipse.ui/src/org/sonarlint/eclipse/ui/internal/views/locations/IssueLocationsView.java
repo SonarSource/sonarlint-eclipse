@@ -19,6 +19,8 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.locations;
 
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,6 +53,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlows;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -71,12 +74,16 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
   private ToggleAnnotationsAction showAnnotationsAction;
 
-  private static class FlowNode {
+  private interface LocationNode {
+    boolean isValid();
+  }
+
+  private static class FlowLocationNode implements LocationNode {
 
     private final String label;
     private final MarkerFlowLocation location;
 
-    public FlowNode(MarkerFlowLocation location) {
+    public FlowLocationNode(MarkerFlowLocation location) {
       this.label = location.getParent().getLocations().size() > 1 ? (location.getNumber() + ": " + location.getMessage()) : location.getMessage();
       this.location = location;
     }
@@ -90,6 +97,12 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     }
 
     @Override
+    public boolean isValid() {
+      IMarker marker = location.getMarker();
+      return marker != null && marker.exists() && !location.isDeleted();
+    }
+
+    @Override
     public int hashCode() {
       return Objects.hash(location.getParent().getNumber(), location.getNumber());
     }
@@ -99,10 +112,10 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       if (this == obj) {
         return true;
       }
-      if (!(obj instanceof FlowNode)) {
+      if (!(obj instanceof FlowLocationNode)) {
         return false;
       }
-      FlowNode other = (FlowNode) obj;
+      FlowLocationNode other = (FlowLocationNode) obj;
       return Objects.equals(location.getParent().getNumber(), other.location.getParent().getNumber()) && Objects.equals(location.getNumber(), other.location.getNumber());
     }
 
@@ -110,16 +123,28 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
   private static class FlowRootNode {
 
-    private final List<FlowNode> children;
+    private final List<LocationNode> children;
     private final MarkerFlow flow;
 
     public FlowRootNode(MarkerFlow flow) {
       this.flow = flow;
-      children = flow.getLocations().stream()
-        // SLE-388 - "Highlight-only" locations don't have a message
-        .filter(l -> !StringUtils.isEmpty(l.getMessage()))
-        .map(FlowNode::new)
-        .collect(toList());
+      if (flow.areAllLocationsInSameFile()) {
+        children = flow.getLocations().stream()
+          // SLE-388 - "Highlight-only" locations don't have a message
+          .filter(l -> !StringUtils.isEmpty(l.getMessage()))
+          .map(FlowLocationNode::new)
+          .collect(toList());
+      } else {
+        children = new ArrayList<>();
+        LocationFileGroupNode lastNode = null;
+        for (MarkerFlowLocation location : flow.getLocations()) {
+          if (lastNode == null || !lastNode.getFilePath().equals(location.getFilePath())) {
+            lastNode = new LocationFileGroupNode(children.size(), location.getFilePath());
+            children.add(lastNode);
+          }
+          lastNode.addLocation(new FlowLocationNode(location));
+        }
+      }
     }
 
     public MarkerFlow getFlow() {
@@ -130,8 +155,8 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       return "Flow " + flow.getNumber();
     }
 
-    public FlowNode[] getChildren() {
-      return children.toArray(new FlowNode[0]);
+    public LocationNode[] getChildren() {
+      return children.toArray(new LocationNode[0]);
     }
 
     @Override
@@ -153,22 +178,69 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
   }
 
+  private static class LocationFileGroupNode implements LocationNode {
+
+    private final int groupIndex;
+    private final String filePath;
+    private List<FlowLocationNode> children = new ArrayList<>();
+
+    public LocationFileGroupNode(int groupIndex, String filePath) {
+      this.groupIndex = groupIndex;
+      this.filePath = filePath;
+    }
+
+    public void addLocation(FlowLocationNode flowLocationNode) {
+      children.add(flowLocationNode);
+    }
+
+    public @Nullable String getFilePath() {
+      return filePath;
+    }
+
+    public List<FlowLocationNode> getChildren() {
+      return children;
+    }
+
+    @Override
+    public boolean isValid() {
+      return children.get(0).isValid();
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(filePath, groupIndex);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof FlowRootNode)) {
+        return false;
+      }
+      LocationFileGroupNode other = (LocationFileGroupNode) obj;
+      return Objects.equals(filePath, other.filePath) && Objects.equals(groupIndex, other.groupIndex);
+    }
+
+  }
+
   private static class RootNode {
 
     private final IMarker rootMarker;
-    private final List<MarkerFlow> flowsMarkers;
+    private final MarkerFlows flows;
 
-    public RootNode(IMarker rootMarker, List<MarkerFlow> flowsMarkers) {
+    public RootNode(IMarker rootMarker, MarkerFlows flows) {
       this.rootMarker = rootMarker;
-      this.flowsMarkers = flowsMarkers;
+      this.flows = flows;
     }
 
     public IMarker getMarker() {
       return rootMarker;
     }
 
-    public List<MarkerFlow> getFlows() {
-      return flowsMarkers;
+    public MarkerFlows getFlows() {
+      return flows;
     }
 
   }
@@ -178,7 +250,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     @Override
     public Object[] getElements(Object inputElement) {
       IMarker sonarlintMarker = (IMarker) inputElement;
-      List<MarkerFlow> flowsMarkers = MarkerUtils.getIssueFlows(sonarlintMarker);
+      MarkerFlows flowsMarkers = MarkerUtils.getIssueFlows(sonarlintMarker);
       if (!flowsMarkers.isEmpty()) {
         return new Object[] {new RootNode(sonarlintMarker, flowsMarkers)};
       } else {
@@ -189,22 +261,24 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
     @Override
     public Object[] getChildren(Object parentElement) {
       if (parentElement instanceof RootNode) {
-        List<MarkerFlow> flows = ((RootNode) parentElement).getFlows();
-        if (flows.size() > 1) {
+        MarkerFlows flows = ((RootNode) parentElement).getFlows();
+        if (flows.count() > 1) {
           // Flatten if all flows have a single location
-          if (flows.stream().allMatch(f -> f.getLocations().size() <= 1)) {
-            return flows.stream().map(FlowRootNode::new).flatMap(f -> Stream.of(f.getChildren())).toArray();
+          if (flows.isSecondaryLocations()) {
+            return flows.getFlows().stream().map(FlowRootNode::new).flatMap(f -> Stream.of(f.getChildren())).toArray();
           } else {
-            return flows.stream().map(FlowRootNode::new).toArray();
+            return flows.getFlows().stream().map(FlowRootNode::new).toArray();
           }
-        } else if (flows.size() == 1) {
+        } else if (flows.count() == 1) {
           // Don't show flow number
-          return new FlowRootNode(flows.get(0)).getChildren();
+          return new FlowRootNode(flows.getFlows().get(0)).getChildren();
         } else {
           return new Object[0];
         }
       } else if (parentElement instanceof FlowRootNode) {
         return ((FlowRootNode) parentElement).getChildren();
+      } else if (parentElement instanceof LocationFileGroupNode) {
+        return ((LocationFileGroupNode) parentElement).getChildren().toArray();
       } else {
         return new Object[0];
       }
@@ -247,8 +321,10 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
         return ((RootNode) element).getMarker().getAttribute(IMarker.MESSAGE, "No message");
       } else if (element instanceof FlowRootNode) {
         return ((FlowRootNode) element).getLabel();
-      } else if (element instanceof FlowNode) {
-        return ((FlowNode) element).getLabel();
+      } else if (element instanceof FlowLocationNode) {
+        return ((FlowLocationNode) element).getLabel();
+      } else if (element instanceof LocationFileGroupNode) {
+        return Paths.get(((LocationFileGroupNode) element).getFilePath()).getFileName().toString();
       } else if (element instanceof String) {
         return (String) element;
       }
@@ -276,23 +352,21 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       return new StyledString(getText(element), isValidLocation(element) ? null : invalidLocationStyler);
     }
 
-  }
-
-  private static boolean isValidLocation(Object element) {
-    if (element instanceof RootNode) {
-      return ((RootNode) element).getMarker().exists();
-    } else if (element instanceof FlowRootNode) {
-      return Stream.of(((FlowRootNode) element).getChildren()).anyMatch(IssueLocationsView::isValidFlowLocation);
-    } else if (element instanceof FlowNode) {
-      return isValidFlowLocation(((FlowNode) element));
-    } else if (element instanceof String) {
-      return true;
+    private static boolean isValidLocation(Object element) {
+      if (element instanceof RootNode) {
+        return ((RootNode) element).getMarker().exists();
+      } else if (element instanceof FlowRootNode) {
+        return Stream.of(((FlowRootNode) element).getChildren()).anyMatch(LocationNode::isValid);
+      } else if (element instanceof FlowLocationNode) {
+        return ((FlowLocationNode) element).isValid();
+      } else if (element instanceof LocationFileGroupNode) {
+        return ((LocationFileGroupNode) element).isValid();
+      } else if (element instanceof String) {
+        return true;
+      }
+      throw new IllegalArgumentException("Unknown node type: " + element);
     }
-    throw new IllegalArgumentException("Unknow node type: " + element);
-  }
 
-  private static boolean isValidFlowLocation(FlowNode flowNode) {
-    return flowNode.getLocation().getMarker().exists() && !flowNode.getLocation().isDeleted();
   }
 
   @Override
@@ -353,8 +427,10 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
       SonarLintUiPlugin.getSonarlintMarkerSelectionService().flowSelected(null);
     } else if (selectedNode instanceof FlowRootNode) {
       SonarLintUiPlugin.getSonarlintMarkerSelectionService().flowSelected(((FlowRootNode) selectedNode).getFlow());
-    } else if (selectedNode instanceof FlowNode) {
-      SonarLintUiPlugin.getSonarlintMarkerSelectionService().flowLocationSelected(((FlowNode) selectedNode).getLocation());
+    } else if (selectedNode instanceof FlowLocationNode) {
+      SonarLintUiPlugin.getSonarlintMarkerSelectionService().flowLocationSelected(((FlowLocationNode) selectedNode).getLocation());
+    } else if (selectedNode instanceof LocationFileGroupNode) {
+      SonarLintUiPlugin.getSonarlintMarkerSelectionService().flowLocationSelected(((LocationFileGroupNode) selectedNode).getChildren().get(0).getLocation());
     } else {
       throw new IllegalStateException("Unsupported node type");
     }
@@ -362,9 +438,15 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
 
   private static void onTreeNodeDoubleClick(Object node) {
     IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-    if (node instanceof FlowNode) {
-      IMarker flowMarker = ((FlowNode) node).getLocation().getMarker();
-      if (flowMarker.exists()) {
+    MarkerFlowLocation location = null;
+    if (node instanceof FlowLocationNode) {
+      location = ((FlowLocationNode) node).getLocation();
+    } else if (node instanceof LocationFileGroupNode) {
+      location = ((LocationFileGroupNode) node).getChildren().get(0).getLocation();
+    }
+    if (location != null) {
+      IMarker flowMarker = location.getMarker();
+      if (flowMarker != null && flowMarker.exists()) {
         try {
           IDE.openEditor(page, flowMarker);
         } catch (PartInitException e) {
@@ -423,7 +505,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
   }
 
   public void selectLocation(MarkerFlowLocation location) {
-    locationsViewer.setSelection(new StructuredSelection(new FlowNode(location)), true);
+    locationsViewer.setSelection(new StructuredSelection(new FlowLocationNode(location)), true);
   }
 
   public void selectFlow(MarkerFlow flow) {
@@ -431,7 +513,7 @@ public class IssueLocationsView extends ViewPart implements SonarLintMarkerSelec
   }
 
   public void refreshLabel(MarkerFlowLocation location) {
-    locationsViewer.refresh(new FlowNode(location));
+    locationsViewer.refresh(new FlowLocationNode(location));
   }
 
 }

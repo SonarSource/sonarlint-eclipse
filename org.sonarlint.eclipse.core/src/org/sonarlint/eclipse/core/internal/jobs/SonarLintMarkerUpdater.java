@@ -35,26 +35,43 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
+import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
 import org.sonarlint.eclipse.core.internal.markers.MarkerFlowLocation;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlows;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
+import org.sonarlint.eclipse.core.internal.tracking.ServerIssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
+import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarlint.eclipse.core.listener.TaintVulnerabilitiesListener;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueLocation;
+import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
+import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue.Flow;
+import org.sonarsource.sonarlint.core.client.api.connected.ServerIssueLocation;
 
 public class SonarLintMarkerUpdater {
 
+  private static TaintVulnerabilitiesListener taintVulnerabilitiesListener;
+
   private SonarLintMarkerUpdater() {
+  }
+
+  public static void setTaintVulnerabilitiesListener(TaintVulnerabilitiesListener listener) {
+    taintVulnerabilitiesListener = listener;
   }
 
   public static void createOrUpdateMarkers(ISonarLintFile file, Optional<IDocument> openedDocument, Collection<Trackable> issues, TriggerType triggerType) {
@@ -75,6 +92,64 @@ public class SonarLintMarkerUpdater {
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
+  }
+
+  public static void refreshMarkersForTaint(ISonarLintFile currentFile, ConnectedEngineFacade facade) {
+    deleteTaintMarkers(currentFile);
+
+    ISonarLintProject project = currentFile.getProject();
+    SonarLintProjectConfiguration config = SonarLintCorePlugin.loadConfig(project);
+    config.getProjectBinding().ifPresent(binding -> {
+      List<ServerIssue> taintVulnerabilities = facade.getServerIssues(binding, currentFile.getProjectRelativePath())
+        .stream()
+        .filter(i -> i.ruleKey().contains("security"))
+        .filter(i -> StringUtils.isEmpty(i.resolution()))
+        .collect(Collectors.toList());
+
+      List<ISonarLintProject> boundSiblingProjects = facade.getBoundProjects(binding.projectKey());
+      Map<ISonarLintProject, EclipseProjectBinding> bindings = boundSiblingProjects.stream()
+        .collect(Collectors.toMap(p -> p, p -> SonarLintCorePlugin.loadConfig(p).getProjectBinding().get()));
+
+      for (ServerIssue taintIssue : taintVulnerabilities) {
+        Optional<ISonarLintFile> primaryLocationFile = findFileForLocationInBoundProjects(bindings, taintIssue.getFilePath());
+        if (primaryLocationFile.isPresent()) {
+          createTaintMarker(primaryLocationFile.get().getDocument(), primaryLocationFile.get(), taintIssue, bindings);
+        }
+      }
+      if (!taintVulnerabilities.isEmpty() && taintVulnerabilitiesListener != null) {
+        taintVulnerabilitiesListener.markersCreated(facade.isSonarCloud());
+      }
+    });
+
+  }
+
+  public static void deleteTaintMarkers(ISonarLintFile currentFile) {
+    try {
+      Set<IMarker> markersToDelete = new HashSet<>(Arrays.asList(currentFile.getResource().findMarkers(SonarLintCorePlugin.MARKER_TAINT_ID, false, IResource.DEPTH_ZERO)));
+      for (IMarker primaryLocationMarker : markersToDelete) {
+        MarkerUtils.getIssueFlows(primaryLocationMarker).deleteAllMarkers();
+        primaryLocationMarker.delete();
+      }
+    } catch (CoreException e) {
+      SonarLintLogger.get().error(e.getMessage(), e);
+    }
+  }
+
+  private static Optional<ISonarLintFile> findFileForLocationInBoundProjects(Map<ISonarLintProject, EclipseProjectBinding> bindingsPerProjects, @Nullable String serverIssuePath) {
+    if (serverIssuePath == null) {
+      // Should never occur, no taint issues are at file level
+      return Optional.empty();
+    }
+    for (Map.Entry<ISonarLintProject, EclipseProjectBinding> entry : bindingsPerProjects.entrySet()) {
+      Optional<String> idePath = entry.getValue().serverPathToIdePath(serverIssuePath);
+      if (idePath.isPresent()) {
+        Optional<ISonarLintFile> primaryLocationFile = entry.getKey().find(idePath.get());
+        if (primaryLocationFile.isPresent()) {
+          return primaryLocationFile;
+        }
+      }
+    }
+    return Optional.empty();
   }
 
   public static Set<IResource> getResourcesWithMarkers(ISonarLintProject project) throws CoreException {
@@ -136,7 +211,8 @@ public class SonarLintMarkerUpdater {
           createMarker(lazyInitDocument, file, issue, triggerType);
         } else {
           IMarker marker = file.getResource().findMarker(issue.getMarkerId());
-          updateMarkerAttributes(lazyInitDocument, file, issue, marker, triggerType);
+          updateMarkerAttributes(lazyInitDocument, issue, marker);
+          createFlowMarkersForLocalIssues(lazyInitDocument, file, issue, marker, markerIdForFlows(triggerType));
           previousMarkersToDelete.remove(marker);
         }
       } else {
@@ -152,14 +228,38 @@ public class SonarLintMarkerUpdater {
       trackable.setMarkerId(marker.getId());
     }
 
-    // See MarkerViewUtils
-    marker.setAttribute("org.eclipse.ui.views.markers.name", issuable.getResourceNameForMarker());
-    marker.setAttribute("org.eclipse.ui.views.markers.path", issuable.getResourceContainerForMarker());
+    setMarkerViewUtilsAttributes(issuable, marker);
 
-    updateMarkerAttributes(document, issuable, trackable, marker, triggerType);
+    updateMarkerAttributes(document, trackable, marker);
+    createFlowMarkersForLocalIssues(document, issuable, trackable, marker, markerIdForFlows(triggerType));
+
   }
 
-  private static void updateMarkerAttributes(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, TriggerType triggerType) throws CoreException {
+  private static String markerIdForFlows(TriggerType triggerType) {
+    return triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID : SonarLintCorePlugin.MARKER_REPORT_FLOW_ID;
+  }
+
+  private static void createTaintMarker(IDocument document, ISonarLintIssuable issuable, ServerIssue taintIssue,
+    Map<ISonarLintProject, EclipseProjectBinding> bindingsPerProjects) {
+    try {
+      IMarker marker = issuable.getResource().createMarker(SonarLintCorePlugin.MARKER_TAINT_ID);
+
+      setMarkerViewUtilsAttributes(issuable, marker);
+
+      updateMarkerAttributes(document, new ServerIssueTrackable(taintIssue), marker);
+      createFlowMarkersForTaint(taintIssue, marker, bindingsPerProjects);
+    } catch (CoreException e) {
+      SonarLintLogger.get().error("Unable to create marker", e);
+    }
+  }
+
+  private static void setMarkerViewUtilsAttributes(ISonarLintIssuable issuable, IMarker marker) throws CoreException {
+    // See MarkerViewUtil
+    marker.setAttribute("org.eclipse.ui.views.markers.name", issuable.getResourceNameForMarker());
+    marker.setAttribute("org.eclipse.ui.views.markers.path", issuable.getResourceContainerForMarker());
+  }
+
+  private static void updateMarkerAttributes(IDocument document, Trackable trackable, IMarker marker) throws CoreException {
     Map<String, Object> existingAttributes = marker.getAttributes();
 
     setMarkerAttributeIfDifferent(marker, existingAttributes, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, trackable.getRuleKey());
@@ -177,23 +277,23 @@ public class SonarLintMarkerUpdater {
       setMarkerAttributeIfDifferent(marker, existingAttributes, IMarker.CHAR_END, position.getOffset() + position.getLength());
     }
 
-    createFlowMarkers(document, issuable, trackable, marker, triggerType);
-
     updateServerMarkerAttributes(trackable, marker);
   }
 
-  private static void createFlowMarkers(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, TriggerType triggerType) throws CoreException {
-    List<MarkerFlow> flowsMarkers = new ArrayList<>();
+  private static void createFlowMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, String flowMarkerId)
+    throws CoreException {
+    List<MarkerFlow> flows = new ArrayList<>();
     int i = 1;
     for (org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow engineFlow : trackable.getFlows()) {
       MarkerFlow flow = new MarkerFlow(i);
-      flowsMarkers.add(flow);
+      flows.add(flow);
       List<IssueLocation> locations = new ArrayList<>(engineFlow.locations());
       Collections.reverse(locations);
       for (IssueLocation l : locations) {
+        l.getInputFile();
         MarkerFlowLocation flowLocation = new MarkerFlowLocation(flow, l.getMessage());
         try {
-          IMarker m = issuable.getResource().createMarker(triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID : SonarLintCorePlugin.MARKER_REPORT_FLOW_ID);
+          IMarker m = issuable.getResource().createMarker(flowMarkerId);
           m.setAttribute(IMarker.MESSAGE, l.getMessage());
           m.setAttribute(IMarker.LINE_NUMBER, l.getStartLine() != null ? l.getStartLine() : 1);
           Position flowPosition = MarkerUtils.getPosition(document, TextRange.get(l.getStartLine(), l.getStartLineOffset(), l.getEndLine(), l.getEndLineOffset()));
@@ -208,7 +308,61 @@ public class SonarLintMarkerUpdater {
       }
       i++;
     }
-    marker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, flowsMarkers);
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, new MarkerFlows(flows));
+  }
+
+  private static void createFlowMarkersForTaint(ServerIssue taintIssue, IMarker primaryLocationMarker, Map<ISonarLintProject, EclipseProjectBinding> bindingsPerProjects)
+    throws CoreException {
+    List<MarkerFlow> flows = new ArrayList<>();
+    int i = 1;
+    for (Flow engineFlow : taintIssue.getFlows()) {
+      MarkerFlow flow = new MarkerFlow(i);
+      flows.add(flow);
+      List<ServerIssueLocation> locations = new ArrayList<>(engineFlow.locations());
+      Collections.reverse(locations);
+      for (ServerIssueLocation l : locations) {
+        MarkerFlowLocation flowLocation = new MarkerFlowLocation(flow, l.getMessage(), l.getFilePath());
+
+        Optional<ISonarLintFile> locationFile = findFileForLocationInBoundProjects(bindingsPerProjects, l.getFilePath());
+        if (!locationFile.isPresent()) {
+          continue;
+        }
+        ISonarLintFile file = locationFile.get();
+        try {
+          IMarker marker = createMarkerIfCodeMatches(file, l);
+          if (marker != null) {
+            flowLocation.setMarker(marker);
+          } else {
+            flowLocation.setDeleted(true);
+          }
+        } catch (Exception e) {
+          SonarLintLogger.get().debug("Unable to create flow marker", e);
+        }
+      }
+      i++;
+    }
+    primaryLocationMarker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, new MarkerFlows(flows));
+  }
+
+  @Nullable
+  private static IMarker createMarkerIfCodeMatches(ISonarLintFile file, ServerIssueLocation location) throws BadLocationException, CoreException {
+    IDocument document = file.getDocument();
+    int startOffset = document.getLineOffset(location.getStartLine() - 1) + location.getStartLineOffset();
+    int endOffset = document.getLineOffset(location.getEndLine() - 1) + location.getEndLineOffset();
+    String inEditorCode = document.get(startOffset, endOffset - startOffset);
+    if (inEditorCode.equals(location.getCodeSnippet())) {
+      IMarker marker = file.getResource().createMarker(SonarLintCorePlugin.MARKER_TAINT_FLOW_ID);
+      marker.setAttribute(IMarker.MESSAGE, location.getMessage());
+      marker.setAttribute(IMarker.LINE_NUMBER, location.getStartLine() != null ? location.getStartLine() : 1);
+      Position flowPosition = MarkerUtils.getPosition(document,
+        TextRange.get(location.getStartLine(), location.getStartLineOffset(), location.getEndLine(), location.getEndLineOffset()));
+      if (flowPosition != null) {
+        marker.setAttribute(IMarker.CHAR_START, flowPosition.getOffset());
+        marker.setAttribute(IMarker.CHAR_END, flowPosition.getOffset() + flowPosition.getLength());
+      }
+      return marker;
+    }
+    return null;
   }
 
   /**
@@ -263,6 +417,15 @@ public class SonarLintMarkerUpdater {
       .forEach(p -> {
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_FLOW_ID);
+      });
+  }
+
+  public static void deleteAllMarkersFromTaint() {
+    ProjectsProviderUtils.allProjects().stream()
+      .filter(ISonarLintProject::isOpen)
+      .forEach(p -> {
+        p.deleteAllMarkers(SonarLintCorePlugin.MARKER_TAINT_ID);
+        p.deleteAllMarkers(SonarLintCorePlugin.MARKER_TAINT_FLOW_ID);
       });
   }
 }

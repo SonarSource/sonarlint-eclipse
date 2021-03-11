@@ -45,10 +45,7 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
   }
 
   @Nullable
-  @Override
-  public Object execute(ExecutionEvent event) throws ExecutionException {
-    IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
-
+  protected static IMarker getSelectedMarker(IStructuredSelection selection) {
     List<IMarker> selectedSonarMarkers = new ArrayList<>();
 
     @SuppressWarnings("rawtypes")
@@ -59,12 +56,16 @@ public abstract class AbstractIssueCommand extends AbstractHandler {
         selectedSonarMarkers.add(marker);
       }
     }
+    return !selectedSonarMarkers.isEmpty() ? selectedSonarMarkers.get(0) : null;
+  }
 
-    if (!selectedSonarMarkers.isEmpty()) {
-      IMarker marker = selectedSonarMarkers.get(0);
+  @Nullable
+  @Override
+  public Object execute(ExecutionEvent event) throws ExecutionException {
+    IMarker marker = getSelectedMarker((IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event));
+    if (marker != null) {
       execute(marker);
     }
-
     return null;
   }
 

@@ -469,7 +469,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   public void updateProjectStorage(String projectKey, IProgressMonitor monitor) {
     doWithEngine(engine -> {
       engine.updateProject(createEndpointParams(), buildClientWithProxyAndCredentials(), projectKey,
-        false, new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "' for project '" + projectKey + "'"));
+        true, new WrappedProgressMonitor(monitor, "Update configuration from server '" + getId() + "' for project '" + projectKey + "'"));
       getBoundProjects(projectKey).forEach(p -> {
         ProjectBinding projectBinding = engine.calculatePathPrefixes(projectKey, p.files().stream().map(ISonarLintFile::getProjectRelativePath).collect(toList()));
         String idePathPrefix = projectBinding.idePathPrefix();
@@ -647,7 +647,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   public List<ServerIssue> downloadServerIssues(ProjectBinding projectBinding, String filePath, IProgressMonitor monitor) {
     return withEngine(
       engine -> engine.downloadServerIssues(createEndpointParams(), buildClientWithProxyAndCredentials(), projectBinding, filePath,
-        false, new WrappedProgressMonitor(monitor, "Fetch issues")))
+        true, new WrappedProgressMonitor(monitor, "Fetch issues")))
           .orElse(emptyList());
   }
 

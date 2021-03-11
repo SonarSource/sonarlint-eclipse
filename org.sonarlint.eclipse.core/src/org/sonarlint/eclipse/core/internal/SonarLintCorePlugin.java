@@ -61,6 +61,8 @@ public class SonarLintCorePlugin extends Plugin {
   public static final String MARKER_REPORT_ID = PLUGIN_ID + ".sonarlintReportProblem";
   public static final String MARKER_REPORT_FLOW_ID = PLUGIN_ID + ".sonarlintReportFlowLocation";
   public static final String MARKER_HOTSPOT_ID = PLUGIN_ID + ".sonarlintHotspot";
+  public static final String MARKER_TAINT_ID = PLUGIN_ID + ".sonarlintTaintVulnerability";
+  public static final String MARKER_TAINT_FLOW_ID = PLUGIN_ID + ".sonarlintTaintVulnerabilityFlowLocation";
 
   private static SonarLintCorePlugin plugin;
   private static SonarLintProjectConfigurationManager configManager;

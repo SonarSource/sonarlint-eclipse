@@ -19,7 +19,6 @@
  */
 package org.sonarlint.eclipse.ui.internal.views.issues;
 
-import java.util.List;
 import java.util.Locale;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
@@ -29,7 +28,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.views.markers.MarkerField;
 import org.eclipse.ui.views.markers.MarkerItem;
-import org.sonarlint.eclipse.core.internal.markers.MarkerFlow;
+import org.sonarlint.eclipse.core.internal.markers.MarkerFlows;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.utils.CompatibilityUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -65,23 +64,10 @@ public class IssueDescriptionField extends MarkerField {
     IMarker marker = item.getMarker();
     // When grouping by severity, MarkerItem will be a MarkerCategory, that doesn't have an attached marker
     if (marker != null) {
-      List<MarkerFlow> issueFlows = MarkerUtils.getIssueFlows(marker);
-      if (!issueFlows.isEmpty()) {
-        boolean isSecondary = MarkerUtils.isSecondaryLocations(issueFlows);
-        String kind;
-        if (isSecondary) {
-          kind = "location";
-        } else {
-          kind = "flow";
-        }
-        sb.append(" [+").append(issueFlows.size()).append(" ").append(pluralize(kind, issueFlows.size())).append("]");
-      }
+      MarkerFlows issueFlows = MarkerUtils.getIssueFlows(marker);
+      sb.append(issueFlows.getSummaryDescription());
     }
     return sb.toString();
-  }
-
-  private static String pluralize(String str, int count) {
-    return count == 1 ? str : (str + "s");
   }
 
   @Override

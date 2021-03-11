@@ -43,6 +43,7 @@ public final class SonarLintImages {
 
   public static final Image ISSUE_ANNOTATION = createImage("full/annotation16/issue.png"); //$NON-NLS-1$
   public static final Image HOTSPOT_ANNOTATION = createImage("full/annotation16/hotspot.png"); //$NON-NLS-1$
+  public static final Image VULNERABILITY_ANNOTATION = createImage("full/annotation16/vulnerability.png"); //$NON-NLS-1$
   public static final Image RESOLUTION_SHOW_RULE = createImage("full/marker_resolution16/showrule.png"); //$NON-NLS-1$
   public static final Image RESOLUTION_SHOW_LOCATIONS = createImage("full/marker_resolution16/showlocations.png"); //$NON-NLS-1$
   public static final Image RESOLUTION_DISABLE_RULE = createImage("full/marker_resolution16/disablerule.png"); //$NON-NLS-1$
@@ -65,6 +66,9 @@ public final class SonarLintImages {
   public static final Image SONARCLOUD_SERVER_ICON_IMG = createImage("logo/sonarcloud-16px.png"); //$NON-NLS-1$
   public static final Image IMG_SONARQUBE_LOGO = createImage("logo/sonarqube-black-256px.png"); //$NON-NLS-1$
   public static final Image IMG_SONARCLOUD_LOGO = createImage("logo/sonarcloud-black-256px.png"); //$NON-NLS-1$
+
+  public static final ImageDescriptor SONARCLOUD_16 = createImageDescriptor("sonarcloud-16.png"); //$NON-NLS-1$
+  public static final ImageDescriptor SONARQUBE_16 = createImageDescriptor("sonarqube-16.png"); //$NON-NLS-1$
 
   public static final Image IMG_OPEN_EXTERNAL = createImage("external-link-16.png"); //$NON-NLS-1$
 

@@ -64,11 +64,11 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
   }
 
   @Test
-  public void shouldShowSingleFlow() throws Exception {
+  public void shouldShowSingleFlow() {
     SWTBotEclipseEditor helloEditor = openAndAnalyzeFile("SingleFlow.java");
 
     String issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
-    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+1 flow]");
+    waitUntilOnTheFlyViewHasItemWithTitle(issueTitle + " [+5 locations]");
     onTheFly.bot().tree().getAllItems()[0].select();
 
     SWTBotView issueLocationsView = getIssueLocationsView();
@@ -86,7 +86,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
   }
 
   @Test
-  public void shouldShowHighlightsOnly() throws Exception {
+  public void shouldShowHighlightsOnly() {
     openAndAnalyzeFile("HighlightOnly.java");
 
     String issueTitle = "Remove these useless parentheses.";
@@ -104,7 +104,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
   }
 
   @Test
-  public void shouldShowMultipleFlows() throws Exception {
+  public void shouldShowMultipleFlows() {
     SWTBotEclipseEditor helloEditor = openAndAnalyzeFile("MultiFlows.java");
 
     String issueTitle = "\"NullPointerException\" will be thrown when invoking method \"doAnotherThingWith()\".";
@@ -140,7 +140,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
   }
 
   @Test
-  public void shouldShowFlattenedFlows() throws Exception {
+  public void shouldShowFlattenedFlows() {
     SWTBotEclipseEditor cognitiveComplexityEditor = openAndAnalyzeFile("CognitiveComplexity.java");
 
     String issueTitle = "Refactor this method to reduce its Cognitive Complexity from 24 to the 15 allowed.";

@@ -43,6 +43,7 @@ import org.sonarlint.eclipse.core.internal.NotificationListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.jobs.SonarLintMarkerUpdater;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.notifications.ListenerFactory;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
@@ -58,6 +59,7 @@ import org.sonarlint.eclipse.ui.internal.popup.DeveloperNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.GenericNotificationPopup;
 import org.sonarlint.eclipse.ui.internal.popup.MissingNodePopup;
 import org.sonarlint.eclipse.ui.internal.popup.ServerStorageNeedUpdatePopup;
+import org.sonarlint.eclipse.ui.internal.popup.TaintVulnerabilityAvailablePopup;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotification;
 import org.sonarsource.sonarlint.core.client.api.notifications.ServerNotificationListener;
@@ -164,9 +166,22 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
 
     getPreferenceStore().addPropertyChangeListener(prefListener);
 
+    SonarLintMarkerUpdater.setTaintVulnerabilitiesListener(SonarLintUiPlugin::notifyTaintVulnerabilitiesDisplayed);
+
     new CheckForUpdatesJob().schedule((long) 10 * 1000);
 
     startupAsync();
+  }
+
+  private static void notifyTaintVulnerabilitiesDisplayed(boolean comeFromSonarCloud) {
+    if (SonarLintGlobalConfiguration.taintVulnerabilityNeverBeenDisplayed()) {
+      SonarLintGlobalConfiguration.setTaintVulnerabilityDisplayed();
+      Display.getDefault().syncExec(() -> showTaintVulnerabitilityNotification(comeFromSonarCloud));
+    }
+  }
+
+  private static void showTaintVulnerabitilityNotification(boolean comeFromSonarCloud) {
+    new TaintVulnerabilityAvailablePopup(comeFromSonarCloud).open();
   }
 
   @Override

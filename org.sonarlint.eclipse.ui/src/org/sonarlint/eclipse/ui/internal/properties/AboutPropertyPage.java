@@ -92,6 +92,10 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
       "      },\n" +
       "      \"show_hotspot\": {\n" +
       "            \"requests_count\": 3\n" +
+      "      },\n" +
+      "      \"taint_vulnerabilities\": {\n" +
+      "            \"investigated_locally_count\": 3,\n" +
+      "            \"investigated_remotely_count\": 4\n" +
       "      }\n"
       + "}");
 

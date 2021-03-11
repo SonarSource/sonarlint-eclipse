@@ -68,7 +68,7 @@ public class SonarLintFlowLocationNumberCodeMining extends AbstractCodeMining {
     gc.setAntialias(SWT.ON);
     String numberStr = Integer.toString(number);
     Point numberExtent = gc.stringExtent(numberStr);
-    // Compute all sizes based on text size to adapt to zoom in/ou
+    // Compute all sizes based on text size to adapt to zoom in/out
     int arcRadius = (int) (numberExtent.y * ARC_RADIUS_RATIO);
     int horizontalPadding = (int) (numberExtent.y * HORIZONTAL_PADDING_RATIO);
     int horizontalMargin = (int) (numberExtent.y * HORIZONTAL_MARGIN_RATIO);

@@ -143,6 +143,14 @@
 	        id="org.sonarlint.eclipse.ui.views.HotspotsView"
 	        name="SonarLint Security Hotspots">
 	  </view>
+    <view
+        allowMultiple="false"
+        category="org.sonarlint.eclipse"
+        class="org.sonarlint.eclipse.ui.internal.views.issues.TaintVulnerabilitiesView"
+        icon="icons/full/eview16/vulnerabilities.png"
+        id="org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView"
+        name="SonarLint Taint Vulnerabilities">
+    </view>
   </extension>
   
   <extension point="org.eclipse.ui.contexts">
@@ -361,6 +369,96 @@
               scope="ON_ANY">
         </markerFieldConfiguration>
     </markerContentGenerator>
+    <markerContentGenerator
+         id="org.sonarlint.eclipse.ui.views.issues.taintIssueMarkerGenerator"
+         name="SonarLint Taint Vulnerabilities Marker Generator">
+        <markerTypeReference
+              id="org.sonarlint.eclipse.core.sonarlintTaintVulnerability"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.issueCreationDateField"
+              visible="true"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.issueDescriptionField"
+              visible="true"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.issueRuleKeyField"
+              visible="false"/>
+        <markerFieldReference
+              id="org.sonarlint.eclipse.ui.views.issues.serverIssueKeyField"
+              visible="false"/>
+        <markerFieldReference
+              id="org.eclipse.ui.ide.resourceField"
+              visible="true"/>
+        <markerFieldReference
+              id="org.eclipse.ui.ide.pathField"
+              visible="false"/>
+        <!-- Default Filtering -->
+        <markerFieldConfiguration
+              enabled="true"
+              id="org.sonarlint.eclipse.ui.issues.allIssuesOnTaintVulnerabilities"
+              name="All Taint Vulnerabilities"
+              scope="ON_ANY">
+        </markerFieldConfiguration>
+
+      <markerGrouping
+            id="org.sonarlint.eclipse.ui.issues.severityGrouping"
+            label="Severity">
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
+               label="Blocker"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="5">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.critical"
+               label="Critical"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="4">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.major"
+               label="Major"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="3">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.minor"
+               label="Minor"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="2">
+         </markerGroupingEntry>
+         <markerGroupingEntry
+               id="org.sonarlint.eclipse.ui.issues.severityGrouping.info"
+               label="Info"
+               markerGrouping="org.sonarlint.eclipse.ui.issues.severityGrouping"
+               priority="1">
+         </markerGroupingEntry>
+         <markerAttributeGrouping
+               attribute="sonarseverity"
+               markerType="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem">
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.blocker"
+                  value="BLOCKER">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.critical"
+                  value="CRITICAL">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.major"
+                  value="MAJOR">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.minor"
+                  value="MINOR">
+            </markerAttributeMapping>
+            <markerAttributeMapping
+                  markerGroupingEntry="org.sonarlint.eclipse.ui.issues.severityGrouping.info"
+                  value="INFO">
+            </markerAttributeMapping>
+         </markerAttributeGrouping>
+      </markerGrouping>
+    </markerContentGenerator>
     <markerField
         class="org.sonarlint.eclipse.ui.internal.views.issues.IssueDescriptionField"
         filterClass="org.eclipse.ui.internal.views.markers.DescriptionFieldFilter"
@@ -489,13 +587,21 @@
          </command>
       </menuContribution>
       <menuContribution
+            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView">
+           <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand"
+                 style="push"
+                 mnemonic="O">
+         </command>
+      </menuContribution>
+      <menuContribution
             locationURI="menu:org.sonarlint.eclipse.ui.views.issues.ChangeSetIssuesView">
          <menu
            id="org.eclipse.ui.ide.problems.filtersMenu"
            label="Show"
            mnemonic="S">
          </menu>
-     <menu
+         <menu
            id="problemsGroupByMenu"
            label="Group By"
            mnemonic="G">
@@ -630,6 +736,43 @@
           </visibleWhen>
        </command>
 	</menuContribution>
+	<menuContribution
+            locationURI="menu:org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView">
+         <menu
+           id="org.eclipse.ui.ide.problems.filtersMenu"
+           label="Show"
+           mnemonic="S">
+         </menu>
+         <menu
+           id="problemsGroupByMenu"
+           label="Group By"
+           mnemonic="G">
+         </menu>
+         <menu
+               id="org.eclipse.ui.ide.problems.markerSortMenu"
+               label="Sort By"
+               mnemonic="S">
+         </menu>
+         <command
+               commandId="org.eclipse.ui.ide.configureFilters"
+               mnemonic="%command.configureFilters.mnemonic"
+               style="push">
+         </command>
+         <command
+               commandId="org.eclipse.ui.ide.configureColumns"
+               mnemonic="%command.configureColumns.mnemonic"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.TaintVulnerabilitiesView">
+           <command
+                 commandId="org.sonarlint.eclipse.ui.internal.command.ShowRuleDescriptionCommand"
+                 icon="icons/full/marker_resolution16/showrule.png"
+                 style="push"
+                 mnemonic="R">
+         </command>
+      </menuContribution>
   </extension>
 
   <extension point="org.eclipse.ui.commands">
@@ -648,6 +791,12 @@
           description="Deactivate the rule of this issue"
           id="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
           name="Deactivate rule"
+          categoryId="org.sonarlint.eclipse.ui.command.category">
+    </command>
+    <command
+          description="Open issue in the browser"
+          id="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand"
+          name="Open in browser"
           categoryId="org.sonarlint.eclipse.ui.command.category">
     </command>
     <command
@@ -696,6 +845,10 @@
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand">
+    </handler>
+    <handler
+          class="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand"
+          commandId="org.sonarlint.eclipse.ui.internal.command.OpenInBrowserCommand">
     </handler>
     <handler
           class="org.sonarlint.eclipse.ui.internal.command.AnalyzeCommand"
@@ -781,6 +934,9 @@
         <type
             name="org.sonarlint.eclipse.hotspotAnnotationType"
             markerType="org.sonarlint.eclipse.core.sonarlintHotspot"/>
+        <type
+            name="org.sonarlint.eclipse.taintAnnotationType"
+            markerType="org.sonarlint.eclipse.core.sonarlintTaintVulnerability"/>
     </extension>
     
     <extension
@@ -816,7 +972,7 @@
               colorPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.color"
               colorPreferenceValue="242,222,222"
               highlightPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.highlight"
-              highlightPreferenceValue="true"
+              highlightPreferenceValue="false"
               icon="icons/sonarlint-16x16.png"
               isGoToNextNavigationTarget="true"
               isGoToNextNavigationTargetKey="org.sonarlint.eclipse.issueFlow.next"
@@ -830,7 +986,7 @@
               textPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.error.text"
               textPreferenceValue="true"
               textStylePreferenceKey="org.sonarlint.eclipse.ui.issueFlow.text.style"
-              textStylePreferenceValue="NONE"
+              textStylePreferenceValue="BOX"
               verticalRulerPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.verticalruler"
               verticalRulerPreferenceValue="false"/>
         <specification
@@ -857,6 +1013,30 @@
               textStylePreferenceValue="SQUIGGLES"
               verticalRulerPreferenceKey="org.sonarlint.eclipse.ui.hotspot.verticalruler"
               verticalRulerPreferenceValue="true"/>
+        <specification
+              annotationImageProvider="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerImageProvider"
+              annotationType="org.sonarlint.eclipse.taintAnnotationType"
+              colorPreferenceKey="org.sonarlint.eclipse.ui.taint.color"
+              colorPreferenceValue="30,144,255"
+              highlightPreferenceKey="org.sonarlint.eclipse.ui.taint.highlight"
+              highlightPreferenceValue="false"
+              icon="icons/full/eview16/vulnerabilities.png"
+              isGoToNextNavigationTarget="true"
+              isGoToNextNavigationTargetKey="org.sonarlint.eclipse.taint.next"
+              isGoToPreviousNavigationTarget="true"
+              isGoToPreviousNavigationTargetKey="org.sonarlint.eclipse.taint.previous"
+              label="SonarLint Taint Vulnerability"
+              overviewRulerPreferenceKey="org.sonarlint.eclipse.ui.taint.overviewruler"
+              overviewRulerPreferenceValue="true"
+              presentationLayer="3"
+              showInNextPrevDropdownToolbarAction="true"
+              showInNextPrevDropdownToolbarActionKey="org.sonarlint.eclipse.taint.dropdown"
+              textPreferenceKey="org.sonarlint.eclipse.ui.taint.error.text"
+              textPreferenceValue="true"
+              textStylePreferenceKey="org.sonarlint.eclipse.ui.taint.text.style"
+              textStylePreferenceValue="SQUIGGLES"
+              verticalRulerPreferenceKey="org.sonarlint.eclipse.ui.taint.verticalruler"
+              verticalRulerPreferenceValue="true"/>
   </extension>
   
   <!-- Marker resolver -->
@@ -865,6 +1045,10 @@
      <markerResolutionGenerator
            class="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerResolutionGenerator"
            markerType="org.sonarlint.eclipse.core.sonarlintOnTheFlyProblem">
+     </markerResolutionGenerator>
+     <markerResolutionGenerator
+           class="org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerResolutionGenerator"
+           markerType="org.sonarlint.eclipse.core.sonarlintTaintVulnerability">
      </markerResolutionGenerator>
   </extension>
 
@@ -965,6 +1149,21 @@
             </with>
          </enabledWhen>
      </codeMiningProvider>
+  </extension>
+
+  <extension point="org.eclipse.ui.perspectiveExtensions">
+    <perspectiveExtension
+        targetID="org.eclipse.jdt.ui.JavaPerspective">
+        <view id="org.sonarlint.eclipse.ui.views.IssueLocationsView"
+            relative="org.eclipse.ui.views.ContentOutline"
+            relationship="stack" visible="false"/>
+    </perspectiveExtension>
+    <perspectiveExtension
+        targetID="org.eclipse.jdt.ui.JavaPerspective">
+        <view id="org.sonarlint.eclipse.ui.views.issues.IssuesView"
+            relative="org.eclipse.ui.views.ProblemView"
+            relationship="stack"/>
+    </perspectiveExtension>
   </extension>
 
 </plugin>
