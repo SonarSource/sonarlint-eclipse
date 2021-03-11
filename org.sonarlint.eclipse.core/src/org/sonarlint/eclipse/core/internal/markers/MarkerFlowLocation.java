@@ -25,9 +25,12 @@ import org.eclipse.jdt.annotation.Nullable;
 public class MarkerFlowLocation {
   private final MarkerFlow parent;
   private final int number;
+  @Nullable
   private final String message;
+  @Nullable
   private IMarker marker;
   private boolean deleted;
+  @Nullable
   private String filePath;
 
   public MarkerFlowLocation(MarkerFlow parent, @Nullable String message) {
