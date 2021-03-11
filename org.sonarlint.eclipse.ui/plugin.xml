@@ -972,7 +972,7 @@
               colorPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.color"
               colorPreferenceValue="242,222,222"
               highlightPreferenceKey="org.sonarlint.eclipse.ui.issueFlow.highlight"
-              highlightPreferenceValue="true"
+              highlightPreferenceValue="false"
               icon="icons/sonarlint-16x16.png"
               isGoToNextNavigationTarget="true"
               isGoToNextNavigationTargetKey="org.sonarlint.eclipse.issueFlow.next"
