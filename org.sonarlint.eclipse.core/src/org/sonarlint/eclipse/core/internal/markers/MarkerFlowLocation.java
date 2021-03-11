@@ -30,14 +30,14 @@ public class MarkerFlowLocation {
   private boolean deleted;
   private String filePath;
 
-  public MarkerFlowLocation(MarkerFlow parent, String message) {
+  public MarkerFlowLocation(MarkerFlow parent, @Nullable String message) {
     this.parent = parent;
     this.parent.locations.add(this);
     this.number = this.parent.locations.size();
     this.message = message;
   }
 
-  public MarkerFlowLocation(MarkerFlow parent, String message, String filePath) {
+  public MarkerFlowLocation(MarkerFlow parent, @Nullable String message, @Nullable String filePath) {
     this(parent, message);
     this.filePath = filePath;
   }
@@ -50,6 +50,7 @@ public class MarkerFlowLocation {
     return number;
   }
 
+  @Nullable
   public String getMessage() {
     return message;
   }
