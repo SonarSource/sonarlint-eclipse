@@ -312,7 +312,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     importExistingProjectIntoWorkspace("php");
     new WaitWhile(new JobIsRunning(StringContains.containsString("DLTK Indexing")), TimePeriod.LONG);
 
-    DefaultProject rootProject = new ProjectExplorer().getProject("php");
+    ProjectExplorer projectExplorer = new ProjectExplorer();
+    projectExplorer.open();
+    DefaultProject rootProject = projectExplorer.getProject("php");
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("foo.php").open());
 
     OnTheFlyView onTheFlyView = new OnTheFlyView();

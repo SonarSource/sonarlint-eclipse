@@ -37,7 +37,7 @@ public class ReportView extends AbstractMarkersSupportView {
 
   public List<TreeItem> getItems() {
     activate();
-    new WaitUntil(new ReportViewMarkerIsUpdating(), TimePeriod.SHORT, false);
+    new WaitUntil(new ReportViewMarkerIsUpdating(), TimePeriod.MEDIUM, false);
     new WaitWhile(new ReportViewMarkerIsUpdating());
     return new DefaultTree(cTabItem).getItems();
   }

@@ -27,9 +27,10 @@ import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.core.resources.Resource;
 import org.eclipse.reddeer.eclipse.jdt.ui.javaeditor.JavaEditor;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
-import org.eclipse.reddeer.swt.impl.button.OkButton;
+import org.eclipse.reddeer.swt.impl.button.PushButton;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.Test;
 import org.sonarlint.eclipse.its.reddeer.conditions.OnTheFlyViewIsEmpty;
@@ -66,7 +67,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     new ContextMenu(helloFile.getTreeItem()).getItem("SonarLint", "Exclude").select();
 
     // ensure issues markers are cleared even before the next analysis
-    new WaitUntil(new OnTheFlyViewIsEmpty(issuesView), TimePeriod.MEDIUM);
+    new WaitUntil(new OnTheFlyViewIsEmpty(issuesView), TimePeriod.DEFAULT);
     assertThat(issuesView.getIssues()).isEmpty();
 
     helloFile.select();
@@ -89,7 +90,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES);
     rootProject.select();
     new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
-    doAndWaitForSonarLintAnalysisJob(() -> new OkButton().click());
+    doAndWaitForSonarLintAnalysisJob(() -> new PushButton(new DefaultShell("Confirmation"), "OK").click());
 
     assertThat(issuesView.getIssues()).isEmpty();
   }

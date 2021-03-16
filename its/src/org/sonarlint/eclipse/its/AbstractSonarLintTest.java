@@ -46,6 +46,7 @@ import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.eclipse.condition.ConsoleHasText;
 import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
 import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
+import org.eclipse.reddeer.eclipse.ui.navigator.resources.ProjectExplorer;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage.ImportProject;
@@ -160,6 +161,10 @@ public abstract class AbstractSonarLintTest {
   }
 
   protected static DefaultProject getOpenedJavaProject(String projectName) {
+    ProjectExplorer projectExplorer = new ProjectExplorer();
+    if (projectExplorer.isOpen()) {
+      return projectExplorer.getProject(projectName);
+    }
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
     packageExplorer.open();
     return packageExplorer.getProject(projectName);
@@ -175,33 +180,6 @@ public abstract class AbstractSonarLintTest {
       fail("Interrupted", e);
     } finally {
       analysisJobCountDownLatch.remove(latch);
-    }
-  }
-
-  public static MarkerAttributesExtractor markerAttributes(String... attributes) {
-    return new MarkerAttributesExtractor(attributes);
-  }
-
-  public static class MarkerAttributesExtractor implements Function<IMarker, Tuple> {
-
-    private final String[] attributes;
-
-    public MarkerAttributesExtractor(String... attributes) {
-      this.attributes = attributes;
-    }
-
-    @Override
-    public Tuple apply(IMarker marker) {
-      Object[] tupleAttributes = new Object[attributes.length + 1];
-      tupleAttributes[0] = marker.getResource().getFullPath().toPortableString();
-      for (int i = 0; i < attributes.length; i++) {
-        try {
-          tupleAttributes[i + 1] = marker.getAttribute(attributes[i]);
-        } catch (CoreException e) {
-          throw new IllegalStateException("Unable to get attribute '" + attributes[i] + "'");
-        }
-      }
-      return new Tuple(tupleAttributes);
     }
   }
 
