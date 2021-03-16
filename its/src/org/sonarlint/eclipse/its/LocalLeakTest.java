@@ -44,9 +44,8 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     assertThat(issuesView.getProblemColumns()).containsExactly("Date", "Description", "Resource");
     assertThat(issuesView.getIssues()).isEmpty();
 
-    importExistingProjectIntoWorkspace("java/leak");
+    Project javaSimple = importExistingProjectIntoWorkspace("java/leak", "leak");
 
-    Project javaSimple = getOpenedJavaProject("leak");
     ProjectItem helloFile = javaSimple.getProjectItem("src", "hello", "Hello.java");
     doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
 
@@ -74,10 +73,9 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     OnTheFlyView issuesView = new OnTheFlyView();
     issuesView.open();
 
-    importExistingProjectIntoWorkspace("js/js-simple");
+    Project jsSimple = importExistingProjectIntoWorkspace("js/js-simple", "js-simple");
 
-    Project javaSimple = getOpenedJavaProject("js-simple");
-    ProjectItem helloFile = javaSimple.getProjectItem("src", "hello.js");
+    ProjectItem helloFile = jsSimple.getProjectItem("src", "hello.js");
     doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
 
     List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();

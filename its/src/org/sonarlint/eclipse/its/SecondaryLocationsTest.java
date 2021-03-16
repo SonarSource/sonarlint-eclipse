@@ -20,7 +20,7 @@
 package org.sonarlint.eclipse.its;
 
 import java.util.List;
-import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
+import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.api.TreeItem;
 import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
@@ -36,6 +36,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
 
   private static OnTheFlyView onTheFlyView;
   private static IssueLocationsView locationsView;
+  private static Project rootProject;
 
   @Before
   public void importProject() {
@@ -44,7 +45,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     locationsView.open();
     onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
-    importExistingProjectIntoWorkspace("java/java-multiple-flows");
+    rootProject = importExistingProjectIntoWorkspace("java/java-multiple-flows", "java-multiple-flows");
   }
 
   @Test
@@ -150,8 +151,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
     assertThat(cognitiveComplexityEditor.getCursorPosition()).extracting(p -> p.x, p -> p.y).containsExactly(45, 8);
   }
 
-  public TextEditor openAndAnalyzeFile(String fileName) {
-    DefaultProject rootProject = getOpenedJavaProject("java-multiple-flows");
+  private TextEditor openAndAnalyzeFile(String fileName) {
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", fileName).open());
     return new TextEditor();
   }

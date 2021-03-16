@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.its;
 
-import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
+import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.swt.api.TreeItem;
 import org.eclipse.reddeer.swt.impl.link.DefaultLink;
@@ -40,12 +40,11 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   @Test
   public void deactivate_rule() {
     new JavaPerspective().open();
-    importExistingProjectIntoWorkspace("java/java-exclude-rules");
+    Project rootProject = importExistingProjectIntoWorkspace("java/java-exclude-rules","java-exclude-rules");
 
     OnTheFlyView onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
 
-    DefaultProject rootProject = getOpenedJavaProject("java-exclude-rules");
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello3.java").open());
 
     checkIssueIsDefault();
@@ -70,9 +69,8 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   @Test
   public void ruleParametersGlobalDefaults() {
     new JavaPerspective().open();
-    importExistingProjectIntoWorkspace("java/java-exclude-rules");
+    Project rootProject = importExistingProjectIntoWorkspace("java/java-exclude-rules", "java-exclude-rules");
 
-    DefaultProject rootProject = getOpenedJavaProject("java-exclude-rules");
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello3.java").open());
 
     checkIssueIsDefault();

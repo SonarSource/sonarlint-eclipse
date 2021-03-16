@@ -46,12 +46,11 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
   @Test
   public void should_exclude_file() throws Exception {
     new JavaPerspective().open();
-    importExistingProjectIntoWorkspace("java/java-simple");
+    Project rootProject = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
 
     OnTheFlyView issuesView = new OnTheFlyView();
     issuesView.open();
 
-    Project rootProject = getOpenedJavaProject("java-simple");
     Resource helloFile = rootProject.getResource("src", "hello", "Hello.java");
     doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
 

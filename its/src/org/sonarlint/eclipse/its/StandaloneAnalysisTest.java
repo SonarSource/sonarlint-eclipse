@@ -45,9 +45,10 @@ import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
+import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.core.resources.Resource;
+import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyDialog;
-import org.eclipse.reddeer.eclipse.ui.navigator.resources.ProjectExplorer;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
@@ -99,12 +100,11 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     Assume.assumeFalse(platformVersion().toString().startsWith("4.4"));
 
     new JavaPerspective().open();
-    importExistingProjectIntoWorkspace("java/java-simple");
+    Project rootProject = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
 
     OnTheFlyView onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
 
-    DefaultProject rootProject = getOpenedJavaProject("java-simple");
     Resource helloJavaFile = rootProject.getResource("src", "hello", "Hello.java");
     doAndWaitForSonarLintAnalysisJob(() -> helloJavaFile.open());
 
@@ -171,7 +171,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     System.out.println("shouldAnalyseJavaJunit");
     assumeTrue(supportJunit());
     new JavaPerspective().open();
-    importExistingProjectIntoWorkspace("java/java-junit");
+    Project rootProject = importExistingProjectIntoWorkspace("java/java-junit", "java-junit");
 
     WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
     preferenceDialog.open();
@@ -180,7 +180,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     preferences.setTestFileRegularExpressions("**/*TestUtil*");
     preferenceDialog.ok();
 
-    DefaultProject rootProject = getOpenedJavaProject("java-junit");
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello.java").open());
 
     DefaultEditor defaultEditor = new DefaultEditor();
@@ -215,9 +214,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     assumeTrue(supportJava8());
     new JavaPerspective().open();
-    importExistingProjectIntoWorkspace("java/java8");
+    Project rootProject = importExistingProjectIntoWorkspace("java/java8", "java8");
 
-    DefaultProject rootProject = getOpenedJavaProject("java8");
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello.java").open());
 
     DefaultEditor defaultEditor = new DefaultEditor();
@@ -237,9 +235,8 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     new JavaPerspective().open();
     importExistingProjectIntoWorkspace("java/java-dependent-projects/java-dependent-project");
-    importExistingProjectIntoWorkspace("java/java-dependent-projects/java-main-project");
+    Project rootProject = importExistingProjectIntoWorkspace("java/java-dependent-projects/java-main-project", "java-main-project");
 
-    DefaultProject rootProject = getOpenedJavaProject("java-main-project");
     File toBeDeleted = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-main-project").getLocation().toFile(), "libs/toBeDeleted.jar");
     assertThat(toBeDeleted.delete()).as("Unable to delete JAR to test SONARIDE-350").isTrue();
 
@@ -309,12 +306,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     System.out.println("shouldAnalysePHP");
 
     new PhpPerspective().open();
-    importExistingProjectIntoWorkspace("php");
+    Project rootProject = importExistingProjectIntoWorkspace("php", "php");
     new WaitWhile(new JobIsRunning(StringContains.containsString("DLTK Indexing")), TimePeriod.LONG);
 
-    ProjectExplorer projectExplorer = new ProjectExplorer();
-    projectExplorer.open();
-    DefaultProject rootProject = projectExplorer.getProject("php");
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("foo.php").open());
 
     OnTheFlyView onTheFlyView = new OnTheFlyView();
@@ -335,9 +329,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   public void shouldAnalyseLinkedFile() throws IOException {
     System.out.println("shouldAnalyseLinkedFile");
     new JavaPerspective().open();
-    importExistingProjectIntoWorkspace("java/java-linked");
-
-    DefaultProject rootProject = getOpenedJavaProject("java-linked");
+    Project rootProject = importExistingProjectIntoWorkspace("java/java-linked", "java-linked");
 
     File dotProject = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-linked").getLocation().toFile(), ".project");
     String content = FileUtils.readFileToString(dotProject, StandardCharsets.UTF_8);
@@ -382,7 +374,9 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       }
     }, workspace.getRoot(), IWorkspace.AVOID_UPDATE, new NullProgressMonitor());
 
-    DefaultProject rootProject = getOpenedJavaProject("Local_java-simple");
+    PackageExplorerPart packageExplorer = new PackageExplorerPart();
+    packageExplorer.open();
+    DefaultProject rootProject = packageExplorer.getProject("Local_java-simple");
     doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello.java").open());
 
     DefaultEditor defaultEditor = new DefaultEditor();

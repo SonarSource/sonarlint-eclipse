@@ -19,7 +19,7 @@
  */
 package org.sonarlint.eclipse.its;
 
-import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
+import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
@@ -43,9 +43,8 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
     OnTheFlyView onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
 
-    importExistingProjectIntoWorkspace("java/java-simple");
+    Project project = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
 
-    DefaultProject project = getOpenedJavaProject("java-simple");
     doAndWaitForSonarLintAnalysisJob(() -> project.getResource("src", "hello", "Hello.java").open());
 
     DefaultEditor defaultEditor = new DefaultEditor();

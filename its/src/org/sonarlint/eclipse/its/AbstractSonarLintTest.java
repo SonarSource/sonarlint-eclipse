@@ -27,12 +27,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.assertj.core.groups.Tuple;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
@@ -44,8 +40,8 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.eclipse.condition.ConsoleHasText;
-import org.eclipse.reddeer.eclipse.core.resources.DefaultProject;
-import org.eclipse.reddeer.eclipse.jdt.ui.packageview.PackageExplorerPart;
+import org.eclipse.reddeer.eclipse.condition.ProjectExists;
+import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.ui.navigator.resources.ProjectExplorer;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
@@ -148,7 +144,7 @@ public abstract class AbstractSonarLintTest {
     }
   }
 
-  protected static final ImportProject importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
+  protected static final void importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder) {
     ExternalProjectImportWizardDialog dialog = new ExternalProjectImportWizardDialog();
     dialog.open();
     WizardProjectsImportPage importPage = new WizardProjectsImportPage(dialog);
@@ -157,17 +153,13 @@ public abstract class AbstractSonarLintTest {
     List<ImportProject> projects = importPage.getProjects();
     assertThat(projects).hasSize(1);
     dialog.finish();
-    return projects.get(0);
   }
 
-  protected static DefaultProject getOpenedJavaProject(String projectName) {
+  protected static final Project importExistingProjectIntoWorkspace(String relativePathFromProjectsFolder, String projectName) {
+    importExistingProjectIntoWorkspace(relativePathFromProjectsFolder);
     ProjectExplorer projectExplorer = new ProjectExplorer();
-    if (projectExplorer.isOpen()) {
-      return projectExplorer.getProject(projectName);
-    }
-    PackageExplorerPart packageExplorer = new PackageExplorerPart();
-    packageExplorer.open();
-    return packageExplorer.getProject(projectName);
+    new WaitUntil(new ProjectExists(projectName, projectExplorer));
+    return projectExplorer.getProject(projectName);
   }
 
   protected final void doAndWaitForSonarLintAnalysisJob(Runnable r) {
