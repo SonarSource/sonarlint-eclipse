@@ -107,7 +107,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     onTheFlyView.open();
 
     Resource helloJavaFile = rootProject.getResource("src", "hello", "Hello.java");
-    doAndWaitForSonarLintAnalysisJob(() -> helloJavaFile.open());
+    openFileAndWaitForAnalysisCompletion(helloJavaFile);
 
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
@@ -182,7 +182,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     preferences.setTestFileRegularExpressions("**/*TestUtil*");
     preferenceDialog.ok();
 
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello.java").open());
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
 
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
@@ -191,7 +191,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
         tuple("Replace this use of System.out or System.err by a logger.", 12),
         tuple("Remove this unnecessary cast to \"int\".", 16)); // Test that sonar.java.libraries is set
 
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "HelloTestUtil.java").open());
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "HelloTestUtil.java"));
 
     defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
@@ -200,7 +200,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
         // File is flagged as test by regexp, only test rules are applied
         tuple("Remove this use of \"Thread.sleep()\".", 11));
 
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("tests", "hello", "HelloTest.java").open());
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("tests", "hello", "HelloTest.java"));
 
     defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
@@ -218,7 +218,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     new JavaPerspective().open();
     Project rootProject = importExistingProjectIntoWorkspace("java/java8", "java8");
 
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello.java").open());
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
 
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
@@ -242,7 +242,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     File toBeDeleted = new File(ResourcesPlugin.getWorkspace().getRoot().getProject("java-main-project").getLocation().toFile(), "libs/toBeDeleted.jar");
     assertThat(toBeDeleted.delete()).as("Unable to delete JAR to test SONARIDE-350").isTrue();
 
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "use", "UseUtils.java").open());
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "use", "UseUtils.java"));
 
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
@@ -267,7 +267,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     DefaultProject rootProject = new PydevPackageExplorer().getProject("python");
     rootProject.getTreeItem().select();
     doAndWaitForSonarLintAnalysisJob(() -> {
-      rootProject.getResource("src", "root", "nested", "example.py").open();
+      open(rootProject.getResource("src", "root", "nested", "example.py"));
 
       new WaitUntil(new ShellIsAvailable("Default Eclipse preferences for PyDev"));
       new PushButton(new DefaultShell("Default Eclipse preferences for PyDev"), "OK").click();
@@ -311,7 +311,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     Project rootProject = importExistingProjectIntoWorkspace("php", "php");
     new WaitWhile(new JobIsRunning(StringContains.containsString("DLTK Indexing")), TimePeriod.LONG);
 
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("foo.php").open());
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("foo.php"));
 
     OnTheFlyView onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
@@ -320,7 +320,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
       .containsOnly(tuple("This branch duplicates the one on line 5. [+1 location]", "foo.php"));
 
     // SLE-342
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("foo.inc").open());
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("foo.inc"));
 
     assertThat(onTheFlyView.getIssues())
       .extracting(SonarLintIssue::getDescription, SonarLintIssue::getResource)
@@ -339,7 +339,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     rootProject.refresh();
 
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "HelloLinked.java").open());
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "HelloLinked.java"));
 
     DefaultEditor defaultEditor = new DefaultEditor("HelloLinked.java");
     assertThat(defaultEditor.getMarkers())
@@ -379,7 +379,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     PackageExplorerPart packageExplorer = new PackageExplorerPart();
     packageExplorer.open();
     DefaultProject rootProject = packageExplorer.getProject("Local_java-simple");
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello.java").open());
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello.java"));
 
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())

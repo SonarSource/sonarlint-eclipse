@@ -47,7 +47,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     Project javaSimple = importExistingProjectIntoWorkspace("java/leak", "leak");
 
     ProjectItem helloFile = javaSimple.getProjectItem("src", "hello", "Hello.java");
-    doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
+    openFileAndWaitForAnalysisCompletion(helloFile);
 
     List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();
 
@@ -76,7 +76,7 @@ public class LocalLeakTest extends AbstractSonarLintTest {
     Project jsSimple = importExistingProjectIntoWorkspace("js/js-simple", "js-simple");
 
     ProjectItem helloFile = jsSimple.getProjectItem("src", "hello.js");
-    doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
+    openFileAndWaitForAnalysisCompletion(helloFile);
 
     List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();
 

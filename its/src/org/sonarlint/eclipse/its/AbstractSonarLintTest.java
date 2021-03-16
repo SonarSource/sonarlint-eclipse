@@ -38,10 +38,13 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
+import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.common.wait.WaitWhile;
 import org.eclipse.reddeer.eclipse.condition.ConsoleHasText;
 import org.eclipse.reddeer.eclipse.condition.ProjectExists;
 import org.eclipse.reddeer.eclipse.core.resources.Project;
+import org.eclipse.reddeer.eclipse.core.resources.Resource;
 import org.eclipse.reddeer.eclipse.ui.navigator.resources.ProjectExplorer;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizardDialog;
 import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportPage;
@@ -50,6 +53,7 @@ import org.eclipse.reddeer.junit.runner.RedDeerSuite;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement;
 import org.eclipse.reddeer.requirements.cleanworkspace.CleanWorkspaceRequirement.CleanWorkspace;
 import org.eclipse.reddeer.requirements.closeeditors.CloseAllEditorsRequirement.CloseAllEditors;
+import org.eclipse.reddeer.workbench.core.condition.JobIsRunning;
 import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -173,6 +177,17 @@ public abstract class AbstractSonarLintTest {
     } finally {
       analysisJobCountDownLatch.remove(latch);
     }
+  }
+
+  protected final void openFileAndWaitForAnalysisCompletion(Resource resource) {
+    doAndWaitForSonarLintAnalysisJob(() -> open(resource));
+  }
+
+  protected static void open(Resource resource) {
+    // resource.open() waits 10s for the analysis to complete which is sometimes not enough
+    resource.select();
+    resource.getTreeItem().doubleClick();
+    new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
   }
 
   /**

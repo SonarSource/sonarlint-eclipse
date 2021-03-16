@@ -52,7 +52,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     issuesView.open();
 
     Resource helloFile = rootProject.getResource("src", "hello", "Hello.java");
-    doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
+    openFileAndWaitForAnalysisCompletion(helloFile);
 
     List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();
 
@@ -74,7 +74,7 @@ public class FileExclusionsTest extends AbstractSonarLintTest {
     assertThat(new ContextMenuItem("SonarLint", "Analyze").isEnabled()).isFalse();
 
     // reopen the file to ensure issue doesn't come back
-    doAndWaitForSonarLintAnalysisJob(() -> helloFile.open());
+    openFileAndWaitForAnalysisCompletion(helloFile);
 
     assertThat(issuesView.getIssues()).isEmpty();
 

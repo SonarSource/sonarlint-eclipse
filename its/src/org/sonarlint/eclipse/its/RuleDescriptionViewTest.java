@@ -45,7 +45,7 @@ public class RuleDescriptionViewTest extends AbstractSonarLintTest {
 
     Project project = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
 
-    doAndWaitForSonarLintAnalysisJob(() -> project.getResource("src", "hello", "Hello.java").open());
+    openFileAndWaitForAnalysisCompletion(project.getResource("src", "hello", "Hello.java"));
 
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())

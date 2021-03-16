@@ -45,7 +45,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     OnTheFlyView onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
 
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello3.java").open());
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello3.java"));
 
     checkIssueIsDefault();
 
@@ -71,7 +71,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     new JavaPerspective().open();
     Project rootProject = importExistingProjectIntoWorkspace("java/java-exclude-rules", "java-exclude-rules");
 
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", "Hello3.java").open());
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", "Hello3.java"));
 
     checkIssueIsDefault();
     doAndWaitForSonarLintAnalysisJob(() -> lowerCognitiveComplexityRuleParameter());

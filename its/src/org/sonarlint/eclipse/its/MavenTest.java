@@ -44,7 +44,7 @@ public class MavenTest extends AbstractSonarLintTest {
     assertThat(defaultEditor.getMarkers()).isEmpty();
     defaultEditor.close();
 
-    doAndWaitForSonarLintAnalysisJob(() -> sampleModule1Project.getResource("src/main/java", "hello", "Hello1.java").open());
+    openFileAndWaitForAnalysisCompletion(sampleModule1Project.getResource("src/main/java", "hello", "Hello1.java"));
     defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
       .extracting(Marker::getText, Marker::getLineNumber)
@@ -53,7 +53,7 @@ public class MavenTest extends AbstractSonarLintTest {
 
     if (!platformVersion().toString().startsWith("4.4") && !platformVersion().toString().startsWith("4.5")) {
       // Issues on pom.xml
-      doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("pom.xml").open());
+      openFileAndWaitForAnalysisCompletion(rootProject.getResource("pom.xml"));
       defaultEditor = new DefaultEditor();
       assertThat(defaultEditor.getMarkers())
         .extracting(Marker::getText, Marker::getLineNumber)

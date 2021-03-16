@@ -152,7 +152,7 @@ public class SecondaryLocationsTest extends AbstractSonarLintTest {
   }
 
   private TextEditor openAndAnalyzeFile(String fileName) {
-    doAndWaitForSonarLintAnalysisJob(() -> rootProject.getResource("src", "hello", fileName).open());
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "hello", fileName));
     return new TextEditor();
   }
 }
