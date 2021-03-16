@@ -33,6 +33,7 @@ public class OnTheFlyViewIsEmpty implements WaitCondition {
 
   @Override
   public boolean test() {
+    issuesView.open();
     return issuesView.getIssues().isEmpty();
   }
 

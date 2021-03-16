@@ -32,14 +32,13 @@ public class BindingsView extends WorkbenchView {
     super("SonarLint Bindings");
   }
 
-  private Tree getTree() {
+  public Tree getTree() {
     activate();
     return new DefaultTree(this);
   }
 
   public void waitForServerUpdate(String connectionName, String version) {
-    String firstServerSescription = getTree().getItems().get(0).getText();
-    new WaitUntil(new ServerStorageIsUpToDate(firstServerSescription, connectionName, version), TimePeriod.LONG);
+    new WaitUntil(new ServerStorageIsUpToDate(this, connectionName, version), TimePeriod.LONG);
   }
 
 }

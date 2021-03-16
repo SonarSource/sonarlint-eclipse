@@ -20,20 +20,23 @@
 package org.sonarlint.eclipse.its.reddeer.conditions;
 
 import org.eclipse.reddeer.common.condition.AbstractWaitCondition;
+import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
 
 public class ServerStorageIsUpToDate extends AbstractWaitCondition {
-  private final String serverDescription;
+  private final BindingsView bindingsView;
   private final String connectionName;
   private final String version;
 
-  public ServerStorageIsUpToDate(String serverDescription, String connectionName, String version) {
-    this.serverDescription = serverDescription;
+  public ServerStorageIsUpToDate(BindingsView bindingsView, String connectionName, String version) {
+    this.bindingsView = bindingsView;
     this.connectionName = connectionName;
     this.version = version;
   }
 
   @Override
   public boolean test() {
+    bindingsView.open();
+    String serverDescription = bindingsView.getTree().getItems().get(0).getText();
     return serverDescription.matches(connectionName + " \\[" +
       (version != null ? "Version: " + substringBefore(version, '-') + "(.*), " : "")
       + "Last storage update: (.*)\\]");
