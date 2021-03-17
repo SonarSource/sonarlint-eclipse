@@ -62,7 +62,9 @@ public class DeleteTaintMarkersOnEditorClosed implements IPartListener2 {
       IEditorInput input = ((IEditorPart) part).getEditorInput();
       if (input instanceof IFileEditorInput) {
         ISonarLintFile sonarLintFile = Adapters.adapt(input, ISonarLintFile.class);
-        SonarLintMarkerUpdater.deleteTaintMarkers(sonarLintFile);
+        if (sonarLintFile != null) {
+          SonarLintMarkerUpdater.deleteTaintMarkers(sonarLintFile);
+        }
       }
     }
   }
