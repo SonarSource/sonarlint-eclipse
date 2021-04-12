@@ -35,8 +35,6 @@
 
     <module>org.sonarlint.eclipse.site</module>
 
-    <module>target-platform-build</module>
-
     <module>org.sonarlint.eclipse.core.tests</module>
   </modules>
 
@@ -216,11 +214,7 @@
         <configuration>
           <pomDependencies>consider</pomDependencies>
           <target>
-            <artifact>
-              <groupId>${project.groupId}</groupId>
-              <artifactId>target-platform-build</artifactId>
-              <version>${project.version}</version>
-            </artifact>
+            <file>../target-platforms/build.target</file>
           </target>
           <environments>
             <environment>

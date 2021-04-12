@@ -30,20 +30,25 @@ Make sure that you follow our [code style](https://github.com/SonarSource/sonar-
 Development setup in Eclipse
 ----------------------------
 
-We assume basic knowledge of Eclipse PDE and Tycho.
+We assume basic knowledge of Eclipse PDE and Tycho. 
+
+You need to have a few Eclipse plugins:
+* Eclipse RCP
+* Eclipse Plug-in developement environment
+* m2e
+
+Normally, m2e will automatically suggest to install missing connectors (Tycho configurators, ...)
 
 1. Run `mvn verify` on the command line to fetch artifacts referenced in the parent pom
 2. In Eclipse, import the project root as Maven project
 3. (Optional) In Eclipse, import the `its/` folder as Maven project
-4. Open `target-platform-build/dev.target` with the target platform editor
+4. Open `target-platforms/dev.target` with the target platform editor
     - Click on **Environment** tab and add `M2_REPO` variable pointing to your local maven repo (for example `/home/youruser/.m2/repository`)
     - On the **Definition** tab, click **Reload**
     - Click **Set as Target Platform** (or **Reload Target Platform**) in the top-right corner
 
 At this point you should be all set, unless Eclipse is not able to generate protobuf sources.
 Following the explanations [here](https://github.com/trustin/os-maven-plugin) may help.
-As a workaround, you can run `mvn compile` on the command line to generate protobuf sources,
-and in Eclipse hit `F5` on the project with build errors.
 
 In some (older?) flavors of Eclipse, you may need to install `m2eclipse` and then Tycho extension to `m2eclipse`:
 
