@@ -34,6 +34,11 @@ public class CompatibilityUtils {
     return platformVersion().compareTo(Version.parseVersion("4.6")) >= 0;
   }
 
+  // SLE-516
+  public static boolean supportDifferentIconsForZoomLevels() {
+    return platformVersion().compareTo(Version.parseVersion("4.7")) >= 0;
+  }
+
   private static Version platformVersion() {
     Bundle platform = Platform.getBundle("org.eclipse.platform");
     return platform != null ? platform.getVersion() : Version.emptyVersion;
