@@ -28,7 +28,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
@@ -114,7 +113,7 @@ public class SonarLintCodeMiningProvider extends AbstractCodeMiningProvider
         if (part instanceof IEditorPart) {
           IEditorPart editorPart = (IEditorPart) part;
           ITextEditor myTextEditor = SonarLintCodeMiningProvider.this.getAdapter(ITextEditor.class);
-          if (Objects.equals(editorPart.getEditorSite(), myTextEditor.getEditorSite())) {
+          if (myTextEditor != null && Objects.equals(editorPart.getEditorSite(), myTextEditor.getEditorSite())) {
             dispose();
           }
         }
