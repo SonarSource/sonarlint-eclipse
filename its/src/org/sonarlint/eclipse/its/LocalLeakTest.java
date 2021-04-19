@@ -19,118 +19,102 @@
  */
 package org.sonarlint.eclipse.its;
 
-import java.util.Arrays;
 import java.util.List;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotView;
+import org.eclipse.reddeer.eclipse.core.resources.Project;
+import org.eclipse.reddeer.eclipse.core.resources.ProjectItem;
+import org.eclipse.reddeer.eclipse.jdt.ui.javaeditor.JavaEditor;
+import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.workbench.impl.editor.TextEditor;
 import org.junit.Test;
-import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
-import org.sonarlint.eclipse.its.bots.OnTheFlyViewBot;
-import org.sonarlint.eclipse.its.utils.JobHelpers;
-import org.sonarlint.eclipse.its.utils.SwtBotUtils;
+import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 public class LocalLeakTest extends AbstractSonarLintTest {
 
-  private static final String CREATIONDATE_ATT = "creationdate";
-
   @Test
-  public void shouldComputeLocalLeak() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+  public void shouldComputeLocalLeak() {
+    new JavaPerspective().open();
 
-    SWTBotView view = new OnTheFlyViewBot(bot).show();
-    assertThat(view.bot().tree().columns()).containsExactly("Date", "Description", "Resource");
+    OnTheFlyView issuesView = new OnTheFlyView();
+    issuesView.open();
 
-    IProject project = importEclipseProject("java/leak", "leak");
-    JobHelpers.waitForJobsToComplete(bot);
+    assertThat(issuesView.getProblemColumns()).containsExactly("Date", "Description", "Resource");
+    assertThat(issuesView.getIssues()).isEmpty();
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("leak", "src", "hello", "Hello.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    Project javaSimple = importExistingProjectIntoWorkspace("java/leak", "leak");
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
-      tuple("/leak/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger.", null));
+    ProjectItem helloFile = javaSimple.getProjectItem("src", "hello", "Hello.java");
+    openFileAndWaitForAnalysisCompletion(helloFile);
 
-    // TODO We could maybe force view to refresh without having to select again the resource
-    new JavaPackageExplorerBot(bot)
-      .expandAndSelect("leak", "src", "hello", "Hello.java");
+    List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();
 
-    assertThat(view.bot().tree().getAllItems()).hasSize(1);
-    assertThat(view.bot().tree().cell(0, 0)).isEqualTo("");
+    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
+      .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", ""));
 
     // Change content
-    SWTBotEclipseEditor editor = bot.editorByTitle("Hello.java").toTextEditor();
-    editor.navigateTo(7, 43);
-    editor.insertText("\nSystem.out.println(\"Hello1\");");
-    editor.save();
+    JavaEditor javaEditor = new JavaEditor("Hello.java");
+    javaEditor.insertText(7, 43, "\nSystem.out.println(\"Hello1\");");
+    doAndWaitForSonarLintAnalysisJob(() -> javaEditor.save());
 
-    JobHelpers.waitForJobsToComplete(bot);
+    sonarlintIssues = issuesView.getIssues();
 
-    markers = Arrays.asList(project.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/leak/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."),
-      tuple("/leak/src/hello/Hello.java", 10, "Replace this use of System.out or System.err by a logger."));
-
-    // TODO We could maybe force view to refresh without having to select again the resource
-    new JavaPackageExplorerBot(bot)
-      .expandAndSelect("leak", "src", "hello", "Hello.java");
-
-    assertThat(view.bot().tree().getAllItems()).hasSize(2);
-    assertThat(view.bot().tree().cell(0, 0)).isEqualTo("few seconds ago");
-    assertThat(view.bot().tree().cell(1, 0)).isEqualTo("");
+    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
+      .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", ""),
+        tuple("Hello.java", "Replace this use of System.out or System.err by a logger.", "few seconds ago"));
   }
 
   @Test
-  public void dontLooseLeakOnParsingError() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+  public void dontLooseLeakOnParsingError() {
+    new JavaPerspective().open();
 
-    IProject project = importEclipseProject("js/js-simple", "js-simple");
-    JobHelpers.waitForJobsToComplete(bot);
+    OnTheFlyView issuesView = new OnTheFlyView();
+    issuesView.open();
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("js-simple", "src", "hello.js");
-    JobHelpers.waitForJobsToComplete(bot);
+    Project jsSimple = importExistingProjectIntoWorkspace("js/js-simple", "js-simple");
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
-      tuple("/js-simple/src/hello.js", 2, "Multiline support is limited to browsers supporting ES5 only.", null));
-    long markerId = markers.get(0).getId();
+    ProjectItem helloFile = jsSimple.getProjectItem("src", "hello.js");
+    openFileAndWaitForAnalysisCompletion(helloFile);
+
+    List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();
+
+    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
+      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""));
 
     // Change content
-    SWTBotEclipseEditor editor = bot.editorByTitle("hello.js").toTextEditor();
-    editor.navigateTo(2, 17);
-    editor.insertText("\nvar i;");
-    editor.save();
+    TextEditor textEditor = new TextEditor("hello.js");
+    textEditor.insertText(2, 17, "\nvar i;");
+    doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
 
-    JobHelpers.waitForJobsToComplete(bot);
+    sonarlintIssues = issuesView.getIssues();
 
-    markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/js-simple/src/hello.js", 2, "Multiline support is limited to browsers supporting ES5 only."),
-      tuple("/js-simple/src/hello.js", 4, "Remove the declaration of the unused 'i' variable."));
-
-    IMarker newIssue = markers.stream().filter(m -> m.getId() != markerId).findFirst().get();
-    String timestamp = (String) newIssue.getAttribute(CREATIONDATE_ATT);
-    assertThat(timestamp).isNotEmpty();
+    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
+      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""),
+        tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
 
     // Insert content that should crash analyzer
-    editor.navigateTo(3, 8);
-    editor.insertText("\nvar");
-    editor.save();
-    JobHelpers.waitForJobsToComplete(bot);
+    String beforeCrash = textEditor.getText();
+    textEditor.insertText(3, 8, "\nvar");
+    doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
 
     // Issues are still there
-    markers = Arrays.asList(project.findMember("src/hello.js").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, CREATIONDATE_ATT)).containsOnly(
-      tuple("/js-simple/src/hello.js", 2, "Multiline support is limited to browsers supporting ES5 only.", null),
-      tuple("/js-simple/src/hello.js", 4, "Remove the declaration of the unused 'i' variable.", timestamp));
+    sonarlintIssues = issuesView.getIssues();
+
+    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
+      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""),
+        tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
+
+    // Fix parsing issue
+    textEditor.setText(beforeCrash);
+    doAndWaitForSonarLintAnalysisJob(() -> textEditor.save());
+
+    sonarlintIssues = issuesView.getIssues();
+
+    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription, SonarLintIssue::getCreationDate)
+      .containsOnly(tuple("hello.js", "Multiline support is limited to browsers supporting ES5 only.", ""),
+        tuple("hello.js", "Remove the declaration of the unused 'i' variable.", "few seconds ago"));
 
   }
 

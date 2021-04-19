@@ -19,106 +19,94 @@
  */
 package org.sonarlint.eclipse.its;
 
-import java.util.concurrent.TimeUnit;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotButton;
+import java.util.List;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.eclipse.reddeer.common.wait.TimePeriod;
+import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.eclipse.core.resources.Project;
+import org.eclipse.reddeer.eclipse.core.resources.Resource;
+import org.eclipse.reddeer.eclipse.jdt.ui.javaeditor.JavaEditor;
+import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.swt.impl.button.PushButton;
+import org.eclipse.reddeer.swt.impl.menu.ContextMenu;
+import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
+import org.eclipse.reddeer.workbench.ui.dialogs.WorkbenchPreferenceDialog;
 import org.junit.Test;
-import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
-import org.sonarlint.eclipse.its.utils.JobHelpers;
-import org.sonarlint.eclipse.its.utils.SwtBotUtils;
+import org.sonarlint.eclipse.its.reddeer.conditions.OnTheFlyViewIsEmpty;
+import org.sonarlint.eclipse.its.reddeer.preferences.FileExclusionsPreferences;
+import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
+import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.junit.Assume.assumeTrue;
 
 public class FileExclusionsTest extends AbstractSonarLintTest {
 
   @Test
   public void should_exclude_file() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
-    IProject project = importEclipseProject("java/java-simple", "java-simple");
-    JobHelpers.waitForJobsToComplete(bot);
+    new JavaPerspective().open();
+    Project rootProject = importExistingProjectIntoWorkspace("java/java-simple", "java-simple");
 
-    JavaPackageExplorerBot javaBot = new JavaPackageExplorerBot(bot);
-    javaBot
-      .expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    OnTheFlyView issuesView = new OnTheFlyView();
+    issuesView.open();
 
-    assertThat(getMarkers(project, "src/hello/Hello.java")).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/java-simple/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."));
+    Resource helloFile = rootProject.getResource("src", "hello", "Hello.java");
+    openFileAndWaitForAnalysisCompletion(helloFile);
 
-    bot.editorByTitle("Hello.java").close();
+    List<SonarLintIssue> sonarlintIssues = issuesView.getIssues();
+
+    assertThat(sonarlintIssues).extracting(SonarLintIssue::getResource, SonarLintIssue::getDescription)
+      .containsOnly(tuple("Hello.java", "Replace this use of System.out or System.err by a logger."));
+
+    new JavaEditor("Hello.java").close();
 
     // Exclude file
-    javaBot.excludeFile("java-simple", "src", "hello", "Hello.java");
-    // Give time for markers to be deleted
-    TimeUnit.SECONDS.sleep(5);
-    assertThat(getMarkers(project, "src/hello/Hello.java")).isEmpty();
+    helloFile.select();
+    new ContextMenu(helloFile.getTreeItem()).getItem("SonarLint", "Exclude").select();
 
-    // Seems that isEnabled of swtbot doesn't work on older Eclipse
-    if (isNeonOrGreater()) {
-      assertThat(javaBot.isExcludeEnabled("java-simple", "src", "hello", "Hello.java")).isFalse();
-      assertThat(javaBot.isManualAnalysisEnabled("java-simple", "src", "hello", "Hello.java")).isFalse();
-    }
+    // ensure issues markers are cleared even before the next analysis
+    new WaitUntil(new OnTheFlyViewIsEmpty(issuesView), TimePeriod.DEFAULT);
+    assertThat(issuesView.getIssues()).isEmpty();
 
-    javaBot.expandAndDoubleClick("java-simple", "src", "hello", "Hello.java");
-    JobHelpers.waitForJobsToComplete(bot);
-    assertThat(getMarkers(project, "src/hello/Hello.java")).isEmpty();
+    helloFile.select();
+    assertThat(new ContextMenuItem("SonarLint", "Exclude").isEnabled()).isFalse();
+    assertThat(new ContextMenuItem("SonarLint", "Analyze").isEnabled()).isFalse();
 
-    SWTBotEclipseEditor editor = bot.editorByTitle("Hello.java").toTextEditor();
-    editor.navigateTo(8, 29);
-    editor.insertText("2");
-    editor.save();
-    JobHelpers.waitForJobsToComplete(bot);
+    // reopen the file to ensure issue doesn't come back
+    openFileAndWaitForAnalysisCompletion(helloFile);
 
-    assertThat(getMarkers(project, "src/hello/Hello.java")).isEmpty();
+    assertThat(issuesView.getIssues()).isEmpty();
+
+    JavaEditor javaEditor = new JavaEditor("Hello.java");
+    javaEditor.insertText(8, 29, "2");
+    doAndWaitForSonarLintAnalysisJob(() -> javaEditor.save());
+
+    assertThat(issuesView.getIssues()).isEmpty();
 
     // Trigger manual analysis of the project
-    javaBot.triggerManualAnalysis("java-simple");
-    bot.shell("Confirmation").activate();
-    bot.button("OK").click();
-    JobHelpers.waitForJobsToComplete(bot);
+    // Clear the preference when running tests locally in developper env
+    ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES);
+    rootProject.select();
+    new ContextMenu(rootProject.getTreeItem()).getItem("SonarLint", "Analyze").select();
+    doAndWaitForSonarLintAnalysisJob(() -> new PushButton(new DefaultShell("Confirmation"), "OK").click());
 
-    assertThat(getMarkers(project, "src/hello/Hello.java")).isEmpty();
-  }
-
-  private IMarker[] getMarkers(IProject project, String path) throws CoreException {
-    return project.findMember(path).findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE);
+    assertThat(issuesView.getIssues()).isEmpty();
   }
 
   @Test
   public void should_add_new_entry() {
-    // The preference menu seems very flaky in Luna
-    assumeTrue(isMarsOrGreater());
+    WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
+    preferenceDialog.open();
 
-    bot.menu("Window").menu("Preferences").click();
-    bot.shell("Preferences").activate();
-    bot.tree().getTreeItem("SonarLint").select().expand().click()
-      .getNode("File Exclusions").select().click();
+    FileExclusionsPreferences fileExclusionsPreferences = new FileExclusionsPreferences(preferenceDialog);
+    preferenceDialog.select(fileExclusionsPreferences);
 
-    SWTBotButton newButton = bot.button("New...");
+    fileExclusionsPreferences.add("foo");
+    assertThat(fileExclusionsPreferences.getExclusions()).containsOnly("foo");
+    fileExclusionsPreferences.remove("foo");
 
-    if (isNeonOrGreater()) {
-      // mars is not able to find the dialog "Create Exclusion" :(
-
-      newButton.click();
-      bot.shell("Create Exclusion").activate();
-      String value = "foo";
-      bot.text().setText(value);
-      bot.button("OK").click();
-      bot.shell("Preferences").activate();
-      assertThat(bot.table().cell(0, 1)).isEqualTo(value);
-
-      bot.table().click(0, 1);
-      bot.button("Remove").click();
-    }
-
-    bot.button("Cancel").click();
+    preferenceDialog.cancel();
   }
 
 }

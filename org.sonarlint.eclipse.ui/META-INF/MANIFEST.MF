@@ -28,6 +28,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.annotation;resolution:=optional,
  minimal-json;bundle-version="0.9.5"
 Export-Package: org.sonarlint.eclipse.ui.internal;x-friends:="org.sonarlint.eclipse.core.tests",
+ org.sonarlint.eclipse.ui.internal.views.issues;x-friends:="org.sonarlint.eclipse.its",
  org.sonarlint.eclipse.ui.internal.notifications;x-friends:="org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.ui.internal.popup;x-friends:="org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.ui.internal.properties;x-friends:="org.sonarlint.eclipse.core.tests"

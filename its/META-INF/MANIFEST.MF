@@ -20,18 +20,23 @@ Require-Bundle: org.eclipse.jdt.core,
  org.eclipse.ui.forms,
  org.eclipse.search,
  org.eclipse.ui.editors,
- org.eclipse.swtbot.eclipse.finder,
- org.eclipse.swtbot.swt.finder,
- org.eclipse.swtbot.junit4_x,
- org.apache.log4j,
  org.junit;bundle-version="4.11.0",
  org.apache.commons.io;bundle-version="2.5.0",
  org.sonarsource.orchestrator.sonar-orchestrator-osgi,
  org.eclipse.equinox.security,
  org.eclipse.ui.console,
  assertj-core,
+ org.eclipse.reddeer.junit,
+ org.eclipse.reddeer.requirements,
+ org.eclipse.reddeer.eclipse,
+ org.eclipse.reddeer.swt,
+ org.eclipse.reddeer.common,
+ org.eclipse.reddeer.workbench.core,
+ org.eclipse.reddeer.workbench,
+ org.eclipse.reddeer.jface,
+ org.eclipse.reddeer.core,
  minimal-json;bundle-version="0.9.5"
+Import-Package: org.sonarlint.eclipse.ui.internal.views.issues
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Export-Package: org.sonarlint.eclipse.its,
- org.sonarlint.eclipse.its.utils
+Export-Package: org.sonarlint.eclipse.its

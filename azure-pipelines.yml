@@ -258,9 +258,6 @@ stages:
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           testRunTitle: 'ITs $(TARGET_PLATFORM)'
           mavenOptions: $(MAVEN_OPTS)
-      - publish: $(Build.Repository.LocalPath)/its/org.sonarlint.eclipse.its/target/output
-        artifact: 'ITCaptureScreenshotAndConsole_$(TARGET_PLATFORM)'
-        condition: failed()
       - bash: |
           kill -2 $(prepareIts.recordingPid)
         displayName: 'Stop video recording'

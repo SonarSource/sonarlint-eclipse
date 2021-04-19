@@ -17,26 +17,28 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.its.utils;
+package org.sonarlint.eclipse.its.reddeer.views;
 
-import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
+import org.eclipse.reddeer.common.wait.TimePeriod;
+import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.swt.api.Tree;
+import org.eclipse.reddeer.swt.impl.tree.DefaultTree;
+import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
+import org.sonarlint.eclipse.its.reddeer.conditions.ServerStorageIsUpToDate;
 
-public final class SwtBotUtils {
+public class BindingsView extends WorkbenchView {
 
-  private SwtBotUtils() {
+  public BindingsView() {
+    super("SonarLint Bindings");
   }
 
-  public static void closeViewQuietly(SWTWorkbenchBot bot, String id) {
-    try {
-      bot.viewById(id).close();
-    } catch (WidgetNotFoundException e) {
-      // ignore
-    }
+  public Tree getTree() {
+    activate();
+    return new DefaultTree(this);
   }
 
-  public static void openPerspective(SWTWorkbenchBot bot, String id) {
-    bot.perspectiveById(id).activate();
+  public void waitForServerUpdate(String connectionName, String version) {
+    new WaitUntil(new ServerStorageIsUpToDate(this, connectionName, version), TimePeriod.LONG);
   }
 
 }

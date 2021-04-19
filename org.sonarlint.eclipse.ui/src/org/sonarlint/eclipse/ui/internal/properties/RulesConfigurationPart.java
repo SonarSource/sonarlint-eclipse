@@ -177,8 +177,6 @@ public class RulesConfigurationPart {
     GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
     tree.setLayoutData(data);
 
-    tree.getFilterControl().setData("org.eclipse.swtbot.widget.key", "slRuleTreeFilter");
-    tree.getViewer().getTree().setData("org.eclipse.swtbot.widget.key", "slRuleTree");
     tree.getViewer().setContentProvider(new ViewContentProvider());
     tree.getViewer().setInput(ruleDetailsWrappersByLanguage.keySet().toArray(new Language[ruleDetailsWrappersByLanguage.size()]));
     tree.getViewer().setLabelProvider(new LanguageAndRuleLabelProvider());
