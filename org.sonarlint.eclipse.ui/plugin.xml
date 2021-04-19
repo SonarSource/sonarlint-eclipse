@@ -1157,12 +1157,15 @@
         <view id="org.sonarlint.eclipse.ui.views.IssueLocationsView"
             relative="org.eclipse.ui.views.ContentOutline"
             relationship="stack" visible="false"/>
-    </perspectiveExtension>
-    <perspectiveExtension
-        targetID="org.eclipse.jdt.ui.JavaPerspective">
         <view id="org.sonarlint.eclipse.ui.views.issues.IssuesView"
             relative="org.eclipse.ui.views.ProblemView"
             relationship="stack"/>
+        <view id="org.sonarlint.eclipse.ui.views.RuleDescriptionWebView"
+            relative="org.eclipse.ui.views.ContentOutline"
+            relationship="stack" visible="false"/>
+        <viewShortcut
+              id="org.sonarlint.eclipse.ui.views.issues.IssuesView">
+        </viewShortcut>
     </perspectiveExtension>
   </extension>
 
