@@ -321,8 +321,8 @@ public class ConnectedEngineFacadeManager {
 
   public List<IConnectedEngineFacade> findByUrl(String serverUrl) {
     return facadesByConnectionId.values().stream()
-        .filter(facade -> equalsIgnoringTrailingSlash(facade.getHost(), serverUrl))
-        .collect(Collectors.toList());
+      .filter(facade -> equalsIgnoringTrailingSlash(facade.getHost(), serverUrl))
+      .collect(Collectors.toList());
   }
 
   private static boolean equalsIgnoringTrailingSlash(String aUrl, String anotherUrl) {
@@ -438,18 +438,18 @@ public class ConnectedEngineFacadeManager {
   }
 
   @Nullable
-  public String validate(String serverId, boolean editExisting) {
-    if (StringUtils.isBlank(serverId)) {
+  public String validate(String connectionId, boolean editExisting) {
+    if (StringUtils.isBlank(connectionId)) {
       return "Connection name must be specified";
     }
-    if (!editExisting && facadesByConnectionId.containsKey(serverId)) {
+    if (!editExisting && facadesByConnectionId.containsKey(connectionId)) {
       return "Connection name already exists";
     }
 
     try {
-      // Validate server ID format
+      // Validate connection ID format
       ConnectedGlobalConfiguration.builder()
-        .setServerId(serverId)
+        .setConnectionId(connectionId)
         .build();
     } catch (Exception e) {
       return e.getMessage();
