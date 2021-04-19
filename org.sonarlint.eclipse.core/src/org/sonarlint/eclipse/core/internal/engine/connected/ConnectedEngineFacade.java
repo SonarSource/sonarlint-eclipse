@@ -124,7 +124,7 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       SonarLintLogger.get().info("Starting SonarLint engine for connection '" + id + "'...");
       NodeJsManager nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
       ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
-        .setServerId(getId())
+        .setConnectionId(getId())
         .setWorkDir(StoragePathManager.getServerWorkDir(getId()))
         .setStorageRoot(StoragePathManager.getServerStorageRoot())
         .setLogOutput(new SonarLintAnalyzerLogOutput())
