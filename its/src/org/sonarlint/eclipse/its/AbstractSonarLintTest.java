@@ -188,6 +188,8 @@ public abstract class AbstractSonarLintTest {
     resource.select();
     resource.getTreeItem().doubleClick();
     new WaitWhile(new JobIsRunning(), TimePeriod.LONG);
+    // Select the file again in the explorer, else sometimes the marker view does not refresh
+    resource.select();
   }
 
   /**
