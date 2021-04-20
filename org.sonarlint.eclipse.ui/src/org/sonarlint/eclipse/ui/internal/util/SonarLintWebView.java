@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
@@ -33,8 +34,10 @@ import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.BrowserFunction;
 import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
@@ -47,8 +50,10 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_BACKGROUND_COLOR;
@@ -85,7 +90,8 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
       browser = new Browser(this, SWT.FILL);
       addLinkListener(browser);
       browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-      browser.setJavascriptEnabled(false);
+      browser.setJavascriptEnabled(true);
+      createBrowserFunction();
       // Cancel opening of new windows
       browser.addOpenWindowListener(event -> event.required = true);
       // Replace browser's built-in context menu with none
@@ -107,6 +113,23 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
     }
 
     refresh();
+  }
+
+  private static void openSonarLintPreferences(Shell shell) {
+    PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(
+      shell, "org.sonarlint.eclipse.ui.properties.RulesConfigurationPage",
+      new String[]{"org.sonarlint.eclipse.ui.properties.RulesConfigurationPage"}, null);
+    dialog.open();
+  }
+
+  private BrowserFunction createBrowserFunction() {
+    return new BrowserFunction(browser, "openSonarLintPreferences") {
+      @Override
+      public Object function(Object[] arguments) {
+        openSonarLintPreferences(getShell());
+        return null;
+      }
+    };
   }
 
   @Override
@@ -208,6 +231,8 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
       + "code, pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;}"
       + "ul { padding-left: 2.5em; list-style: disc;}"
       + ".rule-desc { line-height: 1.5em }"
+      + ".rule-params h2 { text-align: left; }"
+      + "span.rule-settings-span {color: blue}"
       + "</style>";
   }
 
