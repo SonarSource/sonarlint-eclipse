@@ -86,17 +86,11 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
 
   private String renderRuleParams(StandaloneRuleDetails ruleDetails) {
     if (!ruleDetails.paramDetails().isEmpty()) {
-      return "<script language=\"JavaScript\">\n" +
-        "function openSonarLintSettings() {\n" +
-        "openSonarLintPreferences();" +
-        //"alert('Alert from openSonarLintSettings function!');" +
-        "}\n" +
-        "</script>" +
-        "<table class=\"rule-params\">" +
+      return "<table class=\"rule-params\">" +
         "<caption><h2>Parameters</h2></caption>" +
         "<tr class='thead'>" +
         "<td colspan=\"2\">" +
-        "Following parameter values can be set in <a onclick=\"openSonarLintSettings();\">Rules Configuration</a>.\n" +
+        "Following parameter values can be set in <a href='" + RULES_CONFIGURATION_LINK + "'>Rules Configuration</a>.\n" +
         "</td>" +
         "</tr>" +
         ruleDetails.paramDetails().stream().map(param -> renderRuleParam(param, ruleDetails)).collect(Collectors.joining("\n")) +
@@ -113,7 +107,7 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
     String currentValue = getRuleParamValue(ruleDetails.getKey(), param.name()).orElse(defaultValue);
     return "<tr class='tbody'>" +
       // The <br/> elements are added to simulate a "vertical-align: top" (not supported by Java 11 CSS renderer)
-      "<th>" + param.name() + "<br/><br/><br/><br/><br/></th>" +
+      "<th>" + param.name() + "<br/><br/><br/></th>" +
       "<td>" +
       paramDescription +
       "<p><small>Current value: <code>" + currentValue + "</code></small></p>" +

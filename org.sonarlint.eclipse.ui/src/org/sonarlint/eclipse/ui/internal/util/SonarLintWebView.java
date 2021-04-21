@@ -61,6 +61,7 @@ import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROU
 
 public abstract class SonarLintWebView extends Composite implements Listener, IPropertyChangeListener {
 
+  protected static final String RULES_CONFIGURATION_LINK = "sonarlint://rules-configuration";
   private static final RGB DEFAULT_ACTIVE_LINK_COLOR = new RGB(0, 0, 128);
   private static final RGB DEFAULT_LINK_COLOR = new RGB(0, 0, 255);
   // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=155993
@@ -90,8 +91,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
       browser = new Browser(this, SWT.FILL);
       addLinkListener(browser);
       browser.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-      browser.setJavascriptEnabled(true);
-      createBrowserFunction();
+      browser.setJavascriptEnabled(false);
       // Cancel opening of new windows
       browser.addOpenWindowListener(event -> event.required = true);
       // Replace browser's built-in context menu with none
@@ -115,21 +115,11 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
     refresh();
   }
 
-  private static void openSonarLintPreferences(Shell shell) {
+  private void openSonarLintPreferences() {
     PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(
-      shell, "org.sonarlint.eclipse.ui.properties.RulesConfigurationPage",
+      getShell(), "org.sonarlint.eclipse.ui.properties.RulesConfigurationPage",
       new String[]{"org.sonarlint.eclipse.ui.properties.RulesConfigurationPage"}, null);
     dialog.open();
-  }
-
-  private BrowserFunction createBrowserFunction() {
-    return new BrowserFunction(browser, "openSonarLintPreferences") {
-      @Override
-      public Object function(Object[] arguments) {
-        openSonarLintPreferences(getShell());
-        return null;
-      }
-    };
   }
 
   @Override
@@ -182,7 +172,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
     }
   }
 
-  private static void addLinkListener(Browser browser) {
+  private void addLinkListener(Browser browser) {
     browser.addLocationListener(new LocationAdapter() {
       @Override
       public void changing(LocationEvent event) {
@@ -199,10 +189,14 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
 
         event.doit = false;
 
-        try {
-          PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(loc));
-        } catch (PartInitException | MalformedURLException e) {
-          SonarLintLogger.get().error("Unable to open URL: " + loc, e);
+        if(RULES_CONFIGURATION_LINK.equals(loc)) {
+        	openSonarLintPreferences();
+        } else {
+        	try {
+                PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(loc));
+              } catch (PartInitException | MalformedURLException e) {
+                SonarLintLogger.get().error("Unable to open URL: " + loc, e);
+              }	
         }
       }
     });
@@ -232,6 +226,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
       + "ul { padding-left: 2.5em; list-style: disc;}"
       + ".rule-desc { line-height: 1.5em }"
       + ".rule-params h2 { text-align: left; }"
+      + ".rule-params p { line-height: 1em; }"
       + "span.rule-settings-span {color: blue}"
       + "</style>";
   }
