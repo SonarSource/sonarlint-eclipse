@@ -226,7 +226,8 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
       + "ul { padding-left: 2.5em; list-style: disc;}"
       + ".rule-desc { line-height: 1.5em }"
       + ".rule-params h2 { text-align: left; }"
-      + ".rule-params p { line-height: 1em; }"
+      + ".rule-params p { margin: 0; padding: 0; line-height: 1em; }"
+      + ".rule-params th { text-align: left; vertical-align: top}"
       + "span.rule-settings-span {color: blue}"
       + "</style>";
   }
