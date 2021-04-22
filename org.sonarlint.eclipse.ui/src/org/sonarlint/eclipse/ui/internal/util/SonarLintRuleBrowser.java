@@ -63,8 +63,8 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
         }
       }
       String ruleDetailsMarkup = "";
-      if(ruleDetails instanceof StandaloneRuleDetails) {
-    	  ruleDetailsMarkup = renderRuleParams((StandaloneRuleDetails)ruleDetails);
+      if (ruleDetails instanceof StandaloneRuleDetails) {
+        ruleDetailsMarkup = "<div>" + renderRuleParams((StandaloneRuleDetails) ruleDetails) + "</div>";
       }
       String type = ruleDetails.getType();
       String typeImg64 = type != null ? getAsBase64(SonarLintImages.getTypeImage(type)) : "";
@@ -79,7 +79,7 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
         + "<span>" + clean(severity) + "</span>"
         + "</div>"
         + "<div class=\"rule-desc\">" + htmlDescription + "</div>"
-        + "<div>" + ruleDetailsMarkup + "</div>";
+        + ruleDetailsMarkup;
     }
   }
 
@@ -106,10 +106,9 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
     String defaultValue = paramDefaultValue != null ? paramDefaultValue : "(none)";
     String currentValue = getRuleParamValue(ruleDetails.getKey(), param.name()).orElse(defaultValue);
     return "<tr class='tbody'>" +
-      // The <br/> elements are added to simulate a "vertical-align: top" (not supported by Java 11 CSS renderer)
-      "<th>" + param.name() + "<br/><br/><br/></th>" +
+      "<th>" + param.name() + "</th>" +
       "<td>" +
-      paramDescription +
+      "<div class='param-description'>" +  paramDescription + "</div>" +
       "<p><small>Current value: <code>" + currentValue + "</code></small></p>" +
       "<p><small>Default value: <code>" + defaultValue + "</code></small></p>" +
       "</td>" +

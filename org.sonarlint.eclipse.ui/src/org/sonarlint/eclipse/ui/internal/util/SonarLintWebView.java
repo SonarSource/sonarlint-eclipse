@@ -62,6 +62,7 @@ import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROU
 public abstract class SonarLintWebView extends Composite implements Listener, IPropertyChangeListener {
 
   protected static final String RULES_CONFIGURATION_LINK = "sonarlint://rules-configuration";
+  private static final String RULES_CONFIGURATION_ID = "org.sonarlint.eclipse.ui.properties.RulesConfigurationPage";
   private static final RGB DEFAULT_ACTIVE_LINK_COLOR = new RGB(0, 0, 128);
   private static final RGB DEFAULT_LINK_COLOR = new RGB(0, 0, 255);
   // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=155993
@@ -117,8 +118,8 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
 
   private void openSonarLintPreferences() {
     PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(
-      getShell(), "org.sonarlint.eclipse.ui.properties.RulesConfigurationPage",
-      new String[]{"org.sonarlint.eclipse.ui.properties.RulesConfigurationPage"}, null);
+            getShell(), RULES_CONFIGURATION_ID,
+            new String[]{RULES_CONFIGURATION_ID}, null);
     dialog.open();
   }
 
@@ -189,14 +190,14 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
 
         event.doit = false;
 
-        if(RULES_CONFIGURATION_LINK.equals(loc)) {
-        	openSonarLintPreferences();
+        if (RULES_CONFIGURATION_LINK.equals(loc)) {
+          openSonarLintPreferences();
         } else {
-        	try {
-                PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(loc));
-              } catch (PartInitException | MalformedURLException e) {
-                SonarLintLogger.get().error("Unable to open URL: " + loc, e);
-              }	
+          try {
+            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(loc));
+          } catch (PartInitException | MalformedURLException e) {
+            SonarLintLogger.get().error("Unable to open URL: " + loc, e);
+          }
         }
       }
     });
@@ -227,7 +228,9 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
       + ".rule-desc { line-height: 1.5em }"
       + ".rule-params h2 { text-align: left; }"
       + ".rule-params p { margin: 0; padding: 0; line-height: 1em; }"
-      + ".rule-params th { text-align: left; vertical-align: top}"
+      + ".rule-params th { text-align: left; vertical-align: top }"
+      + ".rule-params td { text-align: left; vertical-align: top }"
+      + ".rule-params td .param-description { margin-top: 2px }"
       + "span.rule-settings-span {color: blue}"
       + "</style>";
   }
