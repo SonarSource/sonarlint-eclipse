@@ -34,10 +34,8 @@ import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.browser.BrowserFunction;
 import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
@@ -118,8 +116,8 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
 
   private void openSonarLintPreferences() {
     PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(
-            getShell(), RULES_CONFIGURATION_ID,
-            new String[]{RULES_CONFIGURATION_ID}, null);
+      getShell(), RULES_CONFIGURATION_ID,
+      new String[]{RULES_CONFIGURATION_ID}, null);
     dialog.open();
   }
 
@@ -226,12 +224,10 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
       + "code, pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;}"
       + "ul { padding-left: 2.5em; list-style: disc;}"
       + ".rule-desc { line-height: 1.5em }"
-      + ".rule-params h2 { text-align: left; }"
-      + ".rule-params p { margin: 0; padding: 0; line-height: 1em; }"
+      + "table.rule-params { line-height: 1em; }"
+      + ".rule-params .param-description p { margin: 0.1em; }"
       + ".rule-params th { text-align: left; vertical-align: top }"
       + ".rule-params td { text-align: left; vertical-align: top }"
-      + ".rule-params td .param-description { margin-top: 2px }"
-      + "span.rule-settings-span {color: blue}"
       + "</style>";
   }
 

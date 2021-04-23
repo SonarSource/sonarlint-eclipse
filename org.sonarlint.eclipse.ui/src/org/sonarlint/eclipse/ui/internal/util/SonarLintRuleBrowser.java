@@ -86,13 +86,11 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
 
   private String renderRuleParams(StandaloneRuleDetails ruleDetails) {
     if (!ruleDetails.paramDetails().isEmpty()) {
-      return "<table class=\"rule-params\">" +
-        "<caption><h2>Parameters</h2></caption>" +
-        "<tr class='thead'>" +
-        "<td colspan=\"2\">" +
+      return "<h2>Parameters</h2>" +
+        "<p>" +
         "Following parameter values can be set in <a href='" + RULES_CONFIGURATION_LINK + "'>Rules Configuration</a>.\n" +
-        "</td>" +
-        "</tr>" +
+        "</p>" +
+        "<table class=\"rule-params\">" +
         ruleDetails.paramDetails().stream().map(param -> renderRuleParam(param, ruleDetails)).collect(Collectors.joining("\n")) +
         "</table>";
     } else {
@@ -101,14 +99,14 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
   }
 
   private static String renderRuleParam(StandaloneRuleParam param, StandaloneRuleDetails ruleDetails) {
-    String paramDescription = param.description() != null ? "<p>" + param.description() + "</p>" : "";
+    String paramDescription = param.description() != null ? param.description() : "";
     String paramDefaultValue = param.defaultValue();
     String defaultValue = paramDefaultValue != null ? paramDefaultValue : "(none)";
     String currentValue = getRuleParamValue(ruleDetails.getKey(), param.name()).orElse(defaultValue);
-    return "<tr class='tbody'>" +
+    return "<tr>" +
       "<th>" + param.name() + "</th>" +
-      "<td>" +
-      "<div class='param-description'>" +  paramDescription + "</div>" +
+      "<td class='param-description'>" +
+      paramDescription +
       "<p><small>Current value: <code>" + currentValue + "</code></small></p>" +
       "<p><small>Default value: <code>" + defaultValue + "</code></small></p>" +
       "</td>" +
