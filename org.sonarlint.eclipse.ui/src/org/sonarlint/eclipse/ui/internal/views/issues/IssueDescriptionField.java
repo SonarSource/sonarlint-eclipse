@@ -106,12 +106,8 @@ public class IssueDescriptionField extends MarkerField {
   @Nullable
   private static Image getImage(MarkerItem item) {
     if (item.getMarker() != null) {
-      if (CompatibilityUtils.supportRectangleImagesInTreeViewer()) {
-        return SonarLintImages.getIssueImage(item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, "major"),
-          item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, "code_smell"));
-      } else {
-        return SonarLintImages.getSeverityImage(item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, "major"));
-      }
+      return SonarLintImages.getIssueImage(item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_SEVERITY_ATTR, "major"),
+        item.getAttributeValue(MarkerUtils.SONAR_MARKER_ISSUE_TYPE_ATTR, "code_smell"));
     } else {
       // If there is no marker maybe we have a groupBy item
       // GroupBy severity
@@ -119,12 +115,8 @@ public class IssueDescriptionField extends MarkerField {
       if (severity.indexOf(' ') >= 0) {
         severity = severity.substring(0, severity.indexOf(' '));
       }
-      if (CompatibilityUtils.supportRectangleImagesInTreeViewer()) {
-        // All images of a TreeItem should have the same size
-        return SonarLintImages.getIssueImage(severity, null);
-      } else {
-        return SonarLintImages.getSeverityImage(severity);
-      }
+      // All images of a TreeItem should have the same size
+      return SonarLintImages.getIssueImage(severity, null);
     }
   }
 

@@ -65,9 +65,7 @@ public class M2eUtils {
     IFile finalFile = file;
     IPath rawLocation = file.getRawLocation();
     if (rawLocation != null) {
-      // TODO use getFileForLocation when we will support only Eclipse 4.6+
-      // IFile moreSpecific = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(rawLocation);
-      IFile moreSpecific = resourceForLocation(rawLocation);
+      IFile moreSpecific = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(rawLocation);
       if (moreSpecific != null) {
         finalFile = moreSpecific;
       }

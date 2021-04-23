@@ -136,8 +136,4 @@ public final class PlatformUtils {
     return null;
   }
 
-  // TODO replace by requestLayout() when supporting only Eclipse 4.6+
-  public static void requestLayout(Control control) {
-    control.getShell().layout(new Control[] {control}, SWT.DEFER);
-  }
 }

@@ -29,11 +29,6 @@ public class CompatibilityUtils {
     // utility class, forbidden constructor
   }
 
-  // SLE-124
-  public static boolean supportRectangleImagesInTreeViewer() {
-    return platformVersion().compareTo(Version.parseVersion("4.6")) >= 0;
-  }
-
   // SLE-516
   public static boolean supportDifferentIconsForZoomLevels() {
     return platformVersion().compareTo(Version.parseVersion("4.7")) >= 0;

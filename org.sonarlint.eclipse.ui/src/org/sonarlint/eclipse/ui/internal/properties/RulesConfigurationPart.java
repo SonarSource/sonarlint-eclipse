@@ -218,7 +218,7 @@ public class RulesConfigurationPart {
       ruleBrowser.updateRule(null);
       paramPanel = emptyRuleParam();
     }
-    PlatformUtils.requestLayout(paramPanel);
+    paramPanel.getShell().requestLayout();
   }
 
   private Composite emptyRuleParam() {
