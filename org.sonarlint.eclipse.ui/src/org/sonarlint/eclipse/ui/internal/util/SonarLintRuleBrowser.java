@@ -35,6 +35,7 @@ import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
@@ -59,7 +60,7 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
       if (ruleDetails instanceof ConnectedRuleDetails) {
         String extendedDescription = ((ConnectedRuleDetails) ruleDetails).getExtendedDescription();
         if (StringUtils.isNotBlank(extendedDescription)) {
-          htmlDescription += "<div>" + extendedDescription + "</div>";
+          htmlDescription += "<div class=\"rule-desc\">" + extendedDescription + "</div>";
         }
       }
       String ruleDetailsMarkup = "";
@@ -78,7 +79,7 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
         + "<img class=\"severityicon\" alt=\"" + severity + "\" src=\"data:image/gif;base64," + severityImg64 + "\">"
         + "<span>" + clean(severity) + "</span>"
         + "</div>"
-        + "<div class=\"rule-desc\">" + htmlDescription + "</div>"
+        + htmlDescription
         + ruleDetailsMarkup;
     }
   }
@@ -88,7 +89,7 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
     if (!ruleDetails.paramDetails().isEmpty()) {
       return "<h2>Parameters</h2>" +
         "<p>" +
-        "Following parameter values can be set in <a href='" + RULES_CONFIGURATION_LINK + "'>Rules Configuration</a>.\n" +
+        "Following parameter values can be set in <a href='" + RulesConfigurationPage.RULES_CONFIGURATION_LINK + "'>Rules Configuration</a>.\n" +
         "</p>" +
         "<table class=\"rule-params\">" +
         ruleDetails.paramDetails().stream().map(param -> renderRuleParam(param, ruleDetails)).collect(Collectors.joining("\n")) +

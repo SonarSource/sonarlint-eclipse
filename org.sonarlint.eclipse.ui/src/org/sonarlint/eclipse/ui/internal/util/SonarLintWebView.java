@@ -53,14 +53,13 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
 
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_BACKGROUND_COLOR;
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROUND_COLOR;
 
 public abstract class SonarLintWebView extends Composite implements Listener, IPropertyChangeListener {
 
-  protected static final String RULES_CONFIGURATION_LINK = "sonarlint://rules-configuration";
-  private static final String RULES_CONFIGURATION_ID = "org.sonarlint.eclipse.ui.properties.RulesConfigurationPage";
   private static final RGB DEFAULT_ACTIVE_LINK_COLOR = new RGB(0, 0, 128);
   private static final RGB DEFAULT_LINK_COLOR = new RGB(0, 0, 255);
   // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=155993
@@ -116,8 +115,8 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
 
   private void openSonarLintPreferences() {
     PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(
-      getShell(), RULES_CONFIGURATION_ID,
-      new String[]{RULES_CONFIGURATION_ID}, null);
+            getShell(), RulesConfigurationPage.RULES_CONFIGURATION_ID,
+            new String[]{RulesConfigurationPage.RULES_CONFIGURATION_ID}, null);
     dialog.open();
   }
 
@@ -188,7 +187,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
 
         event.doit = false;
 
-        if (RULES_CONFIGURATION_LINK.equals(loc)) {
+        if (RulesConfigurationPage.RULES_CONFIGURATION_LINK.equals(loc)) {
           openSonarLintPreferences();
         } else {
           try {
