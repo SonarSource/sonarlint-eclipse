@@ -76,7 +76,7 @@ public class SonarLintReportView extends MarkerViewWithBottomPanel {
     SonarLintReportView.reportTitle = title;
     if (SonarLintReportView.instance != null) {
       instance.refreshText();
-      PlatformUtils.requestLayout(instance.bottom);
+      instance.bottom.getShell().requestLayout();
     }
   }
 
