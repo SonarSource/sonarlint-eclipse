@@ -21,17 +21,25 @@ package org.sonarlint.eclipse.ui.internal.util;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.widgets.Composite;
+import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedRuleDetails;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 
 public class SonarLintRuleBrowser extends SonarLintWebView {
 
@@ -52,8 +60,12 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
       if (ruleDetails instanceof ConnectedRuleDetails) {
         String extendedDescription = ((ConnectedRuleDetails) ruleDetails).getExtendedDescription();
         if (StringUtils.isNotBlank(extendedDescription)) {
-          htmlDescription += "<div>" + extendedDescription + "</div>";
+          htmlDescription += "<div class=\"rule-desc\">" + extendedDescription + "</div>";
         }
+      }
+      String ruleDetailsMarkup = "";
+      if (ruleDetails instanceof StandaloneRuleDetails) {
+        ruleDetailsMarkup = "<div>" + renderRuleParams((StandaloneRuleDetails) ruleDetails) + "</div>";
       }
       String type = ruleDetails.getType();
       String typeImg64 = type != null ? getAsBase64(SonarLintImages.getTypeImage(type)) : "";
@@ -67,9 +79,52 @@ public class SonarLintRuleBrowser extends SonarLintWebView {
         + "<img class=\"severityicon\" alt=\"" + severity + "\" src=\"data:image/gif;base64," + severityImg64 + "\">"
         + "<span>" + clean(severity) + "</span>"
         + "</div>"
-        + "<div class=\"rule-desc\">" + htmlDescription
-        + "</div>";
+        + htmlDescription
+        + ruleDetailsMarkup;
     }
+  }
+
+
+  private String renderRuleParams(StandaloneRuleDetails ruleDetails) {
+    if (!ruleDetails.paramDetails().isEmpty()) {
+      return "<h2>Parameters</h2>" +
+        "<p>" +
+        "Following parameter values can be set in <a href='" + RulesConfigurationPage.RULES_CONFIGURATION_LINK + "'>Rules Configuration</a>.\n" +
+        "</p>" +
+        "<table class=\"rule-params\">" +
+        ruleDetails.paramDetails().stream().map(param -> renderRuleParam(param, ruleDetails)).collect(Collectors.joining("\n")) +
+        "</table>";
+    } else {
+      return "";
+    }
+  }
+
+  private static String renderRuleParam(StandaloneRuleParam param, StandaloneRuleDetails ruleDetails) {
+    String paramDescription = param.description() != null ? param.description() : "";
+    String paramDefaultValue = param.defaultValue();
+    String defaultValue = paramDefaultValue != null ? paramDefaultValue : "(none)";
+    String currentValue = getRuleParamValue(ruleDetails.getKey(), param.name()).orElse(defaultValue);
+    return "<tr>" +
+      "<th>" + param.name() + "</th>" +
+      "<td class='param-description'>" +
+      paramDescription +
+      "<p><small>Current value: <code>" + currentValue + "</code></small></p>" +
+      "<p><small>Default value: <code>" + defaultValue + "</code></small></p>" +
+      "</td>" +
+      "</tr>";
+  }
+
+  private static Optional<String> getRuleParamValue(String ruleKey, String paramName) {
+    Collection<RuleConfig> rulesConfig = SonarLintGlobalConfiguration.readRulesConfig();
+    Optional<RuleConfig> ruleConfig = rulesConfig.stream()
+      .filter(r -> r.getKey().equals(ruleKey))
+      .filter(RuleConfig::isActive)
+      .filter(r -> r.getParams().keySet().contains(paramName))
+      .findFirst();
+    if (!ruleConfig.isPresent()) {
+      return Optional.empty();
+    }
+    return Optional.of(ruleConfig.get().getParams().get(paramName));
   }
 
   public void updateRule(@Nullable RuleDetails ruleDetails) {

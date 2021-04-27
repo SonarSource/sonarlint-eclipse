@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.resource.JFaceResources;
@@ -47,9 +48,12 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.ui.internal.properties.RulesConfigurationPage;
 
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_BACKGROUND_COLOR;
 import static org.eclipse.jface.preference.JFacePreferences.INFORMATION_FOREGROUND_COLOR;
@@ -109,6 +113,13 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
     refresh();
   }
 
+  private void openSonarLintPreferences() {
+    PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(
+            getShell(), RulesConfigurationPage.RULES_CONFIGURATION_ID,
+            new String[]{RulesConfigurationPage.RULES_CONFIGURATION_ID}, null);
+    dialog.open();
+  }
+
   @Override
   public void handleEvent(Event event) {
     updateColorAndFontCache();
@@ -159,7 +170,7 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
     }
   }
 
-  private static void addLinkListener(Browser browser) {
+  private void addLinkListener(Browser browser) {
     browser.addLocationListener(new LocationAdapter() {
       @Override
       public void changing(LocationEvent event) {
@@ -176,10 +187,14 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
 
         event.doit = false;
 
-        try {
-          PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(loc));
-        } catch (PartInitException | MalformedURLException e) {
-          SonarLintLogger.get().error("Unable to open URL: " + loc, e);
+        if (RulesConfigurationPage.RULES_CONFIGURATION_LINK.equals(loc)) {
+          openSonarLintPreferences();
+        } else {
+          try {
+            PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(loc));
+          } catch (PartInitException | MalformedURLException e) {
+            SonarLintLogger.get().error("Unable to open URL: " + loc, e);
+          }
         }
       }
     });
@@ -208,6 +223,10 @@ public abstract class SonarLintWebView extends Composite implements Listener, IP
       + "code, pre { font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;}"
       + "ul { padding-left: 2.5em; list-style: disc;}"
       + ".rule-desc { line-height: 1.5em }"
+      + "table.rule-params { line-height: 1em; }"
+      + ".rule-params .param-description p { margin: 0.1em; }"
+      + ".rule-params th { text-align: left; vertical-align: top }"
+      + ".rule-params td { text-align: left; vertical-align: top }"
       + "</style>";
   }
 
