@@ -266,7 +266,7 @@ stages:
         displayName: 'Stop video recording'
         condition: always()
       - publish: /tmp/recording_$(TARGET_PLATFORM).mp4
-        artifact: ITCaptureScreen_$(TARGET_PLATFORM)
+        artifact: ITCaptureScreen_$(TARGET_PLATFORM)_$(System.JobAttempt)
         condition: always()
       - task: PublishBuildArtifacts@1
         displayName: Store coverage report as build artifact
