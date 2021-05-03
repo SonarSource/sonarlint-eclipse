@@ -52,6 +52,11 @@ stages:
         name: jks
         inputs:
           secureFile: 'SonarSource-2019-2021.jks'
+      - task: DownloadSecureFile@1
+        displayName: 'Download the sign key'
+        name: pgpSignKey
+        inputs:
+          secureFile: 'sign-key.asc'
       - template: update-maven-version-steps.yml
         parameters:
           mavenSettingsFilePath: $(mavenSettings.secureFilePath)
@@ -66,6 +71,7 @@ stages:
         env:
           ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
           ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
+          PGP_PASSPHRASE: $(PGP_PASSPHRASE)
           GIT_SHA1: $(Build.SourceVersion)
           GITHUB_BRANCH: $(fixedBranch)
         inputs:
@@ -77,6 +83,8 @@ stages:
               -Djarsigner.skip=false
               -Dsonarsource.keystore.path=$(jks.secureFilePath)
               -Dsonarsource.keystore.password=$(jksPassword)
+              -Psign
+              -Dsign.keyFile=$(pgpSignKey.secureFilePath)
           ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
             options: >-
               $(commonMavenArguments)
