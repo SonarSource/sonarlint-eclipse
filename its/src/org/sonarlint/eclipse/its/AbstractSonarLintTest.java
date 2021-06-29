@@ -219,6 +219,10 @@ public abstract class AbstractSonarLintTest {
     return platformVersion().compareTo(new Version("4.18")) >= 0;
   }
 
+  public static boolean is2021_06OrLess() {
+    return platformVersion().compareTo(new Version("4.20")) <= 0;
+  }
+
   protected static Version platformVersion() {
     return Platform.getBundle("org.eclipse.platform").getVersion();
   }
