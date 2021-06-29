@@ -81,10 +81,11 @@ public class ServerConnectionWizardBot {
     // There is a space added, see TitleAreaDialog#setErrorMessage(String)
     String msgToFind = " " + msg;
     try {
-      if (AbstractSonarLintTest.is2020_12OrGreater()) {
-        // https://github.com/eclipse/eclipse.platform.ui/commit/40b5475e2790b36228537d6446e470b36386b17c#diff-2fdff255edfd3ae715187b2161f594d0
+      if (AbstractSonarLintTest.is2020_12OrGreater() && AbstractSonarLintTest.is2021_06OrLess()) {
+        // changed to label in https://github.com/eclipse/eclipse.platform.ui/commit/40b5475e2790b36228537d6446e470b36386b17c#diff-2fdff255edfd3ae715187b2161f594d0
         wizardBot.label(msgToFind);
       } else {
+        // changed back to text in https://github.com/eclipse/eclipse.platform.ui/commit/a43240d58eebb2015c48a4957859bb944a432a6e
         wizardBot.text(msgToFind);
       }
     } catch (WidgetNotFoundException e) {
