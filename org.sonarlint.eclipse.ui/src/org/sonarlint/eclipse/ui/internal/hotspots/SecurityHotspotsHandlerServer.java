@@ -175,7 +175,11 @@ public class SecurityHotspotsHandlerServer {
   }
 
   private static boolean isTrustedServer(String serverOrigin) {
-    return SonarLintCorePlugin.getServersManager().getServers().stream().anyMatch(s -> s.getHost().contains(serverOrigin));
+    // A server is trusted if the Origin HTTP header matches one of the already configured servers
+    // The Origin header has the following format: <scheme>://<host>(:<port>)
+    // Since servers can have an optional "context path" after this, we consider a valid match when the server's configured URL begins with the passed Origin
+    // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Origin
+    return SonarLintCorePlugin.getServersManager().getServers().stream().anyMatch(s -> s.getHost().startsWith(serverOrigin));
   }
 
   private static class ShowHotspotRequestHandler implements HttpRequestHandler {
