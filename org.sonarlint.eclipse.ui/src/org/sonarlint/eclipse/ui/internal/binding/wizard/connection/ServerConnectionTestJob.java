@@ -19,10 +19,15 @@
  */
 package org.sonarlint.eclipse.ui.internal.binding.wizard.connection;
 
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacade;
 
 final class ServerConnectionTestJob implements IRunnableWithProgress {
@@ -50,7 +55,20 @@ final class ServerConnectionTestJob implements IRunnableWithProgress {
     }
     monitor.beginTask(msg, IProgressMonitor.UNKNOWN);
     try {
-      status = ConnectedEngineFacade.testConnection(url, organization, username, password);
+      CompletableFuture<Status> futureStatus = ConnectedEngineFacade.testConnection(url, organization, username, password);
+      while (!futureStatus.isDone()) {
+        Thread.sleep(500);
+        if (monitor.isCanceled()) {
+          futureStatus.cancel(true);
+        }
+      }
+      status = futureStatus.get();
+    } catch (CancellationException e) {
+      // happen if get() is called while future was canceled by user
+      status = new Status(IStatus.CANCEL, SonarLintCorePlugin.PLUGIN_ID, "Canceled by user");
+    } catch (InterruptedException | ExecutionException e) {
+      // should not happen, as we check if the future is done
+      status = new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Network error");
     } finally {
       monitor.done();
     }
