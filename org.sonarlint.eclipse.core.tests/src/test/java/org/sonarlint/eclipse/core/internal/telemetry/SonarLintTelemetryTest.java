@@ -20,6 +20,8 @@
 package org.sonarlint.eclipse.core.internal.telemetry;
 
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Set;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
@@ -30,10 +32,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
+import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
+import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry.EclipseTelemetryAttributesProvider;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
+import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryHttpClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
 
@@ -62,6 +68,7 @@ public class SonarLintTelemetryTest extends SonarTestCase {
 
   @Before
   public void start() throws Exception {
+    SonarLintGlobalConfiguration.saveRulesConfig(Collections.emptyList());
     this.telemetry = createTelemetry();
 
     project.open(MONITOR);
@@ -228,6 +235,38 @@ public class SonarLintTelemetryTest extends SonarTestCase {
 
     assertThat(SonarLintTelemetry.isAnyOpenProjectBound()).isFalse();
     assertThat(SonarLintTelemetry.isAnyOpenProjectBoundToSonarCloud()).isFalse();
+  }
+
+  @Test
+  public void should_return_default_disabled_rule_keys() {
+    SonarLintGlobalConfiguration.disableRule(new RuleKey("java", "S3776"));
+    EclipseTelemetryAttributesProvider provider = new EclipseTelemetryAttributesProvider();
+
+    Set<String> defaultDisabledRules = provider.getDefaultDisabledRules();
+
+    assertThat(defaultDisabledRules).containsExactly("java:S3776");
+  }
+
+  @Test
+  public void should_return_non_default_enabled_rule_keys() {
+    SonarLintGlobalConfiguration.saveRulesConfig(Collections.singletonList(new RuleConfig("java:S3423", true)));
+    EclipseTelemetryAttributesProvider provider = new EclipseTelemetryAttributesProvider();
+
+    Set<String> nonDefaultEnabledRules = provider.getNonDefaultEnabledRules();
+
+    assertThat(nonDefaultEnabledRules).containsExactly("java:S3423");
+  }
+
+  @Test
+  public void should_not_consider_default_rule_with_changed_parameter_as_non_default() {
+    RuleConfig cognitiveComplexityRuleWithCustomParameter = new RuleConfig("java:S3776", true);
+    cognitiveComplexityRuleWithCustomParameter.setParams(Collections.singletonMap("Threshold", "40"));
+    SonarLintGlobalConfiguration.saveRulesConfig(Collections.singletonList(cognitiveComplexityRuleWithCustomParameter));
+    EclipseTelemetryAttributesProvider provider = new EclipseTelemetryAttributesProvider();
+
+    Set<String> defaultDisabledRules = provider.getNonDefaultEnabledRules();
+
+    assertThat(defaultDisabledRules).isEmpty();
   }
 
   private void addServer(String id, String url) {

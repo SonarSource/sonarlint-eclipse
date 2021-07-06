@@ -21,7 +21,9 @@ package org.sonarlint.eclipse.core.internal.telemetry;
 
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import okhttp3.OkHttpClient;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -36,10 +38,13 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.engine.connected.IConnectedEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ResolvedBinding;
 import org.sonarlint.eclipse.core.internal.http.SonarLintHttpClientOkHttpImpl;
+import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
+import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.Version;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryClientAttributesProvider;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryHttpClient;
 import org.sonarsource.sonarlint.core.telemetry.TelemetryManager;
@@ -119,28 +124,57 @@ public class SonarLintTelemetry {
 
   // visible for testing
   public TelemetryManager newTelemetryManager(Path path, TelemetryHttpClient client) {
-    return new TelemetryManager(path, client, new TelemetryClientAttributesProvider() {
+    return new TelemetryManager(path, client, new EclipseTelemetryAttributesProvider());
+  }
 
-      @Override
-      public boolean usesConnectedMode() {
-        return isAnyOpenProjectBound();
-      }
+  public static class EclipseTelemetryAttributesProvider implements TelemetryClientAttributesProvider {
 
-      @Override
-      public boolean useSonarCloud() {
-        return isAnyOpenProjectBoundToSonarCloud();
-      }
+    @Override
+    public boolean usesConnectedMode() {
+      return isAnyOpenProjectBound();
+    }
 
-      @Override
-      public Optional<String> nodeVersion() {
-        return Optional.ofNullable(getNodeJsVersion());
-      }
+    @Override
+    public boolean useSonarCloud() {
+      return isAnyOpenProjectBoundToSonarCloud();
+    }
 
-      @Override
-      public boolean devNotificationsDisabled() {
-        return isDevNotificationsDisabled();
-      }
-    });
+    @Override
+    public Optional<String> nodeVersion() {
+      return Optional.ofNullable(getNodeJsVersion());
+    }
+
+    @Override
+    public boolean devNotificationsDisabled() {
+      return isDevNotificationsDisabled();
+    }
+
+    @Override
+    public Set<String> getNonDefaultEnabledRules() {
+      Set<String> ruleKeys = SonarLintGlobalConfiguration.readRulesConfig().stream()
+        .filter(RuleConfig::isActive)
+        .map(RuleConfig::getKey)
+        .collect(Collectors.toSet());
+      // the set could contain rules enabled by default but with a parameter change
+      ruleKeys.removeAll(defaultEnabledRuleKeys());
+      return ruleKeys;
+    }
+
+    @Override
+    public Set<String> getDefaultDisabledRules() {
+      return SonarLintGlobalConfiguration.readRulesConfig().stream()
+        .filter(rule -> !rule.isActive())
+        .map(RuleConfig::getKey)
+        .collect(Collectors.toSet());
+    }
+
+    private static Set<String> defaultEnabledRuleKeys() {
+      return SonarLintCorePlugin.getInstance().getDefaultSonarLintClientFacade()
+        .getAllRuleDetails().stream()
+        .filter(StandaloneRuleDetails::isActiveByDefault)
+        .map(StandaloneRuleDetails::getKey)
+        .collect(Collectors.toSet());
+    }
   }
 
   private class TelemetryJob extends Job {
@@ -205,6 +239,12 @@ public class SonarLintTelemetry {
   public void taintVulnerabilitiesInvestigatedRemotely() {
     if (enabled()) {
       telemetry.taintVulnerabilitiesInvestigatedRemotely();
+    }
+  }
+
+  public void addReportedRules(Set<String> ruleKeys) {
+    if (enabled()) {
+      telemetry.addReportedRules(ruleKeys);
     }
   }
 
