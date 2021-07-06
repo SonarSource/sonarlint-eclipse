@@ -199,19 +199,20 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     AnalysisResults result = run(config, issuesPerResource, monitor);
     if (!monitor.isCanceled()) {
       updateMarkers(docPerFiles, issuesPerResource, result, triggerType, monitor);
-      updateTelemetry(result, start);
+      updateTelemetry(result, start, issuesPerResource);
     }
   }
 
   protected abstract CONFIG prepareAnalysisConfig(Path projectBaseDir, List<ClientInputFile> inputFiles, Map<String, String> mergedExtraProps);
 
-  private static void updateTelemetry(AnalysisResults result, long start) {
+  private static void updateTelemetry(AnalysisResults result, long start, Map<ISonarLintIssuable, List<Issue>> issuesPerResource) {
     SonarLintTelemetry telemetry = SonarLintCorePlugin.getTelemetry();
     if (result.languagePerFile().size() == 1) {
       telemetry.analysisDoneOnSingleFile(result.languagePerFile().entrySet().iterator().next().getValue(), (int) (System.currentTimeMillis() - start));
     } else {
       telemetry.analysisDoneOnMultipleFiles();
     }
+    telemetry.addReportedRules(issuesPerResource.values().stream().flatMap(Collection::stream).map(Issue::getRuleKey).collect(Collectors.toSet()));
   }
 
   private static List<ClientInputFile> buildInputFiles(Path tempDirectory, final Map<ISonarLintFile, IDocument> filesToAnalyze) {
