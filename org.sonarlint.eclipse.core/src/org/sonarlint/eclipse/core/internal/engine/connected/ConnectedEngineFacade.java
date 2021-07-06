@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -76,7 +77,6 @@ import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 import org.sonarsource.sonarlint.core.client.api.connected.SonarAnalyzer;
 import org.sonarsource.sonarlint.core.client.api.connected.StateListener;
 import org.sonarsource.sonarlint.core.client.api.connected.UpdateResult;
-import org.sonarsource.sonarlint.core.client.api.connected.ValidationResult;
 import org.sonarsource.sonarlint.core.client.api.exceptions.DownloadException;
 import org.sonarsource.sonarlint.core.client.api.util.TextSearchIndex;
 import org.sonarsource.sonarlint.core.notifications.ServerNotificationsRegistry;
@@ -486,23 +486,24 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     notifyAllListenersStateChanged();
   }
 
-  public static IStatus testConnection(String url, @Nullable String organization, @Nullable String username, @Nullable String password) {
-    try {
-      OkHttpClient.Builder withProxy = buildOkHttpClientWithProxyAndCredentials(url, username, password);
-      ServerApiHelper helper = new ServerApiHelper(createEndpointParams(url, organization), new SonarLintHttpClientOkHttpImpl(withProxy.build()));
-      ValidationResult testConnection = new ConnectionValidator(helper).validateConnection();
-      if (testConnection.success()) {
-        return new Status(IStatus.OK, SonarLintCorePlugin.PLUGIN_ID, "Successfully connected!");
-      } else {
-        return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, testConnection.message());
-      }
-    } catch (Exception e) {
-      if (e.getCause() instanceof UnknownHostException) {
-        return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unknown host: " + url);
-      }
-      SonarLintLogger.get().debug(e.getMessage(), e);
-      return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
-    }
+  public static CompletableFuture<Status> testConnection(String url, @Nullable String organization, @Nullable String username, @Nullable String password) {
+    OkHttpClient.Builder withProxy = buildOkHttpClientWithProxyAndCredentials(url, username, password);
+    ServerApiHelper helper = new ServerApiHelper(createEndpointParams(url, organization), new SonarLintHttpClientOkHttpImpl(withProxy.build()));
+    return new ConnectionValidator(helper).validateConnection()
+      .thenApply(testConnection -> {
+        if (testConnection.success()) {
+          return new Status(IStatus.OK, SonarLintCorePlugin.PLUGIN_ID, "Successfully connected!");
+        } else {
+          return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, testConnection.message());
+        }
+      })
+      .exceptionally(e -> {
+        if (e.getCause() instanceof UnknownHostException) {
+          return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, "Unknown host: " + url);
+        }
+        SonarLintLogger.get().debug(e.getMessage(), e);
+        return new Status(IStatus.ERROR, SonarLintCorePlugin.PLUGIN_ID, e.getMessage(), e);
+      });
   }
 
   public static List<ServerOrganization> listUserOrganizations(String url, String username, String password, IProgressMonitor monitor) {

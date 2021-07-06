@@ -384,10 +384,9 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     IStatus status;
     try {
       ServerConnectionTestJob testJob = new ServerConnectionTestJob(model.getServerUrl(), organization, model.getUsername(), model.getPassword());
-      getContainer().run(true, false, testJob);
+      getContainer().run(true, true, testJob);
       status = testJob.getStatus();
     } catch (InterruptedException canceled) {
-      // Should never be run as it is not cancellable
       return false;
     } catch (InvocationTargetException e) {
       SonarLintLogger.get().error(message(e), e);
@@ -395,6 +394,10 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     }
 
     String message = status.getMessage();
+    if (status.getSeverity() == IStatus.CANCEL) {
+      ((WizardPage) currentPage).setMessage(null, IMessageProvider.NONE);
+      return false;
+    }
     if (status.getSeverity() != IStatus.OK) {
       ((WizardPage) currentPage).setMessage(message, IMessageProvider.ERROR);
       return false;
