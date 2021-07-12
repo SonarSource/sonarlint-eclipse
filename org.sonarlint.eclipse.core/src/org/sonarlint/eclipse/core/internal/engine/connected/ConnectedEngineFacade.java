@@ -66,6 +66,7 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedGlobalConfiguration.Builder;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectedSonarLintEngine.State;
 import org.sonarsource.sonarlint.core.client.api.connected.ConnectionValidator;
@@ -123,14 +124,15 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
     if (wrappedEngine == null) {
       SonarLintLogger.get().info("Starting SonarLint engine for connection '" + id + "'...");
       NodeJsManager nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
-      ConnectedGlobalConfiguration globalConfig = ConnectedGlobalConfiguration.builder()
+      Builder builder = ConnectedGlobalConfiguration.builder()
         .setConnectionId(getId())
         .setWorkDir(StoragePathManager.getServerWorkDir(getId()))
         .setStorageRoot(StoragePathManager.getServerStorageRoot())
         .setLogOutput(new SonarLintAnalyzerLogOutput())
         .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
-        .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
-        .build();
+        .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion());
+      SonarLintUtils.getPlatformPid().ifPresent(builder::setClientPid);
+      ConnectedGlobalConfiguration globalConfig = builder.build();
       try {
         this.wrappedEngine = new ConnectedSonarLintEngineImpl(globalConfig);
         this.wrappedEngine.addStateListener(this);

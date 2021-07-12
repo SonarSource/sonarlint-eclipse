@@ -42,6 +42,7 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration.Builder;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneSonarLintEngine;
 
@@ -62,13 +63,14 @@ public class StandaloneEngineFacade {
         SonarLintLogger.get().debug("Loading embedded analyzers...");
         pluginEntries.stream().forEach(e -> SonarLintLogger.get().debug("  - " + e.getFile()));
         NodeJsManager nodeJsManager = SonarLintCorePlugin.getNodeJsManager();
-        StandaloneGlobalConfiguration globalConfig = StandaloneGlobalConfiguration.builder()
+        Builder builder = StandaloneGlobalConfiguration.builder()
           .addPlugins(pluginEntries.toArray(new URL[0]))
           .setWorkDir(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(".sonarlint").append("default").toFile().toPath())
           .setLogOutput(new SonarLintAnalyzerLogOutput())
           .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
-          .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion())
-          .build();
+          .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion());
+        SonarLintUtils.getPlatformPid().ifPresent(builder::setClientPid);
+        StandaloneGlobalConfiguration globalConfig = builder.build();
         try {
           wrappedEngine = new StandaloneSonarLintEngineImpl(globalConfig);
           SkippedPluginsNotifier.notifyForSkippedPlugins(wrappedEngine.getPluginDetails(), null);
