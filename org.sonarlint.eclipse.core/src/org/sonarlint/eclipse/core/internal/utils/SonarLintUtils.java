@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.core.internal.utils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
@@ -27,6 +28,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Credentials;
@@ -108,5 +110,23 @@ public class SonarLintUtils {
       enabledLanguages.addAll(configurator.whitelistedLanguages());
     }
     return enabledLanguages;
+  }
+
+  public static Optional<Integer> getPlatformPid() {
+    try {
+      return Optional.of(getJvmPidForJava9Plus());
+    } catch(IllegalStateException e) {
+      return Optional.empty();
+    }
+  }
+
+  private static int getJvmPidForJava9Plus() {
+    Object handle;
+    try {
+      handle = Class.forName("java.lang.ProcessHandle").getMethod("current").invoke(null);
+      return (int) handle.getClass().getMethod("pid").invoke(handle);
+    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
+      throw new IllegalStateException("Could not get PID through process handle", e);
+    }
   }
 }
