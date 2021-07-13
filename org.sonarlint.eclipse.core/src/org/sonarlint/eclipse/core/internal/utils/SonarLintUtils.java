@@ -121,10 +121,10 @@ public class SonarLintUtils {
   }
 
   private static int getJvmPidForJava9Plus() {
-    Object handle;
     try {
-      handle = Class.forName("java.lang.ProcessHandle").getMethod("current").invoke(null);
-      return (int) handle.getClass().getMethod("pid").invoke(handle);
+      Class<?> processHandleClass = Class.forName("java.lang.ProcessHandle");
+      Object handle = processHandleClass.getMethod("current").invoke(null);
+      return ((Long) processHandleClass.getMethod("pid").invoke(handle)).intValue();
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | ClassNotFoundException e) {
       throw new IllegalStateException("Could not get PID through process handle", e);
     }
