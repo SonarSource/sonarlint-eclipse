@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
@@ -225,25 +226,41 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
 
   @Override
   public boolean performFinish() {
-    if (model.isEdit() && !testConnection(model.getOrganization())) {
+    try {
+      if (model.isEdit() && !testConnection(model.getOrganization())) {
+        return false;
+      }
+
+      if (model.isEdit()) {
+        editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsDisabled());
+        resultServer = editedServer;
+      } else {
+        finalizeConnectionCreation();
+      }
+
+      updateConnectionStorage();
+      return true;
+    } catch (Exception e) {
+      DialogPage currentPage = (DialogPage) getContainer().getCurrentPage();
+      currentPage.setErrorMessage("Cannot create connection: " + e.getMessage());
+      SonarLintLogger.get().error("Error when finishing server connection wizard", e);
       return false;
     }
+  }
 
-    if (model.isEdit()) {
-      editedServer.updateConfig(model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(), model.getNotificationsDisabled());
-      resultServer = editedServer;
-
-    } else {
-      resultServer = SonarLintCorePlugin.getServersManager().create(model.getConnectionId(), model.getServerUrl(), model.getOrganization(), model.getUsername(), model.getPassword(),
-        model.getNotificationsDisabled());
-      SonarLintCorePlugin.getServersManager().addServer(resultServer, model.getUsername(), model.getPassword());
-      try {
-        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BindingsView.ID);
-      } catch (PartInitException e) {
-        SonarLintLogger.get().error("Unable to open SonarLint bindings view", e);
-      }
+  private void finalizeConnectionCreation() {
+    resultServer = SonarLintCorePlugin.getServersManager().create(model.getConnectionId(), model.getServerUrl(), model.getOrganization(), model.getUsername(),
+      model.getPassword(),
+      model.getNotificationsDisabled());
+    SonarLintCorePlugin.getServersManager().addServer(resultServer, model.getUsername(), model.getPassword());
+    try {
+      PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BindingsView.ID);
+    } catch (PartInitException e) {
+      SonarLintLogger.get().error("Unable to open SonarLint bindings view", e);
     }
+  }
 
+  private void updateConnectionStorage() {
     Job job = new ServerUpdateJob(resultServer);
 
     List<ISonarLintProject> boundProjects = resultServer.getBoundProjects();
@@ -260,14 +277,15 @@ public class ServerConnectionWizard extends Wizard implements INewWizard, IPageC
     List<ISonarLintProject> selectedProjects = model.getSelectedProjects();
     if (!skipBindingWizard) {
       if (selectedProjects != null && !selectedProjects.isEmpty()) {
-        ProjectBindingWizard.createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, (ConnectedEngineFacade) resultServer)
+        ProjectBindingWizard
+          .createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), selectedProjects, (ConnectedEngineFacade) resultServer)
           .open();
       } else if (boundProjects.isEmpty()) {
-        ProjectBindingWizard.createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), (ConnectedEngineFacade) resultServer)
+        ProjectBindingWizard
+          .createDialogSkipServerSelection(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), Collections.emptyList(), (ConnectedEngineFacade) resultServer)
           .open();
       }
     }
-    return true;
   }
 
   public IConnectedEngineFacade getResultServer() {
