@@ -82,7 +82,7 @@
                 <artifactItem>
                   <groupId>org.sonarsource.javascript</groupId>
                   <artifactId>sonar-javascript-plugin</artifactId>
-                  <version>8.1.0.15788</version>
+                  <version>8.3.0.16208</version>
                   <type>jar</type>
                 </artifactItem>
                 <artifactItem>
