@@ -103,6 +103,12 @@
                   <version>3.4.0.2754</version>
                   <type>jar</type>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>com.sonarsource.secrets</groupId>
+                  <artifactId>sonar-secrets-plugin</artifactId>
+                  <version>1.0.0.34655</version>
+                  <type>jar</type>
+                </artifactItem>
               </artifactItems>
               <outputDirectory>${project.basedir}/plugins</outputDirectory>
               <overWriteReleases>false</overWriteReleases>

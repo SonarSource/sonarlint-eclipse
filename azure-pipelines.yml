@@ -72,6 +72,8 @@ stages:
       - task: Maven@3
         displayName: 'Run Maven deploy with signing'
         env:
+          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
+          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
           ARTIFACTORY_DEPLOY_USERNAME: $(ARTIFACTORY_DEPLOY_USERNAME)
           ARTIFACTORY_DEPLOY_PASSWORD: $(ARTIFACTORY_DEPLOY_PASSWORD)
           PGP_PASSPHRASE: $(PGP_PASSPHRASE)
@@ -88,10 +90,12 @@ stages:
               -Dsonarsource.keystore.password=$(jksPassword)
               -Psign
               -Dsign.keyFile=$(pgpSignKey.secureFilePath)
+              -Psonarsource-private-repo
           ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
             options: >-
               $(commonMavenArguments)
               --settings $(mavenSettings.secureFilePath)
+              -Psonarsource-private-repo
           publishJUnitResults: false
           mavenOptions: $(MAVEN_OPTS)
       - bash: git checkout .
@@ -153,7 +157,10 @@ stages:
           DISPLAY: ":10"
         inputs:
           goals: 'verify'
-          options: '-B -e --settings $(mavenSettings.secureFilePath)'
+          options: >-
+            -B -e
+            --settings $(mavenSettings.secureFilePath)
+            -Psonarsource-private-repo
           publishJUnitResults: true
           testResultsFiles: '**/surefire-reports/TEST-*.xml'
           testRunTitle: 'UTs'
@@ -219,11 +226,13 @@ stages:
       - task: Maven@3
         displayName: ' Download staged update site'
         env:
+          ARTIFACTORY_PRIVATE_READER_USERNAME: $(ARTIFACTORY_PRIVATE_READER_USERNAME)
+          ARTIFACTORY_PRIVATE_READER_PASSWORD: $(ARTIFACTORY_PRIVATE_READER_PASSWORD)
           ARTIFACTORY_QA_READER_USERNAME: $(ARTIFACTORY_QA_READER_USERNAME)
           ARTIFACTORY_QA_READER_PASSWORD: $(ARTIFACTORY_QA_READER_PASSWORD)
         inputs:
           goals: 'dependency:unpack'
-          options: '-B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:$(PROJECT_VERSION):zip -DoutputDirectory=$(Agent.BuildDirectory)/staged-repository'
+          options: '-B --settings $(mavenSettings.secureFilePath) -Denable-repo=qa -Dtycho.mode=maven -Dartifact=org.sonarsource.sonarlint.eclipse:org.sonarlint.eclipse.site:$(PROJECT_VERSION):zip -DoutputDirectory=$(Agent.BuildDirectory)/staged-repository -Psonarsource-private-repo'
           publishJUnitResults: false
           mavenOptions: $(MAVEN_OPTS)
       - bash: |
@@ -367,6 +376,7 @@ stages:
             -B -e
             --settings $(mavenSettings.secureFilePath)
             -Pcoverage
+            -Psonarsource-private-repo
             -Djacoco.append=true -Dsonar.coverage.jacoco.xmlReportPaths=$(Build.Repository.LocalPath)/org.sonarlint.eclipse.core.tests/target/site/jacoco-aggregate/jacoco.xml
           publishJUnitResults: false
           mavenOptions: $(MAVEN_OPTS)
