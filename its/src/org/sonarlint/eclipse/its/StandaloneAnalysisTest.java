@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.its;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,6 +27,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -35,6 +38,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEclipseEditor;
 import org.junit.Assume;
@@ -331,6 +335,59 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
     List<IMarker> markers = Arrays.asList(rseProject.findMember("src/hello/Hello.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
       tuple("/Local_java-simple/src/hello/Hello.java", 9, "Replace this use of System.out or System.err by a logger."));
+  }
+
+  @Test
+  public void shouldFindSecretsInTextFiles() throws Exception {
+    IProject project = importEclipseProject("secrets/secret-in-text-file", "secret-in-text-file");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndDoubleClick("secret-in-text-file", "secret");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    List<IMarker> markers = Arrays.asList(project.findMember("secret").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple("/secret-in-text-file/secret", 3, "AWS Secret Access Key detected here. Remove this credential from your code."));
+  }
+
+  @Test
+  public void shouldFindSecretsInSourceFiles() throws Exception {
+    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+    IProject project = importEclipseProject("secrets/secret-java", "secret-java");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndDoubleClick("secret-java", "src", "sec", "Secret.java");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    List<IMarker> markers = Arrays.asList(project.findMember("src/sec/Secret.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple("/secret-java/src/sec/Secret.java", 4, "AWS Secret Access Key detected here. Remove this credential from your code."));
+  }
+
+  @Test
+  public void shouldNotTriggerAnalysisForGitIgnoredFiles() throws Exception {
+    IProject project = importEclipseProject("secrets/secret-gitignored", "secret-gitignored");
+    IFolder gitFolder = project.getFolder("git");
+    gitFolder.move(gitFolder.getParent().getFullPath().append(".git"), true, monitor);
+    IFile file = project.getFile(new Path("secret.txt"));
+    file.create(new ByteArrayInputStream("AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw".getBytes()), true, monitor);
+    JobHelpers.waitForJobsToComplete(bot);
+
+    try {
+      new JavaPackageExplorerBot(bot)
+        .expandAndDoubleClick("secret-gitignored", "secret.txt");
+    } catch (Exception e) {
+      // in some environments egit adds decorations on the project node
+      new JavaPackageExplorerBot(bot)
+        .expandAndDoubleClick("secret-gitignored [secret-gitignored master]", "secret.txt");
+    }
+
+    JobHelpers.waitForJobsToComplete(bot);
+
+    List<IMarker> markers = Arrays.asList(project.findMember("secret.txt").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).isEmpty();
   }
 
 }

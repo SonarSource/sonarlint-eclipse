@@ -60,6 +60,7 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
+import org.sonarlint.eclipse.core.internal.scm.GitUtils;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
@@ -121,8 +122,9 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
 
       FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(getProject());
       files.forEach(fWithDoc -> {
-        if (exclusionsChecker.isExcluded(fWithDoc.getFile(), true)) {
-          excludedFiles.add(fWithDoc.getFile());
+        ISonarLintFile file = fWithDoc.getFile();
+        if (exclusionsChecker.isExcluded(file, true) || GitUtils.isIgnored(file)) {
+          excludedFiles.add(file);
         } else {
           filesToAnalyze.add(fWithDoc);
         }
