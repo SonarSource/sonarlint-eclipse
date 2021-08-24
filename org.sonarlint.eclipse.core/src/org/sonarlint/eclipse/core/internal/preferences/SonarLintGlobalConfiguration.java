@@ -79,6 +79,7 @@ public class SonarLintGlobalConfiguration {
   public static final String PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES = "skipConfirmAnalyzeMultipleFiles"; //$NON-NLS-1$
   public static final String PREF_NODEJS_PATH = "nodeJsPath"; //$NON-NLS-1$
   private static final String PREF_TAINT_VULNERABILITY_DISPLAYED = "taintVulnerabilityDisplayed";
+  private static final String SECRETS_BEEN_ANALYZED = "secretsBeenAnalysed";
 
   private SonarLintGlobalConfiguration() {
     // Utility class
@@ -322,4 +323,13 @@ public class SonarLintGlobalConfiguration {
   public static void setTaintVulnerabilityDisplayed() {
     setPreferenceBoolean(PREF_TAINT_VULNERABILITY_DISPLAYED, true);
   }
+
+  public static boolean isSecretsNeverBeenAnalysed() {
+    return !getPreferenceBoolean(SECRETS_BEEN_ANALYZED);
+  }
+
+  public static void setSecretsBeenAnalysed() {
+    setPreferenceBoolean(SECRETS_BEEN_ANALYZED, true);
+  }
+
 }
