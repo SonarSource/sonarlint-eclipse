@@ -54,7 +54,7 @@ public class SonarLintIssueListener implements IssueListener {
       issuesPerResource.put(r, new ArrayList<Issue>());
     }
     issuesPerResource.get(r).add(issue);
-    SonarLintNotifications.get().showSecretNotificationIfFirstSecret(issue);
+    SonarLintNotifications.get().showNotificationIfFirstSecretDetected(issue);
   }
 
   public long getIssueCount() {

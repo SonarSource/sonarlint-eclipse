@@ -54,15 +54,15 @@ public class SonarLintNotifications {
     }
   }
 
-  public void showSecretNotificationIfFirstSecret(Issue issue) {
-    if (issue.getRuleKey().startsWith(Language.SECRETS.getPluginKey()) && SonarLintGlobalConfiguration.isSecretsNeverBeenAnalysed()) {
+  public void showNotificationIfFirstSecretDetected(Issue issue) {
+    if (issue.getRuleKey().startsWith(Language.SECRETS.getPluginKey()) && SonarLintGlobalConfiguration.secretsNeverDetected()) {
       SonarLintNotifications.get().showNotification(new SonarLintNotifications.Notification(
               "Secret(s) detected", "SonarLint detected some secrets in one of the open files.",
               "SonarLint detected some secrets in one of the open files. " +
                       "We strongly advise you to review those secrets " +
                       "and ensure they are not committed into repositories. " +
-                      "Please refer to the SonarLint tool window for more information."));
-      SonarLintGlobalConfiguration.setSecretsBeenAnalysed();
+                      "Please refer to the SonarLint On-The-Fly view for more information."));
+      SonarLintGlobalConfiguration.setSecretsWereDetected();
     }
   }
 
