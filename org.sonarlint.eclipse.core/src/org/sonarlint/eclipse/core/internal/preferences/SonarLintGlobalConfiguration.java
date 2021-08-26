@@ -79,7 +79,7 @@ public class SonarLintGlobalConfiguration {
   public static final String PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES = "skipConfirmAnalyzeMultipleFiles"; //$NON-NLS-1$
   public static final String PREF_NODEJS_PATH = "nodeJsPath"; //$NON-NLS-1$
   private static final String PREF_TAINT_VULNERABILITY_DISPLAYED = "taintVulnerabilityDisplayed";
-  private static final String PREF_SECRETS_EVER_DETECTED = "secretsBeenAnalysed";
+  private static final String PREF_SECRETS_EVER_DETECTED = "secretsEverDetected";
 
   private SonarLintGlobalConfiguration() {
     // Utility class
