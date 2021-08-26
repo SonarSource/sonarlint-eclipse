@@ -22,6 +22,8 @@ package org.sonarlint.eclipse.core.internal.jobs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.sonarlint.eclipse.core.SonarLintNotifications;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
@@ -52,6 +54,7 @@ public class SonarLintIssueListener implements IssueListener {
       issuesPerResource.put(r, new ArrayList<Issue>());
     }
     issuesPerResource.get(r).add(issue);
+    SonarLintNotifications.get().showNotificationIfFirstSecretDetected(issue);
   }
 
   public long getIssueCount() {
