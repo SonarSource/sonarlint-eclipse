@@ -181,7 +181,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     wizardBot.setUsername(Server.ADMIN_LOGIN);
     wizardBot.setPassword(Server.ADMIN_PASSWORD);
     wizardBot.clickNext();
-    wizardBot.setConnectionName("test");
+    wizardBot.setConnectionName("test1");
     wizardBot.clickNext();
     if (orchestrator.getServer().version().isGreaterThanOrEquals(8, 7)) {
       // SONAR-14306 Starting from 8.7, dev notifications are available even in community edition
