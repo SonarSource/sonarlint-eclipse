@@ -162,6 +162,9 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
   private static URL findEmbeddedPlugin(String pluginNamePattern, String logPrefix) {
     Enumeration<URL> pluginEntriesEnum = SonarLintCorePlugin.getInstance().getBundle()
             .findEntries("/plugins", pluginNamePattern, false);
+    if (pluginEntriesEnum == null) {
+      return null;
+    }
     List<URL> pluginUrls = Collections.list(pluginEntriesEnum);
     pluginUrls.forEach(pluginUrl -> SonarLintLogger.get().debug(logPrefix + pluginUrl));
     if (pluginUrls.size() > 1) {
