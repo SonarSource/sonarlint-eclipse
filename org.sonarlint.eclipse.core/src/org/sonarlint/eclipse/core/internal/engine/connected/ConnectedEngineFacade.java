@@ -19,10 +19,13 @@
  */
 package org.sonarlint.eclipse.core.internal.engine.connected;
 
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -131,6 +134,12 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
         .setLogOutput(new SonarLintAnalyzerLogOutput())
         .addEnabledLanguages(SonarLintUtils.getEnabledLanguages().toArray(new Language[0]))
         .setNodeJs(nodeJsManager.getNodeJsPath(), nodeJsManager.getNodeJsVersion());
+
+      URL secretsPluginUrl = findEmbeddedSecretsPlugin();
+      if (secretsPluginUrl != null) {
+        builder.addExtraPlugin(Language.SECRETS.getPluginKey(), secretsPluginUrl);
+      }
+
       SonarLintUtils.getPlatformPid().ifPresent(builder::setClientPid);
       ConnectedGlobalConfiguration globalConfig = builder.build();
       try {
@@ -147,6 +156,26 @@ public class ConnectedEngineFacade implements IConnectedEngineFacade, StateListe
       }
     }
     return wrappedEngine;
+  }
+
+  @Nullable
+  private static URL findEmbeddedPlugin(String pluginNamePattern, String logPrefix) {
+    Enumeration<URL> pluginEntriesEnum = SonarLintCorePlugin.getInstance().getBundle()
+            .findEntries("/plugins", pluginNamePattern, false);
+    if (pluginEntriesEnum == null) {
+      return null;
+    }
+    List<URL> pluginUrls = Collections.list(pluginEntriesEnum);
+    pluginUrls.forEach(pluginUrl -> SonarLintLogger.get().debug(logPrefix + pluginUrl));
+    if (pluginUrls.size() > 1) {
+      throw new IllegalStateException("Multiple plugins found");
+    }
+    return pluginUrls.size() == 1 ? pluginUrls.get(0) : null;
+  }
+
+  @Nullable
+  private static URL findEmbeddedSecretsPlugin() {
+    return findEmbeddedPlugin("sonar-secrets-plugin-*.jar", "Found Secrets detection plugin: ");
   }
 
   private <G> Optional<G> withEngine(Function<ConnectedSonarLintEngine, G> function) {

@@ -28,14 +28,29 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.jdt.ui.JavaUI;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
+import org.sonarlint.eclipse.its.bots.ProjectBindingWizardBot;
 import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
 import org.sonarlint.eclipse.its.bots.ServersViewBot;
+import org.sonarlint.eclipse.its.utils.JobHelpers;
+import org.sonarlint.eclipse.its.utils.SwtBotUtils;
+import org.sonarqube.ws.client.HttpConnector;
 import org.sonarqube.ws.client.WsClient;
+import org.sonarqube.ws.client.WsClientFactories;
+import org.sonarqube.ws.client.project.CreateRequest;
 import org.sonarqube.ws.client.setting.SetRequest;
+import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -47,15 +62,21 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
 
   @ClassRule
   public static Orchestrator orchestrator = Orchestrator.builderEnv()
-    .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[6.7]"))
+    .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE[7.9]"))
     .build();
 
   private static WsClient adminWsClient;
+  
+  private static final String PROJECT_NAME = "secret-java";
 
   @BeforeClass
   public static void prepare() {
     adminWsClient = newAdminWsClient(orchestrator);
     adminWsClient.settings().set(SetRequest.builder().setKey("sonar.forceAuthentication").setValue("true").build());
+    adminWsClient.projects()
+      .create(CreateRequest.builder()
+        .setName(PROJECT_NAME)
+        .setKey(PROJECT_NAME).build());
   }
 
   @Test
@@ -142,6 +163,50 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
         tuple("ideName", "Eclipse"),
         tuple("description", ""));
     }
+  }
+
+  @Test
+  public void shouldFindSecretsInSourceFiles() throws Exception {
+    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
+    IProject project = importEclipseProject("secrets/secret-java", PROJECT_NAME);
+    JobHelpers.waitForJobsToComplete(bot);
+    ServerConnectionWizardBot wizardBot = new ServerConnectionWizardBot(bot);
+    wizardBot.openFromFileNewWizard();
+    wizardBot.selectSonarQube();
+    wizardBot.clickNext();
+    wizardBot.setServerUrl(orchestrator.getServer().getUrl());
+    wizardBot.clickNext();
+    wizardBot.selectUsernamePassword();
+    wizardBot.clickNext();
+    wizardBot.setUsername(Server.ADMIN_LOGIN);
+    wizardBot.setPassword(Server.ADMIN_PASSWORD);
+    wizardBot.clickNext();
+    wizardBot.setConnectionName("test1");
+    wizardBot.clickNext();
+    if (orchestrator.getServer().version().isGreaterThanOrEquals(8, 7)) {
+      // SONAR-14306 Starting from 8.7, dev notifications are available even in community edition
+      wizardBot.clickNext();
+    }
+    wizardBot.clickFinish();
+
+
+    new ProjectBindingWizardBot(bot)
+      .clickAdd()
+      .chooseProject(PROJECT_NAME)
+      .clickNext()
+      .typeProjectKey(PROJECT_NAME)
+      .clickFinish();
+
+    new ServersViewBot(bot)
+      .waitForServerUpdateAndCheckVersion("test", orchestrator.getServer().version().toString());
+
+    new JavaPackageExplorerBot(bot)
+      .expandAndDoubleClick("secret-java", "src", "sec", "Secret.java");
+    JobHelpers.waitForJobsToComplete(bot);
+
+    List<IMarker> markers = Arrays.asList(project.findMember("src/sec/Secret.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
+      tuple("/secret-java/src/sec/Secret.java", 4, "AWS Secret Access Key detected here. Remove this credential from your code."));
   }
 
 }
