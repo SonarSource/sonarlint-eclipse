@@ -40,6 +40,6 @@ Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.jdt.annotation;resolution:=optional,
  org.sonarsource.sonarlint.core.sonarlint-core;bundle-version="5.1.0",
  minimal-json;bundle-version="0.9.5",
- org.eclipse.jgit
+ org.eclipse.jgit;resolution:=optional
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
