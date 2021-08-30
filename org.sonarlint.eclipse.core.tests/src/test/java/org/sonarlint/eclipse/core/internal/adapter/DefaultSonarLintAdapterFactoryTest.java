@@ -131,6 +131,11 @@ public class DefaultSonarLintAdapterFactoryTest extends SonarTestCase {
       // TODO Auto-generated method stub
       return null;
     }
+
+    @Override
+    public boolean isScmIgnored() {
+      return false;
+    }
   }
 
   public static class CobolModuleAdapter implements ISonarLintProject {

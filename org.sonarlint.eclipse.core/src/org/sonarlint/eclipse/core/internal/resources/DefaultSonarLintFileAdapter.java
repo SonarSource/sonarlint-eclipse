@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.IDocument;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.scm.GitUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 
@@ -92,6 +93,12 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
       SonarLintLogger.get().error("Unable to determine charset of file " + file, e);
       return Charset.defaultCharset();
     }
+  }
+
+  @Override
+  public boolean isScmIgnored() {
+    // we only support git at the moment
+    return GitUtils.isIgnored(this);
   }
 
   @Override

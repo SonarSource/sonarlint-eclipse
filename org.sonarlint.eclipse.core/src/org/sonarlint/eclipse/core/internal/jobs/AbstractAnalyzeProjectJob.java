@@ -60,7 +60,6 @@ import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.resources.SonarLintProperty;
-import org.sonarlint.eclipse.core.internal.scm.GitUtils;
 import org.sonarlint.eclipse.core.internal.telemetry.SonarLintTelemetry;
 import org.sonarlint.eclipse.core.internal.tracking.IssueTracker;
 import org.sonarlint.eclipse.core.internal.tracking.RawIssueTrackable;
@@ -123,7 +122,7 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
       FileExclusionsChecker exclusionsChecker = new FileExclusionsChecker(getProject());
       files.forEach(fWithDoc -> {
         ISonarLintFile file = fWithDoc.getFile();
-        if (exclusionsChecker.isExcluded(file, true) || GitUtils.isIgnored(file)) {
+        if (exclusionsChecker.isExcluded(file, true) || isScmIgnored(file)) {
           excludedFiles.add(file);
         } else {
           filesToAnalyze.add(fWithDoc);
@@ -184,6 +183,14 @@ public abstract class AbstractAnalyzeProjectJob<CONFIG extends AbstractAnalysisC
     }
 
     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+  }
+
+  private static boolean isScmIgnored(ISonarLintFile file) {
+    boolean ignored = file.isScmIgnored();
+    if (ignored) {
+      SonarLintLogger.get().debug("File '" + file.getName() + "' skipped from analysis because it is ignored by SCM");
+    }
+    return ignored;
   }
 
   private void runAnalysisAndUpdateMarkers(Map<ISonarLintFile, IDocument> docPerFiles, final IProgressMonitor monitor,
