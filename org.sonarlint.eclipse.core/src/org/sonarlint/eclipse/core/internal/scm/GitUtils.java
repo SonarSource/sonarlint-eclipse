@@ -39,13 +39,13 @@ public class GitUtils {
     File fileToCheck = fileToCheckLocation.toFile();
     try (Repository repository = builder.findGitDir(fileToCheck.getParentFile()).build()) {
       if (repository.getObjectDatabase().exists()) {
-        FileTreeIterator iterator = new FileTreeIterator(repository);
         Path repositoryRootPath = repository.getWorkTree().toPath();
         try (TreeWalk treeWalk = new TreeWalk(repository)) {
-          treeWalk.addTree(iterator);
+          treeWalk.addTree(new FileTreeIterator(repository));
           treeWalk.setRecursive(true);
           treeWalk.setFilter(PathFilter.create(repositoryRootPath.relativize(fileToCheck.toPath()).toString()));
-          return treeWalk.next() && iterator.isEntryIgnored();
+          // the iterator that we provide in addTree might have been replaced when walking subfolders
+          return treeWalk.next() && treeWalk.getTree(FileTreeIterator.class).isEntryIgnored();
         }
       }
     } catch (Exception e) {
