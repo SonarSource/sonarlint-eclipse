@@ -98,7 +98,16 @@ public class DefaultSonarLintFileAdapter implements ISonarLintFile {
   @Override
   public boolean isScmIgnored() {
     // we only support git at the moment
-    return GitUtils.isIgnored(this);
+    return isJGitPresent() && GitUtils.isIgnored(this);
+  }
+
+  private static boolean isJGitPresent() {
+    try {
+      Class.forName("org.eclipse.jgit.lib.Repository");
+      return true;
+    } catch (ClassNotFoundException e) {
+      return false;
+    }
   }
 
   @Override
