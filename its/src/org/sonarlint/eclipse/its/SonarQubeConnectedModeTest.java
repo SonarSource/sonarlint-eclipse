@@ -35,6 +35,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.ui.JavaUI;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -43,14 +44,12 @@ import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.bots.ProjectBindingWizardBot;
 import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
 import org.sonarlint.eclipse.its.bots.ServersViewBot;
+import org.sonarlint.eclipse.its.bots.SonarLintBindingsBot;
 import org.sonarlint.eclipse.its.utils.JobHelpers;
 import org.sonarlint.eclipse.its.utils.SwtBotUtils;
-import org.sonarqube.ws.client.HttpConnector;
 import org.sonarqube.ws.client.WsClient;
-import org.sonarqube.ws.client.WsClientFactories;
 import org.sonarqube.ws.client.project.CreateRequest;
 import org.sonarqube.ws.client.setting.SetRequest;
-import org.sonarqube.ws.client.usertoken.GenerateWsRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -77,6 +76,11 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
       .create(CreateRequest.builder()
         .setName(PROJECT_NAME)
         .setKey(PROJECT_NAME).build());
+  }
+
+  @Before
+  public void cleanup() {
+    new SonarLintBindingsBot(bot).removeAllBindings();
   }
 
   @Test
@@ -181,7 +185,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     wizardBot.setUsername(Server.ADMIN_LOGIN);
     wizardBot.setPassword(Server.ADMIN_PASSWORD);
     wizardBot.clickNext();
-    wizardBot.setConnectionName("test1");
+    wizardBot.setConnectionName("test");
     wizardBot.clickNext();
     if (orchestrator.getServer().version().isGreaterThanOrEquals(8, 7)) {
       // SONAR-14306 Starting from 8.7, dev notifications are available even in community edition
