@@ -32,7 +32,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.team.core.RepositoryProvider;
 import org.eclipse.team.core.TeamException;
 import org.eclipse.team.core.subscribers.Subscriber;
@@ -101,18 +100,6 @@ public class DefaultSonarLintProjectAdapter implements ISonarLintProject {
       SonarLintLogger.get().error("Error collecting files in project " + project.getName(), e);
     }
     return result;
-  }
-
-  @Nullable
-  public String getNoScmSupportCause() {
-    RepositoryProvider provider = RepositoryProvider.getProvider(project);
-    if (provider == null) {
-      return "No SCM for project '" + project.getName() + "'";
-    } else if (provider.getSubscriber() == null) {
-      return "Unsupported SCM for project '" + project.getName() + "'";
-    } else {
-      return null;
-    }
   }
 
   public Collection<ISonarLintFile> getScmChangedFiles(IProgressMonitor monitor) {
