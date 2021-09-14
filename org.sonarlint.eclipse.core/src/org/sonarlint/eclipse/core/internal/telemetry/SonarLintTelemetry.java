@@ -20,6 +20,8 @@
 package org.sonarlint.eclipse.core.internal.telemetry;
 
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -174,6 +176,11 @@ public class SonarLintTelemetry {
         .filter(StandaloneRuleDetails::isActiveByDefault)
         .map(StandaloneRuleDetails::getKey)
         .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Map<String, Object> additionalAttributes() {
+      return Collections.emptyMap();
     }
   }
 
