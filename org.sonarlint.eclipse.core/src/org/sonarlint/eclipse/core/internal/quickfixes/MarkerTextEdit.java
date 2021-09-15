@@ -24,9 +24,10 @@ import org.eclipse.core.resources.IMarker;
 public class MarkerTextEdit {
 
   private final String newText;
-  private IMarker marker;
+  private final IMarker marker;
 
-  public MarkerTextEdit(String newText) {
+  public MarkerTextEdit(IMarker marker, String newText) {
+    this.marker = marker;
     this.newText = newText;
   }
 
@@ -34,8 +35,8 @@ public class MarkerTextEdit {
     return newText;
   }
 
-  public void setMarker(IMarker marker) {
-    this.marker = marker;
+  public IMarker getMarker() {
+    return marker;
   }
 
 }

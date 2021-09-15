@@ -50,6 +50,9 @@ import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintProjectConfiguration.EclipseProjectBinding;
+import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
+import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
+import org.sonarlint.eclipse.core.internal.quickfixes.MarkerTextEdit;
 import org.sonarlint.eclipse.core.internal.resources.ProjectsProviderUtils;
 import org.sonarlint.eclipse.core.internal.tracking.ServerIssueTrackable;
 import org.sonarlint.eclipse.core.internal.tracking.Trackable;
@@ -58,6 +61,9 @@ import org.sonarlint.eclipse.core.listener.TaintVulnerabilitiesListener;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.core.resource.ISonarLintIssuable;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
+import org.sonarsource.sonarlint.core.client.api.common.ClientInputFileEdit;
+import org.sonarsource.sonarlint.core.client.api.common.QuickFix;
+import org.sonarsource.sonarlint.core.client.api.common.TextEdit;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueLocation;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue.Flow;
@@ -212,7 +218,8 @@ public class SonarLintMarkerUpdater {
         } else {
           IMarker marker = file.getResource().findMarker(issue.getMarkerId());
           updateMarkerAttributes(lazyInitDocument, issue, marker);
-          createFlowMarkersForLocalIssues(lazyInitDocument, file, issue, marker, markerIdForFlows(triggerType));
+          createFlowMarkersForLocalIssues(lazyInitDocument, file, issue, marker, triggerType);
+          createQuickFixMarkersForLocalIssues(lazyInitDocument, file, issue, marker, triggerType);
           previousMarkersToDelete.remove(marker);
         }
       } else {
@@ -231,12 +238,17 @@ public class SonarLintMarkerUpdater {
     setMarkerViewUtilsAttributes(issuable, marker);
 
     updateMarkerAttributes(document, trackable, marker);
-    createFlowMarkersForLocalIssues(document, issuable, trackable, marker, markerIdForFlows(triggerType));
+    createFlowMarkersForLocalIssues(document, issuable, trackable, marker, triggerType);
+    createQuickFixMarkersForLocalIssues(document, issuable, trackable, marker, triggerType);
 
   }
 
   private static String markerIdForFlows(TriggerType triggerType) {
     return triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID : SonarLintCorePlugin.MARKER_REPORT_FLOW_ID;
+  }
+
+  private static String markerIdForQuickFixes(TriggerType triggerType) {
+    return triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_QUICK_FIX_ID : SonarLintCorePlugin.MARKER_REPORT_QUICK_FIX_ID;
   }
 
   private static void createTaintMarker(IDocument document, ISonarLintIssuable issuable, ServerIssue taintIssue,
@@ -280,8 +292,9 @@ public class SonarLintMarkerUpdater {
     updateServerMarkerAttributes(trackable, marker);
   }
 
-  private static void createFlowMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, String flowMarkerId)
+  private static void createFlowMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, TriggerType triggerType)
     throws CoreException {
+    String flowMarkerId = markerIdForFlows(triggerType);
     List<MarkerFlow> flows = new ArrayList<>();
     int i = 1;
     for (org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow engineFlow : trackable.getFlows()) {
@@ -290,25 +303,69 @@ public class SonarLintMarkerUpdater {
       List<IssueLocation> locations = new ArrayList<>(engineFlow.locations());
       Collections.reverse(locations);
       for (IssueLocation l : locations) {
-        l.getInputFile();
         MarkerFlowLocation flowLocation = new MarkerFlowLocation(flow, l.getMessage());
-        try {
-          IMarker m = issuable.getResource().createMarker(flowMarkerId);
-          m.setAttribute(IMarker.MESSAGE, l.getMessage());
-          m.setAttribute(IMarker.LINE_NUMBER, l.getStartLine() != null ? l.getStartLine() : 1);
-          Position flowPosition = MarkerUtils.getPosition(document, TextRange.get(l.getStartLine(), l.getStartLineOffset(), l.getEndLine(), l.getEndLineOffset()));
-          if (flowPosition != null) {
-            m.setAttribute(IMarker.CHAR_START, flowPosition.getOffset());
-            m.setAttribute(IMarker.CHAR_END, flowPosition.getOffset() + flowPosition.getLength());
-          }
-          flowLocation.setMarker(m);
-        } catch (Exception e) {
-          SonarLintLogger.get().debug("Unable to create flow marker", e);
-        }
+        createMarkerForTextRange(document, issuable.getResource(), flowMarkerId, l.getMessage(), l.getTextRange()).ifPresent(flowLocation::setMarker);
       }
       i++;
     }
     marker.setAttribute(MarkerUtils.SONAR_MARKER_EXTRA_LOCATIONS_ATTR, new MarkerFlows(flows));
+  }
+
+  private static void createQuickFixMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, TriggerType triggerType)
+    throws CoreException {
+    String qfMarkerId = markerIdForQuickFixes(triggerType);
+    List<MarkerQuickFix> qfs = new ArrayList<>();
+    for (QuickFix engineQuickFix : trackable.getQuickFix()) {
+      createQuickFix(document, issuable, qfMarkerId, qfs, engineQuickFix);
+    }
+    marker.setAttribute(MarkerUtils.SONAR_MARKER_QUICK_FIXES_ATTR, new MarkerQuickFixes(qfs));
+  }
+
+  private static void createQuickFix(IDocument document, ISonarLintIssuable issuable, String qfMarkerId, List<MarkerQuickFix> qfs, QuickFix engineQuickFix) {
+    MarkerQuickFix qf = new MarkerQuickFix(engineQuickFix.message());
+    for (ClientInputFileEdit edits : engineQuickFix.inputFileEdits()) {
+      if (!issuable.equals(edits.target().getClientObject())) {
+        SonarLintLogger.get().debug("Quick fix on multiple files is not supported yet: " + engineQuickFix.message());
+        return;
+      }
+      for (TextEdit txtEditFromEngine : edits.textEdits()) {
+        Optional<IMarker> markerForTextEdit = createMarkerForTextRange(document, issuable.getResource(), qfMarkerId, null, txtEditFromEngine.range());
+        if (markerForTextEdit.isPresent()) {
+          MarkerTextEdit textEdit = new MarkerTextEdit(markerForTextEdit.get(), txtEditFromEngine.newText());
+          qf.addTextEdit(textEdit);
+        } else {
+          SonarLintLogger.get().debug("Unable to create text edit marker for quick fix: " + engineQuickFix.message());
+          return;
+        }
+      }
+    }
+    qfs.add(qf);
+  }
+
+  private static Optional<IMarker> createMarkerForTextRange(IDocument document, IResource resource, String markerId, @Nullable String message,
+    org.sonarsource.sonarlint.core.client.api.common.@Nullable TextRange textRange) {
+    try {
+      IMarker m = resource.createMarker(markerId);
+      if (message != null) {
+        m.setAttribute(IMarker.MESSAGE, message);
+      }
+      if (textRange == null) {
+        // File level
+        m.setAttribute(IMarker.LINE_NUMBER, 1);
+      } else {
+        m.setAttribute(IMarker.LINE_NUMBER, textRange.getStartLine());
+        Position position = MarkerUtils.getPosition(document,
+          TextRange.get(textRange.getStartLine(), textRange.getStartLineOffset(), textRange.getEndLine(), textRange.getEndLineOffset()));
+        if (position != null) {
+          m.setAttribute(IMarker.CHAR_START, position.getOffset());
+          m.setAttribute(IMarker.CHAR_END, position.getOffset() + position.getLength());
+        }
+      }
+      return Optional.of(m);
+    } catch (Exception e) {
+      SonarLintLogger.get().debug("Unable to create marker", e);
+      return Optional.empty();
+    }
   }
 
   private static void createFlowMarkersForTaint(ServerIssue taintIssue, IMarker primaryLocationMarker, Map<ISonarLintProject, EclipseProjectBinding> bindingsPerProjects)
