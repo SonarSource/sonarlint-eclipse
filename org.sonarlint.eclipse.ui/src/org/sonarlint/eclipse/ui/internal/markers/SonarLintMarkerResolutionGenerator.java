@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.markers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IMarkerResolution;
@@ -40,6 +41,9 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
   @Override
   public IMarkerResolution[] getResolutions(final IMarker marker) {
     List<IMarkerResolution> resolutions = new ArrayList<>();
+
+    resolutions.addAll(getQuickFixesResolutions(marker));
+
     resolutions.add(new ShowRuleDescriptionMarkerResolver(marker));
 
     if (hasExtraLocations(marker)) {
@@ -50,8 +54,14 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
       resolutions.add(new DeactivateRuleMarkerResolver(marker));
     }
 
-    // note: the display order seems independent from the order in this array
+    // note: the display order seems independent from the order in this array (https://bugs.eclipse.org/bugs/show_bug.cgi?id=232383)
     return resolutions.toArray(new IMarkerResolution[resolutions.size()]);
+  }
+
+  private static List<ApplyQuickFixMarkerResolver> getQuickFixesResolutions(IMarker marker) {
+    return MarkerUtils.getIssueQuickFixes(marker).getQuickFixes().stream()
+      .map(ApplyQuickFixMarkerResolver::new)
+      .collect(Collectors.toList());
   }
 
   private static boolean isSonarLintIssueMarker(IMarker marker) {
