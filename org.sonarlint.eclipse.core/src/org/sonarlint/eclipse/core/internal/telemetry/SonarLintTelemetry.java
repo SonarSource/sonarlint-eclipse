@@ -255,6 +255,12 @@ public class SonarLintTelemetry {
     }
   }
 
+  public void addQuickFixAppliedForRule(String ruleKey) {
+    if (enabled()) {
+      telemetry.addQuickFixAppliedForRule(ruleKey);
+    }
+  }
+
   public void stop() {
     if (scheduledJob != null) {
       scheduledJob.cancel();
