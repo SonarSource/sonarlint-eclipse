@@ -27,7 +27,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.sonarlint.eclipse.core.SonarLintLogger;
+import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
@@ -58,16 +60,19 @@ public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
       return;
     }
     IDocument document = getDocument(file);
-    Display.getDefault().asyncExec(() -> fix.getTextEdits().forEach(textEdit -> {
-      try {
-        IMarker editMarker = textEdit.getMarker();
-        int startOffset = (int) editMarker.getAttribute(IMarker.CHAR_START);
-        int endOffset = (int) editMarker.getAttribute(IMarker.CHAR_END);
-        document.replace(startOffset, endOffset - startOffset, textEdit.getNewText());
-      } catch (Exception e) {
-        SonarLintLogger.get().error("Quick fix location does not exist", e);
-      }
-    }));
+    Display.getDefault().asyncExec(() -> {
+      fix.getTextEdits().forEach(textEdit -> {
+        try {
+          IMarker editMarker = textEdit.getMarker();
+          int startOffset = (int) editMarker.getAttribute(IMarker.CHAR_START);
+          int endOffset = (int) editMarker.getAttribute(IMarker.CHAR_END);
+          document.replace(startOffset, endOffset - startOffset, textEdit.getNewText());
+        } catch (Exception e) {
+          SonarLintLogger.get().error("Quick fix location does not exist", e);
+        }
+      });
+      SonarLintCorePlugin.getTelemetry().addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker).toString());
+    });
   }
 
   private static IDocument getDocument(ISonarLintFile file) {
