@@ -37,6 +37,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.markers.TextRange.FullTextRange;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 import static java.util.Arrays.asList;
@@ -51,6 +52,7 @@ public final class MarkerUtils {
 
   public static final String SONAR_MARKER_SERVER_ISSUE_KEY_ATTR = "serverissuekey";
   public static final String SONAR_MARKER_EXTRA_LOCATIONS_ATTR = "extralocations";
+  public static final String SONAR_MARKER_QUICK_FIXES_ATTR = "quickfixes";
 
   public static final Set<String> SONARLINT_PRIMARY_MARKER_IDS = new HashSet<>(
     asList(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, SonarLintCorePlugin.MARKER_REPORT_ID, SonarLintCorePlugin.MARKER_TAINT_ID));
@@ -131,6 +133,14 @@ public final class MarkerUtils {
       return Optional.ofNullable((MarkerFlows) marker.getAttribute(SONAR_MARKER_EXTRA_LOCATIONS_ATTR)).orElseGet(() -> new MarkerFlows(Collections.emptyList()));
     } catch (CoreException e) {
       return new MarkerFlows(Collections.emptyList());
+    }
+  }
+
+  public static MarkerQuickFixes getIssueQuickFixes(IMarker marker) {
+    try {
+      return Optional.ofNullable((MarkerQuickFixes) marker.getAttribute(SONAR_MARKER_QUICK_FIXES_ATTR)).orElseGet(() -> new MarkerQuickFixes(Collections.emptyList()));
+    } catch (CoreException e) {
+      return new MarkerQuickFixes(Collections.emptyList());
     }
   }
 

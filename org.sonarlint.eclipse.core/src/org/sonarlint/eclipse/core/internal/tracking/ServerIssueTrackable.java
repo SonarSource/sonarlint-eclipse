@@ -22,6 +22,7 @@ package org.sonarlint.eclipse.core.internal.tracking;
 import java.util.List;
 import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import org.sonarsource.sonarlint.core.client.api.common.QuickFix;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
 import org.sonarsource.sonarlint.core.client.api.connected.ServerIssue;
 
@@ -124,6 +125,11 @@ public class ServerIssueTrackable implements Trackable {
 
   @Override
   public List<Flow> getFlows() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<QuickFix> getQuickFix() {
     throw new UnsupportedOperationException();
   }
 }

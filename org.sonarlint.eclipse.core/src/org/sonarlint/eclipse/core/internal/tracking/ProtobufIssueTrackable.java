@@ -24,6 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
 import org.sonarlint.eclipse.core.internal.proto.Sonarlint.Issues.Issue;
 import org.sonarlint.eclipse.core.internal.utils.StringUtils;
+import org.sonarsource.sonarlint.core.client.api.common.QuickFix;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
 
 public class ProtobufIssueTrackable implements Trackable {
@@ -126,6 +127,11 @@ public class ProtobufIssueTrackable implements Trackable {
 
   @Override
   public List<Flow> getFlows() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<QuickFix> getQuickFix() {
     throw new UnsupportedOperationException();
   }
 }

@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.core.internal.tracking;
 
 import java.util.List;
 import org.sonarlint.eclipse.core.internal.markers.TextRange;
+import org.sonarsource.sonarlint.core.client.api.common.QuickFix;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue.Flow;
 
 public class WrappedTrackable implements Trackable {
@@ -119,5 +120,10 @@ public class WrappedTrackable implements Trackable {
   @Override
   public List<Flow> getFlows() {
     return trackable.getFlows();
+  }
+
+  @Override
+  public List<QuickFix> getQuickFix() {
+    return trackable.getQuickFix();
   }
 }
