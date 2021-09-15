@@ -19,9 +19,14 @@
  */
 package org.sonarlint.eclipse.core.internal.quickfixes;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class MarkerQuickFix {
 
   private final String message;
+  private final List<MarkerTextEdit> textEdits = new ArrayList<>();
 
   public MarkerQuickFix(String message) {
     this.message = message;
@@ -29,6 +34,14 @@ public class MarkerQuickFix {
 
   public String getMessage() {
     return message;
+  }
+
+  public void addTextEdit(MarkerTextEdit textEdit) {
+    textEdits.add(textEdit);
+  }
+
+  public List<MarkerTextEdit> getTextEdits() {
+    return Collections.unmodifiableList(textEdits);
   }
 
 }
