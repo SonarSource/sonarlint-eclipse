@@ -36,14 +36,6 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentListener;
-import org.eclipse.jface.text.IDocumentPartitioner;
-import org.eclipse.jface.text.IDocumentPartitioningListener;
-import org.eclipse.jface.text.IPositionUpdater;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITypedRegion;
-import org.eclipse.jface.text.Position;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,8 +45,12 @@ import org.sonarlint.eclipse.core.internal.LogListener;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
+import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.preferences.RuleConfig;
 import org.sonarlint.eclipse.core.internal.preferences.SonarLintGlobalConfiguration;
+import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
+import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
+import org.sonarlint.eclipse.core.internal.quickfixes.MarkerTextEdit;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintFileAdapter;
 import org.sonarlint.eclipse.core.internal.resources.DefaultSonarLintProjectAdapter;
 import org.sonarlint.eclipse.tests.common.SonarTestCase;
@@ -105,10 +101,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
   public void analyzeWithRuleParameters() throws Exception {
     IFile file = (IFile) project.findMember("src/main/sample.js");
     DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
-    IDocument document = new SimpleDocument("function hello() {\n" +
-      "  \n" +
-      "}");
-    FileWithDocument fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), document);
+    FileWithDocument fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), null);
     RuleConfig ruleConfig = new RuleConfig("javascript:S100", true);
     ruleConfig.getParams().put("format", "^[0-9]+$");
     SonarLintGlobalConfiguration.saveRulesConfig(asList(ruleConfig));
@@ -200,6 +193,35 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   }
 
+  @Test
+  public void analyzeWithQuickFixes() throws Exception {
+    IFile file = (IFile) project.findMember("src/main/java/com/quickfix/FileWithQuickFixes.java");
+    DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
+    FileWithDocument fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), null);
+
+    AnalyzeStandaloneProjectJob underTest = new AnalyzeStandaloneProjectJob(new AnalyzeProjectRequest(slProject, asList(fileToAnalyze), TriggerType.EDITOR_CHANGE));
+    underTest.schedule();
+    assertThat(underTest.join(10_000, new NullProgressMonitor())).isTrue();
+    IStatus status = underTest.getResult();
+    assertThat(status.isOK()).isTrue();
+
+    List<IMarker> markers = Arrays.asList(file.findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
+    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR))
+      .contains(tuple("/SimpleJdtProject/src/main/java/com/quickfix/FileWithQuickFixes.java", 8,
+        "Replace the type specification in this constructor call with the diamond operator (\"<>\").", "java:S2293"));
+    IMarker markerWithQuickFix = markers.stream().filter(m -> m.getAttribute(MarkerUtils.SONAR_MARKER_RULE_KEY_ATTR, "").equals("java:S2293")).findFirst().get();
+    MarkerQuickFixes issueQuickFixes = MarkerUtils.getIssueQuickFixes(markerWithQuickFix);
+    assertThat(issueQuickFixes.getQuickFixes()).hasSize(1);
+    MarkerQuickFix markerQuickFix = issueQuickFixes.getQuickFixes().get(0);
+    assertThat(markerQuickFix.getMessage()).isEqualTo("Replace with <>");
+    assertThat(markerQuickFix.getTextEdits()).hasSize(1);
+    MarkerTextEdit markerTextEdit = markerQuickFix.getTextEdits().get(0);
+    assertThat(markerTextEdit.getNewText()).isEqualTo("<>");
+    assertThat(markerTextEdit.getMarker()).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE, IMarker.CHAR_START, IMarker.CHAR_END))
+      .isEqualTo(tuple("/SimpleJdtProject/src/main/java/com/quickfix/FileWithQuickFixes.java", 8, null, 158, 166));
+
+  }
+
   private void verifyMarkers(FileWithDocument file1ToAnalyze, FileWithDocument file2ToAnalyze, String markerType) throws CoreException {
     List<IMarker> markers1 = Arrays.asList(file1ToAnalyze.getFile().getResource().findMarkers(markerType, true, IResource.DEPTH_ONE));
     assertThat(markers1).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).hasSize(6);
@@ -209,40 +231,12 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
 
   private FileWithDocument prepareFile2(IProject project, DefaultSonarLintProjectAdapter slProject) {
     IFile file2 = (IFile) project.findMember("src/main/java/com/sonarsource/NpeWithFlow2.java");
-    IDocument document2 = new SimpleDocument("package com.sonarsource;\n" +
-      "\n" +
-      "public class NpeWithFlow2 {\n" +
-      "\n" +
-      "  public int foo(boolean a, String foo) {\n" +
-      "    if (a) {\n" +
-      "      foo = null;\n" +
-      "    } else {\n" +
-      "      foo = null;\n" +
-      "    }\n" +
-      "    foo.toString();\n" +
-      "    return 0;\n" +
-      "  }\n" +
-      "}");
-    return new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file2), document2);
+    return new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file2), null);
   }
 
   private FileWithDocument prepareFile1(IProject project, DefaultSonarLintProjectAdapter slProject) {
     IFile file1 = (IFile) project.findMember("src/main/java/com/sonarsource/NpeWithFlow.java");
-    IDocument document = new SimpleDocument("package com.sonarsource;\n" +
-      "\n" +
-      "public class NpeWithFlow {\n" +
-      "\n" +
-      "  public int foo(boolean a, String foo) {\n" +
-      "    if (a) {\n" +
-      "      foo = null;\n" +
-      "    } else {\n" +
-      "      foo = null;\n" +
-      "    }\n" +
-      "    foo.toString();\n" +
-      "    return 0;\n" +
-      "  }\n" +
-      "}");
-    return new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file1), document);
+    return new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file1), null);
   }
 
   public static MarkerAttributesExtractor markerAttributes(String... attributes) {
@@ -304,261 +298,6 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
       }
       return new Tuple(tupleAttributes);
     }
-  }
-
-  /**
-   * Minimal implementation of IDocument
-   */
-  public class SimpleDocument implements IDocument {
-
-    private final StringBuffer buffer;
-
-    public SimpleDocument(String source) {
-      this.buffer = new StringBuffer(source);
-    }
-
-    @Override
-    public char getChar(int offset) {
-      return this.buffer.charAt(offset);
-    }
-
-    @Override
-    public int getLength() {
-      return this.buffer.length();
-    }
-
-    @Override
-    public String get() {
-      return this.buffer.toString();
-    }
-
-    @Override
-    public String get(int offset, int length) {
-      return this.buffer.substring(offset, offset + length);
-    }
-
-    @Override
-    public void set(String text) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void replace(int offset, int length, String text) {
-      this.buffer.replace(offset, offset + length, text);
-    }
-
-    @Override
-    public void addDocumentListener(IDocumentListener listener) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removeDocumentListener(IDocumentListener listener) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void addPrenotifiedDocumentListener(IDocumentListener documentAdapter) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removePrenotifiedDocumentListener(IDocumentListener documentAdapter) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void addPositionCategory(String category) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removePositionCategory(String category) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String[] getPositionCategories() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean containsPositionCategory(String category) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void addPosition(Position position) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removePosition(Position position) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void addPosition(String category, Position position) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removePosition(String category, Position position) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Position[] getPositions(String category) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean containsPosition(String category, int offset, int length) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int computeIndexInCategory(String category, int offset) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void addPositionUpdater(IPositionUpdater updater) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removePositionUpdater(IPositionUpdater updater) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void insertPositionUpdater(IPositionUpdater updater, int index) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public IPositionUpdater[] getPositionUpdaters() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String[] getLegalContentTypes() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String getContentType(int offset) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ITypedRegion getPartition(int offset) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ITypedRegion[] computePartitioning(int offset, int length) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void addDocumentPartitioningListener(IDocumentPartitioningListener listener) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removeDocumentPartitioningListener(IDocumentPartitioningListener listener) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setDocumentPartitioner(IDocumentPartitioner partitioner) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public IDocumentPartitioner getDocumentPartitioner() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int getLineLength(int line) {
-      return buffer.toString().split("\\n")[line].length();
-    }
-
-    @Override
-    public int getLineOfOffset(int offset) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int getLineOffset(int line) {
-      int offset = 0;
-      int currentLine = 0;
-      int bufferLength = buffer.length();
-      while (offset < bufferLength) {
-        if (currentLine == line) {
-          return offset;
-        }
-        if (buffer.charAt(offset) == '\n') {
-          currentLine++;
-        }
-        offset++;
-      }
-      return offset;
-    }
-
-    @Override
-    public IRegion getLineInformation(int line) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public IRegion getLineInformationOfOffset(int offset) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int getNumberOfLines() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int getNumberOfLines(int offset, int length) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int computeNumberOfLines(String text) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String[] getLegalLineDelimiters() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String getLineDelimiter(int line) {
-      return "\n";
-    }
-
-    /**
-     * @see org.eclipse.jface.text.IDocument#search(int, java.lang.String, boolean, boolean, boolean)
-     * @deprecated
-     */
-    @Deprecated
-    @Override
-    public int search(
-      int startOffset,
-      String findString,
-      boolean forwardSearch,
-      boolean caseSensitive,
-      boolean wholeWord) {
-      throw new UnsupportedOperationException();
-    }
-
   }
 
 }
