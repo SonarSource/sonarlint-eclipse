@@ -84,7 +84,6 @@ public class SonarLintMarkerUpdater {
     try {
       Set<IMarker> previousMarkersToDelete;
       if (triggerType.isOnTheFly()) {
-        file.getResource().deleteMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID, false, IResource.DEPTH_ZERO);
         previousMarkersToDelete = new HashSet<>(Arrays.asList(file.getResource().findMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, false, IResource.DEPTH_ZERO)));
       } else {
         previousMarkersToDelete = Collections.emptySet();
@@ -168,6 +167,7 @@ public class SonarLintMarkerUpdater {
     try {
       file.getResource().deleteMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_ID, false, IResource.DEPTH_ZERO);
       file.getResource().deleteMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID, false, IResource.DEPTH_ZERO);
+      file.getResource().deleteMarkers(SonarLintCorePlugin.MARKER_ON_THE_FLY_QUICK_FIX_ID, false, IResource.DEPTH_ZERO);
     } catch (CoreException e) {
       SonarLintLogger.get().error(e.getMessage(), e);
     }
@@ -474,6 +474,7 @@ public class SonarLintMarkerUpdater {
       .forEach(p -> {
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_FLOW_ID);
+        p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_QUICK_FIX_ID);
       });
   }
 
