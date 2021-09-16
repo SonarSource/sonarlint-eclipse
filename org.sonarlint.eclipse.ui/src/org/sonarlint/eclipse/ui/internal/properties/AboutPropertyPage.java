@@ -96,8 +96,25 @@ public class AboutPropertyPage extends PropertyPage implements IWorkbenchPrefere
       "      \"taint_vulnerabilities\": {\n" +
       "            \"investigated_locally_count\": 3,\n" +
       "            \"investigated_remotely_count\": 4\n" +
-      "      }\n"
-      + "}");
+      "      },\n" + 
+      "      \"rules\": {\n" +
+      "            \"raised_issues\": [\n" +
+      "                \"secrets:S6290\",\n" +
+      "                \"javascript:S3353\",\n" +
+      "                \"javascript:S1441\"\n" +
+      "            ],\n" +
+      "            \"non_default_enabled\": [\n" +
+      "                \"javascript:S3513\"\n" +
+      "            ],\n" +
+      "            \"default_disabled\":  [\n" +
+      "                \"javascript:S1994\"\n" +
+      "            ],\n" +
+      "            \"quick_fix_applied\": [\n" +
+      "                \"java:S1656\",\n" +
+      "                \"java:S1872\"\n" +
+      "            ],\n" +
+      "      }\n" +
+      "}");
 
     text.addSelectionListener(new SelectionAdapter() {
       @Override
