@@ -19,28 +19,32 @@
  */
 package org.sonarlint.eclipse.ui.internal.markers;
 
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Position;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.views.markers.WorkbenchMarkerResolution;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
+import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFixes;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
-import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
+import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 
-public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
+public class ApplyQuickFixMarkerResolver extends WorkbenchMarkerResolution {
 
-  private final MarkerQuickFix fix;
+  private final String fixMessage;
 
   public ApplyQuickFixMarkerResolver(MarkerQuickFix fix) {
-    this.fix = fix;
+    this.fixMessage = fix.getMessage();
   }
 
   @Override
@@ -50,7 +54,7 @@ public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
 
   @Override
   public String getLabel() {
-    return fix.getMessage();
+    return fixMessage;
   }
 
   @Override
@@ -59,35 +63,41 @@ public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
     if (file == null) {
       return;
     }
-    IDocument document = getDocument(file);
-    Display.getDefault().asyncExec(() -> {
-      fix.getTextEdits().forEach(textEdit -> {
-        try {
-          IMarker editMarker = textEdit.getMarker();
-          int startOffset = (int) editMarker.getAttribute(IMarker.CHAR_START);
-          int endOffset = (int) editMarker.getAttribute(IMarker.CHAR_END);
-          document.replace(startOffset, endOffset - startOffset, textEdit.getNewText());
-        } catch (Exception e) {
-          SonarLintLogger.get().error("Quick fix location does not exist", e);
-        }
-      });
-      SonarLintCorePlugin.getTelemetry().addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker).toString());
-    });
-  }
-
-  private static IDocument getDocument(ISonarLintFile file) {
-    IDocument doc;
-    IEditorPart editorPart = PlatformUtils.findEditor(file);
-    if (editorPart instanceof ITextEditor) {
-      doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
-    } else {
-      doc = file.getDocument();
+    Optional<MarkerQuickFix> qfWithSameMessage = MarkerUtils.getIssueQuickFixes(marker).getQuickFixes().stream().filter(qf -> qf.getMessage().equals(fixMessage)).findFirst();
+    if (!qfWithSameMessage.isPresent()) {
+      return;
     }
-    return doc;
+    Display.getDefault().asyncExec(() -> qfWithSameMessage.get().getTextEdits().forEach(textEdit -> {
+      try {
+        IMarker editMarker = textEdit.getMarker();
+        ITextEditor textEditor = LocationsUtils.findOpenEditorFor(editMarker);
+        if (textEditor == null) {
+          // TODO handle closed editors
+          return;
+        }
+        Position markerPosition = LocationsUtils.getMarkerPosition(editMarker, textEditor);
+        if (markerPosition != null) {
+          IDocument doc = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
+          doc.replace(markerPosition.getOffset(), markerPosition.getLength(), textEdit.getNewText());
+        }
+      } catch (Exception e) {
+        SonarLintLogger.get().error("Quick fix location does not exist", e);
+      }
+      SonarLintCorePlugin.getTelemetry().addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker).toString());
+    }));
   }
 
   @Override
   public Image getImage() {
     return SonarLintImages.BALLOON_IMG;
   }
+
+  @Override
+  public IMarker[] findOtherMarkers(IMarker[] markers) {
+    return Arrays.stream(markers).filter(m -> {
+      MarkerQuickFixes otherMarkerQuickFixes = MarkerUtils.getIssueQuickFixes(m);
+      return otherMarkerQuickFixes.getQuickFixes().stream().anyMatch(qf -> qf.getMessage().equals(fixMessage));
+    }).collect(Collectors.toList()).toArray(new IMarker[0]);
+  }
+
 }
