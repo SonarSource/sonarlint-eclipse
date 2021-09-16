@@ -88,6 +88,6 @@ public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
 
   @Override
   public Image getImage() {
-    return SonarLintImages.BALLOON_IMG;
+    return SonarLintImages.RESOLUTION_QUICKFIX_CHANGE;
   }
 }
