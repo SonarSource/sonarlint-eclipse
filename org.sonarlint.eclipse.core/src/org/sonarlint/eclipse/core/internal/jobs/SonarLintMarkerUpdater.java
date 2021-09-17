@@ -324,8 +324,13 @@ public class SonarLintMarkerUpdater {
   private static void createQuickFix(IDocument document, ISonarLintIssuable issuable, String qfMarkerId, List<MarkerQuickFix> qfs, QuickFix engineQuickFix) {
     MarkerQuickFix qf = new MarkerQuickFix(engineQuickFix.message());
     for (ClientInputFileEdit edits : engineQuickFix.inputFileEdits()) {
-      if (!issuable.equals(edits.target().getClientObject())) {
+      EclipseInputFile inputFile = (EclipseInputFile) edits.target();
+      if (!issuable.equals(inputFile.getClientObject())) {
         SonarLintLogger.get().debug("Quick fix on multiple files is not supported yet: " + engineQuickFix.message());
+        return;
+      }
+      if (inputFile.hasDocumentOlderThan(document)) {
+        SonarLintLogger.get().debug("Document has changed since quick fix was contributed: " + engineQuickFix.message());
         return;
       }
       for (TextEdit txtEditFromEngine : edits.textEdits()) {

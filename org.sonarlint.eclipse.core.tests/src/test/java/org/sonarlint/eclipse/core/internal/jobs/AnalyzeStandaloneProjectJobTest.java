@@ -194,7 +194,7 @@ public class AnalyzeStandaloneProjectJobTest extends SonarTestCase {
   }
 
   @Test
-  public void analyzeWithQuickFixes() throws Exception {
+  public void analyzeWithQuickFixesWhenFileIsClosed() throws Exception {
     IFile file = (IFile) project.findMember("src/main/java/com/quickfix/FileWithQuickFixes.java");
     DefaultSonarLintProjectAdapter slProject = new DefaultSonarLintProjectAdapter(project);
     FileWithDocument fileToAnalyze = new FileWithDocument(new DefaultSonarLintFileAdapter(slProject, file), null);

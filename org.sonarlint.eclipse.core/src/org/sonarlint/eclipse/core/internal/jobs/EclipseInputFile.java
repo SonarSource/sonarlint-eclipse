@@ -32,6 +32,7 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension4;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
@@ -49,6 +50,7 @@ class EclipseInputFile implements ClientInputFile {
   private final IDocument editorDocument;
   private final Path tempDirectory;
   private Path filePath;
+  private long documentModificationStamp;
 
   EclipseInputFile(boolean isTestFile, ISonarLintFile file, Path tempDirectory, @Nullable IDocument editorDocument, @Nullable Language language) {
     this.isTestFile = isTestFile;
@@ -56,6 +58,7 @@ class EclipseInputFile implements ClientInputFile {
     this.tempDirectory = tempDirectory;
     this.language = language;
     this.editorDocument = editorDocument;
+    this.documentModificationStamp = editorDocument != null ? ((IDocumentExtension4) editorDocument).getModificationStamp() : 0;
   }
 
   @Override
@@ -125,6 +128,10 @@ class EclipseInputFile implements ClientInputFile {
   @Override
   public InputStream inputStream() throws IOException {
     return new ByteArrayInputStream(contents().getBytes(getCharset()));
+  }
+
+  public boolean hasDocumentOlderThan(IDocument document) {
+    return editorDocument != null && documentModificationStamp < ((IDocumentExtension4) document).getModificationStamp();
   }
 
 }
