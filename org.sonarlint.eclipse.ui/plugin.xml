@@ -90,6 +90,17 @@
    </decorator>
 </extension>
 
+  <extension
+        point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.sonarlint.eclipse.ui.internal.markers.QuickFixPropertyTester"
+            id="org.sonarlint.eclipse.ui.internal.quickFix"
+            namespace="org.sonarlint.eclipse.ui"
+            properties="quickFix"
+            type="org.eclipse.ui.views.markers.MarkerItem">
+      </propertyTester>
+  </extension>
+
   <extension point="org.eclipse.ui.views">
     <category
         name="%sonar.category.view.name"
@@ -566,10 +577,7 @@
                  icon="icons/full/marker_resolution16/showrule.png"
                  style="push"
                  mnemonic="R">
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:org.sonarlint.eclipse.ui.views.issues.IssuesView">
+           </command>
            <command
                  commandId="org.sonarlint.eclipse.ui.internal.command.DeactivateRuleCommand"
                  icon="icons/full/marker_resolution16/disablerule.png"
@@ -584,6 +592,14 @@
                 </iterate>
              </with>
           </visibleWhen>
+         </command>
+         <command
+                 commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"
+                 mnemonic="%command.correctionAssistProposals.mnemonic"
+                 style="push">
+               <visibleWhen
+                    checkEnabled="false">
+              </visibleWhen>
          </command>
       </menuContribution>
       <menuContribution
@@ -638,6 +654,14 @@
                  icon="icons/full/marker_resolution16/disablerule.png"
                  style="push"
                  mnemonic="u">
+         </command>
+         <command
+                 commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"
+                 mnemonic="%command.correctionAssistProposals.mnemonic"
+                 style="push">
+               <visibleWhen
+                    checkEnabled="false">
+              </visibleWhen>
          </command>
       </menuContribution>
 	<menuContribution locationURI="popup:sonar.menu?after=group1">
@@ -901,6 +925,46 @@
           class="org.sonarlint.eclipse.ui.internal.command.AnalyzeChangeSetCommand"
           commandId="org.sonarlint.eclipse.ui.internal.command.AnalyzeChangeSetCommand">
     </handler>
+    <handler
+            class="org.eclipse.ui.internal.views.markers.QuickFixHandler"
+            commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals">
+         <activeWhen>
+             <and>
+                 <with variable="activePart">
+                     <instanceof value="org.eclipse.ui.views.markers.MarkerSupportView"/>
+                     <or>
+                         <test args="org.sonarlint.eclipse.ui.views.issues.onTheFlyIssueMarkerGenerator"
+                             property="org.eclipse.ui.ide.contentGenerator"/>
+                         <test args="org.sonarlint.eclipse.ui.views.issues.reportIssueMarkerGenerator"
+                             property="org.eclipse.ui.ide.contentGenerator"/>
+                     </or>
+                 </with>
+                 <with variable="selection">
+                     <iterate ifEmpty="false" operator="and">
+                         <adapt type="org.eclipse.core.resources.IMarker" >
+                             <test value="org.eclipse.core.resources.problemmarker"
+                                 property="org.eclipse.ui.ide.marker.superType"/>
+                          </adapt>
+                     </iterate>
+                </with>
+          	 </and>
+         </activeWhen>
+         <enabledWhen>
+            <and>
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <instanceof value="org.eclipse.ui.views.markers.MarkerItem"/>
+                  <test
+                        property="org.sonarlint.eclipse.ui.quickFix">
+                  </test>
+               </iterate>
+               <count
+                     value="+">
+               </count>
+            </and>
+         </enabledWhen>
+      </handler>
   </extension>
 
   <extension point="org.eclipse.ui.commandImages">
