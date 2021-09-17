@@ -20,7 +20,11 @@
 package org.sonarlint.eclipse.ui.internal.markers;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.text.DocumentRewriteSession;
+import org.eclipse.jface.text.DocumentRewriteSessionType;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension4;
+import org.eclipse.jface.text.Position;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -31,8 +35,10 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
+import org.sonarlint.eclipse.core.internal.quickfixes.MarkerTextEdit;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
@@ -61,16 +67,7 @@ public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
     }
     IDocument document = getDocument(file);
     Display.getDefault().asyncExec(() -> {
-      fix.getTextEdits().forEach(textEdit -> {
-        try {
-          IMarker editMarker = textEdit.getMarker();
-          int startOffset = (int) editMarker.getAttribute(IMarker.CHAR_START);
-          int endOffset = (int) editMarker.getAttribute(IMarker.CHAR_END);
-          document.replace(startOffset, endOffset - startOffset, textEdit.getNewText());
-        } catch (Exception e) {
-          SonarLintLogger.get().error("Quick fix location does not exist", e);
-        }
-      });
+      applyIn(document, fix);
       SonarLintCorePlugin.getTelemetry().addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker).toString());
     });
   }
@@ -84,6 +81,39 @@ public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
       doc = file.getDocument();
     }
     return doc;
+  }
+
+  private static void applyIn(IDocument document, MarkerQuickFix fix) {
+    // IDocumentExtension4 appeared before oldest supported version, no need to check
+    IDocumentExtension4 extendedDocument = (IDocumentExtension4) document;
+    DocumentRewriteSession session = null;
+    try {
+      session = extendedDocument.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
+      fix.getTextEdits().forEach(textEdit -> apply(extendedDocument, textEdit));
+    } catch (Exception e) {
+      SonarLintLogger.get().error("Cannot apply the quick fix", e);
+    } finally {
+      if (session != null) {
+        extendedDocument.stopRewriteSession(session);
+      }
+    }
+  }
+
+  private static void apply(IDocumentExtension4 document, MarkerTextEdit textEdit) {
+    IMarker editMarker = textEdit.getMarker();
+    try {
+      ITextEditor textEditor = LocationsUtils.findOpenEditorFor(editMarker);
+      if (textEditor == null) {
+        // TODO handle closed editors
+        return;
+      }
+      Position markerPosition = LocationsUtils.getMarkerPosition(editMarker, textEditor);
+      if (markerPosition != null) {
+        document.replace(markerPosition.getOffset(), markerPosition.getLength(), textEdit.getNewText(), document.getModificationStamp() + 1);
+      }
+    } catch (Exception e) {
+      SonarLintLogger.get().error("Quick fix location does not exist", e);
+    }
   }
 
   @Override
