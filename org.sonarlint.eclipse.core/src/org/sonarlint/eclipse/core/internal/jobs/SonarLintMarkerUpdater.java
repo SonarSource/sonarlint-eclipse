@@ -247,10 +247,6 @@ public class SonarLintMarkerUpdater {
     return triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_FLOW_ID : SonarLintCorePlugin.MARKER_REPORT_FLOW_ID;
   }
 
-  private static String markerIdForQuickFixes(TriggerType triggerType) {
-    return triggerType.isOnTheFly() ? SonarLintCorePlugin.MARKER_ON_THE_FLY_QUICK_FIX_ID : SonarLintCorePlugin.MARKER_REPORT_QUICK_FIX_ID;
-  }
-
   private static void createTaintMarker(IDocument document, ISonarLintIssuable issuable, ServerIssue taintIssue,
     Map<ISonarLintProject, EclipseProjectBinding> bindingsPerProjects) {
     try {
@@ -313,15 +309,17 @@ public class SonarLintMarkerUpdater {
 
   private static void createQuickFixMarkersForLocalIssues(IDocument document, ISonarLintIssuable issuable, Trackable trackable, IMarker marker, TriggerType triggerType)
     throws CoreException {
-    String qfMarkerId = markerIdForQuickFixes(triggerType);
+    if (!triggerType.isOnTheFly()) {
+      return;
+    }
     List<MarkerQuickFix> qfs = new ArrayList<>();
     for (QuickFix engineQuickFix : trackable.getQuickFix()) {
-      createQuickFix(document, issuable, qfMarkerId, qfs, engineQuickFix);
+      createQuickFix(document, issuable, qfs, engineQuickFix);
     }
     marker.setAttribute(MarkerUtils.SONAR_MARKER_QUICK_FIXES_ATTR, new MarkerQuickFixes(qfs));
   }
 
-  private static void createQuickFix(IDocument document, ISonarLintIssuable issuable, String qfMarkerId, List<MarkerQuickFix> qfs, QuickFix engineQuickFix) {
+  private static void createQuickFix(IDocument document, ISonarLintIssuable issuable, List<MarkerQuickFix> qfs, QuickFix engineQuickFix) {
     MarkerQuickFix qf = new MarkerQuickFix(engineQuickFix.message());
     for (ClientInputFileEdit edits : engineQuickFix.inputFileEdits()) {
       EclipseInputFile inputFile = (EclipseInputFile) edits.target();
@@ -334,7 +332,8 @@ public class SonarLintMarkerUpdater {
         return;
       }
       for (TextEdit txtEditFromEngine : edits.textEdits()) {
-        Optional<IMarker> markerForTextEdit = createMarkerForTextRange(document, issuable.getResource(), qfMarkerId, null, txtEditFromEngine.range());
+        Optional<IMarker> markerForTextEdit = createMarkerForTextRange(document, issuable.getResource(), SonarLintCorePlugin.MARKER_ON_THE_FLY_QUICK_FIX_ID, null,
+          txtEditFromEngine.range());
         if (markerForTextEdit.isPresent()) {
           MarkerTextEdit textEdit = new MarkerTextEdit(markerForTextEdit.get(), txtEditFromEngine.newText());
           qf.addTextEdit(textEdit);
@@ -479,7 +478,6 @@ public class SonarLintMarkerUpdater {
       .forEach(p -> {
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_ID);
         p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_FLOW_ID);
-        p.deleteAllMarkers(SonarLintCorePlugin.MARKER_REPORT_QUICK_FIX_ID);
       });
   }
 
