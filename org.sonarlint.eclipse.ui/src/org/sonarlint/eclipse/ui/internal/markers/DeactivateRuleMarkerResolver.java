@@ -22,11 +22,14 @@ package org.sonarlint.eclipse.ui.internal.markers;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMarkerResolution2;
+import org.eclipse.ui.IMarkerResolutionRelevance;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.DeactivateRuleUtils;
 
-public class DeactivateRuleMarkerResolver implements IMarkerResolution2 {
+import static org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerResolutionGenerator.QUICK_FIX_RELEVANCE_LOWER_BOUND;
+
+public class DeactivateRuleMarkerResolver implements IMarkerResolution2, IMarkerResolutionRelevance {
 
   private static final String ZERO_WIDTH_SPACE = "\u200b";
 
@@ -56,5 +59,10 @@ public class DeactivateRuleMarkerResolver implements IMarkerResolution2 {
   @Override
   public Image getImage() {
     return SonarLintImages.RESOLUTION_DISABLE_RULE;
+  }
+
+  @Override
+  public int getRelevanceForResolution() {
+    return QUICK_FIX_RELEVANCE_LOWER_BOUND - 3;
   }
 }

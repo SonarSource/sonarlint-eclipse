@@ -21,7 +21,6 @@ package org.sonarlint.eclipse.ui.internal.markers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IMarkerResolution;
@@ -31,7 +30,12 @@ import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
+import static java.util.stream.Collectors.toList;
+
 public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGenerator2 {
+
+  // See org.eclipse.jdt.internal.ui.text.correction.IProposalRelevance
+  static final int QUICK_FIX_RELEVANCE_LOWER_BOUND = -10;
 
   @Override
   public boolean hasResolutions(final IMarker marker) {
@@ -41,6 +45,8 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
   @Override
   public IMarkerResolution[] getResolutions(final IMarker marker) {
     List<IMarkerResolution> resolutions = new ArrayList<>();
+
+    // note: the display order is independent from the order in this list (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=232383)
 
     resolutions.addAll(getQuickFixesResolutions(marker));
 
@@ -54,14 +60,15 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
       resolutions.add(new DeactivateRuleMarkerResolver(marker));
     }
 
-    // note: the display order seems independent from the order in this array (https://bugs.eclipse.org/bugs/show_bug.cgi?id=232383)
+    resolutions = resolutions.stream().collect(toList());
+
     return resolutions.toArray(new IMarkerResolution[resolutions.size()]);
   }
 
-  private static List<ApplyQuickFixMarkerResolver> getQuickFixesResolutions(IMarker marker) {
+  private static List<IMarkerResolution> getQuickFixesResolutions(IMarker marker) {
     return MarkerUtils.getIssueQuickFixes(marker).getQuickFixes().stream()
       .map(ApplyQuickFixMarkerResolver::new)
-      .collect(Collectors.toList());
+      .collect(toList());
   }
 
   private static boolean isSonarLintIssueMarker(IMarker marker) {
