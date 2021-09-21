@@ -26,7 +26,8 @@ public enum TriggerType {
   MANUAL_CHANGESET("Manual trigger changeset", ServerIssueUpdateStrategy.PER_PROJECT_OR_PER_FILE_SYNC),
   EDITOR_CHANGE("Editor change", ServerIssueUpdateStrategy.NO_UPDATE),
   BINDING_CHANGE("Binding change", ServerIssueUpdateStrategy.PER_FILE_ASYNC),
-  STANDALONE_CONFIG_CHANGE("Standalone config change", ServerIssueUpdateStrategy.NO_UPDATE);
+  STANDALONE_CONFIG_CHANGE("Standalone config change", ServerIssueUpdateStrategy.NO_UPDATE),
+  QUICK_FIX("Quick fix", ServerIssueUpdateStrategy.NO_UPDATE);
 
   /**
    * Magic number to decide if issues should be fetched per file or once for the entire project
