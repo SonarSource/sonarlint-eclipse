@@ -31,6 +31,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMarkerResolution2;
+import org.eclipse.ui.IMarkerResolutionRelevance;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -51,7 +52,7 @@ import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 
-public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
+public class ApplyQuickFixMarkerResolver implements IMarkerResolution2, IMarkerResolutionRelevance {
 
   private final MarkerQuickFix fix;
 
@@ -67,6 +68,12 @@ public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
   @Override
   public String getLabel() {
     return fix.getMessage();
+  }
+
+  @Override
+  public int getRelevanceForResolution() {
+    // Should be bigger than IProposalRelevance.MARKER_RESOLUTION to be above other marker quick fixes
+    return 11;
   }
 
   @Override
