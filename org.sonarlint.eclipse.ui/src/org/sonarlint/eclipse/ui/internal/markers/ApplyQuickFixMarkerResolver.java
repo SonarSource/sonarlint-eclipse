@@ -20,6 +20,7 @@
 package org.sonarlint.eclipse.ui.internal.markers;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.DocumentRewriteSession;
 import org.eclipse.jface.text.DocumentRewriteSessionType;
 import org.eclipse.jface.text.IDocument;
@@ -29,7 +30,12 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMarkerResolution2;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
@@ -39,7 +45,6 @@ import org.sonarlint.eclipse.core.internal.quickfixes.MarkerTextEdit;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
-import org.sonarlint.eclipse.ui.internal.util.PlatformUtils;
 
 public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
 
@@ -65,31 +70,39 @@ public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
     if (file == null) {
       return;
     }
-    IDocument document = getDocument(file);
+    ITextEditor openEditor = openEditor(file, marker);
     Display.getDefault().asyncExec(() -> {
-      applyIn(document, fix);
+      applyIn(openEditor, fix);
       SonarLintCorePlugin.getTelemetry().addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker).toString());
     });
   }
 
-  private static IDocument getDocument(ISonarLintFile file) {
-    IDocument doc;
-    IEditorPart editorPart = PlatformUtils.findEditor(file);
-    if (editorPart instanceof ITextEditor) {
-      doc = ((ITextEditor) editorPart).getDocumentProvider().getDocument(editorPart.getEditorInput());
-    } else {
-      doc = file.getDocument();
+  @Nullable
+  private static ITextEditor openEditor(ISonarLintFile file, IMarker marker) {
+    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    IEditorPart textEditor;
+    try {
+      textEditor = IDE.openEditor(page, marker);
+    } catch (PartInitException e) {
+      SonarLintLogger.get().error("Unable to open the text editor");
+      return null;
     }
-    return doc;
+    if (!(textEditor instanceof ITextEditor)) {
+      SonarLintLogger.get().error("Unable to open a text editor");
+      return null;
+    } else {
+      return (ITextEditor) textEditor;
+    }
   }
 
-  private static void applyIn(IDocument document, MarkerQuickFix fix) {
+  private static void applyIn(ITextEditor openEditor, MarkerQuickFix fix) {
+    IDocument document = openEditor.getDocumentProvider().getDocument(openEditor.getEditorInput());
     // IDocumentExtension4 appeared before oldest supported version, no need to check
     IDocumentExtension4 extendedDocument = (IDocumentExtension4) document;
     DocumentRewriteSession session = null;
     try {
       session = extendedDocument.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
-      fix.getTextEdits().forEach(textEdit -> apply(extendedDocument, textEdit));
+      fix.getTextEdits().forEach(textEdit -> apply(openEditor, extendedDocument, textEdit));
     } catch (Exception e) {
       SonarLintLogger.get().error("Cannot apply the quick fix", e);
     } finally {
@@ -99,17 +112,25 @@ public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
     }
   }
 
-  private static void apply(IDocumentExtension4 document, MarkerTextEdit textEdit) {
+  private static void apply(ITextEditor textEditor, IDocumentExtension4 document, MarkerTextEdit textEdit) {
     IMarker editMarker = textEdit.getMarker();
     try {
-      ITextEditor textEditor = LocationsUtils.findOpenEditorFor(editMarker);
-      if (textEditor == null) {
-        // TODO handle closed editors
-        return;
-      }
-      Position markerPosition = LocationsUtils.getMarkerPosition(editMarker, textEditor);
-      if (markerPosition != null) {
-        document.replace(markerPosition.getOffset(), markerPosition.getLength(), textEdit.getNewText(), document.getModificationStamp() + 1);
+      if (editMarker.exists()) {
+        int start = MarkerUtilities.getCharStart(editMarker);
+        int end = MarkerUtilities.getCharEnd(editMarker);
+        // look up the current range of the marker when the document has been edited
+        Position markerPosition = LocationsUtils.getMarkerPosition(editMarker, textEditor);
+        if (markerPosition != null) {
+          if (markerPosition.isDeleted()) {
+            // do nothing if position has been deleted
+            return;
+          } else {
+            // use position instead of marker values
+            start = markerPosition.getOffset();
+            end = markerPosition.getOffset() + markerPosition.getLength();
+          }
+        }
+        document.replace(start, end - start, textEdit.getNewText(), document.getModificationStamp() + 1);
       }
     } catch (Exception e) {
       SonarLintLogger.get().error("Quick fix location does not exist", e);
