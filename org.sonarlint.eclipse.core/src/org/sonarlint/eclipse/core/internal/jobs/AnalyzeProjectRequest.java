@@ -35,6 +35,7 @@ public class AnalyzeProjectRequest {
 
   public static class FileWithDocument {
     private final ISonarLintFile file;
+    @Nullable
     private final IDocument document;
 
     public FileWithDocument(ISonarLintFile file, @Nullable IDocument document) {
