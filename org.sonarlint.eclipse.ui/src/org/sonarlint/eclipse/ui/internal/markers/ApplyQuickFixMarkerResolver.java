@@ -19,6 +19,7 @@
  */
 package org.sonarlint.eclipse.ui.internal.markers;
 
+import java.util.Arrays;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.DocumentRewriteSession;
@@ -38,12 +39,16 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
+import org.sonarlint.eclipse.core.internal.TriggerType;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest;
+import org.sonarlint.eclipse.core.internal.jobs.AnalyzeProjectRequest.FileWithDocument;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerTextEdit;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
+import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.util.LocationsUtils;
 
 public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
@@ -72,9 +77,16 @@ public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
     }
     ITextEditor openEditor = openEditor(file, marker);
     Display.getDefault().asyncExec(() -> {
-      applyIn(openEditor, fix);
+      IDocument document = applyIn(openEditor, fix);
       SonarLintCorePlugin.getTelemetry().addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker).toString());
+      scheduleAnalysis(new FileWithDocument(file, document));
     });
+  }
+
+  private static void scheduleAnalysis(FileWithDocument fileWithDoc) {
+    ISonarLintFile file = fileWithDoc.getFile();
+    AnalyzeProjectRequest request = new AnalyzeProjectRequest(file.getProject(), Arrays.asList(fileWithDoc), TriggerType.QUICK_FIX);
+    JobUtils.scheduleAutoAnalysisIfEnabled(request);
   }
 
   @Nullable
@@ -95,7 +107,7 @@ public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
     }
   }
 
-  private static void applyIn(ITextEditor openEditor, MarkerQuickFix fix) {
+  private static IDocument applyIn(ITextEditor openEditor, MarkerQuickFix fix) {
     IDocument document = openEditor.getDocumentProvider().getDocument(openEditor.getEditorInput());
     // IDocumentExtension4 appeared before oldest supported version, no need to check
     IDocumentExtension4 extendedDocument = (IDocumentExtension4) document;
@@ -110,6 +122,7 @@ public class ApplyQuickFixMarkerResolver implements IMarkerResolution2 {
         extendedDocument.stopRewriteSession(session);
       }
     }
+    return document;
   }
 
   private static void apply(ITextEditor textEditor, IDocumentExtension4 document, MarkerTextEdit textEdit) {
