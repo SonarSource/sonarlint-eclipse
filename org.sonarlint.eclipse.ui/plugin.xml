@@ -655,14 +655,6 @@
                  style="push"
                  mnemonic="u">
          </command>
-         <command
-                 commandId="org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals"
-                 mnemonic="%command.correctionAssistProposals.mnemonic"
-                 style="push">
-               <visibleWhen
-                    checkEnabled="false">
-              </visibleWhen>
-         </command>
       </menuContribution>
 	<menuContribution locationURI="popup:sonar.menu?after=group1">
 	   <command
@@ -934,8 +926,6 @@
                      <instanceof value="org.eclipse.ui.views.markers.MarkerSupportView"/>
                      <or>
                          <test args="org.sonarlint.eclipse.ui.views.issues.onTheFlyIssueMarkerGenerator"
-                             property="org.eclipse.ui.ide.contentGenerator"/>
-                         <test args="org.sonarlint.eclipse.ui.views.issues.reportIssueMarkerGenerator"
                              property="org.eclipse.ui.ide.contentGenerator"/>
                      </or>
                  </with>
