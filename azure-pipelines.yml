@@ -54,7 +54,7 @@ stages:
         displayName: 'Download JKS keystore'
         name: jks
         inputs:
-          secureFile: 'SonarSource-2019-2021.jks'
+          secureFile: 'SonarSource-2021-2023.jks'
       - task: DownloadSecureFile@1
         displayName: 'Download the sign key'
         name: pgpSignKey

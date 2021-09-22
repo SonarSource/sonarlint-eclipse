@@ -39,7 +39,7 @@
         <configuration>
           <certs>true</certs>
           <verbose>false</verbose>
-          <alias>sonarsource-codesign-2019-2021</alias>
+          <alias>sonarsource-codesign-2021-2023</alias>
           <keystore>${sonarsource.keystore.path}</keystore>
           <storepass>${sonarsource.keystore.password}</storepass>
           <skip>${jarsigner.skip}</skip>
