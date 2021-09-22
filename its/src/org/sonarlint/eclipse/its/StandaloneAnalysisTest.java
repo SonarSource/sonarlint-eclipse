@@ -29,7 +29,6 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -40,7 +39,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.common.wait.WaitWhile;
@@ -56,6 +54,7 @@ import org.eclipse.reddeer.eclipse.ui.wizards.datatransfer.WizardProjectsImportP
 import org.eclipse.reddeer.jface.condition.WindowIsAvailable;
 import org.eclipse.reddeer.swt.api.Button;
 import org.eclipse.reddeer.swt.api.MenuItem;
+import org.eclipse.reddeer.swt.api.Shell;
 import org.eclipse.reddeer.swt.api.TreeItem;
 import org.eclipse.reddeer.swt.condition.ShellIsAvailable;
 import org.eclipse.reddeer.swt.impl.button.FinishButton;
@@ -73,18 +72,15 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
-import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
 import org.sonarlint.eclipse.its.reddeer.conditions.OnTheFlyViewIsEmpty;
 import org.sonarlint.eclipse.its.reddeer.perspectives.PhpPerspective;
 import org.sonarlint.eclipse.its.reddeer.perspectives.PydevPerspective;
 import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintPreferences;
+import org.sonarlint.eclipse.its.reddeer.preferences.SonarLintProperties;
 import org.sonarlint.eclipse.its.reddeer.views.OnTheFlyView;
 import org.sonarlint.eclipse.its.reddeer.views.PydevPackageExplorer;
 import org.sonarlint.eclipse.its.reddeer.views.ReportView;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintIssue;
-import org.sonarlint.eclipse.its.utils.JobHelpers;
-import org.sonarlint.eclipse.its.utils.SonarLintProperties;
-import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -388,56 +384,58 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   }
 
   @Test
-  public void shouldFindSecretsInTextFiles() throws Exception {
-    IProject project = importEclipseProject("secrets/secret-in-text-file", "secret-in-text-file");
-    JobHelpers.waitForJobsToComplete(bot);
+  public void shouldFindSecretsInTextFiles() {
+    new JavaPerspective().open();
+    Project rootProject = importExistingProjectIntoWorkspace("secrets/secret-in-text-file", "secret-in-text-file");
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("secret-in-text-file", "secret");
-    JobHelpers.waitForJobsToComplete(bot);
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("secret"));
 
-    List<IMarker> markers = Arrays.asList(project.findMember("secret").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/secret-in-text-file/secret", 3, "Make sure this AWS Secret Access Key is not disclosed."));
+    DefaultEditor defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(
+        tuple("Make sure this AWS Secret Access Key is not disclosed.", 3));
+
+    Shell preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
+    preferencesShell.close();
   }
 
   @Test
-  public void shouldFindSecretsInSourceFiles() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
-    IProject project = importEclipseProject("secrets/secret-java", "secret-java");
-    JobHelpers.waitForJobsToComplete(bot);
+  public void shouldFindSecretsInSourceFiles() {
+    new JavaPerspective().open();
+    Project rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", "secret-java");
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("secret-java", "src", "sec", "Secret.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/sec/Secret.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/secret-java/src/sec/Secret.java", 4, "Make sure this AWS Secret Access Key is not disclosed."));
+    DefaultEditor defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(
+        tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
+
+    Shell preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
+    preferencesShell.close();
   }
 
   @Test
-  public void shouldNotTriggerAnalysisForGitIgnoredFiles() throws Exception {
-    IProject project = importEclipseProject("secrets/secret-gitignored", "secret-gitignored");
-    IFolder gitFolder = project.getFolder("git");
-    gitFolder.move(gitFolder.getParent().getFullPath().append(".git"), true, monitor);
-    IFile file = project.getFile(new Path("secret.txt"));
-    file.create(new ByteArrayInputStream("AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw".getBytes()), true, monitor);
-    JobHelpers.waitForJobsToComplete(bot);
+  public void shouldNotTriggerAnalysisForGitIgnoredFiles() throws CoreException {
+    new JavaPerspective().open();
+    Project rootProject = importExistingProjectIntoWorkspace("secrets/secret-gitignored", "secret-gitignored");
 
-    try {
-      new JavaPackageExplorerBot(bot)
-        .expandAndDoubleClick("secret-gitignored", "secret.txt");
-    } catch (Exception e) {
-      // in some environments egit adds decorations on the project node
-      new JavaPackageExplorerBot(bot)
-        .expandAndDoubleClick("secret-gitignored [secret-gitignored master]", "secret.txt");
-    }
+    IWorkspace workspace = ResourcesPlugin.getWorkspace();
+    final IProject iProject = workspace.getRoot().getProject("secret-gitignored");
 
-    JobHelpers.waitForJobsToComplete(bot);
+    IFolder gitFolder = iProject.getFolder("git");
+    gitFolder.move(gitFolder.getParent().getFullPath().append(".git"), true, null);
+    IFile file = iProject.getFile(new Path("secret.txt"));
+    file.create(new ByteArrayInputStream("AWS_SECRET_KEY: h1ByXvzhN6O8/UQACtwMuSkjE5/oHmWG1MJziTDw".getBytes()), true, null);
 
-    List<IMarker> markers = Arrays.asList(project.findMember("secret.txt").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).isEmpty();
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("secret.txt"));
+
+    DefaultEditor defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .isEmpty();
   }
 
 }

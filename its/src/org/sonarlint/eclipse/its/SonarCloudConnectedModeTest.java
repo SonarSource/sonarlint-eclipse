@@ -47,7 +47,7 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
   private static final String SONARCLOUD_STAGING_URL = "https://sc-staging.io";
   private static final String SONARCLOUD_ORGANIZATION_KEY = "sonarlint-it";
-  //private static final String SONARCLOUD_ORGANIZATION_NAME = "SonarLint IT Tests";
+  // private static final String SONARCLOUD_ORGANIZATION_NAME = "SonarLint IT Tests";
   private static final String SONARCLOUD_USER = "sonarlint-it";
   private static final String SONARCLOUD_PASSWORD = System.getenv("SONARCLOUD_IT_PASSWORD");
   private static final String SONARCLOUD_PROJECT_KEY = IMPORTED_PROJECT_NAME + '-' + TIMESTAMP;
@@ -112,8 +112,8 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
 
     assertThat(organizationsPage.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
 
-    //organizationsPage.typeOrganizationAndSelectFirst(SONARCLOUD_ORGANIZATION_NAME);
-    //assertThat(organizationsPage.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
+    // organizationsPage.typeOrganizationAndSelectFirst(SONARCLOUD_ORGANIZATION_NAME);
+    // assertThat(organizationsPage.getOrganization()).isEqualTo(SONARCLOUD_ORGANIZATION_KEY);
     organizationsPage.setOrganization(SONARCLOUD_ORGANIZATION_KEY);
     assertThat(wizard.isNextEnabled()).isTrue();
     wizard.next();
@@ -131,21 +131,20 @@ public class SonarCloudConnectedModeTest extends AbstractSonarLintTest {
     assertThat(wizard.isNextEnabled()).isFalse();
     wizard.finish();
 
-    
     ProjectBindingWizard projectBindingWizard = new ProjectBindingWizard();
     ProjectBindingWizard.BoundProjectsPage projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
     projectsToBindPage.clickAdd();
-    
+
     ProjectSelectionDialog projectSelectionDialog = new ProjectSelectionDialog();
     projectSelectionDialog.setProjectName(IMPORTED_PROJECT_NAME);
     projectSelectionDialog.ok();
-    
+
     projectBindingWizard.next();
     ProjectBindingWizard.ServerProjectSelectionPage serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
     serverProjectSelectionPage.waitForProjectsToBeFetched();
     serverProjectSelectionPage.setProjectKey(SONARCLOUD_PROJECT_KEY);
     projectBindingWizard.finish();
-    
+
     BindingsView bindingsView = new BindingsView();
     bindingsView.open();
     bindingsView.waitForServerUpdate(CONNECTION_NAME, null);

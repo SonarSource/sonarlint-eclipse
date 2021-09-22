@@ -34,6 +34,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
@@ -79,6 +80,7 @@ public abstract class AbstractSonarLintTest {
   public static final String MARKER_ON_THE_FLY_ID = PLUGIN_ID + ".sonarlintOnTheFlyProblem";
   public static final String MARKER_REPORT_ID = PLUGIN_ID + ".sonarlintReportProblem";
   public static final String PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES = "skipConfirmAnalyzeMultipleFiles";
+  public static final String PREF_SECRETS_EVER_DETECTED = "secretsEverDetected";
 
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
@@ -86,6 +88,8 @@ public abstract class AbstractSonarLintTest {
 
   @After
   public void cleanup() {
+    ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SECRETS_EVER_DETECTED);
+
     WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
     if (preferenceDialog.isOpen()) {
       preferenceDialog.cancel();

@@ -21,7 +21,11 @@ package org.sonarlint.eclipse.its.reddeer.views;
 
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.swt.api.Shell;
 import org.eclipse.reddeer.swt.api.Tree;
+import org.eclipse.reddeer.swt.impl.button.PushButton;
+import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.swt.impl.tree.DefaultTree;
 import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
 import org.sonarlint.eclipse.its.reddeer.conditions.ServerStorageIsUpToDate;
@@ -39,6 +43,15 @@ public class BindingsView extends WorkbenchView {
 
   public void waitForServerUpdate(String connectionName, String version) {
     new WaitUntil(new ServerStorageIsUpToDate(this, connectionName, version), TimePeriod.LONG);
+  }
+
+  public void removeAllBindings() {
+    getTree().getAllItems().forEach(item -> {
+      item.select();
+      new ContextMenuItem("Delete Connection").select();
+      Shell s = new DefaultShell("Delete Connection(s)");
+      new PushButton("OK").click();
+    });
   }
 
 }

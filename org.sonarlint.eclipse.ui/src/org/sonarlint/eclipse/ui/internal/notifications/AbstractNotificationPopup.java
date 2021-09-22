@@ -288,6 +288,7 @@ public abstract class AbstractNotificationPopup extends Window {
     super.configureShell(newShell);
     this.shell = newShell;
     this.shell.setBackgroundMode(SWT.INHERIT_FORCE);
+    this.shell.setText(getPopupShellTitle());
   }
 
   protected void scheduleAutoClose() {

@@ -28,33 +28,25 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.reddeer.common.wait.WaitUntil;
 import org.eclipse.reddeer.core.condition.WidgetIsFound;
 import org.eclipse.reddeer.core.matcher.WithTextMatcher;
+import org.eclipse.reddeer.eclipse.core.resources.Project;
+import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
+import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.eclipse.swt.widgets.Label;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
-import org.sonarlint.eclipse.its.bots.ProjectBindingWizardBot;
-import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
-import org.sonarlint.eclipse.its.bots.ServersViewBot;
-import org.sonarlint.eclipse.its.bots.SonarLintBindingsBot;
 import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
 import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
+import org.sonarlint.eclipse.its.reddeer.wizards.ProjectSelectionDialog;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
 import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard.ServerUrlPage;
-import org.sonarlint.eclipse.its.utils.JobHelpers;
-import org.sonarlint.eclipse.its.utils.SwtBotUtils;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.project.CreateRequest;
 import org.sonarqube.ws.client.setting.SetRequest;
@@ -89,7 +81,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   @Override
   @Before
   public void cleanup() {
-    new SonarLintBindingsBot(bot).removeAllBindings();
+    BindingsView bindingsView = new BindingsView();
+    bindingsView.open();
+    bindingsView.removeAllBindings();
   }
 
   @Test
@@ -184,46 +178,67 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
   }
 
   @Test
-  public void shouldFindSecretsInSourceFiles() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
-    IProject project = importEclipseProject("secrets/secret-java", PROJECT_NAME);
-    JobHelpers.waitForJobsToComplete(bot);
-    ServerConnectionWizardBot wizardBot = new ServerConnectionWizardBot(bot);
-    wizardBot.openFromFileNewWizard();
-    wizardBot.selectSonarQube();
-    wizardBot.clickNext();
-    wizardBot.setServerUrl(orchestrator.getServer().getUrl());
-    wizardBot.clickNext();
-    wizardBot.selectUsernamePassword();
-    wizardBot.clickNext();
-    wizardBot.setUsername(Server.ADMIN_LOGIN);
-    wizardBot.setPassword(Server.ADMIN_PASSWORD);
-    wizardBot.clickNext();
-    wizardBot.setConnectionName("test");
-    wizardBot.clickNext();
+  public void shouldFindSecretsInConnectedMode() throws Exception {
+    new JavaPerspective().open();
+    Project rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", PROJECT_NAME);
+
+    ServerConnectionWizard wizard = new ServerConnectionWizard();
+    wizard.open();
+    new ServerConnectionWizard.ServerTypePage(wizard).selectSonarQube();
+    wizard.next();
+
+    ServerUrlPage serverUrlPage = new ServerConnectionWizard.ServerUrlPage(wizard);
+    serverUrlPage.setUrl(orchestrator.getServer().getUrl());
+    wizard.next();
+
+    ServerConnectionWizard.AuthenticationModePage authenticationModePage = new ServerConnectionWizard.AuthenticationModePage(wizard);
+    authenticationModePage.selectUsernamePasswordMode();
+    wizard.next();
+
+    ServerConnectionWizard.AuthenticationPage authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
+    authenticationPage.setUsername(Server.ADMIN_LOGIN);
+    authenticationPage.setPassword(Server.ADMIN_PASSWORD);
+    wizard.next();
+
+    // as login can take time, wait for the next page to appear
+    new WaitUntil(new WidgetIsFound(Label.class, new WithTextMatcher("SonarQube Connection Identifier")));
+    ServerConnectionWizard.ConnectionNamePage connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
+
+    connectionNamePage.setConnectionName("test");
+    wizard.next();
+
     if (orchestrator.getServer().version().isGreaterThanOrEquals(8, 7)) {
       // SONAR-14306 Starting from 8.7, dev notifications are available even in community edition
-      wizardBot.clickNext();
+      wizard.next();
     }
-    wizardBot.clickFinish();
 
-    new ProjectBindingWizardBot(bot)
-      .clickAdd()
-      .chooseProject(PROJECT_NAME)
-      .clickNext()
-      .typeProjectKey(PROJECT_NAME)
-      .clickFinish();
+    wizard.finish();
 
-    new ServersViewBot(bot)
-      .waitForServerUpdateAndCheckVersion("test", orchestrator.getServer().version().toString());
+    ProjectBindingWizard projectBindingWizard = new ProjectBindingWizard();
+    ProjectBindingWizard.BoundProjectsPage projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
+    projectsToBindPage.clickAdd();
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("secret-java", "src", "sec", "Secret.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    ProjectSelectionDialog projectSelectionDialog = new ProjectSelectionDialog();
+    projectSelectionDialog.setProjectName(PROJECT_NAME);
+    projectSelectionDialog.ok();
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/sec/Secret.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/secret-java/src/sec/Secret.java", 4, "Make sure this AWS Secret Access Key is not disclosed."));
+    projectBindingWizard.next();
+    ProjectBindingWizard.ServerProjectSelectionPage serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
+    serverProjectSelectionPage.waitForProjectsToBeFetched();
+    serverProjectSelectionPage.setProjectKey(PROJECT_NAME);
+    projectBindingWizard.finish();
+
+    BindingsView bindingsView = new BindingsView();
+    bindingsView.open();
+    bindingsView.waitForServerUpdate("test", orchestrator.getServer().version().toString());
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
+
+    DefaultEditor defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(
+        tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
   }
 
 }
