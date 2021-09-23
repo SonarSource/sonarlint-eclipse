@@ -132,10 +132,6 @@ public class DefaultSonarLintAdapterFactoryTest extends SonarTestCase {
       return null;
     }
 
-    @Override
-    public boolean isScmIgnored() {
-      return false;
-    }
   }
 
   public static class CobolModuleAdapter implements ISonarLintProject {
@@ -193,7 +189,7 @@ public class DefaultSonarLintAdapterFactoryTest extends SonarTestCase {
 
   public static class CobolFile extends File {
 
-    private CobolTempProject cobolTempProject;
+    private final CobolTempProject cobolTempProject;
 
     protected CobolFile(IPath path, CobolTempProject project) {
       super(path, (Workspace) workspace);
