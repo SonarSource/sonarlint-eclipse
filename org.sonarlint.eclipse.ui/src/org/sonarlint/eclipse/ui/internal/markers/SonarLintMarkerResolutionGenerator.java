@@ -21,6 +21,7 @@ package org.sonarlint.eclipse.ui.internal.markers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IMarkerResolution;
@@ -35,7 +36,10 @@ import static java.util.stream.Collectors.toList;
 public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGenerator2 {
 
   // See org.eclipse.jdt.internal.ui.text.correction.IProposalRelevance
-  static final int QUICK_FIX_RELEVANCE_LOWER_BOUND = -10;
+  private static final int RESOLUTION_RELEVANCE_LOWER_BOUND = -10;
+
+  // Should be bigger than IProposalRelevance.MARKER_RESOLUTION to be above other marker quick fixes
+  private static final int QUICK_FIX_RESOLUTION_RELEVANCE = 11;
 
   @Override
   public boolean hasResolutions(final IMarker marker) {
@@ -44,30 +48,30 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
 
   @Override
   public IMarkerResolution[] getResolutions(final IMarker marker) {
-    List<IMarkerResolution> resolutions = new ArrayList<>();
+    List<SortableMarkerResolver> resolutions = new ArrayList<>();
 
     // note: the display order is independent from the order in this list (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=232383)
 
     resolutions.addAll(getQuickFixesResolutions(marker));
 
-    resolutions.add(new ShowRuleDescriptionMarkerResolver(marker));
-
     if (hasExtraLocations(marker)) {
-      resolutions.add(new ShowHideIssueFlowsMarkerResolver(marker));
+      resolutions.add(new ShowHideIssueFlowsMarkerResolver(marker, RESOLUTION_RELEVANCE_LOWER_BOUND - 1));
     }
+
+    resolutions.add(new ShowRuleDescriptionMarkerResolver(marker, RESOLUTION_RELEVANCE_LOWER_BOUND - 2));
 
     if (isStandaloneIssue(marker)) {
-      resolutions.add(new DeactivateRuleMarkerResolver(marker));
+      resolutions.add(new DeactivateRuleMarkerResolver(marker, RESOLUTION_RELEVANCE_LOWER_BOUND - 3));
     }
 
-    resolutions = resolutions.stream().collect(toList());
-
-    return resolutions.toArray(new IMarkerResolution[resolutions.size()]);
+    return resolutions.stream()
+      .collect(Collectors.toList())
+      .toArray(new IMarkerResolution[resolutions.size()]);
   }
 
-  private static List<IMarkerResolution> getQuickFixesResolutions(IMarker marker) {
+  private static List<SortableMarkerResolver> getQuickFixesResolutions(IMarker marker) {
     return MarkerUtils.getIssueQuickFixes(marker).getQuickFixes().stream()
-      .map(ApplyQuickFixMarkerResolver::new)
+      .map(fix -> new ApplyQuickFixMarkerResolver(fix, QUICK_FIX_RESOLUTION_RELEVANCE))
       .collect(toList());
   }
 

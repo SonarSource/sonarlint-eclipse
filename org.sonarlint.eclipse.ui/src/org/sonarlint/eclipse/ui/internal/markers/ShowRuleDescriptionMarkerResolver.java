@@ -22,21 +22,18 @@ package org.sonarlint.eclipse.ui.internal.markers;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IMarkerResolution2;
-import org.eclipse.ui.IMarkerResolutionRelevance;
 import org.eclipse.ui.PlatformUI;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.ui.internal.SonarLintImages;
 import org.sonarlint.eclipse.ui.internal.views.RuleDescriptionWebView;
 
-import static org.sonarlint.eclipse.ui.internal.markers.SonarLintMarkerResolutionGenerator.QUICK_FIX_RELEVANCE_LOWER_BOUND;
-
-public class ShowRuleDescriptionMarkerResolver implements IMarkerResolution2, IMarkerResolutionRelevance {
+public class ShowRuleDescriptionMarkerResolver extends SortableMarkerResolver {
 
   private final IMarker marker;
 
-  public ShowRuleDescriptionMarkerResolver(IMarker marker) {
+  public ShowRuleDescriptionMarkerResolver(IMarker marker, int relevance) {
+    super(relevance);
     this.marker = marker;
   }
 
@@ -65,10 +62,5 @@ public class ShowRuleDescriptionMarkerResolver implements IMarkerResolution2, IM
   @Override
   public Image getImage() {
     return SonarLintImages.RESOLUTION_SHOW_RULE;
-  }
-
-  @Override
-  public int getRelevanceForResolution() {
-    return QUICK_FIX_RELEVANCE_LOWER_BOUND - 2;
   }
 }
