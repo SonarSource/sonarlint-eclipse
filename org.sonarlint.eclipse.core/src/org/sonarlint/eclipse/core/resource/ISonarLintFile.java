@@ -59,6 +59,8 @@ public interface ISonarLintFile extends ISonarLintIssuable {
   /**
    * @return true if the file is ignored by the underlying SCM provider (e.g. through the .gitignore file for Git), else false
    */
-  boolean isScmIgnored();
+  default boolean isScmIgnored() {
+    return false;
+  }
 
 }
