@@ -42,8 +42,8 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
   // See org.eclipse.jdt.internal.ui.text.correction.IProposalRelevance
   private static final int RESOLUTION_RELEVANCE_LOWER_BOUND = -10;
 
-  // Should be bigger than IProposalRelevance.MARKER_RESOLUTION to be above other marker quick fixes
-  private static final int QUICK_FIX_RESOLUTION_RELEVANCE = 11;
+  // See org.eclipse.jdt.internal.ui.text.correction.IProposalRelevance
+  private static final int RESOLUTION_RELEVANCE_HIGHER_BOUND = 15;
 
   @Override
   public boolean hasResolutions(final IMarker marker) {
@@ -78,7 +78,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
     return MarkerUtils.getIssueQuickFixes(marker).getQuickFixes()
       .stream()
       .filter(MarkerQuickFix::isValid)
-      .map(fix -> new ApplyQuickFixMarkerResolver(fix, QUICK_FIX_RESOLUTION_RELEVANCE))
+      .map(fix -> new ApplyQuickFixMarkerResolver(fix, RESOLUTION_RELEVANCE_HIGHER_BOUND + 1))
       .collect(toList());
   }
 
