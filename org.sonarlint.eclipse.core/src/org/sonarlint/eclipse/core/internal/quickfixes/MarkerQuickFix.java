@@ -44,4 +44,8 @@ public class MarkerQuickFix {
     return Collections.unmodifiableList(textEdits);
   }
 
+  public boolean isValid() {
+    return textEdits.stream().allMatch(MarkerTextEdit::isValid);
+  }
+
 }

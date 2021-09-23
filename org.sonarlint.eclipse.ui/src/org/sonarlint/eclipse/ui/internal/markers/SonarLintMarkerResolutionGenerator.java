@@ -29,6 +29,7 @@ import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
+import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 import static java.util.stream.Collectors.toList;
@@ -71,6 +72,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
 
   private static List<SortableMarkerResolver> getQuickFixesResolutions(IMarker marker) {
     return MarkerUtils.getIssueQuickFixes(marker).getQuickFixes().stream()
+      .filter(MarkerQuickFix::isValid)
       .map(fix -> new ApplyQuickFixMarkerResolver(fix, QUICK_FIX_RESOLUTION_RELEVANCE))
       .collect(toList());
   }
