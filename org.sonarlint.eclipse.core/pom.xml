@@ -182,7 +182,7 @@
                     <artifactItem>
                       <groupId>com.sonarsource.secrets</groupId>
                       <artifactId>sonar-secrets-plugin</artifactId>
-                      <version>1.0.0.34655</version>
+                      <version>1.1.0.36766</version>
                       <type>jar</type>
                     </artifactItem>
                   </artifactItems>

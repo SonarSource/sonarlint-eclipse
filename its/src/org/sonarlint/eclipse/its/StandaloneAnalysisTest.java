@@ -348,7 +348,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("secret").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/secret-in-text-file/secret", 3, "AWS Secret Access Key detected here. Remove this credential from your code."));
+      tuple("/secret-in-text-file/secret", 3, "Make sure this AWS Secret Access Key is not disclosed."));
   }
 
   @Test
@@ -363,7 +363,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     List<IMarker> markers = Arrays.asList(project.findMember("src/sec/Secret.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
     assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/secret-java/src/sec/Secret.java", 4, "AWS Secret Access Key detected here. Remove this credential from your code."));
+      tuple("/secret-java/src/sec/Secret.java", 4, "Make sure this AWS Secret Access Key is not disclosed."));
   }
 
   @Test
