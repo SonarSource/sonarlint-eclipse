@@ -20,6 +20,8 @@
 package org.sonarlint.eclipse.core.internal.quickfixes;
 
 import org.eclipse.core.resources.IMarker;
+import org.sonarlint.eclipse.core.internal.adapter.Adapters;
+import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 
 public class MarkerTextEdit {
 
@@ -37,6 +39,10 @@ public class MarkerTextEdit {
 
   public IMarker getMarker() {
     return marker;
+  }
+
+  public boolean isValid() {
+    return marker.exists() && Adapters.adapt(marker.getResource(), ISonarLintFile.class) != null;
   }
 
 }

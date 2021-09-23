@@ -77,9 +77,13 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
     }
     ITextEditor openEditor = openEditor(file, marker);
     Display.getDefault().asyncExec(() -> {
-      IDocument document = applyIn(openEditor, fix);
-      SonarLintCorePlugin.getTelemetry().addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker).toString());
-      scheduleAnalysis(new FileWithDocument(file, document));
+      if (fix.isValid()) {
+        IDocument document = applyIn(openEditor, fix);
+        SonarLintCorePlugin.getTelemetry().addQuickFixAppliedForRule(MarkerUtils.getRuleKey(marker).toString());
+        scheduleAnalysis(new FileWithDocument(file, document));
+      } else {
+        SonarLintLogger.get().debug("Quick fix is not valid anymore");
+      }
     });
   }
 
@@ -136,6 +140,7 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
         if (markerPosition != null) {
           if (markerPosition.isDeleted()) {
             // do nothing if position has been deleted
+            SonarLintLogger.get().debug("One quick fix edit position is not valid anymore");
             return;
           } else {
             // use position instead of marker values
