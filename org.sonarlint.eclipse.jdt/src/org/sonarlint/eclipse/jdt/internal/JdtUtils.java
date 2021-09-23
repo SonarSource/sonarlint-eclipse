@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Set;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -41,6 +42,14 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.ui.text.correction.IProposalRelevance;
+import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.IMarkerResolution2;
+import org.eclipse.ui.IMarkerResolutionRelevance;
 import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider.ISonarLintFileType;
@@ -67,7 +76,7 @@ public class JdtUtils {
   }
 
   /**
-   * SLE-34 Remove Java files that are not compiled.This should automatically exclude files that are excluded / unparseable. 
+   * SLE-34 Remove Java files that are not compiled.This should automatically exclude files that are excluded / unparseable.
    */
   public static boolean shouldExclude(IFile file) {
     IJavaElement javaElt = JavaCore.create(file);
@@ -347,5 +356,87 @@ public class JdtUtils {
       return ISonarLintFileType.MAIN;
     }
     return ISonarLintFileType.UNKNOWN;
+  }
+
+  public static IMarkerResolution2 enhance(IMarkerResolution2 resolution, IMarker marker) {
+    return new EnhancedMarkerResolution(resolution, marker);
+  }
+
+  /**
+   * Inspired by MarkerResolutionProposal
+   */
+  private static class EnhancedMarkerResolution implements IMarkerResolution2, IMarkerResolutionRelevance, IJavaCompletionProposal {
+
+    private final IMarkerResolution2 wrapped;
+    private final IMarker marker;
+
+    public EnhancedMarkerResolution(IMarkerResolution2 resolution, IMarker marker) {
+      this.wrapped = resolution;
+      this.marker = marker;
+    }
+
+    @Override
+    public String getLabel() {
+      return wrapped.getLabel();
+    }
+
+    @Override
+    public void run(IMarker marker) {
+      wrapped.run(marker);
+    }
+
+    @Override
+    public void apply(IDocument document) {
+      wrapped.run(marker);
+    }
+
+    @Nullable
+    @Override
+    public Point getSelection(IDocument document) {
+      return null;
+    }
+
+    @Override
+    public String getAdditionalProposalInfo() {
+      return wrapped.getDescription();
+    }
+
+    @Override
+    public String getDisplayString() {
+      return getLabel();
+    }
+
+    @Nullable
+    @Override
+    public IContextInformation getContextInformation() {
+      return null;
+    }
+
+    @Override
+    public int getRelevance() {
+      if (wrapped instanceof IMarkerResolutionRelevance) {
+        return ((IMarkerResolutionRelevance) wrapped).getRelevanceForResolution();
+      }
+      return IProposalRelevance.MARKER_RESOLUTION;
+    }
+
+    @Override
+    public String getDescription() {
+      return wrapped.getDescription();
+    }
+
+    @Override
+    public Image getImage() {
+      return wrapped.getImage();
+    }
+
+    @Override
+    public int getRelevanceForResolution() {
+      if (wrapped instanceof IMarkerResolutionRelevance) {
+        return ((IMarkerResolutionRelevance) wrapped).getRelevanceForResolution();
+      }
+      return IMarkerResolutionRelevance.super.getRelevanceForResolution();
+    }
+
   }
 }

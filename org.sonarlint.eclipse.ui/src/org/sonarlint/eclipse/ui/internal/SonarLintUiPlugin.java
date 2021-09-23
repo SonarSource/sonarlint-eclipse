@@ -52,6 +52,7 @@ import org.sonarlint.eclipse.core.internal.utils.SonarLintUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintProject;
 import org.sonarlint.eclipse.ui.internal.binding.actions.JobUtils;
 import org.sonarlint.eclipse.ui.internal.console.SonarLintConsole;
+import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.internal.flowlocations.SonarLintFlowLocationsService;
 import org.sonarlint.eclipse.ui.internal.hotspots.SecurityHotspotsHandlerServer;
 import org.sonarlint.eclipse.ui.internal.job.CheckForUpdatesJob;
@@ -202,6 +203,7 @@ public class SonarLintUiPlugin extends AbstractUIPlugin {
     } finally {
       super.stop(context);
     }
+    SonarLintUiExtensionTracker.close();
   }
 
   public static void addPostBuildListener() {
