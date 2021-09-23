@@ -19,20 +19,8 @@
  */
 package org.sonarlint.eclipse.core.internal.extension;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtension;
-import org.eclipse.core.runtime.IExtensionPoint;
-import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.dynamichelpers.ExtensionTracker;
-import org.eclipse.core.runtime.dynamichelpers.IExtensionChangeHandler;
-import org.eclipse.core.runtime.dynamichelpers.IExtensionTracker;
-import org.eclipse.core.runtime.dynamichelpers.IFilter;
-import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IAnalysisConfigurator;
 import org.sonarlint.eclipse.core.analysis.IFileLanguageProvider;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider;
@@ -41,11 +29,9 @@ import org.sonarlint.eclipse.core.resource.ISonarLintFileAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectAdapterParticipant;
 import org.sonarlint.eclipse.core.resource.ISonarLintProjectsProvider;
 
-public class SonarLintExtensionTracker implements IExtensionChangeHandler {
+public class SonarLintExtensionTracker extends AbstractSonarLintExtensionTracker {
 
   private static SonarLintExtensionTracker singleInstance = null;
-
-  private static final String ATTR_CLASS = "class"; //$NON-NLS-1$
 
   private final SonarLintEP<ProjectConfigurator> configuratorEp = new SonarLintEP<>("org.sonarlint.eclipse.core.projectConfigurators"); //$NON-NLS-1$
   private final SonarLintEP<IAnalysisConfigurator> analysisEp = new SonarLintEP<>("org.sonarlint.eclipse.core.analysisConfigurator"); //$NON-NLS-1$
@@ -56,33 +42,11 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
   private final SonarLintEP<IFileLanguageProvider> languageEp = new SonarLintEP<>("org.sonarlint.eclipse.core.languageProvider"); //$NON-NLS-1$
   private final SonarLintEP<IFileTypeProvider> typeEp = new SonarLintEP<>("org.sonarlint.eclipse.core.typeProvider"); //$NON-NLS-1$
 
-  private static class SonarLintEP<G> {
-
-    private final String id;
-    private final Collection<G> instances = new ArrayList<>();
-
-    public SonarLintEP(String id) {
-      this.id = id;
-    }
-  }
-
   private final Collection<SonarLintEP<?>> allEps = Arrays.asList(configuratorEp, analysisEp, projectsProviderEp, fileAdapterParticipantEp, projectAdapterParticipantEp,
     languageEp, typeEp);
 
-  private ExtensionTracker tracker;
-
   private SonarLintExtensionTracker() {
-    IExtensionRegistry reg = Platform.getExtensionRegistry();
-    tracker = new ExtensionTracker(reg);
-    IExtensionPoint[] epArray = allEps.stream().map(ep -> reg.getExtensionPoint(ep.id)).toArray(IExtensionPoint[]::new);
-    // initial population
-    for (IExtensionPoint ep : epArray) {
-      for (IExtension ext : ep.getExtensions()) {
-        addExtension(tracker, ext);
-      }
-    }
-    IFilter filter = ExtensionTracker.createExtensionPointFilter(epArray);
-    tracker.registerHandler(this, filter);
+    init(allEps);
   }
 
   public static synchronized SonarLintExtensionTracker getInstance() {
@@ -94,72 +58,36 @@ public class SonarLintExtensionTracker implements IExtensionChangeHandler {
 
   public static void close() {
     if (singleInstance != null) {
-      singleInstance.tracker.close();
-      singleInstance.tracker = null;
-    }
-  }
-
-  @Override
-  public void addExtension(IExtensionTracker tracker, IExtension extension) {
-    IConfigurationElement[] configs = extension.getConfigurationElements();
-    for (final IConfigurationElement element : configs) {
-      try {
-        instanciateAndRegister(tracker, extension, element);
-      } catch (CoreException e) {
-        SonarLintLogger.get().error("Unable to load one SonarLint extension", e);
-      }
-    }
-  }
-
-  private void instanciateAndRegister(IExtensionTracker tracker, IExtension extension, final IConfigurationElement element) throws CoreException {
-    for (SonarLintEP ep : allEps) {
-      if (ep.id.equals(extension.getExtensionPointUniqueIdentifier())) {
-        Object instance = element.createExecutableExtension(ATTR_CLASS);
-        ep.instances.add(instance);
-        // register association between object and extension with the tracker
-        tracker.registerObject(extension, instance, IExtensionTracker.REF_WEAK);
-        break;
-      }
-    }
-  }
-
-  @Override
-  public void removeExtension(IExtension extension, Object[] objects) {
-    // stop using objects associated with the removed extension
-    for (SonarLintEP ep : allEps) {
-      if (ep.id.equals(extension.getExtensionPointUniqueIdentifier())) {
-        ep.instances.removeAll(Arrays.asList(objects));
-        break;
-      }
+      singleInstance.unregister();
     }
   }
 
   public Collection<ProjectConfigurator> getConfigurators() {
-    return configuratorEp.instances;
+    return configuratorEp.getInstances();
   }
 
   public Collection<IAnalysisConfigurator> getAnalysisConfigurators() {
-    return analysisEp.instances;
+    return analysisEp.getInstances();
   }
 
   public Collection<ISonarLintProjectsProvider> getProjectsProviders() {
-    return projectsProviderEp.instances;
+    return projectsProviderEp.getInstances();
   }
 
   public Collection<ISonarLintProjectAdapterParticipant> getProjectAdapterParticipants() {
-    return projectAdapterParticipantEp.instances;
+    return projectAdapterParticipantEp.getInstances();
   }
 
   public Collection<ISonarLintFileAdapterParticipant> getFileAdapterParticipants() {
-    return fileAdapterParticipantEp.instances;
+    return fileAdapterParticipantEp.getInstances();
   }
 
   public Collection<IFileLanguageProvider> getLanguageProviders() {
-    return languageEp.instances;
+    return languageEp.getInstances();
   }
 
   public Collection<IFileTypeProvider> getTypeProviders() {
-    return typeEp.instances;
+    return typeEp.getInstances();
   }
 
 }

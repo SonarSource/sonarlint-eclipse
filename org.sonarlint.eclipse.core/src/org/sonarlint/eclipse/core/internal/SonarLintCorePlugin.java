@@ -34,6 +34,7 @@ import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.internal.engine.StandaloneEngineFacade;
 import org.sonarlint.eclipse.core.internal.engine.connected.ConnectedEngineFacadeManager;
 import org.sonarlint.eclipse.core.internal.event.AnalysisListenerManager;
+import org.sonarlint.eclipse.core.internal.extension.AbstractSonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.extension.SonarLintExtensionTracker;
 import org.sonarlint.eclipse.core.internal.http.UserAgentInterceptor;
 import org.sonarlint.eclipse.core.internal.notifications.NotificationsManager;
@@ -174,6 +175,7 @@ public class SonarLintCorePlugin extends Plugin {
       notificationsManager.stop();
     }
     SonarLintExtensionTracker.close();
+    AbstractSonarLintExtensionTracker.closeTracker();
 
     super.stop(context);
   }
