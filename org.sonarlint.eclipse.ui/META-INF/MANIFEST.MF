@@ -30,7 +30,8 @@ Require-Bundle: org.eclipse.core.runtime,
 Export-Package: org.sonarlint.eclipse.ui.internal;x-friends:="org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.ui.internal.notifications;x-friends:="org.sonarlint.eclipse.core.tests",
  org.sonarlint.eclipse.ui.internal.popup;x-friends:="org.sonarlint.eclipse.core.tests",
- org.sonarlint.eclipse.ui.internal.properties;x-friends:="org.sonarlint.eclipse.core.tests"
+ org.sonarlint.eclipse.ui.internal.properties;x-friends:="org.sonarlint.eclipse.core.tests",
+ org.sonarlint.eclipse.ui.quickfixes
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: OSGI-INF/l10n/bundle

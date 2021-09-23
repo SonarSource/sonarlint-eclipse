@@ -25,12 +25,15 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IMarkerResolution;
+import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
+import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
+import org.sonarlint.eclipse.ui.quickfixes.IMarkerResolutionEnhancer;
 
 import static java.util.stream.Collectors.toList;
 
@@ -66,15 +69,25 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
     }
 
     return resolutions.stream()
+      .map(r -> enhance(r, marker))
       .collect(Collectors.toList())
       .toArray(new IMarkerResolution[resolutions.size()]);
   }
 
   private static List<SortableMarkerResolver> getQuickFixesResolutions(IMarker marker) {
-    return MarkerUtils.getIssueQuickFixes(marker).getQuickFixes().stream()
+    return MarkerUtils.getIssueQuickFixes(marker).getQuickFixes()
+      .stream()
       .filter(MarkerQuickFix::isValid)
       .map(fix -> new ApplyQuickFixMarkerResolver(fix, QUICK_FIX_RESOLUTION_RELEVANCE))
       .collect(toList());
+  }
+
+  private static IMarkerResolution2 enhance(IMarkerResolution2 target, IMarker marker) {
+    IMarkerResolution2 enhanced = target;
+    for (IMarkerResolutionEnhancer markerResolutionEnhancer : SonarLintUiExtensionTracker.getInstance().getMarkerResolutionEnhancers()) {
+      enhanced = markerResolutionEnhancer.enhance(enhanced, marker);
+    }
+    return enhanced;
   }
 
   private static boolean isSonarLintIssueMarker(IMarker marker) {
