@@ -20,12 +20,14 @@
 package org.sonarlint.eclipse.ui.internal.markers;
 
 import java.util.Arrays;
+import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.DocumentRewriteSession;
 import org.eclipse.jface.text.DocumentRewriteSessionType;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension4;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
@@ -107,6 +109,12 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
       SonarLintLogger.get().error("Unable to open a text editor");
       return null;
     } else {
+      // After opening editor with IDE.openEditor, the marker position is selected.
+      // Clear the selection
+      ITextViewer viewer = textEditor.getAdapter(ITextViewer.class);
+      if (viewer != null) {
+        viewer.setSelectedRange(viewer.getSelectedRange().x, 0);
+      }
       return (ITextEditor) textEditor;
     }
   }
@@ -118,7 +126,10 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
     DocumentRewriteSession session = null;
     try {
       session = extendedDocument.startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
-      fix.getTextEdits().forEach(textEdit -> apply(openEditor, extendedDocument, textEdit));
+      List<MarkerTextEdit> textEdits = fix.getTextEdits();
+      // We only want to select edited location when there is only one text edit
+      boolean selectUpdatedText = textEdits.size() == 1;
+      textEdits.forEach(textEdit -> apply(openEditor, extendedDocument, textEdit, selectUpdatedText));
     } catch (Exception e) {
       SonarLintLogger.get().error("Cannot apply the quick fix", e);
     } finally {
@@ -129,7 +140,7 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
     return document;
   }
 
-  private static void apply(ITextEditor textEditor, IDocumentExtension4 document, MarkerTextEdit textEdit) {
+  private static void apply(ITextEditor textEditor, IDocumentExtension4 document, MarkerTextEdit textEdit, boolean selectUpdatedText) {
     IMarker editMarker = textEdit.getMarker();
     try {
       if (editMarker.exists()) {
@@ -149,6 +160,11 @@ public class ApplyQuickFixMarkerResolver extends SortableMarkerResolver {
           }
         }
         document.replace(start, end - start, textEdit.getNewText(), document.getModificationStamp() + 1);
+        ITextViewer viewer = textEditor.getAdapter(ITextViewer.class);
+        if (viewer != null) {
+          viewer.setSelectedRange(start, selectUpdatedText ? textEdit.getNewText().length() : 0);
+          viewer.revealRange(start, textEdit.getNewText().length());
+        }
       }
     } catch (Exception e) {
       SonarLintLogger.get().error("Quick fix location does not exist", e);
