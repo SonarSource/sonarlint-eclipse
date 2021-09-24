@@ -19,8 +19,10 @@
  */
 package org.sonarlint.eclipse.its.reddeer.preferences;
 
+import org.eclipse.reddeer.core.matcher.WithLabelMatcher;
 import org.eclipse.reddeer.core.reference.ReferencedComposite;
 import org.eclipse.reddeer.eclipse.ui.dialogs.PropertyPage;
+import org.eclipse.reddeer.swt.impl.combo.DefaultCombo;
 import org.eclipse.reddeer.swt.impl.text.DefaultText;
 
 public class SonarLintPreferences extends PropertyPage {
@@ -33,6 +35,24 @@ public class SonarLintPreferences extends PropertyPage {
 
   public void setTestFileRegularExpressions(String regex) {
     new DefaultText(this, 1).setText(regex);
+  }
+
+  public void setMarkersSeverity(MarkerSeverity severity) {
+    new DefaultCombo(this, new WithLabelMatcher("Severity of SonarLint markers:")).setSelection(severity.getTextInCombo());
+  }
+
+  public enum MarkerSeverity {
+    ERROR("Error"), WARNING("Warning"), INFO("Info");
+
+    private String textInCombo;
+
+    private MarkerSeverity(String textInCombo) {
+      this.textInCombo = textInCombo;
+    }
+
+    public String getTextInCombo() {
+      return textInCombo;
+    }
   }
 
 }
