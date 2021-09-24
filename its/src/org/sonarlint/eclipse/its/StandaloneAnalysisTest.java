@@ -88,12 +88,12 @@ import static org.junit.Assume.assumeTrue;
 
 public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
+  private static final String ON_THE_FLY_ANNOTATION_TYPE = "org.sonarlint.eclipse.onTheFlyIssueAnnotationType";
   @ClassRule
   public static TemporaryFolder temp = new TemporaryFolder();
 
   @Test
   public void shouldAnalyseJava() {
-    System.out.println("shouldAnalyseJava");
     Assume.assumeFalse(platformVersion().toString().startsWith("4.4"));
 
     new JavaPerspective().open();
@@ -166,7 +166,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseJavaJunit() {
-    System.out.println("shouldAnalyseJavaJunit");
     assumeTrue(supportJunit());
     new JavaPerspective().open();
     Project rootProject = importExistingProjectIntoWorkspace("java/java-junit", "java-junit");
@@ -182,6 +181,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
+      .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
         tuple("Replace this use of System.out or System.err by a logger.", 12),
@@ -208,8 +208,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseJava8() {
-    System.out.println("shouldAnalyseJava8");
-
     assumeTrue(supportJava8());
     new JavaPerspective().open();
     Project rootProject = importExistingProjectIntoWorkspace("java/java8", "java8");
@@ -229,8 +227,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   // SONARIDE-353
   @Test
   public void shouldAnalyseJavaWithDependentProject() {
-    System.out.println("shouldAnalyseJavaWithDependentProject");
-
     new JavaPerspective().open();
     importExistingProjectIntoWorkspace("java/java-dependent-projects/java-dependent-project");
     Project rootProject = importExistingProjectIntoWorkspace("java/java-dependent-projects/java-main-project", "java-main-project");
@@ -242,6 +238,7 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
+      .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(tuple("Remove this unnecessary cast to \"int\".", 9)); // Test that sonar.java.libraries is set on dependent project
   }
@@ -250,7 +247,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   @Category(RequiresExtraDependency.class)
   public void shouldAnalysePython() {
-    System.out.println("shouldAnalysePython");
     new PydevPerspective().open();
     importPythonProjectIntoWorkspace("python");
 
@@ -301,8 +297,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   @Category(RequiresExtraDependency.class)
   public void shouldAnalysePHP() {
-    System.out.println("shouldAnalysePHP");
-
     new PhpPerspective().open();
     Project rootProject = importExistingProjectIntoWorkspace("php", "php");
     new WaitWhile(new JobIsRunning(StringContains.containsString("DLTK Indexing")), TimePeriod.LONG);
@@ -325,7 +319,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
   @Test
   public void shouldAnalyseLinkedFile() throws IOException {
-    System.out.println("shouldAnalyseLinkedFile");
     new JavaPerspective().open();
     Project rootProject = importExistingProjectIntoWorkspace("java/java-linked", "java-linked");
 
@@ -347,8 +340,6 @@ public class StandaloneAnalysisTest extends AbstractSonarLintTest {
   @Test
   @Category(RequiresExtraDependency.class)
   public void shouldAnalyseVirtualProject() throws Exception {
-    System.out.println("shouldAnalyseVirtualProject");
-
     File remoteProjectDir = temp.newFolder();
     FileUtils.copyDirectory(new File("projects/java/java-simple"), remoteProjectDir);
 
