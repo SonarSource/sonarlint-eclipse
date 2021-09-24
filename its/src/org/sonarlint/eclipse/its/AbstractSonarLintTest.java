@@ -61,6 +61,7 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Version;
 import org.osgi.service.prefs.BackingStoreException;
+import org.sonarlint.eclipse.its.reddeer.preferences.RuleConfigurationPreferences;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole;
 import org.sonarlint.eclipse.its.reddeer.views.SonarLintConsole.ShowConsoleOption;
 import org.sonarqube.ws.client.HttpConnector;
@@ -82,6 +83,8 @@ public abstract class AbstractSonarLintTest {
   public static final String PREF_SKIP_CONFIRM_ANALYZE_MULTIPLE_FILES = "skipConfirmAnalyzeMultipleFiles";
   public static final String PREF_SECRETS_EVER_DETECTED = "secretsEverDetected";
 
+  protected static final String ON_THE_FLY_ANNOTATION_TYPE = "org.sonarlint.eclipse.onTheFlyIssueAnnotationType";
+
   private static final ISecurePreferences ROOT_SECURE = SecurePreferencesFactory.getDefault().node(PLUGIN_ID);
   private static final IEclipsePreferences ROOT = InstanceScope.INSTANCE.getNode(PLUGIN_ID);
   private static SonarLintConsole consoleView;
@@ -90,12 +93,10 @@ public abstract class AbstractSonarLintTest {
   public void cleanup() {
     ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SECRETS_EVER_DETECTED);
 
-    WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
-    if (preferenceDialog.isOpen()) {
-      preferenceDialog.cancel();
-    }
+    restoreDefaultRulesConfiguration();
 
     new CleanWorkspaceRequirement().fulfill();
+
   }
 
   protected static int hotspotServerPort = -1;
@@ -244,6 +245,18 @@ public abstract class AbstractSonarLintTest {
       .url(server.getUrl())
       .credentials(Server.ADMIN_LOGIN, Server.ADMIN_PASSWORD)
       .build());
+  }
+
+  void restoreDefaultRulesConfiguration() {
+    WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
+    if (!preferenceDialog.isOpen()) {
+      preferenceDialog.open();
+    }
+
+    RuleConfigurationPreferences ruleConfigurationPreferences = new RuleConfigurationPreferences(preferenceDialog);
+    preferenceDialog.select(ruleConfigurationPreferences);
+    ruleConfigurationPreferences.restoreDefaults();
+    preferenceDialog.ok();
   }
 
 }

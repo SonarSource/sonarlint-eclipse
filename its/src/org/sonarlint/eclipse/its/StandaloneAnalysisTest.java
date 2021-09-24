@@ -88,7 +88,6 @@ import static org.junit.Assume.assumeTrue;
 
 public class StandaloneAnalysisTest extends AbstractSonarLintTest {
 
-  private static final String ON_THE_FLY_ANNOTATION_TYPE = "org.sonarlint.eclipse.onTheFlyIssueAnnotationType";
   @ClassRule
   public static TemporaryFolder temp = new TemporaryFolder();
 

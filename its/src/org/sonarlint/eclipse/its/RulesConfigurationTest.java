@@ -40,7 +40,7 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
   @Test
   public void deactivate_rule() {
     new JavaPerspective().open();
-    Project rootProject = importExistingProjectIntoWorkspace("java/java-exclude-rules","java-exclude-rules");
+    Project rootProject = importExistingProjectIntoWorkspace("java/java-exclude-rules", "java-exclude-rules");
 
     OnTheFlyView onTheFlyView = new OnTheFlyView();
     onTheFlyView.open();
@@ -53,13 +53,14 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
 
     DefaultEditor defaultEditor = new DefaultEditor();
     assertThat(defaultEditor.getMarkers())
+      .filteredOn(m -> ON_THE_FLY_ANNOTATION_TYPE.equals(m.getType()))
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsExactly(tuple("Replace this use of System.out or System.err by a logger.", 9));
 
-    doAndWaitForSonarLintAnalysisJob(() -> restoreDefaultRulesConfiguration());
+    doAndWaitForSonarLintAnalysisJob(this::restoreDefaultRulesConfiguration);
 
     checkIssueIsDefault();
-    doAndWaitForSonarLintAnalysisJob(() -> lowerCognitiveComplexityRuleParameter());
+    doAndWaitForSonarLintAnalysisJob(RulesConfigurationTest::lowerCognitiveComplexityRuleParameter);
     checkIssueChanged();
 
     doAndWaitForSonarLintAnalysisJob(() -> restoreDefaultRulesConfiguration());
@@ -139,16 +140,6 @@ public class RulesConfigurationTest extends AbstractSonarLintTest {
     } catch (Exception e) {
       return null;
     }
-  }
-
-  void restoreDefaultRulesConfiguration() {
-    WorkbenchPreferenceDialog preferenceDialog = new WorkbenchPreferenceDialog();
-    preferenceDialog.open();
-
-    RuleConfigurationPreferences ruleConfigurationPreferences = new RuleConfigurationPreferences(preferenceDialog);
-    preferenceDialog.select(ruleConfigurationPreferences);
-    ruleConfigurationPreferences.restoreDefaults();
-    preferenceDialog.ok();
   }
 
   private static void lowerCognitiveComplexityRuleParameter() {
