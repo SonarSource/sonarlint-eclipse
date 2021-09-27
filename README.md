@@ -36,6 +36,7 @@ You need to have a few Eclipse plugins:
 * Eclipse RCP
 * Eclipse Plug-in developement environment
 * m2e
+* RedDeer to run ITs
 
 Normally, m2e will automatically suggest to install missing connectors (Tycho configurators, ...)
 
