@@ -21,15 +21,14 @@ package org.sonarlint.eclipse.ui.internal.markers;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.IMarkerResolutionRelevance;
 import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
 
-public class SonarLintMarkerResolutionRelevanceWrapper implements IMarkerResolution2, IMarkerResolutionRelevance {
+public class MarkerResolutionRelevanceAdapter implements ISonarLintMarkerResolver, IMarkerResolutionRelevance {
 
   private final ISonarLintMarkerResolver wrapped;
 
-  public SonarLintMarkerResolutionRelevanceWrapper(ISonarLintMarkerResolver wrapped) {
+  public MarkerResolutionRelevanceAdapter(ISonarLintMarkerResolver wrapped) {
     this.wrapped = wrapped;
   }
 

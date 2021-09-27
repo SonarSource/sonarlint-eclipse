@@ -46,6 +46,7 @@ import org.osgi.framework.Version;
 import org.sonarlint.eclipse.core.SonarLintLogger;
 import org.sonarlint.eclipse.core.analysis.IFileTypeProvider.ISonarLintFileType;
 import org.sonarlint.eclipse.core.analysis.IPreAnalysisContext;
+import org.sonarlint.eclipse.core.internal.utils.CompatibilityUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
 
@@ -352,6 +353,9 @@ public class JdtUtils {
   }
 
   public static ISonarLintMarkerResolver enhance(ISonarLintMarkerResolver resolution, IMarker marker) {
-    return new EnhancedMarkerResolution(resolution, marker);
+    if (CompatibilityUtils.supportMarkerResolutionRelevance()) {
+      new MarkerResolverRelevanceJdtAdapter(resolution, marker);
+    }
+    return new MarkerResolverJdtAdapter(resolution, marker);
   }
 }

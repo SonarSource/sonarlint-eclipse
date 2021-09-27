@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IMarkerResolution;
-import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
@@ -71,8 +70,8 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
     }
 
     return resolutions.stream()
-      .map(r -> enhance(r, marker))
       .map(SonarLintMarkerResolutionGenerator::enhanceWithResolutionRelevance)
+      .map(r -> enhance(r, marker))
       .collect(Collectors.toList())
       .toArray(new IMarkerResolution[resolutions.size()]);
   }
@@ -93,8 +92,11 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
     return enhanced;
   }
 
-  private static IMarkerResolution2 enhanceWithResolutionRelevance(ISonarLintMarkerResolver target) {
-    return CompatibilityUtils.supportMarkerResolutionRelevance() ? new SonarLintMarkerResolutionRelevanceWrapper(target) : target;
+  private static ISonarLintMarkerResolver enhanceWithResolutionRelevance(ISonarLintMarkerResolver target) {
+    if (CompatibilityUtils.supportMarkerResolutionRelevance()) {
+      return new MarkerResolutionRelevanceAdapter(target);
+    }
+    return target;
   }
 
   private static boolean isSonarLintIssueMarker(IMarker marker) {

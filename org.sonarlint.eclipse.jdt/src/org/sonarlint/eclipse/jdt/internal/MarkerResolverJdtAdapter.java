@@ -31,12 +31,12 @@ import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
 /**
  * Inspired by MarkerResolutionProposal
  */
-class EnhancedMarkerResolution implements ISonarLintMarkerResolver, IJavaCompletionProposal {
+class MarkerResolverJdtAdapter implements ISonarLintMarkerResolver, IJavaCompletionProposal {
 
   private final ISonarLintMarkerResolver wrapped;
   private final IMarker marker;
 
-  public EnhancedMarkerResolution(ISonarLintMarkerResolver resolution, IMarker marker) {
+  public MarkerResolverJdtAdapter(ISonarLintMarkerResolver resolution, IMarker marker) {
     this.wrapped = resolution;
     this.marker = marker;
   }
