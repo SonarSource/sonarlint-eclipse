@@ -91,12 +91,12 @@ public abstract class AbstractSonarLintTest {
 
   @After
   public void cleanup() {
-    ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SECRETS_EVER_DETECTED);
 
     restoreDefaultRulesConfiguration();
 
     new CleanWorkspaceRequirement().fulfill();
 
+    ConfigurationScope.INSTANCE.getNode(UI_PLUGIN_ID).remove(PREF_SECRETS_EVER_DETECTED);
   }
 
   protected static int hotspotServerPort = -1;
