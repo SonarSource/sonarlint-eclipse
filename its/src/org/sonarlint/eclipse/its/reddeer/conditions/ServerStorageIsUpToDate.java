@@ -19,8 +19,12 @@
  */
 package org.sonarlint.eclipse.its.reddeer.conditions;
 
+import java.util.List;
 import org.eclipse.reddeer.common.condition.AbstractWaitCondition;
 import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
+import org.sonarlint.eclipse.its.reddeer.views.BindingsView.Binding;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ServerStorageIsUpToDate extends AbstractWaitCondition {
   private final BindingsView bindingsView;
@@ -36,8 +40,9 @@ public class ServerStorageIsUpToDate extends AbstractWaitCondition {
   @Override
   public boolean test() {
     bindingsView.open();
-    String serverDescription = bindingsView.getTree().getItems().get(0).getText();
-    return serverDescription.matches(connectionName + " \\[" +
+    List<Binding> bindings = bindingsView.getBindings();
+    assertThat(bindings).hasSize(1);
+    return bindings.get(0).getLabel().matches(connectionName + " \\[" +
       (version != null ? "Version: " + substringBefore(version, '-') + "(.*), " : "")
       + "Last storage update: (.*)\\]");
   }

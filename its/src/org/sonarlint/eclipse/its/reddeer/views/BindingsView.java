@@ -19,11 +19,16 @@
  */
 package org.sonarlint.eclipse.its.reddeer.views;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.reddeer.common.wait.TimePeriod;
 import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.core.exception.CoreLayerException;
+import org.eclipse.reddeer.core.matcher.WithTextMatcher;
 import org.eclipse.reddeer.swt.api.Shell;
-import org.eclipse.reddeer.swt.api.Tree;
+import org.eclipse.reddeer.swt.api.TreeItem;
 import org.eclipse.reddeer.swt.impl.button.PushButton;
+import org.eclipse.reddeer.swt.impl.link.DefaultLink;
 import org.eclipse.reddeer.swt.impl.menu.ContextMenuItem;
 import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.swt.impl.tree.DefaultTree;
@@ -36,22 +41,59 @@ public class BindingsView extends WorkbenchView {
     super("SonarLint Bindings");
   }
 
-  public Tree getTree() {
-    activate();
-    return new DefaultTree(this);
-  }
-
   public void waitForServerUpdate(String connectionName, String version) {
     new WaitUntil(new ServerStorageIsUpToDate(this, connectionName, version), TimePeriod.LONG);
   }
 
+  public boolean isBindingEmpty() {
+    activate();
+    try {
+      new DefaultLink(cTabItem, new WithTextMatcher(
+        "<a>Connect to SonarQube/SonarCloud...</a>"));
+      return true;
+    } catch (CoreLayerException e) {
+      return false;
+    }
+  }
+
   public void removeAllBindings() {
-    getTree().getAllItems().forEach(item -> {
-      item.select();
-      new ContextMenuItem("Delete Connection").select();
-      Shell s = new DefaultShell("Delete Connection(s)");
-      new PushButton("OK").click();
-    });
+    if (!isBindingEmpty()) {
+      new DefaultTree(cTabItem).getItems().forEach(item -> {
+        item.select();
+        new ContextMenuItem("Delete Connection").select();
+        Shell s = new DefaultShell("Delete Connection(s)");
+        new PushButton(s, "OK").click();
+      });
+    }
+  }
+
+  public List<Binding> getBindings() {
+    List<Binding> results = new ArrayList<>();
+    activate();
+    if (!isBindingEmpty()) {
+      new DefaultTree(cTabItem).getItems().forEach(i -> results.add(new Binding(i)));
+    }
+    return results;
+
+  }
+
+  public static class Binding {
+
+    private final TreeItem i;
+
+    private Binding(TreeItem i) {
+      this.i = i;
+    }
+
+    public String getLabel() {
+      return i.getText();
+    }
+
+    @Override
+    public String toString() {
+      return i.getText();
+    }
+
   }
 
 }

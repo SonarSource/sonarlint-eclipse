@@ -33,6 +33,8 @@ import org.eclipse.reddeer.core.condition.WidgetIsFound;
 import org.eclipse.reddeer.core.matcher.WithTextMatcher;
 import org.eclipse.reddeer.eclipse.core.resources.Project;
 import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.swt.api.Shell;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
 import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
 import org.eclipse.reddeer.workbench.impl.editor.Marker;
 import org.eclipse.swt.widgets.Label;
@@ -171,9 +173,12 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     try (InputStream inputStream = statusConnection.getInputStream()) {
       JsonValue response = Json.parse(new InputStreamReader(inputStream));
 
-      assertThat(response.asObject().iterator()).toIterable().extracting(JsonObject.Member::getName, m -> m.getValue().asString()).containsOnly(
-        tuple("ideName", "Eclipse"),
-        tuple("description", ""));
+      assertThat(response.asObject().iterator()).toIterable().extracting(JsonObject.Member::getName, m -> m.getValue().asString())
+        .hasSize(2)
+        .contains(
+          tuple("description", ""))
+        // When running tests locally the ideName is "Eclipse Platform" for some reason
+        .containsAnyOf(tuple("ideName", "Eclipse"), tuple("ideName", "Eclipse Platform"));
     }
   }
 
@@ -239,6 +244,9 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
       .extracting(Marker::getText, Marker::getLineNumber)
       .containsOnly(
         tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
+
+    Shell preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
+    preferencesShell.close();
   }
 
 }
