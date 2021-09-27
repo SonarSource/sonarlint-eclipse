@@ -17,20 +17,12 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.ui.internal.markers;
+package org.sonarlint.eclipse.ui.quickfixes;
 
-import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
+import org.eclipse.ui.IMarkerResolution2;
 
-public abstract class SortableMarkerResolver implements ISonarLintMarkerResolver {
-  private final int relevance;
+public interface ISonarLintMarkerResolver extends IMarkerResolution2 {
 
-  protected SortableMarkerResolver(int relevance) {
-    this.relevance = relevance;
-  }
-
-  @Override
-  public final int getRelevanceForResolution() {
-    return relevance;
-  }
+  int getRelevanceForResolution();
 
 }
