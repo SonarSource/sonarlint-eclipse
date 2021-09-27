@@ -177,9 +177,14 @@ stages:
       displayName: Run ITs
       strategy:
         matrix:
+          Neon:
+            TARGET_PLATFORM: 'neon'
+            SQ_VERSION: 'LATEST_RELEASE[7.9]'
+            imageName: 'ubuntu-18.04'
+            Category: '-DexcludedGroups=SonarCloud'
           Photon:
             TARGET_PLATFORM: 'photon'
-            SQ_VERSION: 'LATEST_RELEASE[7.9]'
+            SQ_VERSION: 'LATEST_RELEASE[8.9]'
             imageName: 'ubuntu-18.04'
             Category: '-DexcludedGroups=SonarCloud'
           2020_06:
