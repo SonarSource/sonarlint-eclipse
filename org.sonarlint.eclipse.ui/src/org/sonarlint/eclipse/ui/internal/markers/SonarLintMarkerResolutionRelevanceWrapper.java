@@ -19,18 +19,43 @@
  */
 package org.sonarlint.eclipse.ui.internal.markers;
 
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IMarkerResolution2;
+import org.eclipse.ui.IMarkerResolutionRelevance;
 import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
 
-public abstract class SortableMarkerResolver implements ISonarLintMarkerResolver {
-  private final int relevance;
+public class SonarLintMarkerResolutionRelevanceWrapper implements IMarkerResolution2, IMarkerResolutionRelevance {
 
-  protected SortableMarkerResolver(int relevance) {
-    this.relevance = relevance;
+  private final ISonarLintMarkerResolver wrapped;
+
+  public SonarLintMarkerResolutionRelevanceWrapper(ISonarLintMarkerResolver wrapped) {
+    this.wrapped = wrapped;
   }
 
   @Override
-  public final int getRelevanceForResolution() {
-    return relevance;
+  public String getLabel() {
+    return wrapped.getLabel();
+  }
+
+  @Override
+  public void run(IMarker marker) {
+    wrapped.run(marker);
+  }
+
+  @Override
+  public String getDescription() {
+    return wrapped.getDescription();
+  }
+
+  @Override
+  public Image getImage() {
+    return wrapped.getImage();
+  }
+
+  @Override
+  public int getRelevanceForResolution() {
+    return wrapped.getRelevanceForResolution();
   }
 
 }

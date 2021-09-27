@@ -31,9 +31,11 @@ import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
+import org.sonarlint.eclipse.core.internal.utils.CompatibilityUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.quickfixes.IMarkerResolutionEnhancer;
+import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
 
 import static java.util.stream.Collectors.toList;
 
@@ -70,6 +72,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
 
     return resolutions.stream()
       .map(r -> enhance(r, marker))
+      .map(SonarLintMarkerResolutionGenerator::enhanceWithResolutionRelevance)
       .collect(Collectors.toList())
       .toArray(new IMarkerResolution[resolutions.size()]);
   }
@@ -82,12 +85,19 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
       .collect(toList());
   }
 
-  private static IMarkerResolution2 enhance(IMarkerResolution2 target, IMarker marker) {
-    IMarkerResolution2 enhanced = target;
+  private static ISonarLintMarkerResolver enhance(ISonarLintMarkerResolver target, IMarker marker) {
+    ISonarLintMarkerResolver enhanced = target;
     for (IMarkerResolutionEnhancer markerResolutionEnhancer : SonarLintUiExtensionTracker.getInstance().getMarkerResolutionEnhancers()) {
       enhanced = markerResolutionEnhancer.enhance(enhanced, marker);
     }
     return enhanced;
+  }
+
+  private static IMarkerResolution2 enhanceWithResolutionRelevance(ISonarLintMarkerResolver target) {
+    if (CompatibilityUtils.supportMarkerResolutionRelevance()) {
+      return new SonarLintMarkerResolutionRelevanceWrapper(target);
+    }
+    return target;
   }
 
   private static boolean isSonarLintIssueMarker(IMarker marker) {

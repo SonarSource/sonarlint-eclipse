@@ -39,4 +39,9 @@ public class CompatibilityUtils {
     return platform != null ? platform.getVersion() : Version.emptyVersion;
   }
 
+  public static boolean supportMarkerResolutionRelevance() {
+    Bundle eclipseUiIde = Platform.getBundle("org.eclipse.ui.ide");
+    return eclipseUiIde != null && (eclipseUiIde.getVersion().compareTo(Version.parseVersion("3.14")) >= 0);
+  }
+
 }
