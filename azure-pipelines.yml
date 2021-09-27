@@ -40,10 +40,10 @@ stages:
       - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
-          key: 'maven | "$(Agent.OS)" | **/pom.xml'
+          key: 'build | "$(Agent.OS)" | **/pom.xml, **/target-platforms/build.target, !**/its/**'
           restoreKeys: |
-            maven | "$(Agent.OS)"
-            maven
+            build | "$(Agent.OS)"
+            build
           path: $(MAVEN_CACHE_FOLDER)
       - task: DownloadSecureFile@1
         displayName: 'Download Maven settings'
@@ -126,10 +126,10 @@ stages:
       - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
-          key: 'maven | "$(Agent.OS)" | **/pom.xml'
+          key: 'validate | "$(Agent.OS)" | **/pom.xml, target-platforms/build.target, !**/its/**'
           restoreKeys: |
-            maven | "$(Agent.OS)"
-            maven
+            validate | "$(Agent.OS)"
+            validate
           path: $(MAVEN_CACHE_FOLDER)
       - task: DownloadSecureFile@1
         displayName: 'Download Maven settings'
@@ -210,10 +210,10 @@ stages:
       - task: Cache@2
         displayName: Cache Maven local repo
         inputs:
-          key: 'maven | "$(Agent.OS)" | **/pom.xml,!**/target/**'
+          key: 'qa | $(TARGET_PLATFORM) | "$(Agent.OS)" | **/pom.xml,!**/target/**,**/its/target-platforms/*.target'
           restoreKeys: |
-            maven | "$(Agent.OS)"
-            maven
+            qa | $(TARGET_PLATFORM) | "$(Agent.OS)"
+            qa | $(TARGET_PLATFORM)
           path: $(MAVEN_CACHE_FOLDER)
       - task: DownloadSecureFile@1
         displayName: 'Download Maven settings'
