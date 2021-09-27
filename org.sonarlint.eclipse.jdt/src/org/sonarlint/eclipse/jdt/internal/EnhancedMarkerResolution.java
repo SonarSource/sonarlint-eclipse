@@ -33,7 +33,7 @@ import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
  */
 class EnhancedMarkerResolution implements ISonarLintMarkerResolver, IJavaCompletionProposal {
 
-  protected final ISonarLintMarkerResolver wrapped;
+  private final ISonarLintMarkerResolver wrapped;
   private final IMarker marker;
 
   public EnhancedMarkerResolution(ISonarLintMarkerResolver resolution, IMarker marker) {

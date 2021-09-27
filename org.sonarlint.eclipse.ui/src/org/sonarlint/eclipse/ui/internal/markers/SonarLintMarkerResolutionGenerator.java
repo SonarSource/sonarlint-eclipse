@@ -94,10 +94,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
   }
 
   private static IMarkerResolution2 enhanceWithResolutionRelevance(ISonarLintMarkerResolver target) {
-    if (CompatibilityUtils.supportMarkerResolutionRelevance()) {
-      return new SonarLintMarkerResolutionRelevanceWrapper(target);
-    }
-    return target;
+    return CompatibilityUtils.supportMarkerResolutionRelevance() ? new SonarLintMarkerResolutionRelevanceWrapper(target) : target;
   }
 
   private static boolean isSonarLintIssueMarker(IMarker marker) {
