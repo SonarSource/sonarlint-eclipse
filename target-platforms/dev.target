@@ -8,7 +8,7 @@
 <location path="${M2_REPO}/net/bytebuddy/byte-buddy-agent/1.10.19" type="Directory"/>
 <location path="${M2_REPO}/org/objenesis/objenesis/3.1" type="Directory"/>
 <location path="${M2_REPO}/org/assertj/assertj-core/3.19.0" type="Directory"/>
-<location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.34.0.2692" type="Directory"/>
+<location path="${M2_REPO}/org/sonarsource/orchestrator/sonar-orchestrator-osgi/3.35.1.2719" type="Directory"/>
 <location path="${M2_REPO}/com/eclipsesource/minimal-json/minimal-json/0.9.5" type="Directory"/>
 <location includeSource="true" path="${M2_REPO}/org/sonarsource/sonarlint/core/sonarlint-core/6.5.0.37122" type="Directory"/>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
