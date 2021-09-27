@@ -28,25 +28,27 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.reddeer.common.wait.WaitUntil;
+import org.eclipse.reddeer.core.condition.WidgetIsFound;
+import org.eclipse.reddeer.core.matcher.WithTextMatcher;
+import org.eclipse.reddeer.eclipse.core.resources.Project;
+import org.eclipse.reddeer.eclipse.ui.perspectives.JavaPerspective;
+import org.eclipse.reddeer.swt.api.Shell;
+import org.eclipse.reddeer.swt.impl.shell.DefaultShell;
+import org.eclipse.reddeer.workbench.impl.editor.DefaultEditor;
+import org.eclipse.reddeer.workbench.impl.editor.Marker;
+import org.eclipse.swt.widgets.Label;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.sonarlint.eclipse.its.bots.JavaPackageExplorerBot;
-import org.sonarlint.eclipse.its.bots.ProjectBindingWizardBot;
-import org.sonarlint.eclipse.its.bots.ServerConnectionWizardBot;
-import org.sonarlint.eclipse.its.bots.ServersViewBot;
-import org.sonarlint.eclipse.its.bots.SonarLintBindingsBot;
-import org.sonarlint.eclipse.its.utils.JobHelpers;
-import org.sonarlint.eclipse.its.utils.SwtBotUtils;
+import org.sonarlint.eclipse.its.reddeer.conditions.DialogMessageIsExpected;
+import org.sonarlint.eclipse.its.reddeer.views.BindingsView;
+import org.sonarlint.eclipse.its.reddeer.wizards.ProjectBindingWizard;
+import org.sonarlint.eclipse.its.reddeer.wizards.ProjectSelectionDialog;
+import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard;
+import org.sonarlint.eclipse.its.reddeer.wizards.ServerConnectionWizard.ServerUrlPage;
 import org.sonarqube.ws.client.WsClient;
 import org.sonarqube.ws.client.project.CreateRequest;
 import org.sonarqube.ws.client.setting.SetRequest;
@@ -65,7 +67,7 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     .build();
 
   private static WsClient adminWsClient;
-  
+
   private static final String PROJECT_NAME = "secret-java";
 
   @BeforeClass
@@ -78,84 +80,92 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
         .setKey(PROJECT_NAME).build());
   }
 
+  @Override
   @Before
   public void cleanup() {
-    new SonarLintBindingsBot(bot).removeAllBindings();
+    BindingsView bindingsView = new BindingsView();
+    bindingsView.open();
+    bindingsView.removeAllBindings();
   }
 
   @Test
   public void configureServerFromNewWizard() {
-    ServerConnectionWizardBot wizardBot = new ServerConnectionWizardBot(bot);
-    wizardBot.openFromFileNewWizard();
+    ServerConnectionWizard wizard = new ServerConnectionWizard();
+    wizard.open();
+    new ServerConnectionWizard.ServerTypePage(wizard).selectSonarQube();
+    wizard.next();
 
-    wizardBot.assertTitle("Connect to SonarQube or SonarCloud");
+    assertThat(wizard.isNextEnabled()).isFalse();
+    ServerUrlPage serverUrlPage = new ServerConnectionWizard.ServerUrlPage(wizard);
 
-    wizardBot.selectSonarQube();
-    wizardBot.clickNext();
+    serverUrlPage.setUrl("Foo");
+    assertThat(wizard.isNextEnabled()).isFalse();
+    new WaitUntil(new DialogMessageIsExpected(wizard, "This is not a valid URL"));
 
-    assertThat(wizardBot.isNextEnabled()).isFalse();
+    serverUrlPage.setUrl("http://");
+    assertThat(wizard.isNextEnabled()).isFalse();
+    new WaitUntil(new DialogMessageIsExpected(wizard, "Please provide a valid URL"));
 
-    wizardBot.setServerUrl("Foo");
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.assertErrorMessage("This is not a valid URL");
+    serverUrlPage.setUrl("");
+    assertThat(wizard.isNextEnabled()).isFalse();
+    new WaitUntil(new DialogMessageIsExpected(wizard, "You must provide a server URL"));
 
-    wizardBot.setServerUrl("http://");
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.assertErrorMessage("Please provide a valid URL");
+    serverUrlPage.setUrl(orchestrator.getServer().getUrl());
+    assertThat(wizard.isNextEnabled()).isTrue();
+    wizard.next();
 
-    wizardBot.setServerUrl("");
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.assertErrorMessage("You must provide a server URL");
+    ServerConnectionWizard.AuthenticationModePage authenticationModePage = new ServerConnectionWizard.AuthenticationModePage(wizard);
+    authenticationModePage.selectUsernamePasswordMode();
+    wizard.next();
 
-    wizardBot.setServerUrl(orchestrator.getServer().getUrl());
-    assertThat(wizardBot.isNextEnabled()).isTrue();
-    wizardBot.clickNext();
+    ServerConnectionWizard.AuthenticationPage authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
+    assertThat(wizard.isNextEnabled()).isFalse();
+    authenticationPage.setUsername(Server.ADMIN_LOGIN);
+    assertThat(wizard.isNextEnabled()).isFalse();
+    authenticationPage.setPassword("wrong");
+    assertThat(wizard.isNextEnabled()).isTrue();
 
-    wizardBot.selectUsernamePassword();
-    wizardBot.clickNext();
+    wizard.next();
+    new WaitUntil(new DialogMessageIsExpected(wizard, "Authentication failed"));
 
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.setUsername(Server.ADMIN_LOGIN);
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.setPassword("wrong");
-    assertThat(wizardBot.isNextEnabled()).isTrue();
+    authenticationPage.setPassword(Server.ADMIN_PASSWORD);
+    wizard.next();
 
-    wizardBot.clickNext();
-    wizardBot.assertErrorMessage("Authentication failed");
+    // as login can take time, wait for the next page to appear
+    new WaitUntil(new WidgetIsFound(Label.class, new WithTextMatcher("SonarQube Connection Identifier")));
+    ServerConnectionWizard.ConnectionNamePage connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
 
-    wizardBot.setPassword(Server.ADMIN_PASSWORD);
-    wizardBot.clickNext();
+    assertThat(connectionNamePage.getConnectionName()).isEqualTo("127.0.0.1");
+    assertThat(wizard.isNextEnabled()).isTrue();
 
-    assertThat(wizardBot.getConnectionName()).isEqualTo("127.0.0.1");
-    assertThat(wizardBot.isNextEnabled()).isTrue();
+    connectionNamePage.setConnectionName("");
+    assertThat(wizard.isNextEnabled()).isFalse();
+    new WaitUntil(new DialogMessageIsExpected(wizard, "Connection name must be specified"));
 
-    wizardBot.setConnectionName("");
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.assertErrorMessage("Connection name must be specified");
-
-    wizardBot.setConnectionName("test");
-    wizardBot.clickNext();
+    connectionNamePage.setConnectionName("test");
+    wizard.next();
 
     if (orchestrator.getServer().version().isGreaterThanOrEquals(8, 7)) {
       // SONAR-14306 Starting from 8.7, dev notifications are available even in community edition
-      assertThat(wizardBot.getNotificationEnabled()).isTrue();
-      assertThat(wizardBot.isNextEnabled()).isTrue();
-      wizardBot.clickNext();
+      ServerConnectionWizard.NotificationsPage notificationsPage = new ServerConnectionWizard.NotificationsPage(wizard);
+      assertThat(notificationsPage.areNotificationsEnabled()).isTrue();
+      assertThat(wizard.isNextEnabled()).isTrue();
+      wizard.next();
     }
 
-    assertThat(wizardBot.isNextEnabled()).isFalse();
-    wizardBot.clickFinish();
+    assertThat(wizard.isNextEnabled()).isFalse();
+    wizard.finish();
 
-    new ServersViewBot(bot)
-      .waitForServerUpdateAndCheckVersion("test", orchestrator.getServer().version().toString());
+    new ProjectBindingWizard().cancel();
 
-    bot.shell("Bind to a SonarQube or SonarCloud project").close();
+    BindingsView bindingsView = new BindingsView();
+    bindingsView.waitForServerUpdate("test", orchestrator.getServer().version().toString());
   }
 
   @Test
   public void testLocalServerStatusRequest() throws Exception {
-
-    HttpURLConnection statusConnection = (HttpURLConnection) new URL(String.format("http://localhost:%d/sonarlint/api/status", hostspotServerPort)).openConnection();
+    assertThat(hotspotServerPort).isNotEqualTo(-1);
+    HttpURLConnection statusConnection = (HttpURLConnection) new URL(String.format("http://localhost:%d/sonarlint/api/status", hotspotServerPort)).openConnection();
     statusConnection.setConnectTimeout(1000);
     statusConnection.connect();
     int code = statusConnection.getResponseCode();
@@ -163,54 +173,80 @@ public class SonarQubeConnectedModeTest extends AbstractSonarLintTest {
     try (InputStream inputStream = statusConnection.getInputStream()) {
       JsonValue response = Json.parse(new InputStreamReader(inputStream));
 
-      assertThat(response.asObject().iterator()).toIterable().extracting(JsonObject.Member::getName, m -> m.getValue().asString()).containsOnly(
-        tuple("ideName", "Eclipse"),
-        tuple("description", ""));
+      assertThat(response.asObject().iterator()).toIterable().extracting(JsonObject.Member::getName, m -> m.getValue().asString())
+        .hasSize(2)
+        .contains(
+          tuple("description", ""))
+        // When running tests locally the ideName is "Eclipse Platform" for some reason
+        .containsAnyOf(tuple("ideName", "Eclipse"), tuple("ideName", "Eclipse Platform"));
     }
   }
 
   @Test
-  public void shouldFindSecretsInSourceFiles() throws Exception {
-    SwtBotUtils.openPerspective(bot, JavaUI.ID_PERSPECTIVE);
-    IProject project = importEclipseProject("secrets/secret-java", PROJECT_NAME);
-    JobHelpers.waitForJobsToComplete(bot);
-    ServerConnectionWizardBot wizardBot = new ServerConnectionWizardBot(bot);
-    wizardBot.openFromFileNewWizard();
-    wizardBot.selectSonarQube();
-    wizardBot.clickNext();
-    wizardBot.setServerUrl(orchestrator.getServer().getUrl());
-    wizardBot.clickNext();
-    wizardBot.selectUsernamePassword();
-    wizardBot.clickNext();
-    wizardBot.setUsername(Server.ADMIN_LOGIN);
-    wizardBot.setPassword(Server.ADMIN_PASSWORD);
-    wizardBot.clickNext();
-    wizardBot.setConnectionName("test");
-    wizardBot.clickNext();
+  public void shouldFindSecretsInConnectedMode() throws Exception {
+    new JavaPerspective().open();
+    Project rootProject = importExistingProjectIntoWorkspace("secrets/secret-java", PROJECT_NAME);
+
+    ServerConnectionWizard wizard = new ServerConnectionWizard();
+    wizard.open();
+    new ServerConnectionWizard.ServerTypePage(wizard).selectSonarQube();
+    wizard.next();
+
+    ServerUrlPage serverUrlPage = new ServerConnectionWizard.ServerUrlPage(wizard);
+    serverUrlPage.setUrl(orchestrator.getServer().getUrl());
+    wizard.next();
+
+    ServerConnectionWizard.AuthenticationModePage authenticationModePage = new ServerConnectionWizard.AuthenticationModePage(wizard);
+    authenticationModePage.selectUsernamePasswordMode();
+    wizard.next();
+
+    ServerConnectionWizard.AuthenticationPage authenticationPage = new ServerConnectionWizard.AuthenticationPage(wizard);
+    authenticationPage.setUsername(Server.ADMIN_LOGIN);
+    authenticationPage.setPassword(Server.ADMIN_PASSWORD);
+    wizard.next();
+
+    // as login can take time, wait for the next page to appear
+    new WaitUntil(new WidgetIsFound(Label.class, new WithTextMatcher("SonarQube Connection Identifier")));
+    ServerConnectionWizard.ConnectionNamePage connectionNamePage = new ServerConnectionWizard.ConnectionNamePage(wizard);
+
+    connectionNamePage.setConnectionName("test");
+    wizard.next();
+
     if (orchestrator.getServer().version().isGreaterThanOrEquals(8, 7)) {
       // SONAR-14306 Starting from 8.7, dev notifications are available even in community edition
-      wizardBot.clickNext();
+      wizard.next();
     }
-    wizardBot.clickFinish();
 
+    wizard.finish();
 
-    new ProjectBindingWizardBot(bot)
-      .clickAdd()
-      .chooseProject(PROJECT_NAME)
-      .clickNext()
-      .typeProjectKey(PROJECT_NAME)
-      .clickFinish();
+    ProjectBindingWizard projectBindingWizard = new ProjectBindingWizard();
+    ProjectBindingWizard.BoundProjectsPage projectsToBindPage = new ProjectBindingWizard.BoundProjectsPage(projectBindingWizard);
+    projectsToBindPage.clickAdd();
 
-    new ServersViewBot(bot)
-      .waitForServerUpdateAndCheckVersion("test", orchestrator.getServer().version().toString());
+    ProjectSelectionDialog projectSelectionDialog = new ProjectSelectionDialog();
+    projectSelectionDialog.setProjectName(PROJECT_NAME);
+    projectSelectionDialog.ok();
 
-    new JavaPackageExplorerBot(bot)
-      .expandAndDoubleClick("secret-java", "src", "sec", "Secret.java");
-    JobHelpers.waitForJobsToComplete(bot);
+    projectBindingWizard.next();
+    ProjectBindingWizard.ServerProjectSelectionPage serverProjectSelectionPage = new ProjectBindingWizard.ServerProjectSelectionPage(projectBindingWizard);
+    serverProjectSelectionPage.waitForProjectsToBeFetched();
+    serverProjectSelectionPage.setProjectKey(PROJECT_NAME);
+    projectBindingWizard.finish();
 
-    List<IMarker> markers = Arrays.asList(project.findMember("src/sec/Secret.java").findMarkers(MARKER_ON_THE_FLY_ID, true, IResource.DEPTH_ONE));
-    assertThat(markers).extracting(markerAttributes(IMarker.LINE_NUMBER, IMarker.MESSAGE)).containsOnly(
-      tuple("/secret-java/src/sec/Secret.java", 4, "Make sure this AWS Secret Access Key is not disclosed."));
+    BindingsView bindingsView = new BindingsView();
+    bindingsView.open();
+    bindingsView.waitForServerUpdate("test", orchestrator.getServer().version().toString());
+
+    openFileAndWaitForAnalysisCompletion(rootProject.getResource("src", "sec", "Secret.java"));
+
+    DefaultEditor defaultEditor = new DefaultEditor();
+    assertThat(defaultEditor.getMarkers())
+      .extracting(Marker::getText, Marker::getLineNumber)
+      .containsOnly(
+        tuple("Make sure this AWS Secret Access Key is not disclosed.", 4));
+
+    Shell preferencesShell = new DefaultShell("SonarLint - Secret(s) detected");
+    preferencesShell.close();
   }
 
 }

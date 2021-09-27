@@ -17,26 +17,19 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package org.sonarlint.eclipse.its.utils;
+package org.sonarlint.eclipse.its.reddeer.views;
 
-import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
-import org.eclipse.swtbot.swt.finder.exceptions.WidgetNotFoundException;
+import org.eclipse.reddeer.swt.impl.browser.InternalBrowser;
+import org.eclipse.reddeer.workbench.impl.view.WorkbenchView;
 
-public final class SwtBotUtils {
+public class RuleDescriptionView extends WorkbenchView {
 
-  private SwtBotUtils() {
+  public RuleDescriptionView() {
+    super("SonarLint Rule Description");
   }
 
-  public static void closeViewQuietly(SWTWorkbenchBot bot, String id) {
-    try {
-      bot.viewById(id).close();
-    } catch (WidgetNotFoundException e) {
-      // ignore
-    }
-  }
-
-  public static void openPerspective(SWTWorkbenchBot bot, String id) {
-    bot.perspectiveById(id).activate();
+  public String getContent() {
+    return new InternalBrowser(getCTabItem()).getText();
   }
 
 }

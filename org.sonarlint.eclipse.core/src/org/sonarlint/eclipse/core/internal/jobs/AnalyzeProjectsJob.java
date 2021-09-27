@@ -74,4 +74,9 @@ public class AnalyzeProjectsJob extends WorkspaceJob {
     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
   }
 
+  @Override
+  public final boolean belongsTo(Object family) {
+    return "org.sonarlint.eclipse.projectsJob".equals(family);
+  }
+
 }
