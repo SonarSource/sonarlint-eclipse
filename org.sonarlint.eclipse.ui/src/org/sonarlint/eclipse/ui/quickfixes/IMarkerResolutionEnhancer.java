@@ -20,10 +20,9 @@
 package org.sonarlint.eclipse.ui.quickfixes;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.ui.IMarkerResolution2;
 
 public interface IMarkerResolutionEnhancer {
 
-  IMarkerResolution2 enhance(IMarkerResolution2 resolution, IMarker marker);
+  ISonarLintMarkerResolver enhance(ISonarLintMarkerResolver resolution, IMarker marker);
 
 }

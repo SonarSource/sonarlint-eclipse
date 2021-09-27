@@ -25,15 +25,16 @@ import java.util.stream.Collectors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IMarkerResolution;
-import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.sonarlint.eclipse.core.internal.SonarLintCorePlugin;
 import org.sonarlint.eclipse.core.internal.adapter.Adapters;
 import org.sonarlint.eclipse.core.internal.markers.MarkerUtils;
 import org.sonarlint.eclipse.core.internal.quickfixes.MarkerQuickFix;
+import org.sonarlint.eclipse.core.internal.utils.CompatibilityUtils;
 import org.sonarlint.eclipse.core.resource.ISonarLintFile;
 import org.sonarlint.eclipse.ui.internal.extension.SonarLintUiExtensionTracker;
 import org.sonarlint.eclipse.ui.quickfixes.IMarkerResolutionEnhancer;
+import org.sonarlint.eclipse.ui.quickfixes.ISonarLintMarkerResolver;
 
 import static java.util.stream.Collectors.toList;
 
@@ -69,6 +70,7 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
     }
 
     return resolutions.stream()
+      .map(SonarLintMarkerResolutionGenerator::enhanceWithResolutionRelevance)
       .map(r -> enhance(r, marker))
       .collect(Collectors.toList())
       .toArray(new IMarkerResolution[resolutions.size()]);
@@ -82,12 +84,19 @@ public class SonarLintMarkerResolutionGenerator implements IMarkerResolutionGene
       .collect(toList());
   }
 
-  private static IMarkerResolution2 enhance(IMarkerResolution2 target, IMarker marker) {
-    IMarkerResolution2 enhanced = target;
+  private static ISonarLintMarkerResolver enhance(ISonarLintMarkerResolver target, IMarker marker) {
+    ISonarLintMarkerResolver enhanced = target;
     for (IMarkerResolutionEnhancer markerResolutionEnhancer : SonarLintUiExtensionTracker.getInstance().getMarkerResolutionEnhancers()) {
       enhanced = markerResolutionEnhancer.enhance(enhanced, marker);
     }
     return enhanced;
+  }
+
+  private static ISonarLintMarkerResolver enhanceWithResolutionRelevance(ISonarLintMarkerResolver target) {
+    if (CompatibilityUtils.supportMarkerResolutionRelevance()) {
+      return new MarkerResolutionRelevanceAdapter(target);
+    }
+    return target;
   }
 
   private static boolean isSonarLintIssueMarker(IMarker marker) {

@@ -108,7 +108,7 @@ http://stackoverflow.com/questions/36317684/eclipse-jsdt-internal-error-noclassd
 Adding a dependency
 -------------------
 
-Must be osgi bundle.
+Must be an osgi bundle.
 
 ### For Maven
 
