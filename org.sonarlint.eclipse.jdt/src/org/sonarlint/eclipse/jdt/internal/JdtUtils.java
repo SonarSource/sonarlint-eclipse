@@ -354,8 +354,9 @@ public class JdtUtils {
 
   public static ISonarLintMarkerResolver enhance(ISonarLintMarkerResolver resolution, IMarker marker) {
     if (CompatibilityUtils.supportMarkerResolutionRelevance()) {
-      new MarkerResolverRelevanceJdtAdapter(resolution, marker);
+      return new MarkerResolverRelevanceJdtAdapter(resolution, marker);
+    } else {
+      return new MarkerResolverJdtAdapter(resolution, marker);
     }
-    return new MarkerResolverJdtAdapter(resolution, marker);
   }
 }
