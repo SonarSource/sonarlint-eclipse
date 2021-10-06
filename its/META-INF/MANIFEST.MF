@@ -37,6 +37,6 @@ Require-Bundle: org.eclipse.jdt.core,
  org.eclipse.reddeer.core,
  minimal-json;bundle-version="0.9.5"
 Import-Package: org.sonarlint.eclipse.ui.internal.views.issues
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: org.sonarlint.eclipse.its
