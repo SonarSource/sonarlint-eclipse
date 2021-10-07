@@ -31,7 +31,7 @@ Export-Package: org.sonarlint.eclipse.core,
  org.sonarlint.eclipse.core.listener,
  org.sonarlint.eclipse.core.resource
 Require-Bundle: org.eclipse.equinox.security,
- org.eclipse.core.runtime,
+ org.eclipse.core.runtime;bundle-version="3.14.0",
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
  org.eclipse.core.filebuffers,
