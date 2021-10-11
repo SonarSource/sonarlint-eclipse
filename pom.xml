@@ -12,7 +12,7 @@
 
   <groupId>org.sonarsource.sonarlint.eclipse</groupId>
   <artifactId>sonarlint-eclipse-parent</artifactId>
-  <version>6.3.0-SNAPSHOT</version>
+  <version>7.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>SonarLint for Eclipse</name>
@@ -56,7 +56,8 @@
     <license.mailto>sonarlint@sonarsource.com</license.mailto>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho.version>2.3.0</tycho.version>
-    <sonarlint-core.version>6.5.0.37122</sonarlint-core.version>
+    <jdk.min.version>11</jdk.min.version>
+    <sonarlint-core.version>7.0.0.37604</sonarlint-core.version>
     <protobuf.version>3.11.4</protobuf.version>
     <jacoco.version>0.8.5</jacoco.version>
     <okhttp.version>3.14.9</okhttp.version>
@@ -68,8 +69,8 @@
     <!-- ================== -->
     <!-- For SonarQube analysis -->
     <!-- ================== -->
-    <sonar.java.source>1.8</sonar.java.source>
-    <sonar.java.target>1.8</sonar.java.target>
+    <sonar.java.source>11</sonar.java.source>
+    <sonar.java.target>11</sonar.java.target>
     <jarsigner.skip>true</jarsigner.skip>
 
     <gitRepositoryName>sonarlint-eclipse</gitRepositoryName>
